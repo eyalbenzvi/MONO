@@ -2,14 +2,11 @@
 
 import { useId } from "react";
 import { PrintImage } from "@/components/PrintImage";
+import { TEE_BODY, TEE_COLORS, TEE_PRINT, TEE_VIEW } from "@/lib/teeShape";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 
-/*
- * Garment geometry lives in a 400×460 design space; the viewBox crops the
- * empty margins. The 3:4 print rectangle sits centred in the upper body.
- */
-const VIEW = { x: 30, y: 10, w: 340, h: 440 };
-const PRINT = { x: 132, y: 78, w: 136, h: (136 * 4) / 3 };
+const VIEW = TEE_VIEW;
+const PRINT = TEE_PRINT;
 
 const pct = (v: number, of: number) => `${(v / of) * 100}%`;
 const PRINT_STYLE = {
@@ -19,8 +16,7 @@ const PRINT_STYLE = {
   height: pct(PRINT.h, VIEW.h),
 };
 
-const BODY =
-  "M150 24 Q200 36 250 24 L302 38 Q338 52 378 118 L336 164 L306 146 L308 432 Q200 442 92 432 L94 146 L64 164 L22 118 Q62 52 98 38 Z";
+const BODY = TEE_BODY;
 
 interface TeeMockupProps {
   shirt: ShirtProduct;
@@ -35,9 +31,7 @@ interface TeeMockupProps {
 export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shadow = true, style }: TeeMockupProps) {
   const uid = useId().replace(/:/g, "");
   const black = color === "black";
-  const fabric = black ? "#161616" : "#f3f3f1";
-  const seam = black ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)";
-  const collar = black ? "#0d0d0d" : "#e6e6e3";
+  const { fabric, seam, collar } = TEE_COLORS[color];
   const body = BODY;
   const viewBox = `${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`;
   const clip = `clip-${uid}`;

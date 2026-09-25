@@ -3,13 +3,14 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Heart, ShoppingBag, X } from "lucide-react";
+import { ArrowRight, Heart, Share2, ShoppingBag, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useCartCount, useShirtStore } from "@/store/useShirtStore";
+import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
@@ -150,6 +151,14 @@ function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () =
               {showMatch ? ` · ${matchScore(vector, shirt.features)}% match` : ""}
             </p>
           </Link>
+          <button
+            type="button"
+            onClick={() => useUiStore.getState().openShare(shirt.id, color)}
+            aria-label={`Share ${shirt.title}`}
+            className="-mt-1.5 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={remove}

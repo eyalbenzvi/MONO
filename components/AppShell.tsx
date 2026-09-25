@@ -5,6 +5,7 @@ import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
 import { Header } from "@/components/Header";
 import { LikedDrawer } from "@/components/LikedDrawer";
+import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useShirtStore } from "@/store/useShirtStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -41,6 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="relative flex min-h-0 flex-1 flex-col">{children}</main>
       <AlgoDebugPanel />
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
+      <ShareSheet />
       <Toast />
     </div>
     </MotionConfig>
