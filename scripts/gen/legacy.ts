@@ -9,6 +9,7 @@ import {
   clamp01, int, n1, pick, polygon, pts, range, smooth,
   type Design, type Generator, type Rng, type Signature,
 } from "./core";
+import { measure, sizeToFit } from "./art";
 
 /* a) Architectural grids & perspective ------------------------------ */
 
@@ -200,6 +201,10 @@ function shape(rng: Rng, cx: number, cy: number, r: number, ink: string, fill: b
   const kind = pick(rng, ["circle", "square", "triangle", "hex", "diamond"] as const);
   kinds?.push(kind);
   const style = fill ? `fill="${ink}"` : `fill="none" stroke="${ink}" stroke-width="${sw}"`;
+  // Keep the whole shape inside the print margins (never cut off at the edge).
+  const pad = r + sw;
+  cx = Math.min(X0 + IW - pad, Math.max(X0 + pad, cx));
+  cy = Math.min(Y0 + IH - pad, Math.max(Y0 + pad, cy));
   if (kind === "circle") return `<circle cx="${n1(cx)}" cy="${n1(cy)}" r="${n1(r)}" ${style}/>`;
   const sides = kind === "triangle" ? 3 : kind === "hex" ? 6 : 4;
   const rot = kind === "square" ? Math.PI / 4 + range(rng, -0.3, 0.3) : kind === "diamond" ? 0 : range(rng, 0, Math.PI * 2);
@@ -366,7 +371,8 @@ const bigWord: Generator = (rng, ink) => {
   const vertical = rng() < 0.35;
   const outline = rng() < 0.35;
   const span = vertical ? IH : IW;
-  const size = Math.min(span / (word.length * 0.62), vertical ? 130 : 150);
+  // Sized from measured glyph widths (heavy M/W are much wider than average).
+  const size = sizeToFit(word, span - 12, "sansBold", vertical ? 130 : 150, -2);
   const style = outline ? `fill="none" stroke="${ink}" stroke-width="2"` : `fill="${ink}"`;
   const text = vertical
     ? `<text x="0" y="0" transform="translate(${n1(W / 2 + size * 0.35)},${H / 2}) rotate(-90)" text-anchor="middle" font-size="${n1(size)}" font-weight="900" letter-spacing="-2" ${SANS} ${style}>${word}</text>`
@@ -436,7 +442,7 @@ const repeatStack: Generator = (rng, ink) => {
   const word = pick(rng, WORDS);
   const lines = int(rng, 7, 16);
   const lh = IH / lines;
-  const size = Math.min(lh * 1.05, IW / (word.length * 0.6));
+  const size = sizeToFit(word, IW, "sansBold", lh * 1.05, -1);
   const alt = rng() < 0.6;
   let body = "";
   for (let i = 0; i < lines; i++) {
@@ -473,10 +479,14 @@ const manifesto: Generator = (rng, ink) => {
   let body = `<text x="${X0}" y="${Y0 + 44}" font-size="46" font-weight="900" letter-spacing="-1" ${SANS} fill="${ink}">${heading}</text><rect x="${X0}" y="${Y0 + 54}" width="${IW}" height="4" fill="${ink}"/>`;
   const lh = (IH - 76) / rows;
   const perLine = Math.max(1, Math.floor(colW / 30));
+  const fs = Math.min(8.5, lh * 0.8);
   for (let c = 0; c < cols; c++)
     for (let r = 0; r < rows; r++) {
-      const words = Array.from({ length: perLine }, () => pick(rng, WORDS)).join(" ");
-      body += `<text x="${n1(X0 + c * (colW + 10))}" y="${n1(Y0 + 76 + (r + 1) * lh)}" font-size="${n1(Math.min(8.5, lh * 0.8))}" letter-spacing="0.5" ${MONO_FONT} fill="${ink}">${words}</text>`;
+      const picked = Array.from({ length: perLine }, () => pick(rng, WORDS));
+      // Drop trailing words that would run into the next column.
+      while (picked.length > 1 && measure(picked.join(" "), fs, "mono", 0.5) > colW) picked.pop();
+      const words = picked.join(" ");
+      body += `<text x="${n1(X0 + c * (colW + 10))}" y="${n1(Y0 + 76 + (r + 1) * lh)}" font-size="${n1(fs)}" letter-spacing="0.5" ${MONO_FONT} fill="${ink}">${words}</text>`;
     }
   const density = clamp01(0.65 + (rows / 28) * 0.3);
   return {

@@ -9,7 +9,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "generate": "tsx scripts/generateCatalog.ts"
+    "generate": "tsx scripts/generateCatalog.ts",
+    "audit:prints": "node scripts/tools/auditPrints.cjs",
+    "measure:fonts": "node scripts/tools/measureFonts.cjs"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",

@@ -9,8 +9,8 @@ import {
   type Design, type Generator, type Rng,
 } from "./core";
 import {
-  CHAR_W, ICONS, MONO, OBJECTS, SANS, SERIF, SPRITES,
-  bitmapRects, drawPrims, esc, fitLines, pixelText, textEl, toneDefs,
+  ICONS, MONO, OBJECTS, SANS, SERIF, SPRITES,
+  bitmapRects, drawPrims, esc, fitLines, measure, pixelText, sizeToFit, textEl, toneDefs,
 } from "./art";
 import {
   ATTRIBUTIONS, BADGE_BOTTOMS, CLUBS, GAME_SCREENS, LABEL_LINES, MOTTOS, OBJECT_CALLOUTS, OBJECT_CAPTIONS,
@@ -285,7 +285,7 @@ const swissPoster: Generator = (rng, ink) => {
   body += `<line x1="${X0}" y1="${Y0 + 20}" x2="${X0 + IW}" y2="${Y0 + 20}" stroke="${ink}" stroke-width="2"/>`;
   // Each line gets the largest size that fits the width (Swiss "size to
   // fit" rhythm), capped by the line height; textLength only guards overflow.
-  const sizes = lines.map((l) => Math.min(lh * 0.9, IW / (l.length * CHAR_W.sansBold)));
+  const sizes = lines.map((l) => sizeToFit(l, IW, "sansBold", lh * 0.9));
   const total = sizes.reduce((a, b) => a + b * 1.02, 0);
   let y = boxTop + Math.max(0, (boxH - total) / 2);
   lines.forEach((l, i) => {
@@ -295,7 +295,7 @@ const swissPoster: Generator = (rng, ink) => {
     const x = align === "left" ? X0 : CX;
     body += `<text x="${n1(x)}" y="${n1(y - size * 0.14)}" font-size="${n1(size)}" font-weight="900" text-anchor="${align === "left" ? "start" : "middle"}" ${SANS} ${
       outline ? `fill="none" stroke="${ink}" stroke-width="1.5"` : `fill="${ink}"`
-    }${l.length * size * CHAR_W.sansBold > IW ? ` textLength="${IW}" lengthAdjust="spacingAndGlyphs"` : ""}>${esc(l)}</text>`;
+    }${measure(l, size, "sansBold") > IW ? ` textLength="${IW}" lengthAdjust="spacingAndGlyphs"` : ""}>${esc(l)}</text>`;
   });
   body += `<line x1="${X0}" y1="${Y0 + IH - 22}" x2="${X0 + IW}" y2="${Y0 + IH - 22}" stroke="${ink}" stroke-width="1"/>`;
   body += `<text x="${X0}" y="${Y0 + IH - 6}" font-size="9" letter-spacing="1.5" ${MONO} fill="${ink}">WEAR IT LIKE YOU MEAN IT</text>`;
@@ -329,14 +329,14 @@ const warningSign: Generator = (rng, ink, ground) => {
   if (tri) {
     body += `<path d="M${x + 44} ${y + 20} L${x + 64} ${y + 56} L${x + 24} ${y + 56} Z" fill="${ground}"/><text x="${x + 44}" y="${y + 52}" font-size="24" font-weight="900" text-anchor="middle" ${SANS} fill="${ink}">!</text>`;
   }
-  body += textEl(header, tri ? x + 78 : CX, y + 50, 30, { fill: ground, weight: 900, anchor: tri ? "start" : "middle", maxW: tri ? w - 96 : w - 40, charW: CHAR_W.sansBold, spacing: 2 });
-  const fit = fitLines(line, w - 50, h - 120, CHAR_W.sansBold, 1.12, 40);
+  body += textEl(header, tri ? x + 78 : CX, y + 50, 30, { fill: ground, weight: 900, anchor: tri ? "start" : "middle", maxW: tri ? w - 96 : w - 40, spacing: 2 });
+  const fit = fitLines(line, w - 50, h - 120, "sansBold", 1.12, 40);
   const blockH = fit.lines.length * fit.size * 1.12;
   const top = y + 65 + (h - 65 - 30 - blockH) / 2 + fit.size;
   fit.lines.forEach((l, i) => {
-    body += textEl(l, CX, top + i * fit.size * 1.12, fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: w - 50, charW: CHAR_W.sansBold });
+    body += textEl(l, CX, top + i * fit.size * 1.12, fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: w - 50 });
   });
-  body += textEl(footer, CX, y + h - 22, 10, { fill: ink, font: MONO, anchor: "middle", spacing: 1.5, maxW: w - 40, charW: CHAR_W.mono });
+  body += textEl(footer, CX, y + h - 22, 10, { fill: ink, font: MONO, anchor: "middle", spacing: 1.5, maxW: w - 40 });
   body += `<text x="${CX}" y="${Y0 + IH - 6}" font-size="8" letter-spacing="2" text-anchor="middle" ${MONO} fill="${ink}">MONO SAFETY DEPT. — FORM 42-B</text>`;
   return {
     body,
@@ -371,7 +371,7 @@ const receipt: Generator = (rng, ink) => {
   const lh = 17;
   let y = top + 34;
   const mono = (t: string, xx: number, anchor: "start" | "middle" | "end" = "start", size = fs, weight = 400) =>
-    textEl(t, xx, y, size, { fill: ink, font: MONO, anchor, weight, maxW: w - 20, charW: CHAR_W.mono });
+    textEl(t, xx, y, size, { fill: ink, font: MONO, anchor, weight, maxW: w - 20 });
   body += mono(store, CX, "middle", 14, 700);
   y += lh;
   const d = new Date(2026, int(rng, 0, 11), int(rng, 1, 28), int(rng, 0, 23), int(rng, 0, 59));
@@ -383,8 +383,8 @@ const receipt: Generator = (rng, ink) => {
   };
   rule();
   for (const [name, price] of items) {
-    body += textEl(name, x + 12, y, fs, { fill: ink, font: MONO, maxW: w * 0.58, charW: CHAR_W.mono });
-    body += textEl(price, x + w - 12, y, fs, { fill: ink, font: MONO, anchor: "end", maxW: w * 0.34, charW: CHAR_W.mono });
+    body += textEl(name, x + 12, y, fs, { fill: ink, font: MONO, maxW: w * 0.58 });
+    body += textEl(price, x + w - 12, y, fs, { fill: ink, font: MONO, anchor: "end", maxW: w * 0.34 });
     y += lh;
   }
   rule();
@@ -420,14 +420,16 @@ const quotePrint: Generator = (rng, ink) => {
   const framed = rng() < 0.5;
   let body = framed ? `<rect x="${X0 + 8}" y="${Y0 + 8}" width="${IW - 16}" height="${IH - 16}" fill="none" stroke="${ink}" stroke-width="1"/>` : "";
   body += `<text x="${X0 + 22}" y="${Y0 + 110}" font-size="130" ${SERIF} fill="${ink}">“</text>`;
-  const fit = fitLines(quote, IW - 60, 170, CHAR_W.serifItalic, 1.2, 30);
-  const top = Y0 + 150;
+  // Quote block sits under the quote mark; its measured height decides where
+  // the rule and attribution go, so they always stay inside the frame.
+  const fit = fitLines(quote, IW - 60, 160, "serifItalic", 1.2, 30);
+  const blockTop = Y0 + 128;
   fit.lines.forEach((l, i) => {
-    body += textEl(l, X0 + 30, top + i * fit.size * 1.2, fit.size, { fill: ink, font: SERIF, italic: true, maxW: IW - 60, charW: CHAR_W.serifItalic });
+    body += textEl(l, X0 + 30, blockTop + fit.size * (0.95 + i * 1.2), fit.size, { fill: ink, font: SERIF, italic: true, maxW: IW - 60 });
   });
-  const ay = top + fit.lines.length * fit.size * 1.2 + 24;
-  body += `<line x1="${X0 + 30}" y1="${n1(ay - 14)}" x2="${X0 + 70}" y2="${n1(ay - 14)}" stroke="${ink}" stroke-width="1.5"/>`;
-  body += textEl(by, X0 + 30, ay + 4, 12, { fill: ink, font: MONO, maxW: IW - 60, charW: CHAR_W.mono });
+  const blockBottom = blockTop + fit.lines.length * fit.size * 1.2;
+  body += `<line x1="${X0 + 30}" y1="${n1(blockBottom + 10)}" x2="${X0 + 70}" y2="${n1(blockBottom + 10)}" stroke="${ink}" stroke-width="1.5"/>`;
+  body += textEl(by, X0 + 30, blockBottom + 30, 12, { fill: ink, font: MONO, maxW: IW - 60 });
   return {
     body,
     variant: "quote",
@@ -569,16 +571,15 @@ const terminal: Generator = (rng, ink, ground) => {
     const lines = TERMINAL_SCRIPTS[script];
     const x = X0 + 2;
     const w = IW - 4;
-    const longest = Math.max(...lines.map((l) => l.length));
-    const fs = Math.min(17, (w - 30) / (longest * CHAR_W.mono));
+    const fs = Math.min(...lines.map((l) => sizeToFit(l, w - 30, "mono", 17)));
     const lhT = fs * 1.75;
     const h = 60 + lines.length * lhT;
     const y = Y0 + (IH - h) / 2;
     body += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="none" stroke="${ink}" stroke-width="3"/><rect x="${x}" y="${y}" width="${w}" height="24" rx="8" fill="${ink}"/><rect x="${x}" y="${y + 14}" width="${w}" height="10" fill="${ink}"/>`;
     for (let i = 0; i < 3; i++) body += `<circle cx="${x + 16 + i * 14}" cy="${y + 12}" r="4" fill="${ground}"/>`;
-    body += textEl("~/mono — zsh", x + w - 10, y + 16, 9, { fill: ground, font: MONO, anchor: "end", charW: CHAR_W.mono });
+    body += textEl("~/mono — zsh", x + w - 10, y + 16, 9, { fill: ground, font: MONO, anchor: "end" });
     lines.forEach((l, i) => {
-      body += textEl(l, x + 14, y + 50 + i * lhT, fs, { fill: ink, font: MONO, weight: l.startsWith("$") || l.startsWith(">") ? 700 : 400, maxW: w - 28, charW: CHAR_W.mono });
+      body += textEl(l, x + 14, y + 50 + i * lhT, fs, { fill: ink, font: MONO, weight: l.startsWith("$") || l.startsWith(">") ? 700 : 400, maxW: w - 28 });
     });
     body += `<rect x="${x + 14}" y="${n1(y + 40 + lines.length * lhT)}" width="${n1(fs * 0.6)}" height="${n1(fs * 1.1)}" fill="${ink}"/>`;
   } else {
@@ -606,7 +607,7 @@ const terminal: Generator = (rng, ink, ground) => {
       }
       body += `<text x="${X0 + 15}" y="${n1(Y0 + 40 + (r + 1) * lh)}" font-size="${n1(lh * 1.05)}" ${MONO} fill="${ink}" xml:space="preserve" textLength="${n1(cw * cols)}" lengthAdjust="spacingAndGlyphs">${esc(row)}</text>`;
     }
-    body += textEl("render.ascii --light=left", CX, Y0 + IH - 16, 10, { fill: ink, font: MONO, anchor: "middle", charW: CHAR_W.mono });
+    body += textEl("render.ascii --light=left", CX, Y0 + IH - 16, 10, { fill: ink, font: MONO, anchor: "middle" });
   }
   return {
     body,
@@ -635,9 +636,10 @@ const roundBadge: Generator = (rng, ink, ground) => {
   const rText = R - 30;
   body += `<defs><path id="top" d="M${CX - rText} ${cy} A${rText} ${rText} 0 0 1 ${CX + rText} ${cy}"/><path id="bot" d="M${CX - rText} ${cy} A${rText} ${rText} 0 0 0 ${CX + rText} ${cy}"/></defs>`;
   const arc = Math.PI * rText * 0.92;
-  const topSize = Math.min(20, arc / (club.length * CHAR_W.sansBold));
+  const topSize = sizeToFit(club, arc, "sansBold", 20, 1);
+  const botSize = sizeToFit(bottom, arc * 0.72, "sansBold", 13, 3);
   body += `<text font-size="${n1(topSize)}" font-weight="900" letter-spacing="1" ${SANS} fill="${ink}"><textPath href="#top" startOffset="50%" text-anchor="middle">${esc(club)}</textPath></text>`;
-  body += `<text font-size="13" font-weight="700" letter-spacing="3" ${SANS} fill="${ink}" dy="10"><textPath href="#bot" startOffset="50%" text-anchor="middle">${esc(bottom)}</textPath></text>`;
+  body += `<text font-size="${n1(botSize)}" font-weight="700" letter-spacing="3" ${SANS} fill="${ink}" dy="10"><textPath href="#bot" startOffset="50%" text-anchor="middle">${esc(bottom)}</textPath></text>`;
   body += `<text x="${CX - R + 20}" y="${cy + 5}" font-size="14" text-anchor="middle" ${SANS} fill="${ink}">★</text><text x="${CX + R - 20}" y="${cy + 5}" font-size="14" text-anchor="middle" ${SANS} fill="${ink}">★</text>`;
   const style = pick(rng, ["line", "solid"] as const);
   body += drawPrims(ICONS[icon], CX - 42, cy - 46, 84, style, ink, ground, 3);
@@ -674,7 +676,7 @@ const crest: Generator = (rng, ink, ground) => {
   const ry = top + 236;
   body += `<path d="M${X0 + 2} ${ry + 6} L${X0 + 30} ${ry - 6} L${X0 + 30} ${ry + 34} L${X0 + 2} ${ry + 44} L${X0 + 14} ${ry + 20} Z M${X0 + IW - 2} ${ry + 6} L${X0 + IW - 30} ${ry - 6} L${X0 + IW - 30} ${ry + 34} L${X0 + IW - 2} ${ry + 44} L${X0 + IW - 14} ${ry + 20} Z" fill="${ink}"/>`;
   body += `<rect x="${X0 + 26}" y="${ry - 10}" width="${IW - 52}" height="40" fill="${ground}" stroke="${ink}" stroke-width="3"/>`;
-  body += textEl(motto, CX, ry + 16, 15, { fill: ink, font: SERIF, weight: 700, anchor: "middle", spacing: 2, maxW: IW - 76, charW: 0.66 });
+  body += textEl(motto, CX, ry + 16, 15, { fill: ink, font: SERIF, weight: 700, anchor: "middle", spacing: 2, maxW: IW - 76 });
   return {
     body,
     variant: "crest",
@@ -707,17 +709,18 @@ const stamp: Generator = (rng, ink, ground) => {
   body += `<rect x="${x + 16}" y="${y + 16}" width="${w - 32}" height="${h - 32}" fill="${ground}"/>`;
   body += `<rect x="${x + 24}" y="${y + 24}" width="${w - 48}" height="${h - 110}" fill="url(#t1)" stroke="${ink}" stroke-width="2"/>`;
   body += drawPrims(ICONS[icon], CX - 60, y + 40, 120, "solid", ink, ground, 4);
-  body += textEl(value, x + w - 30, y + h - 30, 44, { fill: ink, weight: 900, anchor: "end", charW: CHAR_W.sansBold });
-  const textW = w - 56 - value.length * 44 * 0.62 - 14;
-  body += textEl(country, x + 26, y + h - 62, 12, { fill: ink, weight: 700, spacing: 1.5, maxW: textW, charW: CHAR_W.sansBold });
-  body += textEl("AIR MAIL · PAR AVION", x + 26, y + h - 40, 9, { fill: ink, font: MONO, maxW: textW, charW: CHAR_W.mono });
+  body += textEl(value, x + w - 30, y + h - 30, 44, { fill: ink, weight: 900, anchor: "end" });
+  const textW = w - 56 - measure(value, 44, "sansBold") - 14;
+  // Country gets its own full-width row above the value, so long names never crowd it.
+  body += textEl(country, x + 26, y + h - 66, 12, { fill: ink, weight: 700, spacing: 1.5, maxW: w - 52 });
+  body += textEl("AIR MAIL · PAR AVION", x + 26, y + h - 40, 9, { fill: ink, font: MONO, maxW: textW });
   if (cancelled) {
     const cx = x + w - 40;
     const cy = y + 60;
     let waves = "";
     for (let i = 0; i < 4; i++) waves += `M${n1(cx - 150)} ${n1(cy + 30 + i * 10)} q18 -8 36 0 t36 0 t36 0 t36 0 `;
     body += `<g fill="none" stroke="${ink}" stroke-width="2"><circle cx="${n1(cx)}" cy="${n1(cy)}" r="30"/><circle cx="${n1(cx)}" cy="${n1(cy)}" r="24"/><path d="${waves}"/></g>`;
-    body += textEl("2026", cx, cy + 4, 11, { fill: ink, font: MONO, weight: 700, anchor: "middle", charW: CHAR_W.mono });
+    body += textEl("2026", cx, cy + 4, 11, { fill: ink, font: MONO, weight: 700, anchor: "middle" });
   }
   return {
     body,
@@ -746,11 +749,11 @@ const ticketLabel: Generator = (rng, ink, ground) => {
     const notch = 16;
     body += `<path d="M${x} ${y} H${x + w} V${y + h / 2 - notch} A${notch} ${notch} 0 0 0 ${x + w} ${y + h / 2 + notch} V${y + h} H${x} V${y + h / 2 + notch} A${notch} ${notch} 0 0 0 ${x} ${y + h / 2 - notch} Z" fill="none" stroke="${ink}" stroke-width="4"/>`;
     body += `<line x1="${x + 20}" y1="${y + h / 2}" x2="${x + w - 20}" y2="${y + h / 2}" stroke="${ink}" stroke-width="2" stroke-dasharray="5 5"/>`;
-    const fit = fitLines(big, w - 40, 90, CHAR_W.sansBold, 1.05, 46);
-    fit.lines.forEach((l, i) => (body += textEl(l, x + w / 2, y + 30 + fit.size * (i + 0.9), fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: w - 40, charW: CHAR_W.sansBold })));
-    body += textEl(small, x + w / 2, y + h / 2 + 50, 18, { fill: ink, weight: 700, anchor: "middle", maxW: w - 40, charW: CHAR_W.sansBold, spacing: 1 });
-    body += textEl(`ROW ${pick(rng, ["0", "A", "Z", "∞"])} · SEAT ${int(rng, 1, 99)} · GATE ${int(rng, 1, 42)}`, x + w / 2, y + h / 2 + 84, 11, { fill: ink, font: MONO, anchor: "middle", maxW: w - 40, charW: CHAR_W.mono });
-    body += textEl(`Nº ${String(int(rng, 1, 999999)).padStart(6, "0")}`, x + w / 2, y + h - 16, 10, { fill: ink, font: MONO, anchor: "middle", charW: CHAR_W.mono, spacing: 2 });
+    const fit = fitLines(big, w - 40, 90, "sansBold", 1.05, 46);
+    fit.lines.forEach((l, i) => (body += textEl(l, x + w / 2, y + 30 + fit.size * (i + 0.9), fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: w - 40 })));
+    body += textEl(small, x + w / 2, y + h / 2 + 50, 18, { fill: ink, weight: 700, anchor: "middle", maxW: w - 40, spacing: 1 });
+    body += textEl(`ROW ${pick(rng, ["0", "A", "Z", "∞"])} · SEAT ${int(rng, 1, 99)} · GATE ${int(rng, 1, 42)}`, x + w / 2, y + h / 2 + 84, 11, { fill: ink, font: MONO, anchor: "middle", maxW: w - 40 });
+    body += textEl(`Nº ${String(int(rng, 1, 999999)).padStart(6, "0")}`, x + w / 2, y + h - 16, 10, { fill: ink, font: MONO, anchor: "middle", spacing: 2 });
   } else {
     const [a, b, c] = pick(rng, LABEL_LINES);
     key = a + b;
@@ -759,11 +762,11 @@ const ticketLabel: Generator = (rng, ink, ground) => {
     const w = IW - 40;
     const h = IH - 70;
     body += `<path d="M${x + 30} ${y} H${x + w} V${y + h} H${x} V${y + 30} Z" fill="none" stroke="${ink}" stroke-width="4"/><circle cx="${x + 26}" cy="${y + 26}" r="8" fill="none" stroke="${ink}" stroke-width="3"/>`;
-    body += textEl(a, x + w / 2, y + 80, 34, { fill: ink, weight: 900, anchor: "middle", maxW: w - 30, charW: CHAR_W.sansBold, spacing: 2 });
+    body += textEl(a, x + w / 2, y + 80, 34, { fill: ink, weight: 900, anchor: "middle", maxW: w - 30, spacing: 2 });
     body += `<line x1="${x + 16}" y1="${y + 100}" x2="${x + w - 16}" y2="${y + 100}" stroke="${ink}" stroke-width="2"/>`;
-    const fit = fitLines(b, w - 40, 64, CHAR_W.sansBold, 1.1, 28);
-    fit.lines.forEach((l, i) => (body += textEl(l, x + w / 2, y + 130 + i * fit.size * 1.1, fit.size, { fill: ink, weight: 700, anchor: "middle", maxW: w - 40, charW: CHAR_W.sansBold })));
-    body += textEl(c, x + w / 2, y + 196, 12, { fill: ink, font: MONO, anchor: "middle", maxW: w - 40, charW: CHAR_W.mono, spacing: 1.5 });
+    const fit = fitLines(b, w - 40, 64, "sansBold", 1.1, 28);
+    fit.lines.forEach((l, i) => (body += textEl(l, x + w / 2, y + 130 + i * fit.size * 1.1, fit.size, { fill: ink, weight: 700, anchor: "middle", maxW: w - 40 })));
+    body += textEl(c, x + w / 2, y + 196, 12, { fill: ink, font: MONO, anchor: "middle", maxW: w - 40, spacing: 1.5 });
     let bx = x + 30;
     let bars = "";
     while (bx < x + w - 30) {
@@ -798,8 +801,8 @@ const objectIcon: Generator = (rng, ink, ground) => {
   const caption = pick(rng, OBJECT_CAPTIONS[obj]);
   const sw = pick(rng, [3, 4, 5]);
   let body = drawPrims(OBJECTS[obj], CX - 100, Y0 + 20, 200, "line", ink, ground, sw);
-  const fit = fitLines(caption, IW - 30, 80, CHAR_W.sansBold, 1.08, 34);
-  fit.lines.forEach((l, i) => (body += textEl(l, CX, Y0 + 260 + fit.size * (i + 0.9) * 1.08, fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: IW - 30, charW: CHAR_W.sansBold })));
+  const fit = fitLines(caption, IW - 30, 80, "sansBold", 1.08, 34);
+  fit.lines.forEach((l, i) => (body += textEl(l, CX, Y0 + 260 + fit.size * (i + 0.9) * 1.08, fit.size, { fill: ink, weight: 900, anchor: "middle", maxW: IW - 30 })));
   return {
     body,
     variant: "objecticon",
@@ -863,7 +866,7 @@ const oddOneOut: Generator = (rng, ink, ground) => {
       else if (i === odd) body += drawPrims(OBJECTS[other], x, y, s, "line", ink, ground, 2);
       else body += drawPrims(OBJECTS[obj], x, y, s, "line", ink, ground, 2);
     }
-  body += textEl("FIND THE ODD ONE OUT", CX, Y0 + IH - 8, 13, { fill: ink, font: MONO, weight: 700, anchor: "middle", spacing: 2, maxW: IW - 20, charW: CHAR_W.mono });
+  body += textEl("FIND THE ODD ONE OUT", CX, Y0 + IH - 8, 13, { fill: ink, font: MONO, weight: 700, anchor: "middle", spacing: 2, maxW: IW - 20 });
   return {
     body,
     variant: "oddoneout",
@@ -883,7 +886,7 @@ const diagram: Generator = (rng, ink, ground) => {
   const size = 184;
   const ox = CX - size / 2;
   const oy = Y0 + 34;
-  let body = textEl(`FIG. ${int(rng, 1, 12)} — ${obj.toUpperCase()}`, X0, Y0 + 14, 12, { fill: ink, font: MONO, weight: 700, spacing: 1.5, maxW: IW, charW: CHAR_W.mono });
+  let body = textEl(`FIG. ${int(rng, 1, 12)} — ${obj.toUpperCase()}`, X0, Y0 + 14, 12, { fill: ink, font: MONO, weight: 700, spacing: 1.5, maxW: IW });
   body += `<line x1="${X0}" y1="${Y0 + 22}" x2="${X0 + IW}" y2="${Y0 + 22}" stroke="${ink}" stroke-width="1"/>`;
   body += drawPrims(OBJECTS[obj], ox, oy, size, "line", ink, ground, 2.5);
   // Numbered markers on the drawing, legend underneath — like a real spec sheet.
@@ -896,9 +899,9 @@ const diagram: Generator = (rng, ink, ground) => {
   const ly = oy + size + 22;
   body += `<line x1="${ox}" y1="${ly - 10}" x2="${ox + size}" y2="${ly - 10}" stroke="${ink}" stroke-width="1"/><path d="M${ox} ${ly - 16} V${ly - 4} M${ox + size} ${ly - 16} V${ly - 4}" stroke="${ink}" stroke-width="1"/>`;
   callouts.forEach(([, , label], i) => {
-    body += textEl(`${i + 1}  ${label}`, X0 + 8, ly + 18 + i * 18, 11, { fill: ink, font: MONO, maxW: IW - 16, charW: CHAR_W.mono });
+    body += textEl(`${i + 1}  ${label}`, X0 + 8, ly + 18 + i * 18, 11, { fill: ink, font: MONO, maxW: IW - 16 });
   });
-  body += textEl("SCALE 1:1 (EMOTIONALLY)", X0 + IW - 8, Y0 + IH - 6, 9, { fill: ink, font: MONO, anchor: "end", charW: CHAR_W.mono, spacing: 1 });
+  body += textEl("SCALE 1:1 (EMOTIONALLY)", X0 + IW - 8, Y0 + IH - 6, 9, { fill: ink, font: MONO, anchor: "end", spacing: 1 });
   return {
     body,
     variant: "diagram",
