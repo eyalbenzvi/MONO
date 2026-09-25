@@ -23,6 +23,8 @@ Five generative families, 200 shirts each, four algorithms per family:
 | Halftone | radial burst · ordered gradient · dot-matrix shapes · stippled grain |
 | Line & Wave | pulsar ridge lines · sine-wave moiré · topographic contours · gestural line |
 
+**Every design comes in both colourways.** `baseColor` is the original the print was drawn for; the buyer can pick the other tee colour on the product page, the Discover card's details face, the Saved drawer or in the bag. Because prints are strictly two-colour, the reverse colourway is an exact CSS inversion of the same SVG (no extra files); the SKU's colour letter flips (`MN-GEO-B-0001` ↔ `MN-GEO-W-0001`). Bag lines are keyed by design + size + colour. In the shop, the colour switch shows the whole catalog in black or white tees.
+
 Feature vectors are computed from each design's real parameters (line/cell counts, fill ratio, stroke weight, dot coverage, framing, knockout) rather than assigned. Tees are exactly 70% black / 30% white. Every print is single-ink: white ink on black tees, black ink on white. The mockup blends the print's ground into the fabric (`screen` / `multiply`) so only the ink shows. About 12% of prints are knocked out of a solid ink block.
 
 ## Flow

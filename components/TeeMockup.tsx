@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { PrintImage } from "@/components/PrintImage";
-import type { ShirtProduct } from "@/types/shirt";
+import type { BaseColor, ShirtProduct } from "@/types/shirt";
 
 /*
  * Garment geometry lives in a 400×460 design space; the viewBox crops the
@@ -24,15 +24,17 @@ const BODY =
 
 interface TeeMockupProps {
   shirt: ShirtProduct;
+  /** Tee colour to render; defaults to the design's original colourway. */
+  color?: BaseColor;
   className?: string;
   /** Drop shadow under the garment (off for tiny thumbnails). */
   shadow?: boolean;
   style?: React.CSSProperties;
 }
 
-export function TeeMockup({ shirt, className = "", shadow = true, style }: TeeMockupProps) {
+export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shadow = true, style }: TeeMockupProps) {
   const uid = useId().replace(/:/g, "");
-  const black = shirt.baseColor === "black";
+  const black = color === "black";
   const fabric = black ? "#161616" : "#f3f3f1";
   const seam = black ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)";
   const collar = black ? "#0d0d0d" : "#e6e6e3";
@@ -71,7 +73,7 @@ export function TeeMockup({ shirt, className = "", shadow = true, style }: TeeMo
 
       {/* Print: single-ink, blended into the fabric (screen = white ink, multiply = black ink) */}
       <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
-        <PrintImage shirt={shirt} />
+        <PrintImage shirt={shirt} color={color} />
       </div>
 
       {/* Fabric folds — shadows */}

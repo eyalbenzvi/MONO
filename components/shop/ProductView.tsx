@@ -9,11 +9,11 @@ import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Spec } from "@/components/ShirtCard";
 import { TeeMockup } from "@/components/TeeMockup";
-import { MatchBadge, SizeSelector, STAGE_BG, TraitChips } from "@/components/ui";
+import { ColorSelector, MatchBadge, SizeSelector, STAGE_BG, TraitChips } from "@/components/ui";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
 import { useShirtStore } from "@/store/useShirtStore";
-import { CATEGORY_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES } from "@/types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
 
 type View = "tee" | "print";
 const VIEWS: { value: View; label: string }[] = [
@@ -27,6 +27,8 @@ export function ProductView({ id }: { id: string }) {
   const vector = useShirtStore((s) => s.preferenceVector);
   const selected = useShirtStore((s) => s.selectedSizes[id]);
   const setSize = useShirtStore((s) => s.setSize);
+  const pickedColor = useShirtStore((s) => s.selectedColors[id]);
+  const setColor = useShirtStore((s) => s.setColor);
   const addToCart = useShirtStore((s) => s.addToCart);
   const saved = useShirtStore((s) => s.likedIds.includes(id));
   const toggleSaved = useShirtStore((s) => s.toggleSaved);
@@ -42,7 +44,9 @@ export function ProductView({ id }: { id: string }) {
     );
   }
 
-  const black = shirt.baseColor === "black";
+  // Before hydration render the original colourway so SSR and client agree.
+  const color = (hydrated && pickedColor) || shirt.baseColor;
+  const black = color === "black";
   const score = matchScore(vector, shirt.features);
   const reasons = explainMatch(vector, shirt.features);
   const similar = similarShirts(shirt, SHIRTS, 4);
@@ -65,7 +69,7 @@ export function ProductView({ id }: { id: string }) {
               )}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={view}
+                  key={`${view}-${color}`}
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.97 }}
@@ -74,10 +78,10 @@ export function ProductView({ id }: { id: string }) {
                 >
                   {view === "print" ? (
                     <div className="aspect-[3/4] h-[78%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
-                      <PrintImage shirt={shirt} />
+                      <PrintImage shirt={shirt} color={color} />
                     </div>
                   ) : (
-                    <TeeMockup shirt={shirt} className="h-full max-h-full" />
+                    <TeeMockup shirt={shirt} color={color} className="h-full max-h-full" />
                   )}
                 </motion.div>
               </AnimatePresence>
@@ -104,7 +108,7 @@ export function ProductView({ id }: { id: string }) {
 
           {/* Info */}
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">{CATEGORY_LABELS[shirt.category]} · {shirt.sku}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">{CATEGORY_LABELS[shirt.category]} · {skuFor(shirt.sku, color)}</p>
             <div className="mt-1 flex items-start justify-between gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{shirt.title}</h1>
               <span className="mt-1 font-mono text-2xl font-semibold">${shirt.price}</span>
@@ -119,13 +123,18 @@ export function ProductView({ id }: { id: string }) {
             )}
 
             <dl className="mt-5 grid grid-cols-2 gap-2 text-xs">
-              <Spec label="Tee" value={black ? "Black" : "White"} />
+              <Spec label="Tee" value={COLOR_LABELS[color]} />
               <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
               <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
               <Spec label="Style" value={CATEGORY_LABELS[shirt.category]} />
               <Spec label="Fabric" value="100% organic cotton" />
               <Spec label="Weight" value="220 gsm, regular fit" />
             </dl>
+
+            <div className="mt-5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Tee colour</p>
+              <ColorSelector value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
+            </div>
 
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between">
@@ -168,11 +177,11 @@ export function ProductView({ id }: { id: string }) {
               <button
                 type="button"
                 disabled={!hydrated || !selected}
-                onClick={() => selected && addToCart(shirt.id, selected)}
+                onClick={() => selected && addToCart(shirt.id, selected, color)}
                 className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:bg-white/10 disabled:text-neutral-500"
               >
                 <ShoppingBag className="h-4 w-4" />
-                {hydrated && selected ? `Add to bag · ${selected}` : "Select a size"}
+                {hydrated && selected ? `Add to bag · ${COLOR_LABELS[color]} · ${selected}` : "Select a size"}
               </button>
               <motion.button
                 type="button"

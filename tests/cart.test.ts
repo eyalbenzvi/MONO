@@ -5,50 +5,77 @@ import {
   SHIPPING_FEE,
   addItem,
   cartTotals,
-  changeItemSize,
+  changeItem,
   setItemQty,
 } from "@/lib/cart";
 import { SHIRTS } from "@/lib/catalog";
-import type { CartItem } from "@/types/shirt";
+import { otherColor, skuFor, type CartItem } from "@/types/shirt";
 
 const [a, b] = SHIRTS;
 
 describe("cart", () => {
-  it("merges the same shirt+size and keeps sizes separate", () => {
+  it("merges the same shirt+size+colour and keeps other combinations separate", () => {
     let items: CartItem[] = [];
-    items = addItem(items, { id: a.id, size: "M", qty: 1 });
-    items = addItem(items, { id: a.id, size: "M", qty: 2 });
-    items = addItem(items, { id: a.id, size: "L", qty: 1 });
+    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 1 });
+    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 2 });
+    items = addItem(items, { id: a.id, size: "L", color: "black", qty: 1 });
+    items = addItem(items, { id: a.id, size: "M", color: "white", qty: 1 });
     expect(items).toEqual([
-      { id: a.id, size: "M", qty: 3 },
-      { id: a.id, size: "L", qty: 1 },
+      { id: a.id, size: "M", color: "black", qty: 3 },
+      { id: a.id, size: "L", color: "black", qty: 1 },
+      { id: a.id, size: "M", color: "white", qty: 1 },
     ]);
   });
 
   it("caps quantity and removes at zero", () => {
-    let items = addItem([], { id: a.id, size: "S", qty: 50 });
+    let items = addItem([], { id: a.id, size: "S", color: "white", qty: 50 });
     expect(items[0].qty).toBe(MAX_QTY);
-    items = setItemQty(items, a.id, "S", 0);
+    items = setItemQty(items, { id: a.id, size: "S", color: "white" }, 0);
     expect(items).toEqual([]);
   });
 
-  it("changing size merges into an existing line", () => {
+  it("switching colour edits the line in place", () => {
     const items: CartItem[] = [
-      { id: a.id, size: "M", qty: 2 },
-      { id: a.id, size: "L", qty: 1 },
+      { id: a.id, size: "M", color: "black", qty: 2 },
+      { id: b.id, size: "L", color: "white", qty: 1 },
     ];
-    expect(changeItemSize(items, a.id, "M", "L")).toEqual([{ id: a.id, size: "L", qty: 3 }]);
+    expect(changeItem(items, items[0], { color: "white" })).toEqual([
+      { id: a.id, size: "M", color: "white", qty: 2 },
+      { id: b.id, size: "L", color: "white", qty: 1 },
+    ]);
+  });
+
+  it("changing size or colour merges into an existing matching line", () => {
+    const items: CartItem[] = [
+      { id: a.id, size: "M", color: "black", qty: 2 },
+      { id: a.id, size: "M", color: "white", qty: 1 },
+      { id: a.id, size: "L", color: "white", qty: 4 },
+    ];
+    expect(changeItem(items, items[0], { color: "white" })).toEqual([
+      { id: a.id, size: "M", color: "white", qty: 3 },
+      { id: a.id, size: "L", color: "white", qty: 4 },
+    ]);
+    expect(changeItem(items, items[1], { size: "L" })).toEqual([
+      { id: a.id, size: "M", color: "black", qty: 2 },
+      { id: a.id, size: "L", color: "white", qty: 5 },
+    ]);
+  });
+
+  it("both colourways cost the same", () => {
+    const black = cartTotals([{ id: a.id, size: "M", color: "black", qty: 1 }]);
+    const white = cartTotals([{ id: a.id, size: "M", color: "white", qty: 1 }]);
+    expect(black.subtotal).toBe(white.subtotal);
   });
 
   it("totals with shipping below the threshold and free shipping above it", () => {
-    const one = cartTotals([{ id: a.id, size: "M", qty: 1 }]);
+    const one = cartTotals([{ id: a.id, size: "M", color: a.baseColor, qty: 1 }]);
     expect(one.subtotal).toBe(a.price);
     expect(one.shipping).toBe(a.price >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE);
     expect(one.total).toBe(one.subtotal + one.shipping);
 
     const many = cartTotals([
-      { id: a.id, size: "M", qty: 2 },
-      { id: b.id, size: "L", qty: 1 },
+      { id: a.id, size: "M", color: "black", qty: 2 },
+      { id: b.id, size: "L", color: "white", qty: 1 },
     ]);
     expect(many.count).toBe(3);
     expect(many.subtotal).toBe(a.price * 2 + b.price);
@@ -57,6 +84,15 @@ describe("cart", () => {
   });
 
   it("ignores unknown ids", () => {
-    expect(cartTotals([{ id: "nope", size: "M", qty: 1 }]).count).toBe(0);
+    expect(cartTotals([{ id: "nope", size: "M", color: "black", qty: 1 }]).count).toBe(0);
+  });
+});
+
+describe("colourways", () => {
+  it("skuFor swaps only the colour letter", () => {
+    expect(skuFor("MN-GEO-B-0001", "white")).toBe("MN-GEO-W-0001");
+    expect(skuFor("MN-GEO-W-0001", "black")).toBe("MN-GEO-B-0001");
+    expect(skuFor("MN-GEO-B-0001", "black")).toBe("MN-GEO-B-0001");
+    for (const s of SHIRTS.slice(0, 50)) expect(skuFor(s.sku, otherColor(s.baseColor))).not.toBe(s.sku);
   });
 });

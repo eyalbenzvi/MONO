@@ -1062,7 +1062,9 @@ function main() {
       baseColor,
       backPrintUrl: `/prints/print_${n}.svg`,
       category,
-      description: `${design.description}${knockout ? " Knocked out of a solid ink block." : ""} ${baseColor === "black" ? "White" : "Black"} ink.`,
+      // No ink colour here: every design is sold in both colourways (the app
+      // shows the ink for the chosen tee).
+      description: `${design.description}${knockout ? " Knocked out of a solid ink block." : ""}`,
       features,
     });
   }

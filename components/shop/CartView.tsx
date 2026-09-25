@@ -9,7 +9,7 @@ import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG } from "@/components/ui";
 import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals } from "@/lib/cart";
 import { useShirtStore } from "@/store/useShirtStore";
-import { SIZES, type Order, type ShirtSize } from "@/types/shirt";
+import { COLOR_LABELS, SIZES, skuFor, type BaseColor, type Order, type ShirtSize } from "@/types/shirt";
 
 type Step = "bag" | "details" | "done";
 
@@ -18,7 +18,7 @@ export function CartView() {
   const cart = useShirtStore((s) => s.cart);
   const lastOrder = useShirtStore((s) => s.lastOrder);
   const setCartQty = useShirtStore((s) => s.setCartQty);
-  const changeCartSize = useShirtStore((s) => s.changeCartSize);
+  const changeCartItem = useShirtStore((s) => s.changeCartItem);
   const placeOrder = useShirtStore((s) => s.placeOrder);
   const [step, setStep] = useState<Step>("bag");
   const [placed, setPlaced] = useState<Order | null>(null);
@@ -67,7 +67,7 @@ export function CartView() {
               <AnimatePresence initial={false}>
                 {lines.map((line) => (
                   <motion.li
-                    key={`${line.id}-${line.size}`}
+                    key={`${line.id}-${line.size}-${line.color}`}
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -75,22 +75,27 @@ export function CartView() {
                     className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
                   >
                     <Link href={`/shop/${line.id}/`} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
-                      <TeeMockup shirt={line.shirt} shadow={false} className="w-full" />
+                      <TeeMockup shirt={line.shirt} color={line.color} shadow={false} className="w-full" />
                     </Link>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
                           <p className="text-xs text-neutral-500">
-                            {line.shirt.baseColor === "black" ? "Black" : "White"} tee · {line.shirt.sku}
+                            {COLOR_LABELS[line.color]} tee · {skuFor(line.shirt.sku, line.color)}
                           </p>
+                          <ColorSwatches
+                            value={line.color}
+                            original={line.shirt.baseColor}
+                            onChange={(color) => changeCartItem(line, { color })}
+                          />
                         </div>
                         <span className="font-mono text-sm">${line.lineTotal}</span>
                       </div>
                       <div className="mt-auto flex items-center gap-2 pt-2">
                         <select
                           value={line.size}
-                          onChange={(e) => changeCartSize(line.id, line.size, e.target.value as ShirtSize)}
+                          onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
                           aria-label="Size"
                           className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white outline-none ring-1 ring-white/10"
                         >
@@ -101,15 +106,15 @@ export function CartView() {
                           ))}
                         </select>
                         <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
-                          <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line.id, line.size, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
+                          <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
                             <Minus className="h-3.5 w-3.5" />
                           </button>
                           <span className="w-5 text-center font-mono text-sm" aria-live="polite">{line.qty}</span>
-                          <button type="button" aria-label="Increase quantity" disabled={line.qty >= MAX_QTY} onClick={() => setCartQty(line.id, line.size, line.qty + 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
+                          <button type="button" aria-label="Increase quantity" disabled={line.qty >= MAX_QTY} onClick={() => setCartQty(line, line.qty + 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
                             <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line.id, line.size, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 hover:bg-white/5 hover:text-rose-400">
+                        <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 hover:bg-white/5 hover:text-rose-400">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -141,6 +146,30 @@ export function CartView() {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+/** Compact black/white toggle for a bag line. */
+function ColorSwatches({ value, original, onChange }: { value: BaseColor; original: BaseColor; onChange: (c: BaseColor) => void }) {
+  return (
+    <div className="mt-1.5 flex items-center gap-1.5" role="radiogroup" aria-label="Tee colour">
+      {(["black", "white"] as const).map((c) => (
+        <button
+          key={c}
+          type="button"
+          role="radio"
+          aria-checked={value === c}
+          aria-label={`${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`}
+          onClick={() => onChange(c)}
+          className={`flex h-7 items-center gap-1.5 rounded-full pl-1 pr-2 text-[11px] font-medium transition ${
+            value === c ? "bg-white/10 text-white ring-1 ring-white" : "text-neutral-500 ring-1 ring-white/10 hover:text-neutral-300"
+          }`}
+        >
+          <span className={`h-5 w-5 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20"}`} aria-hidden />
+          {COLOR_LABELS[c]}
+        </button>
+      ))}
     </div>
   );
 }
@@ -284,16 +313,16 @@ function Confirmation({ order }: { order: Order }) {
         </p>
         <div className="mt-6 flex w-full justify-center -space-x-6">
           {lines.slice(0, 4).map((l) => (
-            <div key={`${l.id}-${l.size}`} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
-              <TeeMockup shirt={l.shirt} shadow={false} className="w-full" />
+            <div key={`${l.id}-${l.size}-${l.color}`} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
+              <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />
             </div>
           ))}
         </div>
         <ul className="mt-6 w-full space-y-1 text-left text-sm">
           {lines.map((l) => (
-            <li key={`${l.id}-${l.size}`} className="flex justify-between text-neutral-300">
+            <li key={`${l.id}-${l.size}-${l.color}`} className="flex justify-between text-neutral-300">
               <span>
-                {l.qty}× {l.shirt.title} · {l.size}
+                {l.qty}× {l.shirt.title} · {COLOR_LABELS[l.color]} · {l.size}
               </span>
               <span className="font-mono">${l.lineTotal}</span>
             </li>
