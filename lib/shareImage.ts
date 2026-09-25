@@ -12,6 +12,7 @@ import { assetUrl } from "@/lib/catalog";
 import { siteRoot } from "@/lib/share";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "@/lib/teeShape";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
 
 export type ShareFormat = "story" | "square";
 export const SHARE_SIZES: Record<ShareFormat, { w: number; h: number }> = {
@@ -168,7 +169,7 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
   fitFont(ctx, shirt.title, w - 120, story ? 84 : 58, 800);
   ctx.fillText(shirt.title, w / 2, y);
   y += story ? 70 : 48;
-  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee  ·  $${shirt.price}`;
+  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee  ·  ${formatPrice(shirt.price)}`;
   fitFont(ctx, meta, w - 120, story ? 40 : 30, 500);
   ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.fillText(meta, w / 2, y);

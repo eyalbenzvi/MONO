@@ -15,8 +15,6 @@ export const CALIBRATION_SIZE = 10;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
-export const toArray = (v: FeatureVector): number[] =>
-  FEATURE_KEYS.map((k) => v[k]);
 
 /**
  * Cosine similarity mapped to a 0–100 percentage.

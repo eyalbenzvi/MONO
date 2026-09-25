@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
-import { useHydrated } from "@/components/AppShell";
+import { useShowMatch } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
-import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
-import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, COLOR_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "@/types/shirt";
+import { track } from "@/lib/analytics";
 
 const SORTS: { value: ShopSort; label: string }[] = [
   { value: "match", label: "For you" },
@@ -19,18 +20,28 @@ const SORTS: { value: ShopSort; label: string }[] = [
 
 export function ShopView() {
   const hydrated = useHydrated();
-  const vector = useShirtStore((s) => s.preferenceVector);
+  const vector = useTasteStore((s) => s.preferenceVector);
   const { done, total, complete } = useCalibrationProgress();
-  const { category, sort, teeView, limit } = useUiStore((s) => s.shop);
+  // One primitive per selector: the grid re-renders only when these change.
+  const category = useUiStore((s) => s.shop.category);
+  const sort = useUiStore((s) => s.shop.sort);
+  const teeView = useUiStore((s) => s.shop.teeView);
+  const limit = useUiStore((s) => s.shop.limit);
+  const showMatch = useShowMatch();
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
+  const openFromGrid = useCallback(() => setProductOrigin("/shop/"), [setProductOrigin]);
+
+  useEffect(() => {
+    if (hydrated) track("shop_view", { category: useUiStore.getState().shop.category, sort: useUiStore.getState().shop.sort });
+  }, [hydrated]);
 
   // Rank with a snapshot of the taste vector taken on entry (and when sort or
   // category change): a heart tap trains the vector, and re-ranking live
   // would reshuffle the grid under the user's finger.
   const [rankVector, setRankVector] = useState(vector);
   useEffect(() => {
-    setRankVector(useShirtStore.getState().preferenceVector);
+    setRankVector(useTasteStore.getState().preferenceVector);
   }, [hydrated, sort, category]);
   const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort), [rankVector, sort]);
   const bestId = ranked[0]?.shirt.id;
@@ -50,16 +61,16 @@ export function ShopView() {
   useLayoutEffect(() => {
     if (!hydrated || !scroller.current) return;
     restoring.current = true;
-    scroller.current.scrollTop = useUiStore.getState().shop.scrollTop;
+    scroller.current.scrollTop = shopScroll.top;
     requestAnimationFrame(() => (restoring.current = false));
   }, [hydrated]);
   const onHeaderScroll = useMemo(() => makeHeaderScrollHandler(), []);
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!restoring.current) onHeaderScroll(e);
-    useUiStore.getState().setShop({ scrollTop: e.currentTarget.scrollTop });
+    shopScroll.top = e.currentTarget.scrollTop;
   };
 
-  // Infinite scroll in batches — 1,000 mockups are rendered lazily.
+  // Infinite scroll in batches — thousands of mockups, rendered lazily.
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = sentinel.current;
@@ -73,7 +84,8 @@ export function ShopView() {
   }, [hydrated, visible.length, setShop]);
 
   const setFilter = (patch: Partial<{ category: ShirtCategory | null; sort: ShopSort; teeView: BaseColor | "original" }>) => {
-    setShop({ ...patch, limit: SHOP_PAGE_SIZE, scrollTop: 0 });
+    shopScroll.top = 0;
+    setShop({ ...patch, limit: SHOP_PAGE_SIZE });
     scroller.current?.scrollTo({ top: 0 });
   };
 
@@ -99,7 +111,7 @@ export function ShopView() {
             ) : (
               <>
                 <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
-                  Take the 10-tee taste test for real picks <span className="text-neutral-400">· {done}/{total}</span>
+                  Take the {total}-tee taste test for real picks <span className="text-neutral-400">· {done}/{total}</span>
                 </span>
                 <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
                   Start <ArrowRight className="h-3.5 w-3.5" />
@@ -183,7 +195,8 @@ export function ShopView() {
                     variations={variations}
                     color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && shirt.id === bestId}
-                    onOpen={() => setProductOrigin("/shop/")}
+                    showMatch={showMatch}
+                    onOpen={openFromGrid}
                   />
                 ))}
               </div>

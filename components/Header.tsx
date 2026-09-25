@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, ShoppingBag } from "lucide-react";
 import { MonoLogo } from "@/components/MonoLogo";
-import { useCartCount, useShirtStore } from "@/store/useShirtStore";
+import { useCartCount } from "@/store/cartStore";
+import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
 const TABS = [
@@ -16,8 +17,8 @@ const TABS = [
 
 export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   const pathname = usePathname() ?? "/";
-  const hydrated = useShirtStore((s) => s.hydrated);
-  const savedCount = useShirtStore((s) => s.likedIds.length);
+  const hydrated = useUiStore((s) => s.hydrated);
+  const savedCount = useTasteStore((s) => s.likedIds.length);
   const cartCount = useCartCount();
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
@@ -45,7 +46,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
     if (taps.current.length >= 5) {
       taps.current = [];
       setDebug(!debug);
-      useShirtStore.getState().showToast(debug ? "Debug off" : "Debug on");
+      useUiStore.getState().showToast(debug ? "Debug off" : "Debug on");
     }
   };
 

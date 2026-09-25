@@ -10,21 +10,29 @@ import {
   matchScore,
   similarityBreakdown,
 } from "@/lib/recommendation";
-import { useShirtStore, CALIBRATION_TOTAL } from "@/store/useShirtStore";
+import { CALIBRATION_IDS, CALIBRATION_TOTAL, calibrationDone } from "@/lib/deck";
+import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 
 export function AlgoDebugPanel() {
-  const [open, setOpen] = useState(false);
-  const hydrated = useShirtStore((s) => s.hydrated);
+  const hydrated = useUiStore((s) => s.hydrated);
   // Developer tool: hidden unless ?debug=1 or the logo was tapped 5 times.
+  // Returns before subscribing to taste state or computing anything.
   const debug = useUiStore((s) => s.debug);
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const deck = useShirtStore((s) => s.deck);
-  const history = useShirtStore((s) => s.swipeHistory);
-  const likes = useShirtStore((s) => s.likedIds.length);
-  const lastUpdate = useShirtStore((s) => s.lastUpdate);
-  const reset = useShirtStore((s) => s.reset);
+  if (!hydrated || !debug) return null;
+  return <DebugPanel />;
+}
+
+function DebugPanel() {
+  const [open, setOpen] = useState(false);
+  const seen = useTasteStore((s) => s.seen);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const deck = useTasteStore((s) => s.deck);
+  const history = useTasteStore((s) => s.swipeHistory);
+  const likes = useTasteStore((s) => s.likedIds.length);
+  const lastUpdate = useTasteStore((s) => s.lastUpdate);
+  const reset = useTasteStore((s) => s.reset);
 
   const top = deck[0];
   const shirt = top ? getShirtById(top.id) : undefined;
@@ -33,8 +41,6 @@ export function AlgoDebugPanel() {
   const exploreRate = postCal.length
     ? Math.round((postCal.filter((h) => h.strategy === "explore").length / postCal.length) * 100)
     : 0;
-
-  if (!hydrated || !debug) return null;
 
   return (
     <div className="pointer-events-none fixed left-3 top-[calc(max(env(safe-area-inset-top),10px)+60px)] z-30 flex flex-col-reverse items-start sm:left-6">
@@ -59,9 +65,9 @@ export function AlgoDebugPanel() {
             </div>
 
             <div className="mb-3 grid grid-cols-4 gap-1.5 text-center">
-              <Stat label="Swipes" value={history.length} />
+              <Stat label="Seen" value={seen.length} />
               <Stat label="Likes" value={likes} />
-              <Stat label="Calib" value={`${Math.min(history.length, CALIBRATION_TOTAL)}/${CALIBRATION_TOTAL}`} />
+              <Stat label="Calib" value={`${calibrationDone(CALIBRATION_IDS, seen)}/${CALIBRATION_TOTAL}`} />
               <Stat label="Explore" value={`${exploreRate}%`} />
             </div>
 

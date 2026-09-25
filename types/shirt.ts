@@ -13,7 +13,7 @@ export const FEATURE_KEYS = [
   "contrast",
   "dark_industrial",
   "clean_minimal",
-  // Added with the second 1,000 designs (pictures, captions, retro, nature):
+  // Added with the second set of designs (pictures, captions, retro, nature):
   "pictorial",
   "wit",
   "retro",
@@ -30,14 +30,14 @@ export type FeatureVector = Record<FeatureKey, number>;
 
 export type BaseColor = "black" | "white";
 
-/** Generative family a print was made with (see scripts/generate1000Shirts.ts). */
+/** Generative category a print belongs to (see scripts/generateCatalog.ts). */
 export const SHIRT_CATEGORIES = [
   "architectural",
   "geometric",
   "typography",
   "halftone",
   "waves",
-  // second 1,000
+  // second set
   "scenes",
   "slogans",
   "pixel",

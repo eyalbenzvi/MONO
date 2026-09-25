@@ -50,14 +50,4 @@ body {
   .no-scrollbar {
     scrollbar-width: none;
   }
-  .fabric-black {
-    background-color: #0e0e0e;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 3px 3px;
-  }
-  .fabric-white {
-    background-color: #f2f1ee;
-    background-image: radial-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px);
-    background-size: 3px 3px;
-  }
 }

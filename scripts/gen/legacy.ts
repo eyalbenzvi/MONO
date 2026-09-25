@@ -843,7 +843,8 @@ const continuousLine: Generator = (rng, ink) => {
   };
 };
 
-export const LEGACY_GENERATORS: Record<string, Generator[]> = {
+export const LEGACY_CATEGORIES = ["architectural", "geometric", "typography", "halftone", "waves"] as const satisfies readonly ShirtCategory[];
+export const LEGACY_GENERATORS: Record<(typeof LEGACY_CATEGORIES)[number], Generator[]> = {
   architectural: [facadeGrid, perspectiveCorridor, skyline, slabStack],
   geometric: [monoForm, scatter, concentric, truchet],
   typography: [bigWord, coordinates, repeatStack, manifesto],

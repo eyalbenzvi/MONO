@@ -3,14 +3,37 @@
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { ShopSort } from "@/lib/recommendation";
-import type { BaseColor, ShirtCategory } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, SwipeAction } from "@/types/shirt";
+
+export interface ToastState {
+  message: string;
+  nonce: number;
+  action?: { label: string; run: () => void };
+}
 
 /**
  * In-memory UI state that should survive client-side navigation but not a
- * reload: shop filters + scroll position (so "back" lands where you were),
- * header visibility, and the hidden debug switch.
+ * reload: the Discover card's transient state (flip, queued swipes, undo
+ * animation, zoom), the toast, shop filters (so "back" lands where you
+ * were), header visibility, and the hidden debug switch. Nothing here is
+ * persisted — taste lives in tasteStore, the bag in cartStore.
  */
 interface UiState {
+  /** Both persisted stores have loaded from localStorage. */
+  hydrated: boolean;
+  /** The Discover card shows its details face. */
+  isFlipped: boolean;
+  /**
+   * Button/keyboard swipes waiting to run. Rapid taps queue up (max 5) and
+   * play one after another instead of being dropped mid-animation.
+   */
+  swipeQueue: { action: SwipeAction; nonce: number }[];
+  /** Set by undo so the restored card flies back in from where it left. */
+  undoFx: { id: string; action: SwipeAction; nonce: number } | null;
+  toast: ToastState | null;
+  /** The design shown in the full-screen zoom, if open. */
+  zoomId: string | null;
+
   debug: boolean;
   headerHidden: boolean;
   shop: {
@@ -18,7 +41,6 @@ interface UiState {
     sort: ShopSort;
     teeView: BaseColor | "original";
     limit: number;
-    scrollTop: number;
   };
   /**
    * Where the current product page was opened from, when "← Shop" may simply
@@ -30,6 +52,10 @@ interface UiState {
   /** The tee the share sheet is open for (and in which colourway). */
   share: { id: string; color: BaseColor } | null;
 
+  setHydrated: () => void;
+  toggleFlip: (value?: boolean) => void;
+  showToast: (message: string, action?: ToastState["action"]) => void;
+  setZoom: (id: string | null) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
@@ -40,10 +66,27 @@ interface UiState {
 
 export const SHOP_PAGE_SIZE = 24;
 
+/**
+ * The shop grid's scroll position, kept outside React state on purpose: it
+ * changes on every scroll event and nothing needs to re-render for it —
+ * it's only read to restore the position when coming back to the grid.
+ */
+export const shopScroll = { top: 0 };
+
 export const useUiStore = create<UiState>()((set) => ({
+  hydrated: false,
+  isFlipped: false,
+  swipeQueue: [],
+  undoFx: null,
+  toast: null,
+  zoomId: null,
+  setHydrated: () => set({ hydrated: true }),
+  toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
+  showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
+  setZoom: (zoomId) => set({ zoomId }),
   debug: false,
   headerHidden: false,
-  shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE, scrollTop: 0 },
+  shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE },
   productOrigin: null,
   share: null,
 
@@ -78,3 +121,5 @@ export function makeHeaderScrollHandler() {
     last = y;
   };
 }
+
+export const useHydrated = () => useUiStore((s) => s.hydrated);

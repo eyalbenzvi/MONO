@@ -5,17 +5,19 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Heart, Share2, ShoppingBag, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
+import { ColorSelector, SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
-import { useCartCount, useShirtStore } from "@/store/useShirtStore";
+import { useCartCount, useCartStore } from "@/store/cartStore";
+import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
 export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const likedIds = useShirtStore((s) => s.likedIds);
+  const likedIds = useTasteStore((s) => s.likedIds);
   const cartCount = useCartCount();
   const panel = useRef<HTMLElement>(null);
   useFocusTrap(panel, open, onClose);
@@ -107,15 +109,15 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
 }
 
 function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () => void }) {
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const size = useShirtStore((s) => s.selectedSizes[shirt.id]);
-  const color: BaseColor = useShirtStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
-  const setSize = useShirtStore((s) => s.setSize);
-  const setColor = useShirtStore((s) => s.setColor);
-  const removeLiked = useShirtStore((s) => s.removeLiked);
-  const restoreSaved = useShirtStore((s) => s.restoreSaved);
-  const addToCart = useShirtStore((s) => s.addToCart);
-  const showToast = useShirtStore((s) => s.showToast);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const size = useCartStore((s) => s.selectedSizes[shirt.id]);
+  const color: BaseColor = useCartStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
+  const setSize = useCartStore((s) => s.setSize);
+  const setColor = useCartStore((s) => s.setColor);
+  const removeLiked = useTasteStore((s) => s.removeLiked);
+  const restoreSaved = useTasteStore((s) => s.restoreSaved);
+  const addToCart = useCartStore((s) => s.addToCart);
+  const showToast = useUiStore((s) => s.showToast);
   const showMatch = useShowMatch();
   const [nudge, setNudge] = useState(0);
 
@@ -147,7 +149,7 @@ function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () =
           <Link href={`/shop/${shirt.id}/`} onClick={onNavigate} className="min-w-0 py-0.5">
             <p className="truncate text-sm font-semibold">{shirt.title}</p>
             <p className="truncate text-xs text-neutral-400">
-              ${shirt.price}
+              {formatPrice(shirt.price)}
               {showMatch ? ` · ${matchScore(vector, shirt.features)}% match` : ""}
             </p>
           </Link>
@@ -170,20 +172,7 @@ function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () =
         </div>
 
         <div className="flex items-center gap-2">
-          {(["black", "white"] as const).map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={`${COLOR_LABELS[c]} tee`}
-              aria-pressed={color === c}
-              onClick={() => setColor(shirt.id, c)}
-              className={`relative flex h-7 w-7 items-center justify-center rounded-full before:absolute before:-inset-2 before:content-[''] ${
-                color === c ? "ring-2 ring-white" : "ring-1 ring-white/20"
-              }`}
-            >
-              <span className={`h-5 w-5 rounded-full ${c === "black" ? "bg-black ring-1 ring-white/30" : "bg-white"}`} />
-            </button>
-          ))}
+          <ColorSelector variant="dots" value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
           <span className="text-xs text-neutral-400">{COLOR_LABELS[color]}</span>
         </div>
 

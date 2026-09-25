@@ -16,7 +16,8 @@ import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
-import { useShirtStore, type DeckEntry } from "@/store/useShirtStore";
+import { useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { useUiStore } from "@/store/useUiStore";
 import type { SwipeAction } from "@/types/shirt";
 
 const SWIPE_DISTANCE = 110;
@@ -33,17 +34,18 @@ const fromControl = (e: Event | React.PointerEvent) =>
   e.target instanceof Element && e.target.closest(INTERACTIVE) !== null;
 
 export function CardStack() {
-  const deck = useShirtStore((s) => s.deck);
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const isFlipped = useShirtStore((s) => s.isFlipped);
+  const deck = useTasteStore((s) => s.deck);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const isFlipped = useUiStore((s) => s.isFlipped);
   // "Start over" wipes taste and Saved: offer an Undo that restores it all.
   const startOver = () => {
-    const { snapshot, reset, restore, showToast } = useShirtStore.getState();
+    const { snapshot, reset, restore } = useTasteStore.getState();
+    const { showToast } = useUiStore.getState();
     const before = snapshot();
     reset();
     showToast("Started over", { label: "Undo", run: () => restore(before) });
   };
-  const likedCount = useShirtStore((s) => s.likedIds.length);
+  const likedCount = useTasteStore((s) => s.likedIds.length);
   const [hearts, setHearts] = useState<{ id: number; from: DOMRect; to: DOMRect }[]>([]);
   const reduceMotion = useReducedMotion();
 
@@ -153,12 +155,12 @@ function TopCard({
   onLiked: (rect: DOMRect) => void;
 }) {
   const shirt = getShirtById(entry.id)!;
-  const commitSwipe = useShirtStore((s) => s.commitSwipe);
-  const toggleFlip = useShirtStore((s) => s.toggleFlip);
-  const queueHead = useShirtStore((s) => s.swipeQueue[0]);
-  const onboardingSeen = useShirtStore((s) => s.onboardingSeen);
-  const firstEver = useShirtStore((s) => s.swipeHistory.length === 0);
-  const undoFx = useShirtStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
+  const commitSwipe = useTasteStore((s) => s.commitSwipe);
+  const toggleFlip = useUiStore((s) => s.toggleFlip);
+  const queueHead = useUiStore((s) => s.swipeQueue[0]);
+  const onboardingSeen = useTasteStore((s) => s.onboardingSeen);
+  const firstEver = useTasteStore((s) => s.seen.length === 0);
+  const undoFx = useUiStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
   const reduceMotion = useReducedMotion();
 
   const x = useMotionValue(0);
@@ -169,8 +171,9 @@ function TopCard({
   const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(false);
-  const openZoom = useCallback(() => setZoom(true), []);
+  // Zoom state lives in the UI store (keyboard shortcuts and navigation read it).
+  const zoom = useUiStore((s) => s.zoomId === entry.id);
+  const openZoom = useCallback(() => useUiStore.getState().setZoom(entry.id), [entry.id]);
   const leaving = useRef(false);
   // Mirrors `leaving` for rendering: a card on its way out takes no gestures.
   const [isLeaving, setIsLeaving] = useState(false);
@@ -236,15 +239,15 @@ function TopCard({
     const el = cardRef.current;
     if (!el) return;
     const onTouch = (e: TouchEvent) => {
-      if (e.touches.length < 2 || leaving.current || useShirtStore.getState().isFlipped) return;
+      if (e.touches.length < 2 || leaving.current || useUiStore.getState().isFlipped) return;
       e.preventDefault();
       animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
       animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
-      setZoom(true);
+      useUiStore.getState().setZoom(entry.id);
     };
     el.addEventListener("touchstart", onTouch, { passive: false });
     return () => el.removeEventListener("touchstart", onTouch);
-  }, [x, y]);
+  }, [x, y, entry.id]);
 
   // Queued button / keyboard swipes — the head of the queue runs on this card.
   useEffect(() => {
@@ -260,7 +263,7 @@ function TopCard({
       type: "spring",
       stiffness: 400,
       damping: 30,
-      onComplete: () => useShirtStore.setState({ undoFx: null }),
+      onComplete: () => useUiStore.setState({ undoFx: null }),
     });
   }, [undoFx, x]);
 
@@ -321,7 +324,7 @@ function TopCard({
       }}
     >
       <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop onZoom={openZoom} />
-      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => setZoom(false)} />}</AnimatePresence>
+      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => useUiStore.getState().setZoom(null)} />}</AnimatePresence>
 
       {/* Swipe stamps */}
       <motion.div

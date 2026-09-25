@@ -8,6 +8,7 @@
  * image and posting it from the app.
  */
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
 
 export type ShareChannel = "native" | "whatsapp" | "instagram" | "facebook" | "tiktok" | "telegram" | "x" | "email" | "sms" | "copy" | "download";
 
@@ -36,7 +37,7 @@ export function shareTitle(shirt: ShirtProduct) {
 
 /** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
 export function shareMessage(shirt: ShirtProduct, color: BaseColor) {
-  return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, $${shirt.price}.`;
+  return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price)}.`;
 }
 
 /** Web share intents. Each opens in a new tab / the app when installed. */

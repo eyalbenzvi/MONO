@@ -8,15 +8,19 @@ import { Header } from "@/components/Header";
 import { LikedDrawer } from "@/components/LikedDrawer";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
-import { useShirtStore } from "@/store/useShirtStore";
+import { useCartStore } from "@/store/cartStore";
+import { migrateLegacySession } from "@/store/legacySession";
+import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
   const pathname = usePathname();
 
-  // Leaving the shop area forgets where a product page was opened from.
+  // Leaving the shop area forgets where a product page was opened from;
+  // any navigation closes the zoom view.
   useEffect(() => {
+    useUiStore.getState().setZoom(null);
     if (!/^\/shop(\/|$)/.test(pathname)) useUiStore.getState().setProductOrigin(null);
   }, [pathname]);
 
@@ -24,22 +28,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // instead of overwriting it with this tab's stale copy on the next write.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === useShirtStore.persist.getOptions().name) useShirtStore.persist.rehydrate();
+      for (const store of [useTasteStore, useCartStore])
+        if (e.key === store.persist.getOptions().name) void store.persist.rehydrate();
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Rehydrate from localStorage on the client only (avoids SSR mismatch),
-  // then top the deck back up in case the dataset changed.
+  // Rehydrate from localStorage on the client only (avoids SSR mismatch):
+  // first move an old single-store session into the split stores, then load
+  // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
-    const finish = () => {
-      useShirtStore.getState().fillDeck();
-      useShirtStore.getState().setHydrated();
-    };
-    const result = useShirtStore.persist.rehydrate();
-    if (result instanceof Promise) result.then(finish);
-    else finish();
+    migrateLegacySession();
+    void Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]).then(() => {
+      useTasteStore.getState().fillDeck();
+      useUiStore.getState().setHydrated();
+    });
 
     // Debug panel is opt-in: ?debug=1 (remembered for the tab) or 5 taps on the logo.
     try {
@@ -66,6 +70,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useHydrated() {
-  return useShirtStore((s) => s.hydrated);
-}
+export { useHydrated } from "@/store/useUiStore";

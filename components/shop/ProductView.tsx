@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, Share2, ShoppingBag, X, ZoomIn } from "lucide-react";
-import { useHydrated } from "@/components/AppShell";
+import { ArrowDown, ArrowLeft, Check, ChevronDown, Layers, Ruler, Share2, ShoppingBag, X, ZoomIn } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { Spec } from "@/components/ShirtCard";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { ColorSelector, LABEL, MatchBadge, SizeSelector, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
+import { ColorSelector, LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
 import { SHIRTS, familyMembers, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
 import { parseShareParams } from "@/lib/share";
-import { useShirtStore } from "@/store/useShirtStore";
-import { makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
-import { CATEGORY_LABELS, COLOR_LABELS, COLORS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
+import { useCartStore } from "@/store/cartStore";
+import { useTasteStore } from "@/store/tasteStore";
+import { makeHeaderScrollHandler, useUiStore, useHydrated } from "@/store/useUiStore";
+import { CATEGORY_LABELS, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/cart";
+import { CALIBRATION_TOTAL } from "@/lib/deck";
+import { track } from "@/lib/analytics";
 
 type View = "tee" | "print";
 const VIEWS: { value: View; label: string }[] = [
@@ -30,18 +33,18 @@ export function ProductView({ id }: { id: string }) {
   const router = useRouter();
   const hydrated = useHydrated();
   const showMatch = useShowMatch();
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const selected = useShirtStore((s) => s.selectedSizes[id]);
-  const setSize = useShirtStore((s) => s.setSize);
-  const pickedColor = useShirtStore((s) => s.selectedColors[id]);
-  const setColor = useShirtStore((s) => s.setColor);
-  const addToCart = useShirtStore((s) => s.addToCart);
-  const saved = useShirtStore((s) => s.likedIds.includes(id));
-  const toggleSaved = useShirtStore((s) => s.toggleSaved);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const selected = useCartStore((s) => s.selectedSizes[id]);
+  const setSize = useCartStore((s) => s.setSize);
+  const pickedColor = useCartStore((s) => s.selectedColors[id]);
+  const setColor = useCartStore((s) => s.setColor);
+  const addToCart = useCartStore((s) => s.addToCart);
   const productOrigin = useUiStore((s) => s.productOrigin);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
+  const clearOrigin = useCallback(() => setProductOrigin(null), [setProductOrigin]);
   const [view, setView] = useState<View>("tee");
-  const [zoom, setZoom] = useState(false);
+  const zoom = useUiStore((s) => s.zoomId === id);
+  const setZoom = (open: boolean) => useUiStore.getState().setZoom(open ? id : null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [nudge, setNudge] = useState(0);
   const sizeRow = useRef<HTMLDivElement>(null);
@@ -57,7 +60,7 @@ export function ProductView({ id }: { id: string }) {
   // Opened from a shared link (?c=white&ref=whatsapp): show the tee in the
   // colour it was shared in, and greet the visitor.
   const [sharedVia, setSharedVia] = useState<string | null>(null);
-  const calibrated = useShirtStore((s) => s.calibrationAcknowledged);
+  const calibrated = useTasteStore((s) => s.calibrationAcknowledged);
   useEffect(() => {
     if (!hydrated || !shirt) return;
     const { color: c, ref } = parseShareParams(window.location.search);
@@ -66,6 +69,10 @@ export function ProductView({ id }: { id: string }) {
     // Clean the URL so a reload or a re-share doesn't carry the tag along.
     if (c || ref) window.history.replaceState(window.history.state, "", window.location.pathname + window.location.hash);
   }, [hydrated, shirt, setColor]);
+
+  useEffect(() => {
+    if (shirt) track("product_view", { id: shirt.id, category: shirt.category, price: shirt.price });
+  }, [shirt]);
 
   // Specs are open by default on desktop, collapsed on phones.
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -102,7 +109,7 @@ export function ProductView({ id }: { id: string }) {
     sizeRow.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     setNudge((n) => n + 1);
   };
-  const buyLabel = size ? `Add to bag · $${shirt.price}` : "Choose size";
+  const buyLabel = size ? `Add to bag · ${formatPrice(shirt.price)}` : "Choose size";
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when we came from it.
@@ -131,7 +138,7 @@ export function ProductView({ id }: { id: string }) {
               <Share2 className="h-5 w-5 shrink-0 text-neutral-300" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">A friend shared this tee with you</p>
-                <p className="text-xs text-neutral-400">{calibrated ? "Your shop is ranked for you — have a look around." : "Swipe 10 tees and MONO learns your taste."}</p>
+                <p className="text-xs text-neutral-400">{calibrated ? "Your shop is ranked for you — have a look around." : `Swipe ${CALIBRATION_TOTAL} tees and MONO learns your taste.`}</p>
               </div>
               <Link href={calibrated ? "/shop/" : "/"} className="flex h-9 shrink-0 items-center rounded-full bg-white px-3.5 text-xs font-bold text-black">
                 {calibrated ? "My shop" : "Try it"}
@@ -188,21 +195,8 @@ export function ProductView({ id }: { id: string }) {
               </button>
             </div>
             {/* Tee colour, right on the picture: visible without scrolling. */}
-            <div className="absolute bottom-3 left-3 flex gap-1 rounded-full bg-black/50 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  role="radio"
-                  aria-checked={color === c}
-                  aria-label={`${COLOR_LABELS[c]} tee${c === shirt.baseColor ? " (original)" : ""}`}
-                  title={`${COLOR_LABELS[c]} tee`}
-                  onClick={() => setColor(shirt.id, c)}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-shadow ${color === c ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""}`}
-                >
-                  <span className={`h-6 w-6 rounded-full ${c === "black" ? "bg-black ring-1 ring-white/50" : "bg-white"}`} />
-                </button>
-              ))}
+            <div className="absolute bottom-3 left-3">
+              <ColorSelector variant="overlay" value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
             </div>
             <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="tablist" aria-label="View">
               {VIEWS.map((v) => (
@@ -228,7 +222,7 @@ export function ProductView({ id }: { id: string }) {
             <p className="text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-              <span className="mt-0.5 font-mono text-xl font-semibold md:text-2xl">${shirt.price}</span>
+              <span className="mt-0.5 font-mono text-xl font-semibold md:text-2xl">{formatPrice(shirt.price)}</span>
             </div>
 
             {reasons.length > 0 && (
@@ -303,7 +297,7 @@ export function ProductView({ id }: { id: string }) {
             {/* Desktop: inline buy row (mobile uses the sticky bar below) */}
             <div className="mt-4 hidden gap-2 md:flex">
               <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} />
-              <SaveToggle saved={hydrated && saved} onClick={() => toggleSaved(shirt.id)} />
+              <SaveButton id={shirt.id} size="lg" />
             </div>
 
             <div className="mt-5 border-t border-white/10">
@@ -327,11 +321,11 @@ export function ProductView({ id }: { id: string }) {
                 </dl>
               )}
             </div>
-            <p className="mt-2 text-xs text-neutral-400">Free shipping over $80 · demo store, nothing is charged</p>
+            <p className="mt-2 text-xs text-neutral-400">Free shipping over {formatPrice(FREE_SHIPPING_THRESHOLD)} · demo store, nothing is charged</p>
           </div>
         </div>
 
-        {/* Client-only: keeps the 1,000 pre-rendered product pages small. */}
+        {/* Client-only: keeps the pre-rendered product pages small. */}
         {hydrated && members.length > 1 && (
           <section ref={variationsRef} id="variations" className="mt-10 scroll-mt-4">
             <div className="mb-3 flex items-baseline justify-between">
@@ -351,7 +345,7 @@ export function ProductView({ id }: { id: string }) {
                     // Keep the tee colour the user is looking at.
                     onClick={() => setColor(m.id, color)}
                     aria-current={current ? "page" : undefined}
-                    aria-label={`${m.title}, $${m.price}${current ? " (showing)" : ""}`}
+                    aria-label={`${m.title}, ${formatPrice(m.price)}${current ? " (showing)" : ""}`}
                     className={`relative w-28 shrink-0 rounded-2xl p-1.5 transition ${STAGE_BG} ${
                       current ? "ring-2 ring-white" : "ring-1 ring-white/10 hover:ring-white/40"
                     }`}
@@ -363,7 +357,7 @@ export function ProductView({ id }: { id: string }) {
                     )}
                     <TeeMockup shirt={m} color={color} shadow={false} className="w-full" />
                     <p className="mt-1 truncate px-0.5 text-[11px] text-neutral-300">{m.title}</p>
-                    <p className="px-0.5 font-mono text-[11px] text-neutral-400">${m.price}</p>
+                    <p className="px-0.5 font-mono text-[11px] text-neutral-400">{formatPrice(m.price)}</p>
                   </Link>
                 );
               })}
@@ -376,7 +370,7 @@ export function ProductView({ id }: { id: string }) {
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">
               {similar.map((s) => (
-                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} onOpen={() => setProductOrigin(null)} />
+                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} showMatch={showMatch} onOpen={clearOrigin} />
               ))}
             </div>
           </section>
@@ -386,12 +380,12 @@ export function ProductView({ id }: { id: string }) {
       {/* Mobile: sticky buy bar, always visible, never disabled */}
       <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-base font-semibold">${shirt.price}</p>
+          <p className="font-mono text-base font-semibold">{formatPrice(shirt.price)}</p>
           <p className="truncate text-xs text-neutral-400">
             {COLOR_LABELS[color]} tee{size ? ` · ${size}` : ""}
           </p>
         </div>
-        <SaveToggle saved={hydrated && saved} onClick={() => toggleSaved(shirt.id)} />
+        <SaveButton id={shirt.id} size="lg" />
         <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>
@@ -414,20 +408,3 @@ function BuyButton({ label, onClick, disabled, compact }: { label: string; onCli
   );
 }
 
-function SaveToggle({ saved, onClick }: { saved: boolean; onClick: () => void }) {
-  return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.85 }}
-      animate={saved ? { scale: [1, 1.25, 1] } : { scale: 1 }}
-      onClick={onClick}
-      aria-pressed={saved}
-      aria-label={saved ? "Remove from saved" : "Save"}
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-1 ring-white/15 ${
-        saved ? "bg-white text-black" : "bg-white/5 text-white hover:bg-white/10"
-      }`}
-    >
-      <Heart className={`h-5 w-5 ${saved ? "fill-current" : ""}`} />
-    </motion.button>
-  );
-}

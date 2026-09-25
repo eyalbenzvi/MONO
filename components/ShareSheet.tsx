@@ -7,9 +7,9 @@ import { getShirtById } from "@/lib/catalog";
 import { channelLink, productShareUrl, shareFileName, shareMessage, shareTitle, type ShareChannel } from "@/lib/share";
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { useShirtStore } from "@/store/useShirtStore";
 import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, COLORS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { track } from "@/lib/analytics";
 
 /* Monochrome platform glyphs (24×24), drawn to match the UI's line icons. */
 const glyph = (children: React.ReactNode, filled = false) => (
@@ -113,7 +113,7 @@ export function ShareSheet() {
 }
 
 function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; onClose: () => void }) {
-  const showToast = useShirtStore((s) => s.showToast);
+  const showToast = useUiStore((s) => s.showToast);
   const [color, setColor] = useState<BaseColor>(initialColor);
   const [format, setFormat] = useState<ShareFormat>("story");
   const [blob, setBlob] = useState<Blob | null>(null);
@@ -149,6 +149,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
 
   const nativeShare = async (ref: ShareChannel, withFile: boolean) => {
     const url = productShareUrl(shirt, color, ref);
+    track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
     try {
       if (withFile && file) await navigator.share({ files: [file], title: shareTitle(shirt), text: `${shareMessage(shirt, color)}\n${url}` });
       else await navigator.share({ title: shareTitle(shirt), text: shareMessage(shirt, color), url });
@@ -161,6 +162,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
 
   const act = async (ch: ShareChannel) => {
     setHint(null);
+    if (!(ch === "instagram" || ch === "tiktok") || !canShareFiles) track("share", { id: shirt.id, channel: ch, color, format });
     const url = productShareUrl(shirt, color, ch);
     if (ch === "copy") {
       showToast((await copyText(url)) ? "Link copied" : "Couldn't copy the link");

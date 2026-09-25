@@ -5,11 +5,12 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Compass, Heart, RotateCcw, Share2, ZoomIn } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
+import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize } from "@/lib/catalog";
-import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { formatPrice } from "@/lib/format";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
@@ -112,7 +113,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                 {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {COLOR_LABELS[shirt.baseColor]} tee
               </p>
             </div>
-            <span className="shrink-0 font-mono text-lg font-semibold">${shirt.price}</span>
+            <span className="shrink-0 font-mono text-lg font-semibold">{formatPrice(shirt.price)}</span>
           </div>
         </motion.div>
 
@@ -130,20 +131,11 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   );
 });
 
-export function TeeDot({ color }: { color: "black" | "white" }) {
-  return (
-    <span
-      className={`inline-block h-2 w-2 translate-y-[-1px] rounded-full ring-1 ${
-        color === "black" ? "bg-black ring-white/40" : "bg-white ring-white/40"
-      }`}
-    />
-  );
-}
 
 function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
-  const toggleFlip = useShirtStore((s) => s.toggleFlip);
-  const requestSwipe = useShirtStore((s) => s.requestSwipe);
-  const vector = useShirtStore((s) => s.preferenceVector);
+  const toggleFlip = useUiStore((s) => s.toggleFlip);
+  const requestSwipe = useTasteStore((s) => s.requestSwipe);
+  const vector = useTasteStore((s) => s.preferenceVector);
   const showMatch = useShowMatch();
   const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 3);
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
@@ -232,18 +224,10 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           href={`/shop/${shirt.id}/`}
           className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
-          Full details · ${shirt.price} <ArrowRight className="h-4 w-4" />
+          Full details · {formatPrice(shirt.price)} <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </div>
   );
 }
 
-export function Spec({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-3 border-b border-white/5 py-2 text-sm">
-      <dt className="text-neutral-400">{label}</dt>
-      <dd className="text-right font-medium text-neutral-200">{value}</dd>
-    </div>
-  );
-}

@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, FEATURE_LABELS, SIZES, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
 
 /** Studio backdrop behind garment mockups. */
@@ -19,7 +20,7 @@ export const STRONG_MATCH = 90;
  * neutral), so every surface hides it until calibration completes.
  */
 export function useShowMatch() {
-  const hydrated = useShirtStore((s) => s.hydrated);
+  const hydrated = useUiStore((s) => s.hydrated);
   const { complete } = useCalibrationProgress();
   return hydrated && complete;
 }
@@ -65,6 +66,28 @@ export function MatchBadge({
   );
 }
 
+/**
+ * Keyboard support for a radiogroup of buttons (WAI-ARIA pattern): only the
+ * checked option (or the first) is in the Tab order; arrow keys, Home and End
+ * move the selection and focus.
+ */
+export function radioKeys<T>(options: readonly T[], value: T | undefined, onChange: (v: T) => void) {
+  const current = Math.max(0, value === undefined ? 0 : options.indexOf(value));
+  return (i: number) => ({
+    tabIndex: i === current ? 0 : -1,
+    onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => {
+      const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+      const to = e.key === "Home" ? 0 : e.key === "End" ? options.length - 1 : step ? (i + step + options.length) % options.length : -1;
+      if (to < 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onChange(options[to]);
+      const group = e.currentTarget.closest('[role="radiogroup"]');
+      group?.querySelectorAll<HTMLElement>('[role="radio"]')[to]?.focus();
+    },
+  });
+}
+
 export function SizeSelector({
   value,
   onChange,
@@ -77,6 +100,7 @@ export function SizeSelector({
   /** Draw attention (e.g. after "Choose size" was tapped). */
   highlight?: boolean;
 }) {
+  const keys = radioKeys(SIZES, value, onChange);
   return (
     <motion.div
       className="grid grid-cols-4 gap-2"
@@ -85,7 +109,7 @@ export function SizeSelector({
       animate={highlight ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {SIZES.map((size) => {
+      {SIZES.map((size, i) => {
         const active = value === size;
         return (
           <button
@@ -94,6 +118,7 @@ export function SizeSelector({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(size)}
+            {...keys(i)}
             className={`${compact ? "h-9 text-xs" : "h-11 text-sm"} rounded-xl font-semibold transition-colors ${
               active
                 ? "bg-white text-black"
@@ -108,40 +133,81 @@ export function SizeSelector({
   );
 }
 
-/** Tee colour picker. Every design comes in both; the original is marked. */
+const COLORS: readonly BaseColor[] = ["black", "white"];
+const swatch = (c: BaseColor, size: string) => (
+  <span className={`${size} shrink-0 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} aria-hidden />
+);
+
+/**
+ * The one tee-colour picker (every design comes in both; the original is
+ * marked). Variants:
+ * - "cards": two labelled options (product page)
+ * - "pills": compact labelled pills (bag lines)
+ * - "dots": swatches only (Saved list)
+ * - "overlay": swatches on a translucent pill, over a product image
+ */
 export function ColorSelector({
   value,
   original,
   onChange,
+  variant = "cards",
 }: {
   value: BaseColor;
   original: BaseColor;
   onChange: (color: BaseColor) => void;
+  variant?: "cards" | "pills" | "dots" | "overlay";
 }) {
+  const keys = radioKeys(COLORS, value, onChange);
+  const label = (c: BaseColor) => `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
+  const wrap = {
+    cards: "grid grid-cols-2 gap-2",
+    pills: "flex items-center gap-1.5",
+    dots: "flex items-center gap-2",
+    overlay: "flex gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15",
+  }[variant];
   return (
-    <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tee colour">
-      {(["black", "white"] as const).map((c) => {
+    <div className={wrap} role="radiogroup" aria-label="Tee colour">
+      {COLORS.map((c, i) => {
         const active = value === c;
+        const common = { type: "button" as const, role: "radio", "aria-checked": active, "aria-label": label(c), title: label(c), onClick: () => onChange(c), ...keys(i) };
+        if (variant === "cards")
+          return (
+            <button
+              key={c}
+              {...common}
+              className={`flex h-12 min-w-0 items-center gap-2.5 rounded-xl px-3 text-sm font-semibold transition ${
+                active ? "bg-white/10 text-white ring-2 ring-white" : "bg-white/[0.03] text-neutral-400 ring-1 ring-white/15 hover:bg-white/[0.07]"
+              }`}
+            >
+              {swatch(c, "h-6 w-6")}
+              <span className="min-w-0 flex-1 text-left leading-tight">
+                <span className="block truncate">{COLOR_LABELS[c]}</span>
+                {c === original && <span className="block text-xs font-medium text-neutral-400">Original</span>}
+              </span>
+            </button>
+          );
+        if (variant === "pills")
+          return (
+            <button
+              key={c}
+              {...common}
+              className={`flex h-8 items-center gap-1.5 rounded-full pl-1 pr-2.5 text-xs font-medium transition ${
+                active ? "bg-white/10 text-white ring-1 ring-white" : "text-neutral-400 ring-1 ring-white/10 hover:text-neutral-200"
+              }`}
+            >
+              {swatch(c, "h-6 w-6")}
+              {COLOR_LABELS[c]}
+            </button>
+          );
         return (
           <button
             key={c}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            aria-label={`${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`}
-            onClick={() => onChange(c)}
-            className={`flex h-12 min-w-0 items-center gap-2.5 rounded-xl px-3 text-sm font-semibold transition ${
-              active ? "bg-white/10 text-white ring-2 ring-white" : "bg-white/[0.03] text-neutral-400 ring-1 ring-white/15 hover:bg-white/[0.07]"
+            {...common}
+            className={`relative flex items-center justify-center rounded-full transition-shadow before:absolute before:-inset-1.5 before:content-[''] ${variant === "overlay" ? "h-8 w-8" : "h-7 w-7"} ${
+              active ? "ring-2 ring-white ring-offset-2 ring-offset-black" : variant === "dots" ? "ring-1 ring-white/20" : ""
             }`}
           >
-            <span
-              className={`h-6 w-6 shrink-0 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20"}`}
-              aria-hidden
-            />
-            <span className="min-w-0 flex-1 text-left leading-tight">
-              <span className="block truncate">{COLOR_LABELS[c]}</span>
-              {c === original && <span className="block text-[10px] font-medium text-neutral-400">Original</span>}
-            </span>
+            {swatch(c, variant === "overlay" ? "h-6 w-6" : "h-5 w-5")}
           </button>
         );
       })}
@@ -152,14 +218,14 @@ export function ColorSelector({
 let savedToastShown = false;
 
 /**
- * Heart on grid cards. Saving trains the taste vector; unsaving offers Undo
- * (restores without training twice).
+ * The one save (heart) control. Saving trains the taste vector; unsaving
+ * always offers Undo (restores without training twice).
+ * - "sm": 32px on grid cards (callers position it; 44px hit area)
+ * - "lg": 48px next to the buy button
  */
-export function SaveButton({ id, className = "" }: { id: string; className?: string }) {
-  const saved = useShirtStore((s) => s.likedIds.includes(id));
-  const toggleSaved = useShirtStore((s) => s.toggleSaved);
-  const restoreSaved = useShirtStore((s) => s.restoreSaved);
-  const showToast = useShirtStore((s) => s.showToast);
+export function SaveButton({ id, size = "sm", className = "" }: { id: string; size?: "sm" | "lg"; className?: string }) {
+  const hydrated = useUiStore((s) => s.hydrated);
+  const saved = useTasteStore((s) => s.likedIds.includes(id)) && hydrated;
   return (
     <motion.button
       type="button"
@@ -169,24 +235,40 @@ export function SaveButton({ id, className = "" }: { id: string; className?: str
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        const { toggleSaved, restoreSaved } = useTasteStore.getState();
+        const { showToast } = useUiStore.getState();
         toggleSaved(id);
-        if (saved) {
-          showToast("Removed", { label: "Undo", run: () => restoreSaved(id) });
-        } else if (!savedToastShown) {
+        if (saved) showToast("Removed from saved", { label: "Undo", run: () => restoreSaved(id) });
+        else if (!savedToastShown) {
           savedToastShown = true;
           showToast("Saved — your shop just got smarter");
         }
       }}
       aria-pressed={saved}
       aria-label={saved ? "Remove from saved" : "Save"}
-      // 32px visual, 44px hit area via the pseudo-element. Callers position it
-      // (absolute), which also anchors the pseudo-element.
-      className={`flex items-center justify-center rounded-full backdrop-blur-md transition-colors before:absolute before:-inset-1.5 before:content-[''] ${
-        saved ? "bg-white text-black" : "bg-black/50 text-white ring-1 ring-white/15 hover:bg-black/70"
-      } ${className}`}
+      className={`flex items-center justify-center rounded-full transition-colors ${
+        size === "sm" ? "before:absolute before:-inset-1.5 before:content-['']" : "h-12 w-12 shrink-0 ring-1 ring-white/15"
+      } ${saved ? "bg-white text-black" : size === "sm" ? "bg-black/55 text-white ring-1 ring-white/15 hover:bg-black/75" : "bg-white/5 text-white hover:bg-white/10"} ${className}`}
     >
-      <Heart className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
+      <Heart className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
     </motion.button>
+  );
+}
+
+/** Tiny colour dot for "Black · Category" meta lines. */
+export function TeeDot({ color }: { color: BaseColor }) {
+  return (
+    <span className={`inline-block h-2 w-2 translate-y-[-1px] rounded-full ring-1 ${color === "black" ? "bg-black ring-white/40" : "bg-white ring-white/40"}`} />
+  );
+}
+
+/** A row in a spec list (<dl>). */
+export function Spec({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-3 border-b border-white/5 py-2 text-sm">
+      <dt className="text-neutral-400">{label}</dt>
+      <dd className="text-right font-medium text-neutral-200">{value}</dd>
+    </div>
   );
 }
 

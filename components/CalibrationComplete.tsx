@@ -9,15 +9,17 @@ import { STAGE_BG, TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
 import { rankShirts, topTraits } from "@/lib/recommendation";
-import { CALIBRATION_IDS, useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
+import { CALIBRATION_IDS } from "@/lib/deck";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { useUiStore } from "@/store/useUiStore";
 
 /** Shown once, when the taste test is finished: the rewarding hand-off into the shop. */
 export function CalibrationComplete() {
-  const hydrated = useShirtStore((s) => s.hydrated);
-  const acknowledged = useShirtStore((s) => s.calibrationAcknowledged);
-  const acknowledge = useShirtStore((s) => s.acknowledgeCalibration);
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const likedInTest = useShirtStore((s) => CALIBRATION_IDS.filter((id) => s.likedIds.includes(id)).length);
+  const hydrated = useUiStore((s) => s.hydrated);
+  const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
+  const acknowledge = useTasteStore((s) => s.acknowledgeCalibration);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const likedInTest = useTasteStore((s) => CALIBRATION_IDS.filter((id) => s.likedIds.includes(id)).length);
   const { complete, total } = useCalibrationProgress();
   const open = hydrated && complete && !acknowledged;
   const sheet = useRef<HTMLDivElement>(null);
