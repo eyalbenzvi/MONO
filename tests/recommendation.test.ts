@@ -2,13 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   centeredCosine,
   cosineSimilarity,
+  explainMatch,
   getCalibrationQueue,
   getNextCard,
   matchScore,
+  rankShirts,
+  similarShirts,
+  topTraits,
   updateUserVector,
 } from "@/lib/recommendation";
 import { MOCK_SHIRTS } from "@/lib/mockData";
-import { FEATURE_KEYS, createInitialVector, type FeatureVector } from "@/types/shirt";
+import { FEATURE_KEYS, createInitialVector, teeColorForTone, type FeatureVector } from "@/types/shirt";
 
 const vec = (fill: (i: number) => number): FeatureVector =>
   Object.fromEntries(FEATURE_KEYS.map((k, i) => [k, fill(i)])) as FeatureVector;
@@ -153,5 +157,62 @@ describe("mock data", () => {
       }
       expect(["black", "white"]).toContain(s.baseColor);
     }
+  });
+
+  it("derives tee colour from the artwork tone (white ink on black, black ink on white)", () => {
+    for (const s of MOCK_SHIRTS) expect(s.baseColor).toBe(teeColorForTone(s.artTone));
+    expect(teeColorForTone("dark")).toBe("black");
+    expect(teeColorForTone("light")).toBe("white");
+    const blacks = MOCK_SHIRTS.filter((s) => s.baseColor === "black").length;
+    expect(blacks).toBeGreaterThan(5);
+    expect(MOCK_SHIRTS.length - blacks).toBeGreaterThan(5);
+  });
+
+  it("has back prints only — no front artwork", () => {
+    for (const s of MOCK_SHIRTS) {
+      expect(s.backImageUrl).toMatch(/^https:/);
+      expect(s).not.toHaveProperty("frontImageUrl");
+    }
+  });
+});
+
+describe("shop ranking", () => {
+  const userVec = MOCK_SHIRTS[3].features;
+
+  it("orders by match score by default and keeps every shirt", () => {
+    const ranked = rankShirts(userVec, MOCK_SHIRTS);
+    expect(ranked).toHaveLength(MOCK_SHIRTS.length);
+    expect(ranked[0].shirt.id).toBe(MOCK_SHIRTS[3].id);
+    for (let i = 1; i < ranked.length; i++) expect(ranked[i - 1].score).toBeGreaterThanOrEqual(ranked[i].score);
+  });
+
+  it("sorts by price when asked", () => {
+    const asc = rankShirts(userVec, MOCK_SHIRTS, "price-asc").map((r) => r.shirt.price);
+    const desc = rankShirts(userVec, MOCK_SHIRTS, "price-desc").map((r) => r.shirt.price);
+    expect(asc).toEqual([...asc].sort((a, b) => a - b));
+    expect(desc).toEqual([...desc].sort((a, b) => b - a));
+  });
+
+  it("similarShirts excludes the shirt itself and returns the closest styles", () => {
+    const base = MOCK_SHIRTS[0];
+    const sim = similarShirts(base, MOCK_SHIRTS, 4);
+    expect(sim).toHaveLength(4);
+    expect(sim.map((s) => s.id)).not.toContain(base.id);
+    const worst = Math.min(...sim.map((s) => centeredCosine(base.features, s.features)));
+    const rest = MOCK_SHIRTS.filter((s) => s.id !== base.id && !sim.includes(s));
+    for (const s of rest) expect(centeredCosine(base.features, s.features)).toBeLessThanOrEqual(worst);
+  });
+
+  it("explainMatch only names traits the user actually leans towards", () => {
+    const v = { ...createInitialVector(), architectural: 0.9, clean_minimal: 0.8, typography: 0.1 };
+    const shirt = { ...createInitialVector(0.2), architectural: 0.95, clean_minimal: 0.9, typography: 0.05 };
+    const reasons = explainMatch(v, shirt);
+    expect(reasons).toEqual(["architectural", "clean_minimal"]);
+    expect(explainMatch(createInitialVector(), shirt)).toEqual([]);
+  });
+
+  it("topTraits lists the strongest leanings first", () => {
+    const v = { ...createInitialVector(), halftone_raster: 0.8, contrast: 0.7, abstract: 0.3 };
+    expect(topTraits(v)).toEqual(["halftone_raster", "contrast"]);
   });
 });

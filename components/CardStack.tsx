@@ -8,7 +8,8 @@ import {
   useTransform,
   type PanInfo,
 } from "framer-motion";
-import { Heart, RefreshCw, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
 import { ShirtCard } from "@/components/ShirtCard";
 import { getShirtById } from "@/lib/mockData";
 import { matchScore } from "@/lib/recommendation";
@@ -19,6 +20,12 @@ const SWIPE_DISTANCE = 110;
 const SWIPE_VELOCITY = 550;
 const FLIP_DISTANCE = 90;
 const LONG_PRESS_MS = 450;
+
+// Framer's tap gesture listens natively, so React's stopPropagation on child
+// controls doesn't stop it — filter taps that start on interactive elements.
+const INTERACTIVE = "button, a, input, select, textarea, label";
+const fromControl = (e: Event | React.PointerEvent) =>
+  e.target instanceof Element && e.target.closest(INTERACTIVE) !== null;
 
 export function CardStack() {
   const deck = useShirtStore((s) => s.deck);
@@ -38,15 +45,21 @@ export function CardStack() {
         <h2 className="text-lg font-semibold">You&apos;ve seen the whole drop</h2>
         <p className="max-w-xs text-sm text-neutral-400">
           {likedCount > 0
-            ? `${likedCount} tee${likedCount === 1 ? "" : "s"} saved to your list. Start over to retrain from scratch.`
-            : "Nothing caught your eye. Start over to retrain the engine from scratch."}
+            ? `${likedCount} tee${likedCount === 1 ? "" : "s"} saved. Your shop is ranked by everything you swiped.`
+            : "Nothing caught your eye yet — the shop is still ranked by what you passed on."}
         </p>
+        <Link
+          href="/shop/"
+          className="mt-2 flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black active:scale-95"
+        >
+          Go to the shop <ArrowRight className="h-4 w-4" />
+        </Link>
         <button
           type="button"
           onClick={reset}
-          className="mt-2 h-11 rounded-full bg-white px-6 text-sm font-semibold text-black active:scale-95"
+          className="h-10 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white"
         >
-          Start over
+          Retrain from scratch
         </button>
       </div>
     );
@@ -155,8 +168,13 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
         clearPress();
       }}
       onDragEnd={onDragEnd}
-      onPointerDown={() => {
+      onPointerDown={(e) => {
         dragged.current = false;
+        if (fromControl(e)) {
+          longPressed.current = true; // suppress the tap that follows
+          clearPress();
+          return;
+        }
         longPressed.current = false;
         clearPress();
         pressTimer.current = setTimeout(() => {
@@ -168,8 +186,8 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
       }}
       onPointerUp={clearPress}
       onPointerCancel={clearPress}
-      onTap={() => {
-        if (leaving.current || dragged.current || longPressed.current) return;
+      onTap={(e) => {
+        if (leaving.current || dragged.current || longPressed.current || fromControl(e)) return;
         toggleFlip();
       }}
     >
@@ -192,7 +210,7 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
         style={{ opacity: infoOpacity }}
         className="pointer-events-none absolute inset-x-0 bottom-24 mx-auto w-fit rounded-full bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-black"
       >
-        {isFlipped ? "Back print" : "Details"}
+        {isFlipped ? "Back to tee" : "Details"}
       </motion.div>
     </motion.div>
   );
