@@ -11,6 +11,10 @@ npm test           # vector-math unit tests (Vitest)
 npm run typecheck && npm run lint && npm run build
 ```
 
+## Deploy (GitHub Pages)
+
+`.github/workflows/deploy-pages.yml` builds a static export (`out/`) and publishes it on every push. One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The site is served at `https://<user>.github.io/<repo>/`.
+
 ## Controls
 
 | Gesture | Button | Key | Action |
