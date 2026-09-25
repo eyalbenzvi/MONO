@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { CALIBRATION_SIZE, getCalibrationQueue, matchScore, updateUserVector } from "@/lib/recommendation";
 import { DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
-import { addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
+import { MAX_QTY, addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
 import { FAMILY_LEADERS, getShirtById } from "@/lib/catalog";
 import {
   COLOR_LABELS,
@@ -101,6 +101,9 @@ interface ShirtState extends PersistedState {
   showToast: (message: string, action?: ToastState["action"]) => void;
   dismissOnboarding: () => void;
   reset: () => void;
+  /** The persisted part of the state (e.g. to undo a reset). */
+  snapshot: () => PersistedState;
+  restore: (snap: PersistedState) => void;
   setHydrated: () => void;
 }
 
@@ -123,6 +126,21 @@ const initialPersisted = (): PersistedState => ({
   lastOrder: null,
   calibrationAcknowledged: false,
   onboardingSeen: false,
+});
+
+const persistedOf = (s: PersistedState): PersistedState => ({
+  likedIds: s.likedIds,
+  dislikedIds: s.dislikedIds,
+  preferenceVector: s.preferenceVector,
+  swipeHistory: s.swipeHistory,
+  deck: s.deck,
+  selectedSizes: s.selectedSizes,
+  selectedColors: s.selectedColors,
+  lastUpdate: s.lastUpdate,
+  cart: s.cart,
+  lastOrder: s.lastOrder,
+  calibrationAcknowledged: s.calibrationAcknowledged,
+  onboardingSeen: s.onboardingSeen,
 });
 
 /** The last swipe can be undone only if it came from Discover and nothing trained since. */
@@ -176,16 +194,23 @@ export const useShirtStore = create<ShirtState>()(
         // Keep the card that is already visible underneath; re-rank everything
         // behind it with the freshly updated vector.
         const deck = buildDeck(state.deck.slice(1, 2), after, seenIds(swipeHistory));
+        const calibrationJustDone =
+          !state.calibrationAcknowledged &&
+          calibrationDone(CALIBRATION_IDS, seenIds(state.swipeHistory)) < CALIBRATION_TOTAL &&
+          calibrationDone(CALIBRATION_IDS, seenIds(swipeHistory)) >= CALIBRATION_TOTAL;
 
         set({
           preferenceVector: after,
           swipeHistory,
-          likedIds: action === "like" ? [...state.likedIds, shirtId] : state.likedIds,
-          dislikedIds: action === "dislike" ? [...state.dislikedIds, shirtId] : state.dislikedIds,
+          // Never list an id twice (it may already be saved from the shop).
+          likedIds: action === "like" && !state.likedIds.includes(shirtId) ? [...state.likedIds, shirtId] : state.likedIds,
+          dislikedIds: action === "dislike" && !state.dislikedIds.includes(shirtId) ? [...state.dislikedIds, shirtId] : state.dislikedIds,
           deck,
           lastUpdate: { shirtId, action, before, after },
           isFlipped: false,
-          swipeQueue: fromQueue ? state.swipeQueue.slice(1) : state.swipeQueue,
+          // The taste test just finished: drop queued button swipes so they
+          // don't keep playing behind the "taste test complete" screen.
+          swipeQueue: calibrationJustDone ? [] : fromQueue ? state.swipeQueue.slice(1) : state.swipeQueue,
           onboardingSeen: true,
           undoFx: null,
         });
@@ -250,7 +275,10 @@ export const useShirtStore = create<ShirtState>()(
           dislikedIds: state.dislikedIds.filter((x) => x !== id),
           preferenceVector: after,
           swipeHistory,
-          lastUpdate: { shirtId: id, action: "like", before, after },
+          // A save of something already swiped adds no history event, so there
+          // is nothing Undo could revert correctly: clear it (canUndo → false)
+          // rather than letting Undo roll back this save as if it were the swipe.
+          lastUpdate: alreadySeen ? null : { shirtId: id, action: "like", before, after },
           deck: buildDeck(topStays, after, seenIds(swipeHistory)),
           isFlipped: topStays.length ? state.isFlipped : false,
         });
@@ -269,17 +297,22 @@ export const useShirtStore = create<ShirtState>()(
         const shirt = getShirtById(id);
         if (!shirt) return;
         const tee = color ?? get().selectedColors[id] ?? shirt.baseColor;
+        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty });
         set((s) => ({
-          cart: addItem(s.cart, { id, size, color: tee, qty }),
+          cart: items,
           selectedSizes: { ...s.selectedSizes, [id]: size },
           selectedColors: { ...s.selectedColors, [id]: tee },
         }));
-        get().showToast(`${shirt.title} · ${COLOR_LABELS[tee]} · ${size} added to bag`);
+        get().showToast(capped ? `Max ${MAX_QTY} per item` : `${shirt.title} · ${COLOR_LABELS[tee]} · ${size} added to bag`);
       },
 
       setCartQty: (line, qty) => set((s) => ({ cart: setItemQty(s.cart, line, qty) })),
 
-      changeCartItem: (line, to) => set((s) => ({ cart: changeItem(s.cart, line, to) })),
+      changeCartItem: (line, to) => {
+        const { items, capped } = changeItem(get().cart, line, to);
+        if (capped) get().showToast(`Max ${MAX_QTY} per item`);
+        else set({ cart: items });
+      },
 
       placeOrder: ({ name, email }) => {
         const { cart } = get();
@@ -313,6 +346,9 @@ export const useShirtStore = create<ShirtState>()(
           swipeQueue: [],
           undoFx: null,
         })),
+
+      snapshot: () => persistedOf(get()),
+      restore: (snap) => set({ ...snap, isFlipped: false, swipeQueue: [], undoFx: null }),
 
       setHydrated: () => set({ hydrated: true }),
     }),
@@ -349,20 +385,7 @@ export const useShirtStore = create<ShirtState>()(
           lastOrder: state.lastOrder ? { ...state.lastOrder, items: withColor(state.lastOrder.items) } : null,
         };
       },
-      partialize: (s): PersistedState => ({
-        likedIds: s.likedIds,
-        dislikedIds: s.dislikedIds,
-        preferenceVector: s.preferenceVector,
-        swipeHistory: s.swipeHistory,
-        deck: s.deck,
-        selectedSizes: s.selectedSizes,
-        selectedColors: s.selectedColors,
-        lastUpdate: s.lastUpdate,
-        cart: s.cart,
-        lastOrder: s.lastOrder,
-        calibrationAcknowledged: s.calibrationAcknowledged,
-        onboardingSeen: s.onboardingSeen,
-      }),
+      partialize: (s): PersistedState => persistedOf(s),
     },
   ),
 );

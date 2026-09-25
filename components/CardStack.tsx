@@ -36,7 +36,13 @@ export function CardStack() {
   const deck = useShirtStore((s) => s.deck);
   const vector = useShirtStore((s) => s.preferenceVector);
   const isFlipped = useShirtStore((s) => s.isFlipped);
-  const reset = useShirtStore((s) => s.reset);
+  // "Start over" wipes taste and Saved: offer an Undo that restores it all.
+  const startOver = () => {
+    const { snapshot, reset, restore, showToast } = useShirtStore.getState();
+    const before = snapshot();
+    reset();
+    showToast("Started over", { label: "Undo", run: () => restore(before) });
+  };
   const likedCount = useShirtStore((s) => s.likedIds.length);
   const [hearts, setHearts] = useState<{ id: number; from: DOMRect; to: DOMRect }[]>([]);
   const reduceMotion = useReducedMotion();
@@ -73,7 +79,7 @@ export function CardStack() {
         >
           See my shop <ArrowRight className="h-4 w-4" />
         </Link>
-        <button type="button" onClick={reset} className="h-11 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white">
+        <button type="button" onClick={startOver} className="h-11 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white">
           Start over
         </button>
       </div>

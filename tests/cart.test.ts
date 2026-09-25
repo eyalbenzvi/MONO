@@ -16,10 +16,10 @@ const [a, b] = SHIRTS;
 describe("cart", () => {
   it("merges the same shirt+size+colour and keeps other combinations separate", () => {
     let items: CartItem[] = [];
-    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 1 });
-    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 2 });
-    items = addItem(items, { id: a.id, size: "L", color: "black", qty: 1 });
-    items = addItem(items, { id: a.id, size: "M", color: "white", qty: 1 });
+    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 1 }).items;
+    items = addItem(items, { id: a.id, size: "M", color: "black", qty: 2 }).items;
+    items = addItem(items, { id: a.id, size: "L", color: "black", qty: 1 }).items;
+    items = addItem(items, { id: a.id, size: "M", color: "white", qty: 1 }).items;
     expect(items).toEqual([
       { id: a.id, size: "M", color: "black", qty: 3 },
       { id: a.id, size: "L", color: "black", qty: 1 },
@@ -28,7 +28,9 @@ describe("cart", () => {
   });
 
   it("caps quantity and removes at zero", () => {
-    let items = addItem([], { id: a.id, size: "S", color: "white", qty: 50 });
+    const added = addItem([], { id: a.id, size: "S", color: "white", qty: 50 });
+    expect(added.capped).toBe(true);
+    let items = added.items;
     expect(items[0].qty).toBe(MAX_QTY);
     items = setItemQty(items, { id: a.id, size: "S", color: "white" }, 0);
     expect(items).toEqual([]);
@@ -39,7 +41,7 @@ describe("cart", () => {
       { id: a.id, size: "M", color: "black", qty: 2 },
       { id: b.id, size: "L", color: "white", qty: 1 },
     ];
-    expect(changeItem(items, items[0], { color: "white" })).toEqual([
+    expect(changeItem(items, items[0], { color: "white" }).items).toEqual([
       { id: a.id, size: "M", color: "white", qty: 2 },
       { id: b.id, size: "L", color: "white", qty: 1 },
     ]);
@@ -51,14 +53,30 @@ describe("cart", () => {
       { id: a.id, size: "M", color: "white", qty: 1 },
       { id: a.id, size: "L", color: "white", qty: 4 },
     ];
-    expect(changeItem(items, items[0], { color: "white" })).toEqual([
+    expect(changeItem(items, items[0], { color: "white" }).items).toEqual([
       { id: a.id, size: "M", color: "white", qty: 3 },
       { id: a.id, size: "L", color: "white", qty: 4 },
     ]);
-    expect(changeItem(items, items[1], { size: "L" })).toEqual([
+    expect(changeItem(items, items[1], { size: "L" }).items).toEqual([
       { id: a.id, size: "M", color: "black", qty: 2 },
       { id: a.id, size: "L", color: "white", qty: 5 },
     ]);
+  });
+
+  it("reports hitting the per-line limit instead of losing units silently", () => {
+    const eight = addItem([], { id: a.id, size: "M", color: "black", qty: 8 });
+    expect(eight.capped).toBe(false);
+    const more = addItem(eight.items, { id: a.id, size: "M", color: "black", qty: 3 });
+    expect(more.capped).toBe(true);
+    expect(more.items[0].qty).toBe(MAX_QTY);
+    // merging two lines past the limit is refused and nothing changes
+    const items: CartItem[] = [
+      { id: a.id, size: "M", color: "black", qty: 6 },
+      { id: a.id, size: "L", color: "black", qty: 5 },
+    ];
+    const merged = changeItem(items, items[0], { size: "L" });
+    expect(merged.capped).toBe(true);
+    expect(merged.items).toEqual(items);
   });
 
   it("both colourways cost the same", () => {

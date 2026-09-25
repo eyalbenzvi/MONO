@@ -79,7 +79,13 @@ function RoundButton({
       aria-label={label}
       title={label}
       disabled={disabled}
-      onClick={onClick}
+      onClick={(e) => {
+        onClick();
+        // A mouse click leaves focus on the button, which would swallow the
+        // arrow-key shortcuts (they skip focused controls). Keyboard presses
+        // (detail === 0) keep focus where the user put it.
+        if (e.detail > 0) e.currentTarget.blur();
+      }}
       whileTap={{ scale: 0.86 }}
       whileHover={{ scale: 1.05 }}
       transition={{ type: "spring", stiffness: 500, damping: 18 }}

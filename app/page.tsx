@@ -22,8 +22,16 @@ export default function DiscoverPage() {
   // Keyboard shortcuts (desktop).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Any open dialog (zoom, share, taste-test screen) owns the keyboard:
+      // Escape there closes only that dialog, never the card flip.
       if (document.querySelector('[role="dialog"]')) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      // Leave browser / OS shortcuts alone (⌘Z, Ctrl+R, Alt+←…).
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Keys typed into a field, or pressed on a focused control, belong to
+      // that control: Space/Backspace on a button must not swipe or undo.
+      const t = e.target;
+      if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return;
+      if (t instanceof Element && t.closest('button, a, [role="button"], [role="radio"], [role="tab"], [contenteditable=""], [contenteditable="true"]')) return;
       const { requestSwipe, toggleFlip, undoLast, isFlipped } = useShirtStore.getState();
       if (e.key === "ArrowRight") requestSwipe("like");
       else if (e.key === "ArrowLeft") requestSwipe("dislike");

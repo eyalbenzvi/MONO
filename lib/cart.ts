@@ -28,13 +28,20 @@ export function cartTotals(items: CartItem[]) {
 type LineKey = Pick<CartItem, "id" | "size" | "color">;
 const same = (a: LineKey, b: LineKey) => a.id === b.id && a.size === b.size && a.color === b.color;
 
+/** Result of a bag edit; `capped` = the MAX_QTY limit stopped (part of) it. */
+export interface CartResult {
+  items: CartItem[];
+  capped: boolean;
+}
+
 /** Add `qty` of a shirt/size/colour, merging with an existing line and capping at MAX_QTY. */
-export function addItem(items: CartItem[], item: CartItem): CartItem[] {
+export function addItem(items: CartItem[], item: CartItem): CartResult {
   const existing = items.find((i) => same(i, item));
-  if (!existing) return [...items, { ...item, qty: Math.min(item.qty, MAX_QTY) }];
-  return items.map((i) =>
-    i === existing ? { ...i, qty: Math.min(i.qty + item.qty, MAX_QTY) } : i,
-  );
+  const have = existing?.qty ?? 0;
+  const qty = Math.min(have + item.qty, MAX_QTY);
+  const capped = have + item.qty > MAX_QTY;
+  if (!existing) return { items: [...items, { ...item, qty }], capped };
+  return { items: items.map((i) => (i === existing ? { ...i, qty } : i)), capped };
 }
 
 export function setItemQty(items: CartItem[], key: LineKey, qty: number): CartItem[] {
@@ -46,18 +53,21 @@ export function setItemQty(items: CartItem[], key: LineKey, qty: number): CartIt
  * Change a line's size and/or colour, merging into an existing line that
  * already has the new combination.
  */
-export function changeItem(items: CartItem[], key: LineKey, to: Partial<Pick<CartItem, "size" | "color">>): CartItem[] {
+export function changeItem(items: CartItem[], key: LineKey, to: Partial<Pick<CartItem, "size" | "color">>): CartResult {
   const line = items.find((i) => same(i, key));
-  if (!line) return items;
+  if (!line) return { items, capped: false };
   const next = { ...line, ...to };
-  if (same(next, line)) return items;
+  if (same(next, line)) return { items, capped: false };
   const target = items.find((i) => same(i, next));
   if (target) {
+    // Merging would go over the limit: refuse rather than silently drop units.
+    if (target.qty + line.qty > MAX_QTY) return { items, capped: true };
     // Merge into the line that already has this size/colour.
-    return items
-      .filter((i) => i !== line)
-      .map((i) => (i === target ? { ...i, qty: Math.min(i.qty + line.qty, MAX_QTY) } : i));
+    return {
+      items: items.filter((i) => i !== line).map((i) => (i === target ? { ...i, qty: i.qty + line.qty } : i)),
+      capped: false,
+    };
   }
   // Otherwise edit in place so the line keeps its position in the bag.
-  return items.map((i) => (i === line ? next : i));
+  return { items: items.map((i) => (i === line ? next : i)), capped: false };
 }

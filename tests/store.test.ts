@@ -132,6 +132,72 @@ describe("store actions", () => {
   });
 });
 
+describe("stage-1 fixes", () => {
+  it("R2: Pass in Discover, then Save in the shop → Undo is disabled and can't roll back the wrong thing", async () => {
+    const { useShirtStore, canUndo } = await freshStore();
+    const top = useShirtStore.getState().deck[0].id;
+    useShirtStore.getState().commitSwipe(top, "dislike");
+    const afterPass = useShirtStore.getState().preferenceVector;
+    useShirtStore.getState().toggleSaved(top);
+    const afterSave = useShirtStore.getState();
+    expect(canUndo(afterSave)).toBe(false);
+    afterSave.undoLast();
+    expect(useShirtStore.getState().preferenceVector).toEqual(afterSave.preferenceVector);
+    expect(useShirtStore.getState().preferenceVector).not.toEqual(afterPass);
+    expect(useShirtStore.getState().likedIds).toEqual([top]);
+  });
+
+  it("R2: a like never duplicates an id that is already saved", async () => {
+    const { useShirtStore } = await freshStore();
+    const top = useShirtStore.getState().deck[0].id;
+    useShirtStore.setState({ likedIds: [top] });
+    useShirtStore.getState().commitSwipe(top, "like");
+    expect(useShirtStore.getState().likedIds).toEqual([top]);
+  });
+
+  it("R19: finishing the taste test clears queued button swipes", async () => {
+    const { useShirtStore, CALIBRATION_TOTAL } = await freshStore();
+    for (let i = 0; i < CALIBRATION_TOTAL - 1; i++) {
+      const s = useShirtStore.getState();
+      s.commitSwipe(s.deck[0].id, i % 2 ? "like" : "dislike");
+    }
+    useShirtStore.setState({ swipeQueue: [1, 2, 3].map((n) => ({ action: "like" as const, nonce: n })) });
+    const s = useShirtStore.getState();
+    s.commitSwipe(s.deck[0].id, "like", true);
+    expect(useShirtStore.getState().swipeQueue).toEqual([]);
+  });
+
+  it("R20: going over 9 per line shows a limit toast instead of 'added'", async () => {
+    const { useShirtStore } = await freshStore();
+    useShirtStore.getState().addToCart("mono-0001", "M", "black", 8);
+    useShirtStore.getState().addToCart("mono-0001", "M", "black", 3);
+    const s = useShirtStore.getState();
+    expect(s.cart[0].qty).toBe(9);
+    expect(s.toast?.message).toMatch(/max 9/i);
+  });
+
+  it("R20: a size change that would merge past 9 is refused", async () => {
+    const { useShirtStore } = await freshStore();
+    useShirtStore.getState().addToCart("mono-0001", "M", "black", 6);
+    useShirtStore.getState().addToCart("mono-0001", "L", "black", 5);
+    useShirtStore.getState().changeCartItem({ id: "mono-0001", size: "M", color: "black" }, { size: "L" });
+    const s = useShirtStore.getState();
+    expect(s.cart.map((l) => [l.size, l.qty])).toEqual([["M", 6], ["L", 5]]);
+    expect(s.toast?.message).toMatch(/max 9/i);
+  });
+
+  it("I15: Start over can be undone (snapshot / restore brings Saved back)", async () => {
+    const { useShirtStore } = await freshStore();
+    useShirtStore.getState().toggleSaved("mono-0003");
+    const snap = useShirtStore.getState().snapshot();
+    useShirtStore.getState().reset();
+    expect(useShirtStore.getState().likedIds).toEqual([]);
+    useShirtStore.getState().restore(snap);
+    expect(useShirtStore.getState().likedIds).toEqual(["mono-0003"]);
+    expect(useShirtStore.getState().swipeHistory).toEqual(snap.swipeHistory);
+  });
+});
+
 /* ------------------------------------------------------------------ */
 /* Persistence migrations                                              */
 /* ------------------------------------------------------------------ */
