@@ -2,15 +2,16 @@
 
 import { motion } from "framer-motion";
 import { Heart, Info, RotateCcw, X } from "lucide-react";
-import { canUndo, useShirtStore } from "@/store/useShirtStore";
+import { canUndo, useTasteStore } from "@/store/tasteStore";
+import { useUiStore } from "@/store/useUiStore";
 
 export function ActionButtons() {
-  const requestSwipe = useShirtStore((s) => s.requestSwipe);
-  const toggleFlip = useShirtStore((s) => s.toggleFlip);
-  const undoLast = useShirtStore((s) => s.undoLast);
-  const isFlipped = useShirtStore((s) => s.isFlipped);
-  const empty = useShirtStore((s) => s.deck.length === 0);
-  const undoable = useShirtStore(canUndo);
+  const requestSwipe = useTasteStore((s) => s.requestSwipe);
+  const toggleFlip = useUiStore((s) => s.toggleFlip);
+  const undoLast = useTasteStore((s) => s.undoLast);
+  const isFlipped = useUiStore((s) => s.isFlipped);
+  const empty = useTasteStore((s) => s.deck.length === 0);
+  const undoable = useTasteStore(canUndo);
 
   return (
     <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2">

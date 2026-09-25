@@ -52,7 +52,7 @@ Feature vectors are computed from each design's real parameters (line/cell count
 1. **Discover / calibration** (`/`): the first 10 cards are the most mutually different prints. Finishing them shows the "taste profile ready" screen with your top traits and top picks.
 2. **Shop** (`/shop`): the full catalog ranked by match, with category chips (10), tee-colour view and sort, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
 3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,800 pages are statically generated.
-4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over $80), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
+4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over the `FREE_SHIPPING_THRESHOLD` in `lib/cart.ts`), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
 
 Discover keeps training after calibration (80% best match / 20% explore).
 
@@ -103,7 +103,13 @@ The **Algo debug** panel is hidden for normal users: open the site with `?debug=
 - **Match score:** `cosineSimilarity` returns plain cosine as 0–100%. Plain cosine between positive vectors bunches up in the 75–95% band, so the badge uses `matchScore`, which blends in the cosine of the vectors centered on 0.5 as the profile moves away from neutral. Both numbers are shown in the debug panel.
 - **Real-time deck:** after every swipe, the card already showing underneath stays put and everything behind it is re-ranked with the new vector.
 
-State (likes, dislikes, vector, history, deck, chosen sizes, bag, last order) is persisted to `localStorage` through Zustand (`store/useShirtStore.ts`).
+State lives in three Zustand stores:
+
+- `store/tasteStore.ts` (persisted as `mono-taste`): saved and passed designs, the taste vector, the last 500 swipe events, every design seen (so the deck never repeats a family), the deck, undo info and onboarding flags.
+- `store/cartStore.ts` (persisted as `mono-cart`): the bag, the last order, and size / colour picks.
+- `store/useUiStore.ts` (memory only): card flip, queued swipes, undo animation, toast, zoom, shop filters, header, debug.
+
+State read back from `localStorage` goes through a guard (`sanitizeTaste` / `sanitizeCart`): malformed or unknown entries fall back to defaults. Sessions from the old single store (`mono-session-v1`, v3–v6) are migrated once into the split stores (`store/legacySession.ts`). Other tabs' writes are picked up through the `storage` event. Product events go to `window.dataLayer` via `lib/analytics.ts` (no third-party script; a tag manager can forward them).
 
 ## Brand
 

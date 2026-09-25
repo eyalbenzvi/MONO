@@ -4,22 +4,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
-import { useHydrated } from "@/components/AppShell";
 import { TeeMockup } from "@/components/TeeMockup";
-import { STAGE_BG } from "@/components/ui";
+import { ColorSelector, STAGE_BG } from "@/components/ui";
 import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals } from "@/lib/cart";
-import { useShirtStore } from "@/store/useShirtStore";
-import { COLOR_LABELS, SIZES, skuFor, type BaseColor, type Order, type ShirtSize } from "@/types/shirt";
+import { useCartStore } from "@/store/cartStore";
+import { useHydrated } from "@/store/useUiStore";
+import { COLOR_LABELS, SIZES, skuFor, type Order, type ShirtSize } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
+import { track } from "@/lib/analytics";
 
 type Step = "bag" | "details" | "done";
 
 export function CartView() {
   const hydrated = useHydrated();
-  const cart = useShirtStore((s) => s.cart);
-  const lastOrder = useShirtStore((s) => s.lastOrder);
-  const setCartQty = useShirtStore((s) => s.setCartQty);
-  const changeCartItem = useShirtStore((s) => s.changeCartItem);
-  const placeOrder = useShirtStore((s) => s.placeOrder);
+  const cart = useCartStore((s) => s.cart);
+  const lastOrder = useCartStore((s) => s.lastOrder);
+  const setCartQty = useCartStore((s) => s.setCartQty);
+  const changeCartItem = useCartStore((s) => s.changeCartItem);
+  const placeOrder = useCartStore((s) => s.placeOrder);
   const [step, setStep] = useState<Step>("bag");
   const [placed, setPlaced] = useState<Order | null>(null);
 
@@ -57,7 +59,7 @@ export function CartView() {
             </Link>
             {lastOrder && (
               <p className="mt-4 text-xs text-neutral-500">
-                Last order {lastOrder.number} · ${lastOrder.total.toFixed(2)}
+                Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
           </div>
@@ -84,13 +86,11 @@ export function CartView() {
                           <p className="text-xs text-neutral-500">
                             {COLOR_LABELS[line.color]} tee · {skuFor(line.shirt.sku, line.color)}
                           </p>
-                          <ColorSwatches
-                            value={line.color}
-                            original={line.shirt.baseColor}
-                            onChange={(color) => changeCartItem(line, { color })}
-                          />
+                          <div className="mt-1.5">
+                            <ColorSelector variant="pills" value={line.color} original={line.shirt.baseColor} onChange={(color) => changeCartItem(line, { color })} />
+                          </div>
                         </div>
-                        <span className="font-mono text-sm">${line.lineTotal}</span>
+                        <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
                       </div>
                       <div className="mt-auto flex items-center gap-2 pt-2">
                         <select
@@ -126,10 +126,13 @@ export function CartView() {
             <Summary subtotal={subtotal} shipping={shipping} total={total} toFree={toFree} />
             <button
               type="button"
-              onClick={() => setStep("details")}
+              onClick={() => {
+                setStep("details");
+                track("begin_checkout", { value: total, items: cart.reduce((n, l) => n + l.qty, 0), currency: "USD" });
+              }}
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
             >
-              <Lock className="h-4 w-4" /> Checkout · ${total.toFixed(2)}
+              <Lock className="h-4 w-4" /> Checkout · {formatPrice(total)}
             </button>
           </>
         ) : (
@@ -150,29 +153,6 @@ export function CartView() {
   );
 }
 
-/** Compact black/white toggle for a bag line. */
-function ColorSwatches({ value, original, onChange }: { value: BaseColor; original: BaseColor; onChange: (c: BaseColor) => void }) {
-  return (
-    <div className="mt-1.5 flex items-center gap-1.5" role="radiogroup" aria-label="Tee colour">
-      {(["black", "white"] as const).map((c) => (
-        <button
-          key={c}
-          type="button"
-          role="radio"
-          aria-checked={value === c}
-          aria-label={`${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`}
-          onClick={() => onChange(c)}
-          className={`flex h-7 items-center gap-1.5 rounded-full pl-1 pr-2 text-[11px] font-medium transition ${
-            value === c ? "bg-white/10 text-white ring-1 ring-white" : "text-neutral-500 ring-1 ring-white/10 hover:text-neutral-300"
-          }`}
-        >
-          <span className={`h-5 w-5 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20"}`} aria-hidden />
-          {COLOR_LABELS[c]}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function Steps({ step }: { step: Step }) {
   const steps: Step[] = ["bag", "details", "done"];
@@ -204,15 +184,15 @@ function Summary({
   return (
     <div className="mt-5 space-y-2 rounded-2xl bg-white/[0.03] p-4 text-sm ring-1 ring-white/10">
       {compact && itemCount !== undefined && (
-        <Row label={`${itemCount} item${itemCount === 1 ? "" : "s"}`} value={`$${subtotal.toFixed(2)}`} />
+        <Row label={`${itemCount} item${itemCount === 1 ? "" : "s"}`} value={`${formatPrice(subtotal)}`} />
       )}
-      {!compact && <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />}
-      <Row label="Shipping" value={shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`} />
+      {!compact && <Row label="Subtotal" value={`${formatPrice(subtotal)}`} />}
+      <Row label="Shipping" value={shipping === 0 ? "Free" : `${formatPrice(shipping)}`} />
       {toFree > 0 && !compact && (
-        <p className="text-xs text-neutral-500">Add ${toFree.toFixed(2)} more for free shipping.</p>
+        <p className="text-xs text-neutral-500">Add {formatPrice(toFree)} more for free shipping.</p>
       )}
       <div className="border-t border-white/10 pt-2">
-        <Row label="Total" value={`$${total.toFixed(2)}`} bold />
+        <Row label="Total" value={`${formatPrice(total)}`} bold />
       </div>
     </div>
   );
@@ -288,7 +268,7 @@ function DetailsForm({
         type="submit"
         className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
       >
-        Place demo order · ${total.toFixed(2)}
+        Place demo order · {formatPrice(total)}
       </button>
     </form>
   );
@@ -324,12 +304,12 @@ function Confirmation({ order }: { order: Order }) {
               <span>
                 {l.qty}× {l.shirt.title} · {COLOR_LABELS[l.color]} · {l.size}
               </span>
-              <span className="font-mono">${l.lineTotal}</span>
+              <span className="font-mono">{formatPrice(l.lineTotal)}</span>
             </li>
           ))}
           <li className="flex justify-between border-t border-white/10 pt-2 font-semibold">
             <span>Total</span>
-            <span className="font-mono">${order.total.toFixed(2)}</span>
+            <span className="font-mono">{formatPrice(order.total)}</span>
           </li>
         </ul>
         <Link href="/shop/" className="mt-8 flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black">

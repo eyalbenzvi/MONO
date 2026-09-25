@@ -24,8 +24,8 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { BaseColor, FeatureKey, ShirtCategory, ShirtProduct } from "../types/shirt";
 import { H, M, W, clamp01, int, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
-import { LEGACY_GENERATORS } from "./gen/legacy";
-import { EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
+import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
+import { EXPANSION_CATEGORIES, EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
 import { asciiArt, asciiBanner, asciiScene, asciiShade } from "./gen/set3/ascii";
 import { caricatureBobble, caricatureMugshot, caricaturePortrait, caricatureWanted } from "./gen/set3/caricature";
 import { greatWave, masterpiece, modernMasters, starryNight } from "./gen/set3/famousart";
@@ -36,23 +36,43 @@ const SEED = 0x6d6f6e6f; // "mono"
 const PER_SET = 1000;
 const BLACK_SHARE = 0.7;
 
-const LEGACY_CATEGORIES: ShirtCategory[] = ["architectural", "geometric", "typography", "halftone", "waves"];
-const NEW_CATEGORIES: ShirtCategory[] = ["scenes", "slogans", "pixel", "emblems", "objects"];
-const SET3_CATEGORIES: ShirtCategory[] = ["ascii", "caricatures", "famousart", "iconic"];
+const NEW_CATEGORIES = EXPANSION_CATEGORIES;
+const SET3_CATEGORIES = ["ascii", "caricatures", "famousart", "iconic"] as const satisfies readonly ShirtCategory[];
 const SET3_PER_CATEGORY = 200;
 
-const SET3_GENERATORS: Record<string, Generator[]> = {
+const SET3_GENERATORS: Record<(typeof SET3_CATEGORIES)[number], Generator[]> = {
   ascii: [asciiBanner, asciiShade, asciiArt, asciiScene],
   caricatures: [caricaturePortrait, caricatureWanted, caricatureMugshot, caricatureBobble],
   famousart: [greatWave, starryNight, modernMasters, masterpiece],
   iconic: [landmark, travelPoster, spaceAge, motif],
 };
 
+/** A set of designs: its categories, a generator list for each, and its size. */
+interface DesignSet {
+  cats: readonly ShirtCategory[];
+  generatorsFor: (category: ShirtCategory) => Generator[];
+  size: number;
+  legacy: boolean;
+}
+/** Typed per set (every category of the set must have generators). */
+function set<C extends ShirtCategory>(s: { cats: readonly C[]; gens: Record<C, Generator[]>; size: number; legacy: boolean }): DesignSet {
+  const isMine = (c: ShirtCategory): c is C => (s.cats as readonly ShirtCategory[]).includes(c);
+  return {
+    cats: s.cats,
+    size: s.size,
+    legacy: s.legacy,
+    generatorsFor: (c) => {
+      if (!isMine(c)) throw new Error(`no generators for ${c} in this set`);
+      return s.gens[c];
+    },
+  };
+}
+
 /** Each set: its categories, generators and size. Ids run on across sets. */
-const SETS = [
-  { cats: LEGACY_CATEGORIES, gens: LEGACY_GENERATORS, size: PER_SET, legacy: true },
-  { cats: NEW_CATEGORIES, gens: EXPANSION_GENERATORS, size: PER_SET, legacy: false },
-  { cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false },
+const SETS: DesignSet[] = [
+  set({ cats: LEGACY_CATEGORIES, gens: LEGACY_GENERATORS, size: PER_SET, legacy: true }),
+  set({ cats: NEW_CATEGORIES, gens: EXPANSION_GENERATORS, size: PER_SET, legacy: false }),
+  set({ cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false }),
 ];
 
 const ROOT = path.resolve(__dirname, "..");
@@ -234,7 +254,7 @@ function main() {
     // Interleave categories so neighbouring ids differ in style.
     const category = set.cats[(i - setStart) % set.cats.length];
     const index = ++counters[category];
-    const gens = set.gens[category];
+    const gens = set.generatorsFor(category);
     const gen = gens[(index - 1) % gens.length];
 
     const baseColor = colors[i];

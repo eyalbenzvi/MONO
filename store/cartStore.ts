@@ -1,0 +1,127 @@
+"use client";
+
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { MAX_QTY, addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
+import { getShirtById } from "@/lib/catalog";
+import { track } from "@/lib/analytics";
+import { useUiStore } from "@/store/useUiStore";
+import { COLOR_LABELS, SIZES, type BaseColor, type CartItem, type Order, type ShirtSize } from "@/types/shirt";
+
+export const CART_KEY = "mono-cart";
+
+/** The bag, the last order, and per-design size / colour picks. */
+export interface CartState {
+  cart: CartItem[];
+  lastOrder: Order | null;
+  selectedSizes: Record<string, ShirtSize>;
+  /** Tee colour picked per design; missing = the design's original colour. */
+  selectedColors: Record<string, BaseColor>;
+}
+
+interface CartActions {
+  setSize: (id: string, size: ShirtSize) => void;
+  setColor: (id: string, color: BaseColor) => void;
+  /** Adds in the given colour, else the one picked for this design, else its original. */
+  addToCart: (id: string, size: ShirtSize, color?: BaseColor, qty?: number) => void;
+  setCartQty: (line: Pick<CartItem, "id" | "size" | "color">, qty: number) => void;
+  changeCartItem: (line: Pick<CartItem, "id" | "size" | "color">, to: Partial<Pick<CartItem, "size" | "color">>) => void;
+  placeOrder: (customer: { name: string; email: string }) => Order | null;
+}
+
+export const initialCart = (): CartState => ({ cart: [], lastOrder: null, selectedSizes: {}, selectedColors: {} });
+
+const cartOf = (s: CartState): CartState => ({ cart: s.cart, lastOrder: s.lastOrder, selectedSizes: s.selectedSizes, selectedColors: s.selectedColors });
+
+const toast = (message: string) => useUiStore.getState().showToast(message);
+
+/* Guard for state read from localStorage: keep only well-formed entries. */
+const isColor = (c: unknown): c is BaseColor => c === "black" || c === "white";
+const isSize = (s: unknown): s is ShirtSize => (SIZES as readonly unknown[]).includes(s);
+const lines = (x: unknown): CartItem[] =>
+  Array.isArray(x)
+    ? (x as CartItem[]).filter((i) => i && getShirtById(i.id) && isSize(i.size) && isColor(i.color) && Number.isInteger(i.qty) && i.qty > 0).map((i) => ({ id: i.id, size: i.size, color: i.color, qty: Math.min(i.qty, MAX_QTY) }))
+    : [];
+function picks<T>(x: unknown, ok: (v: unknown) => v is T): Record<string, T> {
+  const out: Record<string, T> = {};
+  if (x && typeof x === "object") for (const [k, v] of Object.entries(x)) if (getShirtById(k) && ok(v)) out[k] = v;
+  return out;
+}
+
+export function sanitizeCart(raw: unknown): CartState {
+  if (!raw || typeof raw !== "object") return initialCart();
+  const r = raw as Partial<Record<keyof CartState, unknown>>;
+  const o = r.lastOrder as Order | null | undefined;
+  return {
+    cart: lines(r.cart),
+    lastOrder: o && typeof o.number === "string" && Array.isArray(o.items) ? { ...o, items: lines(o.items) } : null,
+    selectedSizes: picks(r.selectedSizes, isSize),
+    selectedColors: picks(r.selectedColors, isColor),
+  };
+}
+
+export const useCartStore = create<CartState & CartActions>()(
+  persist(
+    (set, get) => ({
+      ...initialCart(),
+
+      setSize: (id, size) => {
+        set((s) => ({ selectedSizes: { ...s.selectedSizes, [id]: size } }));
+        track("select_size", { id, size });
+      },
+
+      setColor: (id, color) => set((s) => ({ selectedColors: { ...s.selectedColors, [id]: color } })),
+
+      addToCart: (id, size, color, qty = 1) => {
+        const shirt = getShirtById(id);
+        if (!shirt) return;
+        const tee = color ?? get().selectedColors[id] ?? shirt.baseColor;
+        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty });
+        set((s) => ({
+          cart: items,
+          selectedSizes: { ...s.selectedSizes, [id]: size },
+          selectedColors: { ...s.selectedColors, [id]: tee },
+        }));
+        toast(capped ? `Max ${MAX_QTY} per item` : `${shirt.title} · ${COLOR_LABELS[tee]} · ${size} added to bag`);
+        if (!capped) track("add_to_cart", { id, size, color: tee, qty, price: shirt.price });
+      },
+
+      setCartQty: (line, qty) => set((s) => ({ cart: setItemQty(s.cart, line, qty) })),
+
+      changeCartItem: (line, to) => {
+        const { items, capped } = changeItem(get().cart, line, to);
+        if (capped) toast(`Max ${MAX_QTY} per item`);
+        else set({ cart: items });
+      },
+
+      placeOrder: ({ name, email }) => {
+        const { cart } = get();
+        const totals = cartTotals(cart);
+        if (totals.count === 0) return null;
+        const order: Order = {
+          number: `MONO-${Date.now().toString(36).toUpperCase().slice(-6)}`,
+          items: cart,
+          subtotal: totals.subtotal,
+          shipping: totals.shipping,
+          total: totals.total,
+          name,
+          email,
+          placedAt: Date.now(),
+        };
+        set({ lastOrder: order, cart: [] });
+        track("purchase", { order: order.number, value: order.total, items: totals.count, currency: "USD" });
+        return order;
+      },
+    }),
+    {
+      name: CART_KEY,
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+      partialize: (s): CartState => cartOf(s),
+      merge: (persisted, current) => ({ ...current, ...sanitizeCart(persisted) }),
+    },
+  ),
+);
+
+export const useCartCount = () => useCartStore((s) => s.cart.reduce((sum, i) => sum + i.qty, 0));

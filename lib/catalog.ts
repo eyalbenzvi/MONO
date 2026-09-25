@@ -2,8 +2,8 @@ import raw from "@/data/shirts.json";
 import type { ShirtProduct } from "@/types/shirt";
 
 /**
- * The catalog: 1,000 procedurally generated shirts (see
- * scripts/generate1000Shirts.ts — run `npm run generate` to rebuild).
+ * The catalog: 2,800 procedurally generated shirts in 14 categories (see
+ * scripts/generateCatalog.ts — run `npm run generate` to rebuild).
  */
 export const SHIRTS = raw as unknown as ShirtProduct[];
 

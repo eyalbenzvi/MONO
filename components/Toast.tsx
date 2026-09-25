@@ -3,16 +3,16 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useShirtStore } from "@/store/useShirtStore";
+import { useUiStore } from "@/store/useUiStore";
 
 export function Toast() {
-  const toast = useShirtStore((s) => s.toast);
+  const toast = useUiStore((s) => s.toast);
 
   useEffect(() => {
     if (!toast) return;
     // Give actionable toasts ("Removed · Undo") time to be used.
     const t = setTimeout(() => {
-      if (useShirtStore.getState().toast?.nonce === toast.nonce) useShirtStore.setState({ toast: null });
+      if (useUiStore.getState().toast?.nonce === toast.nonce) useUiStore.setState({ toast: null });
     }, toast.action ? 4000 : 2200);
     return () => clearTimeout(t);
   }, [toast]);
@@ -37,7 +37,7 @@ export function Toast() {
                 type="button"
                 onClick={() => {
                   toast.action?.run();
-                  useShirtStore.setState({ toast: null });
+                  useUiStore.setState({ toast: null });
                 }}
                 className="pointer-events-auto h-8 rounded-full bg-black px-3 text-xs font-bold text-white"
               >

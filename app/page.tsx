@@ -7,10 +7,11 @@ import { ArrowRight } from "lucide-react";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
-import { useHydrated } from "@/components/AppShell";
 import { STRONG_MATCH } from "@/components/ui";
 import { biggestShift, profileSharpness } from "@/lib/recommendation";
-import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
+import { CALIBRATION_TOTAL } from "@/lib/deck";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { FEATURE_LABELS } from "@/types/shirt";
 
 /** The top strip keeps one fixed height across phases so the card never jumps. */
@@ -32,7 +33,8 @@ export default function DiscoverPage() {
       const t = e.target;
       if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return;
       if (t instanceof Element && t.closest('button, a, [role="button"], [role="radio"], [role="tab"], [contenteditable=""], [contenteditable="true"]')) return;
-      const { requestSwipe, toggleFlip, undoLast, isFlipped } = useShirtStore.getState();
+      const { requestSwipe, undoLast } = useTasteStore.getState();
+      const { toggleFlip, isFlipped } = useUiStore.getState();
       if (e.key === "ArrowRight") requestSwipe("like");
       else if (e.key === "ArrowLeft") requestSwipe("dislike");
       else if (e.key === "ArrowUp" || e.key === " ") {
@@ -63,8 +65,8 @@ export default function DiscoverPage() {
 
 function TopStrip() {
   const { done, total, complete } = useCalibrationProgress();
-  const onboardingSeen = useShirtStore((s) => s.onboardingSeen);
-  const vector = useShirtStore((s) => s.preferenceVector);
+  const onboardingSeen = useTasteStore((s) => s.onboardingSeen);
+  const vector = useTasteStore((s) => s.preferenceVector);
 
   // Milestone copy: "Halfway there" flashes for 1.5 s at 5/10; "Last one!" at 9/10.
   const [flash, setFlash] = useState<string | null>(null);
@@ -110,7 +112,7 @@ function TopStrip() {
     <div className={STRIP}>
       {!onboardingSeen && (
         <p className="mb-1.5 truncate text-center text-[13px] font-medium text-white">
-          Rate 10 tees. We&apos;ll build your shop from your taste.
+          Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.
         </p>
       )}
       <div className="flex items-center gap-3">
@@ -150,8 +152,8 @@ function TopStrip() {
  * 20 swipes, so it teaches without nagging.
  */
 function LearnChip() {
-  const lastUpdate = useShirtStore((s) => s.lastUpdate);
-  const history = useShirtStore((s) => s.swipeHistory);
+  const lastUpdate = useTasteStore((s) => s.lastUpdate);
+  const history = useTasteStore((s) => s.swipeHistory);
   const last = history[history.length - 1];
   const show = lastUpdate && last && last.source !== "shop" && last.shirtId === lastUpdate.shirtId && history.length <= 20;
 
