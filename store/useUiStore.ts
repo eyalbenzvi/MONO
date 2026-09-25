@@ -22,11 +22,15 @@ interface UiState {
   };
   /** A product page was opened from the shop grid (so "← Shop" can go back). */
   cameFromShop: boolean;
+  /** The tee the share sheet is open for (and in which colourway). */
+  share: { id: string; color: BaseColor } | null;
 
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
   setCameFromShop: (v: boolean) => void;
+  openShare: (id: string, color: BaseColor) => void;
+  closeShare: () => void;
 }
 
 export const SHOP_PAGE_SIZE = 24;
@@ -36,6 +40,7 @@ export const useUiStore = create<UiState>()((set) => ({
   headerHidden: false,
   shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE, scrollTop: 0 },
   cameFromShop: false,
+  share: null,
 
   setDebug: (on) => {
     try {
@@ -49,6 +54,8 @@ export const useUiStore = create<UiState>()((set) => ({
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
   setCameFromShop: (cameFromShop) => set({ cameFromShop }),
+  openShare: (id, color) => set({ share: { id, color } }),
+  closeShare: () => set({ share: null }),
 }));
 
 /** Scroll handler for page scrollers: hide the header scrolling down, show it scrolling up. */

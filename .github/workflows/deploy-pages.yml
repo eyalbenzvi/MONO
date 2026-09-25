@@ -31,10 +31,20 @@ jobs:
 
       - run: npm ci
       - run: npm test
+
+      # Link-preview images (1200×630 PNG per tee) for WhatsApp / Facebook /
+      # X / iMessage. Rendered here rather than committed (~77 MB).
+      - name: Generate link-preview images
+        run: npm run og
+        env:
+          OG_HOST: ${{ steps.pages.outputs.host }}${{ steps.pages.outputs.base_path }}
+
       - name: Build static site
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Absolute URLs for Open Graph tags.
+          NEXT_PUBLIC_SITE_ORIGIN: ${{ steps.pages.outputs.origin }}
           NEXT_TELEMETRY_DISABLED: 1
 
       # Stop GitHub Pages' Jekyll from hiding the _next/ folder.

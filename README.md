@@ -61,13 +61,25 @@ Discover keeps training after calibration (80% best match / 20% explore).
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # vector-math unit tests (Vitest)
+npm test           # unit tests (Vitest)
+npm run og         # link-preview images (optional locally; built in CI)
 npm run typecheck && npm run lint && npm run build
 ```
 
 ## Deploy (GitHub Pages)
 
 `.github/workflows/deploy-pages.yml` builds a static export (`out/`) and publishes it on every push. One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The site is served at `https://<user>.github.io/<repo>/`.
+
+## Sharing
+
+Every tee can be shared from the product page, the Discover card (front and details), and the Saved list. The **share sheet** (`components/ShareSheet.tsx`) works like this:
+
+- **Share image, drawn in the browser** (`lib/shareImage.ts`): the tee in the chosen colour with its print, name, price and site, as a *Story* (1080×1920) or *Post* (1080×1080) PNG. The print SVG is recoloured by swapping its two inks, so it works in every browser. The image is rendered when the sheet opens, so the file is ready inside the tap's user activation.
+- **Share…**: the device share sheet (Web Share API) with the image, message and link. On phones this reaches WhatsApp, Instagram (story, feed or DM), TikTok, Facebook, Messages and anything else installed.
+- **Instagram / TikTok**: they have no web share intent. Where file sharing is available they open the share sheet with the image. Otherwise the image is saved, the link copied, and short how-to steps are shown.
+- **WhatsApp, Facebook, Telegram, X, Email, SMS**: direct share intents (`lib/share.ts`), plus Copy link and Save image.
+- **Links** open the product page in the shared colour and are tagged with the channel: `/shop/mono-2002/?c=white&ref=whatsapp`. The recipient gets a "A friend shared this tee with you" banner inviting them to the taste test, and the tags are then removed from the address bar.
+- **Link previews**: every product page has Open Graph / Twitter tags pointing at a 1200×630 PNG (`npm run og`, `scripts/generateOgImages.ts`, rendered with resvg and palette-compressed to about 28 KB). The Pages workflow renders them before the build, in batches of short-lived workers (resvg's native memory isn't reclaimed by the JS garbage collector). They aren't committed (`public/og` is git-ignored).
 
 ## Controls
 

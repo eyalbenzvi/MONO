@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, ShoppingBag, ZoomIn } from "lucide-react";
+import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, Share2, ShoppingBag, X, ZoomIn } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
@@ -14,6 +14,7 @@ import { ZoomViewer } from "@/components/ZoomViewer";
 import { ColorSelector, LABEL, MatchBadge, SizeSelector, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
 import { SHIRTS, familyMembers, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
+import { parseShareParams } from "@/lib/share";
 import { useShirtStore } from "@/store/useShirtStore";
 import { makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, COLOR_LABELS, COLORS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
@@ -52,6 +53,19 @@ export function ProductView({ id }: { id: string }) {
     if (hydrated && window.location.hash === "#variations")
       requestAnimationFrame(() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, [hydrated]);
+
+  // Opened from a shared link (?c=white&ref=whatsapp): show the tee in the
+  // colour it was shared in, and greet the visitor.
+  const [sharedVia, setSharedVia] = useState<string | null>(null);
+  const calibrated = useShirtStore((s) => s.calibrationAcknowledged);
+  useEffect(() => {
+    if (!hydrated || !shirt) return;
+    const { color: c, ref } = parseShareParams(window.location.search);
+    if (c) setColor(shirt.id, c);
+    if (ref) setSharedVia(ref);
+    // Clean the URL so a reload or a re-share doesn't carry the tag along.
+    if (c || ref) window.history.replaceState(window.history.state, "", window.location.pathname + window.location.hash);
+  }, [hydrated, shirt, setColor]);
 
   // Specs are open by default on desktop, collapsed on phones.
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -105,6 +119,30 @@ export function ProductView({ id }: { id: string }) {
           <ArrowLeft className="h-4 w-4" /> Shop
         </button>
 
+        <AnimatePresence>
+          {sharedVia && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              className="mb-3 flex items-center gap-3 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10"
+              role="status"
+            >
+              <Share2 className="h-5 w-5 shrink-0 text-neutral-300" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">A friend shared this tee with you</p>
+                <p className="text-xs text-neutral-400">{calibrated ? "Your shop is ranked for you — have a look around." : "Swipe 10 tees and MONO learns your taste."}</p>
+              </div>
+              <Link href={calibrated ? "/shop/" : "/"} className="flex h-9 shrink-0 items-center rounded-full bg-white px-3.5 text-xs font-bold text-black">
+                {calibrated ? "My shop" : "Try it"}
+              </Link>
+              <button type="button" onClick={() => setSharedVia(null)} aria-label="Dismiss" className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="grid gap-6 md:grid-cols-2">
           {/* Visual */}
           <div className={`relative flex aspect-square max-h-[60dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
@@ -131,14 +169,24 @@ export function ProductView({ id }: { id: string }) {
                 )}
               </motion.div>
             </AnimatePresence>
-            <button
-              type="button"
-              onClick={() => setZoom(true)}
-              aria-label="Zoom in on the print"
-              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
-            >
-              <ZoomIn className="h-5 w-5" />
-            </button>
+            <div className="absolute right-3 top-3 z-10 flex gap-2">
+              <button
+                type="button"
+                onClick={() => useUiStore.getState().openShare(shirt.id, color)}
+                aria-label={`Share ${shirt.title}`}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
+              >
+                <Share2 className="h-[18px] w-[18px]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom(true)}
+                aria-label="Zoom in on the print"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
+              >
+                <ZoomIn className="h-5 w-5" />
+              </button>
+            </div>
             {/* Tee colour, right on the picture: visible without scrolling. */}
             <div className="absolute bottom-3 left-3 flex gap-1 rounded-full bg-black/50 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
               {COLORS.map((c) => (

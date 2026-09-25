@@ -3,12 +3,13 @@
 import { memo } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Compass, Heart, RotateCcw, ZoomIn } from "lucide-react";
+import { ArrowRight, Compass, Heart, RotateCcw, Share2, ZoomIn } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize } from "@/lib/catalog";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
+import { useUiStore } from "@/store/useUiStore";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
@@ -36,6 +37,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
   const { done, total } = useCalibrationProgress();
+  const openShare = useUiStore((s) => s.openShare);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -75,6 +77,16 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                   >
                     <Compass className="h-3.5 w-3.5" /> Wildcard
                   </span>
+                )}
+                {isTop && (
+                  <button
+                    type="button"
+                    onClick={() => openShare(shirt.id, shirt.baseColor)}
+                    aria-label={`Share ${shirt.title}`}
+                    className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
+                  >
+                    <Share2 className="h-[17px] w-[17px]" />
+                  </button>
                 )}
                 {isTop && onZoom && (
                   <button
@@ -200,13 +212,21 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
       </div>
 
       {/* Footer actions stay visible */}
-      <div className="grid grid-cols-[auto_1fr] gap-2 border-t border-white/10 bg-ink-900 px-4 py-3">
+      <div className="grid grid-cols-[auto_auto_1fr] gap-2 border-t border-white/10 bg-ink-900 px-4 py-3">
         <button
           type="button"
           onClick={() => requestSwipe("like")}
           className="flex h-12 items-center gap-2 rounded-full bg-white/10 px-5 text-sm font-semibold hover:bg-white/15"
         >
           <Heart className="h-4 w-4" /> Like
+        </button>
+        <button
+          type="button"
+          onClick={() => useUiStore.getState().openShare(shirt.id, shirt.baseColor)}
+          aria-label={`Share ${shirt.title}`}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
+        >
+          <Share2 className="h-4 w-4" />
         </button>
         <Link
           href={`/shop/${shirt.id}/`}
