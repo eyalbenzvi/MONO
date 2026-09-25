@@ -7,6 +7,9 @@
  * built from dot and line patterns, never grey fills or opacity.
  */
 import { n1 } from "./core";
+import { ADVANCES, GLYPHS, type FontStyle } from "./metrics";
+
+export type { FontStyle };
 
 /* ------------------------------------------------------------------ */
 /* Text                                                                */
@@ -18,8 +21,34 @@ export const MONO = `font-family="'Courier New', Courier, monospace"`;
 
 export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Average advance per character, as a fraction of font size. */
-export const CHAR_W = { sansBold: 0.66, sans: 0.56, serif: 0.5, serifItalic: 0.47, mono: 0.6 };
+/** Font style of a text run, for measuring. */
+export function styleOf(font: string, weight: number | string = 400, italic = false): FontStyle {
+  const bold = Number(weight) >= 600;
+  if (font === MONO) return bold ? "monoBold" : "mono";
+  if (font === SERIF) return italic ? "serifItalic" : bold ? "serifBold" : "serif";
+  return bold ? "sansBold" : "sans";
+}
+
+const GLYPH_INDEX = new Map([...GLYPHS].map((ch, i) => [ch, i]));
+
+/**
+ * Rendered width of `txt` at `size` px, from measured glyph advances plus a
+ * 4% safety margin (unknown glyphs count as wide).
+ */
+export function measure(txt: string, size: number, style: FontStyle, spacing = 0) {
+  const adv = ADVANCES[style];
+  let w = 0;
+  for (const ch of txt) {
+    const i = GLYPH_INDEX.get(ch);
+    w += i === undefined ? 1 : adv[i];
+  }
+  const n = [...txt].length;
+  return w * size * 1.04 + Math.max(0, n - 1) * spacing;
+}
+
+/** Largest font size (capped) at which `txt` fits `maxW`. */
+export const sizeToFit = (txt: string, maxW: number, style: FontStyle, cap: number, spacing = 0) =>
+  Math.min(cap, (maxW - Math.max(0, [...txt].length - 1) * spacing) / measure(txt, 1, style));
 
 export function wrap(text: string, maxChars: number): string[] {
   const words = text.split(" ");
@@ -40,20 +69,21 @@ export function wrap(text: string, maxChars: number): string[] {
 /**
  * Wrap + size text to fill a box: tries every line width and keeps the
  * layout with the largest font that fits both width and height.
+ * `lines.length * size * lineH` is the block height.
  */
-export function fitLines(text: string, boxW: number, boxH: number, charW: number, lineH = 1.08, maxSize = 120) {
+export function fitLines(text: string, boxW: number, boxH: number, style: FontStyle, lineH = 1.08, maxSize = 120) {
   let best = { lines: [text], size: 0 };
   for (let max = 4; max <= Math.max(4, text.length); max++) {
     const lines = wrap(text, max);
-    const longest = Math.max(...lines.map((l) => l.length));
-    const size = Math.min(maxSize, boxW / (longest * charW), boxH / (lines.length * lineH));
+    const widest = Math.max(...lines.map((l) => measure(l, 1, style)));
+    const size = Math.min(maxSize, boxW / widest, boxH / (lines.length * lineH));
     if (size > best.size) best = { lines, size };
   }
   return best;
 }
 
 /**
- * One line of text. If its estimated width exceeds `maxW`, it's squeezed
+ * One line of text. If its measured width exceeds `maxW`, it's squeezed
  * to fit with textLength (so no font can overflow the print).
  */
 export function textEl(
@@ -61,12 +91,15 @@ export function textEl(
   x: number,
   y: number,
   size: number,
-  opts: { fill: string; font?: string; weight?: number | string; anchor?: "start" | "middle" | "end"; maxW?: number; charW?: number; italic?: boolean; spacing?: number; extra?: string },
+  opts: { fill: string; font?: string; weight?: number | string; anchor?: "start" | "middle" | "end"; maxW?: number; italic?: boolean; spacing?: number; extra?: string },
 ) {
-  const { fill, font = SANS, weight = 400, anchor = "start", maxW, charW = CHAR_W.sans, italic = false, spacing = 0, extra = "" } = opts;
-  const est = txt.length * size * charW + Math.max(0, txt.length - 1) * spacing;
-  const fit = maxW && est > maxW ? ` textLength="${n1(maxW)}" lengthAdjust="spacingAndGlyphs"` : "";
-  return `<text x="${n1(x)}" y="${n1(y)}" font-size="${n1(size)}" font-weight="${weight}"${italic ? ` font-style="italic"` : ""}${spacing ? ` letter-spacing="${spacing}"` : ""} text-anchor="${anchor}" ${font} fill="${fill}"${fit}${extra}>${esc(txt)}</text>`;
+  const { fill, font = SANS, weight = 400, anchor = "start", maxW, italic = false, spacing = 0, extra = "" } = opts;
+  const style = styleOf(font, weight, italic);
+  // Too wide: shrink the font first (to at most 78%), squeeze only the rest.
+  let fs = size;
+  if (maxW && measure(txt, fs, style, spacing) > maxW) fs = Math.max(size * 0.78, sizeToFit(txt, maxW, style, size, spacing));
+  const fit = maxW && measure(txt, fs, style, spacing) > maxW ? ` textLength="${n1(maxW)}" lengthAdjust="spacingAndGlyphs"` : "";
+  return `<text x="${n1(x)}" y="${n1(y)}" font-size="${n1(fs)}" font-weight="${weight}"${italic ? ` font-style="italic"` : ""}${spacing ? ` letter-spacing="${spacing}"` : ""} text-anchor="${anchor}" ${font} fill="${fill}"${fit}${extra}>${esc(txt)}</text>`;
 }
 
 /* ------------------------------------------------------------------ */
