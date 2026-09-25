@@ -103,3 +103,22 @@ export const X0 = M;
 export const Y0 = M;
 export const IW = W - 2 * M;
 export const IH = H - 2 * M;
+
+/* ------------------------------------------------------------------ */
+/* Copy helpers (descriptions say how a print feels, not how many      */
+/* elements it has)                                                    */
+/* ------------------------------------------------------------------ */
+
+/** "a" / "an" for the word that follows. */
+export const an = (word: string) => (/^[aeiou]/i.test(word) && !/^(one|uni|use)/i.test(word) ? `an ${word}` : `a ${word}`);
+
+/** Picks a word by where `n` sits in [lo, hi]: e.g. scale(12, 4, 16, ["sparse", "balanced", "dense"]). */
+export function scale<T>(n: number, lo: number, hi: number, words: readonly T[]): T {
+  const t = hi === lo ? 0 : (n - lo) / (hi - lo);
+  return words[Math.min(words.length - 1, Math.max(0, Math.floor(t * words.length)))];
+}
+
+/** Screen fineness for halftone / pixel steps (smaller step = finer). */
+export const screen = (step: number, fine: number, coarse: number) => scale(step, fine, coarse, ["fine", "medium", "coarse"] as const);
+
+export const POLYGON = ["", "", "", "triangle", "square", "pentagon", "hexagon", "heptagon", "octagon", "nonagon", "decagon"];

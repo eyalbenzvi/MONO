@@ -12,6 +12,7 @@ import { useHydrated } from "@/store/useUiStore";
 import { COLOR_LABELS, SIZES, skuFor, type Order, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { track } from "@/lib/analytics";
+import { productHref } from "@/lib/catalog";
 
 type Step = "bag" | "details" | "done";
 
@@ -76,7 +77,7 @@ export function CartView() {
                     exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
                     className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
                   >
-                    <Link href={`/shop/${line.id}/`} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
+                    <Link href={productHref(line.id)} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
                       <TeeMockup shirt={line.shirt} color={line.color} shadow={false} className="w-full" />
                     </Link>
                     <div className="flex min-w-0 flex-1 flex-col">

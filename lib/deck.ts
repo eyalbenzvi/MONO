@@ -1,5 +1,5 @@
-import { FAMILY_LEADERS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
-import { CALIBRATION_SIZE, getCalibrationQueue, getNextCard } from "@/lib/recommendation";
+import { CALIBRATION_IDS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
+import { getNextCard } from "@/lib/recommendation";
 import type { RecommendationStrategy, UserProfileVector } from "@/types/shirt";
 
 export const DECK_SIZE = 3;
@@ -10,15 +10,10 @@ export const VARIANT_SPACING = 5;
 /**
  * The taste test: one representative per design family (so it never shows
  * two variations of one print), covering as many categories as it has
- * slots. Only the display order is tweaked: the boldest print (contrast +
- * density) opens, a stronger first impression than a faint sketch.
+ * slots, boldest print first. Precomputed by the generator (getCalibrationQueue
+ * over the family leaders); tests check it matches the runtime algorithm.
  */
-export const CALIBRATION_IDS: string[] = (() => {
-  const queue = getCalibrationQueue(FAMILY_LEADERS, CALIBRATION_SIZE, (s) => s.category);
-  const boldness = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
-  const opener = queue.reduce((best, s) => (boldness(s) > boldness(best) ? s : best), queue[0]);
-  return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
-})();
+export { CALIBRATION_IDS };
 export const CALIBRATION_TOTAL = CALIBRATION_IDS.length;
 
 export interface DeckEntry {
@@ -43,7 +38,7 @@ export function buildDeck(
   deck: DeckEntry[],
   vector: UserProfileVector,
   history: string[],
-  calibrationIds: string[],
+  calibrationIds: readonly string[],
   rng: () => number = Math.random,
 ): DeckEntry[] {
   const seenFamilies = familiesOf(history);
@@ -82,7 +77,7 @@ export function buildDeck(
 }
 
 /** Calibration progress in families, so a sibling saved from the shop still counts. */
-export function calibrationDone(calibrationIds: string[], history: string[]) {
+export function calibrationDone(calibrationIds: readonly string[], history: string[]) {
   const seen = familiesOf(history);
   return calibrationIds.filter((id) => seen.has(familyOf(id) ?? "")).length;
 }

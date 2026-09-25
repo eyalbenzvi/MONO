@@ -17,9 +17,9 @@ import { Resvg } from "@resvg/resvg-js";
 import UPNG from "upng-js";
 import shirtsJson from "../data/shirts.json";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
-import { CATEGORY_LABELS, COLOR_LABELS, type ShirtProduct } from "../types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry, type ShirtProduct } from "../types/shirt";
 
-const SHIRTS = shirtsJson as ShirtProduct[];
+const SHIRTS = shirtsJson as CatalogEntry[];
 const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "public", "og");
 const W = 1200;

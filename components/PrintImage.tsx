@@ -15,10 +15,13 @@ export function PrintImage({
   shirt,
   color = shirt.baseColor,
   className = "",
+  priority = false,
 }: {
   shirt: ShirtProduct;
   color?: BaseColor;
   className?: string;
+  /** Above-the-fold image (the top Discover card, the main product image): load it first. */
+  priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const inverted = color !== shirt.baseColor;
@@ -29,7 +32,9 @@ export function PrintImage({
       src={assetUrl(shirt.backPrintUrl)}
       alt={`${shirt.title} print`}
       draggable={false}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      // React 18 doesn't know fetchPriority yet; the lowercase attribute passes through.
+      {...{ fetchpriority: priority ? "high" : "auto" }}
       decoding="async"
       onError={() => setFailed(true)}
       className={`h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${className}`}

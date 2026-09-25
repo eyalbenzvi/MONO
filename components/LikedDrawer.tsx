@@ -7,7 +7,7 @@ import { ArrowRight, Heart, Share2, ShoppingBag, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { getShirtById } from "@/lib/catalog";
+import { getShirtById, productHref } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -141,12 +141,12 @@ function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () =
       }}
       className="relative flex gap-3 rounded-2xl bg-ink-850 p-2.5 ring-1 ring-white/10"
     >
-      <Link href={`/shop/${shirt.id}/`} onClick={onNavigate} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
+      <Link href={productHref(shirt.id)} onClick={onNavigate} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-1">
-          <Link href={`/shop/${shirt.id}/`} onClick={onNavigate} className="min-w-0 py-0.5">
+          <Link href={productHref(shirt.id)} onClick={onNavigate} className="min-w-0 py-0.5">
             <p className="truncate text-sm font-semibold">{shirt.title}</p>
             <p className="truncate text-xs text-neutral-400">
               {formatPrice(shirt.price)}

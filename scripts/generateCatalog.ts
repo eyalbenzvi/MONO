@@ -20,10 +20,13 @@
  * Feature vectors are computed from each design's actual parameters.
  * Near-identical designs are grouped into families from a visual signature.
  */
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { BaseColor, FeatureKey, ShirtCategory, ShirtProduct } from "../types/shirt";
-import { H, M, W, clamp01, int, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
+import { FEATURE_KEYS, SKU_CODES, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
+import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
+import { finishDescriptions, sentence } from "./gen/describe";
+import { minifySvg } from "./gen/minify";
+import { H, M, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
 import { EXPANSION_CATEGORIES, EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
 import { asciiArt, asciiBanner, asciiScene, asciiShade } from "./gen/set3/ascii";
@@ -75,9 +78,23 @@ const SETS: DesignSet[] = [
   set({ cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false }),
 ];
 
+/** Every tee costs the same (both colourways too). */
+const PRICE = 48;
+/** Designs per weekly drop (ids in order); the last drop is "new this week". */
+const DROP_SIZE = 40;
+/** Precomputed neighbours per design (other families, one per algorithm). */
+const SIMILAR_K = 6;
+/** Designs per detail shard in public/data. */
+export const SHARD_SIZE = 100;
+
 const ROOT = path.resolve(__dirname, "..");
 const PRINTS_DIR = path.join(ROOT, "public", "prints");
+/** Full catalog (server-side: product pages, metadata, OG images; tests). */
 const DATA_FILE = path.join(ROOT, "data", "shirts.json");
+/** Lean index bundled with the app. */
+const INDEX_FILE = path.join(ROOT, "data", "shirts.index.json");
+/** Descriptions + neighbours, fetched on demand. */
+const SHARD_DIR = path.join(ROOT, "public", "data");
 
 /* ------------------------------------------------------------------ */
 /* Titles & SKUs                                                       */
@@ -85,79 +102,63 @@ const DATA_FILE = path.join(ROOT, "data", "shirts.json");
 
 const TITLE_WORDS: Record<ShirtCategory, [string[], string[]]> = {
   architectural: [
-    ["Concrete", "Brutal", "Monolith", "Facade", "Structural", "Civic", "Steel", "Tectonic", "Transit", "Pillar"],
-    ["Lattice", "Elevation", "Section", "Frame", "Plan", "Module", "Stack", "Corridor", "Array", "Bay"],
+    ["Concrete", "Brutal", "Monolith", "Facade", "Structural", "Civic", "Steel", "Tectonic", "Transit", "Pillar", "Modular", "Grid", "Poured", "Cantilever", "Plinth"],
+    ["Lattice", "Elevation", "Section", "Frame", "Plan", "Module", "Stack", "Corridor", "Array", "Bay", "Tower", "Atrium", "Span", "Block", "Terrace"],
   ],
   geometric: [
-    ["Prime", "Solid", "Vector", "Orbit", "Pivot", "Axial", "Nodal", "Inverse", "Kinetic", "Euclid"],
-    ["Form", "Polygon", "Sphere", "Vertex", "Cluster", "Arc", "Prism", "Tile", "Unit", "Shape"],
+    ["Prime", "Solid", "Vector", "Orbit", "Pivot", "Axial", "Nodal", "Inverse", "Kinetic", "Euclid", "Pure", "Square", "Radial", "Minimal", "Angular"],
+    ["Form", "Polygon", "Sphere", "Vertex", "Cluster", "Arc", "Prism", "Tile", "Unit", "Shape", "Circle", "Grid", "Axis", "Figure", "Field"],
   ],
   typography: [
-    ["Coordinate", "Index", "Manifest", "Transmit", "Serial", "Datum", "Header", "Glyph", "Caption", "Bulletin"],
-    ["Log", "Sheet", "Stamp", "Code", "Report", "Series", "Notation", "Ledger", "Type", "Archive"],
+    ["Coordinate", "Index", "Manifest", "Transmit", "Serial", "Datum", "Header", "Glyph", "Caption", "Bulletin", "Bold", "Plain", "Heavy", "Printed", "Stacked"],
+    ["Log", "Sheet", "Stamp", "Code", "Report", "Series", "Notation", "Ledger", "Type", "Archive", "Word", "Letter", "Column", "Headline", "Block"],
   ],
   halftone: [
-    ["Raster", "Grain", "Dot", "Static", "Pulse", "Dither", "Screen", "Noise", "Matrix", "Pixel"],
-    ["Field", "Fade", "Bloom", "Gradient", "Sun", "Moon", "Scan", "Plate", "Haze", "Burst"],
+    ["Raster", "Grain", "Dot", "Static", "Pulse", "Dither", "Screen", "Noise", "Matrix", "Pixel", "Soft", "Coarse", "Fine", "Faded", "Tonal"],
+    ["Field", "Fade", "Bloom", "Gradient", "Sun", "Moon", "Scan", "Plate", "Haze", "Burst", "Grain", "Screen", "Wash", "Glow", "Halo"],
   ],
   waves: [
-    ["Drift", "Tide", "Flow", "Contour", "Echo", "Current", "Ripple", "Phase", "Fluid", "Loop"],
-    ["Lines", "Study", "Wave", "Map", "Pattern", "Motion", "Stream", "Weave", "Rhythm", "Trace"],
+    ["Drift", "Tide", "Flow", "Contour", "Echo", "Current", "Ripple", "Phase", "Fluid", "Loop", "Slow", "Tidal", "Quiet", "Rolling", "Soft"],
+    ["Lines", "Study", "Wave", "Map", "Pattern", "Motion", "Stream", "Weave", "Rhythm", "Trace", "Current", "Swell", "Drift", "Ridge", "Field"],
   ],
   scenes: [
-    ["Quiet", "Northern", "Lunar", "Desert", "Coastal", "Midnight", "Distant", "Hollow", "Silver", "Wild"],
-    ["Horizon", "Ridge", "Tide", "Moon", "Dune", "Pines", "Valley", "Shore", "Orbit", "Dusk"],
+    ["Quiet", "Northern", "Lunar", "Desert", "Coastal", "Midnight", "Distant", "Hollow", "Silver", "Wild", "Misty", "Golden", "Still", "Far", "Faded"],
+    ["Horizon", "Ridge", "Tide", "Moon", "Dune", "Pines", "Valley", "Shore", "Orbit", "Dusk", "Coast", "Summit", "Lake", "Plain", "Night"],
   ],
   slogans: [
-    ["Loud", "Honest", "Dry", "Plain", "Bold", "Deadpan", "Small", "Big", "Open", "Fine"],
-    ["Print", "Statement", "Notice", "Memo", "Remark", "Truth", "Reminder", "Headline", "Take", "Word"],
+    ["Loud", "Honest", "Dry", "Plain", "Bold", "Deadpan", "Small", "Big", "Open", "Fine", "Frank", "Blunt", "Sincere", "Clear", "Candid"],
+    ["Print", "Statement", "Notice", "Memo", "Remark", "Truth", "Reminder", "Headline", "Take", "Word", "Line", "Note", "Motto", "Claim", "Point"],
   ],
   pixel: [
-    ["8-Bit", "Arcade", "Pixel", "Retro", "Neon", "Glitch", "Turbo", "Cartridge", "Joystick", "Chip"],
-    ["Hero", "Quest", "Level", "Sprite", "Screen", "Boss", "Save", "Combo", "Bonus", "Run"],
+    ["8-Bit", "Arcade", "Pixel", "Retro", "Neon", "Glitch", "Turbo", "Cartridge", "Joystick", "Chip", "Blocky", "Pocket", "Bonus", "Low-Res", "Glitchy"],
+    ["Hero", "Quest", "Level", "Sprite", "Screen", "Boss", "Save", "Combo", "Bonus", "Run", "Stage", "Pixel", "Coin", "Warp", "Ending"],
   ],
   emblems: [
-    ["Official", "Royal", "Loyal", "Grand", "Secret", "Honorary", "Founding", "Local", "Vintage", "Certified"],
-    ["Badge", "Crest", "Seal", "Stamp", "Emblem", "Pass", "Ticket", "Order", "Society", "Club"],
+    ["Official", "Royal", "Loyal", "Grand", "Secret", "Honorary", "Founding", "Local", "Vintage", "Certified", "Noble", "Elder", "Ancient", "Club", "Private"],
+    ["Badge", "Crest", "Seal", "Stamp", "Emblem", "Pass", "Ticket", "Order", "Society", "Club", "Guild", "League", "Medal", "Circle", "Charter"],
   ],
   objects: [
-    ["Everyday", "Lucky", "Borrowed", "Pocket", "Studio", "Humble", "Curious", "Spare", "Found", "Tiny"],
-    ["Object", "Thing", "Tool", "Relic", "Item", "Artifact", "Gadget", "Keepsake", "Piece", "Kit"],
+    ["Everyday", "Lucky", "Borrowed", "Pocket", "Studio", "Humble", "Curious", "Spare", "Found", "Tiny", "Useful", "Common", "Simple", "Second", "Loyal"],
+    ["Object", "Thing", "Tool", "Relic", "Item", "Artifact", "Gadget", "Keepsake", "Piece", "Kit", "Gizmo", "Trinket", "Utensil", "Thingamajig", "Souvenir"],
   ],
   ascii: [
-    ["Plain", "Monospace", "Terminal", "Typed", "Legacy", "Command", "Raw", "Console", "Text", "Char"],
-    ["Text", "Prompt", "Render", "Output", "Log", "Screen", "Stream", "Mode", "Buffer", "Shell"],
+    ["Plain", "Monospace", "Terminal", "Typed", "Legacy", "Command", "Raw", "Console", "Text", "Char", "Plaintext", "Buffered", "Encoded", "Escaped", "Piped"],
+    ["Text", "Prompt", "Render", "Output", "Log", "Screen", "Stream", "Mode", "Buffer", "Shell", "Glyph", "Cursor", "Ledger", "Script", "Terminal"],
   ],
   caricatures: [
-    ["Usual", "Local", "Classic", "Certified", "Proud", "Typical", "Famous", "Legendary", "Resident", "Friendly"],
-    ["Suspect", "Character", "Regular", "Type", "Face", "Legend", "Specimen", "Persona", "Icon", "Neighbour"],
+    ["Usual", "Local", "Classic", "Certified", "Proud", "Typical", "Famous", "Legendary", "Resident", "Friendly", "Notorious", "Regular", "Serial", "Habitual", "Proper"],
+    ["Suspect", "Character", "Regular", "Type", "Face", "Legend", "Specimen", "Persona", "Icon", "Neighbour", "Fixture", "Figure", "Local", "Stalwart", "Customer"],
   ],
   famousart: [
-    ["Gallery", "Museum", "Salon", "Old", "Master", "Grand", "Gilded", "Hung", "Framed", "Curated"],
-    ["Study", "Homage", "Piece", "Canvas", "Print", "Sketch", "Classic", "Wing", "Room", "Edition"],
+    ["Gallery", "Museum", "Salon", "Old", "Master", "Grand", "Gilded", "Hung", "Framed", "Curated", "Classic", "Painted", "Varnished", "Restored", "Rare"],
+    ["Study", "Homage", "Piece", "Canvas", "Print", "Sketch", "Classic", "Wing", "Room", "Edition", "Salon", "Masterwork", "Panel", "Fresco", "Tableau"],
   ],
   iconic: [
-    ["Postcard", "World", "Landmark", "Souvenir", "Famous", "Grand", "Wanderer", "Voyage", "Horizon", "Atlas"],
-    ["View", "Icon", "Sight", "Wonder", "Stop", "Poster", "Trip", "Mark", "Route", "Moment"],
+    ["Postcard", "World", "Landmark", "Souvenir", "Famous", "Grand", "Wanderer", "Voyage", "Horizon", "Atlas", "Vintage", "Faraway", "Classic", "Global", "Scenic"],
+    ["View", "Icon", "Sight", "Wonder", "Stop", "Poster", "Trip", "Mark", "Route", "Moment", "Postcard", "Skyline", "Horizon", "Voyage", "Landmark"],
   ],
 };
 
-const SKU_CODE: Record<ShirtCategory, string> = {
-  architectural: "ARC",
-  geometric: "GEO",
-  typography: "TYP",
-  halftone: "HLF",
-  waves: "WAV",
-  scenes: "SCN",
-  slogans: "SLG",
-  pixel: "PIX",
-  emblems: "EMB",
-  objects: "OBJ",
-  ascii: "ASC",
-  caricatures: "CAR",
-  famousart: "ART",
-  iconic: "ICN",
-};
 
 /** Categories whose designs may be knocked out of a solid ink block. */
 const KNOCKOUT_OK: ShirtCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
@@ -240,9 +241,11 @@ function main() {
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
   const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
-  const shirts: Omit<ShirtProduct, "family">[] = [];
+  const shirts: (Omit<CatalogEntry, "family" | "description" | "similar" | "rank"> & { base: string })[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
+  const takenTitles = new Set<string>();
+  const spareTitle: Partial<Record<ShirtCategory, number>> = {};
 
   for (let i = 0; i < total; i++) {
     const n = i + 1;
@@ -293,45 +296,77 @@ function main() {
     }
     const features = vector(f);
 
-    const svg =
+    const svg = minifySvg(
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">` +
       `<rect width="${W}" height="${H}" fill="${ground}"/>` +
       (knockout ? `<rect x="${M / 2}" y="${M / 2}" width="${W - M}" height="${H - M}" fill="${ink}"/>` : "") +
       design.body +
       fr.svg +
-      `</svg>`;
+      `</svg>`,
+    );
     writeFileSync(path.join(PRINTS_DIR, `print_${n}.svg`), svg);
     // A knocked-out block reads completely differently from the plain print.
     sigs.push({ key: `${design.sig.key}|${knockout ? "ko" : "std"}`, vec: design.sig.vec });
     bytes += svg.length;
 
+    // Titles carry no number (that's `no`, shown small, and part of the SKU).
+    // (adj, noun) = (i mod A, (⌊i/A⌋ + i) mod N) is one-to-one for i < A·N,
+    // so every title is unique within its category and pairs are spread out.
+    // A pair another category already used moves to one of this category's
+    // spare combinations (taken from the top, past its designs; checked after
+    // the loop), keeping titles unique across the catalog.
     const [adjs, nouns] = TITLE_WORDS[category];
-    const title = `${adjs[(index - 1) % adjs.length]} ${nouns[Math.floor((index - 1) / adjs.length) % nouns.length]} ${String(index).padStart(3, "0")}`;
-    const price = Math.min(59, 39 + Math.round(clamp01(design.complexity) * 14) + int(designRng, 0, 6));
+    const combos = adjs.length * nouns.length;
+    const titleAt = (k: number) => `${adjs[k % adjs.length]} ${nouns[(Math.floor(k / adjs.length) + k) % nouns.length]}`;
+    let title = titleAt(index - 1);
+    while (takenTitles.has(title)) {
+      const spare = (spareTitle[category] ?? combos) - 1;
+      spareTitle[category] = spare;
+      title = titleAt(spare);
+    }
+    takenTitles.add(title);
 
     shirts.push({
       id: `mono-${String(n).padStart(4, "0")}`,
-      sku: `MN-${SKU_CODE[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
+      n,
+      no: index,
+      sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
       title,
-      price,
+      price: PRICE,
       baseColor,
       backPrintUrl: `/prints/print_${n}.svg`,
       category,
       variant: design.variant,
       // No ink colour here: every design is sold in both colourways.
-      description: `${design.description}${knockout ? " Knocked out of a solid ink block." : ""}`,
+      base: knockout ? `${sentence(design.description)} Knocked out of a solid ink block.` : design.description,
       features,
+      dropWeek: Math.floor((n - 1) / DROP_SIZE),
     });
   }
 
   const familyIndex = assignFamilies(sigs);
-  const catalog: ShirtProduct[] = shirts.map((s, i) => ({
+  const descriptions = finishDescriptions(
+    shirts.map((s) => ({ base: s.base, category: s.category, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
+  );
+  const ranks = editorialRanks(shirts.map((s) => s.features));
+  const withFamily = shirts.map(({ base: _base, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
+    description: descriptions[i],
+    rank: ranks[i],
   }));
+  const similar = neighbours(withFamily);
+  const catalog: CatalogEntry[] = withFamily.map((s, i) => ({ ...s, similar: similar[i] }));
+  const calibration = calibrationIds(catalog);
 
-  // One object per line: diff-friendly but compact.
+  // Full catalog, one object per line: diff-friendly but compact.
   writeFileSync(DATA_FILE, `[\n${catalog.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
+  writeIndex(catalog, calibration);
+  writeShards(catalog);
+
+  for (const [c, spare] of Object.entries(spareTitle)) {
+    if (spare < counters[c as ShirtCategory]) throw new Error(`not enough title words for ${c}`);
+  }
 
   const sizes = new Map<string, number>();
   for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
@@ -344,7 +379,111 @@ function main() {
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
   console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families} second set, ${set3Families} third set)`);
   console.log(`  categories: ${Object.entries(counters).map(([c, n]) => `${c} ${n}`).join(" · ")}`);
-  console.log(`  price range: $${Math.min(...shirts.map((s) => s.price))}–$${Math.max(...shirts.map((s) => s.price))}`);
+  const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
+  console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog.length / SHARD_SIZE)}`);
+  console.log(`  price: $${PRICE} · calibration: ${calibration.join(" ")}`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Precomputed data                                                    */
+/* ------------------------------------------------------------------ */
+
+type Features = CatalogEntry["features"];
+
+/**
+ * Editorial order for the "Popular" sort (a fixed ranking, not usage data):
+ * designs closest to the catalog's centre of gravity — broadly appealing —
+ * first, nudged towards bold, readable prints.
+ */
+function editorialRanks(features: Features[]): number[] {
+  const mean = Object.fromEntries(FEATURE_KEYS.map((k) => [k, features.reduce((sum, f) => sum + f[k], 0) / features.length])) as Features;
+  const score = features.map((f, i) => ({ i, v: cosineSimilarity(f, mean) / 100 + 0.3 * f.contrast + 0.1 * f.wit }));
+  score.sort((a, b) => b.v - a.v || a.i - b.i);
+  const ranks = new Array<number>(features.length);
+  score.forEach(({ i }, r) => (ranks[i] = r));
+  return ranks;
+}
+
+/** Top neighbours by centered cosine: other families only, one per algorithm. */
+function neighbours(list: Omit<CatalogEntry, "similar">[]): string[][] {
+  return list.map((s) => {
+    const sims = list
+      .filter((o) => o.family !== s.family)
+      .map((o) => ({ o, sim: centeredCosine(s.features, o.features) }))
+      .sort((a, b) => b.sim - a.sim || a.o.n - b.o.n);
+    const out: string[] = [];
+    const variants = new Set([s.variant]);
+    for (const { o } of sims) {
+      if (variants.has(o.variant)) continue;
+      variants.add(o.variant);
+      out.push(o.id);
+      if (out.length === SIMILAR_K) break;
+    }
+    return out;
+  });
+}
+
+/**
+ * The taste test (see lib/deck): one design per family, covering as many
+ * categories as there are slots, boldest first. Precomputed so the app
+ * doesn't run farthest-point sampling on every load.
+ */
+function calibrationIds(catalog: CatalogEntry[]): string[] {
+  const leaders = new Map<string, ShirtProduct>();
+  for (const s of catalog) if (!leaders.has(s.family)) leaders.set(s.family, s);
+  const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category);
+  const bold = (s: ShirtProduct) => s.features.contrast + s.features.density;
+  const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
+  return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
+}
+
+/**
+ * Lean index for the app bundle, stored by column (it gzips to a third of
+ * the row form). Design n is at position n − 1 in every column:
+ * family#, variant# and category# point into their tables, `white` is a
+ * 0/1 string, `features` has one string per FEATURE_KEYS entry: character
+ * k is design k's value ×100 (0–100) written as one symbol of `digits`
+ * (101 symbols: printable ASCII without the backslash, then À–É).
+ * Derived, so not stored: `no` (running count within the category) and
+ * `dropWeek` (n − 1 over dropSize). Decoded by lib/catalog.
+ */
+const FEATURE_DIGITS =
+  Array.from({ length: 92 }, (_, i) => String.fromCharCode(35 + i)).filter((c) => c !== "\\").join("") +
+  Array.from({ length: 10 }, (_, i) => String.fromCharCode(0xc0 + i)).join("");
+if (FEATURE_DIGITS.length !== 101) throw new Error("feature digits must cover 0–100");
+
+function writeIndex(catalog: CatalogEntry[], calibration: string[]) {
+  const seen: Partial<Record<ShirtCategory, number>> = {};
+  catalog.forEach((s, i) => {
+    const no = (seen[s.category] = (seen[s.category] ?? 0) + 1);
+    if (s.n !== i + 1 || s.no !== no || s.dropWeek !== Math.floor(i / DROP_SIZE)) throw new Error(`index can't derive ${s.id}`);
+  });
+  const variants = [...new Set(catalog.map((s) => s.variant))];
+  const categories = [...new Set(catalog.map((s) => s.category))];
+  const col = <T>(f: (s: CatalogEntry) => T) => catalog.map(f);
+  const columns = {
+    family: col((s) => Number(s.family.slice(4))),
+    variant: col((s) => variants.indexOf(s.variant)),
+    category: col((s) => categories.indexOf(s.category)),
+    white: col((s) => (s.baseColor === "white" ? 1 : 0)).join(""),
+    price: col((s) => s.price),
+    title: col((s) => s.title),
+    rank: col((s) => s.rank),
+    features: FEATURE_KEYS.map((k) => col((s) => FEATURE_DIGITS[Math.round(s.features[k] * 100)]).join("")),
+  };
+  const head = { v: 2, keys: FEATURE_KEYS, digits: FEATURE_DIGITS, variants, categories, calibration, dropSize: DROP_SIZE };
+  const body = Object.entries({ ...head, ...columns }).map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`);
+  writeFileSync(INDEX_FILE, `{\n${body.join(",\n")}\n}\n`);
+}
+
+/** public/data/details-<k>.json: { id: { d: description, s: similar ids } } per SHARD_SIZE designs. */
+function writeShards(catalog: CatalogEntry[]) {
+  rmSync(SHARD_DIR, { recursive: true, force: true });
+  mkdirSync(SHARD_DIR, { recursive: true });
+  for (let k = 0; k * SHARD_SIZE < catalog.length; k++) {
+    const part = Object.fromEntries(catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar }]));
+    writeFileSync(path.join(SHARD_DIR, `details-${k}.json`), JSON.stringify(part));
+  }
 }
 
 main();

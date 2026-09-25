@@ -67,13 +67,51 @@ export function centeredCosine(vecA: FeatureVector, vecB: FeatureVector): number
  * sharpens, while a fresh (all 0.5) profile shows the plain cosine.
  */
 export function matchScore(userVec: UserProfileVector, features: FeatureVector): number {
-  const raw = cosineSimilarity(userVec, features); // 0..100
+  return makeScorer(userVec)(features).score;
+}
+
+/**
+ * matchScore for many shirts against one profile: the profile's own terms
+ * (magnitudes, confidence) are computed once, and each shirt takes a single
+ * pass for both cosines. Returns the score and the raw cosine (0–100, the
+ * tie-breaker). Same arithmetic as cosineSimilarity / centeredCosine.
+ */
+export function makeScorer(userVec: UserProfileVector) {
+  const n = FEATURE_KEYS.length;
+  const u = new Float64Array(n);
+  let magA = 0;
+  let cMagA = 0;
   let spread = 0;
-  for (const k of FEATURE_KEYS) spread += Math.abs(userVec[k] - 0.5);
+  FEATURE_KEYS.forEach((k, i) => {
+    const v = userVec[k];
+    u[i] = v;
+    magA += v * v;
+    cMagA += (v - 0.5) * (v - 0.5);
+    spread += Math.abs(v - 0.5);
+  });
   // How far the profile has moved from neutral; saturates quickly.
-  const confidence = clamp01(spread / (FEATURE_KEYS.length * 0.12));
-  const centered = ((centeredCosine(userVec, features) + 1) / 2) * 100; // 0..100
-  return Math.round(raw * (1 - confidence) + centered * confidence);
+  const confidence = clamp01(spread / (n * 0.12));
+  const sqA = Math.sqrt(magA);
+  const cSqA = Math.sqrt(cMagA);
+  return (features: FeatureVector) => {
+    let dot = 0;
+    let magB = 0;
+    let cDot = 0;
+    let cMagB = 0;
+    for (let i = 0; i < n; i++) {
+      const a = u[i];
+      const b = features[FEATURE_KEYS[i]];
+      dot += a * b;
+      magB += b * b;
+      const cb = b - 0.5;
+      cDot += (a - 0.5) * cb;
+      cMagB += cb * cb;
+    }
+    const raw = magA === 0 || magB === 0 ? 0 : clamp01(dot / (sqA * Math.sqrt(magB))) * 100;
+    const cos = cMagA === 0 || cMagB === 0 ? 0 : cDot / (cSqA * Math.sqrt(cMagB));
+    const centered = ((cos + 1) / 2) * 100;
+    return { score: Math.round(raw * (1 - confidence) + centered * confidence), raw };
+  };
 }
 
 /**
@@ -167,19 +205,21 @@ export function getNextCard(
 
   const chosenStrategy = strategy ?? (rng() < EXPLORE_PROBABILITY ? "explore" : "greedy");
 
+  const score = makeScorer(userVec);
   let best = unseen[0];
   let bestKey = chosenStrategy === "greedy" ? -Infinity : Infinity;
   for (const shirt of unseen) {
-    const key =
-      chosenStrategy === "greedy"
-        ? matchScore(userVec, shirt.features) + cosineSimilarity(userVec, shirt.features) / 1000
-        : Math.abs(centeredCosine(userVec, shirt.features));
+    let key: number;
+    if (chosenStrategy === "greedy") {
+      const r = score(shirt.features);
+      key = r.score + r.raw / 1000;
+    } else key = Math.abs(centeredCosine(userVec, shirt.features));
     if (chosenStrategy === "greedy" ? key > bestKey : key < bestKey) {
       bestKey = key;
       best = shirt;
     }
   }
-  return { shirt: best, strategy: chosenStrategy, score: matchScore(userVec, best.features) };
+  return { shirt: best, strategy: chosenStrategy, score: score(best.features).score };
 }
 
 /** Per-feature contribution breakdown for the debug panel. */
@@ -211,11 +251,8 @@ export function rankShirts(
   shirts: ShirtProduct[],
   sort: ShopSort = "match",
 ): RankedShirt[] {
-  const ranked = shirts.map((shirt) => ({
-    shirt,
-    score: matchScore(userVec, shirt.features),
-    raw: cosineSimilarity(userVec, shirt.features),
-  }));
+  const score = makeScorer(userVec);
+  const ranked = shirts.map((shirt) => ({ shirt, ...score(shirt.features) }));
   ranked.sort((a, b) => {
     if (sort === "price-asc" && a.shirt.price !== b.shirt.price) return a.shirt.price - b.shirt.price;
     if (sort === "price-desc" && a.shirt.price !== b.shirt.price) return b.shirt.price - a.shirt.price;
@@ -224,14 +261,26 @@ export function rankShirts(
   return ranked.map(({ shirt, score }) => ({ shirt, score }));
 }
 
-/** Prints closest in style to `shirt` (centered cosine), excluding itself. */
+/**
+ * Prints closest in style to `shirt` (centered cosine), excluding itself.
+ * Top-k partial selection (a small sorted buffer) rather than a full sort.
+ * The product page uses the generator's precomputed list; this stays for
+ * the generator and tests.
+ */
 export function similarShirts(shirt: ShirtProduct, shirts: ShirtProduct[], n = 4): ShirtProduct[] {
-  return shirts
-    .filter((s) => s.id !== shirt.id)
-    .map((s) => ({ s, sim: centeredCosine(shirt.features, s.features) }))
-    .sort((a, b) => b.sim - a.sim || a.s.id.localeCompare(b.s.id))
-    .slice(0, n)
-    .map(({ s }) => s);
+  const better = (a: { s: ShirtProduct; sim: number }, b: { s: ShirtProduct; sim: number }) =>
+    a.sim > b.sim || (a.sim === b.sim && a.s.id.localeCompare(b.s.id) < 0);
+  const top: { s: ShirtProduct; sim: number }[] = [];
+  for (const s of shirts) {
+    if (s.id === shirt.id) continue;
+    const item = { s, sim: centeredCosine(shirt.features, s.features) };
+    if (top.length === n && !better(item, top[n - 1])) continue;
+    let i = top.length;
+    while (i > 0 && better(item, top[i - 1])) i--;
+    top.splice(i, 0, item);
+    if (top.length > n) top.pop();
+  }
+  return top.map(({ s }) => s);
 }
 
 /**

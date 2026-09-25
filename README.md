@@ -6,8 +6,10 @@
 
 The catalog is fully offline and procedural. `scripts/generateCatalog.ts` (seeded, deterministic) writes:
 
-- `public/prints/print_1.svg` … `print_2800.svg`: 3:4 single-ink SVG prints (~7 KB each)
-- `data/shirts.json`: the catalog the app imports (`lib/catalog.ts`)
+- `public/prints/print_1.svg` … `print_2800.svg`: 3:4 single-ink SVG prints (~6 KB each; minified, path data relative where shorter; `scripts/gen/minify.ts`)
+- `data/shirts.index.json`: the lean index the app bundles (`lib/catalog.ts`): id-derivable fields left out, stored by column, feature values one symbol each (~140 KB, ~60 KB gzipped). Also carries the precomputed taste-test ids.
+- `public/data/details-<k>.json`: descriptions and precomputed "similar prints" (100 designs per shard), fetched on demand (`lib/details.ts`)
+- `data/shirts.json`: the full catalog, read at build time only (product page metadata and props via `lib/catalogServer.ts`, link-preview images)
 
 ```bash
 npm run generate       # rebuilds both, byte-identical on every run
@@ -67,6 +69,8 @@ npm run typecheck && npm run lint && npm run build
 ```
 
 ## Deploy (GitHub Pages)
+
+**Product pages and scale.** Every product page is pre-rendered (about 2,800 pages, ~90 MB of `out/shop`). To keep the export small as the catalog grows, build with `NEXT_PUBLIC_PRERENDER_LIMIT=<N>`: only the top N designs of the editorial rank get a static page at `/shop/<id>/`, and every other design opens through the client route `/shop/p/?id=<id>`, which reads the lean index and fetches its details shard. All in-app links and share links go through `productHref()` in `lib/catalog.ts`, so they point at the right one. Beyond that, the next step is a server (or edge function) rendering product pages on demand.
 
 `.github/workflows/deploy-pages.yml` builds a static export (`out/`) and publishes it on every push. One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The site is served at `https://<user>.github.io/<repo>/`.
 

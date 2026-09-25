@@ -9,6 +9,7 @@
  */
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
+import { productHref } from "@/lib/catalog";
 
 export type ShareChannel = "native" | "whatsapp" | "instagram" | "facebook" | "tiktok" | "telegram" | "x" | "email" | "sms" | "copy" | "download";
 
@@ -28,7 +29,8 @@ export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: Shar
   const q = new URLSearchParams();
   if (color !== shirt.baseColor) q.set("c", color);
   q.set("ref", ref);
-  return `${siteRoot(origin)}/shop/${shirt.id}/?${q.toString()}`;
+  const href = productHref(shirt.id);
+  return `${siteRoot(origin)}${href}${href.includes("?") ? "&" : "?"}${q.toString()}`;
 }
 
 export function shareTitle(shirt: ShirtProduct) {

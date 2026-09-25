@@ -7,7 +7,8 @@ import { ArrowRight, Compass, Heart, RotateCcw, Share2, ZoomIn } from "lucide-re
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
-import { familySize } from "@/lib/catalog";
+import { familySize, productHref } from "@/lib/catalog";
+import { useShirtDetails } from "@/lib/details";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { formatPrice } from "@/lib/format";
@@ -102,7 +103,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
               </div>
             </div>
             <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-1 [container-type:size]">
-              <TeeMockup shirt={shirt} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
+              <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
             </div>
           </div>
 
@@ -140,6 +141,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 3);
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
   const black = shirt.baseColor === "black";
+  const details = useShirtDetails(shirt.id);
 
   return (
     <div className="flex h-full flex-col">
@@ -165,7 +167,8 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           </div>
         </div>
 
-        <p className="mt-4 text-sm leading-relaxed text-neutral-300">{shirt.description}</p>
+        {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
+        <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
         {reasons.length > 0 && (
           <div className="mt-4">
@@ -181,7 +184,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
 
         {familySize(shirt) > 1 && (
           <Link
-            href={`/shop/${shirt.id}/#variations`}
+            href={productHref(shirt.id, "#variations")}
             className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
           >
             {familySize(shirt) - 1} close variation{familySize(shirt) === 2 ? "" : "s"} in the shop <ArrowRight className="h-3.5 w-3.5" />
@@ -221,7 +224,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           <Share2 className="h-4 w-4" />
         </button>
         <Link
-          href={`/shop/${shirt.id}/`}
+          href={productHref(shirt.id)}
           className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
           Full details · {formatPrice(shirt.price)} <ArrowRight className="h-4 w-4" />
