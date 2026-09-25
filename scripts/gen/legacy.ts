@@ -8,6 +8,7 @@ import {
   IH, IW, M, W, H, X0, Y0,
   clamp01, int, n1, pick, polygon, pts, range, smooth,
   type Design, type Generator, type Rng, type Signature,
+  POLYGON, an, scale, screen,
 } from "./core";
 import { measure, sizeToFit } from "./art";
 
@@ -43,7 +44,7 @@ const facadeGrid: Generator = (rng, ink) => {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${cells}</g>`,
     variant: "facade",
     sig: { key: "facade", vec: [(cols - 4) / 8, (rows - 5) / 11, fillRatio] },
-    description: `Brutalist facade grid, ${cols}×${rows} bays with ${Math.round(fillRatio * 100)}% solid infill.`,
+    description: `Brutalist facade grid of ${cols * rows > 80 ? "tight" : "wide"} bays, ${scale(fillRatio, 0.08, 0.65, ["mostly open", "half filled in", "heavily filled in"])}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.55, 0.75),
@@ -87,7 +88,7 @@ const perspectiveCorridor: Generator = (rng, ink) => {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/><path d="${d.trim()}"/>${rects}</g>`,
     variant: "perspective",
     sig: { key: "perspective", vec: [(vx - 80) / 140, (vy - 120) / 160] },
-    description: `One-point perspective corridor: ${rays} vanishing rays and ${frames} receding frames.`,
+    description: `One-point perspective corridor${frames > 7 ? ", frames receding deep into the distance" : ", a few frames receding into the distance"}${rays > 30 ? ", rays packed tight" : ""}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.5, 0.7),
@@ -133,7 +134,7 @@ const skyline: Generator = (rng, ink, ground) => {
     body,
     variant: "skyline",
     sig: { key: "skyline", vec: [(towers - 5) / 8, windowP] },
-    description: `Solid skyline of ${towers} towers with knocked-out window grids.`,
+    description: `${towers > 8 ? "Crowded" : "Sparse"} solid skyline with knocked-out window grids.`,
     complexity: clamp01(coverage + windowP * 0.3),
     features: {
       geometric: range(rng, 0.55, 0.7),
@@ -178,7 +179,7 @@ const slabStack: Generator = (rng, ink) => {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "slabs",
     sig: { key: "slabs", vec: [solidRatio, (slabs - 4) / 7] },
-    description: `Cantilevered stack of ${slabs} concrete slabs, ${solid} poured solid.`,
+    description: `Cantilevered stack of concrete slabs, ${solid === 0 ? "all left open" : solid === slabs ? "all poured solid" : solid > slabs / 2 ? "mostly poured solid" : "a few poured solid"}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.6, 0.8),
@@ -261,7 +262,7 @@ const scatter: Generator = (rng, ink) => {
     body,
     variant: "scatter",
     sig: { key: "scatter", vec: [fillRatio, (n - 5) / 9] },
-    description: `${n} primitives scattered in a loose constellation.`,
+    description: `${n < 8 ? "A handful of" : n < 11 ? "A dozen or so" : "A crowd of"} primitives scattered in a loose constellation.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.82, 0.96),
@@ -294,7 +295,7 @@ const concentric: Generator = (rng, ink) => {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "concentric",
     sig: { key: `concentric-${sides}-${Math.abs(twist) > 0.06 ? "spiral" : "straight"}`, vec: [] },
-    description: `${rings} concentric ${sides}-sided rings${twist ? " with a slow twist" : ""}.`,
+    description: `${rings > 12 ? "Dense" : "Open"} concentric ${POLYGON[sides]}s${twist ? ", twisting slowly inward" : ""}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.9, 1),
@@ -340,7 +341,7 @@ const truchet: Generator = (rng, ink) => {
     body: `<path d="${d}" fill="${ink}"/><rect x="${X0}" y="${n1(y0)}" width="${IW}" height="${n1(rows * size)}" fill="none" stroke="${ink}" stroke-width="1.5"/>`,
     variant: "tiling",
     sig: { key: "tiling", vec: [(cols - 4) / 6] },
-    description: `Truchet tiling, ${cols}×${rows} half-square triangles.`,
+    description: `Truchet tiling of half-square triangles, ${cols * rows > 60 ? "fine-grained" : "bold and chunky"}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.9, 1),
@@ -421,7 +422,7 @@ const coordinates: Generator = (rng, ink) => {
     body,
     variant: "coordinates",
     sig: { key: "coords", vec: [(lines - 6) / 12, (cx - X0 - 60) / (IW - 120), (cy - Y0 - 70) / 100] },
-    description: `Survey sheet for ${fmt(lat, "N", "S").replace("&#176;", "°")}, crosshair and ${lines} logged points.`,
+    description: `Survey sheet for ${fmt(lat, "N", "S").replace("&#176;", "°")}: a crosshair and a column of logged points.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.3, 0.5),
@@ -454,7 +455,7 @@ const repeatStack: Generator = (rng, ink) => {
     body,
     variant: "repeat",
     sig: { key: `repeat-${word}-${alt ? "alt" : "solid"}`, vec: [(lines - 7) / 9] },
-    description: `"${word}" repeated ${lines} times${alt ? ", alternating solid and outline" : ""}.`,
+    description: `"${word}" stacked down the print${lines > 11 ? ", tightly" : ""}${alt ? ", alternating solid and outline" : ""}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.2, 0.35),
@@ -493,7 +494,7 @@ const manifesto: Generator = (rng, ink) => {
     body,
     variant: "manifesto",
     sig: { key: `manifesto-${cols}`, vec: [(rows - 16) / 12] },
-    description: `Manifesto layout: ${heading} masthead over ${cols} columns of dense type.`,
+    description: `Manifesto layout: ${an(heading)} masthead over columns of dense type.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.15, 0.3),
@@ -553,7 +554,7 @@ const radialHalftone: Generator = (rng, ink) => {
     body,
     variant: "radial",
     sig: { key: `radial-${invert ? "inv" : "std"}`, vec: [(cx - X0) / IW, (cy - Y0) / IH] },
-    description: `Radial halftone burst, ${step}px screen${invert ? ", inverted" : ""}.`,
+    description: `Radial halftone burst on ${an(screen(step, 6, 16))} screen${invert ? ", inverted" : ""}.`,
     complexity: clamp01(coverage * 1.5 + (18 - step) / 14),
     features: {
       geometric: range(rng, 0.2, 0.35),
@@ -585,7 +586,7 @@ const linearHalftone: Generator = (rng, ink) => {
     body,
     variant: "gradient",
     sig: { key: `gradient-${bands}`, vec: [(((angle % Math.PI) + Math.PI) % Math.PI) / Math.PI] },
-    description: `Ordered halftone gradient in ${bands} band${bands > 1 ? "s" : ""}, ${step}px screen.`,
+    description: `Ordered halftone gradient${bands > 1 ? " in stacked bands" : ""} on ${an(screen(step, 6, 18))} screen.`,
     complexity: clamp01(coverage * 1.4 + (17 - step) / 12),
     features: {
       geometric: range(rng, 0.25, 0.4),
@@ -624,7 +625,7 @@ const dotMatrix: Generator = (rng, ink) => {
     body,
     variant: "matrix",
     sig: { key: `matrix-${form}-${offR > 0 ? "grid" : "clean"}`, vec: [] },
-    description: `Dot-matrix ${form} on a ${step}px LED grid.`,
+    description: `Dot-matrix ${form} on ${an(scale(step, 8, 18, ["fine", "chunky"]))} LED grid.`,
     complexity: clamp01(coverage * 1.5 + 0.2),
     features: {
       geometric: range(rng, 0.45, 0.65),
@@ -667,7 +668,7 @@ const stipple: Generator = (rng, ink) => {
     body: `<g fill="${ink}">${body}</g>`,
     variant: "stipple",
     sig: { key: `stipple-${clusters}`, vec: [(placed - 300) / 500] },
-    description: `Stippled grain cloud of ${placed} hand-set dots in ${clusters} mass${clusters > 1 ? "es" : ""}.`,
+    description: `Stippled grain cloud, hand-set dots gathering into ${clusters > 1 ? "separate masses" : "one mass"}${placed > 600 ? ", thick as static" : ", light and airy"}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.05, 0.15),
@@ -712,7 +713,7 @@ const ridgeLines: Generator = (rng, ink, ground) => {
     body,
     variant: "ridges",
     sig: { key: `ridges-${peaks}`, vec: [(lines - 18) / 24] },
-    description: `${lines} stacked ridge lines rising into ${peaks} peak${peaks > 1 ? "s" : ""}, like a pulsar plot.`,
+    description: `Stacked ridge lines rising into ${peaks > 2 ? "a range of peaks" : peaks > 1 ? "twin peaks" : "a single peak"}, like a pulsar plot${lines > 30 ? ", densely layered" : ""}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.05, 0.15),
@@ -752,7 +753,7 @@ const waveInterference: Generator = (rng, ink) => {
     body: `<clipPath id="c"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#c)" fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "interference",
     sig: { key: `interference-${families}`, vec: [(perFamily - 8) / 14] },
-    description: `${families} families of sine waves crossing into a moiré.`,
+    description: `${families > 2 ? "Several" : "Two"} families of sine waves crossing into a moiré.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.15, 0.3),
@@ -796,7 +797,7 @@ const contours: Generator = (rng, ink) => {
     body: `<clipPath id="c"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#c)" fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "contours",
     sig: { key: `contours-${k1}`, vec: [(rings - 8) / 16] },
-    description: `Topographic contour map, ${rings} elevation lines.`,
+    description: `Topographic contour map${rings > 14 ? " with elevation lines packed tight" : " with wide, gentle elevation lines"}.`,
     complexity: density,
     features: {
       geometric: range(rng, 0.1, 0.25),
@@ -826,7 +827,7 @@ const continuousLine: Generator = (rng, ink) => {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${body}</g>`,
     variant: "gesture",
     sig: { key: `gesture-${strokes}`, vec: [(sw - 2) / 4] },
-    description: `${strokes === 1 ? "A single continuous" : `${strokes} continuous`} gestural line${strokes > 1 ? "s" : ""}.`,
+    description: `${strokes === 1 ? "A single continuous gestural line" : "Continuous gestural lines looping over each other"}.`,
     complexity: 0.15 + strokes * 0.08,
     features: {
       geometric: range(rng, 0.03, 0.12),

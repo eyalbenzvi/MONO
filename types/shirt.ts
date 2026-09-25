@@ -51,6 +51,42 @@ export const SHIRT_CATEGORIES = [
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
+/** SKU code per category: MN-<code>-<B|W>-<n>. */
+export const SKU_CODES: Record<ShirtCategory, string> = {
+  architectural: "ARC",
+  geometric: "GEO",
+  typography: "TYP",
+  halftone: "HLF",
+  waves: "WAV",
+  scenes: "SCN",
+  slogans: "SLG",
+  pixel: "PIX",
+  emblems: "EMB",
+  objects: "OBJ",
+  ascii: "ASC",
+  caricatures: "CAR",
+  famousart: "ART",
+  iconic: "ICN",
+};
+
+/** One short line on the feel of each category (product page). */
+export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
+  architectural: "Concrete, grids and cantilevers — order you can wear.",
+  geometric: "Pure shapes doing very little, very well.",
+  typography: "Words as objects: set big, set bold, set straight.",
+  halftone: "Dots doing the work of greys, like a press sheet up close.",
+  waves: "Lines that drift, ripple and refuse to sit still.",
+  scenes: "Quiet landscapes printed like a screen print on a gallery wall.",
+  slogans: "Deadpan statements for people who mean it (mostly).",
+  pixel: "Low-res nostalgia, from the arcade and the command line.",
+  emblems: "Badges, crests and stamps for clubs that don't exist.",
+  objects: "Everyday things, drawn with more care than they asked for.",
+  ascii: "Pictures made of characters, straight out of a terminal.",
+  caricatures: "Invented characters, lovingly exaggerated — nobody real.",
+  famousart: "Homages to public-domain masterpieces, in one colour.",
+  iconic: "Landmarks, space age and symbols, drawn from scratch.",
+};
+
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   architectural: "Architectural",
   geometric: "Geometric",
@@ -70,9 +106,18 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
 
 export type ShirtSize = "S" | "M" | "L" | "XL";
 
+/**
+ * A design as the app knows it everywhere (the lean catalog index, bundled
+ * with the app). Longer copy lives in ShirtDetails, fetched on demand.
+ */
 export interface ShirtProduct {
   id: string;
+  /** Catalog number (the N in mono-000N and print_N.svg). */
+  n: number;
+  /** Number within its category, shown small as "No. 067". */
+  no: number;
   sku: string;
+  /** Display name, without a number (the number is `no`, and part of the SKU). */
   title: string;
   price: number;
   /** Tee colour. Prints are single-ink: white ink on black tees, black ink on white. */
@@ -88,9 +133,22 @@ export interface ShirtProduct {
    * as variations on the product page.
    */
   family: string;
-  description: string;
   features: FeatureVector;
+  /** Editorial rank (0 = first) from the generator: the order of the "Popular" sort. */
+  rank: number;
+  /** The weekly drop a design was released in (the latest drop is "new this week"). */
+  dropWeek: number;
 }
+
+/** Longer copy and precomputed neighbours, loaded on demand (public/data shards). */
+export interface ShirtDetails {
+  description: string;
+  /** Similar prints from other families, one per algorithm, closest first. */
+  similar: string[];
+}
+
+/** Full catalog entry (generator output, server-side and tests). */
+export type CatalogEntry = ShirtProduct & ShirtDetails;
 
 /** User taste vector — same shape as product features, starts at 0.5. */
 export type UserProfileVector = FeatureVector;

@@ -26,9 +26,11 @@ interface TeeMockupProps {
   /** Drop shadow under the garment (off for tiny thumbnails). */
   shadow?: boolean;
   style?: React.CSSProperties;
+  /** Load the print first (see PrintImage). */
+  priority?: boolean;
 }
 
-export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shadow = true, style }: TeeMockupProps) {
+export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shadow = true, style, priority }: TeeMockupProps) {
   const uid = useId().replace(/:/g, "");
   const black = color === "black";
   const { fabric, seam, collar } = TEE_COLORS[color];
@@ -67,7 +69,7 @@ export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shad
 
       {/* Print: single-ink, blended into the fabric (screen = white ink, multiply = black ink) */}
       <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
-        <PrintImage shirt={shirt} color={color} />
+        <PrintImage shirt={shirt} color={color} priority={priority} />
       </div>
 
       {/* Fabric folds — shadows */}

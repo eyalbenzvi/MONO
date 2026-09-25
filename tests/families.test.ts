@@ -8,7 +8,7 @@ import {
   getShirtById,
   variationsOf,
 } from "@/lib/catalog";
-import { DECK_SIZE, VARIANT_SPACING, buildDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
+import { CALIBRATION_IDS, DECK_SIZE, VARIANT_SPACING, buildDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { createInitialVector } from "@/types/shirt";
 
@@ -18,7 +18,7 @@ function rng(seed = 7) {
   return () => ((a = (a * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-const CALIBRATION = getCalibrationQueue(FAMILY_LEADERS, 10, (s) => s.category).map((s) => s.id);
+const CALIBRATION = [...CALIBRATION_IDS];
 
 /** Play Discover: always swipe the top card, alternating like/pass. */
 function simulate(swipes: number) {
@@ -129,5 +129,14 @@ describe("display pacing", () => {
       const recent = paced.slice(i - 3, i).map((x) => x.shirt.variant);
       expect(recent).not.toContain(paced[i].shirt.variant);
     }
+  });
+});
+
+describe("precomputed calibration (I8)", () => {
+  it("matches the runtime algorithm: farthest-point over family leaders, boldest first", () => {
+    const queue = getCalibrationQueue(FAMILY_LEADERS, 10, (s) => s.category);
+    const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
+    const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
+    expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));
   });
 });

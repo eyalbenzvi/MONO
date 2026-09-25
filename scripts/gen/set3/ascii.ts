@@ -4,7 +4,7 @@
  * landscapes. Everything sits on a monospace grid; each run of characters
  * is pinned with textLength so columns line up in any monospace font.
  */
-import { IH, IW, X0, Y0, int, n1, pick, range, type Generator, type Rng } from "../core";
+import { IH, IW, X0, Y0, an, int, n1, pick, range, type Generator, type Rng } from "../core";
 import { MONO, esc, pixelTextRows, textEl, wrap } from "../art";
 import { ASCII_ART, BANNER_CAPTIONS, BANNER_WORDS, SCENE_CAPTIONS, SHADE_CAPTIONS } from "../copy3";
 
@@ -193,7 +193,7 @@ export const asciiShade: Generator = (rng, ink) => {
     body,
     variant: "ascii-shade",
     sig: { key: `shade-${shape}`, vec: shape === "sphere" ? [(lx + 0.7) / 1.4] : [(a - 0.3) / 0.9, (b - 0.2) / 1.1] },
-    description: `A ${shape === "octa" ? "octahedron" : shape} rendered in 3D with nothing but characters, lit from the ${lx < 0 ? "left" : "right"}. ${caption}.`,
+    description: `${an(shape === "octa" ? "octahedron" : shape === "donut" ? "doughnut" : shape).replace(/^a/, "A")} rendered in 3D with nothing but characters, lit from the ${lx < 0 ? "left" : "right"}. ${caption[0].toUpperCase()}${caption.slice(1)}.`,
     complexity: 0.55,
     features: {
       geometric: range(rng, 0.68, 0.85), halftone_raster: range(rng, 0.55, 0.72), typography: range(rng, 0.42, 0.58), retro: range(rng, 0.7, 0.86), abstract: range(rng, 0.35, 0.5),

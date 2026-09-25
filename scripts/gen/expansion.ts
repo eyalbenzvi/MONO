@@ -6,7 +6,7 @@
 import type { ShirtCategory } from "../../types/shirt";
 import {
   IH, IW, W, H, X0, Y0,
-  clamp01, int, n1, pick, range, smooth,
+  an, clamp01, int, n1, pick, range, scale, smooth,
   type Design, type Generator, type Rng,
 } from "./core";
 import {
@@ -20,6 +20,23 @@ import {
 } from "./copy";
 
 const CX = W / 2;
+
+/** How an object is named in descriptions: [singular, plural]. */
+const OBJECT_NOUNS: Record<string, [string, string]> = {
+  coffee: ["coffee cup", "coffee cups"],
+  cassette: ["cassette tape", "cassette tapes"],
+  camera: ["camera", "cameras"],
+  bulb: ["light bulb", "light bulbs"],
+  plane: ["paper plane", "paper planes"],
+  cactus: ["potted cactus", "potted cacti"],
+  headphones: ["pair of headphones", "pairs of headphones"],
+  key: ["key", "keys"],
+  eye: ["eye", "eyes"],
+  hourglass: ["hourglass", "hourglasses"],
+  umbrella: ["umbrella", "umbrellas"],
+  envelope: ["envelope", "envelopes"],
+  glasses: ["pair of glasses", "pairs of glasses"],
+};
 const clip = (id: string, body: string) =>
   `<clipPath id="${id}"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#${id})">${body}</g>`;
 
@@ -83,7 +100,7 @@ const mountains: Generator = (rng, ink, ground) => {
     body,
     variant: "mountains",
     sig: { key: `mountains-${celestial}`, vec: [(layers - 3) / 2, (jag - 0.35) / 0.55] },
-    description: `${layers} mountain ranges in halftone${celestial === "none" ? "" : ` under a ${celestial}`}, screen-print style.`,
+    description: `${layers >= 4 ? "Layered" : "Quiet"} mountain ranges in halftone${celestial === "none" ? "" : ` under ${an(celestial)}`}, screen-print style.`,
     complexity: density,
     features: {
       pictorial: range(rng, 0.88, 1), nature: range(rng, 0.88, 1), abstract: range(rng, 0.2, 0.32),
@@ -252,7 +269,7 @@ const landscape: Generator = (rng, ink, ground) => {
     body: clip("c", scene) + `<rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}" fill="none" stroke="${ink}" stroke-width="2"/>`,
     variant: kind,
     sig: { key: `${kind}-${moon ? "moon" : "day"}`, vec: [detail / 5] },
-    description: kind === "forest" ? `Pine forest in ${detail} misty rows${moon ? " under a full moon" : ""}.` : `Rolling desert dunes${moon ? " by moonlight" : ""}, printed in dot tones.`,
+    description: kind === "forest" ? `Pine forest fading back in misty rows${moon ? " under a full moon" : ""}.` : `Rolling desert dunes${moon ? " by moonlight" : ""}, printed in dot tones.`,
     complexity: density,
     features: {
       pictorial: range(rng, 0.82, 0.96), nature: range(rng, 0.9, 1), density, halftone_raster: range(rng, 0.42, 0.6), contrast: range(rng, 0.6, 0.8),
@@ -554,7 +571,7 @@ const pixelLandscape: Generator = (rng, ink, ground) => {
     body,
     variant: "pixelscape",
     sig: { key: `pixelscape-${mtn ? "mtn" : "sea"}`, vec: [(px - 6) / 4, (horizon / rowsN - 0.52) / 0.14] },
-    description: `Pixel-art sunset${mtn ? " behind dithered mountains" : " over a scanline sea"}, ${px}px blocks.`,
+    description: `Pixel-art sunset${mtn ? " behind dithered mountains" : " over a scanline sea"}, in ${scale(px, 6, 12, ["fine", "chunky"])} blocks.`,
     complexity: 0.55,
     features: {
       retro: range(rng, 0.9, 1), pictorial: range(rng, 0.7, 0.85), nature: range(rng, 0.5, 0.7), geometric: range(rng, 0.45, 0.6), halftone_raster: range(rng, 0.3, 0.45),
@@ -682,7 +699,7 @@ const crest: Generator = (rng, ink, ground) => {
     body,
     variant: "crest",
     sig: { key: `crest-${motto}`, vec: [] },
-    description: `Heraldic crest (${division}) with a ${icon} and the motto “${motto}”.`,
+    description: `Heraldic crest${{ plain: "", bend: " divided per bend", chevron: " with a chevron field", quarter: ", quartered," }[division]} with ${an(icon)} and the motto “${motto}”.`,
     complexity: 0.6,
     features: {
       geometric: range(rng, 0.55, 0.7), retro: range(rng, 0.72, 0.86), typography: range(rng, 0.4, 0.55), wit: range(rng, 0.5, 0.8), pictorial: range(rng, 0.3, 0.5),
@@ -727,7 +744,7 @@ const stamp: Generator = (rng, ink, ground) => {
     body,
     variant: "stamp",
     sig: { key: `stamp-${icon}-${cancelled ? "used" : "mint"}`, vec: [] },
-    description: `A ${value}-value postage stamp from the ${country.toLowerCase()}${cancelled ? ", postmarked" : ""}.`,
+    description: `A postage stamp from the ${country.toLowerCase()}${cancelled ? ", already postmarked" : ", mint and unused"}.`,
     complexity: 0.6,
     features: {
       retro: range(rng, 0.8, 0.95), pictorial: range(rng, 0.42, 0.6), typography: range(rng, 0.45, 0.6), geometric: range(rng, 0.45, 0.6), line_art: range(rng, 0.42, 0.6),
@@ -808,7 +825,7 @@ const objectIcon: Generator = (rng, ink, ground) => {
     body,
     variant: "objecticon",
     sig: { key: `objecticon-${obj}-${caption}`, vec: [] },
-    description: `Line-drawn ${obj} with the caption “${caption}”.`,
+    description: `Line-drawn ${OBJECT_NOUNS[obj][0]} with the caption “${caption}”.`,
     complexity: 0.35,
     features: {
       pictorial: range(rng, 0.76, 0.9), line_art: range(rng, 0.8, 0.95), wit: range(rng, 0.62, 0.9), clean_minimal: range(rng, 0.65, 0.85), typography: range(rng, 0.35, 0.55),
@@ -837,7 +854,7 @@ const woodcut: Generator = (rng, ink, ground) => {
     body,
     variant: "woodcut",
     sig: { key: `woodcut-${obj}`, vec: [burst ? 1 : 0] },
-    description: `Linocut-style ${obj}${burst ? " against a sunburst" : ""}, hatched in single ink.`,
+    description: `Linocut-style ${OBJECT_NOUNS[obj][0]}${burst ? " against a sunburst" : ""}, hatched in single ink.`,
     complexity: 0.6,
     features: {
       pictorial: range(rng, 0.8, 0.95), halftone_raster: range(rng, 0.5, 0.7), line_art: range(rng, 0.5, 0.7), retro: range(rng, 0.52, 0.7), contrast: range(rng, 0.72, 0.9),
@@ -872,7 +889,7 @@ const oddOneOut: Generator = (rng, ink, ground) => {
     body,
     variant: "oddoneout",
     sig: { key: `odd-${obj}`, vec: [(cols - 3) / 2] },
-    description: `A ${cols}×${rows} grid of ${obj}s — one of them is different.`,
+    description: `A grid of ${OBJECT_NOUNS[obj][1]} — one of them is different.`,
     complexity: 0.6,
     features: {
       pictorial: range(rng, 0.55, 0.7), geometric: range(rng, 0.55, 0.7), wit: range(rng, 0.55, 0.72), density: range(rng, 0.6, 0.85), line_art: range(rng, 0.5, 0.7),
@@ -907,7 +924,7 @@ const diagram: Generator = (rng, ink, ground) => {
     body,
     variant: "diagram",
     sig: { key: `diagram-${obj}`, vec: [] },
-    description: `Technical diagram of a ${obj} with deeply honest labels.`,
+    description: `Technical diagram of ${an(OBJECT_NOUNS[obj][0])} with deeply honest labels.`,
     complexity: 0.55,
     features: {
       pictorial: range(rng, 0.65, 0.8), line_art: range(rng, 0.75, 0.9), typography: range(rng, 0.5, 0.7), wit: range(rng, 0.76, 0.95), architectural: range(rng, 0.3, 0.45),

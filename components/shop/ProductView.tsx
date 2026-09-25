@@ -10,13 +10,14 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { ColorSelector, LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
-import { SHIRTS, familyMembers, getShirtById } from "@/lib/catalog";
-import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
+import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
+import { useShirtDetails } from "@/lib/details";
+import { explainMatch, matchScore } from "@/lib/recommendation";
 import { parseShareParams } from "@/lib/share";
 import { useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, useUiStore, useHydrated } from "@/store/useUiStore";
-import { CATEGORY_LABELS, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
+import { CATEGORY_LABELS, CATEGORY_VIBES, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/cart";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
@@ -28,8 +29,13 @@ const VIEWS: { value: View; label: string }[] = [
   { value: "print", label: "Print" },
 ];
 
-export function ProductView({ id }: { id: string }) {
+/**
+ * `details` come as props from the pre-rendered page (/shop/<id>/); the
+ * client route (/shop/p/?id=) leaves them out and they are fetched.
+ */
+export function ProductView({ id, details: initialDetails }: { id: string; details?: ShirtDetails | null }) {
   const shirt = getShirtById(id);
+  const details = useShirtDetails(shirt ? id : null, initialDetails);
   const router = useRouter();
   const hydrated = useHydrated();
   const showMatch = useShowMatch();
@@ -67,7 +73,13 @@ export function ProductView({ id }: { id: string }) {
     if (c) setColor(shirt.id, c);
     if (ref) setSharedVia(ref);
     // Clean the URL so a reload or a re-share doesn't carry the tag along.
-    if (c || ref) window.history.replaceState(window.history.state, "", window.location.pathname + window.location.hash);
+    if (c || ref) {
+      const q = new URLSearchParams(window.location.search);
+      q.delete("c");
+      q.delete("ref");
+      const rest = q.toString();
+      window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
+    }
   }, [hydrated, shirt, setColor]);
 
   useEffect(() => {
@@ -95,13 +107,12 @@ export function ProductView({ id }: { id: string }) {
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
-  // the variations above) and at most one per algorithm.
-  const similar = (() => {
-    const seen = new Set([shirt.variant]);
-    return similarShirts(shirt, SHIRTS, 200)
-      .filter((s) => s.family !== shirt.family && !seen.has(s.variant) && (seen.add(s.variant), true))
-      .slice(0, 4);
-  })();
+  // the variations above) and at most one per algorithm. Precomputed by the
+  // generator, closest first.
+  const similar = (details?.similar ?? [])
+    .map(getShirtById)
+    .filter((s): s is ShirtProduct => !!s)
+    .slice(0, 4);
 
   // Never a dead, disabled button: without a size it guides you to the sizes.
   const onBuy = () => {
@@ -169,10 +180,10 @@ export function ProductView({ id }: { id: string }) {
               >
                 {view === "print" ? (
                   <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
-                    <PrintImage shirt={shirt} color={color} />
+                    <PrintImage shirt={shirt} color={color} priority />
                   </div>
                 ) : (
-                  <TeeMockup shirt={shirt} color={color} className="h-full max-h-full" />
+                  <TeeMockup shirt={shirt} color={color} priority className="h-full max-h-full" />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -219,7 +230,9 @@ export function ProductView({ id }: { id: string }) {
 
           {/* Info */}
           <div>
-            <p className="text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
+            <p className="text-sm text-neutral-400">
+              {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
+            </p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
               <span className="mt-0.5 font-mono text-xl font-semibold md:text-2xl">{formatPrice(shirt.price)}</span>
@@ -232,7 +245,8 @@ export function ProductView({ id }: { id: string }) {
               </div>
             )}
 
-            <p className="mt-3 text-sm leading-relaxed text-neutral-300">{shirt.description}</p>
+            <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
+            <p className="mt-2 text-xs text-neutral-400">{CATEGORY_VIBES[shirt.category]}</p>
 
             {members.length > 1 ? (
               <button
@@ -340,7 +354,7 @@ export function ProductView({ id }: { id: string }) {
                 return (
                   <Link
                     key={m.id}
-                    href={`/shop/${m.id}/`}
+                    href={productHref(m.id)}
                     replace
                     // Keep the tee colour the user is looking at.
                     onClick={() => setColor(m.id, color)}
@@ -365,7 +379,7 @@ export function ProductView({ id }: { id: string }) {
           </section>
         )}
 
-        {hydrated && (
+        {hydrated && similar.length > 0 && (
           <section className="mt-10">
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">

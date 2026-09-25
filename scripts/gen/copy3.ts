@@ -33,7 +33,7 @@ export const SHADE_CAPTIONS: Record<string, string[]> = {
   sphere: ["sphere(r=1) // perfectly round, emotionally", "a ball, but make it text", "lit from the left. like my opinions."],
   donut: ["donut.c // zero calories", "torus, lightly glazed", "the only donut that fits in a terminal"],
   cube: ["cube.txt // six sides, no drama", "box(1,1,1) // thinking inside it", "a cube walks into a terminal"],
-  capsule: ["capsule // take one daily", "pill.exe // side effects: vibes", "one tablet, 1,260 characters"],
+  capsule: ["capsule // take one daily", "pill.exe // side effects: vibes", "one tablet, no prescription"],
   octa: ["octahedron // d8 of destiny", "eight faces, one mood", "geometry class, but fun"],
 };
 

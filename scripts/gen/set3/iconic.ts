@@ -8,6 +8,9 @@ import { MONO, SERIF, drawPrims, fitLines, sizeToFit, textEl, toneDefs } from ".
 import { LANDMARK_INFO, MOTIF_CAPTIONS, SPACE_CAPTIONS, TRAVEL_TAGLINES } from "../copy3";
 import { LANDMARKS, LANDMARK_KEYS } from "./landmarks";
 
+/** "NEW YORK" → "New York" (place names are stored in caps for the poster type). */
+const placeName = (place: string) => place.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
 const CX = W / 2;
 type P = [number, number];
 const line = (d: string, ink: string, w: number) => `<path d="${d}" fill="none" stroke="${ink}" stroke-width="${n1(w)}" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -64,7 +67,7 @@ export const landmark: Generator = (rng, ink, ground) => {
     body,
     variant: "iconic-landmark",
     sig: { key: `landmark-${key}`, vec: [style === "solid" ? 0 : style === "line" ? 0.5 : 1] },
-    description: `${info.name}, ${info.place === "THE COAST" ? "somewhere on the coast" : info.place.charAt(0) + info.place.slice(1).toLowerCase()} — an original ${style === "line" ? "line drawing" : style === "solid" ? "silhouette" : "woodcut"}. ${line1}`,
+    description: `${info.name}, ${info.place === "THE COAST" ? "somewhere on the coast" : placeName(info.place)} — an original ${style === "line" ? "line drawing" : style === "solid" ? "silhouette" : "woodcut"}. ${line1}`,
     complexity: 0.6,
     features: {
       ...iconicFeatures(rng), architectural: key === "moai" || key === "stonehenge" ? range(rng, 0.4, 0.55) : range(rng, 0.62, 0.8), classic: range(rng, 0.25, 0.4), retro: range(rng, 0.35, 0.5),
@@ -122,7 +125,7 @@ export const travelPoster: Generator = (rng, ink, ground) => {
     body,
     variant: "iconic-travel",
     sig: { key: `travel-${key}`, vec: [bg === "rays" ? 0 : bg === "stripes" ? 0.5 : 1] },
-    description: `Vintage travel poster: ${verb.toLowerCase()} ${info.place === "THE COAST" ? "the coast" : info.place.charAt(0) + info.place.slice(1).toLowerCase()}. “${tagline}”`,
+    description: `Vintage travel poster: ${verb.toLowerCase()} ${info.place === "THE COAST" ? "the coast" : placeName(info.place)}. “${tagline}”`,
     complexity: 0.7,
     features: {
       ...iconicFeatures(rng), retro: range(rng, 0.8, 0.95), architectural: range(rng, 0.45, 0.6), typography: range(rng, 0.5, 0.65), geometric: range(rng, 0.4, 0.55), density: range(rng, 0.6, 0.75),

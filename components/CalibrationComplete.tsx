@@ -7,7 +7,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
+import { SHIRTS, dedupeByFamily, paceByVariant, productHref } from "@/lib/catalog";
 import { rankShirts, topTraits } from "@/lib/recommendation";
 import { CALIBRATION_IDS } from "@/lib/deck";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -66,7 +66,7 @@ export function CalibrationComplete() {
               {picks.map(({ shirt, score }, i) => (
                 <Link
                   key={shirt.id}
-                  href={`/shop/${shirt.id}/`}
+                  href={productHref(shirt.id)}
                   onClick={close}
                   aria-label={`${shirt.title}, ${score}% match`}
                   className={`relative block rounded-2xl p-2 pt-8 ring-1 ring-white/10 transition active:scale-95 ${STAGE_BG}`}

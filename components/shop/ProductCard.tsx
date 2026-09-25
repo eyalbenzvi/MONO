@@ -8,6 +8,7 @@ import { MatchBadge, SaveButton, STAGE_BG, TeeDot } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
+import { productHref } from "@/lib/catalog";
 
 /** Below this the % adds noise, not information. */
 const SHOW_BADGE_FROM = 80;
@@ -57,7 +58,7 @@ export const ProductCard = memo(function ProductCard({
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <div className="min-w-0">
           <Link
-            href={`/shop/${shirt.id}/`}
+            href={productHref(shirt.id)}
             onClick={() => {
               if (color) useCartStore.getState().setColor(shirt.id, color);
               onOpen?.(shirt.id);

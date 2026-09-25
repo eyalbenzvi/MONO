@@ -1,8 +1,13 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { SHIRTS, assetUrl, getShirtById } from "@/lib/catalog";
-import { FEATURE_KEYS, SHIRT_CATEGORIES } from "@/types/shirt";
+import { SHIRTS, assetUrl, getShirtById, productHref } from "@/lib/catalog";
+import full from "@/data/shirts.json";
+import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, type CatalogEntry } from "@/types/shirt";
+
+const FULL = full as CatalogEntry[];
+/** Description text outside quoted captions (captions are the print's own words). */
+const narrative = (d: string) => d.replace(/“[^”]*”/g, "“”").replace(/"[^"]*"/g, "").replace(/'[^']*'/g, "");
 
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
@@ -32,10 +37,9 @@ describe("generated catalog (data/shirts.json)", () => {
     for (const c of SHIRT_CATEGORIES) expect(SHIRTS.filter((s) => s.category === c)).toHaveLength(200);
   });
 
-  it("prices within $39–$59 and features within [0, 1]", () => {
+  it("one flat price ($48) and features within [0, 1]", () => {
     for (const s of SHIRTS) {
-      expect(s.price).toBeGreaterThanOrEqual(39);
-      expect(s.price).toBeLessThanOrEqual(59);
+      expect(s.price).toBe(48);
       for (const k of FEATURE_KEYS) {
         expect(s.features[k]).toBeGreaterThanOrEqual(0);
         expect(s.features[k]).toBeLessThanOrEqual(1);
@@ -100,5 +104,86 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(getShirtById(SHIRTS[42].id)).toBe(SHIRTS[42]);
     expect(getShirtById("nope")).toBeUndefined();
     expect(assetUrl("/prints/print_1.svg")).toMatch(/\/prints\/print_1\.svg$/);
+  });
+
+  it("the lean app index decodes to exactly the generator's catalog", () => {
+    expect(SHIRTS).toHaveLength(FULL.length);
+    FULL.forEach((f, i) => {
+      const { description: _d, similar: _s, ...lean } = f;
+      expect(SHIRTS[i]).toEqual(lean);
+    });
+  });
+
+  it("product links point at the pre-rendered page by default", () => {
+    expect(productHref("mono-0001")).toBe("/shop/mono-0001/");
+    expect(productHref("mono-0001", "#variations")).toBe("/shop/mono-0001/#variations");
+  });
+});
+
+describe("catalog copy (R13)", () => {
+  it("titles carry no catalog number (that's `no`, 1–200 per category)", () => {
+    for (const s of SHIRTS) {
+      expect(s.title).not.toMatch(/No\.|#|\d{2,}/);
+      expect(s.no).toBeGreaterThanOrEqual(1);
+      expect(s.no).toBeLessThanOrEqual(200);
+    }
+    for (const c of SHIRT_CATEGORIES) {
+      const nos = SHIRTS.filter((s) => s.category === c).map((s) => s.no);
+      expect(new Set(nos).size).toBe(200);
+    }
+  });
+
+  it("no description repeats more than 3 times", () => {
+    const counts = new Map<string, number>();
+    for (const s of FULL) counts.set(s.description, (counts.get(s.description) ?? 0) + 1);
+    expect(Math.max(...counts.values())).toBeLessThanOrEqual(3);
+    expect(counts.size).toBeGreaterThan(2000);
+  });
+
+  it("descriptions have no technical counts, and use a/an correctly", () => {
+    const units = "dots?|lines?|families|family|mass(es)?|shapes?|bars?|circles?|rings?|stripes?|waves?|squares?|rays?|points?|characters?|blocks?|cells?|bays?|layers?|strokes?|stars?|peaks?";
+    const count = new RegExp(`\\b\\d+\\s+(hand-set\\s+)?(${units})\\b`, "i");
+    for (const s of FULL) {
+      const text = narrative(s.description);
+      expect(text, s.id).not.toMatch(count);
+      expect(text, s.id).not.toMatch(/\b[Aa] [aeioAEIO][a-z]/);
+      // Lowercase only: "an LED grid" is right.
+      expect(text, s.id).not.toMatch(/\b[Aa]n [bcdfgjklmnpqrstvwxz][a-z]/);
+      expect(text, s.id).not.toMatch(/\ba (coffee|tea)(?! cup| mug| pot)\b/i);
+      // Sentences never run on: every one ends before the next begins.
+      expect(s.description, s.id).toMatch(/[.!?…”)]$/);
+    }
+  });
+
+  it("every category has a short vibe line", () => {
+    for (const c of SHIRT_CATEGORIES) {
+      expect(CATEGORY_VIBES[c].length).toBeGreaterThan(10);
+      expect(CATEGORY_VIBES[c].length).toBeLessThan(90);
+    }
+  });
+});
+
+describe("detail shards (public/data)", () => {
+  const shards = new Map<number, Record<string, { d: string; s: string[] }>>();
+  const shard = (k: number) => {
+    if (!shards.has(k)) shards.set(k, JSON.parse(readFileSync(path.join(PUBLIC, "data", `details-${k}.json`), "utf8")));
+    return shards.get(k)!;
+  };
+
+  it("hold every design's description and similar list", () => {
+    for (const f of FULL) {
+      const entry = shard(Math.floor((f.n - 1) / 100))[f.id];
+      expect(entry, f.id).toEqual({ d: f.description, s: f.similar });
+    }
+  });
+
+  it("similar prints are other families, one per algorithm", () => {
+    for (const f of FULL) {
+      expect(f.similar.length).toBeGreaterThanOrEqual(4);
+      const others = f.similar.map((id) => getShirtById(id)!);
+      for (const o of others) expect(o.family).not.toBe(f.family);
+      const variants = others.map((o) => o.variant);
+      expect(new Set([f.variant, ...variants]).size).toBe(variants.length + 1);
+    }
   });
 });
