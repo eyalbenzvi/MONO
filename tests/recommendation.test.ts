@@ -9,6 +9,8 @@ import {
   rankShirts,
   similarShirts,
   topTraits,
+  profileSharpness,
+  biggestShift,
   updateUserVector,
 } from "@/lib/recommendation";
 import { SHIRTS } from "@/lib/catalog";
@@ -187,5 +189,24 @@ describe("shop ranking", () => {
   it("topTraits lists the strongest leanings first", () => {
     const v = { ...createInitialVector(), halftone_raster: 0.8, contrast: 0.7, abstract: 0.3 };
     expect(topTraits(v)).toEqual(["halftone_raster", "contrast"]);
+  });
+});
+
+describe("display helpers (no effect on scores)", () => {
+  it("profileSharpness grows as the profile leaves neutral", () => {
+    expect(profileSharpness(createInitialVector())).toBe(0);
+    let v = createInitialVector();
+    const s0 = profileSharpness(v);
+    for (let i = 0; i < 5; i++) v = updateUserVector(v, SHIRTS[0].features, "like");
+    expect(profileSharpness(v)).toBeGreaterThan(s0);
+    expect(profileSharpness(vec(() => 1))).toBe(1);
+  });
+
+  it("biggestShift names the most-moved trait in the swipe's direction", () => {
+    const before = createInitialVector();
+    const shirt = { ...createInitialVector(0.5), typography: 1, halftone_raster: 0.9 };
+    expect(biggestShift(before, updateUserVector(before, shirt, "like"), "like")).toBe("typography");
+    expect(biggestShift(before, updateUserVector(before, shirt, "dislike"), "dislike")).toBe("typography");
+    expect(biggestShift(before, before, "like")).toBeNull();
   });
 });

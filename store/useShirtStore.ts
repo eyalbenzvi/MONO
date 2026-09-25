@@ -27,7 +27,17 @@ import {
 
 export const DECK_SIZE = 3;
 
-export const CALIBRATION_IDS = getCalibrationQueue(SHIRTS, CALIBRATION_SIZE).map((s) => s.id);
+/**
+ * The calibration set comes from getCalibrationQueue (unchanged); only the
+ * *display order* is tweaked so the very first card is the boldest print
+ * (highest contrast + density) — a stronger opener than a faint sketch.
+ */
+export const CALIBRATION_IDS = (() => {
+  const queue = getCalibrationQueue(SHIRTS, CALIBRATION_SIZE);
+  const boldness = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
+  const opener = queue.reduce((best, s) => (boldness(s) > boldness(best) ? s : best), queue[0]);
+  return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
+})();
 export const CALIBRATION_TOTAL = CALIBRATION_IDS.length;
 
 export interface DeckEntry {
@@ -52,22 +62,41 @@ interface PersistedState extends UserSession {
   lastOrder: Order | null;
   /** The "taste profile ready" screen has been shown. */
   calibrationAcknowledged: boolean;
+  /** First-run coach marks dismissed (first swipe or tap). */
+  onboardingSeen: boolean;
+}
+
+export interface ToastState {
+  message: string;
+  nonce: number;
+  action?: { label: string; run: () => void };
 }
 
 interface ShirtState extends PersistedState {
   /** UI-only (not persisted) */
   hydrated: boolean;
   isFlipped: boolean;
-  swipeRequest: { action: SwipeAction; nonce: number } | null;
-  toast: { message: string; nonce: number } | null;
+  /**
+   * Button/keyboard swipes waiting to run. Rapid taps queue up (max 5) and
+   * play one after another instead of being dropped mid-animation.
+   */
+  swipeQueue: { action: SwipeAction; nonce: number }[];
+  /** Set by undoLast so the restored card flies back in from where it left. */
+  undoFx: { id: string; action: SwipeAction; nonce: number } | null;
+  toast: ToastState | null;
 
   fillDeck: () => void;
   requestSwipe: (action: SwipeAction) => void;
-  commitSwipe: (shirtId: string, action: SwipeAction) => void;
+  /** `fromQueue` = this commit consumed the head of swipeQueue. */
+  commitSwipe: (shirtId: string, action: SwipeAction, fromQueue?: boolean) => void;
+  /** One-level undo of the last Discover swipe (vector, lists, deck). */
+  undoLast: () => void;
   toggleFlip: (value?: boolean) => void;
   /** Heart in the shop / drawer: save (a "like" that also trains) or unsave. */
   toggleSaved: (id: string) => void;
   removeLiked: (id: string) => void;
+  /** Put a removed tee back in Saved without training on it again. */
+  restoreSaved: (id: string) => void;
   setSize: (id: string, size: ShirtSize) => void;
   setColor: (id: string, color: BaseColor) => void;
   /** Adds in the given colour, else the one picked for this design, else its original. */
@@ -76,7 +105,8 @@ interface ShirtState extends PersistedState {
   changeCartItem: (line: Pick<CartItem, "id" | "size" | "color">, to: Partial<Pick<CartItem, "size" | "color">>) => void;
   placeOrder: (customer: { name: string; email: string }) => Order | null;
   acknowledgeCalibration: () => void;
-  showToast: (message: string) => void;
+  showToast: (message: string, action?: ToastState["action"]) => void;
+  dismissOnboarding: () => void;
   reset: () => void;
   setHydrated: () => void;
 }
@@ -115,7 +145,14 @@ const initialPersisted = (): PersistedState => ({
   cart: [],
   lastOrder: null,
   calibrationAcknowledged: false,
+  onboardingSeen: false,
 });
+
+/** The last swipe can be undone only if it came from Discover and nothing trained since. */
+export const canUndo = (s: Pick<UserSession, "swipeHistory"> & { lastUpdate: LastUpdate | null }) => {
+  const last = s.swipeHistory[s.swipeHistory.length - 1];
+  return !!last && last.source !== "shop" && !!s.lastUpdate && s.lastUpdate.shirtId === last.shirtId;
+};
 
 export const useShirtStore = create<ShirtState>()(
   persist(
@@ -123,7 +160,8 @@ export const useShirtStore = create<ShirtState>()(
       ...initialPersisted(),
       hydrated: false,
       isFlipped: false,
-      swipeRequest: null,
+      swipeQueue: [],
+      undoFx: null,
       toast: null,
 
       fillDeck: () => {
@@ -132,11 +170,12 @@ export const useShirtStore = create<ShirtState>()(
       },
 
       requestSwipe: (action) => {
-        if (get().deck.length === 0) return;
-        set({ swipeRequest: { action, nonce: Date.now() + Math.random() } });
+        const { deck, swipeQueue } = get();
+        if (deck.length === 0 || swipeQueue.length >= 5) return;
+        set({ swipeQueue: [...swipeQueue, { action, nonce: Date.now() + Math.random() }] });
       },
 
-      commitSwipe: (shirtId, action) => {
+      commitSwipe: (shirtId, action, fromQueue = false) => {
         const state = get();
         const top = state.deck[0];
         const shirt = getShirtById(shirtId);
@@ -169,11 +208,38 @@ export const useShirtStore = create<ShirtState>()(
           deck,
           lastUpdate: { shirtId, action, before, after },
           isFlipped: false,
-          swipeRequest: null,
+          swipeQueue: fromQueue ? state.swipeQueue.slice(1) : state.swipeQueue,
+          onboardingSeen: true,
+          undoFx: null,
         });
       },
 
-      toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
+      undoLast: () => {
+        const state = get();
+        if (!canUndo(state) || !state.lastUpdate) return;
+        const last = state.swipeHistory[state.swipeHistory.length - 1];
+        const dropLast = (ids: string[]) => {
+          const i = ids.lastIndexOf(last.shirtId);
+          return i === -1 ? ids : [...ids.slice(0, i), ...ids.slice(i + 1)];
+        };
+        const swipeHistory = state.swipeHistory.slice(0, -1);
+        const restored: DeckEntry = { id: last.shirtId, strategy: last.strategy };
+        set({
+          preferenceVector: state.lastUpdate.before,
+          swipeHistory,
+          likedIds: last.action === "like" ? dropLast(state.likedIds) : state.likedIds,
+          dislikedIds: last.action === "dislike" ? dropLast(state.dislikedIds) : state.dislikedIds,
+          deck: [restored, ...state.deck.filter((e) => e.id !== restored.id)].slice(0, DECK_SIZE),
+          lastUpdate: null,
+          isFlipped: false,
+          swipeQueue: [],
+          undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() },
+        });
+      },
+
+      toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped, onboardingSeen: true })),
+
+      dismissOnboarding: () => set({ onboardingSeen: true }),
 
       toggleSaved: (id) => {
         const state = get();
@@ -215,6 +281,9 @@ export const useShirtStore = create<ShirtState>()(
 
       removeLiked: (id) => set((s) => ({ likedIds: s.likedIds.filter((x) => x !== id) })),
 
+      restoreSaved: (id) =>
+        set((s) => (s.likedIds.includes(id) ? {} : { likedIds: [...s.likedIds, id] })),
+
       setSize: (id, size) => set((s) => ({ selectedSizes: { ...s.selectedSizes, [id]: size } })),
 
       setColor: (id, color) => set((s) => ({ selectedColors: { ...s.selectedColors, [id]: color } })),
@@ -255,7 +324,7 @@ export const useShirtStore = create<ShirtState>()(
 
       acknowledgeCalibration: () => set({ calibrationAcknowledged: true }),
 
-      showToast: (message) => set({ toast: { message, nonce: Date.now() + Math.random() } }),
+      showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
 
       reset: () =>
         set((s) => ({
@@ -264,7 +333,8 @@ export const useShirtStore = create<ShirtState>()(
           cart: s.cart,
           lastOrder: s.lastOrder,
           isFlipped: false,
-          swipeRequest: null,
+          swipeQueue: [],
+          undoFx: null,
         })),
 
       setHydrated: () => set({ hydrated: true }),
@@ -306,6 +376,7 @@ export const useShirtStore = create<ShirtState>()(
         cart: s.cart,
         lastOrder: s.lastOrder,
         calibrationAcknowledged: s.calibrationAcknowledged,
+        onboardingSeen: s.onboardingSeen,
       }),
     },
   ),
