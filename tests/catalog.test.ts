@@ -7,19 +7,27 @@ import { FEATURE_KEYS, SHIRT_CATEGORIES } from "@/types/shirt";
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 describe("generated catalog (data/shirts.json)", () => {
-  it("has 1,000 shirts with unique ids, skus and titles", () => {
-    expect(SHIRTS).toHaveLength(1000);
-    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(1000);
-    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(1000);
-    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(1000);
+  it("has 2,000 shirts with unique ids, skus and titles", () => {
+    expect(SHIRTS).toHaveLength(2000);
+    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(2000);
+    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(2000);
+    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(2000);
   });
 
-  it("is 70% black / 30% white tees", () => {
-    expect(SHIRTS.filter((s) => s.baseColor === "black")).toHaveLength(700);
-    expect(SHIRTS.filter((s) => s.baseColor === "white")).toHaveLength(300);
+  it("is 70% black / 30% white tees in each set of 1,000", () => {
+    for (const set of [SHIRTS.slice(0, 1000), SHIRTS.slice(1000)]) {
+      expect(set.filter((s) => s.baseColor === "black")).toHaveLength(700);
+      expect(set.filter((s) => s.baseColor === "white")).toHaveLength(300);
+    }
   });
 
-  it("covers all five generative categories evenly", () => {
+  it("has ten categories, 200 designs each (the second 1,000 adds five new ones)", () => {
+    expect(SHIRT_CATEGORIES).toHaveLength(10);
+    const newCats = new Set(SHIRTS.slice(1000).map((s) => s.category));
+    expect([...newCats].sort()).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
+  });
+
+  it("covers all generative categories evenly", () => {
     for (const c of SHIRT_CATEGORIES) expect(SHIRTS.filter((s) => s.category === c)).toHaveLength(200);
   });
 
@@ -44,6 +52,15 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(mean("typography", "typography")).toBeGreaterThan(0.85);
     expect(mean("halftone", "halftone_raster")).toBeGreaterThan(0.8);
     expect(mean("waves", "line_art")).toBeGreaterThan(0.8);
+    expect(mean("scenes", "pictorial")).toBeGreaterThan(0.8);
+    expect(mean("scenes", "nature")).toBeGreaterThan(0.75);
+    expect(mean("slogans", "wit")).toBeGreaterThan(0.75);
+    expect(mean("pixel", "retro")).toBeGreaterThan(0.85);
+    expect(mean("emblems", "retro")).toBeGreaterThan(0.65);
+    expect(mean("objects", "pictorial")).toBeGreaterThan(0.65);
+    // the new dimensions stay low on the original abstract families
+    expect(mean("geometric", "wit")).toBeLessThan(0.1);
+    expect(mean("architectural", "nature")).toBeLessThan(0.1);
     // and not the others
     expect(mean("waves", "typography")).toBeLessThan(0.1);
     expect(mean("typography", "halftone_raster")).toBeLessThan(0.3);

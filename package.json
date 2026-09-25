@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "generate": "tsx scripts/generate1000Shirts.ts"
+    "generate": "tsx scripts/generateCatalog.ts"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",

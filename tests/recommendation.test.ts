@@ -112,8 +112,8 @@ describe("getCalibrationQueue", () => {
   });
 
   it("probes every generative category", () => {
-    const cats = new Set(getCalibrationQueue(SHIRTS).map((s) => s.category));
-    expect(cats.size).toBe(5);
+    const cats = new Set(getCalibrationQueue(SHIRTS, 10, (s) => s.category).map((s) => s.category));
+    expect(cats.size).toBe(10);
   });
 
   it("handles small inputs", () => {

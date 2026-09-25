@@ -111,6 +111,8 @@ export function updateUserVector(
 export function getCalibrationQueue(
   shirts: ShirtProduct[],
   size: number = CALIBRATION_SIZE,
+  /** Optional coverage key (e.g. category): prefer candidates whose key is not used yet. */
+  keyOf?: (s: ShirtProduct) => string,
 ): ShirtProduct[] {
   if (shirts.length === 0) return [];
   const pool = [...shirts];
@@ -123,7 +125,10 @@ export function getCalibrationQueue(
   while (chosen.length < Math.min(size, shirts.length)) {
     let bestIdx = 0;
     let bestScore = Infinity;
+    const used = keyOf ? new Set(chosen.map(keyOf)) : null;
+    const coverageLeft = used !== null && pool.some((c) => !used.has(keyOf!(c)));
     pool.forEach((candidate, idx) => {
+      if (coverageLeft && used!.has(keyOf!(candidate))) return;
       const maxSim = Math.max(
         ...chosen.map((c) => centeredCosine(c.features, candidate.features)),
       );

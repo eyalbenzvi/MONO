@@ -2,28 +2,37 @@
 
 "Tinder for T-shirts": swipe black or white tees with rectangular monochrome prints. A vector recommendation engine learns your taste in real time, then opens a shop ranked for you.
 
-## Catalog: 1,000 generated shirts
+## Catalog: 2,000 generated shirts in 10 categories
 
-The catalog is fully offline and procedural. `scripts/generate1000Shirts.ts` (seeded, deterministic) writes:
+The catalog is fully offline and procedural. `scripts/generateCatalog.ts` (seeded, deterministic) writes:
 
-- `public/prints/print_1.svg` … `print_1000.svg`: 3:4 monochrome SVG prints (~8 KB each)
+- `public/prints/print_1.svg` … `print_2000.svg`: 3:4 single-ink SVG prints (~6 KB each)
 - `data/shirts.json`: the catalog the app imports (`lib/catalog.ts`)
 
 ```bash
 npm run generate   # rebuilds both, byte-identical on every run
 ```
 
-Five generative families, 200 shirts each, four algorithms per family:
+Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `legacy.ts` (ids 1–1000, unchanged) · `expansion.ts` (ids 1001–2000) · `art.ts` (objects, icons, pixel sprites, 5×7 pixel font, halftone and hatch tones, text fitting) · `copy.ts` (all captions: original, no brands or real people).
 
-| Family | Algorithms |
+| Category | Algorithms |
 | --- | --- |
-| Architectural | facade grid · one-point perspective corridor · skyline with window grids · cantilevered slabs |
-| Geometric | primary forms · scattered primitives · twisted concentric polygons · Truchet tiling |
-| Typography | heavy single word · survey coordinates · repeated word stack · manifesto columns |
+| Architectural | facade grid · perspective corridor · skyline · cantilevered slabs |
+| Geometric | primary forms · scattered primitives · concentric polygons · Truchet tiling |
+| Typography | heavy word · survey coordinates · repeated word · manifesto columns |
 | Halftone | radial burst · ordered gradient · dot-matrix shapes · stippled grain |
-| Line & Wave | pulsar ridge lines · sine-wave moiré · topographic contours · gestural line |
+| Line & Wave | pulsar ridges · sine moiré · topographic contours · gestural line |
+| **Scenes** | halftone mountains · moon, planet and eclipse · striped-sun seascape · pine forest and desert dunes |
+| **Slogans** | Swiss poster · faux warning sign · joke receipt · serif quote with a questionable attribution |
+| **Pixel & Retro** | 8-bit sprites · arcade screen in a hand-built pixel font · pixel sunset · terminal session and ASCII-shaded sphere |
+| **Badges** | round club badge (text on a circle) · heraldic crest with a Latin-ish motto · perforated stamp · ticket and product label |
+| **Objects** | line icon plus caption · linocut woodcut · "find the odd one out" grid · technical diagram with honest labels |
 
-**Design families (variations).** Many generated prints are near-identical: same algorithm, close parameters. The generator gives every design a *visual signature* built from the parameters the eye actually notices: algorithm, word, shape, polarity and knockout as categories, plus normalised continuous values such as vanishing point, grid size or fill. It then groups designs with deterministic leader clustering (`FAMILY_THRESHOLD`) into ~314 families. Each shirt carries `family` and `variant` in `data/shirts.json`. At runtime (`lib/catalog.ts`, `lib/deck.ts`):
+Pictures are drawn as illustrations with halftone and hatch patterns, never grey fills, so every print stays strictly two-colour. That is what makes the black/white colourway swap an exact inversion.
+
+Feature vectors have 14 dimensions. The expansion added **pictorial, wit, retro and nature**. The original 1,000 get deterministic values for these, and stored user profiles are extended with neutral 0.5 rather than reset. The taste test picks one design per category. Tees are 70% black / 30% white in each set of 1,000. About 12% of the abstract, slogan, pixel and object prints are knocked out of a solid ink block.
+
+**Design families (variations).** Many generated prints are near-identical: same algorithm, close parameters. The generator gives every design a *visual signature* built from the parameters the eye actually notices: algorithm, word, shape, polarity and knockout as categories, plus normalised continuous values such as vanishing point, grid size or fill. It then groups designs with deterministic leader clustering (`FAMILY_THRESHOLD`) into 742 families. For caption designs the text itself is part of the signature. Each shirt carries `family` and `variant` in `data/shirts.json`. At runtime (`lib/catalog.ts`, `lib/deck.ts`):
 - **Discover never shows two designs of one family in a run.** Seeing one (swipe, save or dealt card) excludes its siblings. It also avoids repeating an algorithm within 5 cards. The taste test uses 10 different families, and its progress counts families.
 - **Shop:** one card per family (the best-ranked one) with a "+N variations" badge. In "For you" order, neighbours never share an algorithm. This is display-only pacing; scores are unchanged.
 - **Product page:** a *Variations* strip with the whole family (switching keeps your tee colour, and "back" still returns to the shop). *Similar prints* shows related but different designs, one per algorithm.
@@ -35,8 +44,8 @@ Feature vectors are computed from each design's real parameters (line/cell count
 ## Flow
 
 1. **Discover / calibration** (`/`): the first 10 cards are the most mutually different prints. Finishing them shows the "taste profile ready" screen with your top traits and top picks.
-2. **Shop** (`/shop`): the full catalog ranked by match, with tee colour, style and sort filters, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
-3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 1,000 pages are statically generated.
+2. **Shop** (`/shop`): the full catalog ranked by match, with category chips (10), tee-colour view and sort, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
+3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,000 pages are statically generated.
 4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over $80), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
 
 Discover keeps training after calibration (80% best match / 20% explore).
