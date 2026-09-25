@@ -6,6 +6,7 @@ import { ArrowRight, Compass, Heart, RotateCcw } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
+import { familySize } from "@/lib/catalog";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 import {
   CATEGORY_LABELS,
@@ -156,6 +157,15 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {PRINT_SIZE_CM.width}×{PRINT_SIZE_CM.height} cm print
           <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
         </p>
+
+        {familySize(shirt) > 1 && (
+          <Link
+            href={`/shop/${shirt.id}/#variations`}
+            className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
+          >
+            {familySize(shirt) - 1} close variation{familySize(shirt) === 2 ? "" : "s"} in the shop <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
 
         <div className="mt-5">
           <p className={LABEL}>Print DNA</p>

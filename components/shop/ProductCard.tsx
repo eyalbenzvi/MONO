@@ -17,10 +17,13 @@ export function ProductCard({
   topPick = false,
   color,
   onOpen,
+  variations = 0,
 }: {
   shirt: ShirtProduct;
   score: number;
   topPick?: boolean;
+  /** Other designs in this card's family (shown as "+N variations"). */
+  variations?: number;
   /** Render in this tee colour (and open the product in it); default = original. */
   color?: BaseColor;
   onOpen?: () => void;
@@ -37,7 +40,7 @@ export function ProductCard({
           onOpen?.();
         }}
         className="group block rounded-2xl"
-        aria-label={`${shirt.title}, $${shirt.price}${showMatch ? `, ${score}% match` : ""}`}
+        aria-label={`${shirt.title}, $${shirt.price}${showMatch ? `, ${score}% match` : ""}${variations ? `, ${variations} variations` : ""}`}
       >
         <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
           {showMatch && (topPick || score >= SHOW_BADGE_FROM) && (
@@ -46,6 +49,11 @@ export function ProductCard({
             </div>
           )}
           <SaveButton id={shirt.id} className="absolute right-2 top-2 h-8 w-8" />
+          {variations > 0 && (
+            <span className="absolute bottom-2 left-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white ring-1 ring-white/15 backdrop-blur-sm">
+              +{variations} variation{variations === 1 ? "" : "s"}
+            </span>
+          )}
           <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
         </div>
         <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
