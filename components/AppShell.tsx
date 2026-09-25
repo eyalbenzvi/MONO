@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
 import { Header } from "@/components/Header";
@@ -12,6 +13,22 @@ import { useUiStore } from "@/store/useUiStore";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Leaving the shop area forgets where a product page was opened from.
+  useEffect(() => {
+    if (!/^\/shop(\/|$)/.test(pathname)) useUiStore.getState().setProductOrigin(null);
+  }, [pathname]);
+
+  // Another tab changed the saved session (a save, the bag…): reload it here
+  // instead of overwriting it with this tab's stale copy on the next write.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === useShirtStore.persist.getOptions().name) useShirtStore.persist.rehydrate();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Rehydrate from localStorage on the client only (avoids SSR mismatch),
   // then top the deck back up in case the dataset changed.

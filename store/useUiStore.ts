@@ -20,15 +20,20 @@ interface UiState {
     limit: number;
     scrollTop: number;
   };
-  /** A product page was opened from the shop grid (so "← Shop" can go back). */
-  cameFromShop: boolean;
+  /**
+   * Where the current product page was opened from, when "← Shop" may simply
+   * go back in history (restoring filters + scroll): "/shop/" when opened from
+   * the grid. Cleared when a product is opened from anywhere else (similar
+   * prints) and when leaving the shop, so Back never lands somewhere odd.
+   */
+  productOrigin: string | null;
   /** The tee the share sheet is open for (and in which colourway). */
   share: { id: string; color: BaseColor } | null;
 
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
-  setCameFromShop: (v: boolean) => void;
+  setProductOrigin: (path: string | null) => void;
   openShare: (id: string, color: BaseColor) => void;
   closeShare: () => void;
 }
@@ -39,7 +44,7 @@ export const useUiStore = create<UiState>()((set) => ({
   debug: false,
   headerHidden: false,
   shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE, scrollTop: 0 },
-  cameFromShop: false,
+  productOrigin: null,
   share: null,
 
   setDebug: (on) => {
@@ -53,7 +58,7 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
-  setCameFromShop: (cameFromShop) => set({ cameFromShop }),
+  setProductOrigin: (productOrigin) => set({ productOrigin }),
   openShare: (id, color) => set({ share: { id, color } }),
   closeShare: () => set({ share: null }),
 }));

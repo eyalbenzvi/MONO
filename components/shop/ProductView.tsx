@@ -38,8 +38,8 @@ export function ProductView({ id }: { id: string }) {
   const addToCart = useShirtStore((s) => s.addToCart);
   const saved = useShirtStore((s) => s.likedIds.includes(id));
   const toggleSaved = useShirtStore((s) => s.toggleSaved);
-  const cameFromShop = useUiStore((s) => s.cameFromShop);
-  const setCameFromShop = useUiStore((s) => s.setCameFromShop);
+  const productOrigin = useUiStore((s) => s.productOrigin);
+  const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const [view, setView] = useState<View>("tee");
   const [zoom, setZoom] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
@@ -106,8 +106,8 @@ export function ProductView({ id }: { id: string }) {
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when we came from it.
-    if (cameFromShop) {
-      setCameFromShop(false);
+    if (productOrigin === "/shop/") {
+      setProductOrigin(null);
       router.back();
     } else router.push("/shop/");
   };
@@ -376,7 +376,7 @@ export function ProductView({ id }: { id: string }) {
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">
               {similar.map((s) => (
-                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} />
+                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} onOpen={() => setProductOrigin(null)} />
               ))}
             </div>
           </section>

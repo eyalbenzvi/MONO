@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
@@ -23,9 +23,16 @@ export function ShopView() {
   const { done, total, complete } = useCalibrationProgress();
   const { category, sort, teeView, limit } = useUiStore((s) => s.shop);
   const setShop = useUiStore((s) => s.setShop);
-  const setCameFromShop = useUiStore((s) => s.setCameFromShop);
+  const setProductOrigin = useUiStore((s) => s.setProductOrigin);
 
-  const ranked = useMemo(() => rankShirts(vector, SHIRTS, sort), [vector, sort]);
+  // Rank with a snapshot of the taste vector taken on entry (and when sort or
+  // category change): a heart tap trains the vector, and re-ranking live
+  // would reshuffle the grid under the user's finger.
+  const [rankVector, setRankVector] = useState(vector);
+  useEffect(() => {
+    setRankVector(useShirtStore.getState().preferenceVector);
+  }, [hydrated, sort, category]);
+  const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort), [rankVector, sort]);
   const bestId = ranked[0]?.shirt.id;
   // One design per family (the best-ranked one) — its siblings are offered as
   // variations on the product page. With "For you", neighbouring cards also
@@ -176,7 +183,7 @@ export function ShopView() {
                     variations={variations}
                     color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && shirt.id === bestId}
-                    onOpen={() => setCameFromShop(true)}
+                    onOpen={() => setProductOrigin("/shop/")}
                   />
                 ))}
               </div>
