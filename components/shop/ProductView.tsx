@@ -4,14 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Heart, Ruler, ShoppingBag } from "lucide-react";
+import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, ShoppingBag } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Spec } from "@/components/ShirtCard";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, LABEL, MatchBadge, SizeSelector, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
-import { SHIRTS, getShirtById } from "@/lib/catalog";
+import { SHIRTS, familyMembers, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
 import { useShirtStore } from "@/store/useShirtStore";
 import { makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
@@ -44,6 +44,13 @@ export function ProductView({ id }: { id: string }) {
   const sizeRow = useRef<HTMLDivElement>(null);
   const onScroll = useMemo(() => makeHeaderScrollHandler(), []);
 
+  // Arriving via ".../#variations" (e.g. from a Discover card): jump to them.
+  const variationsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (hydrated && window.location.hash === "#variations")
+      requestAnimationFrame(() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [hydrated]);
+
   // Specs are open by default on desktop, collapsed on phones.
   const [detailsOpen, setDetailsOpen] = useState(false);
   useEffect(() => setDetailsOpen(window.matchMedia("(min-width: 768px)").matches), []);
@@ -63,7 +70,15 @@ export function ProductView({ id }: { id: string }) {
   const size = hydrated ? selected : undefined;
   const score = matchScore(vector, shirt.features);
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
-  const similar = similarShirts(shirt, SHIRTS, 4);
+  const members = familyMembers(shirt);
+  // "Similar" = related but *different* designs: never this family (those are
+  // the variations above) and at most one per algorithm.
+  const similar = (() => {
+    const seen = new Set([shirt.variant]);
+    return similarShirts(shirt, SHIRTS, 200)
+      .filter((s) => s.family !== shirt.family && !seen.has(s.variant) && (seen.add(s.variant), true))
+      .slice(0, 4);
+  })();
 
   // Never a dead, disabled button: without a size it guides you to the sizes.
   const onBuy = () => {
@@ -149,6 +164,19 @@ export function ProductView({ id }: { id: string }) {
 
             <p className="mt-3 text-sm leading-relaxed text-neutral-300">{shirt.description}</p>
 
+            {members.length > 1 ? (
+              <button
+                type="button"
+                onClick={() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
+              >
+                <Layers className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
+                <ArrowDown className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <p className="mt-3 text-xs text-neutral-400">One of a kind — no close variations.</p>
+            )}
+
             <div className="mt-5">
               <p className={LABEL}>Tee colour</p>
               <ColorSelector value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
@@ -228,6 +256,45 @@ export function ProductView({ id }: { id: string }) {
         </div>
 
         {/* Client-only: keeps the 1,000 pre-rendered product pages small. */}
+        {hydrated && members.length > 1 && (
+          <section ref={variationsRef} id="variations" className="mt-10 scroll-mt-4">
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="text-base font-semibold">Variations</h2>
+              <span className="text-xs text-neutral-400">
+                {members.length} versions of this print
+              </span>
+            </div>
+            <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
+              {members.map((m) => {
+                const current = m.id === shirt.id;
+                return (
+                  <Link
+                    key={m.id}
+                    href={`/shop/${m.id}/`}
+                    replace
+                    // Keep the tee colour the user is looking at.
+                    onClick={() => setColor(m.id, color)}
+                    aria-current={current ? "page" : undefined}
+                    aria-label={`${m.title}, $${m.price}${current ? " (showing)" : ""}`}
+                    className={`relative w-28 shrink-0 rounded-2xl p-1.5 transition ${STAGE_BG} ${
+                      current ? "ring-2 ring-white" : "ring-1 ring-white/10 hover:ring-white/40"
+                    }`}
+                  >
+                    {current && (
+                      <span className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-white text-black">
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                    )}
+                    <TeeMockup shirt={m} color={color} shadow={false} className="w-full" />
+                    <p className="mt-1 truncate px-0.5 text-[11px] text-neutral-300">{m.title}</p>
+                    <p className="px-0.5 font-mono text-[11px] text-neutral-400">${m.price}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {hydrated && (
           <section className="mt-10">
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>

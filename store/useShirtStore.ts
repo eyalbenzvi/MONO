@@ -2,15 +2,10 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import {
-  CALIBRATION_SIZE,
-  getCalibrationQueue,
-  getNextCard,
-  matchScore,
-  updateUserVector,
-} from "@/lib/recommendation";
+import { CALIBRATION_SIZE, getCalibrationQueue, matchScore, updateUserVector } from "@/lib/recommendation";
+import { DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
-import { SHIRTS, getShirtById } from "@/lib/catalog";
+import { FAMILY_LEADERS, getShirtById } from "@/lib/catalog";
 import {
   COLOR_LABELS,
   createInitialVector,
@@ -25,7 +20,7 @@ import {
   type UserSession,
 } from "@/types/shirt";
 
-export const DECK_SIZE = 3;
+export { DECK_SIZE, type DeckEntry };
 
 /**
  * The calibration set comes from getCalibrationQueue (unchanged); only the
@@ -33,17 +28,15 @@ export const DECK_SIZE = 3;
  * (highest contrast + density) — a stronger opener than a faint sketch.
  */
 export const CALIBRATION_IDS = (() => {
-  const queue = getCalibrationQueue(SHIRTS, CALIBRATION_SIZE);
+  // One representative per design family, so the taste test never shows two
+  // variations of the same print.
+  const queue = getCalibrationQueue(FAMILY_LEADERS, CALIBRATION_SIZE);
   const boldness = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
   const opener = queue.reduce((best, s) => (boldness(s) > boldness(best) ? s : best), queue[0]);
   return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
 })();
 export const CALIBRATION_TOTAL = CALIBRATION_IDS.length;
 
-export interface DeckEntry {
-  id: string;
-  strategy: RecommendationStrategy;
-}
 
 export interface LastUpdate {
   shirtId: string;
@@ -111,25 +104,9 @@ interface ShirtState extends PersistedState {
   setHydrated: () => void;
 }
 
-/** Draws cards until the deck is full: calibration set first, then the engine. */
-function buildDeck(deck: DeckEntry[], vector: UserProfileVector, seenIds: string[]): DeckEntry[] {
-  const seen = new Set(seenIds);
-  const next = deck.filter((e) => getShirtById(e.id) && !seen.has(e.id));
-  next.forEach((e) => seen.add(e.id));
-  while (next.length < DECK_SIZE) {
-    const calibrationId = CALIBRATION_IDS.find((id) => !seen.has(id));
-    if (calibrationId) {
-      next.push({ id: calibrationId, strategy: "calibration" });
-      seen.add(calibrationId);
-      continue;
-    }
-    const pick = getNextCard(vector, SHIRTS, seen);
-    if (!pick) break;
-    next.push({ id: pick.shirt.id, strategy: pick.strategy });
-    seen.add(pick.shirt.id);
-  }
-  return next;
-}
+/** Deal the deck: calibration first, never two designs of one family (lib/deck). */
+const buildDeck = (deck: DeckEntry[], vector: UserProfileVector, history: string[]) =>
+  dealDeck(deck, vector, history, CALIBRATION_IDS);
 
 const seenIds = (history: SwipeEvent[]) => history.map((h) => h.shirtId);
 
@@ -384,11 +361,9 @@ export const useShirtStore = create<ShirtState>()(
 
 /** How many calibration prints the user has already seen (any source). */
 export function useCalibrationProgress() {
-  // Select a primitive so the selector result is referentially stable.
-  const done = useShirtStore((s) => {
-    const seen = new Set(s.swipeHistory.map((h) => h.shirtId));
-    return CALIBRATION_IDS.filter((id) => seen.has(id)).length;
-  });
+  // Counted per family: saving a sibling of a calibration print in the shop
+  // also counts. Selects a primitive so the result is referentially stable.
+  const done = useShirtStore((s) => calibrationDone(CALIBRATION_IDS, s.swipeHistory.map((h) => h.shirtId)));
   return { done, total: CALIBRATION_TOTAL, complete: done >= CALIBRATION_TOTAL };
 }
 

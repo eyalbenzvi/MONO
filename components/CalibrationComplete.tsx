@@ -7,7 +7,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { SHIRTS } from "@/lib/catalog";
+import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
 import { rankShirts, topTraits } from "@/lib/recommendation";
 import { CALIBRATION_IDS, useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 
@@ -24,7 +24,8 @@ export function CalibrationComplete() {
   const close = useCallback(() => acknowledge(), [acknowledge]);
   useFocusTrap(sheet, open, close);
 
-  const picks = open ? rankShirts(vector, SHIRTS).slice(0, 3) : [];
+  // Three clearly different designs: different families and algorithms.
+  const picks = open ? paceByVariant(dedupeByFamily(rankShirts(vector, SHIRTS)), 3).slice(0, 3) : [];
   const traits = open ? topTraits(vector, 3) : [];
 
   return (

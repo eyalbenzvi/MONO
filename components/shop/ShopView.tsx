@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { SHIRTS } from "@/lib/catalog";
-import { rankShirts, topTraits, type RankedShirt, type ShopSort } from "@/lib/recommendation";
+import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
+import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, FEATURE_LABELS, type BaseColor, type FeatureKey } from "@/types/shirt";
@@ -29,27 +29,6 @@ const SORTS: { value: ShopSort; label: string }[] = [
   { value: "price-desc", label: "Price: high–low" },
 ];
 
-/**
- * Display-only variety: with the default ranking, never show more than two
- * prints of the same family in a row — pull the next-best of another family
- * forward instead. Scores and the ranking itself are untouched.
- */
-function interleave(list: RankedShirt[]): RankedShirt[] {
-  const pool = [...list];
-  const out: RankedShirt[] = [];
-  while (pool.length) {
-    const a = out[out.length - 1]?.shirt.category;
-    const b = out[out.length - 2]?.shirt.category;
-    let i = 0;
-    if (a && a === b) {
-      const j = pool.findIndex((r) => r.shirt.category !== a);
-      if (j !== -1) i = j;
-    }
-    out.push(pool.splice(i, 1)[0]);
-  }
-  return out;
-}
-
 export function ShopView() {
   const hydrated = useHydrated();
   const vector = useShirtStore((s) => s.preferenceVector);
@@ -60,9 +39,12 @@ export function ShopView() {
 
   const ranked = useMemo(() => rankShirts(vector, SHIRTS, sort), [vector, sort]);
   const bestId = ranked[0]?.shirt.id;
+  // One design per family (the best-ranked one) — its siblings are offered as
+  // variations on the product page. With "For you", neighbouring cards also
+  // never share an algorithm (display-only pacing; scores are untouched).
   const visible = useMemo(() => {
-    const filtered = ranked.filter(({ shirt }) => !style || shirt.features[style] >= STYLE_THRESHOLD);
-    return sort === "match" && !style ? interleave(filtered) : filtered;
+    const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !style || shirt.features[style] >= STYLE_THRESHOLD));
+    return sort === "match" ? paceByVariant(filtered, 3) : filtered;
   }, [ranked, style, sort]);
   const traits = topTraits(vector, 3);
 
@@ -191,18 +173,19 @@ export function ShopView() {
         </div>
 
         <p className="mb-3 text-xs text-neutral-400">
-          {visible.length} tee{visible.length === 1 ? "" : "s"}
+          {visible.length} design{visible.length === 1 ? "" : "s"} · tap one to see its variations
         </p>
 
         {hydrated ? (
           visible.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-                {visible.slice(0, limit).map(({ shirt, score }) => (
+                {visible.slice(0, limit).map(({ shirt, score, variations }) => (
                   <ProductCard
                     key={shirt.id}
                     shirt={shirt}
                     score={score}
+                    variations={variations}
                     color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && shirt.id === bestId}
                     onOpen={() => setCameFromShop(true)}

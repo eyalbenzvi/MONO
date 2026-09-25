@@ -46,6 +46,14 @@ export interface ShirtProduct {
   /** 3:4 monochrome SVG print, relative to the site root (e.g. /prints/print_1.svg). */
   backPrintUrl: string;
   category: ShirtCategory;
+  /** Algorithm within the category (e.g. "facade", "ridges"). */
+  variant: string;
+  /**
+   * Design family: near-identical prints (same algorithm, close parameters).
+   * Discover and the shop show one design per family; the rest are offered
+   * as variations on the product page.
+   */
+  family: string;
   description: string;
   features: FeatureVector;
 }

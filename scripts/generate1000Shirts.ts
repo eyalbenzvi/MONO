@@ -103,9 +103,23 @@ function smooth(points: [number, number][], closed = false): string {
 /* Design generators                                                   */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Visual signature of a design, used to group near-identical prints into
+ * families. `key` holds the categorical choices that change the look outright
+ * (algorithm, word, shape, polarity…); `vec` holds the continuous parameters
+ * normalised to ~[0, 1]. Designs only share a family when their keys match
+ * and their vectors are close. Computing it consumes no randomness, so the
+ * prints are unaffected.
+ */
+interface Signature {
+  key: string;
+  vec: number[];
+}
+
 interface Design {
   body: string;
   variant: string;
+  sig: Signature;
   description: string;
   features: Record<FeatureKey, number>;
   /** 0..1, drives price. */
@@ -150,6 +164,7 @@ const facadeGrid: Generator = (rng, ink) => {
   return {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${cells}</g>`,
     variant: "facade",
+    sig: { key: "facade", vec: [(cols - 4) / 8, (rows - 5) / 11, fillRatio] },
     description: `Brutalist facade grid, ${cols}×${rows} bays with ${Math.round(fillRatio * 100)}% solid infill.`,
     complexity: density,
     features: {
@@ -193,6 +208,7 @@ const perspectiveCorridor: Generator = (rng, ink) => {
   return {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/><path d="${d.trim()}"/>${rects}</g>`,
     variant: "perspective",
+    sig: { key: "perspective", vec: [(vx - 80) / 140, (vy - 120) / 160] },
     description: `One-point perspective corridor: ${rays} vanishing rays and ${frames} receding frames.`,
     complexity: density,
     features: {
@@ -238,6 +254,7 @@ const skyline: Generator = (rng, ink, ground) => {
   return {
     body,
     variant: "skyline",
+    sig: { key: "skyline", vec: [(towers - 5) / 8, windowP] },
     description: `Solid skyline of ${towers} towers with knocked-out window grids.`,
     complexity: clamp01(coverage + windowP * 0.3),
     features: {
@@ -282,6 +299,7 @@ const slabStack: Generator = (rng, ink) => {
   return {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "slabs",
+    sig: { key: "slabs", vec: [solidRatio, (slabs - 4) / 7] },
     description: `Cantilevered stack of ${slabs} concrete slabs, ${solid} poured solid.`,
     complexity: density,
     features: {
@@ -301,8 +319,9 @@ const slabStack: Generator = (rng, ink) => {
 
 /* b) Geometric & polygons ------------------------------------------- */
 
-function shape(rng: Rng, cx: number, cy: number, r: number, ink: string, fill: boolean, sw: number) {
+function shape(rng: Rng, cx: number, cy: number, r: number, ink: string, fill: boolean, sw: number, kinds?: string[]) {
   const kind = pick(rng, ["circle", "square", "triangle", "hex", "diamond"] as const);
+  kinds?.push(kind);
   const style = fill ? `fill="${ink}"` : `fill="none" stroke="${ink}" stroke-width="${sw}"`;
   if (kind === "circle") return `<circle cx="${n1(cx)}" cy="${n1(cy)}" r="${n1(r)}" ${style}/>`;
   const sides = kind === "triangle" ? 3 : kind === "hex" ? 6 : 4;
@@ -315,15 +334,17 @@ const monoForm: Generator = (rng, ink) => {
   const sw = pick(rng, [2, 3, 4, 6]);
   let body = "";
   let filled = 0;
+  const kinds: string[] = [];
   for (let i = 0; i < n; i++) {
     const fill = rng() < 0.5;
     if (fill) filled++;
-    body += shape(rng, W / 2 + range(rng, -35, 35), H / 2 + range(rng, -50, 50), range(rng, 55, 115), ink, fill, sw);
+    body += shape(rng, W / 2 + range(rng, -35, 35), H / 2 + range(rng, -50, 50), range(rng, 55, 115), ink, fill, sw, kinds);
   }
   const fillRatio = filled / n;
   return {
     body,
     variant: "monoform",
+    sig: { key: `monoform-${n}-${kinds[0]}`, vec: [fillRatio] },
     description: `${n === 1 ? "A single" : n === 2 ? "Two overlapping" : "Three overlapping"} primary form${n > 1 ? "s" : ""}, reduced to pure geometry.`,
     complexity: 0.15 + n * 0.08,
     features: {
@@ -357,6 +378,7 @@ const scatter: Generator = (rng, ink) => {
   return {
     body,
     variant: "scatter",
+    sig: { key: "scatter", vec: [fillRatio, (n - 5) / 9] },
     description: `${n} primitives scattered in a loose constellation.`,
     complexity: density,
     features: {
@@ -389,6 +411,7 @@ const concentric: Generator = (rng, ink) => {
   return {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "concentric",
+    sig: { key: `concentric-${sides}-${Math.abs(twist) > 0.06 ? "spiral" : "straight"}`, vec: [] },
     description: `${rings} concentric ${sides}-sided rings${twist ? " with a slow twist" : ""}.`,
     complexity: density,
     features: {
@@ -434,6 +457,7 @@ const truchet: Generator = (rng, ink) => {
   return {
     body: `<path d="${d}" fill="${ink}"/><rect x="${X0}" y="${n1(y0)}" width="${IW}" height="${n1(rows * size)}" fill="none" stroke="${ink}" stroke-width="1.5"/>`,
     variant: "tiling",
+    sig: { key: "tiling", vec: [(cols - 4) / 6] },
     description: `Truchet tiling, ${cols}×${rows} half-square triangles.`,
     complexity: density,
     features: {
@@ -475,6 +499,7 @@ const bigWord: Generator = (rng, ink) => {
   return {
     body: text + caption,
     variant: "word",
+    sig: { key: `word-${word}-${vertical ? "v" : "h"}-${outline ? "o" : "f"}`, vec: [] },
     description: `"${word}" set ${vertical ? "vertically " : ""}in heavy grotesk${outline ? ", outlined" : ""}.`,
     complexity: 0.25,
     features: {
@@ -512,6 +537,7 @@ const coordinates: Generator = (rng, ink) => {
   return {
     body,
     variant: "coordinates",
+    sig: { key: "coords", vec: [(lines - 6) / 12, (cx - X0 - 60) / (IW - 120), (cy - Y0 - 70) / 100] },
     description: `Survey sheet for ${fmt(lat, "N", "S").replace("&#176;", "°")}, crosshair and ${lines} logged points.`,
     complexity: density,
     features: {
@@ -544,6 +570,7 @@ const repeatStack: Generator = (rng, ink) => {
   return {
     body,
     variant: "repeat",
+    sig: { key: `repeat-${word}-${alt ? "alt" : "solid"}`, vec: [(lines - 7) / 9] },
     description: `"${word}" repeated ${lines} times${alt ? ", alternating solid and outline" : ""}.`,
     complexity: density,
     features: {
@@ -578,6 +605,7 @@ const manifesto: Generator = (rng, ink) => {
   return {
     body,
     variant: "manifesto",
+    sig: { key: `manifesto-${cols}`, vec: [(rows - 16) / 12] },
     description: `Manifesto layout: ${heading} masthead over ${cols} columns of dense type.`,
     complexity: density,
     features: {
@@ -637,6 +665,7 @@ const radialHalftone: Generator = (rng, ink) => {
   return {
     body,
     variant: "radial",
+    sig: { key: `radial-${invert ? "inv" : "std"}`, vec: [(cx - X0) / IW, (cy - Y0) / IH] },
     description: `Radial halftone burst, ${step}px screen${invert ? ", inverted" : ""}.`,
     complexity: clamp01(coverage * 1.5 + (18 - step) / 14),
     features: {
@@ -668,6 +697,7 @@ const linearHalftone: Generator = (rng, ink) => {
   return {
     body,
     variant: "gradient",
+    sig: { key: `gradient-${bands}`, vec: [(((angle % Math.PI) + Math.PI) % Math.PI) / Math.PI] },
     description: `Ordered halftone gradient in ${bands} band${bands > 1 ? "s" : ""}, ${step}px screen.`,
     complexity: clamp01(coverage * 1.4 + (17 - step) / 12),
     features: {
@@ -706,6 +736,7 @@ const dotMatrix: Generator = (rng, ink) => {
   return {
     body,
     variant: "matrix",
+    sig: { key: `matrix-${form}-${offR > 0 ? "grid" : "clean"}`, vec: [] },
     description: `Dot-matrix ${form} on a ${step}px LED grid.`,
     complexity: clamp01(coverage * 1.5 + 0.2),
     features: {
@@ -748,6 +779,7 @@ const stipple: Generator = (rng, ink) => {
   return {
     body: `<g fill="${ink}">${body}</g>`,
     variant: "stipple",
+    sig: { key: `stipple-${clusters}`, vec: [(placed - 300) / 500] },
     description: `Stippled grain cloud of ${placed} hand-set dots in ${clusters} mass${clusters > 1 ? "es" : ""}.`,
     complexity: density,
     features: {
@@ -792,6 +824,7 @@ const ridgeLines: Generator = (rng, ink, ground) => {
   return {
     body,
     variant: "ridges",
+    sig: { key: `ridges-${peaks}`, vec: [(lines - 18) / 24] },
     description: `${lines} stacked ridge lines rising into ${peaks} peak${peaks > 1 ? "s" : ""}, like a pulsar plot.`,
     complexity: density,
     features: {
@@ -831,6 +864,7 @@ const waveInterference: Generator = (rng, ink) => {
   return {
     body: `<clipPath id="c"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#c)" fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "interference",
+    sig: { key: `interference-${families}`, vec: [(perFamily - 8) / 14] },
     description: `${families} families of sine waves crossing into a moiré.`,
     complexity: density,
     features: {
@@ -874,6 +908,7 @@ const contours: Generator = (rng, ink) => {
   return {
     body: `<clipPath id="c"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#c)" fill="none" stroke="${ink}" stroke-width="${sw}">${body}</g>`,
     variant: "contours",
+    sig: { key: `contours-${k1}`, vec: [(rings - 8) / 16] },
     description: `Topographic contour map, ${rings} elevation lines.`,
     complexity: density,
     features: {
@@ -903,6 +938,7 @@ const continuousLine: Generator = (rng, ink) => {
   return {
     body: `<g fill="none" stroke="${ink}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${body}</g>`,
     variant: "gesture",
+    sig: { key: `gesture-${strokes}`, vec: [(sw - 2) / 4] },
     description: `${strokes === 1 ? "A single continuous" : `${strokes} continuous`} gestural line${strokes > 1 ? "s" : ""}.`,
     complexity: 0.15 + strokes * 0.08,
     features: {
@@ -982,6 +1018,47 @@ function frame(rng: Rng, ink: string): { svg: string; kind: "frame" | "corners" 
   return { svg: "", kind: "none" };
 }
 
+/**
+ * RMS distance between signature vectors (both in ~[0,1] per dimension).
+ * Below this, two designs of the same kind read as variations of one print.
+ * Signatures only carry parameters the eye actually notices (tuned against
+ * contact sheets), so e.g. ring count or stroke weight don't split families.
+ */
+const FAMILY_THRESHOLD = 0.25;
+
+function sigDistance(a: number[], b: number[]) {
+  if (a.length === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += (a[i] - b[i]) ** 2;
+  return Math.sqrt(sum / a.length);
+}
+
+/**
+ * Leader clustering: each design joins the nearest existing family leader
+ * with the same key within FAMILY_THRESHOLD, else it founds a new family.
+ * Comparing against leaders only (not every member) stops similarity from
+ * chaining across a whole algorithm. Deterministic in catalog order.
+ */
+function assignFamilies(sigs: Signature[]): number[] {
+  const leaders: { key: string; vec: number[]; family: number }[] = [];
+  return sigs.map((sig) => {
+    let best: (typeof leaders)[number] | null = null;
+    let bestD = Infinity;
+    for (const l of leaders) {
+      if (l.key !== sig.key) continue;
+      const d = sigDistance(l.vec, sig.vec);
+      if (d < FAMILY_THRESHOLD && d < bestD) {
+        best = l;
+        bestD = d;
+      }
+    }
+    if (best) return best.family;
+    const family = leaders.length;
+    leaders.push({ key: sig.key, vec: sig.vec, family });
+    return family;
+  });
+}
+
 function main() {
   const rng = mulberry32(SEED);
 
@@ -996,7 +1073,8 @@ function main() {
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
   const counters: Record<ShirtCategory, number> = { architectural: 0, geometric: 0, typography: 0, halftone: 0, waves: 0 };
-  const shirts: ShirtProduct[] = [];
+  const shirts: Omit<ShirtProduct, "family">[] = [];
+  const sigs: Signature[] = [];
   let bytes = 0;
 
   for (let i = 0; i < TOTAL; i++) {
@@ -1048,6 +1126,8 @@ function main() {
       fr.svg +
       `</svg>`;
     writeFileSync(path.join(PRINTS_DIR, `print_${n}.svg`), svg);
+    // A knocked-out block reads completely differently from the plain print.
+    sigs.push({ key: `${design.sig.key}|${knockout ? "ko" : "std"}`, vec: design.sig.vec });
     bytes += svg.length;
 
     const [adjs, nouns] = TITLE_WORDS[category];
@@ -1062,6 +1142,7 @@ function main() {
       baseColor,
       backPrintUrl: `/prints/print_${n}.svg`,
       category,
+      variant: design.variant,
       // No ink colour here: every design is sold in both colourways (the app
       // shows the ink for the chosen tee).
       description: `${design.description}${knockout ? " Knocked out of a solid ink block." : ""}`,
@@ -1069,14 +1150,27 @@ function main() {
     });
   }
 
-  // One object per line: diff-friendly but compact.
-  writeFileSync(DATA_FILE, `[\n${shirts.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
+  const familyIndex = assignFamilies(sigs);
+  const catalog: ShirtProduct[] = shirts.map((s, i) => ({
+    ...s,
+    family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
+  }));
 
+  // One object per line: diff-friendly but compact.
+  writeFileSync(DATA_FILE, `[\n${catalog.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
+
+  const sizes = new Map<string, number>();
+  for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
+  const hist = new Map<number, number>();
+  for (const n of sizes.values()) hist.set(n, (hist.get(n) ?? 0) + 1);
   const black = shirts.filter((s) => s.baseColor === "black").length;
   const titles = new Set(shirts.map((s) => s.title)).size;
   console.log(`Generated ${shirts.length} shirts → ${path.relative(ROOT, DATA_FILE)}`);
   console.log(`  prints: ${shirts.length} SVGs in ${path.relative(ROOT, PRINTS_DIR)} (${(bytes / 1024 / 1024).toFixed(2)} MB, avg ${(bytes / shirts.length / 1024).toFixed(1)} KB)`);
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
+  console.log(
+    `  families: ${sizes.size} (sizes: ${[...hist.entries()].sort((a, b) => a[0] - b[0]).map(([k, v]) => `${k}×${v}`).join(", ")})`,
+  );
   console.log(`  price range: $${Math.min(...shirts.map((s) => s.price))}–$${Math.max(...shirts.map((s) => s.price))}`);
 }
 
