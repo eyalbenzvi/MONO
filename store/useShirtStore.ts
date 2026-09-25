@@ -318,7 +318,7 @@ export const useShirtStore = create<ShirtState>()(
     }),
     {
       name: "mono-session-v1",
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       // v3 replaced the 25-shirt catalog with the generated 1,000: every stored
@@ -329,8 +329,9 @@ export const useShirtStore = create<ShirtState>()(
       migrate: (persisted, version) => {
         if (version < 3) return initialPersisted();
         const state = persisted as PersistedState;
-        // v5 added feature dimensions (pictorial, wit, retro, nature): extend
-        // stored vectors with neutral 0.5 instead of resetting the user's taste.
+        // v5 added feature dimensions (pictorial, wit, retro, nature), v6 added
+        // figurative and classic: extend stored vectors with neutral 0.5
+        // instead of resetting the user's taste.
         const extend = (v: UserProfileVector | undefined) => ({ ...createInitialVector(), ...(v ?? {}) });
         const withColor = (items: CartItem[] = []) =>
           items.flatMap((i) => {

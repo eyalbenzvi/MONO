@@ -1,5 +1,5 @@
 /**
- * Offline procedural generator for the MONO catalog (2,000 designs).
+ * Offline procedural generator for the MONO catalog (2,800 designs).
  *
  *   npm run generate
  *
@@ -9,6 +9,8 @@
  * - ids 1–1000: the original five families (./gen/legacy) — unchanged.
  * - ids 1001–2000: five new categories (./gen/expansion): scenes, slogans,
  *   pixel & retro, badges, illustrated objects.
+ * - ids 2001–2800: ASCII art, caricatures (original archetypes), famous art
+ *   (public-domain homages) and iconic images (./gen/set3).
  *
  * Every print is single-ink: white ink on a black ground for black tees,
  * black ink on a white ground for white tees (tones come from dot / hatch
@@ -24,6 +26,11 @@ import type { BaseColor, FeatureKey, ShirtCategory, ShirtProduct } from "../type
 import { H, M, W, clamp01, int, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_GENERATORS } from "./gen/legacy";
 import { EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
+import { asciiArt, asciiBanner, asciiScene, asciiShade } from "./gen/set3/ascii";
+import { caricatureBobble, caricatureMugshot, caricaturePortrait, caricatureWanted } from "./gen/set3/caricature";
+import { greatWave, masterpiece, modernMasters, starryNight } from "./gen/set3/famousart";
+import { landmark, motif, spaceAge, travelPoster } from "./gen/set3/iconic";
+import type { Generator } from "./gen/core";
 
 const SEED = 0x6d6f6e6f; // "mono"
 const PER_SET = 1000;
@@ -31,6 +38,22 @@ const BLACK_SHARE = 0.7;
 
 const LEGACY_CATEGORIES: ShirtCategory[] = ["architectural", "geometric", "typography", "halftone", "waves"];
 const NEW_CATEGORIES: ShirtCategory[] = ["scenes", "slogans", "pixel", "emblems", "objects"];
+const SET3_CATEGORIES: ShirtCategory[] = ["ascii", "caricatures", "famousart", "iconic"];
+const SET3_PER_CATEGORY = 200;
+
+const SET3_GENERATORS: Record<string, Generator[]> = {
+  ascii: [asciiBanner, asciiShade, asciiArt, asciiScene],
+  caricatures: [caricaturePortrait, caricatureWanted, caricatureMugshot, caricatureBobble],
+  famousart: [greatWave, starryNight, modernMasters, masterpiece],
+  iconic: [landmark, travelPoster, spaceAge, motif],
+};
+
+/** Each set: its categories, generators and size. Ids run on across sets. */
+const SETS = [
+  { cats: LEGACY_CATEGORIES, gens: LEGACY_GENERATORS, size: PER_SET, legacy: true },
+  { cats: NEW_CATEGORIES, gens: EXPANSION_GENERATORS, size: PER_SET, legacy: false },
+  { cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false },
+];
 
 const ROOT = path.resolve(__dirname, "..");
 const PRINTS_DIR = path.join(ROOT, "public", "prints");
@@ -81,6 +104,22 @@ const TITLE_WORDS: Record<ShirtCategory, [string[], string[]]> = {
     ["Everyday", "Lucky", "Borrowed", "Pocket", "Studio", "Humble", "Curious", "Spare", "Found", "Tiny"],
     ["Object", "Thing", "Tool", "Relic", "Item", "Artifact", "Gadget", "Keepsake", "Piece", "Kit"],
   ],
+  ascii: [
+    ["Plain", "Monospace", "Terminal", "Typed", "Legacy", "Command", "Raw", "Console", "Text", "Char"],
+    ["Text", "Prompt", "Render", "Output", "Log", "Screen", "Stream", "Mode", "Buffer", "Shell"],
+  ],
+  caricatures: [
+    ["Usual", "Local", "Classic", "Certified", "Proud", "Typical", "Famous", "Legendary", "Resident", "Friendly"],
+    ["Suspect", "Character", "Regular", "Type", "Face", "Legend", "Specimen", "Persona", "Icon", "Neighbour"],
+  ],
+  famousart: [
+    ["Gallery", "Museum", "Salon", "Old", "Master", "Grand", "Gilded", "Hung", "Framed", "Curated"],
+    ["Study", "Homage", "Piece", "Canvas", "Print", "Sketch", "Classic", "Wing", "Room", "Edition"],
+  ],
+  iconic: [
+    ["Postcard", "World", "Landmark", "Souvenir", "Famous", "Grand", "Wanderer", "Voyage", "Horizon", "Atlas"],
+    ["View", "Icon", "Sight", "Wonder", "Stop", "Poster", "Trip", "Mark", "Route", "Moment"],
+  ],
 };
 
 const SKU_CODE: Record<ShirtCategory, string> = {
@@ -94,10 +133,14 @@ const SKU_CODE: Record<ShirtCategory, string> = {
   pixel: "PIX",
   emblems: "EMB",
   objects: "OBJ",
+  ascii: "ASC",
+  caricatures: "CAR",
+  famousart: "ART",
+  iconic: "ICN",
 };
 
 /** Categories whose designs may be knocked out of a solid ink block. */
-const KNOCKOUT_OK: ShirtCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects"];
+const KNOCKOUT_OK: ShirtCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
 
 /* ------------------------------------------------------------------ */
 /* Assembly                                                            */
@@ -159,34 +202,39 @@ function assignFamilies(sigs: Signature[]): number[] {
   });
 }
 
-const colourSplit = (rng: Rng): BaseColor[] =>
+const colourSplit = (rng: Rng, n: number): BaseColor[] =>
   shuffle(rng, [
-    ...Array<BaseColor>(Math.round(PER_SET * BLACK_SHARE)).fill("black"),
-    ...Array<BaseColor>(PER_SET - Math.round(PER_SET * BLACK_SHARE)).fill("white"),
+    ...Array<BaseColor>(Math.round(n * BLACK_SHARE)).fill("black"),
+    ...Array<BaseColor>(n - Math.round(n * BLACK_SHARE)).fill("white"),
   ]);
 
 function main() {
-  // Exactly 70% black / 30% white in each set of 1,000. The first shuffle is
-  // the original one, so ids 1–1000 keep their colours.
-  const colors = [...colourSplit(mulberry32(SEED)), ...colourSplit(mulberry32(SEED ^ 0x2000))];
+  // Exactly 70% black / 30% white in each set. The first shuffle is the
+  // original one, so ids 1–1000 keep their colours (and so on per set).
+  const colorSeeds = [SEED, SEED ^ 0x2000, SEED ^ 0x3000];
+  const colors = SETS.flatMap((set, k) => colourSplit(mulberry32(colorSeeds[k]), set.size));
+  const total = colors.length;
 
   rmSync(PRINTS_DIR, { recursive: true, force: true });
   mkdirSync(PRINTS_DIR, { recursive: true });
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
-  const counters = Object.fromEntries([...LEGACY_CATEGORIES, ...NEW_CATEGORIES].map((c) => [c, 0])) as Record<ShirtCategory, number>;
+  const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
   const shirts: Omit<ShirtProduct, "family">[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
 
-  for (let i = 0; i < PER_SET * 2; i++) {
+  for (let i = 0; i < total; i++) {
     const n = i + 1;
-    const isNew = i >= PER_SET;
-    const cats = isNew ? NEW_CATEGORIES : LEGACY_CATEGORIES;
+    let setStart = 0;
+    let setIdx = 0;
+    while (i >= setStart + SETS[setIdx].size) setStart += SETS[setIdx++].size;
+    const set = SETS[setIdx];
+    const isNew = !set.legacy;
     // Interleave categories so neighbouring ids differ in style.
-    const category = cats[i % cats.length];
+    const category = set.cats[(i - setStart) % set.cats.length];
     const index = ++counters[category];
-    const gens = (isNew ? EXPANSION_GENERATORS : LEGACY_GENERATORS)[category];
+    const gens = set.gens[category];
     const gen = gens[(index - 1) % gens.length];
 
     const baseColor = colors[i];
@@ -268,12 +316,13 @@ function main() {
   const sizes = new Map<string, number>();
   for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
   const newFamilies = new Set(catalog.slice(PER_SET).map((s) => s.family)).size;
+  const set3Families = new Set(catalog.slice(PER_SET * 2).map((s) => s.family)).size;
   const black = shirts.filter((s) => s.baseColor === "black").length;
   const titles = new Set(shirts.map((s) => s.title)).size;
   console.log(`Generated ${shirts.length} shirts → ${path.relative(ROOT, DATA_FILE)}`);
   console.log(`  prints: ${shirts.length} SVGs in ${path.relative(ROOT, PRINTS_DIR)} (${(bytes / 1024 / 1024).toFixed(2)} MB, avg ${(bytes / shirts.length / 1024).toFixed(1)} KB)`);
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
-  console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies} new)`);
+  console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families} second set, ${set3Families} third set)`);
   console.log(`  categories: ${Object.entries(counters).map(([c, n]) => `${c} ${n}`).join(" · ")}`);
   console.log(`  price range: $${Math.min(...shirts.map((s) => s.price))}–$${Math.max(...shirts.map((s) => s.price))}`);
 }

@@ -95,9 +95,11 @@ export function textEl(
 ) {
   const { fill, font = SANS, weight = 400, anchor = "start", maxW, italic = false, spacing = 0, extra = "" } = opts;
   const style = styleOf(font, weight, italic);
-  // Too wide: shrink the font first (to at most 78%), squeeze only the rest.
+  // Too wide: shrink the font (down to 60%). Sizes come from the widest
+  // fallback font, so the text then fits everywhere; textLength is only a
+  // last resort because it also stretches narrower fonts to the full width.
   let fs = size;
-  if (maxW && measure(txt, fs, style, spacing) > maxW) fs = Math.max(size * 0.78, sizeToFit(txt, maxW, style, size, spacing));
+  if (maxW && measure(txt, fs, style, spacing) > maxW) fs = Math.max(size * 0.6, sizeToFit(txt, maxW, style, size, spacing));
   const fit = maxW && measure(txt, fs, style, spacing) > maxW ? ` textLength="${n1(maxW)}" lengthAdjust="spacingAndGlyphs"` : "";
   return `<text x="${n1(x)}" y="${n1(y)}" font-size="${n1(fs)}" font-weight="${weight}"${italic ? ` font-style="italic"` : ""}${spacing ? ` letter-spacing="${spacing}"` : ""} text-anchor="${anchor}" ${font} fill="${fill}"${fit}${extra}>${esc(txt)}</text>`;
 }

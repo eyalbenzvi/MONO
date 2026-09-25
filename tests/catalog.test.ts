@@ -7,24 +7,25 @@ import { FEATURE_KEYS, SHIRT_CATEGORIES } from "@/types/shirt";
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 describe("generated catalog (data/shirts.json)", () => {
-  it("has 2,000 shirts with unique ids, skus and titles", () => {
-    expect(SHIRTS).toHaveLength(2000);
-    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(2000);
-    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(2000);
-    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(2000);
+  it("has 2,800 shirts with unique ids, skus and titles", () => {
+    expect(SHIRTS).toHaveLength(2800);
+    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(2800);
+    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(2800);
+    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(2800);
   });
 
-  it("is 70% black / 30% white tees in each set of 1,000", () => {
-    for (const set of [SHIRTS.slice(0, 1000), SHIRTS.slice(1000)]) {
-      expect(set.filter((s) => s.baseColor === "black")).toHaveLength(700);
-      expect(set.filter((s) => s.baseColor === "white")).toHaveLength(300);
+  it("is 70% black / 30% white tees in each set", () => {
+    for (const set of [SHIRTS.slice(0, 1000), SHIRTS.slice(1000, 2000), SHIRTS.slice(2000)]) {
+      expect(set.filter((s) => s.baseColor === "black")).toHaveLength(set.length * 0.7);
+      expect(set.filter((s) => s.baseColor === "white")).toHaveLength(set.length * 0.3);
     }
   });
 
-  it("has ten categories, 200 designs each (the second 1,000 adds five new ones)", () => {
-    expect(SHIRT_CATEGORIES).toHaveLength(10);
-    const newCats = new Set(SHIRTS.slice(1000).map((s) => s.category));
-    expect([...newCats].sort()).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
+  it("has fourteen categories, 200 designs each (each set adds its own)", () => {
+    expect(SHIRT_CATEGORIES).toHaveLength(14);
+    const cats = (list: typeof SHIRTS) => [...new Set(list.map((s) => s.category))].sort();
+    expect(cats(SHIRTS.slice(1000, 2000))).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
+    expect(cats(SHIRTS.slice(2000))).toEqual(["ascii", "caricatures", "famousart", "iconic"]);
   });
 
   it("covers all generative categories evenly", () => {
@@ -58,6 +59,14 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(mean("pixel", "retro")).toBeGreaterThan(0.85);
     expect(mean("emblems", "retro")).toBeGreaterThan(0.65);
     expect(mean("objects", "pictorial")).toBeGreaterThan(0.65);
+    expect(mean("ascii", "retro")).toBeGreaterThan(0.75);
+    expect(mean("caricatures", "figurative")).toBeGreaterThan(0.85);
+    expect(mean("caricatures", "wit")).toBeGreaterThan(0.7);
+    expect(mean("famousart", "classic")).toBeGreaterThan(0.85);
+    expect(mean("iconic", "pictorial")).toBeGreaterThan(0.75);
+    // figurative / classic belong to the third set only
+    expect(mean("objects", "figurative")).toBe(0);
+    expect(mean("slogans", "classic")).toBe(0);
     // the new dimensions stay low on the original abstract families
     expect(mean("geometric", "wit")).toBeLessThan(0.1);
     expect(mean("architectural", "nature")).toBeLessThan(0.1);
