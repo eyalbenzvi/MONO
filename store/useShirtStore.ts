@@ -9,10 +9,12 @@ import {
   matchScore,
   updateUserVector,
 } from "@/lib/recommendation";
-import { addItem, cartTotals, changeItemSize, setItemQty } from "@/lib/cart";
+import { addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import {
+  COLOR_LABELS,
   createInitialVector,
+  type BaseColor,
   type CartItem,
   type Order,
   type RecommendationStrategy,
@@ -43,6 +45,8 @@ export interface LastUpdate {
 interface PersistedState extends UserSession {
   deck: DeckEntry[];
   selectedSizes: Record<string, ShirtSize>;
+  /** Tee colour picked per design; missing = the design's original colour. */
+  selectedColors: Record<string, BaseColor>;
   lastUpdate: LastUpdate | null;
   cart: CartItem[];
   lastOrder: Order | null;
@@ -65,9 +69,11 @@ interface ShirtState extends PersistedState {
   toggleSaved: (id: string) => void;
   removeLiked: (id: string) => void;
   setSize: (id: string, size: ShirtSize) => void;
-  addToCart: (id: string, size: ShirtSize, qty?: number) => void;
-  setCartQty: (id: string, size: ShirtSize, qty: number) => void;
-  changeCartSize: (id: string, from: ShirtSize, to: ShirtSize) => void;
+  setColor: (id: string, color: BaseColor) => void;
+  /** Adds in the given colour, else the one picked for this design, else its original. */
+  addToCart: (id: string, size: ShirtSize, color?: BaseColor, qty?: number) => void;
+  setCartQty: (line: Pick<CartItem, "id" | "size" | "color">, qty: number) => void;
+  changeCartItem: (line: Pick<CartItem, "id" | "size" | "color">, to: Partial<Pick<CartItem, "size" | "color">>) => void;
   placeOrder: (customer: { name: string; email: string }) => Order | null;
   acknowledgeCalibration: () => void;
   showToast: (message: string) => void;
@@ -104,6 +110,7 @@ const initialPersisted = (): PersistedState => ({
   swipeHistory: [],
   deck: buildDeck([], createInitialVector(), []),
   selectedSizes: {},
+  selectedColors: {},
   lastUpdate: null,
   cart: [],
   lastOrder: null,
@@ -210,19 +217,23 @@ export const useShirtStore = create<ShirtState>()(
 
       setSize: (id, size) => set((s) => ({ selectedSizes: { ...s.selectedSizes, [id]: size } })),
 
-      addToCart: (id, size, qty = 1) => {
+      setColor: (id, color) => set((s) => ({ selectedColors: { ...s.selectedColors, [id]: color } })),
+
+      addToCart: (id, size, color, qty = 1) => {
         const shirt = getShirtById(id);
         if (!shirt) return;
+        const tee = color ?? get().selectedColors[id] ?? shirt.baseColor;
         set((s) => ({
-          cart: addItem(s.cart, { id, size, qty }),
+          cart: addItem(s.cart, { id, size, color: tee, qty }),
           selectedSizes: { ...s.selectedSizes, [id]: size },
+          selectedColors: { ...s.selectedColors, [id]: tee },
         }));
-        get().showToast(`${shirt.title} · ${size} added to bag`);
+        get().showToast(`${shirt.title} · ${COLOR_LABELS[tee]} · ${size} added to bag`);
       },
 
-      setCartQty: (id, size, qty) => set((s) => ({ cart: setItemQty(s.cart, id, size, qty) })),
+      setCartQty: (line, qty) => set((s) => ({ cart: setItemQty(s.cart, line, qty) })),
 
-      changeCartSize: (id, from, to) => set((s) => ({ cart: changeItemSize(s.cart, id, from, to) })),
+      changeCartItem: (line, to) => set((s) => ({ cart: changeItem(s.cart, line, to) })),
 
       placeOrder: ({ name, email }) => {
         const { cart } = get();
@@ -260,13 +271,29 @@ export const useShirtStore = create<ShirtState>()(
     }),
     {
       name: "mono-session-v1",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       // v3 replaced the 25-shirt catalog with the generated 1,000: every stored
       // id (likes, deck, bag, history) points at a shirt that no longer exists,
       // so older sessions start fresh. v2 only added fields to v1.
-      migrate: (persisted, version) => (version < 3 ? initialPersisted() : (persisted as PersistedState)),
+      // v4 made tee colour a purchase choice: existing bag lines and orders
+      // get their design's original colour.
+      migrate: (persisted, version) => {
+        if (version < 3) return initialPersisted();
+        const state = persisted as PersistedState;
+        const withColor = (items: CartItem[] = []) =>
+          items.flatMap((i) => {
+            const shirt = getShirtById(i.id);
+            return shirt ? [{ ...i, color: i.color ?? shirt.baseColor }] : [];
+          });
+        return {
+          ...state,
+          selectedColors: state.selectedColors ?? {},
+          cart: withColor(state.cart),
+          lastOrder: state.lastOrder ? { ...state.lastOrder, items: withColor(state.lastOrder.items) } : null,
+        };
+      },
       partialize: (s): PersistedState => ({
         likedIds: s.likedIds,
         dislikedIds: s.dislikedIds,
@@ -274,6 +301,7 @@ export const useShirtStore = create<ShirtState>()(
         swipeHistory: s.swipeHistory,
         deck: s.deck,
         selectedSizes: s.selectedSizes,
+        selectedColors: s.selectedColors,
         lastUpdate: s.lastUpdate,
         cart: s.cart,
         lastOrder: s.lastOrder,

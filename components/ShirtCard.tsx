@@ -3,10 +3,11 @@
 import { motion } from "framer-motion";
 import { Compass, RotateCcw, ShoppingBag, Sparkles, Target } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { MatchBadge, SizeSelector, STAGE_BG } from "@/components/ui";
+import { ColorSelector, MatchBadge, SizeSelector, STAGE_BG } from "@/components/ui";
 import { useShirtStore } from "@/store/useShirtStore";
 import {
   CATEGORY_LABELS,
+  COLOR_LABELS,
   FEATURE_KEYS,
   FEATURE_LABELS,
   PRINT_SIZE_CM,
@@ -99,9 +100,11 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const setSize = useShirtStore((s) => s.setSize);
   const toggleFlip = useShirtStore((s) => s.toggleFlip);
   const addToCart = useShirtStore((s) => s.addToCart);
+  const color = useShirtStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
+  const setColor = useShirtStore((s) => s.setColor);
   const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 5);
   const stop = (e: React.PointerEvent) => e.stopPropagation();
-  const black = shirt.baseColor === "black";
+  const black = color === "black";
 
   return (
     <div className="no-scrollbar flex h-full flex-col overflow-y-auto px-5 pb-5 pt-4">
@@ -119,7 +122,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
 
       <div className="mt-3 flex gap-4">
         <div className={`w-28 shrink-0 rounded-2xl p-2 ${STAGE_BG}`}>
-          <TeeMockup shirt={shirt} shadow={false} className="w-full" />
+          <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
         </div>
         <div className="min-w-0">
           <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>
@@ -129,11 +132,16 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
-        <Spec label="Tee" value={black ? "Black" : "White"} />
+        <Spec label="Tee" value={COLOR_LABELS[color]} />
         <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
         <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
         <Spec label="Style" value={CATEGORY_LABELS[shirt.category]} />
       </dl>
+
+      <div className="mt-4">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Tee colour</p>
+        <ColorSelector value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} stopPointer />
+      </div>
 
       <div className="mt-4">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Size</p>
@@ -144,7 +152,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         type="button"
         disabled={!selected}
         onPointerDown={stop}
-        onClick={() => selected && addToCart(shirt.id, selected)}
+        onClick={() => selected && addToCart(shirt.id, selected, color)}
         className="mt-3 flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:bg-white/10 disabled:text-neutral-500"
       >
         <ShoppingBag className="h-4 w-4" />

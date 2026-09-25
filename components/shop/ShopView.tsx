@@ -36,7 +36,8 @@ export function ShopView() {
   const hydrated = useHydrated();
   const vector = useShirtStore((s) => s.preferenceVector);
   const { done, total, complete } = useCalibrationProgress();
-  const [color, setColor] = useState<BaseColor | "all">("all");
+  // Every design comes in both colours, so this is a "view as" switch, not a filter.
+  const [teeView, setTeeView] = useState<BaseColor | "original">("original");
   const [style, setStyle] = useState<FeatureKey | null>(null);
   const [sort, setSort] = useState<ShopSort>("match");
 
@@ -44,14 +45,13 @@ export function ShopView() {
   const bestId = useMemo(() => rankShirts(vector, SHIRTS)[0]?.shirt.id, [vector]);
   const visible = ranked.filter(
     ({ shirt }) =>
-      (color === "all" || shirt.baseColor === color) &&
       (!style || shirt.features[style] >= STYLE_THRESHOLD),
   );
   const traits = topTraits(vector, 3);
 
   const [limit, setLimit] = useState(PAGE_SIZE);
   const sentinel = useRef<HTMLDivElement>(null);
-  useEffect(() => setLimit(PAGE_SIZE), [color, style, sort]);
+  useEffect(() => setLimit(PAGE_SIZE), [style, sort]);
   useEffect(() => {
     const el = sentinel.current;
     if (!el) return;
@@ -101,10 +101,11 @@ export function ShopView() {
         {/* Filters */}
         <div className="mb-2 flex items-center gap-2">
           <Segmented
-            value={color}
-            onChange={setColor}
+            value={teeView}
+            onChange={setTeeView}
+            label="Show tees in"
             options={[
-              { value: "all", label: "All" },
+              { value: "original", label: "Original" },
               { value: "black", label: "Black" },
               { value: "white", label: "White" },
             ]}
@@ -149,6 +150,7 @@ export function ShopView() {
                     key={shirt.id}
                     shirt={shirt}
                     score={score}
+                    color={teeView === "original" ? undefined : teeView}
                     highlight={complete && shirt.id === bestId ? "Top pick" : undefined}
                   />
                 ))}
@@ -168,7 +170,7 @@ export function ShopView() {
           ) : (
             <div className="py-16 text-center text-sm text-neutral-500">
               No tees match these filters.
-              <button type="button" onClick={() => { setStyle(null); setColor("all"); }} className="ml-1 font-semibold text-white underline">
+              <button type="button" onClick={() => setStyle(null)} className="ml-1 font-semibold text-white underline">
                 Clear filters
               </button>
             </div>
@@ -189,13 +191,15 @@ function Segmented<T extends string>({
   value,
   onChange,
   options,
+  label,
 }: {
   value: T;
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
+  label: string;
 }) {
   return (
-    <div className="flex rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="radiogroup" aria-label="Tee colour">
+    <div className="flex rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button
           key={o.value}

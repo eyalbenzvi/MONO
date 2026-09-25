@@ -25,29 +25,39 @@ export function cartTotals(items: CartItem[]) {
   return { lines, count, subtotal, shipping, total: subtotal + shipping };
 }
 
-/** Add `qty` of a shirt/size, merging with an existing line and capping at MAX_QTY. */
+type LineKey = Pick<CartItem, "id" | "size" | "color">;
+const same = (a: LineKey, b: LineKey) => a.id === b.id && a.size === b.size && a.color === b.color;
+
+/** Add `qty` of a shirt/size/colour, merging with an existing line and capping at MAX_QTY. */
 export function addItem(items: CartItem[], item: CartItem): CartItem[] {
-  const existing = items.find((i) => i.id === item.id && i.size === item.size);
+  const existing = items.find((i) => same(i, item));
   if (!existing) return [...items, { ...item, qty: Math.min(item.qty, MAX_QTY) }];
   return items.map((i) =>
     i === existing ? { ...i, qty: Math.min(i.qty + item.qty, MAX_QTY) } : i,
   );
 }
 
-export function setItemQty(items: CartItem[], id: string, size: CartItem["size"], qty: number): CartItem[] {
-  if (qty <= 0) return items.filter((i) => !(i.id === id && i.size === size));
-  return items.map((i) => (i.id === id && i.size === size ? { ...i, qty: Math.min(qty, MAX_QTY) } : i));
+export function setItemQty(items: CartItem[], key: LineKey, qty: number): CartItem[] {
+  if (qty <= 0) return items.filter((i) => !same(i, key));
+  return items.map((i) => (same(i, key) ? { ...i, qty: Math.min(qty, MAX_QTY) } : i));
 }
 
-/** Change a line's size, merging into an existing line of the new size. */
-export function changeItemSize(
-  items: CartItem[],
-  id: string,
-  from: CartItem["size"],
-  to: CartItem["size"],
-): CartItem[] {
-  if (from === to) return items;
-  const line = items.find((i) => i.id === id && i.size === from);
+/**
+ * Change a line's size and/or colour, merging into an existing line that
+ * already has the new combination.
+ */
+export function changeItem(items: CartItem[], key: LineKey, to: Partial<Pick<CartItem, "size" | "color">>): CartItem[] {
+  const line = items.find((i) => same(i, key));
   if (!line) return items;
-  return addItem(items.filter((i) => i !== line), { id, size: to, qty: line.qty });
+  const next = { ...line, ...to };
+  if (same(next, line)) return items;
+  const target = items.find((i) => same(i, next));
+  if (target) {
+    // Merge into the line that already has this size/colour.
+    return items
+      .filter((i) => i !== line)
+      .map((i) => (i === target ? { ...i, qty: Math.min(i.qty + line.qty, MAX_QTY) } : i));
+  }
+  // Otherwise edit in place so the line keeps its position in the bag.
+  return items.map((i) => (i === line ? next : i));
 }

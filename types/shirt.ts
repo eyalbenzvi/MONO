@@ -89,8 +89,21 @@ export const SIZES: ShirtSize[] = ["S", "M", "L", "XL"];
 export interface CartItem {
   id: string;
   size: ShirtSize;
+  /** Tee colour chosen at purchase — every design comes in black and white. */
+  color: BaseColor;
   qty: number;
 }
+
+export const COLOR_LABELS: Record<BaseColor, string> = { black: "Black", white: "White" };
+
+export const otherColor = (c: BaseColor): BaseColor => (c === "black" ? "white" : "black");
+
+/**
+ * SKU for a colourway. The catalog SKU encodes the original colour
+ * (MN-GEO-B-0001); the reverse colourway swaps that letter.
+ */
+export const skuFor = (sku: string, color: BaseColor) =>
+  sku.replace(/-[BW]-/, `-${color === "black" ? "B" : "W"}-`);
 
 export interface Order {
   number: string;

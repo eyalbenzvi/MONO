@@ -60,8 +60,10 @@ describe("generated catalog (data/shirts.json)", () => {
     }
   });
 
-  it("prints are single-ink monochrome", () => {
-    for (const s of SHIRTS.slice(0, 200)) {
+  // The reverse colourway is rendered with a CSS invert, which is only exact
+  // if every print uses nothing but pure black and pure white.
+  it("prints are strictly two-colour, so the reverse colourway is an exact inversion", () => {
+    for (const s of SHIRTS) {
       const svg = readFileSync(path.join(PUBLIC, s.backPrintUrl), "utf8");
       const colors = new Set(svg.match(/#[0-9A-Fa-f]{6}\b/g));
       for (const c of colors) expect(["#000000", "#FFFFFF"]).toContain(c.toUpperCase());
