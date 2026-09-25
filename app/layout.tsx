@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MONO — Monochrome Tee Discovery",
-  description: "Swipe black & white tees with back prints. A vector engine learns your taste, then opens a shop built for you.",
+  description: "Swipe black & white monochrome tees. A vector engine learns your taste, then opens a shop built for you.",
 };
 
 export const viewport: Viewport = {

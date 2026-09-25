@@ -5,11 +5,11 @@ import { motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { TeeDot } from "@/components/ShirtCard";
 import { MatchBadge, SaveButton, STAGE_BG } from "@/components/ui";
-import type { ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, type ShirtProduct } from "@/types/shirt";
 
 export function ProductCard({ shirt, score, highlight }: { shirt: ShirtProduct; score: number; highlight?: string }) {
   return (
-    <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
       <Link href={`/shop/${shirt.id}/`} className="group block" aria-label={`${shirt.title}, $${shirt.price}, ${score}% match`}>
         <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
           <div className="absolute left-2 top-2">
@@ -27,7 +27,7 @@ export function ProductCard({ shirt, score, highlight }: { shirt: ShirtProduct; 
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{shirt.title}</p>
             <p className="truncate text-[11px] text-neutral-500">
-              <TeeDot color={shirt.baseColor} /> {shirt.baseColor === "black" ? "Black" : "White"} · {shirt.artist}
+              <TeeDot color={shirt.baseColor} /> {shirt.baseColor === "black" ? "Black" : "White"} · {CATEGORY_LABELS[shirt.category]}
             </p>
           </div>
           <span className="shrink-0 font-mono text-sm">${shirt.price}</span>

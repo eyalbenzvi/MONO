@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Heart, ShoppingBag, Trash2, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { MatchBadge, STAGE_BG } from "@/components/ui";
-import { getShirtById } from "@/lib/mockData";
+import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useCartCount, useShirtStore } from "@/store/useShirtStore";
 import { SIZES, type ShirtProduct, type ShirtSize } from "@/types/shirt";

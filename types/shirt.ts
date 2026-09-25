@@ -22,27 +22,30 @@ export type FeatureVector = Record<FeatureKey, number>;
 
 export type BaseColor = "black" | "white";
 
-/**
- * Dominant tone of the artwork. Prints are single-ink monochrome, so the tee
- * colour follows the art: a dark artwork is printed in white ink on a black
- * tee (its blacks become the fabric), a light artwork in black ink on white.
- */
-export type ArtTone = "dark" | "light";
+/** Generative family a print was made with (see scripts/generate1000Shirts.ts). */
+export const SHIRT_CATEGORIES = ["architectural", "geometric", "typography", "halftone", "waves"] as const;
+export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
-export const teeColorForTone = (tone: ArtTone): BaseColor => (tone === "dark" ? "black" : "white");
+export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
+  architectural: "Architectural",
+  geometric: "Geometric",
+  typography: "Typography",
+  halftone: "Halftone",
+  waves: "Line & Wave",
+};
 
 export type ShirtSize = "S" | "M" | "L" | "XL";
 
 export interface ShirtProduct {
   id: string;
+  sku: string;
   title: string;
-  artist: string;
   price: number;
-  /** Derived from artTone — see teeColorForTone. */
+  /** Tee colour. Prints are single-ink: white ink on black tees, black ink on white. */
   baseColor: BaseColor;
-  artTone: ArtTone;
-  /** The only print on the product: a 3:4 rectangle on the back. Front is plain. */
-  backImageUrl: string;
+  /** 3:4 monochrome SVG print, relative to the site root (e.g. /prints/print_1.svg). */
+  backPrintUrl: string;
+  category: ShirtCategory;
   description: string;
   features: FeatureVector;
 }

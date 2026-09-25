@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence } from "framer-motion";
 import { ArrowRight, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { TraitChips } from "@/components/ui";
-import { MOCK_SHIRTS } from "@/lib/mockData";
+import { SHIRTS } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 import { FEATURE_LABELS, type BaseColor, type FeatureKey } from "@/types/shirt";
@@ -24,6 +23,9 @@ const STYLE_FILTERS: FeatureKey[] = [
 ];
 const STYLE_THRESHOLD = 0.6;
 
+/** Cards rendered per batch — the catalog has 1,000 mockups, render them lazily. */
+const PAGE_SIZE = 24;
+
 const SORTS: { value: ShopSort; label: string }[] = [
   { value: "match", label: "Best match" },
   { value: "price-asc", label: "Price ↑" },
@@ -38,14 +40,28 @@ export function ShopView() {
   const [style, setStyle] = useState<FeatureKey | null>(null);
   const [sort, setSort] = useState<ShopSort>("match");
 
-  const ranked = useMemo(() => rankShirts(vector, MOCK_SHIRTS, sort), [vector, sort]);
-  const bestId = useMemo(() => rankShirts(vector, MOCK_SHIRTS)[0]?.shirt.id, [vector]);
+  const ranked = useMemo(() => rankShirts(vector, SHIRTS, sort), [vector, sort]);
+  const bestId = useMemo(() => rankShirts(vector, SHIRTS)[0]?.shirt.id, [vector]);
   const visible = ranked.filter(
     ({ shirt }) =>
       (color === "all" || shirt.baseColor === color) &&
       (!style || shirt.features[style] >= STYLE_THRESHOLD),
   );
   const traits = topTraits(vector, 3);
+
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const sentinel = useRef<HTMLDivElement>(null);
+  useEffect(() => setLimit(PAGE_SIZE), [color, style, sort]);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => entries[0]?.isIntersecting && setLimit((l) => l + PAGE_SIZE),
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hydrated, visible.length]);
 
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
@@ -121,14 +137,14 @@ export function ShopView() {
         </div>
 
         <p className="mb-3 text-xs text-neutral-500">
-          {visible.length} tee{visible.length === 1 ? "" : "s"} · back print only, front plain
+          {visible.length} tee{visible.length === 1 ? "" : "s"}
         </p>
 
         {hydrated ? (
           visible.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-              <AnimatePresence mode="popLayout">
-                {visible.map(({ shirt, score }) => (
+            <>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+                {visible.slice(0, limit).map(({ shirt, score }) => (
                   <ProductCard
                     key={shirt.id}
                     shirt={shirt}
@@ -136,8 +152,19 @@ export function ShopView() {
                     highlight={complete && shirt.id === bestId ? "Top pick" : undefined}
                   />
                 ))}
-              </AnimatePresence>
-            </div>
+              </div>
+              {limit < visible.length && (
+                <div ref={sentinel} className="flex justify-center pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setLimit((l) => l + PAGE_SIZE)}
+                    className="h-10 rounded-full px-5 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5"
+                  >
+                    Show more · {visible.length - limit} left
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="py-16 text-center text-sm text-neutral-500">
               No tees match these filters.

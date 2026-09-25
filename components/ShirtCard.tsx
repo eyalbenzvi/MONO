@@ -6,6 +6,7 @@ import { TeeMockup } from "@/components/TeeMockup";
 import { MatchBadge, SizeSelector, STAGE_BG } from "@/components/ui";
 import { useShirtStore } from "@/store/useShirtStore";
 import {
+  CATEGORY_LABELS,
   FEATURE_KEYS,
   FEATURE_LABELS,
   PRINT_SIZE_CM,
@@ -42,7 +43,7 @@ export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCar
         animate={{ rotateY: showDetails ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
       >
-        {/* Face 1: the tee from the back, print mocked up on the fabric */}
+        {/* Face 1: the tee, print mocked up on the fabric */}
         <div
           className={`backface-hidden absolute inset-0 flex flex-col overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10 ${showDetails ? hiddenFace : ""}`}
           aria-hidden={showDetails}
@@ -64,7 +65,7 @@ export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCar
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
               <p className="truncate text-xs text-neutral-400">
-                {shirt.artist} · <TeeDot color={shirt.baseColor} /> {shirt.baseColor === "black" ? "Black" : "White"} tee · back print
+                {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {shirt.baseColor === "black" ? "Black" : "White"} tee
               </p>
             </div>
             <span className="shrink-0 font-mono text-lg font-semibold">${shirt.price}</span>
@@ -112,7 +113,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           onClick={() => toggleFlip(false)}
           className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-medium hover:bg-white/15"
         >
-          <RotateCcw className="h-3.5 w-3.5" /> Back to tee
+          <RotateCcw className="h-3.5 w-3.5" /> Tee view
         </button>
       </div>
 
@@ -122,7 +123,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         </div>
         <div className="min-w-0">
           <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>
-          <p className="text-xs text-neutral-400">{shirt.artist}</p>
+          <p className="text-xs text-neutral-400">{CATEGORY_LABELS[shirt.category]} · {shirt.sku}</p>
           <p className="mt-2 text-sm leading-snug text-neutral-300">{shirt.description}</p>
         </div>
       </div>
@@ -130,8 +131,8 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
       <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
         <Spec label="Tee" value={black ? "Black" : "White"} />
         <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
-        <Spec label="Front" value="Plain — no print" />
-        <Spec label="Back" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm print`} />
+        <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
+        <Spec label="Style" value={CATEGORY_LABELS[shirt.category]} />
       </dl>
 
       <div className="mt-4">

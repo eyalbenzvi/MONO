@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
 import { ShirtCard } from "@/components/ShirtCard";
-import { getShirtById } from "@/lib/mockData";
+import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useShirtStore, type DeckEntry } from "@/store/useShirtStore";
 import type { SwipeAction } from "@/types/shirt";
@@ -210,7 +210,7 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
         style={{ opacity: infoOpacity }}
         className="pointer-events-none absolute inset-x-0 bottom-24 mx-auto w-fit rounded-full bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-black"
       >
-        {isFlipped ? "Back to tee" : "Details"}
+        {isFlipped ? "Tee view" : "Details"}
       </motion.div>
     </motion.div>
   );

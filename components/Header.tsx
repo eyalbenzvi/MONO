@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, ShoppingBag } from "lucide-react";
+import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount, useShirtStore } from "@/store/useShirtStore";
 
 const TABS = [
@@ -20,19 +21,9 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   return (
     <header className="relative z-20 shrink-0 px-4 pb-2 pt-[max(env(safe-area-inset-top),12px)]">
       <div className="mx-auto flex max-w-5xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="MONO home">
-          <div className="grid h-9 w-9 grid-cols-2 overflow-hidden rounded-lg ring-1 ring-white/15">
-            <span className="bg-white" />
-            <span className="bg-black" />
-            <span className="bg-black" />
-            <span className="bg-white" />
-          </div>
-          <div className="leading-none">
-            <span className="block text-lg font-black tracking-[0.3em]">MONO</span>
-            <span className="mt-1 hidden text-[10px] uppercase tracking-[0.18em] text-neutral-500 min-[380px]:block">
-              Black · White · Back print
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-3 rounded-md transition active:scale-95" aria-label="MONO home">
+          <MonoLogo size="sm" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-500">Monochrome tees</span>
         </Link>
 
         <div className="flex items-center gap-2">

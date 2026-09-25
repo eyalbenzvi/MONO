@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Activity, ChevronDown, RotateCcw } from "lucide-react";
-import { getShirtById } from "@/lib/mockData";
+import { getShirtById } from "@/lib/catalog";
 import {
   centeredCosine,
   cosineSimilarity,
