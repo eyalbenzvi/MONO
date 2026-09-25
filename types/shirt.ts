@@ -137,6 +137,7 @@ export interface CartItem {
 }
 
 export const COLOR_LABELS: Record<BaseColor, string> = { black: "Black", white: "White" };
+export const COLORS: readonly BaseColor[] = ["black", "white"];
 
 export const otherColor = (c: BaseColor): BaseColor => (c === "black" ? "white" : "black");
 

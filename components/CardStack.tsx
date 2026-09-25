@@ -93,7 +93,7 @@ export function CardStack() {
           ) : (
             <motion.div
               key={entry.id}
-              className="pointer-events-none absolute inset-0"
+              className="pointer-events-none absolute inset-0 will-change-transform"
               initial={{ scale: 1 - depth * 0.05, y: depth * 16, opacity: 0 }}
               animate={{ scale: 1 - depth * 0.05, y: depth * 16, opacity: depth === 1 ? 1 : 0.6 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -197,8 +197,27 @@ function TopCard({
         commitSwipe(entry.id, action, fromQueue);
       };
       fallback.current = setTimeout(commit, duration * 1000 + 150);
-      animate(y, y.get() + (velocity?.y ?? 0) * duration * 0.4, { duration, ease: "easeOut" });
-      animate(x, targetX, { duration, ease: [0.2, 0.7, 0.4, 1], onComplete: commit });
+      const el = cardRef.current;
+      const targetY = y.get() + (velocity?.y ?? 0) * duration * 0.4;
+      if (el && typeof el.animate === "function") {
+        // Fly out on the compositor (Web Animations): a busy main thread —
+        // React re-rendering, the next card mounting — can't stall or skip
+        // it, so the card always visibly leaves. Framer's own release spring
+        // is stopped so x stays put (and the LIKE / NOPE stamp stays lit).
+        x.stop();
+        y.stop();
+        const from = getComputedStyle(el).transform;
+        const to = `translateX(${targetX}px) translateY(${targetY}px) rotate(${dir * 22}deg)`;
+        const anim = el.animate([{ transform: from === "none" ? "none" : from }, { transform: to }], {
+          duration: duration * 1000,
+          easing: "cubic-bezier(0.2, 0.7, 0.4, 1)",
+          fill: "forwards",
+        });
+        anim.onfinish = commit;
+      } else {
+        animate(y, targetY, { duration, ease: "easeOut" });
+        animate(x, targetX, { duration, ease: [0.2, 0.7, 0.4, 1], onComplete: commit });
+      }
     },
     [commitSwipe, entry.id, onLiked, x, y],
   );
@@ -246,7 +265,9 @@ function TopCard({
   return (
     <motion.div
       ref={cardRef}
-      className={`absolute inset-0 ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
+      // will-change: the card is its own compositor layer, so dragging and
+      // flying it moves a cached bitmap instead of repainting the tee.
+      className={`absolute inset-0 will-change-transform ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
       initial={{ scale: 0.95, y: 16 }}
       animate={{ scale: 1, y: 0 }}
@@ -277,13 +298,13 @@ function TopCard({
       {/* Swipe stamps */}
       <motion.div
         style={{ opacity: likeOpacity }}
-        className="pointer-events-none absolute left-6 top-16 flex -rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-emerald-400 bg-black/40 px-3 py-1.5 text-2xl font-black tracking-widest text-emerald-400 backdrop-blur-sm"
+        className="pointer-events-none absolute left-6 top-16 flex -rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-emerald-400 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-emerald-400 will-change-[opacity]"
       >
         <Heart className="h-6 w-6 fill-current" /> LIKE
       </motion.div>
       <motion.div
         style={{ opacity: nopeOpacity }}
-        className="pointer-events-none absolute right-6 top-16 flex rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-rose-500 bg-black/40 px-3 py-1.5 text-2xl font-black tracking-widest text-rose-500 backdrop-blur-sm"
+        className="pointer-events-none absolute right-6 top-16 flex rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-rose-500 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-rose-500 will-change-[opacity]"
       >
         <X className="h-6 w-6" strokeWidth={3} /> NOPE
       </motion.div>
@@ -302,7 +323,7 @@ function TopCard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.4 }}
-            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-full bg-black/60 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-md"
+            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-full bg-black/75 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15"
           >
             ← Pass · Tap for details · Like →
           </motion.div>
