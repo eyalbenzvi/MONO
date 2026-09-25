@@ -163,12 +163,19 @@ function TopCard({
 
   const cardRef = useRef<HTMLDivElement>(null);
   const leaving = useRef(false);
+  // Mirrors `leaving` for rendering: a card on its way out takes no gestures.
+  const [isLeaving, setIsLeaving] = useState(false);
   const dragged = useRef(false);
+  const fallback = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (fallback.current) clearTimeout(fallback.current);
+  }, []);
 
   const flyOut = useCallback(
     (action: SwipeAction, velocity?: { x: number; y: number }, fromQueue = false) => {
       if (leaving.current) return;
       leaving.current = true;
+      setIsLeaving(true);
       if (action === "like" && cardRef.current) onLiked(cardRef.current.getBoundingClientRect());
       else navigator.vibrate?.(8);
       const dir = action === "like" ? 1 : -1;
@@ -178,12 +185,20 @@ function TopCard({
       const duration = velocity
         ? Math.min(0.45, Math.max(0.2, Math.abs(targetX - x.get()) / Math.max(Math.abs(velocity.x), 900)))
         : BUTTON_FLY_S;
+      // Commit exactly once — when the fly-out finishes, or via the fallback
+      // timer if something interrupts the animation (framer-motion stops a
+      // running value animation when the element is touched again, and
+      // onComplete then never fires; that used to leave the card stuck).
+      let committed = false;
+      const commit = () => {
+        if (committed) return;
+        committed = true;
+        if (fallback.current) clearTimeout(fallback.current);
+        commitSwipe(entry.id, action, fromQueue);
+      };
+      fallback.current = setTimeout(commit, duration * 1000 + 150);
       animate(y, y.get() + (velocity?.y ?? 0) * duration * 0.4, { duration, ease: "easeOut" });
-      animate(x, targetX, {
-        duration,
-        ease: [0.2, 0.7, 0.4, 1],
-        onComplete: () => commitSwipe(entry.id, action, fromQueue),
-      });
+      animate(x, targetX, { duration, ease: [0.2, 0.7, 0.4, 1], onComplete: commit });
     },
     [commitSwipe, entry.id, onLiked, x, y],
   );
@@ -231,13 +246,13 @@ function TopCard({
   return (
     <motion.div
       ref={cardRef}
-      className={`absolute inset-0 ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"}`}
+      className={`absolute inset-0 ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
       initial={{ scale: 0.95, y: 16 }}
       animate={{ scale: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       // Drag is disabled while flipped so the details panel can scroll natively.
-      drag={!isFlipped}
+      drag={!isFlipped && !isLeaving}
       dragDirectionLock
       // Sideways swipes are free; vertical travel is heavily damped so the
       // card never slides over the header.
