@@ -10,16 +10,15 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { Spec } from "@/components/ShirtCard";
 import { TeeMockup } from "@/components/TeeMockup";
 import { MatchBadge, SizeSelector, STAGE_BG, TraitChips } from "@/components/ui";
-import { MOCK_SHIRTS, getShirtById } from "@/lib/mockData";
+import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
 import { useShirtStore } from "@/store/useShirtStore";
-import { PRINT_SIZE_CM, SIZE_GUIDE, SIZES } from "@/types/shirt";
+import { CATEGORY_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES } from "@/types/shirt";
 
-type View = "back" | "print" | "front";
+type View = "tee" | "print";
 const VIEWS: { value: View; label: string }[] = [
-  { value: "back", label: "Back" },
+  { value: "tee", label: "On the tee" },
   { value: "print", label: "Print" },
-  { value: "front", label: "Front" },
 ];
 
 export function ProductView({ id }: { id: string }) {
@@ -31,7 +30,7 @@ export function ProductView({ id }: { id: string }) {
   const addToCart = useShirtStore((s) => s.addToCart);
   const saved = useShirtStore((s) => s.likedIds.includes(id));
   const toggleSaved = useShirtStore((s) => s.toggleSaved);
-  const [view, setView] = useState<View>("back");
+  const [view, setView] = useState<View>("tee");
   const [guideOpen, setGuideOpen] = useState(false);
 
   if (!shirt) {
@@ -46,7 +45,7 @@ export function ProductView({ id }: { id: string }) {
   const black = shirt.baseColor === "black";
   const score = matchScore(vector, shirt.features);
   const reasons = explainMatch(vector, shirt.features);
-  const similar = similarShirts(shirt, MOCK_SHIRTS, 4);
+  const similar = similarShirts(shirt, SHIRTS, 4);
 
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
@@ -78,15 +77,10 @@ export function ProductView({ id }: { id: string }) {
                       <PrintImage shirt={shirt} />
                     </div>
                   ) : (
-                    <TeeMockup shirt={shirt} view={view} className="h-full max-h-full" />
+                    <TeeMockup shirt={shirt} className="h-full max-h-full" />
                   )}
                 </motion.div>
               </AnimatePresence>
-              {view === "front" && (
-                <span className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1 text-[11px] text-neutral-200 backdrop-blur-sm">
-                  Plain front · print on back
-                </span>
-              )}
             </div>
             <div className="mt-3 flex justify-center">
               <div className="flex rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="tablist" aria-label="View">
@@ -110,7 +104,7 @@ export function ProductView({ id }: { id: string }) {
 
           {/* Info */}
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">{shirt.artist}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">{CATEGORY_LABELS[shirt.category]} · {shirt.sku}</p>
             <div className="mt-1 flex items-start justify-between gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{shirt.title}</h1>
               <span className="mt-1 font-mono text-2xl font-semibold">${shirt.price}</span>
@@ -127,8 +121,8 @@ export function ProductView({ id }: { id: string }) {
             <dl className="mt-5 grid grid-cols-2 gap-2 text-xs">
               <Spec label="Tee" value={black ? "Black" : "White"} />
               <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
-              <Spec label="Front" value="Plain — no print" />
-              <Spec label="Back" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm print`} />
+              <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
+              <Spec label="Style" value={CATEGORY_LABELS[shirt.category]} />
               <Spec label="Fabric" value="100% organic cotton" />
               <Spec label="Weight" value="220 gsm, regular fit" />
             </dl>
@@ -197,6 +191,8 @@ export function ProductView({ id }: { id: string }) {
           </div>
         </div>
 
+        {/* Client-only: keeps the 1,000 pre-rendered product pages small. */}
+        {hydrated && (
         <section className="mt-10">
           <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-neutral-400">Similar prints</h2>
           <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">
@@ -205,6 +201,7 @@ export function ProductView({ id }: { id: string }) {
             ))}
           </div>
         </section>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { getShirtById } from "@/lib/mockData";
+import { getShirtById } from "@/lib/catalog";
 import type { CartItem, ShirtProduct } from "@/types/shirt";
 
 export const FREE_SHIPPING_THRESHOLD = 80;

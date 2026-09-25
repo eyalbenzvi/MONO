@@ -8,10 +8,10 @@ import {
   changeItemSize,
   setItemQty,
 } from "@/lib/cart";
-import { MOCK_SHIRTS } from "@/lib/mockData";
+import { SHIRTS } from "@/lib/catalog";
 import type { CartItem } from "@/types/shirt";
 
-const [a, b] = MOCK_SHIRTS;
+const [a, b] = SHIRTS;
 
 describe("cart", () => {
   it("merges the same shirt+size and keeps sizes separate", () => {

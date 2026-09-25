@@ -10,7 +10,7 @@ import {
   updateUserVector,
 } from "@/lib/recommendation";
 import { addItem, cartTotals, changeItemSize, setItemQty } from "@/lib/cart";
-import { MOCK_SHIRTS, getShirtById } from "@/lib/mockData";
+import { SHIRTS, getShirtById } from "@/lib/catalog";
 import {
   createInitialVector,
   type CartItem,
@@ -25,7 +25,7 @@ import {
 
 export const DECK_SIZE = 3;
 
-export const CALIBRATION_IDS = getCalibrationQueue(MOCK_SHIRTS, CALIBRATION_SIZE).map((s) => s.id);
+export const CALIBRATION_IDS = getCalibrationQueue(SHIRTS, CALIBRATION_SIZE).map((s) => s.id);
 export const CALIBRATION_TOTAL = CALIBRATION_IDS.length;
 
 export interface DeckEntry {
@@ -87,7 +87,7 @@ function buildDeck(deck: DeckEntry[], vector: UserProfileVector, seenIds: string
       seen.add(calibrationId);
       continue;
     }
-    const pick = getNextCard(vector, MOCK_SHIRTS, seen);
+    const pick = getNextCard(vector, SHIRTS, seen);
     if (!pick) break;
     next.push({ id: pick.shirt.id, strategy: pick.strategy });
     seen.add(pick.shirt.id);
@@ -260,12 +260,13 @@ export const useShirtStore = create<ShirtState>()(
     }),
     {
       name: "mono-session-v1",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
-      // v1 → v2 only added fields (defaults come from the initial state) and
-      // dropped nothing we still read, so the old state carries over as-is.
-      migrate: (persisted) => persisted as PersistedState,
+      // v3 replaced the 25-shirt catalog with the generated 1,000: every stored
+      // id (likes, deck, bag, history) points at a shirt that no longer exists,
+      // so older sessions start fresh. v2 only added fields to v1.
+      migrate: (persisted, version) => (version < 3 ? initialPersisted() : (persisted as PersistedState)),
       partialize: (s): PersistedState => ({
         likedIds: s.likedIds,
         dislikedIds: s.dislikedIds,

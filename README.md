@@ -1,18 +1,35 @@
 # MONO — monochrome tee discovery
 
-"Tinder for T-shirts": swipe black or white tees with rectangular monochrome back prints. A vector recommendation engine learns your taste in real time, then opens a shop ranked for you.
+"Tinder for T-shirts": swipe black or white tees with rectangular monochrome prints. A vector recommendation engine learns your taste in real time, then opens a shop ranked for you.
 
-## Product rules
+## Catalog: 1,000 generated shirts
 
-- **Back print only.** Every tee has a single 30×40 cm rectangular print on the back; the front is plain. There is no front artwork anywhere in the data model.
-- **Tee colour follows the artwork.** Prints are single-ink monochrome. Each artwork has an `artTone`: dark artwork is printed in white ink on a black tee (its blacks become the fabric), light artwork in black ink on a white tee (`teeColorForTone` in `types/shirt.ts`).
-- **Mockups, not flat images.** `TeeMockup` draws the tee from the back and blends the print into the fabric (`screen` on black = white ink, `multiply` on white = black ink), with fold shading on top. The flat artwork is still available in the product page's "Print" view.
+The catalog is fully offline and procedural. `scripts/generate1000Shirts.ts` (seeded, deterministic) writes:
+
+- `public/prints/print_1.svg` … `print_1000.svg`: 3:4 monochrome SVG prints (~8 KB each)
+- `data/shirts.json`: the catalog the app imports (`lib/catalog.ts`)
+
+```bash
+npm run generate   # rebuilds both, byte-identical on every run
+```
+
+Five generative families, 200 shirts each, four algorithms per family:
+
+| Family | Algorithms |
+| --- | --- |
+| Architectural | facade grid · one-point perspective corridor · skyline with window grids · cantilevered slabs |
+| Geometric | primary forms · scattered primitives · twisted concentric polygons · Truchet tiling |
+| Typography | heavy single word · survey coordinates · repeated word stack · manifesto columns |
+| Halftone | radial burst · ordered gradient · dot-matrix shapes · stippled grain |
+| Line & Wave | pulsar ridge lines · sine-wave moiré · topographic contours · gestural line |
+
+Feature vectors are computed from each design's real parameters (line/cell counts, fill ratio, stroke weight, dot coverage, framing, knockout) rather than assigned. Tees are exactly 70% black / 30% white. Every print is single-ink: white ink on black tees, black ink on white. The mockup blends the print's ground into the fabric (`screen` / `multiply`) so only the ink shows. About 12% of prints are knocked out of a solid ink block.
 
 ## Flow
 
 1. **Discover / calibration** (`/`): the first 10 cards are the most mutually different prints. Finishing them shows the "taste profile ready" screen with your top traits and top picks.
-2. **Shop** (`/shop`): the full catalog ranked by match, with tee colour, style and sort filters. ♥ saves a tee *and* trains the vector.
-3. **Product** (`/shop/[id]`): Back / Print / Front views, why it matches you, size guide, add to bag, similar prints.
+2. **Shop** (`/shop`): the full catalog ranked by match, with tee colour, style and sort filters, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
+3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 1,000 pages are statically generated.
 4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over $80), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
 
 Discover keeps training after calibration (80% best match / 20% explore).
@@ -51,6 +68,6 @@ The pulse button (bottom-right) opens the **Algo debug** panel: live user vector
 
 State (likes, dislikes, vector, history, deck, chosen sizes, bag, last order) is persisted to `localStorage` through Zustand (`store/useShirtStore.ts`).
 
-## Images
+## Brand
 
-Back prints load from Unsplash and are forced to grayscale. If an image fails to load (offline, blocked network), `PrintImage` falls back to a generative SVG print built from the shirt's feature vector, so a card never shows a broken image.
+`components/MonoLogo.tsx` is the brand mark (black square, white "MONO", sizes `sm` / `md` / `lg`); `app/icon.svg` is the favicon.

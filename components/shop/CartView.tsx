@@ -82,7 +82,7 @@ export function CartView() {
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
                           <p className="text-xs text-neutral-500">
-                            {line.shirt.baseColor === "black" ? "Black" : "White"} tee · back print
+                            {line.shirt.baseColor === "black" ? "Black" : "White"} tee · {line.shirt.sku}
                           </p>
                         </div>
                         <span className="font-mono text-sm">${line.lineTotal}</span>

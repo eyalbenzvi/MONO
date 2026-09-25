@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { MatchBadge, STAGE_BG, TraitChips } from "@/components/ui";
-import { MOCK_SHIRTS } from "@/lib/mockData";
+import { SHIRTS } from "@/lib/catalog";
 import { rankShirts, topTraits } from "@/lib/recommendation";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 
@@ -19,7 +19,7 @@ export function CalibrationComplete() {
   const { complete } = useCalibrationProgress();
   const open = hydrated && complete && !acknowledged;
 
-  const picks = open ? rankShirts(vector, MOCK_SHIRTS).slice(0, 3) : [];
+  const picks = open ? rankShirts(vector, SHIRTS).slice(0, 3) : [];
   const traits = open ? topTraits(vector, 3) : [];
 
   return (

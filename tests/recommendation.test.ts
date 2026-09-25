@@ -11,8 +11,8 @@ import {
   topTraits,
   updateUserVector,
 } from "@/lib/recommendation";
-import { MOCK_SHIRTS } from "@/lib/mockData";
-import { FEATURE_KEYS, createInitialVector, teeColorForTone, type FeatureVector } from "@/types/shirt";
+import { SHIRTS } from "@/lib/catalog";
+import { FEATURE_KEYS, createInitialVector, type FeatureVector } from "@/types/shirt";
 
 const vec = (fill: (i: number) => number): FeatureVector =>
   Object.fromEntries(FEATURE_KEYS.map((k, i) => [k, fill(i)])) as FeatureVector;
@@ -92,114 +92,87 @@ describe("updateUserVector", () => {
 
 describe("getCalibrationQueue", () => {
   it("returns 10 unique shirts", () => {
-    const q = getCalibrationQueue(MOCK_SHIRTS);
+    const q = getCalibrationQueue(SHIRTS);
     expect(q).toHaveLength(10);
     expect(new Set(q.map((s) => s.id)).size).toBe(10);
   });
 
-  it("is more diverse than a naive first-10 slice", () => {
-    const avgPairwise = (list: typeof MOCK_SHIRTS) => {
-      let sum = 0;
-      let n = 0;
+  it("avoids near-duplicates better than a naive first-10 slice", () => {
+    // Farthest-point sampling minimises the *closest* pair, so compare that.
+    const maxPairwise = (list: typeof SHIRTS) => {
+      let max = -1;
       for (let i = 0; i < list.length; i++)
-        for (let j = i + 1; j < list.length; j++) {
-          sum += centeredCosine(list[i].features, list[j].features);
-          n++;
-        }
-      return sum / n;
+        for (let j = i + 1; j < list.length; j++)
+          max = Math.max(max, centeredCosine(list[i].features, list[j].features));
+      return max;
     };
-    expect(avgPairwise(getCalibrationQueue(MOCK_SHIRTS))).toBeLessThan(
-      avgPairwise(MOCK_SHIRTS.slice(0, 10)),
-    );
+    expect(maxPairwise(getCalibrationQueue(SHIRTS))).toBeLessThan(maxPairwise(SHIRTS.slice(0, 10)));
+  });
+
+  it("probes every generative category", () => {
+    const cats = new Set(getCalibrationQueue(SHIRTS).map((s) => s.category));
+    expect(cats.size).toBe(5);
   });
 
   it("handles small inputs", () => {
     expect(getCalibrationQueue([])).toEqual([]);
-    expect(getCalibrationQueue(MOCK_SHIRTS.slice(0, 3))).toHaveLength(3);
+    expect(getCalibrationQueue(SHIRTS.slice(0, 3))).toHaveLength(3);
   });
 });
 
 describe("getNextCard", () => {
-  const userVec = MOCK_SHIRTS[0].features;
+  const userVec = SHIRTS[0].features;
 
   it("greedy picks the highest match among unseen", () => {
-    const res = getNextCard(userVec, MOCK_SHIRTS, [], "greedy")!;
-    expect(res.shirt.id).toBe(MOCK_SHIRTS[0].id);
-    const others = MOCK_SHIRTS.filter((s) => s.id !== res.shirt.id);
+    const res = getNextCard(userVec, SHIRTS, [], "greedy")!;
+    expect(res.shirt.id).toBe(SHIRTS[0].id);
+    const others = SHIRTS.filter((s) => s.id !== res.shirt.id);
     for (const s of others) expect(matchScore(userVec, s.features)).toBeLessThanOrEqual(res.score);
   });
 
   it("skips seen ids and returns null when exhausted", () => {
-    const res = getNextCard(userVec, MOCK_SHIRTS, [MOCK_SHIRTS[0].id], "greedy")!;
-    expect(res.shirt.id).not.toBe(MOCK_SHIRTS[0].id);
-    expect(getNextCard(userVec, MOCK_SHIRTS, MOCK_SHIRTS.map((s) => s.id))).toBeNull();
+    const res = getNextCard(userVec, SHIRTS, [SHIRTS[0].id], "greedy")!;
+    expect(res.shirt.id).not.toBe(SHIRTS[0].id);
+    expect(getNextCard(userVec, SHIRTS, SHIRTS.map((s) => s.id))).toBeNull();
   });
 
   it("explore picks the most orthogonal shirt", () => {
-    const res = getNextCard(userVec, MOCK_SHIRTS, [], "explore")!;
-    const minAbs = Math.min(...MOCK_SHIRTS.map((s) => Math.abs(centeredCosine(userVec, s.features))));
+    const res = getNextCard(userVec, SHIRTS, [], "explore")!;
+    const minAbs = Math.min(...SHIRTS.map((s) => Math.abs(centeredCosine(userVec, s.features))));
     expect(Math.abs(centeredCosine(userVec, res.shirt.features))).toBeCloseTo(minAbs, 10);
   });
 
   it("rolls ~80/20 greedy/explore when strategy is omitted", () => {
-    expect(getNextCard(userVec, MOCK_SHIRTS, [], undefined, () => 0.1)!.strategy).toBe("explore");
-    expect(getNextCard(userVec, MOCK_SHIRTS, [], undefined, () => 0.5)!.strategy).toBe("greedy");
-  });
-});
-
-describe("mock data", () => {
-  it("has 25 shirts with valid vectors", () => {
-    expect(MOCK_SHIRTS).toHaveLength(25);
-    for (const s of MOCK_SHIRTS) {
-      for (const k of FEATURE_KEYS) {
-        expect(s.features[k]).toBeGreaterThanOrEqual(0);
-        expect(s.features[k]).toBeLessThanOrEqual(1);
-      }
-      expect(["black", "white"]).toContain(s.baseColor);
-    }
-  });
-
-  it("derives tee colour from the artwork tone (white ink on black, black ink on white)", () => {
-    for (const s of MOCK_SHIRTS) expect(s.baseColor).toBe(teeColorForTone(s.artTone));
-    expect(teeColorForTone("dark")).toBe("black");
-    expect(teeColorForTone("light")).toBe("white");
-    const blacks = MOCK_SHIRTS.filter((s) => s.baseColor === "black").length;
-    expect(blacks).toBeGreaterThan(5);
-    expect(MOCK_SHIRTS.length - blacks).toBeGreaterThan(5);
-  });
-
-  it("has back prints only — no front artwork", () => {
-    for (const s of MOCK_SHIRTS) {
-      expect(s.backImageUrl).toMatch(/^https:/);
-      expect(s).not.toHaveProperty("frontImageUrl");
-    }
+    expect(getNextCard(userVec, SHIRTS, [], undefined, () => 0.1)!.strategy).toBe("explore");
+    expect(getNextCard(userVec, SHIRTS, [], undefined, () => 0.5)!.strategy).toBe("greedy");
   });
 });
 
 describe("shop ranking", () => {
-  const userVec = MOCK_SHIRTS[3].features;
+  const userVec = SHIRTS[3].features;
 
   it("orders by match score by default and keeps every shirt", () => {
-    const ranked = rankShirts(userVec, MOCK_SHIRTS);
-    expect(ranked).toHaveLength(MOCK_SHIRTS.length);
-    expect(ranked[0].shirt.id).toBe(MOCK_SHIRTS[3].id);
+    const ranked = rankShirts(userVec, SHIRTS);
+    expect(ranked).toHaveLength(SHIRTS.length);
+    // The shirt whose features *are* the user vector must rank at the top score.
+    expect(ranked[0].score).toBe(matchScore(userVec, SHIRTS[3].features));
     for (let i = 1; i < ranked.length; i++) expect(ranked[i - 1].score).toBeGreaterThanOrEqual(ranked[i].score);
   });
 
   it("sorts by price when asked", () => {
-    const asc = rankShirts(userVec, MOCK_SHIRTS, "price-asc").map((r) => r.shirt.price);
-    const desc = rankShirts(userVec, MOCK_SHIRTS, "price-desc").map((r) => r.shirt.price);
+    const asc = rankShirts(userVec, SHIRTS, "price-asc").map((r) => r.shirt.price);
+    const desc = rankShirts(userVec, SHIRTS, "price-desc").map((r) => r.shirt.price);
     expect(asc).toEqual([...asc].sort((a, b) => a - b));
     expect(desc).toEqual([...desc].sort((a, b) => b - a));
   });
 
   it("similarShirts excludes the shirt itself and returns the closest styles", () => {
-    const base = MOCK_SHIRTS[0];
-    const sim = similarShirts(base, MOCK_SHIRTS, 4);
+    const base = SHIRTS[0];
+    const sim = similarShirts(base, SHIRTS, 4);
     expect(sim).toHaveLength(4);
     expect(sim.map((s) => s.id)).not.toContain(base.id);
     const worst = Math.min(...sim.map((s) => centeredCosine(base.features, s.features)));
-    const rest = MOCK_SHIRTS.filter((s) => s.id !== base.id && !sim.includes(s));
+    const rest = SHIRTS.filter((s) => s.id !== base.id && !sim.includes(s));
     for (const s of rest) expect(centeredCosine(base.features, s.features)).toBeLessThanOrEqual(worst);
   });
 

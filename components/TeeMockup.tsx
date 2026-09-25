@@ -6,7 +6,7 @@ import type { ShirtProduct } from "@/types/shirt";
 
 /*
  * Garment geometry lives in a 400×460 design space; the viewBox crops the
- * empty margins. The print rectangle (3:4) sits centred on the upper back.
+ * empty margins. The 3:4 print rectangle sits centred in the upper body.
  */
 const VIEW = { x: 30, y: 10, w: 340, h: 440 };
 const PRINT = { x: 132, y: 78, w: 136, h: (136 * 4) / 3 };
@@ -19,30 +19,24 @@ const PRINT_STYLE = {
   height: pct(PRINT.h, VIEW.h),
 };
 
-const BODY_BACK =
+const BODY =
   "M150 24 Q200 36 250 24 L302 38 Q338 52 378 118 L336 164 L306 146 L308 432 Q200 442 92 432 L94 146 L64 164 L22 118 Q62 52 98 38 Z";
-const BODY_FRONT =
-  "M150 24 Q200 72 250 24 L302 38 Q338 52 378 118 L336 164 L306 146 L308 432 Q200 442 92 432 L94 146 L64 164 L22 118 Q62 52 98 38 Z";
-
-export type MockupView = "back" | "front";
 
 interface TeeMockupProps {
   shirt: ShirtProduct;
-  /** "back" shows the print; "front" is the plain front of the same tee. */
-  view?: MockupView;
   className?: string;
   /** Drop shadow under the garment (off for tiny thumbnails). */
   shadow?: boolean;
   style?: React.CSSProperties;
 }
 
-export function TeeMockup({ shirt, view = "back", className = "", shadow = true, style }: TeeMockupProps) {
+export function TeeMockup({ shirt, className = "", shadow = true, style }: TeeMockupProps) {
   const uid = useId().replace(/:/g, "");
   const black = shirt.baseColor === "black";
   const fabric = black ? "#161616" : "#f3f3f1";
   const seam = black ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)";
   const collar = black ? "#0d0d0d" : "#e6e6e3";
-  const body = view === "back" ? BODY_BACK : BODY_FRONT;
+  const body = BODY;
   const viewBox = `${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`;
   const clip = `clip-${uid}`;
 
@@ -51,7 +45,7 @@ export function TeeMockup({ shirt, view = "back", className = "", shadow = true,
       className={`relative isolate select-none ${className}`}
       style={{ aspectRatio: `${VIEW.w} / ${VIEW.h}`, ...style }}
       role="img"
-      aria-label={`${shirt.title} — ${black ? "black" : "white"} tee, ${view === "back" ? "back with print" : "plain front"}`}
+      aria-label={`${shirt.title} — ${black ? "black" : "white"} tee`}
     >
       {/* Garment */}
       <svg
@@ -72,19 +66,13 @@ export function TeeMockup({ shirt, view = "back", className = "", shadow = true,
           strokeDasharray="3 3"
         />
         {/* collar rib */}
-        {view === "back" ? (
-          <path d="M150 24 Q200 36 250 24" fill="none" stroke={collar} strokeWidth={7} strokeLinecap="round" />
-        ) : (
-          <path d="M150 24 Q200 72 250 24" fill="none" stroke={collar} strokeWidth={8} strokeLinecap="round" />
-        )}
+        <path d="M150 24 Q200 36 250 24" fill="none" stroke={collar} strokeWidth={7} strokeLinecap="round" />
       </svg>
 
       {/* Print: single-ink, blended into the fabric (screen = white ink, multiply = black ink) */}
-      {view === "back" && (
-        <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
-          <PrintImage shirt={shirt} />
-        </div>
-      )}
+      <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
+        <PrintImage shirt={shirt} />
+      </div>
 
       {/* Fabric folds — shadows */}
       <svg viewBox={viewBox} className="pointer-events-none absolute inset-0 h-full w-full" style={{ mixBlendMode: "multiply" }} aria-hidden>
