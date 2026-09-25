@@ -15,6 +15,20 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Keyboard focus is always visible (mouse/touch clicks don't show it). */
+:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* No double-tap-zoom delay on controls; pinch-zoom stays available. */
+button,
+a,
+select,
+label {
+  touch-action: manipulation;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }

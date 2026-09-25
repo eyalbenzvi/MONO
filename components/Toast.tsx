@@ -10,9 +10,10 @@ export function Toast() {
 
   useEffect(() => {
     if (!toast) return;
+    // Give actionable toasts ("Removed · Undo") time to be used.
     const t = setTimeout(() => {
       if (useShirtStore.getState().toast?.nonce === toast.nonce) useShirtStore.setState({ toast: null });
-    }, 2200);
+    }, toast.action ? 4000 : 2200);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -27,9 +28,22 @@ export function Toast() {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -24, opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-black shadow-2xl shadow-black"
+            className="flex items-center gap-2 rounded-full bg-white py-2 pl-4 pr-2 text-sm font-semibold text-black shadow-2xl shadow-black"
           >
-            <Check className="h-4 w-4" /> {toast.message}
+            {!toast.action && <Check className="h-4 w-4" />}
+            <span className="pr-2">{toast.message}</span>
+            {toast.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action?.run();
+                  useShirtStore.setState({ toast: null });
+                }}
+                className="pointer-events-auto h-8 rounded-full bg-black px-3 text-xs font-bold text-white"
+              >
+                {toast.action.label}
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

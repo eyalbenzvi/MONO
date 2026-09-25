@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   animate,
+  AnimatePresence,
   motion,
   useMotionValue,
+  useReducedMotion,
   useTransform,
   type PanInfo,
 } from "framer-motion";
-import Link from "next/link";
 import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
 import { ShirtCard } from "@/components/ShirtCard";
 import { getShirtById } from "@/lib/catalog";
@@ -18,8 +20,10 @@ import type { SwipeAction } from "@/types/shirt";
 
 const SWIPE_DISTANCE = 110;
 const SWIPE_VELOCITY = 550;
-const FLIP_DISTANCE = 90;
-const LONG_PRESS_MS = 450;
+/** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
+const FLIP_DISTANCE = 80;
+/** Button / keyboard swipes: short and snappy. */
+const BUTTON_FLY_S = 0.26;
 
 // Framer's tap gesture listens natively, so React's stopPropagation on child
 // controls doesn't stop it — filter taps that start on interactive elements.
@@ -33,8 +37,22 @@ export function CardStack() {
   const isFlipped = useShirtStore((s) => s.isFlipped);
   const reset = useShirtStore((s) => s.reset);
   const likedCount = useShirtStore((s) => s.likedIds.length);
+  const [hearts, setHearts] = useState<{ id: number; from: DOMRect; to: DOMRect }[]>([]);
+  const reduceMotion = useReducedMotion();
 
   const visible = deck.slice(0, 3);
+
+  // A like sends a small heart from the card to the Saved icon in the header.
+  const onLiked = useCallback(
+    (cardRect: DOMRect) => {
+      navigator.vibrate?.(8);
+      if (reduceMotion) return;
+      const target = document.querySelector("[data-saved-target]");
+      if (!target) return;
+      setHearts((h) => [...h, { id: Date.now() + Math.random(), from: cardRect, to: target.getBoundingClientRect() }]);
+    },
+    [reduceMotion],
+  );
 
   if (visible.length === 0) {
     return (
@@ -52,14 +70,10 @@ export function CardStack() {
           href="/shop/"
           className="mt-2 flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black active:scale-95"
         >
-          Go to the shop <ArrowRight className="h-4 w-4" />
+          See my shop <ArrowRight className="h-4 w-4" />
         </Link>
-        <button
-          type="button"
-          onClick={reset}
-          className="h-10 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white"
-        >
-          Retrain from scratch
+        <button type="button" onClick={reset} className="h-11 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white">
+          Start over
         </button>
       </div>
     );
@@ -75,7 +89,7 @@ export function CardStack() {
           if (!shirt) return null;
           const score = matchScore(vector, shirt.features);
           return depth === 0 ? (
-            <TopCard key={entry.id} entry={entry} score={score} isFlipped={isFlipped} />
+            <TopCard key={entry.id} entry={entry} score={score} isFlipped={isFlipped} onLiked={onLiked} />
           ) : (
             <motion.div
               key={entry.id}
@@ -89,63 +103,126 @@ export function CardStack() {
             </motion.div>
           );
         })}
+
+      {/* Heart flights (fixed layer, above everything) */}
+      <AnimatePresence>
+        {hearts.map((h) => (
+          <HeartFlight key={h.id} from={h.from} to={h.to} onDone={() => setHearts((all) => all.filter((x) => x.id !== h.id))} />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
-function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number; isFlipped: boolean }) {
+function HeartFlight({ from, to, onDone }: { from: DOMRect; to: DOMRect; onDone: () => void }) {
+  const x0 = from.left + from.width / 2 - 8;
+  const y0 = from.top + from.height / 2 - 8;
+  const x1 = to.left + to.width / 2 - 8;
+  const y1 = to.top + to.height / 2 - 8;
+  return (
+    <motion.div
+      className="pointer-events-none fixed left-0 top-0 z-[70] text-white"
+      initial={{ x: x0, y: y0, scale: 1.4, opacity: 1 }}
+      // Curved path: rise first, then arc into the icon.
+      animate={{ x: [x0, (x0 + x1) / 2, x1], y: [y0, Math.min(y0, y1) - 40, y1], scale: [1.4, 1.1, 0.7], opacity: [1, 1, 0.9] }}
+      transition={{ duration: 0.45, ease: "easeInOut" }}
+      onAnimationComplete={onDone}
+      aria-hidden
+    >
+      <Heart className="h-4 w-4 fill-current" />
+    </motion.div>
+  );
+}
+
+function TopCard({
+  entry,
+  score,
+  isFlipped,
+  onLiked,
+}: {
+  entry: DeckEntry;
+  score: number;
+  isFlipped: boolean;
+  onLiked: (rect: DOMRect) => void;
+}) {
   const shirt = getShirtById(entry.id)!;
   const commitSwipe = useShirtStore((s) => s.commitSwipe);
   const toggleFlip = useShirtStore((s) => s.toggleFlip);
-  const swipeRequest = useShirtStore((s) => s.swipeRequest);
+  const queueHead = useShirtStore((s) => s.swipeQueue[0]);
+  const onboardingSeen = useShirtStore((s) => s.onboardingSeen);
+  const firstEver = useShirtStore((s) => s.swipeHistory.length === 0);
+  const undoFx = useShirtStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
+  const reduceMotion = useReducedMotion();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-240, 0, 240], [-16, 0, 16]);
   const likeOpacity = useTransform(x, [20, SWIPE_DISTANCE], [0, 1]);
   const nopeOpacity = useTransform(x, [-SWIPE_DISTANCE, -20], [1, 0]);
-  const infoOpacity = useTransform(y, [-FLIP_DISTANCE, -20], [1, 0]);
+  const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
+  const cardRef = useRef<HTMLDivElement>(null);
   const leaving = useRef(false);
   const dragged = useRef(false);
-  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressed = useRef(false);
-
-  const clearPress = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-    pressTimer.current = null;
-  };
 
   const flyOut = useCallback(
-    (action: SwipeAction, velocity = { x: 0, y: 0 }) => {
+    (action: SwipeAction, velocity?: { x: number; y: number }, fromQueue = false) => {
       if (leaving.current) return;
       leaving.current = true;
+      if (action === "like" && cardRef.current) onLiked(cardRef.current.getBoundingClientRect());
+      else navigator.vibrate?.(8);
       const dir = action === "like" ? 1 : -1;
       const width = typeof window !== "undefined" ? window.innerWidth : 500;
       const targetX = dir * (width + 200);
-      // Carry the throw speed: faster flicks leave faster.
-      const speed = Math.max(Math.abs(velocity.x), 900);
-      const duration = Math.min(0.45, Math.max(0.2, Math.abs(targetX - x.get()) / speed));
-      animate(y, y.get() + velocity.y * duration * 0.4, { duration, ease: "easeOut" });
+      // Drags carry their throw speed; buttons/keys use a fixed snappy duration.
+      const duration = velocity
+        ? Math.min(0.45, Math.max(0.2, Math.abs(targetX - x.get()) / Math.max(Math.abs(velocity.x), 900)))
+        : BUTTON_FLY_S;
+      animate(y, y.get() + (velocity?.y ?? 0) * duration * 0.4, { duration, ease: "easeOut" });
       animate(x, targetX, {
         duration,
         ease: [0.2, 0.7, 0.4, 1],
-        onComplete: () => commitSwipe(entry.id, action),
+        onComplete: () => commitSwipe(entry.id, action, fromQueue),
       });
     },
-    [commitSwipe, entry.id, x, y],
+    [commitSwipe, entry.id, onLiked, x, y],
   );
 
-  // Button / keyboard driven swipes.
+  // Queued button / keyboard swipes — the head of the queue runs on this card.
   useEffect(() => {
-    if (swipeRequest) flyOut(swipeRequest.action);
-  }, [swipeRequest, flyOut]);
+    if (queueHead) flyOut(queueHead.action, undefined, true);
+  }, [queueHead, flyOut]);
+
+  // Undo: fly back in from the side the card left.
+  useEffect(() => {
+    if (!undoFx) return;
+    const width = typeof window !== "undefined" ? window.innerWidth : 500;
+    x.set((undoFx.action === "like" ? 1 : -1) * (width + 100));
+    animate(x, 0, {
+      type: "spring",
+      stiffness: 400,
+      damping: 30,
+      onComplete: () => useShirtStore.setState({ undoFx: null }),
+    });
+  }, [undoFx, x]);
+
+  // First-run hint: one gentle wiggle so LIKE / NOPE reveal themselves.
+  const hinted = useRef(false);
+  useEffect(() => {
+    if (onboardingSeen || !firstEver || reduceMotion || hinted.current) return;
+    hinted.current = true;
+    const t = setTimeout(() => {
+      if (dragged.current || leaving.current) return;
+      animate(x, [0, 36, -36, 0], { duration: 0.9, ease: "easeInOut" });
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [onboardingSeen, firstEver, reduceMotion, x]);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const { offset, velocity } = info;
     if (offset.x > SWIPE_DISTANCE || velocity.x > SWIPE_VELOCITY) return flyOut("like", velocity);
     if (offset.x < -SWIPE_DISTANCE || velocity.x < -SWIPE_VELOCITY) return flyOut("dislike", velocity);
-    if (offset.y < -FLIP_DISTANCE && Math.abs(offset.x) < SWIPE_DISTANCE) toggleFlip();
+    if ((offset.y < -FLIP_DISTANCE || velocity.y < -500) && Math.abs(offset.x) < SWIPE_DISTANCE) toggleFlip();
     // Snap back.
     animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
     animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
@@ -153,6 +230,7 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
 
   return (
     <motion.div
+      ref={cardRef}
       className={`absolute inset-0 ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"}`}
       style={{ x, y, rotate }}
       initial={{ scale: 0.95, y: 16 }}
@@ -160,34 +238,22 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       // Drag is disabled while flipped so the details panel can scroll natively.
       drag={!isFlipped}
-      dragElastic={0.9}
+      dragDirectionLock
+      // Sideways swipes are free; vertical travel is heavily damped so the
+      // card never slides over the header.
+      dragElastic={{ left: 0.9, right: 0.9, top: 0.12, bottom: 0.08 }}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragMomentum={false}
       onDragStart={() => {
         dragged.current = true;
-        clearPress();
       }}
       onDragEnd={onDragEnd}
-      onPointerDown={(e) => {
+      onPointerDown={() => {
         dragged.current = false;
-        if (fromControl(e)) {
-          longPressed.current = true; // suppress the tap that follows
-          clearPress();
-          return;
-        }
-        longPressed.current = false;
-        clearPress();
-        pressTimer.current = setTimeout(() => {
-          if (!dragged.current) {
-            longPressed.current = true;
-            toggleFlip();
-          }
-        }, LONG_PRESS_MS);
       }}
-      onPointerUp={clearPress}
-      onPointerCancel={clearPress}
       onTap={(e) => {
-        if (leaving.current || dragged.current || longPressed.current || fromControl(e)) return;
+        // On the details face taps do nothing — flip back via Back / ⓘ / Esc.
+        if (isFlipped || leaving.current || dragged.current || fromControl(e)) return;
         toggleFlip();
       }}
     >
@@ -210,8 +276,23 @@ function TopCard({ entry, score, isFlipped }: { entry: DeckEntry; score: number;
         style={{ opacity: infoOpacity }}
         className="pointer-events-none absolute inset-x-0 bottom-24 mx-auto w-fit rounded-full bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-black"
       >
-        {isFlipped ? "Tee view" : "Details"}
+        {isFlipped ? "Back" : "Details"}
       </motion.div>
+
+      {/* First-run gesture legend */}
+      <AnimatePresence>
+        {!onboardingSeen && !isFlipped && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.4 }}
+            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-full bg-black/60 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-md"
+          >
+            ← Pass · Tap for details · Like →
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

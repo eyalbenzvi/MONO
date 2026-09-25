@@ -55,9 +55,12 @@ npm run typecheck && npm run lint && npm run build
 | --- | --- | --- | --- |
 | Swipe right | ♥ | → | Like |
 | Swipe left | ✕ | ← | Dislike |
-| Swipe up / tap / long-press | ⓘ | ↑ / Space | Flip to details: specs, sizes, add to bag, print DNA |
+| Swipe up / tap | ⓘ | ↑ / Space | Flip to details (Esc / Back to return) |
+| — | ↺ | Z / Backspace | Undo the last swipe |
 
-The pulse button (bottom-right) opens the **Algo debug** panel: live user vector with per-swipe deltas, the current card's cosine / centered cosine / match score, per-feature dot-product share, recent swipes, and a reset.
+First run: a one-line goal, a hint wiggle and a gesture legend; 10 progress pips with "Halfway there" / "Last one!"; after every swipe a chip shows what the engine just learned (`+ Geometric`, `− Typography`). Match % stays hidden until the taste test is done. Rapid taps queue (nothing is dropped), likes fly a heart to Saved, and one-level undo rewinds the vector exactly.
+
+The **Algo debug** panel is hidden for normal users: open the site with `?debug=1` (or tap the logo 5 times). It shows: live user vector with per-swipe deltas, the current card's cosine / centered cosine / match score, per-feature dot-product share, recent swipes, and a reset.
 
 ## How the engine works (`lib/recommendation.ts`)
 

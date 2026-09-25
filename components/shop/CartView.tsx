@@ -97,7 +97,7 @@ export function CartView() {
                           value={line.size}
                           onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
                           aria-label="Size"
-                          className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white outline-none ring-1 ring-white/10"
+                          className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white ring-1 ring-white/10"
                         >
                           {SIZES.map((s) => (
                             <option key={s} value={s} className="bg-ink-900">

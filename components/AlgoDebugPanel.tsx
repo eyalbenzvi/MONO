@@ -11,11 +11,14 @@ import {
   similarityBreakdown,
 } from "@/lib/recommendation";
 import { useShirtStore, CALIBRATION_TOTAL } from "@/store/useShirtStore";
+import { useUiStore } from "@/store/useUiStore";
 import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 
 export function AlgoDebugPanel() {
   const [open, setOpen] = useState(false);
   const hydrated = useShirtStore((s) => s.hydrated);
+  // Developer tool: hidden unless ?debug=1 or the logo was tapped 5 times.
+  const debug = useUiStore((s) => s.debug);
   const vector = useShirtStore((s) => s.preferenceVector);
   const deck = useShirtStore((s) => s.deck);
   const history = useShirtStore((s) => s.swipeHistory);
@@ -31,18 +34,18 @@ export function AlgoDebugPanel() {
     ? Math.round((postCal.filter((h) => h.strategy === "explore").length / postCal.length) * 100)
     : 0;
 
-  if (!hydrated) return null;
+  if (!hydrated || !debug) return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-[calc(max(env(safe-area-inset-bottom),16px)+24px)] right-3 z-30 flex flex-col items-end sm:right-6">
+    <div className="pointer-events-none fixed left-3 top-[calc(max(env(safe-area-inset-top),10px)+60px)] z-30 flex flex-col-reverse items-start sm:left-6">
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            initial={{ opacity: 0, y: -12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.96 }}
+            exit={{ opacity: 0, y: -12, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
-            className="no-scrollbar pointer-events-auto mb-2 max-h-[62dvh] w-[min(92vw,340px)] origin-bottom-right overflow-y-auto rounded-2xl border border-white/10 bg-ink-900/95 p-4 font-mono text-[11px] text-neutral-300 shadow-2xl shadow-black backdrop-blur-xl"
+            className="no-scrollbar pointer-events-auto mt-2 max-h-[62dvh] w-[min(92vw,340px)] origin-top-left overflow-y-auto rounded-2xl border border-white/10 bg-ink-900/95 p-4 font-mono text-[11px] text-neutral-300 shadow-2xl shadow-black backdrop-blur-xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Algo debug</span>

@@ -1,10 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Compass, RotateCcw, ShoppingBag, Sparkles, Target } from "lucide-react";
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Compass, Heart, RotateCcw } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { ColorSelector, MatchBadge, SizeSelector, STAGE_BG } from "@/components/ui";
-import { useShirtStore } from "@/store/useShirtStore";
+import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
+import { explainMatch } from "@/lib/recommendation";
+import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
@@ -15,12 +17,6 @@ import {
   type ShirtProduct,
 } from "@/types/shirt";
 
-const STRATEGY_META: Record<RecommendationStrategy, { label: string; Icon: typeof Target }> = {
-  calibration: { label: "Calibrating", Icon: Sparkles },
-  greedy: { label: "For you", Icon: Target },
-  explore: { label: "Explore", Icon: Compass },
-};
-
 interface ShirtCardProps {
   shirt: ShirtProduct;
   strategy: RecommendationStrategy;
@@ -30,32 +26,49 @@ interface ShirtCardProps {
 }
 
 export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCardProps) {
-  const { Icon, label } = STRATEGY_META[strategy];
   const showDetails = isFlipped && isTop;
+  const reduceMotion = useReducedMotion();
+  const showMatch = useShowMatch();
+  const { done, total } = useCalibrationProgress();
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
+  const face = "absolute inset-0 overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10";
 
   return (
     <div className="relative h-full w-full [perspective:1400px]">
       <motion.div
         className="preserve-3d relative h-full w-full"
         initial={false}
-        animate={{ rotateY: showDetails ? 180 : 0 }}
+        // Reduced motion: crossfade the faces instead of a 3D flip.
+        animate={{ rotateY: showDetails && !reduceMotion ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
       >
         {/* Face 1: the tee, print mocked up on the fabric */}
-        <div
-          className={`backface-hidden absolute inset-0 flex flex-col overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10 ${showDetails ? hiddenFace : ""}`}
+        <motion.div
+          className={`backface-hidden ${face} flex flex-col ${showDetails ? hiddenFace : ""}`}
+          animate={reduceMotion ? { opacity: showDetails ? 0 : 1 } : undefined}
           aria-hidden={showDetails}
         >
           <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
-            <div className="flex items-center justify-between px-4 pt-4">
-              <MatchBadge score={score} />
-              <span className="flex items-center gap-1 rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-200 backdrop-blur-sm">
-                <Icon className="h-3 w-3" />
-                {label}
-              </span>
+            <div className="flex h-12 items-center justify-between px-4 pt-3">
+              {showMatch ? (
+                <MatchBadge score={score} strong={isTop && strategy === "greedy" && score >= STRONG_MATCH} />
+              ) : isTop && strategy === "calibration" ? (
+                <span className="rounded-full bg-black/45 px-3 py-1 font-mono text-xs font-bold text-white backdrop-blur-sm">
+                  {Math.min(done + 1, total)} / {total}
+                </span>
+              ) : (
+                <span />
+              )}
+              {strategy === "explore" && (
+                <span
+                  className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/40 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm"
+                  title="Outside your usual — tells us more"
+                >
+                  <Compass className="h-3.5 w-3.5" /> Wildcard
+                </span>
+              )}
             </div>
             <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-1 [container-type:size]">
               <TeeMockup shirt={shirt} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
@@ -66,20 +79,22 @@ export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCar
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
               <p className="truncate text-xs text-neutral-400">
-                {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {shirt.baseColor === "black" ? "Black" : "White"} tee
+                {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {COLOR_LABELS[shirt.baseColor]} tee
               </p>
             </div>
             <span className="shrink-0 font-mono text-lg font-semibold">${shirt.price}</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Face 2: product details */}
-        <div
-          className={`backface-hidden rotate-y-180 absolute inset-0 overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10 ${showDetails ? "" : hiddenFace}`}
+        {/* Face 2: light details — buying happens on the product page */}
+        <motion.div
+          className={`backface-hidden ${reduceMotion ? "" : "rotate-y-180"} ${face} ${showDetails ? "" : hiddenFace}`}
+          initial={false}
+          animate={reduceMotion ? { opacity: showDetails ? 1 : 0 } : undefined}
           aria-hidden={!showDetails}
         >
           {isTop && <CardDetails shirt={shirt} score={score} />}
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );
@@ -96,82 +111,82 @@ export function TeeDot({ color }: { color: "black" | "white" }) {
 }
 
 function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
-  const selected = useShirtStore((s) => s.selectedSizes[shirt.id]);
-  const setSize = useShirtStore((s) => s.setSize);
   const toggleFlip = useShirtStore((s) => s.toggleFlip);
-  const addToCart = useShirtStore((s) => s.addToCart);
-  const color = useShirtStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
-  const setColor = useShirtStore((s) => s.setColor);
-  const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 5);
-  const stop = (e: React.PointerEvent) => e.stopPropagation();
-  const black = color === "black";
+  const requestSwipe = useShirtStore((s) => s.requestSwipe);
+  const vector = useShirtStore((s) => s.preferenceVector);
+  const showMatch = useShowMatch();
+  const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 3);
+  const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
+  const black = shirt.baseColor === "black";
 
   return (
-    <div className="no-scrollbar flex h-full flex-col overflow-y-auto px-5 pb-5 pt-4">
-      <div className="flex items-center justify-between">
-        <MatchBadge score={score} />
+    <div className="flex h-full flex-col">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-4">
+        <div className="flex items-center justify-between">
+          {showMatch ? <MatchBadge score={score} /> : <span />}
+          <button
+            type="button"
+            onClick={() => toggleFlip(false)}
+            className="flex h-10 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-sm font-medium hover:bg-white/15"
+          >
+            <RotateCcw className="h-4 w-4" /> Back
+          </button>
+        </div>
+
+        <div className="mt-4 flex gap-4">
+          <div className={`w-24 shrink-0 rounded-2xl p-2 ${STAGE_BG}`}>
+            <TeeMockup shirt={shirt} shadow={false} className="w-full" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>
+            <p className="mt-0.5 text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
+          </div>
+        </div>
+
+        <p className="mt-4 text-sm leading-relaxed text-neutral-300">{shirt.description}</p>
+
+        {reasons.length > 0 && (
+          <div className="mt-4">
+            <p className={LABEL}>Why it matches you</p>
+            <TraitChips keys={reasons} />
+          </div>
+        )}
+
+        <p className="mt-4 text-sm text-neutral-300">
+          {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {PRINT_SIZE_CM.width}×{PRINT_SIZE_CM.height} cm print
+          <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
+        </p>
+
+        <div className="mt-5">
+          <p className={LABEL}>Print DNA</p>
+          <ul className="space-y-2">
+            {top.map((k) => (
+              <li key={k} className="flex items-center gap-3 text-sm">
+                <span className="w-24 shrink-0 text-neutral-300">{FEATURE_LABELS[k]}</span>
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                  <span className="block h-full rounded-full bg-white" style={{ width: `${shirt.features[k] * 100}%` }} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Footer actions stay visible */}
+      <div className="grid grid-cols-[auto_1fr] gap-2 border-t border-white/10 bg-ink-900 px-4 py-3">
         <button
           type="button"
-          onPointerDown={stop}
-          onClick={() => toggleFlip(false)}
-          className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-medium hover:bg-white/15"
+          onClick={() => requestSwipe("like")}
+          className="flex h-12 items-center gap-2 rounded-full bg-white/10 px-5 text-sm font-semibold hover:bg-white/15"
         >
-          <RotateCcw className="h-3.5 w-3.5" /> Tee view
+          <Heart className="h-4 w-4" /> Like
         </button>
-      </div>
-
-      <div className="mt-3 flex gap-4">
-        <div className={`w-28 shrink-0 rounded-2xl p-2 ${STAGE_BG}`}>
-          <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>
-          <p className="text-xs text-neutral-400">{CATEGORY_LABELS[shirt.category]} · {shirt.sku}</p>
-          <p className="mt-2 text-sm leading-snug text-neutral-300">{shirt.description}</p>
-        </div>
-      </div>
-
-      <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
-        <Spec label="Tee" value={COLOR_LABELS[color]} />
-        <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
-        <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
-        <Spec label="Style" value={CATEGORY_LABELS[shirt.category]} />
-      </dl>
-
-      <div className="mt-4">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Tee colour</p>
-        <ColorSelector value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} stopPointer />
-      </div>
-
-      <div className="mt-4">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Size</p>
-        <SizeSelector value={selected} onChange={(s) => setSize(shirt.id, s)} stopPointer />
-      </div>
-
-      <button
-        type="button"
-        disabled={!selected}
-        onPointerDown={stop}
-        onClick={() => selected && addToCart(shirt.id, selected, color)}
-        className="mt-3 flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:bg-white/10 disabled:text-neutral-500"
-      >
-        <ShoppingBag className="h-4 w-4" />
-        {selected ? `Add to bag · $${shirt.price}` : "Select a size"}
-      </button>
-
-      <div className="mt-5">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Print DNA</p>
-        <ul className="space-y-1.5">
-          {top.map((k) => (
-            <li key={k} className="flex items-center gap-2 text-xs">
-              <span className="w-20 shrink-0">{FEATURE_LABELS[k]}</span>
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                <span className="block h-full rounded-full bg-white" style={{ width: `${shirt.features[k] * 100}%` }} />
-              </span>
-              <span className="w-8 text-right font-mono text-neutral-500">{shirt.features[k].toFixed(2)}</span>
-            </li>
-          ))}
-        </ul>
+        <Link
+          href={`/shop/${shirt.id}/`}
+          className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
+        >
+          Full details · ${shirt.price} <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </div>
   );
@@ -179,9 +194,9 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
 
 export function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-white/[0.04] px-3 py-2 ring-1 ring-white/5">
-      <dt className="text-[10px] uppercase tracking-wider text-neutral-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-neutral-200">{value}</dd>
+    <div className="flex justify-between gap-3 border-b border-white/5 py-2 text-sm">
+      <dt className="text-neutral-400">{label}</dt>
+      <dd className="text-right font-medium text-neutral-200">{value}</dd>
     </div>
   );
 }

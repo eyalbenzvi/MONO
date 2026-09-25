@@ -1,39 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, ShoppingBag, Trash2, X } from "lucide-react";
+import { ArrowRight, Heart, ShoppingBag, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { MatchBadge, STAGE_BG } from "@/components/ui";
+import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useCartCount, useShirtStore } from "@/store/useShirtStore";
-import { COLOR_LABELS, SIZES, type BaseColor, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
 export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const likedIds = useShirtStore((s) => s.likedIds);
-  const vector = useShirtStore((s) => s.preferenceVector);
-  const sizes = useShirtStore((s) => s.selectedSizes);
-  const setSize = useShirtStore((s) => s.setSize);
-  const colors = useShirtStore((s) => s.selectedColors);
-  const setColor = useShirtStore((s) => s.setColor);
-  const removeLiked = useShirtStore((s) => s.removeLiked);
-  const addToCart = useShirtStore((s) => s.addToCart);
   const cartCount = useCartCount();
+  const panel = useRef<HTMLElement>(null);
+  useFocusTrap(panel, open, onClose);
 
   const items = likedIds
     .map((id) => getShirtById(id))
     .filter((s): s is ShirtProduct => Boolean(s))
     .reverse();
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
 
   return (
     <AnimatePresence>
@@ -47,6 +36,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
             onClick={onClose}
           />
           <motion.aside
+            ref={panel}
             role="dialog"
             aria-modal="true"
             aria-label="Saved tees"
@@ -55,19 +45,11 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={{ left: 0, right: 0.6 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.x > 120 || info.velocity.x > 500) onClose();
-            }}
           >
-            <div className="flex items-center justify-between px-5 pb-4 pt-[max(env(safe-area-inset-top),20px)]">
+            <div className="flex items-center justify-between px-5 pb-3 pt-[max(env(safe-area-inset-top),16px)]">
               <div>
                 <h2 className="text-lg font-bold tracking-tight">Saved</h2>
-                <p className="text-xs text-neutral-500">
-                  {items.length} tee{items.length === 1 ? "" : "s"} · swipe right to close
-                </p>
+                <p className="text-xs text-neutral-400">{items.length} saved</p>
               </div>
               <button
                 type="button"
@@ -79,104 +61,135 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
               </button>
             </div>
 
-            <div className="no-scrollbar flex-1 overflow-y-auto px-5">
+            <div className="no-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-5">
               {items.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center gap-3 pb-20 text-center text-neutral-500">
+                <div className="flex h-full flex-col items-center justify-center gap-3 pb-20 text-center text-neutral-400">
                   <Heart className="h-10 w-10" />
                   <p className="text-sm">Swipe right in Discover, or tap ♥ in the shop, to save a tee here.</p>
                 </div>
               ) : (
                 <ul className="space-y-3 pb-4">
                   <AnimatePresence initial={false}>
-                    {items.map((shirt) => {
-                      const size: ShirtSize = sizes[shirt.id] ?? "M";
-                      const color: BaseColor = colors[shirt.id] ?? shirt.baseColor;
-                      return (
-                        <motion.li
-                          key={shirt.id}
-                          layout
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
-                          className="flex gap-3 rounded-2xl bg-white/[0.03] p-2.5 ring-1 ring-white/10"
-                        >
-                          <Link href={`/shop/${shirt.id}/`} onClick={onClose} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
-                            <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
-                          </Link>
-                          <div className="flex min-w-0 flex-1 flex-col">
-                            <div className="flex items-start justify-between gap-2">
-                              <Link href={`/shop/${shirt.id}/`} onClick={onClose} className="min-w-0">
-                                <p className="truncate text-sm font-semibold">{shirt.title}</p>
-                                <p className="truncate text-xs text-neutral-500">
-                                  {COLOR_LABELS[color]} tee · ${shirt.price}
-                                </p>
-                              </Link>
-                              <button
-                                type="button"
-                                onClick={() => removeLiked(shirt.id)}
-                                aria-label={`Remove ${shirt.title}`}
-                                className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-white/5 hover:text-rose-400"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                            <div className="mt-1">
-                              <MatchBadge score={matchScore(vector, shirt.features)} size="sm" />
-                            </div>
-                            <div className="mt-auto flex items-center gap-2 pt-2">
-                              <select
-                                value={size}
-                                onChange={(e) => setSize(shirt.id, e.target.value as ShirtSize)}
-                                aria-label={`Size for ${shirt.title}`}
-                                className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white outline-none ring-1 ring-white/10"
-                              >
-                                {SIZES.map((s) => (
-                                  <option key={s} value={s} className="bg-ink-900">
-                                    {s}
-                                  </option>
-                                ))}
-                              </select>
-                              <select
-                                value={color}
-                                onChange={(e) => setColor(shirt.id, e.target.value as BaseColor)}
-                                aria-label={`Tee colour for ${shirt.title}`}
-                                className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white outline-none ring-1 ring-white/10"
-                              >
-                                {(["black", "white"] as const).map((c) => (
-                                  <option key={c} value={c} className="bg-ink-900">
-                                    {COLOR_LABELS[c]}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                type="button"
-                                onClick={() => addToCart(shirt.id, size, color)}
-                                className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-white text-xs font-bold text-black active:scale-[0.97]"
-                              >
-                                <ShoppingBag className="h-3.5 w-3.5" /> Add
-                              </button>
-                            </div>
-                          </div>
-                        </motion.li>
-                      );
-                    })}
+                    {items.map((shirt) => (
+                      <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} />
+                    ))}
                   </AnimatePresence>
+                  <li className="pt-1 text-center text-[11px] text-neutral-500">Swipe a tee left to remove it</li>
                 </ul>
               )}
             </div>
 
-            <div className="border-t border-white/10 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-4">
-              <Link
-                href="/cart/"
-                onClick={onClose}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98]"
-              >
-                <ShoppingBag className="h-4 w-4" /> View bag{cartCount > 0 ? ` (${cartCount})` : ""}
-              </Link>
+            <div className="border-t border-white/10 px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-4">
+              {cartCount > 0 ? (
+                <Link
+                  href="/cart/"
+                  onClick={onClose}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98]"
+                >
+                  <ShoppingBag className="h-4 w-4" /> View bag ({cartCount})
+                </Link>
+              ) : (
+                <Link
+                  href="/"
+                  onClick={onClose}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white/10 text-sm font-bold text-white transition active:scale-[0.98]"
+                >
+                  Keep discovering <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
             </div>
           </motion.aside>
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () => void }) {
+  const vector = useShirtStore((s) => s.preferenceVector);
+  const size = useShirtStore((s) => s.selectedSizes[shirt.id]);
+  const color: BaseColor = useShirtStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
+  const setSize = useShirtStore((s) => s.setSize);
+  const setColor = useShirtStore((s) => s.setColor);
+  const removeLiked = useShirtStore((s) => s.removeLiked);
+  const restoreSaved = useShirtStore((s) => s.restoreSaved);
+  const addToCart = useShirtStore((s) => s.addToCart);
+  const showToast = useShirtStore((s) => s.showToast);
+  const showMatch = useShowMatch();
+  const [nudge, setNudge] = useState(0);
+
+  const remove = () => {
+    removeLiked(shirt.id);
+    showToast("Removed", { label: "Undo", run: () => restoreSaved(shirt.id) });
+  };
+
+  return (
+    <motion.li
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={{ left: 0.7, right: 0 }}
+      dragDirectionLock
+      onDragEnd={(_, info) => {
+        if (info.offset.x < -90 || info.velocity.x < -500) remove();
+      }}
+      className="relative flex gap-3 rounded-2xl bg-ink-850 p-2.5 ring-1 ring-white/10"
+    >
+      <Link href={`/shop/${shirt.id}/`} onClick={onNavigate} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
+        <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex items-start justify-between gap-1">
+          <Link href={`/shop/${shirt.id}/`} onClick={onNavigate} className="min-w-0 py-0.5">
+            <p className="truncate text-sm font-semibold">{shirt.title}</p>
+            <p className="truncate text-xs text-neutral-400">
+              ${shirt.price}
+              {showMatch ? ` · ${matchScore(vector, shirt.features)}% match` : ""}
+            </p>
+          </Link>
+          <button
+            type="button"
+            onClick={remove}
+            aria-label={`Remove ${shirt.title}`}
+            className="-mr-1.5 -mt-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {(["black", "white"] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-label={`${COLOR_LABELS[c]} tee`}
+              aria-pressed={color === c}
+              onClick={() => setColor(shirt.id, c)}
+              className={`relative flex h-7 w-7 items-center justify-center rounded-full before:absolute before:-inset-2 before:content-[''] ${
+                color === c ? "ring-2 ring-white" : "ring-1 ring-white/20"
+              }`}
+            >
+              <span className={`h-5 w-5 rounded-full ${c === "black" ? "bg-black ring-1 ring-white/30" : "bg-white"}`} />
+            </button>
+          ))}
+          <span className="text-xs text-neutral-400">{COLOR_LABELS[color]}</span>
+        </div>
+
+        <SizeSelector key={nudge} compact value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
+
+        <button
+          type="button"
+          onClick={() => (size ? addToCart(shirt.id, size, color) : setNudge((n) => n + 1))}
+          className={`flex h-10 items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition active:scale-[0.97] ${
+            size ? "bg-white text-black" : "bg-white/10 text-white"
+          }`}
+        >
+          <ShoppingBag className="h-3.5 w-3.5" /> {size ? `Add to bag · ${size}` : "Pick a size"}
+        </button>
+      </div>
+    </motion.li>
   );
 }

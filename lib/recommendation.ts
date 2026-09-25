@@ -1,5 +1,6 @@
 import {
   FEATURE_KEYS,
+  type FeatureKey,
   type FeatureVector,
   type RecommendationStrategy,
   type ShirtProduct,
@@ -247,4 +248,32 @@ export function topTraits(userVec: UserProfileVector, n = 3) {
   return FEATURE_KEYS.filter((k) => userVec[k] > 0.52)
     .sort((a, b) => userVec[b] - userVec[a])
     .slice(0, n);
+}
+
+/**
+ * Display-only "how defined is this taste profile" in [0, 1], from how far
+ * the vector has moved away from neutral. Uses a gentler scale than the
+ * confidence inside matchScore (which saturates after a handful of swipes)
+ * so the meter keeps moving; it does not affect any score.
+ */
+export function profileSharpness(userVec: UserProfileVector): number {
+  let spread = 0;
+  for (const k of FEATURE_KEYS) spread += Math.abs(userVec[k] - 0.5);
+  return clamp01(spread / (FEATURE_KEYS.length * 0.25));
+}
+
+/** The feature a swipe moved most — used for the "learning" chip after each swipe. */
+export function biggestShift(before: UserProfileVector, after: UserProfileVector, action: SwipeAction) {
+  let best: FeatureKey | null = null;
+  let bestDelta = 0;
+  for (const k of FEATURE_KEYS) {
+    const d = after[k] - before[k];
+    // like → largest increase; pass → largest decrease
+    const signed = action === "like" ? d : -d;
+    if (signed > bestDelta) {
+      bestDelta = signed;
+      best = k;
+    }
+  }
+  return best;
 }

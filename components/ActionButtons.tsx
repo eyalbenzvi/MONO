@@ -1,45 +1,61 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart, Info, X } from "lucide-react";
-import { useShirtStore } from "@/store/useShirtStore";
+import { Heart, Info, RotateCcw, X } from "lucide-react";
+import { canUndo, useShirtStore } from "@/store/useShirtStore";
 
 export function ActionButtons() {
   const requestSwipe = useShirtStore((s) => s.requestSwipe);
   const toggleFlip = useShirtStore((s) => s.toggleFlip);
+  const undoLast = useShirtStore((s) => s.undoLast);
   const isFlipped = useShirtStore((s) => s.isFlipped);
   const empty = useShirtStore((s) => s.deck.length === 0);
+  const undoable = useShirtStore(canUndo);
 
   return (
-    <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),16px)] pt-3">
-      <div className="mx-auto flex max-w-[420px] items-center justify-center gap-6">
+    <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
+      <div className="mx-auto grid max-w-[420px] grid-cols-[44px_1fr_44px] items-center">
         <RoundButton
-          label="Dislike"
-          disabled={empty}
-          onClick={() => requestSwipe("dislike")}
-          className="h-16 w-16 bg-ink-800 text-rose-500 ring-1 ring-white/10 hover:bg-ink-700"
+          label="Undo last swipe"
+          disabled={!undoable}
+          onClick={undoLast}
+          className="h-11 w-11 bg-ink-800 text-neutral-300 ring-1 ring-white/10 hover:bg-ink-700"
         >
-          <X className="h-7 w-7" strokeWidth={2.75} />
+          <RotateCcw className="h-[18px] w-[18px]" />
         </RoundButton>
-        <RoundButton
-          label={isFlipped ? "Tee view" : "Show details"}
-          disabled={empty}
-          onClick={() => toggleFlip()}
-          className={`h-12 w-12 ring-1 ring-white/10 ${
-            isFlipped ? "bg-white text-black" : "bg-ink-800 text-neutral-200 hover:bg-ink-700"
-          }`}
-        >
-          <Info className="h-5 w-5" />
-        </RoundButton>
-        <RoundButton
-          label="Like"
-          disabled={empty}
-          onClick={() => requestSwipe("like")}
-          className="h-16 w-16 bg-white text-black hover:bg-neutral-200"
-        >
-          <Heart className="h-7 w-7 fill-current" />
-        </RoundButton>
+        <div className="flex items-center justify-center gap-6">
+          <RoundButton
+            label="Pass"
+            disabled={empty}
+            onClick={() => requestSwipe("dislike")}
+            className="h-16 w-16 bg-ink-800 text-rose-500 ring-1 ring-white/10 hover:bg-ink-700"
+          >
+            <X className="h-7 w-7" strokeWidth={2.75} />
+          </RoundButton>
+          <RoundButton
+            label={isFlipped ? "Back to the tee" : "Show details"}
+            disabled={empty}
+            onClick={() => toggleFlip()}
+            className={`h-12 w-12 ring-1 ring-white/10 ${
+              isFlipped ? "bg-white text-black" : "bg-ink-800 text-neutral-200 hover:bg-ink-700"
+            }`}
+          >
+            <Info className="h-5 w-5" />
+          </RoundButton>
+          <RoundButton
+            label="Like"
+            disabled={empty}
+            onClick={() => requestSwipe("like")}
+            className="h-16 w-16 bg-white text-black hover:bg-neutral-200"
+          >
+            <Heart className="h-7 w-7 fill-current" />
+          </RoundButton>
+        </div>
+        <span aria-hidden />
       </div>
+      <p className="mt-2 hidden text-center text-[11px] text-neutral-500 sm:block">
+        ← pass · → like · space details · Z undo
+      </p>
     </div>
   );
 }
