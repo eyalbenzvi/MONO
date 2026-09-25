@@ -18,7 +18,7 @@ function rng(seed = 7) {
   return () => ((a = (a * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-const CALIBRATION = getCalibrationQueue(FAMILY_LEADERS, 10).map((s) => s.id);
+const CALIBRATION = getCalibrationQueue(FAMILY_LEADERS, 10, (s) => s.category).map((s) => s.id);
 
 /** Play Discover: always swipe the top card, alternating like/pass. */
 function simulate(swipes: number) {
@@ -51,8 +51,8 @@ describe("design families", () => {
 
   it("groups the catalog into a few hundred designs with real variations", () => {
     const families = new Set(SHIRTS.map((s) => s.family));
-    expect(families.size).toBeGreaterThan(150);
-    expect(families.size).toBeLessThan(600);
+    expect(families.size).toBeGreaterThan(400);
+    expect(families.size).toBeLessThan(1200);
     expect(SHIRTS.filter((s) => variationsOf(s).length > 0).length).toBeGreaterThan(400);
   });
 
@@ -75,8 +75,9 @@ describe("design families", () => {
 });
 
 describe("Discover never shows two designs of one family", () => {
-  it("calibration uses 10 different families", () => {
+  it("calibration uses 10 different families, one per category", () => {
     expect(new Set(CALIBRATION.map((id) => getShirtById(id)!.family)).size).toBe(10);
+    expect(new Set(CALIBRATION.map((id) => getShirtById(id)!.category)).size).toBe(10);
   });
 
   it("a long run (200 swipes) never repeats a family", () => {

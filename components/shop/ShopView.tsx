@@ -9,19 +9,7 @@ import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useShirtStore } from "@/store/useShirtStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
-import { COLOR_LABELS, FEATURE_LABELS, type BaseColor, type FeatureKey } from "@/types/shirt";
-
-const STYLE_FILTERS: FeatureKey[] = [
-  "architectural",
-  "abstract",
-  "geometric",
-  "typography",
-  "line_art",
-  "halftone_raster",
-  "clean_minimal",
-  "dark_industrial",
-];
-const STYLE_THRESHOLD = 0.6;
+import { CATEGORY_LABELS, COLOR_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "@/types/shirt";
 
 const SORTS: { value: ShopSort; label: string }[] = [
   { value: "match", label: "For you" },
@@ -33,7 +21,7 @@ export function ShopView() {
   const hydrated = useHydrated();
   const vector = useShirtStore((s) => s.preferenceVector);
   const { done, total, complete } = useCalibrationProgress();
-  const { style, sort, teeView, limit } = useUiStore((s) => s.shop);
+  const { category, sort, teeView, limit } = useUiStore((s) => s.shop);
   const setShop = useUiStore((s) => s.setShop);
   const setCameFromShop = useUiStore((s) => s.setCameFromShop);
 
@@ -43,9 +31,9 @@ export function ShopView() {
   // variations on the product page. With "For you", neighbouring cards also
   // never share an algorithm (display-only pacing; scores are untouched).
   const visible = useMemo(() => {
-    const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !style || shirt.features[style] >= STYLE_THRESHOLD));
+    const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
     return sort === "match" ? paceByVariant(filtered, 3) : filtered;
-  }, [ranked, style, sort]);
+  }, [ranked, category, sort]);
   const traits = topTraits(vector, 3);
 
   // Restore scroll position when coming back from a product page.
@@ -77,7 +65,7 @@ export function ShopView() {
     return () => io.disconnect();
   }, [hydrated, visible.length, setShop]);
 
-  const setFilter = (patch: Partial<{ style: FeatureKey | null; sort: ShopSort; teeView: BaseColor | "original" }>) => {
+  const setFilter = (patch: Partial<{ category: ShirtCategory | null; sort: ShopSort; teeView: BaseColor | "original" }>) => {
     setShop({ ...patch, limit: SHOP_PAGE_SIZE, scrollTop: 0 });
     scroller.current?.scrollTo({ top: 0 });
   };
@@ -161,12 +149,12 @@ export function ShopView() {
             </label>
           </div>
           <div className="no-scrollbar -mx-4 mt-2 flex gap-1.5 overflow-x-auto px-4">
-            <Chip active={style === null} onClick={() => setFilter({ style: null })}>
-              All styles
+            <Chip active={category === null} onClick={() => setFilter({ category: null })}>
+              All
             </Chip>
-            {STYLE_FILTERS.map((k) => (
-              <Chip key={k} active={style === k} onClick={() => setFilter({ style: style === k ? null : k })}>
-                {FEATURE_LABELS[k]}
+            {SHIRT_CATEGORIES.map((c) => (
+              <Chip key={c} active={category === c} onClick={() => setFilter({ category: category === c ? null : c })}>
+                {CATEGORY_LABELS[c]}
               </Chip>
             ))}
           </div>
@@ -206,8 +194,8 @@ export function ShopView() {
             </>
           ) : (
             <div className="py-16 text-center text-sm text-neutral-400">
-              No tees match this style.
-              <button type="button" onClick={() => setFilter({ style: null })} className="ml-1 font-semibold text-white underline">
+              No tees in this category.
+              <button type="button" onClick={() => setFilter({ category: null })} className="ml-1 font-semibold text-white underline">
                 Show all
               </button>
             </div>

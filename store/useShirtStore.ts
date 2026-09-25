@@ -29,8 +29,8 @@ export { DECK_SIZE, type DeckEntry };
  */
 export const CALIBRATION_IDS = (() => {
   // One representative per design family, so the taste test never shows two
-  // variations of the same print.
-  const queue = getCalibrationQueue(FAMILY_LEADERS, CALIBRATION_SIZE);
+  // variations of the same print, and it probes every category once.
+  const queue = getCalibrationQueue(FAMILY_LEADERS, CALIBRATION_SIZE, (s) => s.category);
   const boldness = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
   const opener = queue.reduce((best, s) => (boldness(s) > boldness(best) ? s : best), queue[0]);
   return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
@@ -318,7 +318,7 @@ export const useShirtStore = create<ShirtState>()(
     }),
     {
       name: "mono-session-v1",
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       // v3 replaced the 25-shirt catalog with the generated 1,000: every stored
@@ -329,6 +329,9 @@ export const useShirtStore = create<ShirtState>()(
       migrate: (persisted, version) => {
         if (version < 3) return initialPersisted();
         const state = persisted as PersistedState;
+        // v5 added feature dimensions (pictorial, wit, retro, nature): extend
+        // stored vectors with neutral 0.5 instead of resetting the user's taste.
+        const extend = (v: UserProfileVector | undefined) => ({ ...createInitialVector(), ...(v ?? {}) });
         const withColor = (items: CartItem[] = []) =>
           items.flatMap((i) => {
             const shirt = getShirtById(i.id);
@@ -336,6 +339,10 @@ export const useShirtStore = create<ShirtState>()(
           });
         return {
           ...state,
+          preferenceVector: extend(state.preferenceVector),
+          lastUpdate: state.lastUpdate
+            ? { ...state.lastUpdate, before: extend(state.lastUpdate.before), after: extend(state.lastUpdate.after) }
+            : null,
           selectedColors: state.selectedColors ?? {},
           cart: withColor(state.cart),
           lastOrder: state.lastOrder ? { ...state.lastOrder, items: withColor(state.lastOrder.items) } : null,

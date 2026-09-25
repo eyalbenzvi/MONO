@@ -3,7 +3,7 @@
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { ShopSort } from "@/lib/recommendation";
-import type { BaseColor, FeatureKey } from "@/types/shirt";
+import type { BaseColor, ShirtCategory } from "@/types/shirt";
 
 /**
  * In-memory UI state that should survive client-side navigation but not a
@@ -14,7 +14,7 @@ interface UiState {
   debug: boolean;
   headerHidden: boolean;
   shop: {
-    style: FeatureKey | null;
+    category: ShirtCategory | null;
     sort: ShopSort;
     teeView: BaseColor | "original";
     limit: number;
@@ -34,7 +34,7 @@ export const SHOP_PAGE_SIZE = 24;
 export const useUiStore = create<UiState>()((set) => ({
   debug: false,
   headerHidden: false,
-  shop: { style: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE, scrollTop: 0 },
+  shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE, scrollTop: 0 },
   cameFromShop: false,
 
   setDebug: (on) => {

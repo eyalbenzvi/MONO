@@ -13,6 +13,11 @@ export const FEATURE_KEYS = [
   "contrast",
   "dark_industrial",
   "clean_minimal",
+  // Added with the second 1,000 designs (pictures, captions, retro, nature):
+  "pictorial",
+  "wit",
+  "retro",
+  "nature",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -23,7 +28,19 @@ export type FeatureVector = Record<FeatureKey, number>;
 export type BaseColor = "black" | "white";
 
 /** Generative family a print was made with (see scripts/generate1000Shirts.ts). */
-export const SHIRT_CATEGORIES = ["architectural", "geometric", "typography", "halftone", "waves"] as const;
+export const SHIRT_CATEGORIES = [
+  "architectural",
+  "geometric",
+  "typography",
+  "halftone",
+  "waves",
+  // second 1,000
+  "scenes",
+  "slogans",
+  "pixel",
+  "emblems",
+  "objects",
+] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
@@ -32,6 +49,11 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   typography: "Typography",
   halftone: "Halftone",
   waves: "Line & Wave",
+  scenes: "Scenes",
+  slogans: "Slogans",
+  pixel: "Pixel & Retro",
+  emblems: "Badges",
+  objects: "Objects",
 };
 
 export type ShirtSize = "S" | "M" | "L" | "XL";
@@ -141,4 +163,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   contrast: "Contrast",
   dark_industrial: "Industrial",
   clean_minimal: "Minimal",
+  pictorial: "Pictorial",
+  wit: "Witty",
+  retro: "Retro",
+  nature: "Nature",
 };
