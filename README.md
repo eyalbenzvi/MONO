@@ -2,18 +2,20 @@
 
 "Tinder for T-shirts": swipe black or white tees with rectangular monochrome prints. A vector recommendation engine learns your taste in real time, then opens a shop ranked for you.
 
-## Catalog: 2,000 generated shirts in 10 categories
+## Catalog: 2,800 generated shirts in 14 categories
 
 The catalog is fully offline and procedural. `scripts/generateCatalog.ts` (seeded, deterministic) writes:
 
-- `public/prints/print_1.svg` … `print_2000.svg`: 3:4 single-ink SVG prints (~6 KB each)
+- `public/prints/print_1.svg` … `print_2800.svg`: 3:4 single-ink SVG prints (~7 KB each)
 - `data/shirts.json`: the catalog the app imports (`lib/catalog.ts`)
 
 ```bash
-npm run generate   # rebuilds both, byte-identical on every run
+npm run generate       # rebuilds both, byte-identical on every run
+npm run audit:prints   # renders every print in Chromium and flags text that
+                       # overflows, overlaps, crosses a rule or is squeezed
 ```
 
-Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `legacy.ts` (ids 1–1000, unchanged) · `expansion.ts` (ids 1001–2000) · `art.ts` (objects, icons, pixel sprites, 5×7 pixel font, halftone and hatch tones, text fitting) · `copy.ts` (all captions: original, no brands or real people).
+Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `legacy.ts` (ids 1–1000, unchanged) · `expansion.ts` (ids 1001–2000) · `set3/` (ids 2001–2800: `ascii.ts`, `caricature.ts`, `famousart.ts`, `iconic.ts`, `landmarks.ts`) · `art.ts` (objects, icons, pixel sprites, 5×7 pixel font, halftone and hatch tones, text fitting) · `metrics.ts` (measured glyph widths: all text is sized from real per-character advances of the widest fallback font, so it fits on every device) · `copy.ts` / `copy3.ts` (all captions: original, no brands or real people).
 
 | Category | Algorithms |
 | --- | --- |
@@ -27,12 +29,16 @@ Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `l
 | **Pixel & Retro** | 8-bit sprites · arcade screen in a hand-built pixel font · pixel sunset · terminal session and ASCII-shaded sphere |
 | **Badges** | round club badge (text on a circle) · heraldic crest with a Latin-ish motto · perforated stamp · ticket and product label |
 | **Objects** | line icon plus caption · linocut woodcut · "find the odd one out" grid · technical diagram with honest labels |
+| **ASCII Art** | giant banners typed from characters · ray-marched 3D solids shaded with a character ramp · hand-typed ASCII pieces · ASCII landscapes |
+| **Caricatures** | a procedural face engine with exaggerated features, as portrait · WANTED poster · mugshot · bobblehead. Original archetypes only ("The Barista", "The Overthinker"), never real people |
+| **Famous Art** | homages to public-domain works, drawn from scratch: Hokusai's wave · Van Gogh's starry night · Mondrian, Malevich, Kandinsky, Klimt · Munch, Leonardo, Vermeer. Each hangs with a museum label |
+| **Iconic Images** | world landmarks drawn from scratch · vintage travel posters · space age (astronaut, footprint, earthrise, launch) · universal motifs with captions. No photos, logos or trademarks |
 
 Pictures are drawn as illustrations with halftone and hatch patterns, never grey fills, so every print stays strictly two-colour. That is what makes the black/white colourway swap an exact inversion.
 
-Feature vectors have 14 dimensions. The expansion added **pictorial, wit, retro and nature**. The original 1,000 get deterministic values for these, and stored user profiles are extended with neutral 0.5 rather than reset. The taste test picks one design per category. Tees are 70% black / 30% white in each set of 1,000. About 12% of the abstract, slogan, pixel and object prints are knocked out of a solid ink block.
+Feature vectors have 16 dimensions. The second set added **pictorial, wit, retro and nature**; the third added **figurative and classic**. Older designs get deterministic values for new dimensions, and stored user profiles are extended with neutral 0.5 rather than reset. The taste test picks one design from each of ten different categories. Tees are 70% black / 30% white in each set. About 12% of the abstract, slogan, pixel, object and ASCII prints are knocked out of a solid ink block.
 
-**Design families (variations).** Many generated prints are near-identical: same algorithm, close parameters. The generator gives every design a *visual signature* built from the parameters the eye actually notices: algorithm, word, shape, polarity and knockout as categories, plus normalised continuous values such as vanishing point, grid size or fill. It then groups designs with deterministic leader clustering (`FAMILY_THRESHOLD`) into 742 families. For caption designs the text itself is part of the signature. Each shirt carries `family` and `variant` in `data/shirts.json`. At runtime (`lib/catalog.ts`, `lib/deck.ts`):
+**Design families (variations).** Many generated prints are near-identical: same algorithm, close parameters. The generator gives every design a *visual signature* built from the parameters the eye actually notices: algorithm, word, shape, polarity and knockout as categories, plus normalised continuous values such as vanishing point, grid size or fill. It then groups designs with deterministic leader clustering (`FAMILY_THRESHOLD`) into 1,101 families. For caption designs the text itself is part of the signature. Each shirt carries `family` and `variant` in `data/shirts.json`. At runtime (`lib/catalog.ts`, `lib/deck.ts`):
 - **Discover never shows two designs of one family in a run.** Seeing one (swipe, save or dealt card) excludes its siblings. It also avoids repeating an algorithm within 5 cards. The taste test uses 10 different families, and its progress counts families.
 - **Shop:** one card per family (the best-ranked one) with a "+N variations" badge. In "For you" order, neighbours never share an algorithm. This is display-only pacing; scores are unchanged.
 - **Product page:** a *Variations* strip with the whole family (switching keeps your tee colour, and "back" still returns to the shop). *Similar prints* shows related but different designs, one per algorithm.
@@ -45,7 +51,7 @@ Feature vectors are computed from each design's real parameters (line/cell count
 
 1. **Discover / calibration** (`/`): the first 10 cards are the most mutually different prints. Finishing them shows the "taste profile ready" screen with your top traits and top picks.
 2. **Shop** (`/shop`): the full catalog ranked by match, with category chips (10), tee-colour view and sort, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
-3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,000 pages are statically generated.
+3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,800 pages are statically generated.
 4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over $80), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
 
 Discover keeps training after calibration (80% best match / 20% explore).

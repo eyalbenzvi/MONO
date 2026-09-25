@@ -18,6 +18,9 @@ export const FEATURE_KEYS = [
   "wit",
   "retro",
   "nature",
+  // Added with ASCII art, caricatures, famous art and iconic images:
+  "figurative",
+  "classic",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -40,6 +43,11 @@ export const SHIRT_CATEGORIES = [
   "pixel",
   "emblems",
   "objects",
+  // third set
+  "ascii",
+  "caricatures",
+  "famousart",
+  "iconic",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
@@ -54,6 +62,10 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   pixel: "Pixel & Retro",
   emblems: "Badges",
   objects: "Objects",
+  ascii: "ASCII Art",
+  caricatures: "Caricatures",
+  famousart: "Famous Art",
+  iconic: "Iconic Images",
 };
 
 export type ShirtSize = "S" | "M" | "L" | "XL";
@@ -167,4 +179,6 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   wit: "Witty",
   retro: "Retro",
   nature: "Nature",
+  figurative: "Figurative",
+  classic: "Classic Art",
 };

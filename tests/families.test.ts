@@ -88,9 +88,9 @@ describe("Discover never shows two designs of one family", () => {
 
   it("a full run ends after exactly one card per family", () => {
     const families = new Set(SHIRTS.map((s) => s.family)).size;
-    const history = simulate(2000);
+    const history = simulate(SHIRTS.length);
     expect(history).toHaveLength(families);
-  });
+  }, 60_000);
 
   it("paces algorithms: no repeat within the spacing window while alternatives exist", () => {
     const history = simulate(120);
