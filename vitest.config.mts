@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
+  // React components in tests (per-file `// @vitest-environment jsdom`).
+  oxc: { jsx: { runtime: "automatic" } },
   resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
-  test: { include: ["tests/**/*.test.ts"], environment: "node" },
+  test: { include: ["tests/**/*.test.{ts,tsx}"], environment: "node" },
 });
