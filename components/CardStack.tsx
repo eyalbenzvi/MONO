@@ -13,6 +13,7 @@ import {
 } from "framer-motion";
 import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
 import { ShirtCard } from "@/components/ShirtCard";
+import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { useShirtStore, type DeckEntry } from "@/store/useShirtStore";
@@ -162,6 +163,8 @@ function TopCard({
   const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(false);
+  const openZoom = useCallback(() => setZoom(true), []);
   const leaving = useRef(false);
   // Mirrors `leaving` for rendering: a card on its way out takes no gestures.
   const [isLeaving, setIsLeaving] = useState(false);
@@ -222,6 +225,21 @@ function TopCard({
     [commitSwipe, entry.id, onLiked, x, y],
   );
 
+  // Pinch on the card (two fingers) opens the zoom view instead of dragging.
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const onTouch = (e: TouchEvent) => {
+      if (e.touches.length < 2 || leaving.current || useShirtStore.getState().isFlipped) return;
+      e.preventDefault();
+      animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
+      animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+      setZoom(true);
+    };
+    el.addEventListener("touchstart", onTouch, { passive: false });
+    return () => el.removeEventListener("touchstart", onTouch);
+  }, [x, y]);
+
   // Queued button / keyboard swipes — the head of the queue runs on this card.
   useEffect(() => {
     if (queueHead) flyOut(queueHead.action, undefined, true);
@@ -273,8 +291,11 @@ function TopCard({
       animate={{ scale: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       // Drag is disabled while flipped so the details panel can scroll natively.
-      drag={!isFlipped && !isLeaving}
-      dragDirectionLock
+      // No direction lock: a thumb arc that starts slightly upward used to
+      // lock the card to the vertical axis, so it ignored the sideways finger
+      // (yet the swipe still counted on release). Vertical travel is damped
+      // by dragElastic instead.
+      drag={!isFlipped && !isLeaving && !zoom}
       // Sideways swipes are free; vertical travel is heavily damped so the
       // card never slides over the header.
       dragElastic={{ left: 0.9, right: 0.9, top: 0.12, bottom: 0.08 }}
@@ -293,7 +314,8 @@ function TopCard({
         toggleFlip();
       }}
     >
-      <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop />
+      <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop onZoom={openZoom} />
+      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => setZoom(false)} />}</AnimatePresence>
 
       {/* Swipe stamps */}
       <motion.div

@@ -1,11 +1,10 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Compass, Heart, RotateCcw, ZoomIn } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { ZoomViewer } from "@/components/ZoomViewer";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize } from "@/lib/catalog";
@@ -26,16 +25,17 @@ interface ShirtCardProps {
   score: number;
   isFlipped: boolean;
   isTop: boolean;
+  /** Top card only: opens the full-screen zoom (owned by the swipe card). */
+  onZoom?: () => void;
 }
 
 // Memoised: starting a swipe re-renders the stack (leaving flag, heart
 // flight); the card content itself doesn't change, so skip that work.
-export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCardProps) {
+export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFlipped, isTop, onZoom }: ShirtCardProps) {
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
   const { done, total } = useCalibrationProgress();
-  const [zoom, setZoom] = useState(false);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -76,10 +76,10 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     <Compass className="h-3.5 w-3.5" /> Wildcard
                   </span>
                 )}
-                {isTop && (
+                {isTop && onZoom && (
                   <button
                     type="button"
-                    onClick={() => setZoom(true)}
+                    onClick={onZoom}
                     aria-label="Zoom in on the print"
                     className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
                   >
@@ -114,7 +114,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           {isTop && <CardDetails shirt={shirt} score={score} />}
         </motion.div>
       </motion.div>
-      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => setZoom(false)} />}</AnimatePresence>
     </div>
   );
 });
