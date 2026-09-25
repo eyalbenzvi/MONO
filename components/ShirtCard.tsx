@@ -1,9 +1,11 @@
 "use client";
 
+import { memo, useState } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Compass, Heart, RotateCcw } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Compass, Heart, RotateCcw, ZoomIn } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
+import { ZoomViewer } from "@/components/ZoomViewer";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize } from "@/lib/catalog";
@@ -26,11 +28,14 @@ interface ShirtCardProps {
   isTop: boolean;
 }
 
-export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCardProps) {
+// Memoised: starting a swipe re-renders the stack (leaving flag, heart
+// flight); the card content itself doesn't change, so skip that work.
+export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCardProps) {
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
   const { done, total } = useCalibrationProgress();
+  const [zoom, setZoom] = useState(false);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -56,20 +61,32 @@ export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCar
               {showMatch ? (
                 <MatchBadge score={score} strong={isTop && strategy === "greedy" && score >= STRONG_MATCH} />
               ) : isTop && strategy === "calibration" ? (
-                <span className="rounded-full bg-black/45 px-3 py-1 font-mono text-xs font-bold text-white backdrop-blur-sm">
+                <span className="rounded-full bg-black/60 px-3 py-1 font-mono text-xs font-bold text-white">
                   {Math.min(done + 1, total)} / {total}
                 </span>
               ) : (
                 <span />
               )}
-              {strategy === "explore" && (
-                <span
-                  className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/40 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm"
-                  title="Outside your usual — tells us more"
-                >
-                  <Compass className="h-3.5 w-3.5" /> Wildcard
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {strategy === "explore" && (
+                  <span
+                    className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white"
+                    title="Outside your usual — tells us more"
+                  >
+                    <Compass className="h-3.5 w-3.5" /> Wildcard
+                  </span>
+                )}
+                {isTop && (
+                  <button
+                    type="button"
+                    onClick={() => setZoom(true)}
+                    aria-label="Zoom in on the print"
+                    className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
+                  >
+                    <ZoomIn className="h-[18px] w-[18px]" />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-1 [container-type:size]">
               <TeeMockup shirt={shirt} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
@@ -97,9 +114,10 @@ export function ShirtCard({ shirt, strategy, score, isFlipped, isTop }: ShirtCar
           {isTop && <CardDetails shirt={shirt} score={score} />}
         </motion.div>
       </motion.div>
+      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => setZoom(false)} />}</AnimatePresence>
     </div>
   );
-}
+});
 
 export function TeeDot({ color }: { color: "black" | "white" }) {
   return (

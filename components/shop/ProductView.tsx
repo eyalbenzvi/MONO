@@ -4,18 +4,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, ShoppingBag } from "lucide-react";
+import { ArrowDown, ArrowLeft, Check, ChevronDown, Heart, Layers, Ruler, ShoppingBag, ZoomIn } from "lucide-react";
 import { useHydrated } from "@/components/AppShell";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Spec } from "@/components/ShirtCard";
 import { TeeMockup } from "@/components/TeeMockup";
+import { ZoomViewer } from "@/components/ZoomViewer";
 import { ColorSelector, LABEL, MatchBadge, SizeSelector, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
 import { SHIRTS, familyMembers, getShirtById } from "@/lib/catalog";
 import { explainMatch, matchScore, similarShirts } from "@/lib/recommendation";
 import { useShirtStore } from "@/store/useShirtStore";
 import { makeHeaderScrollHandler, useUiStore } from "@/store/useUiStore";
-import { CATEGORY_LABELS, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, COLORS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor } from "@/types/shirt";
 
 type View = "tee" | "print";
 const VIEWS: { value: View; label: string }[] = [
@@ -39,6 +40,7 @@ export function ProductView({ id }: { id: string }) {
   const cameFromShop = useUiStore((s) => s.cameFromShop);
   const setCameFromShop = useUiStore((s) => s.setCameFromShop);
   const [view, setView] = useState<View>("tee");
+  const [zoom, setZoom] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [nudge, setNudge] = useState(0);
   const sizeRow = useRef<HTMLDivElement>(null);
@@ -129,6 +131,31 @@ export function ProductView({ id }: { id: string }) {
                 )}
               </motion.div>
             </AnimatePresence>
+            <button
+              type="button"
+              onClick={() => setZoom(true)}
+              aria-label="Zoom in on the print"
+              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
+            >
+              <ZoomIn className="h-5 w-5" />
+            </button>
+            {/* Tee colour, right on the picture: visible without scrolling. */}
+            <div className="absolute bottom-3 left-3 flex gap-1 rounded-full bg-black/50 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={color === c}
+                  aria-label={`${COLOR_LABELS[c]} tee${c === shirt.baseColor ? " (original)" : ""}`}
+                  title={`${COLOR_LABELS[c]} tee`}
+                  onClick={() => setColor(shirt.id, c)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-shadow ${color === c ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""}`}
+                >
+                  <span className={`h-6 w-6 rounded-full ${c === "black" ? "bg-black ring-1 ring-white/50" : "bg-white"}`} />
+                </button>
+              ))}
+            </div>
             <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="tablist" aria-label="View">
               {VIEWS.map((v) => (
                 <button
@@ -145,6 +172,7 @@ export function ProductView({ id }: { id: string }) {
                 </button>
               ))}
             </div>
+            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} onClose={() => setZoom(false)} />}</AnimatePresence>
           </div>
 
           {/* Info */}
