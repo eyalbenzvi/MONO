@@ -22,6 +22,15 @@ export type FeatureVector = Record<FeatureKey, number>;
 
 export type BaseColor = "black" | "white";
 
+/**
+ * Dominant tone of the artwork. Prints are single-ink monochrome, so the tee
+ * colour follows the art: a dark artwork is printed in white ink on a black
+ * tee (its blacks become the fabric), a light artwork in black ink on white.
+ */
+export type ArtTone = "dark" | "light";
+
+export const teeColorForTone = (tone: ArtTone): BaseColor => (tone === "dark" ? "black" : "white");
+
 export type ShirtSize = "S" | "M" | "L" | "XL";
 
 export interface ShirtProduct {
@@ -29,9 +38,11 @@ export interface ShirtProduct {
   title: string;
   artist: string;
   price: number;
+  /** Derived from artTone — see teeColorForTone. */
   baseColor: BaseColor;
+  artTone: ArtTone;
+  /** The only print on the product: a 3:4 rectangle on the back. Front is plain. */
   backImageUrl: string;
-  frontImageUrl: string;
   description: string;
   features: FeatureVector;
 }
@@ -44,6 +55,8 @@ export type SwipeAction = "like" | "dislike";
 export interface SwipeEvent {
   shirtId: string;
   action: SwipeAction;
+  /** "swipe" from Discover, "shop" when saved with the heart in the shop. */
+  source: "swipe" | "shop";
   /** Match score (0–100) the card showed at the time of the swipe. */
   matchScore: number;
   strategy: RecommendationStrategy;
@@ -57,6 +70,34 @@ export interface UserSession {
   dislikedIds: string[];
   preferenceVector: UserProfileVector;
   swipeHistory: SwipeEvent[];
+}
+
+export const PRINT_SIZE_CM = { width: 30, height: 40 } as const;
+
+export const SIZE_GUIDE: Record<ShirtSize, { chest: number; length: number }> = {
+  S: { chest: 50, length: 70 },
+  M: { chest: 53, length: 72 },
+  L: { chest: 56, length: 74 },
+  XL: { chest: 59, length: 76 },
+};
+
+export const SIZES: ShirtSize[] = ["S", "M", "L", "XL"];
+
+export interface CartItem {
+  id: string;
+  size: ShirtSize;
+  qty: number;
+}
+
+export interface Order {
+  number: string;
+  items: CartItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  name: string;
+  email: string;
+  placedAt: number;
 }
 
 export const createInitialVector = (value = 0.5): UserProfileVector =>

@@ -189,3 +189,62 @@ export function similarityBreakdown(userVec: UserProfileVector, features: Featur
     share: dot === 0 ? 0 : (userVec[k] * features[k]) / dot,
   }));
 }
+
+/* ------------------------------------------------------------------ */
+/* Shop helpers                                                        */
+/* ------------------------------------------------------------------ */
+
+export type ShopSort = "match" | "price-asc" | "price-desc";
+
+export interface RankedShirt {
+  shirt: ShirtProduct;
+  score: number;
+}
+
+/** Catalog ordered for the storefront. Ties fall back to raw cosine, then id. */
+export function rankShirts(
+  userVec: UserProfileVector,
+  shirts: ShirtProduct[],
+  sort: ShopSort = "match",
+): RankedShirt[] {
+  const ranked = shirts.map((shirt) => ({
+    shirt,
+    score: matchScore(userVec, shirt.features),
+    raw: cosineSimilarity(userVec, shirt.features),
+  }));
+  ranked.sort((a, b) => {
+    if (sort === "price-asc" && a.shirt.price !== b.shirt.price) return a.shirt.price - b.shirt.price;
+    if (sort === "price-desc" && a.shirt.price !== b.shirt.price) return b.shirt.price - a.shirt.price;
+    return b.score - a.score || b.raw - a.raw || a.shirt.id.localeCompare(b.shirt.id);
+  });
+  return ranked.map(({ shirt, score }) => ({ shirt, score }));
+}
+
+/** Prints closest in style to `shirt` (centered cosine), excluding itself. */
+export function similarShirts(shirt: ShirtProduct, shirts: ShirtProduct[], n = 4): ShirtProduct[] {
+  return shirts
+    .filter((s) => s.id !== shirt.id)
+    .map((s) => ({ s, sim: centeredCosine(shirt.features, s.features) }))
+    .sort((a, b) => b.sim - a.sim || a.s.id.localeCompare(b.s.id))
+    .slice(0, n)
+    .map(({ s }) => s);
+}
+
+/**
+ * Features that push this shirt's match up: both the user and the shirt sit
+ * on the same side of neutral. Returned strongest first.
+ */
+export function explainMatch(userVec: UserProfileVector, features: FeatureVector, n = 3) {
+  return FEATURE_KEYS.map((key) => ({ key, weight: (userVec[key] - 0.5) * (features[key] - 0.5) }))
+    .filter((f) => f.weight > 0.001 && userVec[f.key] > 0.5)
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, n)
+    .map((f) => f.key);
+}
+
+/** The user's strongest leanings (dimensions furthest above neutral). */
+export function topTraits(userVec: UserProfileVector, n = 3) {
+  return FEATURE_KEYS.filter((k) => userVec[k] > 0.52)
+    .sort((a, b) => userVec[b] - userVec[a])
+    .slice(0, n);
+}

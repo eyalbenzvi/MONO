@@ -15,6 +15,7 @@ import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 
 export function AlgoDebugPanel() {
   const [open, setOpen] = useState(false);
+  const hydrated = useShirtStore((s) => s.hydrated);
   const vector = useShirtStore((s) => s.preferenceVector);
   const deck = useShirtStore((s) => s.deck);
   const history = useShirtStore((s) => s.swipeHistory);
@@ -29,6 +30,8 @@ export function AlgoDebugPanel() {
   const exploreRate = postCal.length
     ? Math.round((postCal.filter((h) => h.strategy === "explore").length / postCal.length) * 100)
     : 0;
+
+  if (!hydrated) return null;
 
   return (
     <div className="pointer-events-none fixed bottom-[calc(max(env(safe-area-inset-bottom),16px)+24px)] right-3 z-30 flex flex-col items-end sm:right-6">
@@ -98,7 +101,7 @@ export function AlgoDebugPanel() {
             </Section>
 
             {shirt && top && (
-              <Section title={`Current card · ${shirt.title}`}>
+              <Section title={`Discover top card · ${shirt.title}`}>
                 <div className="mb-2 grid grid-cols-3 gap-1.5 text-center">
                   <Stat label="Cosine" value={`${cosineSimilarity(vector, shirt.features).toFixed(1)}%`} />
                   <Stat label="Centered" value={centeredCosine(vector, shirt.features).toFixed(3)} />
@@ -137,6 +140,7 @@ export function AlgoDebugPanel() {
                         <span className={h.action === "like" ? "text-emerald-400" : "text-rose-400"}>
                           {h.action === "like" ? "♥" : "✕"}
                         </span>
+                        {h.source === "shop" && <span className="text-neutral-500">shop</span>}
                         <span className="flex-1 truncate">{getShirtById(h.shirtId)?.title}</span>
                         <span className="text-neutral-500">{h.strategy.slice(0, 5)}</span>
                         <span className="w-9 text-right">{h.matchScore}%</span>

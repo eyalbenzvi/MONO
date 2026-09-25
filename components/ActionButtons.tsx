@@ -22,7 +22,7 @@ export function ActionButtons() {
           <X className="h-7 w-7" strokeWidth={2.75} />
         </RoundButton>
         <RoundButton
-          label={isFlipped ? "Show back print" : "Show details"}
+          label={isFlipped ? "Back to tee" : "Show details"}
           disabled={empty}
           onClick={() => toggleFlip()}
           className={`h-12 w-12 ring-1 ring-white/10 ${

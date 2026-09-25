@@ -4,36 +4,28 @@ import { useState } from "react";
 import type { ShirtProduct } from "@/types/shirt";
 
 /**
- * Monochrome print image. Forces grayscale regardless of the source photo and
- * falls back to a generative SVG print (derived from the feature vector) if
- * the remote image can't load, so a card never renders broken.
+ * The flat back-print artwork, forced to grayscale. If the remote image can't
+ * load, a generative print derived from the feature vector is drawn instead
+ * (in the correct ink for the tee), so a product never renders broken.
  */
-export function PrintImage({
-  shirt,
-  variant = "back",
-  className = "",
-}: {
-  shirt: ShirtProduct;
-  variant?: "back" | "front";
-  className?: string;
-}) {
+export function PrintImage({ shirt, className = "" }: { shirt: ShirtProduct; className?: string }) {
   const [failed, setFailed] = useState(false);
-  const src = variant === "back" ? shirt.backImageUrl : shirt.frontImageUrl;
 
   if (failed) return <GenerativePrint shirt={shirt} className={className} />;
 
   return (
     <img
-      src={src}
-      alt={`${shirt.title} print`}
+      src={shirt.backImageUrl}
+      alt={`${shirt.title} back print`}
       draggable={false}
+      loading="lazy"
       onError={() => setFailed(true)}
       className={`h-full w-full select-none object-cover grayscale contrast-125 ${className}`}
     />
   );
 }
 
-function hash(str: string) {
+function seeded(str: string) {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
   return () => {
@@ -45,9 +37,12 @@ function hash(str: string) {
 
 function GenerativePrint({ shirt, className }: { shirt: ShirtProduct; className: string }) {
   const f = shirt.features;
-  const rnd = hash(shirt.id);
-  const ink = "#f5f5f5";
-  const bg = "#0a0a0a";
+  const rnd = seeded(shirt.id);
+  // Dark art: white ink on a black ground. Light art: black ink on white.
+  const dark = shirt.artTone === "dark";
+  const ink = dark ? "#f5f5f5" : "#0a0a0a";
+  const bg = dark ? "#0a0a0a" : "#f5f5f5";
+  const gid = `gp-${shirt.id}`;
   const els: JSX.Element[] = [];
 
   if (f.halftone_raster > 0.5) {
@@ -63,13 +58,7 @@ function GenerativePrint({ shirt, className }: { shirt: ShirtProduct; className:
     for (let i = 0; i < n; i++) {
       const y = (i / n) * 400;
       els.push(
-        <path
-          key={`l${i}`}
-          d={`M0 ${y} Q 150 ${y + (rnd() - 0.5) * 120} 300 ${y}`}
-          stroke={ink}
-          strokeWidth={1.2}
-          fill="none"
-        />,
+        <path key={`l${i}`} d={`M0 ${y} Q 150 ${y + (rnd() - 0.5) * 120} 300 ${y}`} stroke={ink} strokeWidth={1.4} fill="none" />,
       );
     }
   }
@@ -101,17 +90,16 @@ function GenerativePrint({ shirt, className }: { shirt: ShirtProduct; className:
     );
   }
   if (els.length === 0) {
-    // Quiet / minimal prints: a soft tonal gradient with a single hairline.
     els.push(
       <g key="m">
         <defs>
-          <linearGradient id={`g-${shirt.id}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor={ink} stopOpacity={0.9} />
             <stop offset="1" stopColor={ink} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <rect width={300} height={400} fill={`url(#g-${shirt.id})`} />
-        <line x1={40} y1={330} x2={260} y2={330} stroke={ink} strokeWidth={1} />
+        <rect width={300} height={400} fill={`url(#${gid})`} />
+        <line x1={40} y1={330} x2={260} y2={330} stroke={ink} strokeWidth={1.2} />
       </g>,
     );
   }
