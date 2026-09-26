@@ -151,13 +151,12 @@ export function ZoomViewer({
       transition={{ duration: 0.18 }}
     >
       <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(12px,env(safe-area-inset-top))]">
-        <div className="flex rounded-full bg-white/10 p-0.5 ring-1 ring-white/15" role="tablist" aria-label="View">
+        <div className="flex rounded-full bg-white/10 p-0.5 ring-1 ring-white/15" role="group" aria-label="View">
           {(["print", "tee"] as const).map((v) => (
             <button
               key={v}
               type="button"
-              role="tab"
-              aria-selected={view === v}
+              aria-pressed={view === v}
               onClick={() => {
                 setView(v);
                 setT({ s: 1, x: 0, y: 0 });

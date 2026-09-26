@@ -6,7 +6,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Compass, Share2, X, ZoomIn } from "lucide-react";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
-import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
+import { LABEL, MatchBadge, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
+import { tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
@@ -39,6 +40,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const tier = showMatch ? tierOf(vector, score) : null;
   const openShare = useUiStore((s) => s.openShare);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
@@ -64,7 +67,11 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
             <div className="flex h-12 items-center justify-between px-4 pt-3">
               {/* Taste-test progress lives in one place: the strip above the card. */}
-              {showMatch ? <MatchBadge score={score} strong={isTop && strategy === "greedy" && score >= STRONG_MATCH} /> : <span />}
+              {tier ? (
+                <MatchBadge tier={tier} strong={isTop && strategy === "greedy" && tier === "top"} why={isTop ? () => explainMatch(vector, shirt.features) : undefined} />
+              ) : (
+                <span />
+              )}
               <div className="flex items-center gap-2">
                 {strategy === "explore" && (
                   <span
@@ -149,7 +156,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
     <div className="flex h-full flex-col">
       <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-4">
         <div className="flex items-center justify-between">
-          {showMatch ? <MatchBadge score={score} /> : <span />}
+          {showMatch && tierOf(vector, score) ? <MatchBadge tier={tierOf(vector, score)!} /> : <span />}
           {/* Closes the details (Undo keeps the ↺ icon to itself). */}
           <button
             type="button"

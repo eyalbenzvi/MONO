@@ -14,6 +14,7 @@ import { ColorSelector, LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE
 import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch, matchScore } from "@/lib/recommendation";
+import { matchTier } from "@/lib/match";
 import { parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -110,7 +111,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   const color = (hydrated && pickedColor) || shirt.baseColor;
   const black = color === "black";
   const size = hydrated ? selected : undefined;
-  const score = matchScore(vector, shirt.features);
+  const tier = showMatch ? matchTier(vector, shirt.features) : null;
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
@@ -194,9 +195,9 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
         <div className="grid gap-6 md:grid-cols-2">
           {/* Visual */}
           <div className={`relative flex aspect-square max-h-[60dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
-            {showMatch && (
+            {showMatch && tier && (
               <div className="absolute left-4 top-4 z-10">
-                <MatchBadge score={score} />
+                <MatchBadge tier={tier} why={() => explainMatch(vector, shirt.features)} />
               </div>
             )}
             <AnimatePresence mode="wait">
@@ -239,13 +240,12 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <div className="absolute bottom-3 left-3">
               <ColorSelector variant="overlay" value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
             </div>
-            <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="tablist" aria-label="View">
+            <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="group" aria-label="View">
               {VIEWS.map((v) => (
                 <button
                   key={v.value}
                   type="button"
-                  role="tab"
-                  aria-selected={view === v.value}
+                  aria-pressed={view === v.value}
                   onClick={() => setView(v.value)}
                   className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors ${
                     view === v.value ? "bg-white text-black" : "text-neutral-200 hover:text-white"
@@ -433,7 +433,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">
               {similar.map((s) => (
-                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} showMatch={showMatch} onOpen={clearOrigin} />
+                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} vector={vector} showMatch={showMatch} onOpen={clearOrigin} />
               ))}
             </div>
           </section>

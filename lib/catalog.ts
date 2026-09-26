@@ -181,3 +181,49 @@ export function paceByVariant<T extends { shirt: ShirtProduct }>(list: T[], wind
   }
   return out;
 }
+
+/**
+ * Shop "For you" order at the top of the grid: the ranking, reordered
+ * greedily so that
+ * - no three cards in a row share a category, or a tee colour,
+ * - no card repeats the algorithm of the previous `variantWindow` cards,
+ * - every `wildcardEvery`-th card is a wildcard: the best-ranked design
+ *   from a category not among the previous slots (a taste probe).
+ * Rules relax in that order when nothing fits. Only the first `top` items
+ * are diversified (the rest keep the variant pacing), so it stays cheap.
+ * `sameColor: false` skips the colour rule (all tees shown in one colour).
+ */
+export function diversify<T extends { shirt: ShirtProduct }>(
+  list: T[],
+  { top = 96, maxRun = 2, wildcardEvery = 8, variantWindow = 3, category = true, color = true } = {},
+): (T & { wildcard?: boolean })[] {
+  const pool = [...list];
+  const out: (T & { wildcard?: boolean })[] = [];
+  const run = (key: (s: ShirtProduct) => string, candidate: ShirtProduct) =>
+    out.length >= maxRun && out.slice(-maxRun).every((x) => key(x.shirt) === key(candidate));
+  while (pool.length && out.length < top) {
+    const slot = out.length;
+    const recentVariants = new Set(out.slice(-variantWindow).map((x) => x.shirt.variant));
+    if (category && wildcardEvery > 0 && slot % wildcardEvery === wildcardEvery - 1) {
+      const seen = new Set(out.slice(-(wildcardEvery - 1)).map((x) => x.shirt.category));
+      const i = pool.findIndex((x) => !seen.has(x.shirt.category) && !(color && run((s) => s.baseColor, x.shirt)));
+      if (i !== -1) {
+        out.push({ ...pool.splice(i, 1)[0], wildcard: true });
+        continue;
+      }
+    }
+    const fits = [
+      (s: ShirtProduct) => !(category && run((x) => x.category, s)) && !(color && run((x) => x.baseColor, s)) && !recentVariants.has(s.variant),
+      (s: ShirtProduct) => !(category && run((x) => x.category, s)) && !(color && run((x) => x.baseColor, s)),
+      (s: ShirtProduct) => !(category && run((x) => x.category, s)),
+    ];
+    let i = -1;
+    for (const ok of fits) {
+      i = pool.findIndex((x) => ok(x.shirt));
+      if (i !== -1) break;
+    }
+    out.push(pool.splice(i === -1 ? 0 : i, 1)[0]);
+  }
+  return [...out, ...paceByVariant(pool, variantWindow)];
+}
+

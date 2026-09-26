@@ -1,9 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { TIER_LABEL, type MatchTier } from "@/lib/match";
 import { COLOR_LABELS, FEATURE_LABELS, SIZES, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
 
 /** Studio backdrop behind garment mockups. */
@@ -12,8 +14,6 @@ export const STAGE_BG =
 
 /** Section label: sentence case, readable (not tiny tracked caps). */
 export const LABEL = "mb-2 text-xs font-medium text-neutral-400";
-
-export const STRONG_MATCH = 90;
 
 /**
  * Match % is meaningless before the taste test is done (the profile is
@@ -25,44 +25,111 @@ export function useShowMatch() {
   return hydrated && complete;
 }
 
-type BadgeVariant = "solid" | "quiet" | "top";
-
+/**
+ * How well a design matches, in words (lib/match: a tier by percentile in
+ * the catalog — raw % bunch up in the 90s and say little). With `why`, the
+ * badge is a button: tapping it shows the traits behind the match.
+ */
 export function MatchBadge({
-  score,
-  variant = "solid",
+  tier,
+  quiet = false,
   size = "md",
   strong = false,
+  why,
 }: {
-  score: number;
-  variant?: BadgeVariant;
+  tier: MatchTier;
+  /** Translucent (over busy grid images). */
+  quiet?: boolean;
   size?: "sm" | "md";
-  /** ≥ 90 on a "for you" card: one-time shimmer + "Strong match". */
+  /** One-time shimmer (a top pick on a "for you" Discover card). */
   strong?: boolean;
+  /** The traits behind the match, computed when opened. */
+  why?: () => FeatureKey[];
 }) {
-  const text =
-    variant === "quiet" ? `${score}%` : variant === "top" ? `Top pick · ${score}%` : strong ? `${score}% · Strong match` : `${score}% Match`;
-  const tone =
-    variant === "quiet" ? "bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-sm" : "bg-white text-black";
-  return (
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", away, true);
+    document.addEventListener("keydown", esc, true);
+    return () => {
+      document.removeEventListener("pointerdown", away, true);
+      document.removeEventListener("keydown", esc, true);
+    };
+  }, [open]);
+
+  const tone = quiet ? "bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-sm" : "bg-white text-black";
+  const cls = `relative inline-flex shrink-0 items-center overflow-hidden rounded-full font-bold ${size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"} ${tone}`;
+  const label = TIER_LABEL[tier];
+  const shimmer = strong && (
     <motion.span
-      key={score}
-      initial={{ scale: 0.9, opacity: 0.6 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className={`relative inline-flex shrink-0 items-center overflow-hidden rounded-full font-mono font-bold ${
-        size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"
-      } ${tone}`}
-    >
-      {text}
-      {strong && (
-        <motion.span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent"
-          initial={{ x: "-120%" }}
-          animate={{ x: "260%" }}
-          transition={{ duration: 0.6, delay: 0.25, ease: "easeInOut" }}
-        />
-      )}
-    </motion.span>
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent"
+      initial={{ x: "-120%" }}
+      animate={{ x: "260%" }}
+      transition={{ duration: 0.6, delay: 0.25, ease: "easeInOut" }}
+    />
+  );
+  if (!why) {
+    return (
+      <motion.span initial={{ scale: 0.9, opacity: 0.6 }} animate={{ scale: 1, opacity: 1 }} className={cls}>
+        {label}
+        {shimmer}
+      </motion.span>
+    );
+  }
+  const reasons = open ? why() : [];
+  return (
+    <span ref={root} className="relative inline-flex">
+      <motion.button
+        type="button"
+        initial={{ scale: 0.9, opacity: 0.6 }}
+        animate={{ scale: 1, opacity: 1 }}
+        aria-expanded={open}
+        aria-label={`${label} — why?`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
+        className={`${cls} before:absolute before:-inset-2 before:content-['']`}
+      >
+        {label}
+        {shimmer}
+      </motion.button>
+      <AnimatePresence>
+        {open && (
+          <motion.span
+            role="status"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 top-full z-30 mt-2 block w-max max-w-[220px] rounded-2xl bg-ink-900 p-3 text-left text-xs font-normal text-neutral-300 shadow-2xl shadow-black ring-1 ring-white/15"
+          >
+            <span className="mb-1.5 block font-semibold text-white">Why it matches you</span>
+            {reasons.length > 0 ? (
+              <span className="flex flex-wrap gap-1">
+                {reasons.map((k) => (
+                  <span key={k} className="rounded-full bg-white/10 px-2 py-0.5 text-white">
+                    {FEATURE_LABELS[k]}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              "Close to your overall taste."
+            )}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
   );
 }
 
