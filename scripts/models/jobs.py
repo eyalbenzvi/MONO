@@ -22,7 +22,7 @@ only = int(sys.argv[1]) if len(sys.argv) > 1 else None
 jobs = []
 for i, man in enumerate(MEN):
     moment = MOMENTS[i % len(MOMENTS)]
-    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": i % 2,
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": 0,
       # The model reads only ~75 tokens: the tee first, the rest short.
       "prompt": f"plain white short-sleeved t-shirt, smooth taut fabric, back view, {man} {moment}, dark jeans, relaxed arms, straight-on from directly behind, symmetrical, shoulders level, head straight, blurred quiet street, soft light, photo"})
 # More models: same pose, a different man, build and quiet urban scene each.
@@ -31,10 +31,15 @@ MORE = [
   ("a tall slim man with short wavy hair", "blurred underpass, soft light"),
   ("a muscular man with short black hair and a short beard", "blurred plain stone steps"),
   ("a lean young man with short curly red hair", "blurred empty loft with a large window"),
+  # A second set: other hair, fuller builds, different heights.
+  ("a chubby heavyset man with shoulder-length hair tied back", "blurred grey metro station"),
+  ("a middle-aged man with a receding hairline and a round belly", "blurred quiet parking garage"),
+  ("a young man with short spiky dyed blond hair, slim", "blurred brutalist concrete wall"),
+  ("a very tall broad man with long straight dark hair to his shoulders", "blurred glass office lobby"),
 ]
 for k, (man, scene) in enumerate(MORE):
     i = len(MEN) + k
-    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": i % 2,
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": 0,
       "prompt": f"plain white short-sleeved t-shirt, smooth taut fabric, back view, {man} standing still, dark jeans, relaxed arms, straight-on from directly behind, symmetrical, shoulders level, head straight, {scene}, soft light, photo"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
