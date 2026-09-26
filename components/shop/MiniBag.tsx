@@ -9,6 +9,7 @@ import { STAGE_BG } from "@/components/ui";
 import { getShirtById } from "@/lib/catalog";
 import { useCartStore } from "@/store/cartStore";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
+import { SIZE_LABELS } from "@/types/shirt";
 
 const SHOW_MS = 2500;
 
@@ -72,7 +73,7 @@ export function MiniBag() {
           </div>
           <p className="min-w-0 flex-1 truncate text-sm font-semibold" aria-live="polite">
             <Icon name="check" className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />
-            {note.pair ? "Added the pair" : "Added"} · {note.size}
+            {note.pair ? "Added the pair" : "Added"} · {SIZE_LABELS[note.size]}
           </p>
           <button type="button" onClick={undo} className="h-10 shrink-0 px-2 text-xs font-semibold text-neutral-300 underline underline-offset-4 hover:text-white">
             Undo

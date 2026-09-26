@@ -6,7 +6,7 @@
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/cart";
 import { SITE_URL, ogImage } from "@/lib/seo";
 import { STORE_POLICY } from "@/lib/store-policy";
-import { COLORS, COLOR_LABELS, SIZES, skuFor, type CatalogEntry } from "@/types/shirt";
+import { COLORS, COLOR_LABELS, SIZES, SIZE_LABELS, skuFor, type CatalogEntry } from "@/types/shirt";
 
 export const ORGANIZATION = {
   "@type": "Organization",
@@ -55,7 +55,7 @@ const POLICIES = [
 
 /**
  * Structured data: the design as a ProductGroup varying by colour and size
- * (eight variants with their offers; name, image and brand live on the
+ * (every colour × size with its offer; name, image and brand live on the
  * group), the shop's policies, and a breadcrumb.
  */
 export function productJsonLd(shirt: CatalogEntry) {
@@ -65,7 +65,7 @@ export function productJsonLd(shirt: CatalogEntry) {
     SIZES.map((size) => ({
       "@type": "Product",
       sku: `${skuFor(shirt.sku, color)}-${size}`,
-      name: `${shirt.title} — ${COLOR_LABELS[color]}, ${size}`,
+      name: `${shirt.title} — ${COLOR_LABELS[color]}, ${SIZE_LABELS[size]}`,
       color: COLOR_LABELS[color],
       size,
       offers: {

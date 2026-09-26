@@ -16,7 +16,7 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { apiConfigured, fetchReferral, isEmail } from "@/lib/api";
 import { arrivalRange, formatArrival } from "@/lib/delivery";
-import { COLOR_LABELS, SIZES, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
@@ -136,10 +136,14 @@ export function CartView() {
                           aria-label="Size"
                           className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white ring-1 ring-white/10"
                         >
-                          {SIZES.map((s) => (
-                            <option key={s} value={s} className="bg-ink-900">
-                              Size {s}
-                            </option>
+                          {([["Adults", ADULT_SIZES], ["Kids", KID_SIZES]] as const).map(([label, group]) => (
+                            <optgroup key={label} label={label} className="bg-ink-900">
+                              {group.map((s) => (
+                                <option key={s} value={s} className="bg-ink-900">
+                                  Size {SIZE_LABELS[s]}
+                                </option>
+                              ))}
+                            </optgroup>
                           ))}
                         </select>
                         <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
@@ -463,7 +467,7 @@ function DetailsForm({
             <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />
             {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
             <span className="sr-only">
-              {l.qty} × {l.shirt.title}, {COLOR_LABELS[l.color]}, {l.size}
+              {l.qty} × {l.shirt.title}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}
             </span>
           </li>
         ))}
@@ -523,7 +527,7 @@ function Confirmation({ order }: { order: Order }) {
           {lines.map((l) => (
             <li key={`${l.id}-${l.size}-${l.color}`} className="flex justify-between text-neutral-300">
               <span>
-                {l.qty}× {l.shirt.title} · {COLOR_LABELS[l.color]} · {l.size}
+                {l.qty}× {l.shirt.title} · {COLOR_LABELS[l.color]} · {SIZE_LABELS[l.size]}
               </span>
               <span className="font-mono">{formatPrice(l.lineTotal)}</span>
             </li>

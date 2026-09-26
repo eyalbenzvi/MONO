@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { TIER_LABEL, type MatchTier } from "@/lib/match";
-import { COLOR_LABELS, FEATURE_LABELS, SIZES, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
+import { ADULT_SIZES, COLOR_LABELS, FEATURE_LABELS, KID_SIZES, SIZE_LABELS, SIZE_SHORT, isKidSize, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
 
 /** Studio backdrop behind garment mockups. */
 export const STAGE_BG =
@@ -171,36 +171,45 @@ export function SizeSelector({
   /** Draw attention (e.g. after "Choose size" was tapped). */
   highlight?: boolean;
 }) {
-  const keys = radioKeys(SIZES, value, onChange);
+  // Adults by default; the kids' row one tap away (and open if a kids' size is chosen).
+  const [kids, setKids] = useState(isKidSize(value));
+  const group = kids ? KID_SIZES : ADULT_SIZES;
+  const keys = radioKeys(group, value, onChange);
   return (
-    <motion.div
-      className="grid grid-cols-4 gap-2"
-      role="radiogroup"
-      aria-label="Size"
-      animate={highlight ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {SIZES.map((size, i) => {
-        const active = value === size;
-        return (
-          <button
-            key={size}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(size)}
-            {...keys(i)}
-            className={`${compact ? "h-9 text-xs" : "h-11 text-sm"} rounded-xl font-semibold transition-colors ${
-              active
-                ? "bg-white text-black"
-                : `bg-white/5 text-neutral-200 ring-1 hover:bg-white/10 ${highlight ? "ring-white/60" : "ring-white/15"}`
-            }`}
-          >
-            {size}
-          </button>
-        );
-      })}
-    </motion.div>
+    <div>
+      <motion.div
+        className={`grid gap-1.5 ${kids ? "grid-cols-5" : "grid-cols-7"}`}
+        role="radiogroup"
+        aria-label={kids ? "Kids' size" : "Size"}
+        animate={highlight ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {group.map((size, i) => {
+          const active = value === size;
+          return (
+            <button
+              key={size}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              aria-label={SIZE_LABELS[size]}
+              onClick={() => onChange(size)}
+              {...keys(i)}
+              className={`${compact ? "h-9 text-xs" : "h-11 text-sm"} min-w-0 rounded-xl px-0 font-semibold transition-colors ${
+                active
+                  ? "bg-white text-black"
+                  : `bg-white/5 text-neutral-200 ring-1 hover:bg-white/10 ${highlight ? "ring-white/60" : "ring-white/15"}`
+              }`}
+            >
+              {SIZE_SHORT[size]}
+            </button>
+          );
+        })}
+      </motion.div>
+      <button type="button" onClick={() => setKids((k) => !k)} className="mt-1.5 h-8 text-xs text-neutral-400 underline-offset-2 hover:text-white hover:underline">
+        {kids ? "Adult sizes" : "Kids' sizes"}
+      </button>
+    </div>
   );
 }
 
