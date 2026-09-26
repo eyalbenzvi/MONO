@@ -7,8 +7,8 @@
  * The 3:4 print rectangle sits centred in the upper body.
  */
 export const TEE_VIEW = { x: 30, y: 10, w: 340, h: 440 };
-// A big, readable back print: ~60% of the chest wide, just below the collar.
-export const TEE_PRINT = { x: 138, y: 72, w: 124, h: (124 * 4) / 3 };
+// A big, readable back print: ~60% of the chest wide, a hand below the collar.
+export const TEE_PRINT = { x: 138, y: 90, w: 124, h: (124 * 4) / 3 };
 export const TEE_BODY =
   "M150 24 Q200 36 250 24 L302 38 Q338 52 378 118 L336 164 L306 146 L308 432 Q200 442 92 432 L94 146 L64 164 L22 118 Q62 52 98 38 Z";
 export const TEE_SEAMS = "M98 38 Q113 92 94 146 M302 38 Q287 92 306 146";

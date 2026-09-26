@@ -19,6 +19,11 @@ OUT = os.path.join(ROOT, "public", "models"); DATA = os.path.join(ROOT, "data", 
 os.makedirs(OUT, exist_ok=True); os.makedirs(DATA, exist_ok=True)
 session = new_session("isnet-general-use")
 
+OUT_W, OUT_H = 512, 704
+SHOULDERS, COLLAR = 0.56, 0.24
+# The print: 46% of the shoulders wide (3:4), its top 0.42 shoulder-widths below the collar.
+_pw = SHOULDERS * 0.46; _ph = _pw * OUT_W / OUT_H * 4 / 3
+PRINT_BOX = [round(0.5 - _pw / 2, 4), round(COLLAR + SHOULDERS * 0.42 * OUT_W / OUT_H, 4), round(_pw, 4), round(_ph, 4)]
 out = []
 for j in JOBS:
     f = os.path.join(SRC, j["id"] + ".png")
@@ -66,13 +71,20 @@ for j in JOBS:
         while R < w - 1 and cloth[r, R + 1]: R += 1
         if R - L > shoulders * 0.4: mids.append((L + R) / 2)
     if len(mids) >= 5: cx = float(np.median(mids))
-    # Its top about 8 cm below the collar (a third of the shoulders' width), 46% of the shoulders wide.
-    pw = shoulders * 0.46; ph = pw * 4 / 3
-    py = neck + shoulders * 0.3
-    box = [round(float((cx - pw / 2) / w), 4), round(float(py / h), 4), round(float(pw / w), 4), round(float(ph / h), 4)]
-    # Black and white, like the prints: the photo goes out in greyscale.
-    img.convert("L").save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
-    out.append({"id": j["id"], "color": j["color"], "box": box})
-    print(j["id"], box, flush=True)
+    # One framing for every photo: scaled and cropped so the shoulders span
+    # SHOULDERS of the width, the spine is the centre line and the collar
+    # sits at COLLAR of the height. The print box is then the same on every
+    # photo (PRINT_BOX): centred, its top ~10 cm below the collar.
+    f = OUT_W * SHOULDERS / shoulders
+    cw, ch = OUT_W / f, OUT_H / f
+    left, top_ = cx - cw / 2, neck - OUT_H * COLLAR / f
+    arr = np.asarray(img.convert("L"))
+    pad = int(max(cw, ch))
+    padded = np.pad(arr, pad, mode="edge")
+    crop = Image.fromarray(padded).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS)
+    # Black and white, like the prints.
+    crop.save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
+    out.append({"id": j["id"], "color": j["color"], "box": PRINT_BOX})
+    print(j["id"], "framed", round(f, 2), flush=True)
 json.dump(out, open(os.path.join(DATA, "models.json"), "w"), indent=1)
 print(len(out), "photos")
