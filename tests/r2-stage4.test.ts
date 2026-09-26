@@ -104,11 +104,11 @@ describe("I12: explicit drop dates", () => {
 
 describe("R21: the index head describes the data", () => {
   it("carries v, keys, shard size and shard hashes; the app refuses a mismatch", () => {
-    expect(index.v).toBe(5);
+    expect(index.v).toBe(6);
     expect(index.keys).toEqual([...FEATURE_KEYS]);
     expect(index.shards).toHaveLength(Math.ceil(FULL[FULL.length - 1].n / index.shardSize));
-    expect(() => checkIndexHead({ v: 4, keys: [...FEATURE_KEYS] })).toThrow(/v4/);
-    expect(() => checkIndexHead({ v: 5, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
+    expect(() => checkIndexHead({ v: 5, keys: [...FEATURE_KEYS] })).toThrow(/v5/);
+    expect(() => checkIndexHead({ v: 6, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
     // T8: how each print is made, one letter per design.
     expect(index.medium).toMatch(/^[dip]+$/);
     expect(index.medium).toHaveLength(FULL.length);

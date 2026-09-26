@@ -109,7 +109,7 @@ function productSvg(shirt: CatalogEntry) {
   ${logo(620, 92)}
   <text x="620" y="245" font-size="${titleSize.toFixed(1)}" font-weight="700" ${FONT} fill="#fff">${esc(shirt.title)}</text>
   <text x="620" y="296" font-size="27" ${FONT} fill="#fff" fill-opacity="0.75">${esc(CATEGORY_LABELS[shirt.category])} · $${shirt.price}</text>
-  <text x="620" y="336" font-size="23" ${FONT} fill="#fff" fill-opacity="0.55">${COLOR_LABELS[shirt.baseColor]} tee · also in ${other}</text>
+  <text x="620" y="336" font-size="23" ${FONT} fill="#fff" fill-opacity="0.55">${COLOR_LABELS[shirt.baseColor]} tee${shirt.colors.length > 1 ? ` · also in ${other}` : " only"}</text>
   <rect x="620" y="420" width="${ctaW.toFixed(0)}" height="64" rx="32" fill="#fff"/>
   <text x="${(620 + ctaW / 2).toFixed(0)}" y="461" font-size="25" font-weight="700" text-anchor="middle" ${FONT} fill="#000">${cta}</text>
   <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);

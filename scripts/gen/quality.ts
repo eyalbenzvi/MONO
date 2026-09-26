@@ -28,7 +28,7 @@ const FONT_FILES = ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/truety
  * lone small shape scores low. The bounding box also gives the print's real
  * size on the tee.
  */
-export function measurePrint(svg: string, baseColor: BaseColor): { quality: number; printCm: { width: number; height: number } } {
+export function measurePrint(svg: string, baseColor: BaseColor): { quality: number; printCm: { width: number; height: number }; ink: number } {
   const img = new Resvg(svg, { fitTo: { mode: "width", value: 150 }, font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "DejaVu Sans" } }).render();
   const px = img.pixels;
   const { width: w, height: h } = img;
@@ -50,6 +50,6 @@ export function measurePrint(svg: string, baseColor: BaseColor): { quality: numb
   const bh = maxY < 0 ? 0 : (maxY - minY + 1) / h;
   const cover = Math.min(1, sum / (w * h) / 0.2);
   const quality = Math.round(100 * (0.4 * cover + 0.3 * Math.sqrt(bw * bh) + 0.3 * Math.min(1, edges / 2500)));
-  return { quality, printCm: { width: Math.max(1, Math.round(bw * PRINT_CM.width)), height: Math.max(1, Math.round(bh * PRINT_CM.height)) } };
+  return { quality, printCm: { width: Math.max(1, Math.round(bw * PRINT_CM.width)), height: Math.max(1, Math.round(bh * PRINT_CM.height)) }, ink: sum / (w * h) };
 }
 

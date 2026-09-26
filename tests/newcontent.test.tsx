@@ -97,7 +97,7 @@ describe("T8: the archive — public-domain works from Smithsonian Open Access",
 
 describe("T8: ink prints turn for a black tee; photographs never do", () => {
   it("needsInvert: an ink print is inverted (to white ink) on a black tee, never on a white one", () => {
-    const ink = SHIRTS.find((s) => s.medium === "ink")!;
+    const ink = SHIRTS.find((s) => s.medium === "ink" && s.colors.length === 2)!;
     expect(ink.backPrintUrl).toMatch(/\.webp$/);
     expect(printUrl(ink, "black")).toBe(ink.backPrintUrl);
     expect(needsInvert(ink, "black")).toBe(true);
@@ -105,7 +105,7 @@ describe("T8: ink prints turn for a black tee; photographs never do", () => {
   });
 
   it("PrintImage: an inverted ink print sits on a white ground, which the invert turns black like the tee", () => {
-    const ink = SHIRTS.find((s) => s.medium === "ink")!;
+    const ink = SHIRTS.find((s) => s.medium === "ink" && s.colors.length === 2)!;
     const { container, rerender } = render(<PrintImage shirt={ink} color="black" />);
     let cls = container.querySelector("img")!.className;
     expect(cls).toMatch(/\binvert\b/);

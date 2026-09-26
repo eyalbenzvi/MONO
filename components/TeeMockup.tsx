@@ -3,7 +3,7 @@
 import { PrintImage } from "@/components/PrintImage";
 import { assetUrl } from "@/lib/catalog";
 import { TEE_PRINT, TEE_VIEW } from "@/lib/teeShape";
-import type { BaseColor, ShirtProduct } from "@/types/shirt";
+import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 const VIEW = TEE_VIEW;
 const PRINT = TEE_PRINT;
@@ -36,7 +36,9 @@ interface TeeMockupProps {
 const layer = (name: "garment" | "shade" | "light", color: BaseColor) => assetUrl(`/tee/${name}-${color}.svg`);
 const LAYER = "pointer-events-none absolute inset-0 h-full w-full select-none";
 
-export function TeeMockup({ shirt, color = shirt.baseColor, className = "", shadow = true, style, priority }: TeeMockupProps) {
+export function TeeMockup({ shirt, color: wanted, className = "", shadow = true, style, priority }: TeeMockupProps) {
+  // A design shown only in the colours it's sold in (T3).
+  const color = teeColor(shirt, wanted);
   const black = color === "black";
   return (
     <div

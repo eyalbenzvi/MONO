@@ -188,6 +188,12 @@ export interface ShirtProduct {
   category: ShirtCategory;
   /** How the print is made (see Medium). */
   medium: Medium;
+  /**
+   * The tee colours it's sold in, the original first (T3): both for most;
+   * one for a design that doesn't work on the other (see offeredColors in
+   * scripts/generateCatalog).
+   */
+  colors: BaseColor[];
   /** Algorithm within the category (e.g. "facade", "ridges"). */
   variant: string;
   /**
@@ -293,6 +299,11 @@ export interface CartItem {
 
 export const COLOR_LABELS: Record<BaseColor, string> = { black: "Black", white: "White" };
 export const COLORS: readonly BaseColor[] = ["black", "white"];
+
+/** Whether a design is sold in `color`. */
+export const offers = (s: Pick<ShirtProduct, "colors">, color: BaseColor) => s.colors.includes(color);
+/** The colour to show or sell: `color` if the design comes in it, else its original. */
+export const teeColor = (s: Pick<ShirtProduct, "colors" | "baseColor">, color?: BaseColor | null): BaseColor => (color && offers(s, color) ? color : s.baseColor);
 
 export const otherColor = (c: BaseColor): BaseColor => (c === "black" ? "white" : "black");
 

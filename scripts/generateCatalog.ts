@@ -49,6 +49,7 @@ import { set5Designs } from "./gen/set5";
 import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
 import { ARCHIVE_DISPLAY, displayCategory } from "./gen/categories";
+import { INK_HEAVY, TONAL_INK, offeredColors } from "./gen/colors";
 
 const SEED = 0x6d6f6e6f; // "mono"
 /** Designs in each of the first two sets (five categories each). */
@@ -374,6 +375,7 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
     backPrintUrl: `/prints/print_${n}.webp`,
     category: displayCategory(category, ""),
     medium: "photo",
+    colors: offeredColors(baseColor, true),
     source: category,
     variant: `photo-${category}-${photo.mode}`,
     base: `${photo.subject}, ${where}, printed in greyscale.`,
@@ -423,7 +425,7 @@ function fifthSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numbe
     const f = { ...d.features };
     if (baseColor === "black") (f.dark_industrial = (f.dark_industrial ?? 0) + 0.12), (f.clean_minimal = (f.clean_minimal ?? 0) - 0.05);
     else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
-    const { quality, printCm } = measurePrint(svg, baseColor);
+    const { quality, printCm, ink: inkShare } = measurePrint(svg, baseColor);
     // A faint print (a constellation of a few stars) isn't sold: its number stays empty.
     if (quality < WEAK_QUALITY) {
       rmSync(path.join(PRINTS_DIR, `print_${n}.svg`));
@@ -443,6 +445,7 @@ function fifthSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numbe
       backPrintUrl: `/prints/print_${n}.svg`,
       category,
       medium: "drawn",
+      colors: offeredColors(baseColor, inkShare > INK_HEAVY),
       source: d.source,
       variant: d.variant,
       base: d.description,
@@ -491,7 +494,10 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
     const g = ARCHIVE_GROUPS[a.group];
     const medium: Medium = g.mode === "ink" ? "ink" : "photo";
     // A photograph goes on the tee that shows more of it; ink prints either way (half and half).
-    const baseColor: BaseColor = medium === "photo" ? (a.tone >= 0.5 ? "black" : "white") : mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))() < 0.5 ? "black" : "white";
+    const tonal = medium === "ink" && TONAL_INK.includes(a.group);
+    // A photograph goes on the tee that shows more of it; tonal ink on white (never a negative); line work either way (half and half).
+    const baseColor: BaseColor = medium === "photo" ? (a.tone >= 0.5 ? "black" : "white") : tonal ? "white" : mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))() < 0.5 ? "black" : "white";
+    const single = medium === "photo" || tonal || a.coverage > INK_HEAVY;
     const f: Partial<Record<FeatureKey, number>> = {
       ...ARCHIVE_FEATURES[a.group],
       density: Math.min(1, a.coverage * (medium === "ink" ? 2.5 : 1.6)),
@@ -516,6 +522,7 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       backPrintUrl: `/prints/print_${n}.webp`,
       category,
       medium,
+      colors: offeredColors(baseColor, single),
       source: "archive",
       variant: `archive-${a.group}`,
       base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" ? "its marks printed as one ink" : "printed in greyscale"}.`,
@@ -659,7 +666,7 @@ function main() {
       }
     }
     takenTitles.add(title);
-    const { quality, printCm } = measurePrint(svg, baseColor);
+    const { quality, printCm, ink: inkShare } = measurePrint(svg, baseColor);
 
     shirts.push({
       id: `mono-${String(n).padStart(4, "0")}`,
@@ -672,6 +679,7 @@ function main() {
       backPrintUrl: `/prints/print_${n}.svg`,
       category: displayCategory(category, design.variant),
       medium: "drawn",
+      colors: offeredColors(baseColor, knockout || inkShare > INK_HEAVY),
       source: category,
       variant: design.variant,
       // No ink colour here: every design is sold in both colourways.
@@ -852,6 +860,8 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     family: col((s) => Number(s.family.slice(4))),
     variant: col((s) => variants.indexOf(s.variant)),
     category: col((s) => categories.indexOf(s.category)),
+    // Sold in its original colour only (T3): 0/1 per design.
+    single: col((s) => (s.colors.length === 1 ? 1 : 0)).join(""),
     // How each print is made: d(rawn) SVG, i(nk) or p(hoto) WebP (lib/catalog MEDIUM_CODES).
     medium: col((s) => s.medium[0]).join(""),
     white: col((s) => (s.baseColor === "white" ? 1 : 0)).join(""),
@@ -878,7 +888,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
 }
 
 /** Index format version (lib/catalog refuses any other). */
-const INDEX_VERSION = 5;
+const INDEX_VERSION = 6;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar

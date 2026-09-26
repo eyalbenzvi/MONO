@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
-import { type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /**
  * The flat print artwork: a local monochrome 3:4 SVG from /public/prints.
@@ -18,7 +18,7 @@ import { type BaseColor, type ShirtProduct } from "@/types/shirt";
  */
 export function PrintImage({
   shirt,
-  color = shirt.baseColor,
+  color: wanted,
   className = "",
   priority = false,
 }: {
@@ -29,6 +29,8 @@ export function PrintImage({
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  // Only the colours it's sold in (T3): anything else shows the original.
+  const color = teeColor(shirt, wanted);
   const inverted = needsInvert(shirt, color);
   const ground = shirt.medium === "drawn" ? "" : (color === "black") !== inverted ? "bg-black" : "bg-white";
   // Blank ground in the tee colour if a file is ever missing, so nothing looks broken.

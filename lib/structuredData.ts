@@ -61,7 +61,8 @@ const POLICIES = [
 export function productJsonLd(shirt: CatalogEntry) {
   const entry = shirt;
   const url = `${SITE_URL}/shop/${shirt.id}/`;
-  const variants = COLORS.flatMap((color) =>
+  // Only the colours it's sold in (T3).
+  const variants = COLORS.filter((c) => shirt.colors.includes(c)).flatMap((color) =>
     SIZES.map((size) => ({
       "@type": "Product",
       sku: `${skuFor(shirt.sku, color)}-${size}`,
