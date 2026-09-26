@@ -116,6 +116,35 @@ describe("T2: the tee worn — model photos", () => {
     expect(modelFor(both, "white")).toEqual(modelFor(both, "white"));
   });
 
+  it("no photo has streaked edges (rows or columns repeating their neighbour, from framing past the picture)", async () => {
+    const { MODEL_PHOTOS } = await import("@/lib/models");
+    const sharp = (await import("sharp")).default;
+    for (const m of MODEL_PHOTOS) {
+      const { data, info } = await sharp(`public/models/${m.id}.webp`).greyscale().raw().toBuffer({ resolveWithObject: true });
+      const { width: w, height: h } = info;
+      const px = (x: number, y: number) => data[y * w + x];
+      const flat = (a: (i: number) => number, b: (i: number) => number, n: number) => {
+        let d = 0;
+        for (let i = 0; i < n; i++) d += Math.abs(a(i) - b(i));
+        // A streak repeats its neighbour almost exactly (a defocused edge still changes).
+        return d / n < 0.3;
+      };
+      // How many lines from each edge repeat their neighbour.
+      const run = (line: (k: number) => (i: number) => number, n: number) => {
+        let k = 0;
+        while (k < 40 && flat(line(k), line(k + 1), n)) k++;
+        return k;
+      };
+      const runs = [
+        run((k) => (i) => px(k, i), h),
+        run((k) => (i) => px(w - 1 - k, i), h),
+        run((k) => (i) => px(i, k), w),
+        run((k) => (i) => px(i, h - 1 - k), w),
+      ];
+      expect(Math.max(...runs), m.id).toBeLessThan(6);
+    }
+  });
+
   it("the mockup lays the print on the photo, never on a photo of the other colour", () => {
     const { container } = render(<TeeMockup shirt={both} color="black" />);
     const imgs = [...container.querySelectorAll("img")].map((i) => i.getAttribute("src"));

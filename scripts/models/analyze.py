@@ -99,7 +99,7 @@ for j in JOBS:
     left, top_ = cx - cw / 2, neck - OUT_H * COLLAR / f
     arr = np.asarray(img.convert("L"))
     pad = int(max(cw, ch))
-    padded = np.pad(arr, pad, mode="edge")
+    padded = np.pad(arr, pad, mode="symmetric")  # mirrored, never streaked edges (see unsmear.py)
     crop = Image.fromarray(padded).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS)
     # Its black-tee twin: the tee (the white cloth on the person, the part
     # joined to the back) darkened, keeping its folds and shading.
@@ -108,7 +108,7 @@ for j in JOBS:
     soft = np.asarray(Image.fromarray((tee * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))) / 255.0
     g = np.asarray(img.convert("L")).astype(np.float32) / 255
     def framed(arr, name):
-        a8 = np.pad((np.clip(arr, 0, 1) * 255).astype(np.uint8), pad, mode="edge")
+        a8 = np.pad((np.clip(arr, 0, 1) * 255).astype(np.uint8), pad, mode="symmetric")
         Image.fromarray(a8).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS).save(os.path.join(OUT, name + ".webp"), quality=82, method=6)
     # Full white: the tee's greys lifted towards white, its folds kept faint.
     lo = float(np.percentile(g[tee], 5))
