@@ -5,7 +5,7 @@ pillow):
 
   python scripts/models/analyze.py <photos-dir> <jobs.json>
 
-Writes public/models/<id>.webp (the photo), public/models/<id>-mask.png
+Writes public/models/<id>.webp (the photo, in greyscale), public/models/<id>-mask.png
 (the tee, as alpha) and data/models/models.json: each photo's category,
 tee colour and print box (fractions of the photo: x, y, width, height).
 """
@@ -71,7 +71,8 @@ for j in JOBS:
         print("reject", j["id"], "tee tone", round(tone, 2)); continue
     box = [round(float((cx - pw / 2) / w), 4), round(float(py / h), 4), round(float(pw / w), 4), round(float(ph / h), 4)]
     Image.fromarray((tee * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2)).save(os.path.join(OUT, j["id"] + "-mask.png"), optimize=True)
-    img.save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
+    # Black and white, like the prints: the photo goes out in greyscale.
+    img.convert("L").save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
     out.append({"id": j["id"], "color": j["color"], "box": box})
     print(j["id"], box, flush=True)
 json.dump(out, open(os.path.join(DATA, "models.json"), "w"), indent=1)
