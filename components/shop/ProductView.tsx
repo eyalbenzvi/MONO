@@ -21,7 +21,7 @@ import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
-import { CATEGORY_LABELS, COLOR_LABELS, SIZE_GUIDE, SIZES, isPhoto, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
+import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, isPhoto, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
@@ -204,9 +204,10 @@ export function ProductView({
     if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) confirmAdded(addedKey);
   };
   // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
-  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${size}` : pairLabel(pair, shirt.price)) : `Add to bag · ${size}`;
+  const sizeText = size ? SIZE_LABELS[size] : "";
+  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${sizeText}` : pairLabel(pair, shirt.price)) : `Add to bag · ${sizeText}`;
   const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
-  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${size}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${size}`;
+  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${sizeText}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${size}`;
   const shownPrice = both ? (
     <>
       <s className="mr-1.5 text-[0.8em] font-normal text-neutral-500">{formatPrice(shirt.price * 2)}</s>
@@ -406,24 +407,27 @@ export function ProductView({
                 {guideOpen && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                   <p className="mt-3 text-xs text-neutral-300">{STORE_POLICY.fit}</p>
-                  <table className="mt-2 w-full text-left font-mono text-xs text-neutral-300">
-                    <thead className="text-neutral-400">
-                      <tr>
-                        <th className="py-1 font-normal">cm</th>
-                        {SIZES.map((s) => <th key={s} className="py-1 font-normal">{s}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="py-1 text-neutral-400">Chest ½</td>
-                        {SIZES.map((s) => <td key={s}>{SIZE_GUIDE[s].chest}</td>)}
-                      </tr>
-                      <tr>
-                        <td className="py-1 text-neutral-400">Length</td>
-                        {SIZES.map((s) => <td key={s}>{SIZE_GUIDE[s].length}</td>)}
-                      </tr>
-                    </tbody>
-                  </table>
+                  {([["Adults", ADULT_SIZES], ["Kids (print 20 × 26 cm)", KID_SIZES]] as const).map(([label, group]) => (
+                    <table key={label} className="mt-2 w-full text-left font-mono text-xs text-neutral-300">
+                      <caption className="py-1 text-left font-sans text-neutral-400">{label}</caption>
+                      <thead className="text-neutral-400">
+                        <tr>
+                          <th className="py-1 font-normal">cm</th>
+                          {group.map((s) => <th key={s} className="py-1 font-normal">{SIZE_SHORT[s]}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-1 text-neutral-400">Chest ½</td>
+                          {group.map((s) => <td key={s}>{SIZE_GUIDE[s].chest}</td>)}
+                        </tr>
+                        <tr>
+                          <td className="py-1 text-neutral-400">Length</td>
+                          {group.map((s) => <td key={s}>{SIZE_GUIDE[s].length}</td>)}
+                        </tr>
+                      </tbody>
+                    </table>
+                  ))}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -537,7 +541,7 @@ export function ProductView({
           <p className="truncate text-xs text-neutral-400">
             {both ? "Black + White" : COLOR_LABELS[color]}
             <span className="max-[399px]:hidden">{both ? " tees" : " tee"}</span>
-            {size ? ` · ${size}` : ""}
+            {size ? ` · ${SIZE_LABELS[size]}` : ""}
           </p>
         </div>
         <SaveButton id={shirt.id} size="lg" />

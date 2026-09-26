@@ -127,7 +127,19 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   machines: "Engines & Gauges",
 };
 
-export type ShirtSize = "S" | "M" | "L" | "XL";
+/** Adult sizes, then kids' sizes (by age). Stored as these codes; shown with SIZE_LABELS. */
+export const ADULT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const;
+export const KID_SIZES = ["K4", "K6", "K8", "K10", "K12"] as const;
+export type ShirtSize = (typeof ADULT_SIZES)[number] | (typeof KID_SIZES)[number];
+export const isKidSize = (s: ShirtSize | null | undefined) => !!s && (KID_SIZES as readonly string[]).includes(s);
+
+/** How a size reads: "XXL", "Kids 5–6". */
+export const SIZE_LABELS: Record<ShirtSize, string> = {
+  XS: "XS", S: "S", M: "M", L: "L", XL: "XL", "2XL": "XXL", "3XL": "3XL",
+  K4: "Kids 3–4", K6: "Kids 5–6", K8: "Kids 7–8", K10: "Kids 9–10", K12: "Kids 11–12",
+};
+/** The short form on a size button (the kids row is labelled "Kids", so ages only). */
+export const SIZE_SHORT: Record<ShirtSize, string> = { ...SIZE_LABELS, K4: "3–4", K6: "5–6", K8: "7–8", K10: "9–10", K12: "11–12" };
 
 /**
  * A design as the app knows it everywhere (the lean catalog index, bundled
@@ -225,14 +237,23 @@ export const PRINT_SIZE_CM = { width: 28, height: 37 } as const;
 /** "28 × 37 cm" — the print's real size on the tee. */
 export const printSizeLabel = (cm: { width: number; height: number } = PRINT_SIZE_CM) => `${cm.width} × ${cm.height} cm`;
 
+/** Garment measurements, cm (chest is half the width, laid flat). Kids' prints are scaled to 20 × 26 cm. */
 export const SIZE_GUIDE: Record<ShirtSize, { chest: number; length: number }> = {
+  XS: { chest: 47, length: 68 },
   S: { chest: 50, length: 70 },
   M: { chest: 53, length: 72 },
   L: { chest: 56, length: 74 },
   XL: { chest: 59, length: 76 },
+  "2XL": { chest: 62, length: 78 },
+  "3XL": { chest: 65, length: 80 },
+  K4: { chest: 32, length: 43 },
+  K6: { chest: 35, length: 48 },
+  K8: { chest: 38, length: 53 },
+  K10: { chest: 41, length: 58 },
+  K12: { chest: 44, length: 63 },
 };
 
-export const SIZES: ShirtSize[] = ["S", "M", "L", "XL"];
+export const SIZES: readonly ShirtSize[] = [...ADULT_SIZES, ...KID_SIZES];
 
 export interface CartItem {
   id: string;

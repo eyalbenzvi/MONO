@@ -5,7 +5,7 @@ import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCartStore } from "@/store/cartStore";
 import { useHydrated } from "@/store/useUiStore";
-import { SIZES, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { ADULT_SIZES, SIZE_LABELS, SIZE_SHORT, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import type { AddSource } from "@/lib/analytics";
 
 /**
@@ -74,10 +74,10 @@ export function QuickAdd({
         ref={button}
         type="button"
         onClick={() => addToCart(shirt.id, preferred, color, 1, { source })}
-        aria-label={`Add ${shirt.title} to bag, size ${preferred}`}
+        aria-label={`Add ${shirt.title} to bag, size ${SIZE_LABELS[preferred]}`}
         className={`flex shrink-0 items-center gap-1 whitespace-nowrap ${chip} ${shape} ${className}`}
       >
-        <Icon name="plus" className="h-3.5 w-3.5" /> {words(compact ? preferred : `${long ? "Add to bag" : "Add"} · ${preferred}`)}
+        <Icon name="plus" className="h-3.5 w-3.5" /> {words(compact ? SIZE_SHORT[preferred] : `${long ? "Add to bag" : "Add"} · ${SIZE_LABELS[preferred]}`)}
       </button>
     );
   }
@@ -94,9 +94,10 @@ export function QuickAdd({
             transition={{ duration: 0.15 }}
             role="group"
             aria-label={`Add ${shirt.title}: pick a size`}
-            className={`flex items-center gap-0.5 ${overlay ? "w-full min-w-0 rounded-full bg-black/70 p-1 ring-1 ring-white/20 backdrop-blur-sm" : iconOnly ? "w-44" : ""}`}
+            className={`grid grid-cols-4 gap-0.5 ${overlay ? "w-full min-w-0 rounded-2xl bg-black/75 p-1 ring-1 ring-white/20 backdrop-blur-sm" : iconOnly ? "w-44" : "w-48"}`}
           >
-            {SIZES.map((size) => (
+            {/* Adult sizes here; kids' sizes are on the product page. */}
+            {ADULT_SIZES.map((size) => (
               <button
                 key={size}
                 type="button"
@@ -104,13 +105,13 @@ export function QuickAdd({
                   addToCart(shirt.id, size, color, 1, { source });
                   close();
                 }}
-                aria-label={`Size ${size}`}
-                className={`h-8 min-w-0 flex-1 rounded-full px-0 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
+                aria-label={`Size ${SIZE_LABELS[size]}`}
+                className={`h-8 min-w-0 rounded-full px-0 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
               >
-                {size}
+                {SIZE_SHORT[size]}
               </button>
             ))}
-            <button type="button" onClick={close} aria-label="Close sizes" className="flex h-8 w-7 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
+            <button type="button" onClick={close} aria-label="Close sizes" className="flex h-8 min-w-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
               <Icon name="x" className="h-3.5 w-3.5" />
             </button>
           </motion.div>

@@ -17,7 +17,7 @@ import { TIER_LABEL, tierOf } from "@/lib/match";
 import { useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
+import { SIZE_LABELS, type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
@@ -211,7 +211,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
     let added = 0;
     for (const s of which === "top" ? top : items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { silent: true, source: "saved" })) added++;
     setPick(null);
-    useUiStore.getState().showToast(`Added ${added} · ${size}`);
+    useUiStore.getState().showToast(`Added ${added} · ${SIZE_LABELS[size]}`);
   };
   const run = (which: "top" | "all") => (preferred ? add(which, preferred) : setPick((p) => (p === which ? null : which)));
   const total = top.reduce((sum, s) => sum + s.price, 0);
@@ -225,7 +225,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
         className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
       >
         <Icon name="shopping-bag" className="h-4 w-4" /> {label}
-        {preferred ? ` · ${preferred}` : ""} · {formatPrice(total)}
+        {preferred ? ` · ${SIZE_LABELS[preferred]}` : ""} · {formatPrice(total)}
       </button>
       {items.length > top.length && (
         <button

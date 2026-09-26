@@ -57,3 +57,15 @@ test("someone who took the taste test before the photographs: not sent back into
   expect(state.preferenceVector).toMatchObject({ wit: 0.8, photographic: 0.5 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(4);
 });
+
+test("sizes: XXL and kids' sizes on the product page, labelled in the bag", async ({ page }) => {
+  await page.goto("shop/mono-0001/");
+  await hydrated(page);
+  await page.getByRole("radio", { name: "XXL" }).tap();
+  await page.getByRole("button", { name: "Kids' sizes" }).tap();
+  await page.getByRole("radio", { name: "Kids 5–6" }).tap();
+  await page.getByRole("button", { name: /^Add to bag/ }).last().tap();
+  await page.goto("cart/");
+  await hydrated(page);
+  await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
+});

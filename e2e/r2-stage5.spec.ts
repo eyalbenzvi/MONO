@@ -33,7 +33,7 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
     expect(links.length).toBeLessThanOrEqual(8);
     const types = ldTypes(page);
     expect(types).toEqual(expect.arrayContaining(["ProductGroup", "BreadcrumbList", "OfferShippingDetails", "MerchantReturnPolicy", "Organization"]));
-    expect(types.filter((t) => t === "Offer")).toHaveLength(8);
+    expect(types.filter((t) => t === "Offer")).toHaveLength(24); // 2 colours × 12 sizes
     expect(page).toContain('"variesBy":["https://schema.org/color","https://schema.org/size"]');
     expect(page).toContain('"itemCondition":"https://schema.org/NewCondition"');
     expect(page).toMatch(/"priceValidUntil":"\d{4}-12-31"/);
