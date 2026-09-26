@@ -134,7 +134,9 @@ describe("display pacing", () => {
 
 describe("precomputed calibration (I8)", () => {
   it("matches the runtime algorithm: farthest-point over family leaders, boldest first", () => {
-    const queue = getCalibrationQueue(FAMILY_LEADERS, 10, (s) => s.category);
+    // Each family's first strong design (weak prints never rate taste).
+    const leaders = [...new Map([...SHIRTS].reverse().filter((s) => !s.weak).map((s) => [s.family, s])).values()].sort((a, b) => a.n - b.n);
+    const queue = getCalibrationQueue(leaders, 10, (s) => s.category);
     const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
     const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
     expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));

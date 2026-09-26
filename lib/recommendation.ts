@@ -144,19 +144,19 @@ export function updateUserVector(
  * already chosen is lowest. This yields a maximally orthogonal set that
  * probes every axis of taste.
  */
-export function getCalibrationQueue(
-  shirts: ShirtProduct[],
+export function getCalibrationQueue<T extends Pick<ShirtProduct, "id" | "features">>(
+  shirts: T[],
   size: number = CALIBRATION_SIZE,
   /** Optional coverage key (e.g. category): prefer candidates whose key is not used yet. */
-  keyOf?: (s: ShirtProduct) => string,
-): ShirtProduct[] {
+  keyOf?: (s: T) => string,
+): T[] {
   if (shirts.length === 0) return [];
   const pool = [...shirts];
-  const distFromNeutral = (s: ShirtProduct) =>
+  const distFromNeutral = (s: T) =>
     FEATURE_KEYS.reduce((sum, k) => sum + (s.features[k] - 0.5) ** 2, 0);
 
   pool.sort((a, b) => distFromNeutral(b) - distFromNeutral(a) || a.id.localeCompare(b.id));
-  const chosen: ShirtProduct[] = [pool.shift()!];
+  const chosen: T[] = [pool.shift()!];
 
   while (chosen.length < Math.min(size, shirts.length)) {
     let bestIdx = 0;
@@ -260,7 +260,7 @@ export function rankShirts(
   const ranked = shirts.map((shirt) => ({ shirt, ...score(shirt.features) }));
   ranked.sort((a, b) => {
     if (sort === "popular") return a.shirt.rank - b.shirt.rank;
-    if (sort === "new" && a.shirt.dropWeek !== b.shirt.dropWeek) return b.shirt.dropWeek - a.shirt.dropWeek;
+    if (sort === "new" && a.shirt.dropDate !== b.shirt.dropDate) return b.shirt.dropDate - a.shirt.dropDate;
     if (sort === "new") return a.shirt.rank - b.shirt.rank;
     return b.score - a.score || b.raw - a.raw || a.shirt.id.localeCompare(b.shirt.id);
   });

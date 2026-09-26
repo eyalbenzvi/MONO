@@ -20,11 +20,14 @@
  * Feature vectors are computed from each design's actual parameters.
  * Near-identical designs are grouped into families from a visual signature.
  */
+import { createHash } from "node:crypto";
 import { mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { FEATURE_KEYS, SKU_CODES, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
+import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
+import { WEAK_QUALITY, measurePrint } from "./gen/quality";
 import { minifySvg } from "./gen/minify";
 import { H, M, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
@@ -80,8 +83,12 @@ const SETS: DesignSet[] = [
 
 /** Every tee costs the same (both colourways too). */
 const PRICE = 48;
-/** Designs per weekly drop (ids in order); the last drop is "new this week". */
+/** Designs per weekly drop (ids in order). */
 const DROP_SIZE = 40;
+/** Monday of the first weekly drop; each design gets its drop date explicitly. */
+const DROP_EPOCH = Date.UTC(2025, 4, 26);
+const DAY = 86_400_000;
+
 /** Precomputed neighbours per design (other families, one per algorithm). */
 const SIMILAR_K = 6;
 /** Designs per detail shard in public/data. */
@@ -241,7 +248,7 @@ function main() {
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
   const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
-  const shirts: (Omit<CatalogEntry, "family" | "description" | "similar" | "rank"> & { base: string })[] = [];
+  const shirts: (Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & { base: string })[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
   const takenTitles = new Set<string>();
@@ -318,15 +325,31 @@ function main() {
     const [adjs, nouns] = TITLE_WORDS[category];
     const combos = adjs.length * nouns.length;
     const titleAt = (k: number) => `${adjs[k % adjs.length]} ${nouns[(Math.floor(k / adjs.length) + k) % nouns.length]}`;
-    let title = titleAt(index - 1);
+    // What the print shows, read from its own description (the SEO title
+    // and, where the poetic nouns said nothing, the name's noun).
+    const { subject, noun } = subjectOf(design.variant, design.description);
     // Also skip pairs that repeat a word ("Postcard Postcard").
-    const repeats = (t: string) => new Set(t.split(" ")).size < t.split(" ").length;
-    while (takenTitles.has(title) || repeats(title)) {
-      const spare = (spareTitle[category] ?? combos) - 1;
-      spareTitle[category] = spare;
-      title = titleAt(spare);
+    const repeats = (t: string) => new Set(t.toLowerCase().split(" ")).size < t.split(" ").length;
+    let title = "";
+    if (noun && SUBJECT_NOUN_CATEGORIES.includes(category)) {
+      // "Lucky Cactus", "Proud Barista": the adjective rotates, the noun is the subject.
+      // All fifteen taken for this noun: the full subject ("Pocket Umbrella Diagram").
+      for (const n of noun === subject ? [noun] : [noun, subject])
+        for (let k = 0; k < adjs.length && !title; k++) {
+          const t = `${adjs[(index - 1 + k) % adjs.length]} ${n}`;
+          if (!takenTitles.has(t) && !repeats(t)) title = t;
+        }
+    }
+    if (!title) {
+      title = titleAt(index - 1);
+      while (takenTitles.has(title) || repeats(title)) {
+        const spare = (spareTitle[category] ?? combos) - 1;
+        spareTitle[category] = spare;
+        title = titleAt(spare);
+      }
     }
     takenTitles.add(title);
+    const { quality, printCm } = measurePrint(svg, baseColor);
 
     shirts.push({
       id: `mono-${String(n).padStart(4, "0")}`,
@@ -341,8 +364,12 @@ function main() {
       variant: design.variant,
       // No ink colour here: every design is sold in both colourways.
       base: knockout ? `${sentence(design.description)} Knocked out of a solid ink block.` : design.description,
+      subject,
+      style: STYLE[category],
+      quality,
+      printCm,
       features,
-      dropWeek: Math.floor((n - 1) / DROP_SIZE),
+      dropDate: new Date(DROP_EPOCH + Math.floor((n - 1) / DROP_SIZE) * 7 * DAY).toISOString().slice(0, 10),
     });
   }
 
@@ -350,10 +377,13 @@ function main() {
   const descriptions = finishDescriptions(
     shirts.map((s) => ({ base: s.base, category: s.category, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
   );
-  const ranks = editorialRanks(shirts.map((s) => s.features));
-  const withFamily = shirts.map(({ base: _base, ...s }, i) => ({
+  const ranks = editorialRanks(shirts.map((s) => s.features), shirts.map((s) => s.quality));
+  const withFamily = shirts.map(({ base, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
+    // `summary`: the design's own sentence (meta descriptions); `description`
+    // adds the closing line about how it wears (the product page).
+    summary: sentence(base),
     description: descriptions[i],
     rank: ranks[i],
   }));
@@ -363,8 +393,7 @@ function main() {
 
   // Full catalog, one object per line: diff-friendly but compact.
   writeFileSync(DATA_FILE, `[\n${catalog.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
-  writeIndex(catalog, calibration);
-  writeShards(catalog);
+  writeIndex(catalog, calibration, writeShards(catalog));
 
   for (const [c, spare] of Object.entries(spareTitle)) {
     if (spare < counters[c as ShirtCategory]) throw new Error(`not enough title words for ${c}`);
@@ -384,6 +413,7 @@ function main() {
   const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
   console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog.length / SHARD_SIZE)}`);
   console.log(`  price: $${PRICE} · calibration: ${calibration.join(" ")}`);
+  console.log(`  quality: ${catalog.filter((s) => s.quality < WEAK_QUALITY).length} weak prints (< ${WEAK_QUALITY}) · drops ${catalog[0].dropDate} → ${catalog[catalog.length - 1].dropDate}`);
 }
 
 /* ------------------------------------------------------------------ */
@@ -397,9 +427,10 @@ type Features = CatalogEntry["features"];
  * designs closest to the catalog's centre of gravity — broadly appealing —
  * first, nudged towards bold, readable prints.
  */
-function editorialRanks(features: Features[]): number[] {
+function editorialRanks(features: Features[], quality: number[]): number[] {
   const mean = Object.fromEntries(FEATURE_KEYS.map((k) => [k, features.reduce((sum, f) => sum + f[k], 0) / features.length])) as Features;
-  const score = features.map((f, i) => ({ i, v: cosineSimilarity(f, mean) / 100 + 0.3 * f.contrast + 0.1 * f.wit }));
+  // Weak prints (a lone small shape) sink below every strong one.
+  const score = features.map((f, i) => ({ i, v: cosineSimilarity(f, mean) / 100 + 0.3 * f.contrast + 0.1 * f.wit + 0.2 * (quality[i] / 100) - (quality[i] < WEAK_QUALITY ? 10 : 0) }));
   score.sort((a, b) => b.v - a.v || a.i - b.i);
   const ranks = new Array<number>(features.length);
   score.forEach(({ i }, r) => (ranks[i] = r));
@@ -431,10 +462,11 @@ function neighbours(list: Omit<CatalogEntry, "similar">[]): string[][] {
  * doesn't run farthest-point sampling on every load.
  */
 function calibrationIds(catalog: CatalogEntry[]): string[] {
-  const leaders = new Map<string, ShirtProduct>();
-  for (const s of catalog) if (!leaders.has(s.family)) leaders.set(s.family, s);
+  const leaders = new Map<string, CatalogEntry>();
+  // Families led by their first strong design; weak prints never rate taste.
+  for (const s of catalog) if (s.quality >= WEAK_QUALITY && !leaders.has(s.family)) leaders.set(s.family, s);
   const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category);
-  const bold = (s: ShirtProduct) => s.features.contrast + s.features.density;
+  const bold = (s: CatalogEntry) => s.features.contrast + s.features.density;
   const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
   return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
 }
@@ -446,19 +478,22 @@ function calibrationIds(catalog: CatalogEntry[]): string[] {
  * 0/1 string, `features` has one string per FEATURE_KEYS entry: character
  * k is design k's value ×100 (0–100) written as one symbol of `digits`
  * (101 symbols: printable ASCII without the backslash, then À–É).
- * Derived, so not stored: `no` (running count within the category) and
- * `dropWeek` (n − 1 over dropSize). Decoded by lib/catalog.
+ * `drop` is each design's drop date in days after `dropEpoch`; `weak` is a
+ * 0/1 string (quality below WEAK_QUALITY). Derived, so not stored: `no`
+ * (running count within the category). The head also carries `shardSize`
+ * and the content hash of every detail shard (their file names). Decoded
+ * by lib/catalog, which checks `v` and `keys`.
  */
 const FEATURE_DIGITS =
   Array.from({ length: 92 }, (_, i) => String.fromCharCode(35 + i)).filter((c) => c !== "\\").join("") +
   Array.from({ length: 10 }, (_, i) => String.fromCharCode(0xc0 + i)).join("");
 if (FEATURE_DIGITS.length !== 101) throw new Error("feature digits must cover 0–100");
 
-function writeIndex(catalog: CatalogEntry[], calibration: string[]) {
+function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: string[]) {
   const seen: Partial<Record<ShirtCategory, number>> = {};
   catalog.forEach((s, i) => {
     const no = (seen[s.category] = (seen[s.category] ?? 0) + 1);
-    if (s.n !== i + 1 || s.no !== no || s.dropWeek !== Math.floor(i / DROP_SIZE)) throw new Error(`index can't derive ${s.id}`);
+    if (s.n !== i + 1 || s.no !== no) throw new Error(`index can't derive ${s.id}`);
   });
   const variants = [...new Set(catalog.map((s) => s.variant))];
   const categories = [...new Set(catalog.map((s) => s.category))];
@@ -471,21 +506,48 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[]) {
     price: col((s) => s.price),
     title: col((s) => s.title),
     rank: col((s) => s.rank),
+    drop: col((s) => Math.round((Date.parse(`${s.dropDate}T00:00:00Z`) - DROP_EPOCH) / DAY)),
+    weak: col((s) => (s.quality < WEAK_QUALITY ? 1 : 0)).join(""),
     features: FEATURE_KEYS.map((k) => col((s) => FEATURE_DIGITS[Math.round(s.features[k] * 100)]).join("")),
   };
-  const head = { v: 2, keys: FEATURE_KEYS, digits: FEATURE_DIGITS, variants, categories, calibration, dropSize: DROP_SIZE };
+  const head = {
+    v: INDEX_VERSION,
+    keys: FEATURE_KEYS,
+    digits: FEATURE_DIGITS,
+    variants,
+    categories,
+    calibration,
+    dropEpoch: new Date(DROP_EPOCH).toISOString().slice(0, 10),
+    shardSize: SHARD_SIZE,
+    shards,
+  };
   const body = Object.entries({ ...head, ...columns }).map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`);
   writeFileSync(INDEX_FILE, `{\n${body.join(",\n")}\n}\n`);
 }
 
-/** public/data/details-<k>.json: { id: { d: description, s: similar ids } } per SHARD_SIZE designs. */
-function writeShards(catalog: CatalogEntry[]) {
+/** Index format version (lib/catalog refuses any other). */
+const INDEX_VERSION = 3;
+
+/**
+ * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar
+ * ids, t: subject, p: [print width, height] cm } } per SHARD_SIZE designs.
+ * The content hash in the name lets them be cached forever; the index lists
+ * the hashes. Returns them.
+ */
+function writeShards(catalog: CatalogEntry[]): string[] {
   rmSync(SHARD_DIR, { recursive: true, force: true });
   mkdirSync(SHARD_DIR, { recursive: true });
+  const hashes: string[] = [];
   for (let k = 0; k * SHARD_SIZE < catalog.length; k++) {
-    const part = Object.fromEntries(catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar }]));
-    writeFileSync(path.join(SHARD_DIR, `details-${k}.json`), JSON.stringify(part));
+    const part = Object.fromEntries(
+      catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height] }]),
+    );
+    const json = JSON.stringify(part);
+    const hash = createHash("sha256").update(json).digest("hex").slice(0, 10);
+    writeFileSync(path.join(SHARD_DIR, `details-${k}.${hash}.json`), json);
+    hashes.push(hash);
   }
+  return hashes;
 }
 
 main();

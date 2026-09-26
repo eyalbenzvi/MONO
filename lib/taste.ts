@@ -62,28 +62,23 @@ export function tasteOverlap(a: UserProfileVector, b: UserProfileVector): number
 /* ------------------------------------------------------------------ */
 
 const WEEK = 7 * 86_400_000;
-/** Monday the first weekly drop went out (drop n = this + n weeks). */
-export const DROP_EPOCH = Date.UTC(2025, 4, 26); // Mon 26 May 2025 → drop 69 = week of Mon 21 Sep 2026
 
 /**
- * The newest drop in a list of designs. A plain loop: spreading a large
+ * The newest drop date in a list of designs. A plain loop: spreading a large
  * catalog into Math.max(...) overflows the argument limit (Safari: ~65k).
  */
-export function latestDrop(shirts: readonly { dropWeek: number }[]): number {
+export function latestDrop(shirts: readonly { dropDate: number }[]): number {
   let max = 0;
-  for (const s of shirts) if (s.dropWeek > max) max = s.dropWeek;
+  for (const s of shirts) if (s.dropDate > max) max = s.dropDate;
   return max;
 }
 
-/** The drop running in the week of `date` (may be past the last generated one). */
-export const dropWeekAt = (date: number) => Math.floor((date - DROP_EPOCH) / WEEK);
-
 /**
- * "New this week" only while it's true: the design's drop is the one
- * running in the week the site was built. A later build without a new drop
- * shows no tag — no invented urgency.
+ * "New this week" only while it's true: for the seven days after the
+ * design's drop date, measured when the page is viewed (client-side; a
+ * weekly rebuild refreshes the pre-rendered pages). No invented urgency.
  */
-export const isNewThisWeek = (dropWeek: number, buildDate = Number(process.env.NEXT_PUBLIC_BUILD_DATE) || Date.now()) => dropWeek === dropWeekAt(buildDate);
+export const isNew = (dropDate: number, now = Date.now()) => now >= dropDate && now < dropDate + WEEK;
 
 /* ------------------------------------------------------------------ */
 /* Daily 5                                                             */

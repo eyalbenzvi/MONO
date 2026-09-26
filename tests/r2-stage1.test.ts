@@ -220,7 +220,7 @@ describe("R24: undo never reopens a finished taste test", () => {
 describe("R31: the latest drop without spreading the catalog into Math.max", () => {
   it("works for catalogs far larger than an argument list can hold", async () => {
     const { latestDrop } = await fresh();
-    const many = Array.from({ length: 300_000 }, (_, i) => ({ dropWeek: i % 97 }));
+    const many = Array.from({ length: 300_000 }, (_, i) => ({ dropDate: i % 97 }));
     expect(latestDrop(many)).toBe(96);
     expect(latestDrop([])).toBe(0);
   });

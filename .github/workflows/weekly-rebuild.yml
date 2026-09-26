@@ -1,0 +1,23 @@
+name: Weekly rebuild
+
+# "New this week" follows each design's explicit drop date. The pages are
+# static, so once a week this re-runs the Pages deploy (deploy-pages.yml,
+# unchanged) to refresh what is pre-rendered. A workflow_dispatch sent with
+# GITHUB_TOKEN is allowed to start another workflow.
+on:
+  schedule:
+    - cron: "17 3 * * 1" # Mondays 03:17 UTC, after the week's drop date
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-run the Pages deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --repo "$GITHUB_REPOSITORY" --ref claude/tshirt-discovery-mvp-pc6mk9

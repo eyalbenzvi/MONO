@@ -1,5 +1,17 @@
 import index from "@/data/shirts.index.json";
-import { SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { FEATURE_KEYS, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+
+/** The index format this code reads (written by the generator's writeIndex). */
+export const INDEX_VERSION = 3;
+/** A stale or mismatched index would decode into nonsense: stop at once. */
+export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
+  if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
+  if (head.keys.join() !== FEATURE_KEYS.join()) throw new Error("catalog index feature keys don't match FEATURE_KEYS — run npm run generate");
+}
+checkIndexHead(index);
+
+const DAY = 86_400_000;
+const DROP_EPOCH = Date.parse(`${index.dropEpoch}T00:00:00Z`);
 
 /**
  * The catalog: 2,800 procedurally generated shirts in 14 categories (see
@@ -50,7 +62,8 @@ function decode(i: number): ShirtProduct {
     family: `fam-${pad4(index.family[i])}`,
     features,
     rank: index.rank[i],
-    dropWeek: Math.floor(i / index.dropSize),
+    dropDate: DROP_EPOCH + index.drop[i] * DAY,
+    weak: index.weak[i] === "1",
   };
 }
 
@@ -62,6 +75,11 @@ export const CALIBRATION_IDS: readonly string[] = index.calibration;
 const BY_ID = new Map(SHIRTS.map((s) => [s.id, s]));
 
 export const getShirtById = (id: string) => BY_ID.get(id);
+
+/** Designs per detail shard, and each shard's file (named by its content hash). Both from the index head. */
+export const SHARD_SIZE: number = index.shardSize;
+export const shardFile = (k: number) => `/data/details-${k}.${index.shards[k]}.json`;
+export const shardOf = (shirt: Pick<ShirtProduct, "n">) => Math.floor((shirt.n - 1) / SHARD_SIZE);
 
 /** Public asset URLs need the GitHub Pages base path (e.g. /MONO) in front. */
 export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${url}`;
@@ -201,6 +219,9 @@ export function diversify<T extends { shirt: ShirtProduct }>(
   const out: (T & { wildcard?: boolean })[] = [];
   const run = (key: (s: ShirtProduct) => string, candidate: ShirtProduct) =>
     out.length >= maxRun && out.slice(-maxRun).every((x) => key(x.shirt) === key(candidate));
+  // Weak prints (a lone small shape) never make the top: they wait below it.
+  const weak = pool.filter((x) => x.shirt.weak);
+  if (weak.length) pool.splice(0, pool.length, ...pool.filter((x) => !x.shirt.weak));
   while (pool.length && out.length < top) {
     const slot = out.length;
     const recentVariants = new Set(out.slice(-variantWindow).map((x) => x.shirt.variant));
@@ -224,6 +245,12 @@ export function diversify<T extends { shirt: ShirtProduct }>(
     }
     out.push(pool.splice(i === -1 ? 0 : i, 1)[0]);
   }
-  return [...out, ...paceByVariant(pool, variantWindow)];
+  // Weak ones go back in by rank, below the diversified top.
+  let rest = pool;
+  if (weak.length) {
+    const at = new Map(list.map((x, i) => [x, i]));
+    rest = [...pool, ...weak].sort((a, b) => at.get(a)! - at.get(b)!);
+  }
+  return [...out, ...paceByVariant(rest, variantWindow)];
 }
 

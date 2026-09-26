@@ -165,7 +165,7 @@ describe("shop ranking", () => {
     const popular = rankShirts(userVec, SHIRTS, "popular").map((r) => r.shirt.rank);
     expect(popular).toEqual([...popular].sort((a, b) => a - b));
     expect(popular[0]).toBe(0);
-    const weeks = rankShirts(userVec, SHIRTS, "new").map((r) => r.shirt.dropWeek);
+    const weeks = rankShirts(userVec, SHIRTS, "new").map((r) => r.shirt.dropDate);
     expect(weeks).toEqual([...weeks].sort((a, b) => b - a));
   });
 

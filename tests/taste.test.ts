@@ -9,10 +9,9 @@ import {
   countSwipe,
   currentStreak,
   decodeTaste,
-  dropWeekAt,
   emptyDaily,
   encodeTaste,
-  isNewThisWeek,
+  isNew,
   tasteOverlap,
 } from "@/lib/taste";
 import { createInitialVector } from "@/types/shirt";
@@ -74,16 +73,17 @@ describe("Daily 5 (F10)", () => {
 
 const LATEST_DROP = latestDrop(SHIRTS);
 
-describe("drops (F13)", () => {
-  it("the latest drop is the week of 21 Sep 2026", () => {
-    expect(LATEST_DROP).toBe(SHIRTS.reduce((m, s) => Math.max(m, s.dropWeek), 0));
-    expect(dropWeekAt(new Date(2026, 8, 23).getTime())).toBe(LATEST_DROP);
+describe("drops (F13, round 2 I12)", () => {
+  it("the latest drop is Monday 21 Sep 2026 (explicit dates from the generator)", () => {
+    expect(new Date(LATEST_DROP).toISOString().slice(0, 10)).toBe("2026-09-21");
+    expect(SHIRTS.reduce((m, s) => Math.max(m, s.dropDate), 0)).toBe(LATEST_DROP);
   });
 
-  it('"New this week" only in the week that drop is running', () => {
-    expect(isNewThisWeek(LATEST_DROP, new Date(2026, 8, 25).getTime())).toBe(true);
-    expect(isNewThisWeek(LATEST_DROP - 1, new Date(2026, 8, 25).getTime())).toBe(false);
-    // a build a week later, without a new drop, tags nothing
-    expect(isNewThisWeek(LATEST_DROP, new Date(2026, 9, 2).getTime())).toBe(false);
+  it('"New this week" for the seven days after a drop, on the viewer\'s clock', () => {
+    expect(isNew(LATEST_DROP, Date.UTC(2026, 8, 25))).toBe(true);
+    expect(isNew(LATEST_DROP, LATEST_DROP)).toBe(true);
+    expect(isNew(LATEST_DROP, Date.UTC(2026, 8, 20))).toBe(false);
+    // a week later, without a new drop, nothing is new
+    expect(isNew(LATEST_DROP, Date.UTC(2026, 8, 28))).toBe(false);
   });
 });
