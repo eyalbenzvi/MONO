@@ -97,7 +97,7 @@ function DebugPanel() {
                       <span className="w-9 text-right text-white">{v.toFixed(3)}</span>
                       <span
                         className={`w-11 text-right ${
-                          delta > 0.0005 ? "text-emerald-400" : delta < -0.0005 ? "text-rose-400" : "text-neutral-600"
+                          delta > 0.0005 ? "font-semibold text-white" : delta < -0.0005 ? "text-neutral-400" : "text-neutral-600"
                         }`}
                       >
                         {delta >= 0 ? "+" : ""}
@@ -146,7 +146,7 @@ function DebugPanel() {
                     .reverse()
                     .map((h) => (
                       <li key={h.timestamp + h.shirtId} className="flex justify-between gap-2">
-                        <span className={h.action === "like" ? "text-emerald-400" : "text-rose-400"}>
+                        <span className={h.action === "like" ? "font-semibold text-white" : "text-neutral-400"}>
                           {h.action === "like" ? "♥" : "✕"}
                         </span>
                         {h.source === "shop" && <span className="text-neutral-500">shop</span>}

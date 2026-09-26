@@ -77,7 +77,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                       <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} />
                     ))}
                   </AnimatePresence>
-                  <li className="pt-1 text-center text-[11px] text-neutral-500">Swipe a tee left to remove it</li>
+                  <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
                 </ul>
               )}
             </div>

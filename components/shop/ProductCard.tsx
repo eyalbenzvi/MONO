@@ -49,7 +49,7 @@ export const ProductCard = memo(function ProductCard({
           </div>
         )}
         {variations > 0 && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white ring-1 ring-white/15">
+          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15">
             +{variations} variation{variations === 1 ? "" : "s"}
           </span>
         )}

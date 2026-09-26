@@ -30,11 +30,14 @@ export function ZoomViewer({
   color,
   initialView = "print",
   onClose,
+  returnFocusTo,
 }: {
   shirt: ShirtProduct;
   color: BaseColor;
   initialView?: View;
   onClose: () => void;
+  /** Where focus goes on close when nothing was focused before (opened by a pinch). */
+  returnFocusTo?: () => HTMLElement | null | undefined;
 }) {
   const [view, setView] = useState<View>(initialView);
   const [t, setT] = useState<Transform>({ s: 1, x: 0, y: 0 });
@@ -44,7 +47,7 @@ export function ZoomViewer({
   const gesture = useRef<{ dist: number; mid: { x: number; y: number }; start: Transform } | null>(null);
   const lastTap = useRef(0);
   const moved = useRef(false);
-  useFocusTrap(panel, true, onClose);
+  useFocusTrap(panel, true, onClose, returnFocusTo);
 
   // Keep the picture on screen: pan is limited by how far the zoom overflows.
   const clamp = useCallback((n: Transform): Transform => {

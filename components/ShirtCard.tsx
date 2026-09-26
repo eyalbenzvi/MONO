@@ -3,13 +3,13 @@
 import { memo } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Compass, Heart, RotateCcw, Share2, ZoomIn } from "lucide-react";
+import { ArrowRight, Compass, Share2, X, ZoomIn } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
-import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { formatPrice } from "@/lib/format";
 import {
@@ -38,7 +38,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
-  const { done, total } = useCalibrationProgress();
   const openShare = useUiStore((s) => s.openShare);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
@@ -59,22 +58,16 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           className={`backface-hidden ${face} flex flex-col ${showDetails ? hiddenFace : ""}`}
           animate={reduceMotion ? { opacity: showDetails ? 0 : 1 } : undefined}
           aria-hidden={showDetails}
+          {...inert(showDetails)}
         >
           <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
             <div className="flex h-12 items-center justify-between px-4 pt-3">
-              {showMatch ? (
-                <MatchBadge score={score} strong={isTop && strategy === "greedy" && score >= STRONG_MATCH} />
-              ) : isTop && strategy === "calibration" ? (
-                <span className="rounded-full bg-black/60 px-3 py-1 font-mono text-xs font-bold text-white">
-                  {Math.min(done + 1, total)} / {total}
-                </span>
-              ) : (
-                <span />
-              )}
+              {/* Taste-test progress lives in one place: the strip above the card. */}
+              {showMatch ? <MatchBadge score={score} strong={isTop && strategy === "greedy" && score >= STRONG_MATCH} /> : <span />}
               <div className="flex items-center gap-2">
                 {strategy === "explore" && (
                   <span
-                    className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white"
+                    className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white"
                     title="Outside your usual — tells us more"
                   >
                     <Compass className="h-3.5 w-3.5" /> Wildcard
@@ -94,6 +87,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                   <button
                     type="button"
                     onClick={onZoom}
+                    data-zoom-button
                     aria-label="Zoom in on the print"
                     className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
                   >
@@ -124,6 +118,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           initial={false}
           animate={reduceMotion ? { opacity: showDetails ? 1 : 0 } : undefined}
           aria-hidden={!showDetails}
+          {...inert(!showDetails)}
         >
           {isTop && <CardDetails shirt={shirt} score={score} />}
         </motion.div>
@@ -133,9 +128,15 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
 });
 
 
+/**
+ * The face turned away is inert: out of the tab order and the accessibility
+ * tree, and it takes no clicks (React 18 has no `inert` prop yet, so the
+ * attribute is set as a string).
+ */
+const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
+
 function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
-  const requestSwipe = useTasteStore((s) => s.requestSwipe);
   const vector = useTasteStore((s) => s.preferenceVector);
   const showMatch = useShowMatch();
   const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 3);
@@ -148,12 +149,14 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
       <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-4">
         <div className="flex items-center justify-between">
           {showMatch ? <MatchBadge score={score} /> : <span />}
+          {/* Closes the details (Undo keeps the ↺ icon to itself). */}
           <button
             type="button"
             onClick={() => toggleFlip(false)}
-            className="flex h-10 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-sm font-medium hover:bg-white/15"
+            aria-label="Back to the tee"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
           >
-            <RotateCcw className="h-4 w-4" /> Back
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -206,26 +209,11 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         </div>
       </div>
 
-      {/* Footer actions stay visible */}
-      <div className="grid grid-cols-[auto_auto_1fr] gap-2 border-t border-white/10 bg-ink-900 px-4 py-3">
-        <button
-          type="button"
-          onClick={() => requestSwipe("like")}
-          className="flex h-12 items-center gap-2 rounded-full bg-white/10 px-5 text-sm font-semibold hover:bg-white/15"
-        >
-          <Heart className="h-4 w-4" /> Like
-        </button>
-        <button
-          type="button"
-          onClick={() => useUiStore.getState().openShare(shirt.id, shirt.baseColor)}
-          aria-label={`Share ${shirt.title}`}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
-        >
-          <Share2 className="h-4 w-4" />
-        </button>
+      {/* One action here: Like / Pass / Share already sit on the buttons and the card. */}
+      <div className="border-t border-white/10 bg-ink-900 px-4 py-3">
         <Link
           href={productHref(shirt.id)}
-          className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
           Full details · {formatPrice(shirt.price)} <ArrowRight className="h-4 w-4" />
         </Link>

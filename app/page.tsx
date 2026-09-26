@@ -30,18 +30,22 @@ export default function DiscoverPage() {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       // Keys typed into a field, or pressed on a focused control, belong to
       // that control: Space/Backspace on a button must not swipe or undo.
+      // Escape never activates a control, so it closes the details from anywhere.
+      if (e.key === "Escape") {
+        if (useUiStore.getState().isFlipped) useUiStore.getState().toggleFlip(false);
+        return;
+      }
       const t = e.target;
       if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return;
       if (t instanceof Element && t.closest('button, a, [role="button"], [role="radio"], [role="tab"], [contenteditable=""], [contenteditable="true"]')) return;
       const { requestSwipe, undoLast } = useTasteStore.getState();
-      const { toggleFlip, isFlipped } = useUiStore.getState();
+      const { toggleFlip } = useUiStore.getState();
       if (e.key === "ArrowRight") requestSwipe("like");
       else if (e.key === "ArrowLeft") requestSwipe("dislike");
       else if (e.key === "ArrowUp" || e.key === " ") {
         e.preventDefault();
         toggleFlip();
-      } else if (e.key === "Escape" && isFlipped) toggleFlip(false);
-      else if (e.key === "z" || e.key === "Z" || e.key === "Backspace") {
+      } else if (e.key === "z" || e.key === "Z" || e.key === "Backspace") {
         e.preventDefault();
         undoLast();
       }
@@ -50,16 +54,18 @@ export default function DiscoverPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Phones held sideways (the `sideways` variant): the strip hides and the
+  // buttons stand in a column beside the card, which keeps the height.
   return (
-    <>
-      {hydrated ? <TopStrip /> : <div className={STRIP} />}
-      <section className="relative min-h-0 flex-1 px-4 pb-1 pt-1">
+    <div className="flex min-h-0 flex-1 flex-col sideways:flex-row">
+      <div className="sideways:hidden">{hydrated ? <TopStrip /> : <div className={STRIP} />}</div>
+      <section className="relative min-h-0 flex-1 px-4 pb-1 pt-1 sideways:py-2">
         {hydrated ? <CardStack /> : <CardSkeleton />}
         {hydrated && <LearnChip />}
       </section>
       <ActionButtons />
       <CalibrationComplete />
-    </>
+    </div>
   );
 }
 
@@ -107,7 +113,9 @@ function TopStrip() {
     );
   }
 
-  const label = flash ?? (done === total - 1 ? "Last one!" : `Taste test · ${done} of ${total}`);
+  // The one progress counter: which card of the taste test is on screen.
+  const current = Math.min(done + 1, total);
+  const label = flash ?? (done === total - 1 ? "Last one" : `${current}/${total}`);
   return (
     <div className={STRIP}>
       {!onboardingSeen && (
@@ -116,7 +124,15 @@ function TopStrip() {
         </p>
       )}
       <div className="flex items-center gap-3">
-        <div className="flex flex-1 gap-1" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label="Taste test progress">
+        <div
+          className="flex flex-1 gap-1"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={done}
+          aria-valuetext={`Card ${current} of ${total}`}
+          aria-label="Taste test progress"
+        >
           {Array.from({ length: total }, (_, i) => (
             <motion.span
               key={i}
@@ -127,20 +143,19 @@ function TopStrip() {
             />
           ))}
         </div>
-        {onboardingSeen && (
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={label}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.15 }}
-              className={`shrink-0 text-xs ${flash || done === total - 1 ? "font-semibold text-white" : "text-neutral-400"}`}
-            >
-              {label}
-            </motion.span>
-          </AnimatePresence>
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={label}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className={`shrink-0 font-mono text-xs ${flash || done === total - 1 ? "font-semibold text-white" : "text-neutral-300"}`}
+            aria-hidden
+          >
+            {label}
+          </motion.span>
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -148,8 +163,8 @@ function TopStrip() {
 
 /**
  * "The app is learning" feedback: after each swipe, the trait that moved most
- * floats up for a moment (+ Geometric / − Typography). Only for the first
- * 20 swipes, so it teaches without nagging.
+ * shows for a moment inside the top of the card ("More geometric" / "Less
+ * minimal"). Only for the first 20 swipes, so it teaches without nagging.
  */
 function LearnChip() {
   const lastUpdate = useTasteStore((s) => s.lastUpdate);
@@ -162,19 +177,20 @@ function LearnChip() {
     if (lastUpdate.action === "like" && last.strategy === "greedy" && last.matchScore >= STRONG_MATCH) text = "Nailed it";
     else {
       const key = biggestShift(lastUpdate.before, lastUpdate.after, lastUpdate.action);
-      if (key) text = `${lastUpdate.action === "like" ? "+" : "−"} ${FEATURE_LABELS[key]}`;
+      if (key) text = `${lastUpdate.action === "like" ? "More" : "Less"} ${FEATURE_LABELS[key].toLowerCase()}`;
     }
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-3 z-30 flex justify-center" aria-live="polite">
+    // Inside the card's top row (centre), clear of its edge and its buttons.
+    <div className="pointer-events-none absolute inset-x-0 top-[25px] z-30 flex justify-center sideways:top-[29px]" aria-live="polite">
       <AnimatePresence>
         {text && (
           <motion.span
             key={history.length}
             initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: [0, 1, 1, 0], y: [8, 0, -6, -12] }}
-            transition={{ duration: 0.9, times: [0, 0.2, 0.7, 1] }}
+            animate={{ opacity: [0, 1, 1, 0], y: [6, 0, 0, -4] }}
+            transition={{ duration: 1.4, times: [0, 0.15, 0.8, 1] }}
             className={`rounded-full px-3 py-1 text-xs font-bold shadow-lg ${
               lastUpdate?.action === "like" ? "bg-white text-black" : "bg-black/70 text-white ring-1 ring-white/20"
             }`}

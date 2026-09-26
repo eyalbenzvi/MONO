@@ -71,7 +71,7 @@ export function CalibrationComplete() {
                   aria-label={`${shirt.title}, ${score}% match`}
                   className={`relative block rounded-2xl p-2 pt-8 ring-1 ring-white/10 transition active:scale-95 ${STAGE_BG}`}
                 >
-                  <span className="absolute left-1.5 top-1.5 rounded-full bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-black">
+                  <span className="absolute left-1.5 top-1.5 rounded-full bg-white px-2 py-0.5 font-mono text-xs font-bold text-black">
                     <CountUp to={score} delay={0.55 + i * 0.08} />% Match
                   </span>
                   <TeeMockup shirt={shirt} shadow={false} className="w-full" />

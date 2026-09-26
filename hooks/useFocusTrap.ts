@@ -6,12 +6,15 @@ const FOCUSABLE = 'a[href], button:not([disabled]), select, input, textarea, [ta
 
 /**
  * While `active`: keeps Tab focus inside `ref`, closes on Escape, moves focus
- * in on open and returns it to the previously focused element on close.
+ * in on open and returns it to the previously focused element on close —
+ * or to `returnTo()` when nothing was focused (e.g. opened by a gesture).
  */
-export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, onClose: () => void) {
+export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, onClose: () => void, returnTo?: () => HTMLElement | null | undefined) {
   // Keep the latest onClose without re-running the effect (which would bounce focus).
   const close = useRef(onClose);
   close.current = onClose;
+  const fallback = useRef(returnTo);
+  fallback.current = returnTo;
   useEffect(() => {
     if (!active) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -43,7 +46,8 @@ export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, onClo
     return () => {
       cancelAnimationFrame(raf);
       document.removeEventListener("keydown", onKey, true);
-      previous?.focus?.({ preventScroll: true });
+      const back = previous && previous !== document.body && previous.isConnected ? previous : fallback.current?.();
+      back?.focus?.({ preventScroll: true });
     };
   }, [active, ref]);
 }

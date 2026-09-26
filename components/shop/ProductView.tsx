@@ -370,8 +370,8 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                       </span>
                     )}
                     <TeeMockup shirt={m} color={color} shadow={false} className="w-full" />
-                    <p className="mt-1 truncate px-0.5 text-[11px] text-neutral-300">{m.title}</p>
-                    <p className="px-0.5 font-mono text-[11px] text-neutral-400">{formatPrice(m.price)}</p>
+                    <p className="mt-1 truncate px-0.5 text-xs text-neutral-300">{m.title}</p>
+                    <p className="px-0.5 font-mono text-xs text-neutral-400">{formatPrice(m.price)}</p>
                   </Link>
                 );
               })}
