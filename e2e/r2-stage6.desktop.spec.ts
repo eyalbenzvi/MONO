@@ -54,8 +54,9 @@ test("R23/I03: icons come from the sprite, mockups from shared files, the index 
   await page.waitForTimeout(500);
   expect(await page.locator("svg use").count()).toBeGreaterThan(3);
   expect(await page.locator("svg use").first().getAttribute("href")).toMatch(/\/icons\.svg#[\w-]+$/);
-  const teeImgs = page.locator('img[src*="/tee/"]');
-  expect(await teeImgs.count()).toBeGreaterThanOrEqual(3);
+  // Mockups are shared files: the model photos (T2), else the drawn tee's layers.
+  const teeImgs = page.locator('img[src*="/models/"], img[src*="/tee/"]');
+  expect(await teeImgs.count()).toBeGreaterThanOrEqual(1);
   expect(await teeImgs.evaluateAll((imgs) => imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0))).toBe(true);
   // No mockup paths inlined in the page any more.
   expect(await page.locator("svg path[d^='M150 24 Q200 36']").count()).toBe(0);

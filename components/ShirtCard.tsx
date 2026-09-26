@@ -62,7 +62,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
         >
           <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
             <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]">
-              <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
+              <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
             </div>
           </div>
 
