@@ -12,6 +12,7 @@ import { useCartStore } from "@/store/cartStore";
 import { migrateLegacySession } from "@/store/legacySession";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { decodeTaste } from "@/lib/taste";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
@@ -44,6 +45,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       useTasteStore.getState().fillDeck();
       useUiStore.getState().setHydrated();
     });
+
+    // A friend's taste link (/?taste=…): kept for this session so the taste
+    // test can end with "Compare with a friend"; removed from the address bar.
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const code = q.get("taste") ?? sessionStorage.getItem("mono-friend-taste");
+      const friend = decodeTaste(code);
+      if (friend && code) {
+        sessionStorage.setItem("mono-friend-taste", code);
+        useUiStore.setState({ friendTaste: friend });
+      }
+      if (q.has("taste")) {
+        q.delete("taste");
+        const rest = q.toString();
+        window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
+      }
+    } catch {
+      /* storage unavailable */
+    }
 
     // Debug panel is opt-in: ?debug=1 (remembered for the tab) or 5 taps on the logo.
     try {

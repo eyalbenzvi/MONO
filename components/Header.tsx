@@ -4,11 +4,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, Flame } from "lucide-react";
 import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { currentStreak } from "@/lib/taste";
 
 const TABS = [
   { href: "/", label: "Discover", match: (p: string) => p === "/" },
@@ -20,6 +21,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   const activeTab = TABS.findIndex((t) => t.match(pathname));
   const hydrated = useUiStore((s) => s.hydrated);
   const savedCount = useTasteStore((s) => s.likedIds.length);
+  const streak = useTasteStore((s) => currentStreak(s.daily));
   const cartCount = useCartCount();
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
@@ -62,6 +64,13 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
         <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95" aria-label="MONO home">
           <MonoLogo size="sm" />
           <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
+          {/* Daily 5 streak (days in a row with five new swipes); only once there is one. */}
+          {hydrated && streak > 0 && (
+            <span className="flex items-center gap-0.5 font-mono text-xs text-neutral-300" title={`Daily 5 streak: ${streak} day${streak === 1 ? "" : "s"}`} aria-label={`Daily 5 streak: ${streak} days`}>
+              <Flame className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+              {streak}
+            </span>
+          )}
         </Link>
 
         <nav aria-label="Sections" className="justify-self-center">

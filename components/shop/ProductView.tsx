@@ -15,6 +15,7 @@ import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch, matchScore } from "@/lib/recommendation";
 import { matchTier } from "@/lib/match";
+import { isNewThisWeek } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -253,6 +254,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
           <div>
             <p className="text-sm text-neutral-400">
               {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
+              {isNewThisWeek(shirt.dropWeek) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
             </p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>

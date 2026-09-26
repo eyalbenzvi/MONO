@@ -10,6 +10,9 @@ const nextConfig = {
   assetPrefix: basePath || undefined,
   trailingSlash: true,
   images: { unoptimized: true },
+  // One build time for server and client, so "New this week" (lib/taste)
+  // renders the same on both.
+  env: { NEXT_PUBLIC_BUILD_DATE: String(Date.now()) },
 };
 
 export default nextConfig;

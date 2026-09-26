@@ -196,3 +196,74 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
 
   return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas.toBlob failed"))), "image/png"));
 }
+
+/**
+ * "My taste" card, 1080×1920 black and white: the archetype name, the three
+ * strongest traits and three top matches (each on its own tee colour).
+ */
+export async function renderTasteImage(name: string, traits: string[], picks: ShirtProduct[]): Promise<Blob> {
+  const { w, h } = SHARE_SIZES.story;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  const prints = await Promise.all(picks.slice(0, 3).map((s) => loadPrintImage(s, s.baseColor)));
+
+  const bg = ctx.createRadialGradient(w / 2, h * 0.4, 0, w / 2, h * 0.4, h * 0.75);
+  bg.addColorStop(0, "#2a2a2a");
+  bg.addColorStop(1, "#050505");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  logo(ctx, w / 2, 120, 1.3);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "rgba(255,255,255,0.72)";
+  fitFont(ctx, "MY TASTE IN TEES", w - 200, 38, 600, MONO_FONT);
+  ctx.fillText("MY TASTE IN TEES", w / 2, 330);
+  ctx.fillStyle = "#ffffff";
+  fitFont(ctx, name, w - 140, 112, 800);
+  ctx.fillText(name, w / 2, 460);
+
+  // traits as outlined pills
+  ctx.font = `600 40px ${FONT}`;
+  const pad = 36;
+  const gap = 20;
+  const widths = traits.map((t) => ctx.measureText(t).width + pad * 2);
+  let x = (w - (widths.reduce((a, b) => a + b, 0) + gap * (traits.length - 1))) / 2;
+  traits.forEach((t, i) => {
+    roundRect(ctx, x, 540, widths[i], 84, 42);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
+    ctx.fillText(t, x + widths[i] / 2, 596);
+    x += widths[i] + gap;
+  });
+
+  // three matches, side by side
+  const teeW = 320;
+  const colGap = 20;
+  const x0 = (w - (teeW * 3 + colGap * 2)) / 2;
+  prints.forEach((p, i) => drawTee(ctx, x0 + i * (teeW + colGap), 760, teeW, picks[i].baseColor, p));
+  ctx.fillStyle = "rgba(255,255,255,0.72)";
+  ctx.font = `500 34px ${FONT}`;
+  picks.slice(0, 3).forEach((s, i) => {
+    fitFont(ctx, s.title, teeW - 10, 34, 500);
+    ctx.fillText(s.title, x0 + i * (teeW + colGap) + teeW / 2, 1230);
+  });
+
+  const cta = "What's yours? Swipe 10 tees →";
+  ctx.fillStyle = "#ffffff";
+  fitFont(ctx, cta, w - 280, 44, 700);
+  const cw = ctx.measureText(cta).width + 110;
+  roundRect(ctx, (w - cw) / 2, h - 292, cw, 96, 48);
+  ctx.fill();
+  ctx.fillStyle = "#000000";
+  ctx.fillText(cta, w / 2, h - 230);
+  const host = siteRoot().replace(/^https?:\/\//, "");
+  fitFont(ctx, host, w - 120, 36, 500, MONO_FONT);
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.fillText(host, w / 2, h - 120);
+
+  return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas.toBlob failed"))), "image/png"));
+}

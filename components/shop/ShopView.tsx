@@ -6,6 +6,7 @@ import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
 import { radioKeys, useShowMatch } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
+import { SharedList, Trending } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -191,6 +192,8 @@ export function ShopView() {
         </div>
         <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />
         <div className="h-2" />
+        <SharedList />
+        <Trending />
 
         {/* Rendered on the server too, in the default order ("Popular" — no
             personal data needed), so the page arrives with products. A
@@ -199,12 +202,13 @@ export function ShopView() {
         {visible.length > 0 ? (
             <>
               <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-                {visible.slice(0, limit).map(({ shirt, score, variations }) => (
+                {visible.slice(0, limit).map(({ shirt, score, variations, wildcard }) => (
                   <ProductCard
                     key={shirt.id}
                     shirt={shirt}
                     score={score}
                     variations={variations}
+                    wildcard={!!wildcard}
                     color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && shirt.id === bestId}
                     vector={rankVector}

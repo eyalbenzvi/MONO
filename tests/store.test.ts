@@ -157,6 +157,20 @@ describe("taste store", () => {
   });
 });
 
+describe("taste store v2 (F10)", () => {
+  it("migrates v1 → v2 with an empty Daily 5 and counts Discover swipes", async () => {
+    storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ["mono-0001"], onboardingSeen: true }, version: 1 }));
+    const { useTasteStore } = await fresh();
+    await useTasteStore.persist.rehydrate();
+    expect(useTasteStore.getState().likedIds).toEqual(["mono-0001"]);
+    expect(useTasteStore.getState().daily).toMatchObject({ count: 0, streak: 0, last: null });
+    useTasteStore.getState().fillDeck(); // as AppShell does after hydration
+    useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "like");
+    expect(useTasteStore.getState().daily.count).toBe(1);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(2);
+  });
+});
+
 describe("cart store", () => {
   it("remembers one size for every design once chosen (F1)", async () => {
     const { useCartStore, sizeFor } = await fresh();
