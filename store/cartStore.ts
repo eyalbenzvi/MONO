@@ -6,14 +6,16 @@ import { MAX_QTY, PAIR_PRICE, addItem, cartTotals, changeItem, setItemQty } from
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { useUiStore } from "@/store/useUiStore";
-import { SIZES, type BaseColor, type CartItem, type Order, type ShirtSize } from "@/types/shirt";
+import { SIZES, type BaseColor, type CartItem, type Customer, type Order, type OrderRecord, type ShirtSize } from "@/types/shirt";
+import { arrivalRange } from "@/lib/delivery";
 
 export const CART_KEY = "mono-cart";
 
 /** The bag, the last order, and per-design size / colour picks. */
 export interface CartState {
   cart: CartItem[];
-  lastOrder: Order | null;
+  /** The last order, without personal details (see OrderRecord). */
+  lastOrder: OrderRecord | null;
   selectedSizes: Record<string, ShirtSize>;
   /** Tee colour picked per design; missing = the design's original colour. */
   selectedColors: Record<string, BaseColor>;
@@ -38,7 +40,8 @@ interface CartActions {
   addPair: (id: string, size: ShirtSize, options?: AddOptions) => boolean;
   setCartQty: (line: Pick<CartItem, "id" | "size" | "color">, qty: number) => void;
   changeCartItem: (line: Pick<CartItem, "id" | "size" | "color">, to: Partial<Pick<CartItem, "size" | "color">>) => void;
-  placeOrder: (customer: { name: string; email: string }) => Order | null;
+  /** Returns the full order (with the customer, for the confirmation); persists only its record. */
+  placeOrder: (customer: Customer) => Order | null;
 }
 
 export const initialCart = (): CartState => ({ cart: [], lastOrder: null, selectedSizes: {}, selectedColors: {}, preferredSize: null });
@@ -73,13 +76,27 @@ function picks<T>(x: unknown, ok: (v: unknown) => v is T): Record<string, T> {
 export function sanitizeCart(raw: unknown): CartState {
   if (!raw || typeof raw !== "object") return initialCart();
   const r = raw as Partial<Record<keyof CartState, unknown>>;
-  const o = r.lastOrder as Order | null | undefined;
+  const o = r.lastOrder as Partial<OrderRecord> | null | undefined;
   return {
     cart: lines(r.cart),
-    lastOrder: o && typeof o.number === "string" && Array.isArray(o.items) ? { ...o, items: lines(o.items) } : null,
+    lastOrder: o && typeof o.number === "string" && Array.isArray(o.items) ? orderRecord(o as OrderRecord) : null,
     selectedSizes: picks(r.selectedSizes, isSize),
     selectedColors: picks(r.selectedColors, isColor),
     preferredSize: isSize(r.preferredSize) ? r.preferredSize : null,
+  };
+}
+
+/** Only the non-personal fields of an order (whitelist: anything else is dropped). */
+function orderRecord(o: OrderRecord): OrderRecord {
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  return {
+    number: o.number,
+    items: lines(o.items),
+    subtotal: num(o.subtotal),
+    ...(o.discount ? { discount: num(o.discount) } : {}),
+    shipping: num(o.shipping),
+    total: num(o.total),
+    placedAt: num(o.placedAt),
   };
 }
 
@@ -89,12 +106,17 @@ export function sanitizeCart(raw: unknown): CartState {
  */
 export function migrateCart(persisted: unknown, version: number): unknown {
   if (!persisted || typeof persisted !== "object") return persisted;
-  const s = persisted as Record<string, unknown>;
+  const s = { ...(persisted as Record<string, unknown>) };
   if (version < 2) {
     const cart = Array.isArray(s.cart) ? (s.cart as { size?: unknown }[]) : [];
     const picked = s.selectedSizes && typeof s.selectedSizes === "object" ? Object.values(s.selectedSizes as object) : [];
     const candidates = [...cart.map((l) => l?.size).reverse(), ...picked.reverse()];
-    return { ...s, preferredSize: candidates.find(isSize) ?? null };
+    s.preferredSize = candidates.find(isSize) ?? null;
+  }
+  // v2 → v3: the last order no longer keeps the customer's name / email.
+  if (version < 3 && s.lastOrder && typeof s.lastOrder === "object") {
+    const { name: _name, email: _email, ...rest } = s.lastOrder as Record<string, unknown>;
+    s.lastOrder = rest;
   }
   return s;
 }
@@ -156,29 +178,31 @@ export const useCartStore = create<CartState & CartActions>()(
         else set({ cart: items });
       },
 
-      placeOrder: ({ name, email }) => {
+      placeOrder: (customer) => {
         const { cart } = get();
         const totals = cartTotals(cart);
         if (totals.count === 0) return null;
-        const order: Order = {
-          number: `MONO-${Date.now().toString(36).toUpperCase().slice(-6)}`,
+        const now = Date.now();
+        const record: OrderRecord = {
+          number: `MONO-${now.toString(36).toUpperCase().slice(-6)}`,
           items: cart,
           subtotal: totals.subtotal,
-          discount: totals.discount,
+          ...(totals.discount ? { discount: totals.discount } : {}),
           shipping: totals.shipping,
           total: totals.total,
-          name,
-          email,
-          placedAt: Date.now(),
+          placedAt: now,
         };
-        set({ lastOrder: order, cart: [] });
+        const { from, to } = arrivalRange(new Date(now));
+        const order: Order = { ...record, customer, arrives: { from: from.getTime(), to: to.getTime() } };
+        // Persist the record only: no name, email or address on the device.
+        set({ lastOrder: record, cart: [] });
         track("purchase", { order: order.number, value: order.total, items: totals.count, currency: "USD" });
         return order;
       },
     }),
     {
       name: CART_KEY,
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateCart,
       skipHydration: true,

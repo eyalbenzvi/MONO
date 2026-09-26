@@ -41,6 +41,8 @@ async function fresh() {
 
 beforeEach(() => storage.clear());
 
+const CUSTOMER = { name: "Ada Lovelace", email: "ada@example.com", address: "12 Analytical St", city: "Tel Aviv", zip: "6100001", country: "IL" };
+
 /* ------------------------------------------------------------------ */
 /* Actions                                                             */
 /* ------------------------------------------------------------------ */
@@ -186,7 +188,7 @@ describe("cart store", () => {
     const { useCartStore } = await fresh();
     await useCartStore.persist.rehydrate();
     expect(useCartStore.getState().preferredSize).toBe("XL");
-    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(2);
+    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(3);
     storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
     const again = await fresh();
     await again.useCartStore.persist.rehydrate();
@@ -223,13 +225,40 @@ describe("cart store", () => {
   it("placeOrder turns the bag into an order and empties it", async () => {
     const { useCartStore } = await fresh();
     useCartStore.getState().addToCart("mono-0001", "M", "white");
-    const order = useCartStore.getState().placeOrder({ name: "A", email: "a@example.com" });
+    const order = useCartStore.getState().placeOrder(CUSTOMER);
     expect(order).not.toBeNull();
+    expect(order!.customer.city).toBe("Tel Aviv");
+    expect(order!.arrives.to).toBeGreaterThan(order!.arrives.from);
     const s = useCartStore.getState();
     expect(s.cart).toEqual([]);
     expect(s.lastOrder?.number).toBe(order!.number);
     expect(s.lastOrder?.items).toHaveLength(1);
-    expect(useCartStore.getState().placeOrder({ name: "A", email: "a@example.com" })).toBeNull();
+    expect(useCartStore.getState().placeOrder(CUSTOMER)).toBeNull();
+  });
+
+  it("R28: the saved last order holds no personal details", async () => {
+    const { useCartStore } = await fresh();
+    useCartStore.getState().addToCart("mono-0001", "M", "white");
+    useCartStore.getState().placeOrder(CUSTOMER);
+    const saved = storage.getItem("mono-cart")!;
+    for (const v of Object.values(CUSTOMER)) expect(saved).not.toContain(v);
+    expect(Object.keys(useCartStore.getState().lastOrder!).sort()).toEqual(["items", "number", "placedAt", "shipping", "subtotal", "total"]);
+  });
+
+  it("R28: migrating to v3 clears the name and email kept by older versions", async () => {
+    storage.setItem(
+      "mono-cart",
+      JSON.stringify({ state: { cart: [], lastOrder: { number: "MONO-ABC", items: [{ id: "mono-0001", size: "M", color: "black", qty: 1 }], subtotal: 48, shipping: 6, total: 54, name: "Ada Lovelace", email: "ada@example.com", placedAt: 1 } }, version: 2 }),
+    );
+    const { useCartStore } = await fresh();
+    await useCartStore.persist.rehydrate();
+    const o = useCartStore.getState().lastOrder!;
+    expect(o.number).toBe("MONO-ABC");
+    expect(o.total).toBe(54);
+    expect(JSON.stringify(o)).not.toContain("Ada");
+    const saved = storage.getItem("mono-cart")!;
+    expect(saved).not.toContain("ada@example.com");
+    expect(JSON.parse(saved).version).toBe(3);
   });
 });
 
