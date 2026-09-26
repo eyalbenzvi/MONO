@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { matchScore, updateUserVector } from "@/lib/recommendation";
+import { LIKE_RATE, matchScore, updateUserVector } from "@/lib/recommendation";
 import { CALIBRATION_IDS, CALIBRATION_TOTAL, DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
@@ -67,6 +67,34 @@ interface TasteActions {
 }
 
 const buildDeck = (deck: DeckEntry[], vector: UserProfileVector, seen: string[]) => dealDeck(deck, vector, seen, CALIBRATION_IDS);
+
+/**
+ * The taste without the like of `id`. The vector is the sum of every swipe
+ * (lib/recommendation updateUserVector), so it is replayed from the history
+ * without that like — exact while the history is whole (under
+ * HISTORY_LIMIT). Past that, the like's own step is reversed on the current
+ * vector (its latest like: v = (v' − r·f) / (1 − r)).
+ */
+export function unlearn(s: Pick<TasteState, "preferenceVector" | "swipeHistory">, id: string): Pick<TasteState, "preferenceVector" | "swipeHistory"> {
+  const shirt = getShirtById(id);
+  const at = s.swipeHistory.map((e) => e.shirtId === id && e.action === "like").lastIndexOf(true);
+  const swipeHistory = at === -1 ? s.swipeHistory : [...s.swipeHistory.slice(0, at), ...s.swipeHistory.slice(at + 1)];
+  if (!shirt || at === -1) return { preferenceVector: s.preferenceVector, swipeHistory };
+  if (s.swipeHistory.length < HISTORY_LIMIT) {
+    let v = createInitialVector();
+    for (const e of swipeHistory) {
+      const f = getShirtById(e.shirtId)?.features;
+      if (f) v = updateUserVector(v, f, e.action);
+    }
+    return { preferenceVector: v, swipeHistory };
+  }
+  const v = { ...s.preferenceVector };
+  for (const k of Object.keys(v) as (keyof UserProfileVector)[]) v[k] = Math.min(1, Math.max(0, (v[k] - LIKE_RATE * shirt.features[k]) / (1 - LIKE_RATE)));
+  return { preferenceVector: v, swipeHistory };
+}
+
+/** The taste as it was before each removal, for Undo (this session only). */
+const unlearned = new Map<string, { before: Pick<TasteState, "preferenceVector" | "swipeHistory" | "lastUpdate">; history: SwipeEvent[] }>();
 
 export const initialTaste = (): TasteState => ({
   likedIds: [],
@@ -303,15 +331,13 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         const state = get();
         const shirt = getShirtById(id);
         if (!shirt) return;
-        if (state.likedIds.includes(id)) {
-          set({ likedIds: state.likedIds.filter((x) => x !== id) });
-          return;
-        }
+        if (state.likedIds.includes(id)) return get().removeLiked(id);
         // Saving from the shop is an explicit like: train on it, and mark it
-        // seen so Discover doesn't serve it again. Each design trains once:
-        // one already swiped or saved before (save → unsave → save…) is
-        // saved again without moving the vector.
-        const alreadySeen = state.seen.includes(id);
+        // seen so Discover doesn't serve it again. A design trains once: one
+        // still in the taste (swiped either way before) is saved without
+        // moving the vector; an unsave took its like out (removeLiked), so
+        // saving again puts it back. Save → unsave cycles never pile up.
+        const alreadySeen = state.swipeHistory.some((e) => e.shirtId === id);
         const before = state.preferenceVector;
         const after = alreadySeen ? before : updateUserVector(before, shirt.features, "like");
         const swipeHistory = alreadySeen
@@ -335,13 +361,37 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         track("save", { id });
       },
 
-      removeLiked: (id) => set((s) => ({ likedIds: s.likedIds.filter((x) => x !== id) })),
+      // Unsaving takes the like back out of the taste (and so the title):
+      // the vector without it, and a deck dealt for that taste.
+      removeLiked: (id) => {
+        const s = get();
+        if (!s.likedIds.includes(id)) return;
+        const { preferenceVector, swipeHistory } = unlearn(s, id);
+        const topStays = s.deck[0] && s.deck[0].id !== id ? [s.deck[0]] : [];
+        unlearned.set(id, { before: { preferenceVector: s.preferenceVector, swipeHistory: s.swipeHistory, lastUpdate: s.lastUpdate }, history: swipeHistory });
+        set({
+          likedIds: s.likedIds.filter((x) => x !== id),
+          preferenceVector,
+          swipeHistory,
+          // Undo last swipe can't roll back across this.
+          lastUpdate: null,
+          deck: buildDeck(topStays, preferenceVector, s.seen),
+        });
+      },
 
       restoreSaved: (id, at) =>
         set((s) => {
           if (s.likedIds.includes(id)) return {};
           const i = at === undefined ? s.likedIds.length : Math.min(Math.max(0, at), s.likedIds.length);
-          return { likedIds: [...s.likedIds.slice(0, i), id, ...s.likedIds.slice(i)] };
+          const likedIds = [...s.likedIds.slice(0, i), id, ...s.likedIds.slice(i)];
+          // Undo right after the removal: the taste exactly as it was.
+          const u = unlearned.get(id);
+          unlearned.delete(id);
+          if (u && u.history === s.swipeHistory) {
+            const topStays = s.deck[0] ? [s.deck[0]] : [];
+            return { likedIds, ...u.before, deck: buildDeck(topStays, u.before.preferenceVector, s.seen) };
+          }
+          return { likedIds };
         }),
 
       acknowledgeCalibration: () => set({ calibrationAcknowledged: true }),
