@@ -16,10 +16,10 @@ import {
 import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
-import { matchScore } from "@/lib/recommendation";
+import { matchScore, biggestShift } from "@/lib/recommendation";
 import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { CATEGORY_LABELS, type SwipeAction } from "@/types/shirt";
+import { CATEGORY_LABELS, type SwipeAction, FEATURE_LABELS, type UserProfileVector } from "@/types/shirt";
 
 /** Pointer travel that commits a swipe on release. */
 const SWIPE_DISTANCE = 110;
@@ -217,7 +217,9 @@ function TopCard({
         if (committed) return;
         committed = true;
         if (fallback.current) clearTimeout(fallback.current);
+        const before = useTasteStore.getState().preferenceVector;
         commitSwipe(entry.id, action, fromQueue);
+        noteLearning(before, action);
       };
       fallback.current = setTimeout(commit, duration * 1000 + 150);
       const el = cardRef.current;
@@ -379,4 +381,16 @@ function TopCard({
 
     </motion.div>
   );
+}
+
+/** Every NOTE_EVERY swipes after the taste test: a quiet line saying what the last swipe taught (the real change). */
+const NOTE_EVERY = 5;
+let swipesSinceNote = 0;
+function noteLearning(before: UserProfileVector, action: SwipeAction) {
+  const { calibrationAcknowledged, preferenceVector } = useTasteStore.getState();
+  if (!calibrationAcknowledged || ++swipesSinceNote < NOTE_EVERY) return;
+  const k = biggestShift(before, preferenceVector, action);
+  if (!k) return;
+  swipesSinceNote = 0;
+  useUiStore.getState().showToast(`Noted: ${action === "like" ? "more" : "less"} ${FEATURE_LABELS[k].toLowerCase()}`);
 }

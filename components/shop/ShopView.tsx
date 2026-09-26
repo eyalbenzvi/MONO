@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
+import { archetypeOf } from "@/lib/taste";
 import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
@@ -144,7 +145,14 @@ export function ShopView() {
           scroller's padding, which would push the filter bar down. */}
       <div aria-hidden className="h-[var(--header-h)]" />
       <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        <div className="h-3" />
+        {/* One quiet line, only when the grid is ranked for this visitor: whose taste it follows. */}
+        {hydrated && sort === "match" && complete ? (
+          <Link href="/me/" className="flex h-9 items-center gap-1.5 text-xs text-neutral-400 hover:text-white">
+            <Icon name="sparkles" className="h-3.5 w-3.5" /> For you · {archetypeOf(rankVector).name}
+          </Link>
+        ) : (
+          <div className="h-3" />
+        )}
 
         {/* One sticky row: categories scroll sideways; the tee-colour preview
             stays in view (black / white switch without scrolling); the order

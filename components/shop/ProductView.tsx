@@ -327,7 +327,11 @@ export function ProductView({
           <div>
             {/* Just the name; everything about the design sits behind ⓘ. */}
             <div className="flex items-start justify-between gap-2">
-              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+                {/* The learning, felt: said only when it's true (a top or strong match for this taste). */}
+                {tier && tier !== "good" && <p className="mt-0.5 text-sm text-neutral-400">{tier === "top" ? "Top pick for you" : "A strong match for you"}</p>}
+              </div>
               <button
                 type="button"
                 onClick={() => setDetailsOpen((o) => !o)}

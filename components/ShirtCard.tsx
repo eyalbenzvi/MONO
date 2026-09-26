@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
@@ -9,6 +9,7 @@ import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
+import { becauseOf } from "@/lib/because";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
@@ -39,6 +40,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const tier = showMatch ? tierOf(vector, score) : null;
+  const likedIds = useTasteStore((s) => s.likedIds);
+  const because = useMemo(() => (showMatch ? becauseOf(shirt, likedIds) : null), [showMatch, shirt, likedIds]);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -69,6 +72,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           <div className="flex items-end justify-between gap-3 px-5 pb-4 pt-3">
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
+              {/* The learning, felt: the closest thing you liked (once the taste is known). */}
+              {because && <p className="mt-0.5 truncate text-xs text-neutral-400">Because you liked {because.title}</p>}
             </div>
           </div>
         </motion.div>
