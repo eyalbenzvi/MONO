@@ -90,3 +90,18 @@ export function migrateLegacySession(storage: Storage | undefined = typeof local
     storage.removeItem(LEGACY_KEY);
   }
 }
+
+/**
+ * Keys older builds kept that are no longer used. "mono-email": an email
+ * remembered on this device by the old drop signup — removed with the
+ * signup itself (no email is kept anywhere now).
+ */
+export const RETIRED_KEYS = ["mono-email"];
+
+export function removeRetiredKeys() {
+  try {
+    for (const k of RETIRED_KEYS) localStorage.removeItem(k);
+  } catch {
+    /* storage unavailable */
+  }
+}

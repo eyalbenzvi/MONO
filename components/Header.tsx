@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, ShoppingBag, Flame } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { currentStreak } from "@/lib/taste";
 
 const TABS = [
   { href: "/", label: "Discover", match: (p: string) => p === "/" },
@@ -21,12 +20,14 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   const activeTab = TABS.findIndex((t) => t.match(pathname));
   const hydrated = useUiStore((s) => s.hydrated);
   const savedCount = useTasteStore((s) => s.likedIds.length);
-  const streak = useTasteStore((s) => currentStreak(s.daily));
   const cartCount = useCartCount();
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
   const debug = useUiStore((s) => s.debug);
   const setDebug = useUiStore((s) => s.setDebug);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Always show the header again when the route changes.
   useEffect(() => setHeaderHidden(false), [pathname, setHeaderHidden]);
@@ -68,22 +69,19 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
       onFocusCapture={() => hidden && setHeaderHidden(false)}
     >
       {/* Narrow phones: everything must stay on screen (the bag above all).
-          Below 420 px the streak hides (it's in "Your taste"), below 400 the
-          tabs and icons tighten, below 340 the logo gives way. */}
+          Below 400 px the tabs and icons tighten, below 340 the logo gives
+          way. The Daily 5 streak lives in "Your taste" only. */}
       <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
         <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="MONO home">
           <MonoLogo size="sm" />
           <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
-          {/* Daily 5 streak (days in a row with five new swipes); only once there is one. */}
-          {hydrated && streak > 0 && (
-            <span className="hidden items-center gap-0.5 font-mono text-xs text-neutral-300 min-[420px]:flex" title={`Daily 5 streak: ${streak} day${streak === 1 ? "" : "s"}`} aria-label={`Daily 5 streak: ${streak} days`}>
-              <Flame className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
-              {streak}
-            </span>
-          )}
         </Link>
 
-        <nav aria-label="Sections" className="justify-self-center">
+        {/* Rendered afresh once mounted: a page served at another address
+            (404.html at /shop/…) hydrates with the markup built for the 404,
+            and hydration never patches class names — the active tab's text
+            would stay grey on the white pill. */}
+        <nav key={mounted ? "client" : "server"} aria-label="Sections" className="justify-self-center">
           <div className="relative grid w-44 grid-cols-2 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-40 max-[339px]:w-36">
             {/* One pill, always rendered, moved under the active tab: the
                 markup never depends on the URL, so a page served at another

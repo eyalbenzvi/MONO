@@ -312,7 +312,7 @@ export function SaveButton({ id, size = "sm", className = "" }: { id: string; si
         if (saved) showToast("Removed from saved", { label: "Undo", run: () => restoreSaved(id) });
         else if (!savedToastShown) {
           savedToastShown = true;
-          showToast("Saved — your shop just got smarter");
+          showToast("Saved");
         }
       }}
       aria-pressed={saved}

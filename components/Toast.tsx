@@ -18,21 +18,22 @@ export function Toast() {
   }, [toast]);
 
   return (
-    // At the bottom, above the safe area and the bottom bars (Discover's
-    // buttons, the product page's buy bar), over drawers and sheets too.
-    // The live region is always in the DOM so screen readers hear each toast.
+    // Up top, under the header: never over the name and price at the foot
+    // of a Discover card, the buy bar or the action buttons; over drawers
+    // and sheets too. The live region is always in the DOM so screen readers
+    // hear each toast.
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(max(env(safe-area-inset-bottom),12px)+84px)] z-[60] flex justify-center px-4"
+      className="pointer-events-none fixed inset-x-0 top-[calc(var(--header-h)+8px)] z-[60] flex justify-center px-4"
     >
       <AnimatePresence>
         {toast && (
           <motion.div
             key={toast.nonce}
-            initial={{ y: 24, opacity: 0, scale: 0.95 }}
+            initial={{ y: -16, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 24, opacity: 0, scale: 0.95 }}
+            exit={{ y: -16, opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className="flex max-w-full items-center gap-2 whitespace-nowrap rounded-full bg-white py-2 pl-4 pr-2 text-sm font-semibold text-black shadow-2xl shadow-black"
           >

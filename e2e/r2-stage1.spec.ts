@@ -34,15 +34,17 @@ test.describe("R17: ← Shop after moving between products", () => {
     expect(page.url()).not.toContain(a);
   });
 
-  test("grid → A → add to bag → B from the mini bag → ← Shop returns to the grid", async ({ page }) => {
+  test("grid → A → add to bag → mini bag → bag → B → ← Shop returns to the grid", async ({ page }) => {
     await seed(page);
     const a = await openFromGrid(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-    await page.locator(".sticky.bottom-0").getByRole("button", { name: /Add to bag/ }).tap();
+    await page.locator(".sticky.bottom-0").getByRole("button", { name: /Add/ }).tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toBeVisible();
-    const link = sheet.locator('a[href*="/shop/mono-"]').first();
-    await link.tap();
+    await sheet.getByRole("link", { name: "View bag" }).tap();
+    await page.waitForURL(/\/cart\/$/);
+    const b = page.locator('main section a[href*="/shop/mono-"]').first();
+    await b.tap();
     await page.waitForURL((u) => /\/shop\/mono-\d+\/$/.test(u.pathname) && !u.pathname.includes(a));
     await shopBack(page).tap();
     await expect(page).toHaveURL(/\/shop\/$/);

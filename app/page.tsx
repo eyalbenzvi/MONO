@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -11,7 +11,6 @@ import { tierOf } from "@/lib/match";
 import { biggestShift, profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { SHIRTS } from "@/lib/catalog";
-import { STORE_POLICY } from "@/lib/store-policy";
 import { tasteLevel } from "@/lib/taste";
 import { TasteSheet } from "@/components/TasteSheet";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -64,13 +63,12 @@ function HowItWorks() {
         <li>Every swipe teaches MONO your taste in prints.</li>
         <li>Then the shop ranks all {SHIRTS.length.toLocaleString("en-US")} designs for you.</li>
       </ul>
-      <p className="mt-4 text-xs text-neutral-400">{STORE_POLICY.firstVisit}</p>
     </aside>
   );
 }
 
 /** The top strip keeps one fixed height across phases so the card never jumps. */
-const STRIP = "mx-auto flex h-10 w-full max-w-[420px] shrink-0 flex-col justify-center px-4 outline-none";
+const STRIP = "mx-auto flex h-11 w-full max-w-[420px] shrink-0 flex-col justify-center px-4 outline-none";
 
 export default function DiscoverPage() {
   const hydrated = useHydrated();
@@ -137,21 +135,9 @@ function TopStrip() {
   const vector = useTasteStore((s) => s.preferenceVector);
   const [sheet, setSheet] = useState(false);
 
-  // Milestone copy: "Halfway there" flashes for 1.5 s at 5/10; "Last one!" at 9/10.
-  const [flash, setFlash] = useState<string | null>(null);
-  const prev = useRef(done);
-  useEffect(() => {
-    if (done !== prev.current && done === Math.floor(total / 2)) {
-      setFlash("Halfway there");
-      const t = setTimeout(() => setFlash(null), 1500);
-      prev.current = done;
-      return () => clearTimeout(t);
-    }
-    prev.current = done;
-  }, [done, total]);
-
   if (complete) {
     const sharp = profileSharpness(vector);
+    // A new level is shown quietly: the word here changes (no toast).
     const word = tasteLevel(vector);
     return (
       <div className={STRIP} data-strip tabIndex={-1}>
@@ -172,7 +158,11 @@ function TopStrip() {
                 transition={{ type: "spring", stiffness: 200, damping: 28 }}
               />
             </span>
-            <span className="truncate font-medium text-white">{word}</span>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span key={word} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="truncate font-medium text-white">
+                {word}
+              </motion.span>
+            </AnimatePresence>
           </button>
           <TasteSheet open={sheet} onClose={() => setSheet(false)} />
           <Link href="/shop/" className="flex h-10 shrink-0 items-center gap-1 font-semibold text-white">
@@ -185,19 +175,19 @@ function TopStrip() {
 
   // The one progress counter: which card of the taste test is on screen.
   const current = Math.min(done + 1, total);
-  const label = flash ?? (done === total - 1 ? "Last one" : `${current}/${total}`);
-  // First visit (before the first swipe) on phones: one quiet line of store
-  // basics under the bar; the strip grows for it, just this once.
-  const firstVisit = !onboardingSeen && done === 0;
+  const label = done === total - 1 ? "Last one" : `${current}/${total}`;
+  // The strip keeps one height: the goal line above the bar fades out after
+  // the first swipe instead of collapsing, so the card never moves.
   return (
-    <div className={firstVisit ? STRIP.replace("h-10", "min-h-10 lg:h-10") : STRIP} data-strip tabIndex={-1}>
-      {!onboardingSeen && (
-        <p className={`truncate text-center text-[13px] font-medium text-white ${firstVisit ? "mb-1 leading-4" : "mb-1.5"}`}>
-          <span className="max-[379px]:hidden">Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.</span>
-          <span className="min-[380px]:hidden">Rate {CALIBRATION_TOTAL} tees → your own shop</span>
-        </p>
-      )}
-      <div className="flex items-center gap-3">
+    <div className={STRIP} data-strip tabIndex={-1}>
+      <p
+        className={`h-4 truncate text-center text-[13px] font-medium leading-4 text-white transition-opacity duration-300 ${onboardingSeen ? "opacity-0" : "opacity-100"}`}
+        aria-hidden={onboardingSeen}
+      >
+        <span className="max-[379px]:hidden">Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.</span>
+        <span className="min-[380px]:hidden">Rate {CALIBRATION_TOTAL} tees → your own shop</span>
+      </p>
+      <div className="mt-1 flex items-center gap-3">
         <div
           className="flex flex-1 gap-1"
           role="progressbar"
@@ -217,21 +207,10 @@ function TopStrip() {
             />
           ))}
         </div>
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={label}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className={`shrink-0 font-mono text-xs ${flash || done === total - 1 ? "font-semibold text-white" : "text-neutral-300"}`}
-            aria-hidden
-          >
-            {label}
-          </motion.span>
-        </AnimatePresence>
+        <span className={`w-14 shrink-0 text-right font-mono text-xs ${done === total - 1 ? "font-semibold text-white" : "text-neutral-300"}`} aria-hidden>
+          {label}
+        </span>
       </div>
-      {firstVisit && <p className="mt-1 truncate text-center text-xs leading-4 text-neutral-400 max-[339px]:whitespace-normal lg:hidden">{STORE_POLICY.firstVisit}</p>}
     </div>
   );
 }

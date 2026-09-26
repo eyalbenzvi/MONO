@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
-import { radioKeys, useShowMatch } from "@/components/ui";
+import { radioKeys } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList, Trending } from "@/components/shop/ShopExtras";
@@ -87,7 +87,6 @@ export function ShopView() {
   const chosenSort = useUiStore((s) => s.shop.sort);
   const teeView = useUiStore((s) => s.shop.teeView);
   const limit = useUiStore((s) => s.shop.limit);
-  const showMatch = useShowMatch();
   // Before the taste test there's no taste to rank by: "Popular" (the
   // generator's fixed editorial order — not usage data) is the default.
   const sort: ShopSort = chosenSort ?? (complete ? "match" : "popular");
@@ -103,12 +102,11 @@ export function ShopView() {
   // Rank with a snapshot of the taste vector taken on entry (and when sort or
   // category change): a heart tap trains the vector, and re-ranking live
   // would reshuffle the grid under the user's finger.
-  const [rankVector, setRankVector] = useState(vector);
-  useEffect(() => {
-    setRankVector(useTasteStore.getState().preferenceVector);
-  }, [hydrated, sort, category]);
+  // The snapshot is taken during render, so the grid ranks once when the
+  // stored taste arrives (not once with the neutral profile, then again).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, category]);
   const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort), [rankVector, sort]);
-  const bestId = ranked[0]?.shirt.id;
   // One design per family (the best-ranked one) — its siblings are offered as
   // variations on the product page. The top of the grid is diversified
   // (display only; scores are untouched): no three in a row of one
@@ -212,8 +210,10 @@ export function ShopView() {
           style={{ top: headerHidden ? 0 : "var(--header-h)" }}
         >
           {/* Chips fade out at the edge instead of being cut mid-word. */}
+          {/* Phones: one scrolling row that fades out at the edge. Desktop:
+              the chips wrap, so none is ever cut. */}
           <div
-            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
+            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] lg:flex-wrap lg:overflow-visible lg:pr-0 lg:[mask-image:none]"
             role="group"
             aria-label="Category"
           >
@@ -251,17 +251,13 @@ export function ShopView() {
         {visible.length > 0 ? (
             <>
               <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6">
-                {visible.slice(0, limit).map(({ shirt, score, variations, wildcard }) => (
+                {visible.slice(0, limit).map(({ shirt, variations }, i) => (
                   <ProductCard
                     key={shirt.id}
                     shirt={shirt}
-                    score={score}
                     variations={variations}
-                    wildcard={!!wildcard}
                     color={teeView === "original" ? undefined : teeView}
-                    topPick={complete && sort === "match" && shirt.id === bestId}
-                    vector={rankVector}
-                    showMatch={showMatch}
+                    topPick={complete && sort === "match" && i === 0}
                     onOpen={openFromGrid}
                   />
                 ))}

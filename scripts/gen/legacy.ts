@@ -10,7 +10,7 @@ import {
   type Design, type Generator, type Rng, type Signature,
   POLYGON, an, scale, screen,
 } from "./core";
-import { measure, sizeToFit } from "./art";
+import { MONO, SANS, measure, sizeToFit } from "./art";
 
 /* a) Architectural grids & perspective ------------------------------ */
 
@@ -364,8 +364,6 @@ const WORDS = [
   "VOID", "MONO", "RAW", "NULL", "GRID", "ECHO", "FORM", "MASS", "SLAB", "ZERO",
   "NOISE", "STATIC", "SIGNAL", "INDEX", "AXIS", "BLOCK", "UNIT", "DATA", "LOOP", "TONE",
 ];
-const SANS = `font-family="Helvetica, Arial, sans-serif"`;
-const MONO_FONT = `font-family="Courier New, Courier, monospace"`;
 
 const bigWord: Generator = (rng, ink) => {
   const word = pick(rng, WORDS);
@@ -379,7 +377,7 @@ const bigWord: Generator = (rng, ink) => {
     ? `<text x="0" y="0" transform="translate(${n1(W / 2 + size * 0.35)},${H / 2}) rotate(-90)" text-anchor="middle" font-size="${n1(size)}" font-weight="900" letter-spacing="-2" ${SANS} ${style}>${word}</text>`
     : `<text x="${W / 2}" y="${n1(H / 2 + size * 0.35)}" text-anchor="middle" font-size="${n1(size)}" font-weight="900" letter-spacing="-2" ${SANS} ${style}>${word}</text>`;
   const serial = `NO.${String(int(rng, 1, 999)).padStart(3, "0")}`;
-  const caption = `<text x="${X0}" y="${Y0 + IH}" font-size="9" letter-spacing="2" ${MONO_FONT} fill="${ink}">MONO / ${serial} / MMXXVI</text><line x1="${X0}" y1="${Y0 + IH - 16}" x2="${X0 + IW}" y2="${Y0 + IH - 16}" stroke="${ink}" stroke-width="1"/>`;
+  const caption = `<text x="${X0}" y="${Y0 + IH}" font-size="9" letter-spacing="2" ${MONO} fill="${ink}">MONO / ${serial} / MMXXVI</text><line x1="${X0}" y1="${Y0 + IH - 16}" x2="${X0 + IW}" y2="${Y0 + IH - 16}" stroke="${ink}" stroke-width="1"/>`;
   return {
     body: text + caption,
     variant: "word",
@@ -415,7 +413,7 @@ const coordinates: Generator = (rng, ink) => {
   for (let i = 0; i < lines && y < Y0 + IH; i++, y += 12) {
     const a = (lat + range(rng, -1, 1)).toFixed(3);
     const b = (lon + range(rng, -1, 1)).toFixed(3);
-    body += `<text x="${X0}" y="${n1(y)}" font-size="8.5" ${MONO_FONT} fill="${ink}">${String(i + 1).padStart(2, "0")}  ${a}  ${b}  ${int(rng, 10, 999)}M</text>`;
+    body += `<text x="${X0}" y="${n1(y)}" font-size="8.5" ${MONO} fill="${ink}">${String(i + 1).padStart(2, "0")}  ${a}  ${b}  ${int(rng, 10, 999)}M</text>`;
   }
   const density = clamp01(0.3 + (lines / 18) * 0.35);
   return {
@@ -487,7 +485,7 @@ const manifesto: Generator = (rng, ink) => {
       // Drop trailing words that would run into the next column.
       while (picked.length > 1 && measure(picked.join(" "), fs, "mono", 0.5) > colW) picked.pop();
       const words = picked.join(" ");
-      body += `<text x="${n1(X0 + c * (colW + 10))}" y="${n1(Y0 + 76 + (r + 1) * lh)}" font-size="${n1(fs)}" letter-spacing="0.5" ${MONO_FONT} fill="${ink}">${words}</text>`;
+      body += `<text x="${n1(X0 + c * (colW + 10))}" y="${n1(Y0 + 76 + (r + 1) * lh)}" font-size="${n1(fs)}" letter-spacing="0.5" ${MONO} fill="${ink}">${words}</text>`;
     }
   const density = clamp01(0.65 + (rows / 28) * 0.3);
   return {

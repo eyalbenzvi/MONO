@@ -13,13 +13,12 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
-import { TeeMockup } from "@/components/TeeMockup";
 import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { formatPrice } from "@/lib/format";
-import { canUndo, startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, type SwipeAction } from "@/types/shirt";
 
@@ -29,10 +28,6 @@ const SWIPE_DISTANCE = 110;
 const ELASTIC_X = 0.9;
 /** Card travel at the commit point, where the LIKE / NOPE stamp locks in. */
 const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
-/** How long the pull-back tab of the last swiped card stays at the edge. */
-const PULL_BACK_MS = 3000;
-/** Inward drag on the pull-back tab that brings the card back. */
-const PULL_BACK_DISTANCE = 40;
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
 const FLIP_DISTANCE = 80;
@@ -118,8 +113,6 @@ export function CardStack() {
             </motion.div>
           );
         })}
-
-      <PullBack />
 
       {/* Heart flights (fixed layer, above everything) */}
       <AnimatePresence>
@@ -405,61 +398,5 @@ function TopCard({
         )}
       </AnimatePresence>
     </motion.div>
-  );
-}
-
-/**
- * Pull-back undo: for a few seconds after a swipe, the swiped card peeks in
- * from the edge it left by. Drag it back in (or tap it) to undo. Only while
- * the swipe can still be undone.
- */
-function PullBack() {
-  const last = useTasteStore((s) => s.lastUpdate);
-  const undoable = useTasteStore(canUndo);
-  const undoLast = useTasteStore((s) => s.undoLast);
-  // Only swipes made while this is on screen (a restored session's last
-  // swipe doesn't peek on load).
-  const initial = useRef(last);
-  const [peek, setPeek] = useState<{ id: string; side: "left" | "right" } | null>(null);
-  useEffect(() => {
-    if (!last || last === initial.current || !undoable) {
-      setPeek(null);
-      return;
-    }
-    setPeek({ id: last.shirtId, side: last.action === "like" ? "right" : "left" });
-    const t = setTimeout(() => setPeek(null), PULL_BACK_MS);
-    return () => clearTimeout(t);
-  }, [last, undoable]);
-
-  const shirt = peek ? getShirtById(peek.id) : undefined;
-  const dir = peek?.side === "left" ? -1 : 1;
-  return (
-    <AnimatePresence>
-      {peek && shirt && (
-        <motion.button
-          key={peek.id}
-          type="button"
-          aria-label={`Bring back ${shirt.title} (undo)`}
-          onClick={undoLast}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.6}
-          dragSnapToOrigin
-          onDragEnd={(_, info) => {
-            if (-dir * info.offset.x > PULL_BACK_DISTANCE) undoLast();
-          }}
-          initial={{ x: dir * 40, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: dir * 40, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 34 }}
-          // 56 px wide, hung over the edge: on phones only a sliver shows
-          // (the rest is off screen), on wide screens the whole tab.
-          style={{ [peek.side]: -44, y: "-50%" }}
-          className="absolute top-1/2 z-20 flex h-40 w-14 touch-none items-center justify-center overflow-hidden rounded-2xl bg-ink-900/90 shadow-xl shadow-black/60 ring-1 ring-white/20 backdrop-blur-md"
-        >
-          <TeeMockup shirt={shirt} shadow={false} className="w-24 max-w-none opacity-80" />
-        </motion.button>
-      )}
-    </AnimatePresence>
   );
 }

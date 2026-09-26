@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, RotateCcw, Share2, ShoppingBag, Trash2, Truck } from "lucide-react";
-import { DropSignup } from "@/components/DropSignup";
-import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals } from "@/lib/cart";
 import { SHIRTS, dedupeByFamily, familiesOf, getShirtById } from "@/lib/catalog";
-import { rankShirts } from "@/lib/recommendation";
+import { topPicks } from "@/lib/match";
+import { ShirtStrip } from "@/components/ShirtStrip";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -114,9 +113,7 @@ export function CartView() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
-                          <p className="text-xs text-neutral-400">
-                            {COLOR_LABELS[line.color]} · {line.size}
-                          </p>
+                          {/* Colour and size are the controls themselves: no meta line repeating them. */}
                           <div className="mt-1.5">
                             <ColorSelector variant="pills" value={line.color} original={line.shirt.baseColor} onChange={(color) => changeCartItem(line, { color })} />
                           </div>
@@ -227,40 +224,35 @@ function FreeShippingBar({ toFree }: { toFree: number }) {
 }
 
 /**
- * Three prints not already chosen: the best matches once the taste test is
- * done, otherwise from Saved, otherwise the editors' picks.
- * Used in the bag ("One more from your taste") and after an order ("Your
+ * Three prints not already chosen (no family already in the bag or just
+ * bought): the best matches once the taste test is done (topPicks),
+ * otherwise from Saved, otherwise the editors' picks. Used in the bag
+ * ("One more from your taste"), an empty bag and after an order ("Your
  * next match").
  */
 function Suggestions({ exclude, title: heading }: { exclude: string[]; title: string }) {
-  let title = heading;
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const likedIds = useTasteStore((s) => s.likedIds);
-  const skip = familiesOf(exclude);
-  const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
-  const fromTaste = showMatch
-    ? pool(rankShirts(vector, SHIRTS).map((r) => r.shirt)).slice(0, 3)
-    : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
-  // No taste yet and nothing saved: the editors' order (the generator's
-  // fixed ranking — not usage data), titled as exactly that.
-  const picks = fromTaste.length ? fromTaste : pool(rankShirts(vector, SHIRTS, "popular").map((r) => r.shirt)).slice(0, 3);
+  const lastOrder = useCartStore((s) => s.lastOrder);
+  const key = exclude.join(",");
+  const { picks, title } = useMemo(() => {
+    const skip = familiesOf([...exclude, ...(lastOrder?.items.map((l) => l.id) ?? [])]);
+    const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
+    const fromTaste = showMatch
+      ? topPicks(vector, 3, { excludeFamilies: skip })
+      : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
+    if (fromTaste.length) return { picks: fromTaste, title: heading };
+    // No taste yet and nothing saved: the editors' order (the generator's
+    // fixed ranking — not usage data), titled as exactly that.
+    return { picks: pool([...SHIRTS].sort((a, b) => a.rank - b.rank).slice(0, 60)).slice(0, 3), title: "Editors' picks" };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, lastOrder, showMatch, vector, likedIds, heading]);
   if (picks.length === 0) return null;
-  if (!fromTaste.length) title = "Editors' picks";
   return (
     <section className="mt-8 w-full text-left">
       <h2 className="mb-3 text-sm font-semibold">{title}</h2>
-      <ul className="grid grid-cols-3 gap-3">
-        {picks.map((p) => (
-          <li key={p.id} className="flex min-w-0 flex-col gap-1.5">
-            <Link href={productHref(p.id)} className={`rounded-xl p-1.5 ${STAGE_BG}`} aria-label={`${p.title}, ${formatPrice(p.price)}`}>
-              <TeeMockup shirt={p} shadow={false} className="w-full" />
-            </Link>
-            <p className="truncate text-xs text-neutral-300">{p.title}</p>
-            <QuickAdd shirt={p} />
-          </li>
-        ))}
-      </ul>
+      <ShirtStrip shirts={picks} layout="grid" quickAdd label={title} />
     </section>
   );
 }
@@ -354,9 +346,6 @@ function DetailsForm({
   summary: React.ReactNode;
   onSubmit: (c: Customer) => void;
 }) {
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [promo, setPromo] = useState("");
-  const [promoNote, setPromoNote] = useState("");
   const form = useRef<HTMLFormElement>(null);
   const errors = validate(values);
   const arrives = formatArrival(arrivalRange());
@@ -441,39 +430,6 @@ function DetailsForm({
             </select>
           </label>
         </div>
-      </div>
-
-      {/* Promo code: tucked away, one tap to open. */}
-      <div className="mt-4">
-        {promoOpen ? (
-          <div className="flex gap-2">
-            <input
-              value={promo}
-              onChange={(e) => setPromo(e.target.value)}
-              aria-label="Promo code"
-              placeholder="Promo code"
-              autoComplete="off"
-              enterKeyHint="done"
-              className="h-11 min-w-0 flex-1 rounded-xl bg-white/[0.05] px-3 text-sm uppercase text-white outline-none ring-1 ring-white/10 placeholder:normal-case placeholder:text-neutral-600 focus:ring-white/50"
-            />
-            <button
-              type="button"
-              onClick={() => setPromoNote(promo.trim() ? "Promo codes aren't active in this demo store." : "")}
-              className="h-11 rounded-xl px-4 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5"
-            >
-              Apply
-            </button>
-          </div>
-        ) : (
-          <button type="button" onClick={() => setPromoOpen(true)} aria-expanded={false} className="-ml-1 inline-flex h-10 items-center px-1 text-xs font-medium text-neutral-300 underline underline-offset-4 hover:text-white">
-            Have a promo code?
-          </button>
-        )}
-        {promoNote && (
-          <p role="status" className="mt-1.5 text-xs text-neutral-400">
-            {promoNote}
-          </p>
-        )}
       </div>
 
       </div>
@@ -578,8 +534,6 @@ function Confirmation({ order }: { order: Order }) {
         )}
 
         <Suggestions exclude={order.items.map((l) => l.id)} title="Your next match" />
-
-        <DropSignup source="order" />
 
         {referral && (
           <section className="mt-6 w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/10">

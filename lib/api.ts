@@ -4,58 +4,38 @@
  *
  * - NEXT_PUBLIC_API_URL set: requests go to that endpoint (to be provided —
  *   see the approvals list in the README).
- * - Not set (today): nothing leaves the device. An email is remembered on
- *   this device only, and the UI says exactly that. Features that need real
- *   shared data (referrals, social proof) are not shown at all.
+ * - Not set (today): nothing leaves the device, and no UI that needs a
+ *   backend is shown (no email capture, referrals or social proof).
  */
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 export const apiConfigured = API_URL !== "";
 
-const LOCAL_EMAIL_KEY = "mono-email";
-
 export type SignupSource = "saved" | "calibration" | "order" | "drop";
 
 export interface SignupResult {
   ok: boolean;
-  /** "server": sent to the API. "device": kept in this browser only. */
-  stored: "server" | "device";
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const isEmail = (s: string) => EMAIL.test(s.trim());
 
-/** Email signup (new drops that match your taste). */
+/**
+ * Email signup (new drops that match your taste) — infrastructure only:
+ * without an API nothing is sent or stored, and no UI calls this.
+ */
 export async function signup(email: string, source: SignupSource, taste?: Record<string, number>): Promise<SignupResult> {
   const clean = email.trim().toLowerCase();
-  if (!isEmail(clean)) return { ok: false, stored: apiConfigured ? "server" : "device" };
-  if (apiConfigured) {
-    try {
-      const r = await fetch(`${API_URL}/signup`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: clean, source, taste }),
-      });
-      return { ok: r.ok, stored: "server" };
-    } catch {
-      return { ok: false, stored: "server" };
-    }
-  }
+  if (!apiConfigured || !isEmail(clean)) return { ok: false };
   try {
-    localStorage.setItem(LOCAL_EMAIL_KEY, JSON.stringify({ email: clean, source, at: Date.now() }));
-    return { ok: true, stored: "device" };
+    const r = await fetch(`${API_URL}/signup`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: clean, source, taste }),
+    });
+    return { ok: r.ok };
   } catch {
-    return { ok: false, stored: "device" };
-  }
-}
-
-/** The email remembered on this device (no API), if any. */
-export function localEmail(): string | null {
-  try {
-    const raw = localStorage.getItem(LOCAL_EMAIL_KEY);
-    return raw ? (JSON.parse(raw) as { email?: string }).email ?? null : null;
-  } catch {
-    return null;
+    return { ok: false };
   }
 }
 

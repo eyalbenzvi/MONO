@@ -4,11 +4,11 @@
  * ink line art. Every face is an original archetype (“The Barista”), never
  * a real person. Four formats: portrait, WANTED poster, mugshot, bobblehead.
  */
-import { IH, IW, W, X0, Y0, int, n1, pick, pts, range, smooth, type Generator, type Rng } from "../core";
+import { IH, IW, X0, Y0, int, n1, pick, pts, range, smooth, type Generator, type Rng } from "../core";
 import { MONO, OBJECTS, SERIF, drawPrims, fitLines, textEl, toneDefs, wrap } from "../art";
+import { CX, clip } from "../svg";
 import { ARCHETYPES, BOBBLE_TAGLINES, WANTED_CRIMES, WANTED_REWARDS, type Archetype } from "../copy3";
 
-const CX = W / 2;
 
 interface FaceParams {
   hw: number; // head half-width
@@ -332,8 +332,7 @@ function placeFigure(rng: Rng, a: Archetype, box: { x: number; y: number; w: num
 const propFor = (a: Archetype, x: number, y: number, size: number, ink: string, ground: string) =>
   a.prop && OBJECTS[a.prop] ? `<circle cx="${n1(x + size / 2)}" cy="${n1(y + size / 2)}" r="${n1(size * 0.55)}" fill="${ground}" stroke="${ink}" stroke-width="2.5"/>` + drawPrims(OBJECTS[a.prop], x + size * 0.12, y + size * 0.1, size * 0.76, "solid", ink, ground, 3) : "";
 
-const clipBox = (id: string, x: number, y: number, w: number, h: number, body: string) =>
-  `<clipPath id="${id}"><rect x="${n1(x)}" y="${n1(y)}" width="${n1(w)}" height="${n1(h)}"/></clipPath><g clip-path="url(#${id})">${body}</g>`;
+const clipBox = (id: string, x: number, y: number, w: number, h: number, body: string) => clip(id, body, { x, y, w, h });
 
 const sigVec = (p: FaceParams) => [(p.noseS - 1) / 0.75, (p.hw - 50) / 16];
 

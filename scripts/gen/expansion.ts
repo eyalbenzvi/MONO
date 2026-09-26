@@ -5,7 +5,7 @@
  */
 import type { ShirtCategory } from "../../types/shirt";
 import {
-  IH, IW, W, H, X0, Y0,
+  IH, IW, H, X0, Y0,
   an, clamp01, int, n1, pick, range, scale, smooth,
   type Design, type Generator, type Rng,
 } from "./core";
@@ -13,13 +13,13 @@ import {
   ICONS, MONO, OBJECTS, SANS, SERIF, SPRITES,
   bitmapRects, drawPrims, esc, fitLines, measure, pixelText, sizeToFit, textEl, toneDefs,
 } from "./art";
+import { CX, clip } from "./svg";
 import {
   ATTRIBUTIONS, BADGE_BOTTOMS, CLUBS, GAME_SCREENS, LABEL_LINES, MOTTOS, OBJECT_CALLOUTS, OBJECT_CAPTIONS,
   POSTER_LINES, QUOTES, RECEIPT_FOOTERS, RECEIPT_ITEMS, RECEIPT_STORES, RECEIPT_TOTALS, SPRITE_CAPTIONS,
   STAMP_COUNTRIES, TERMINAL_SCRIPTS, TICKET_LINES, WARNING_FOOTERS, WARNING_HEADERS, WARNING_LINES,
 } from "./copy";
 
-const CX = W / 2;
 
 /** How an object is named in descriptions: [singular, plural]. */
 const OBJECT_NOUNS: Record<string, [string, string]> = {
@@ -37,8 +37,6 @@ const OBJECT_NOUNS: Record<string, [string, string]> = {
   envelope: ["envelope", "envelopes"],
   glasses: ["pair of glasses", "pairs of glasses"],
 };
-const clip = (id: string, body: string) =>
-  `<clipPath id="${id}"><rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/></clipPath><g clip-path="url(#${id})">${body}</g>`;
 
 /** Random-walk ridge across the print, returned as a closed silhouette down to `bottom`. */
 function ridge(rng: Rng, base: number, amp: number, step: number, bottom: number, jag: number) {

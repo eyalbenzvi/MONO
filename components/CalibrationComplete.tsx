@@ -1,51 +1,44 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { ShirtStrip } from "@/components/ShirtStrip";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Share2, Sparkles } from "lucide-react";
-import { DropSignup } from "@/components/DropSignup";
-import { archetypeOf, encodeTaste, tasteOverlap } from "@/lib/taste";
-import { renderTasteImage } from "@/lib/shareImage";
-import { shareOrCopy } from "@/lib/clipboard";
-import { siteRoot } from "@/lib/share";
-import { track } from "@/lib/analytics";
-import { FEATURE_LABELS } from "@/types/shirt";
-import { TeeMockup } from "@/components/TeeMockup";
-import { STAGE_BG, TraitChips } from "@/components/ui";
+import { archetypeOf, tasteOverlap } from "@/lib/taste";
+import { shareTaste } from "@/lib/shareTaste";
+import { topPicks } from "@/lib/match";
+import { TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { SHIRTS, dedupeByFamily, paceByVariant, productHref } from "@/lib/catalog";
-import { rankShirts, topTraits } from "@/lib/recommendation";
-import { CALIBRATION_IDS } from "@/lib/deck";
+import { topTraits } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
-/** Shown once, when the taste test is finished: the rewarding hand-off into the shop. */
+/**
+ * Shown once, when the taste test is finished: the hand-off into the shop.
+ * Just the result — archetype, three traits, three tees — one way on
+ * ("See my shop"), a quiet "Keep swiping", and a small share icon.
+ */
 export function CalibrationComplete() {
   const hydrated = useUiStore((s) => s.hydrated);
   const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
   const acknowledge = useTasteStore((s) => s.acknowledgeCalibration);
   const vector = useTasteStore((s) => s.preferenceVector);
-  const likedInTest = useTasteStore((s) => CALIBRATION_IDS.filter((id) => s.likedIds.includes(id)).length);
-  const { complete, total } = useCalibrationProgress();
+  const { complete } = useCalibrationProgress();
   const open = hydrated && complete && !acknowledged;
   const sheet = useRef<HTMLDivElement>(null);
   const close = useCallback(() => acknowledge(), [acknowledge]);
   useFocusTrap(sheet, open, close);
 
-  // Three clearly different designs: different families and algorithms.
-  const picks = open ? paceByVariant(dedupeByFamily(rankShirts(vector, SHIRTS)), 3).slice(0, 3) : [];
+  const picks = useMemo(() => (open ? topPicks(vector, 3) : []), [open, vector]);
   const traits = open ? topTraits(vector, 3) : [];
   const archetype = archetypeOf(vector);
   const friend = useUiStore((s) => s.friendTaste);
   const [sharing, setSharing] = useState(false);
-  const shareTaste = async () => {
+  const share = async () => {
     setSharing(true);
     try {
-      const url = `${siteRoot()}/?taste=${encodeTaste(vector)}&utm_source=taste&utm_medium=share&utm_campaign=taste_profile`;
-      const blob = await renderTasteImage(archetype.name, traits.map((k) => FEATURE_LABELS[k]), picks.map((p) => p.shirt));
-      await shareOrCopy({ title: `${archetype.name} — MONO`, text: `My taste in tees: ${archetype.name}. What's yours?`, url, image: { blob, name: "mono-my-taste.png" } });
-      track("share", { channel: "taste" });
+      await shareTaste(vector);
     } finally {
       setSharing(false);
     }
@@ -72,69 +65,43 @@ export function CalibrationComplete() {
             exit={{ y: 60, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.25 }}
           >
-            <div className="flex items-center gap-2 text-sm font-medium text-neutral-300">
-              <Burst /> Taste test complete
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 text-sm font-medium text-neutral-300">
+                  <Burst /> Taste test complete
+                </p>
+                <h2 id="calib-title" className="mt-1 text-2xl font-bold tracking-tight">
+                  You&apos;re {archetype.name}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={share}
+                disabled={sharing}
+                aria-label="Share my taste"
+                title="Share my taste"
+                className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/15 hover:text-white disabled:opacity-50"
+              >
+                <Share2 className="h-[18px] w-[18px]" />
+              </button>
             </div>
-            <h2 id="calib-title" className="mt-2 text-2xl font-bold tracking-tight">
-              You&apos;re {archetype.name}
-            </h2>
-            <p className="text-sm text-neutral-300">Your shop is ready.</p>
-            <p className="mt-1 text-sm text-neutral-400">
-              You liked {likedInTest} of {total}.{traits.length > 0 ? " Here's what you're into:" : ""}
-            </p>
             <TraitChips keys={traits} className="mt-3" stagger />
 
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {picks.map(({ shirt }, i) => (
-                <Link
-                  key={shirt.id}
-                  href={productHref(shirt.id)}
-                  onClick={close}
-                  aria-label={`${shirt.title}, top pick`}
-                  className={`relative block rounded-2xl p-2 pt-8 ring-1 ring-white/10 transition active:scale-95 ${STAGE_BG}`}
-                >
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.55 + i * 0.08 }}
-                    className="absolute left-1.5 top-1.5 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-xs font-bold text-black max-[339px]:hidden"
-                  >
-                    Top pick
-                  </motion.span>
-                  <TeeMockup shirt={shirt} shadow={false} className="w-full" />
-                </Link>
-              ))}
+            <div className="mt-4">
+              <ShirtStrip shirts={picks} layout="grid" names={false} label="Top picks for you" onOpen={close} />
             </div>
 
             {friend && (
-              <div className="mt-4 rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10" role="status">
-                <p className="text-sm font-semibold">Compared with your friend: {tasteOverlap(vector, friend)}% alike</p>
-                <p className="mt-0.5 text-xs text-neutral-400">
-                  They&apos;re {archetypeOf(friend).name}
-                  {(() => {
-                    const both = topTraits(friend, 5).filter((k) => traits.includes(k)).map((k) => FEATURE_LABELS[k]);
-                    return both.length ? ` · you're both into ${both.join(", ")}` : "";
-                  })()}
-                </p>
-              </div>
+              <p className="mt-4 text-sm text-neutral-300" role="status">
+                <span className="font-semibold text-white">{tasteOverlap(vector, friend)}% alike</span> with your friend, {archetypeOf(friend).name}
+              </p>
             )}
-
-            <button
-              type="button"
-              onClick={shareTaste}
-              disabled={sharing}
-              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-50"
-            >
-              <Share2 className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
-            </button>
-
-            <DropSignup source="calibration" className="!mt-4" />
 
             {/* The way out stays in reach on short screens (landscape, 280 px). */}
             {/* The dialog has no bottom padding (a sticky footer would stop above
                 it and let content show through); the footer carries it. Phones
-                sideways: the two buttons side by side. */}
-            <div className="sticky bottom-0 -mx-5 mt-5 grid gap-1 bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 max-[339px]:-mx-4 max-[339px]:px-4 [@media(max-height:500px)]:grid-cols-2">
+                sideways: the two side by side. */}
+            <div className="sticky bottom-0 -mx-5 mt-4 grid gap-1 bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 max-[339px]:-mx-4 max-[339px]:px-4 [@media(max-height:500px)]:grid-cols-2">
               <Link
                 href="/shop/"
                 onClick={close}
@@ -143,7 +110,7 @@ export function CalibrationComplete() {
               >
                 See my shop <ArrowRight className="h-4 w-4" />
               </Link>
-              <button type="button" onClick={close} className="h-11 rounded-full text-sm font-semibold text-neutral-300 hover:text-white">
+              <button type="button" onClick={close} className="h-10 rounded-full text-sm font-medium text-neutral-400 underline-offset-4 hover:text-white hover:underline">
                 Keep swiping
               </button>
             </div>

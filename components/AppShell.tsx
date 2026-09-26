@@ -6,10 +6,11 @@ import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
 import { Header } from "@/components/Header";
 import { LikedDrawer } from "@/components/LikedDrawer";
+import { MiniBag } from "@/components/shop/MiniBag";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useCartStore } from "@/store/cartStore";
-import { migrateLegacySession } from "@/store/legacySession";
+import { migrateLegacySession, removeRetiredKeys } from "@/store/legacySession";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
@@ -24,6 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // any navigation closes the zoom view.
   useEffect(() => {
     useUiStore.getState().setZoom(null);
+    useUiStore.getState().clearAdded();
     if (!/^\/shop(\/|$)/.test(pathname)) useUiStore.getState().setProductOrigin(null);
   }, [pathname]);
 
@@ -40,6 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
     migrateLegacySession();
+    removeRetiredKeys();
     void Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]).then(() => {
       useTasteStore.getState().fillDeck();
       useUiStore.getState().setHydrated();
@@ -86,6 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AlgoDebugPanel />
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
       <ShareSheet />
+      <MiniBag />
       <Toast />
     </div>
     </MotionConfig>
