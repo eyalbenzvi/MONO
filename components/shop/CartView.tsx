@@ -56,7 +56,7 @@ export function CartView() {
     setStep(next);
   };
 
-  const { lines, count, subtotal, discount, pairs, shipping, total, toFreeShipping: toFree } = cartTotals(cart);
+  const { lines, count, subtotal, discount, pairs, shipping, total } = cartTotals(cart);
 
   // view_cart once per visit to the bag, when it has loaded.
   const viewedCart = useRef(false);
@@ -84,7 +84,6 @@ export function CartView() {
               <Icon name="arrow-left" className="h-4 w-4" /> Continue shopping
             </Link>
           )}
-          {count > 0 && <Steps step={step} />}
         </div>
 
         <h1 ref={heading} tabIndex={-1} className="mb-4 text-2xl font-bold tracking-tight outline-none">
@@ -110,7 +109,6 @@ export function CartView() {
             {/* Large screens: lines on the left, summary + checkout on the right (sticky). */}
             <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
               <div>
-                <FreeShippingBar toFree={toFree} />
                 <ul className="space-y-3">
               <AnimatePresence initial={false}>
                 {lines.map((line) => (
@@ -190,7 +188,6 @@ export function CartView() {
             </p>
               </div>
             </div>
-            <Suggestions exclude={cart.map((l) => l.id)} title="One more from your taste" source="cart_xsell" />
           </>
         ) : (
           <DetailsForm
@@ -226,31 +223,7 @@ function ecomItems(lines: CartLine[], pairs: { id: string; saving: number }[]) {
   return lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, discount: saving.has(l.id) ? saving.get(l.id)! / units.get(l.id)! : undefined }));
 }
 
-function Steps({ step }: { step: Step }) {
-  const steps: Step[] = ["bag", "details", "done"];
-  const idx = steps.indexOf(step);
-  return (
-    <div className="flex items-center gap-1.5" role="img" aria-label={`Step ${idx + 1} of 3`}>
-      {steps.map((s, i) => (
-        <span key={s} className={`h-1.5 rounded-full transition-all ${i <= idx ? "w-6 bg-white" : "w-3 bg-white/20"}`} />
-      ))}
-    </div>
-  );
-}
 
-/** Thin black-and-white progress towards free shipping. */
-function FreeShippingBar({ toFree }: { toFree: number }) {
-  const done = toFree <= 0;
-  const pct = Math.round(((FREE_SHIPPING_THRESHOLD - toFree) / FREE_SHIPPING_THRESHOLD) * 100);
-  return (
-    <div className="mb-4">
-      <p className="mb-1.5 text-xs text-neutral-300">{done ? "Free shipping" : `${formatPrice(toFree)} to free shipping`}</p>
-      <div className="h-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Towards free shipping">
-        <motion.div className="h-full rounded-full bg-white" initial={false} animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 200, damping: 30 }} />
-      </div>
-    </div>
-  );
-}
 
 /**
  * Three prints not already chosen (no family already in the bag or just

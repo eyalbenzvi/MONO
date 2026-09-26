@@ -118,7 +118,6 @@ export function DiscoverPage() {
       <HowItWorks />
       <section className="relative min-h-0 flex-1 px-4 pb-1 pt-1 sideways:py-2">
         {hydrated ? <CardStack /> : <CardSkeleton />}
-        {hydrated && <LearnChip />}
       </section>
       {/* `contents` in portrait (no box); sideways, a column: status + buttons. */}
       <div className="contents sideways:flex sideways:flex-col sideways:justify-center">
@@ -188,8 +187,7 @@ function TopStrip() {
           <>Your friend is {archetypeOf(friend).name} — swipe {CALIBRATION_TOTAL} to see how alike you are</>
         ) : (
           <>
-            <span className="max-[379px]:hidden">Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.</span>
-            <span className="min-[380px]:hidden">Rate {CALIBRATION_TOTAL} tees → your own shop</span>
+            Rate {CALIBRATION_TOTAL} tees
           </>
         )}
       </p>
@@ -221,49 +219,6 @@ function TopStrip() {
   );
 }
 
-/**
- * "The app is learning" feedback: after each swipe, the trait that moved most
- * shows for a moment inside the top of the card ("More geometric" / "Less
- * minimal"). Only for the first 10 swipes, so it teaches without nagging.
- */
-function LearnChip() {
-  const lastUpdate = useTasteStore((s) => s.lastUpdate);
-  const history = useTasteStore((s) => s.swipeHistory);
-  const last = history[history.length - 1];
-  const show = lastUpdate && last && last.source !== "shop" && last.shirtId === lastUpdate.shirtId && history.length <= 10;
-
-  let text: string | null = null;
-  if (show) {
-    // A like on a card the engine rated a top or strong match for you.
-    const tier = lastUpdate.action === "like" && last.strategy === "greedy" ? tierOf(lastUpdate.before, last.matchScore) : null;
-    if (tier === "top" || tier === "strong") text = "Nailed it";
-    else {
-      const key = biggestShift(lastUpdate.before, lastUpdate.after, lastUpdate.action);
-      if (key) text = `${lastUpdate.action === "like" ? "More" : "Less"} ${FEATURE_LABELS[key].toLowerCase()}`;
-    }
-  }
-
-  return (
-    // Inside the card's top row (centre), clear of its edge and its buttons.
-    <div className="pointer-events-none absolute inset-x-0 top-[25px] z-30 flex justify-center sideways:top-[29px]" aria-live="polite">
-      <AnimatePresence>
-        {text && (
-          <motion.span
-            key={history.length}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: [0, 1, 1, 0], y: [6, 0, 0, -4] }}
-            transition={{ duration: 1.4, times: [0, 0.15, 0.8, 1] }}
-            className={`rounded-full px-3 py-1 text-xs font-bold shadow-lg ${
-              lastUpdate?.action === "like" ? "bg-white text-black" : "bg-black/70 text-white ring-1 ring-white/20"
-            }`}
-          >
-            {text}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 function CardSkeleton() {
   return (

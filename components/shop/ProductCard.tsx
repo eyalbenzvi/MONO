@@ -39,22 +39,13 @@ export const ProductCard = memo(function ProductCard({
   const tee = color ?? shirt.baseColor;
   // "New" is judged on the viewer's clock, so only once running in the browser.
   const hydrated = useHydrated();
-  const tag = topPick ? "Top pick" : hydrated && isNew(shirt.dropDate) ? "New this week" : null;
+  const tag = topPick ? "Top pick" : null; // read by screen readers only: the card shows the name alone
   // `isolate`: the card's own controls (z-10) stack inside the card and
   // never above the shop's sticky filter bar or a page's sticky buy bar.
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate">
-      <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
+      <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
-        {tag && (
-          <span
-            className={`absolute left-2 top-2 z-10 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold ${
-              topPick ? "bg-white text-black" : "border border-dashed border-white/50 bg-black/40 font-semibold text-white"
-            }`}
-          >
-            {tag}
-          </span>
-        )}
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <Link
@@ -69,15 +60,11 @@ export const ProductCard = memo(function ProductCard({
           {shirt.title}
         </Link>
       </div>
-      <p className="truncate px-0.5 text-xs text-neutral-400">
-        <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
-        {variations > 0 && ` · +${variations} variation${variations === 1 ? "" : "s"}`}
-      </p>
       {/* A sibling of the link, stacked above its ::after. */}
-      {/* With a mouse it shows on hover (a saved heart always shows). */}
+      {/* Quiet grid: the heart shows once a tee is saved (and on hover with a mouse); saving is on the product page and in Discover. */}
       <SaveButton
         id={shirt.id}
-        className="absolute right-2 top-2 z-10 h-8 w-8 transition-opacity focus-visible:opacity-100 aria-pressed:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
+        className="absolute right-2 top-2 z-10 h-8 w-8 opacity-0 transition-opacity focus-visible:opacity-100 aria-pressed:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
       />
     </motion.div>
   );

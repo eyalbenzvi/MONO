@@ -275,11 +275,6 @@ export function ProductView({
         <div className="grid gap-6 md:grid-cols-2">
           {/* Visual */}
           <div className={`relative flex aspect-square max-h-[60dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
-            {showMatch && tier && (
-              <div className="absolute left-4 top-4 z-10">
-                <MatchBadge tier={tier} why={() => explainMatch(vector, shirt.features)} />
-              </div>
-            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${view}-${color}`}
@@ -319,22 +314,10 @@ export function ProductView({
 
           {/* Info */}
           <div>
-            <p className="text-sm text-neutral-400">
-              {/* What the print shows, then where it sits in the catalog. */}
-              {/* A photograph is named after its subject: don't say it twice. */}
-              {details?.subject && !shirt.title.startsWith(details.subject) && <span className="text-neutral-200">{details.subject} · </span>}
-              {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
-              {hydrated && isNew(shirt.dropDate) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
-            </p>
+            <p className="text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
             <h1 className="mt-0.5 text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
             {both && <p className="mt-0.5 text-sm text-neutral-400">Black + white pair</p>}
 
-            {reasons.length > 0 && (
-              <div className="mt-3">
-                <p className={LABEL}>Why it matches you</p>
-                <TraitChips keys={reasons} />
-              </div>
-            )}
 
             <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
@@ -380,7 +363,6 @@ export function ProductView({
                   </motion.div>
                 )}
               </AnimatePresence>
-              <TrustLine />
             </div>
 
 
@@ -545,18 +527,4 @@ function BuyButton({
 
 const TRUST_ICONS: Record<TrustKey, IconName> = { exchange: "repeat", shipping: "truck", fabric: "leaf" };
 
-/** Quiet store promises under the sizes (lib/store-policy, pending approval). */
-function TrustLine() {
-  return (
-    <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
-      {STORE_POLICY.trust.map(({ key, text }) => {
-        return (
-          <li key={key} className="flex items-center gap-1.5">
-            <Icon name={TRUST_ICONS[key]} className="h-3.5 w-3.5" strokeWidth={1.5} /> {text}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
 

@@ -8,7 +8,7 @@ test("I01: the product page names what the print shows, in the title and on the 
   await page.goto(`shop/${first.id}/`);
   await hydrated(page);
   await expect(page).toHaveTitle(new RegExp(`^${first.title} — ${first.subject}.* Tee \\| MONO$`));
-  await expect(page.locator("main").getByText(`${first.subject} ·`)).toBeVisible();
+  // T1: on the page itself the subject lives in the description (no extra kicker line).
   const meta = await page.locator('meta[name="description"]').getAttribute("content");
   expect(meta).toContain(`${first.title}: ${first.subject}.`);
 });

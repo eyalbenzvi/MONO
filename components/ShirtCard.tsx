@@ -61,25 +61,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           {...inert(showDetails)}
         >
           <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
-            <div className="flex h-12 items-center justify-between px-4 pt-3">
-              {/* Taste-test progress lives in one place: the strip above the card. */}
-              {tier ? (
-                <MatchBadge tier={tier} strong={isTop && strategy === "greedy" && tier === "top"} why={isTop ? () => explainMatch(vector, shirt.features) : undefined} />
-              ) : (
-                <span />
-              )}
-              <div className="flex items-center gap-2">
-                {strategy === "explore" && (
-                  <span
-                    className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white"
-                    title="Outside your usual — tells us more"
-                  >
-                    <Icon name="compass" className="h-3.5 w-3.5" /> Wildcard
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-1 [container-type:size]">
+            <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]">
               <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 340 / 440))" }} />
             </div>
           </div>
@@ -87,9 +69,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           <div className="flex items-end justify-between gap-3 px-5 pb-4 pt-3">
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
-              <p className="truncate text-xs text-neutral-400">
-                {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {COLOR_LABELS[shirt.baseColor]} tee
-              </p>
             </div>
           </div>
         </motion.div>
@@ -131,7 +110,7 @@ function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: num
       {/* Fades at the bottom so text scrolling under the footer never looks cut. */}
       <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4 [mask-image:linear-gradient(#000_calc(100%-24px),transparent)]">
         <div className="flex items-center justify-between">
-          {showMatch && tierOf(vector, score) ? <MatchBadge tier={tierOf(vector, score)!} /> : <span />}
+          <span />
           <div className="flex items-center gap-1">
           {/* Secondary actions live in one menu, not on the card. */}
           <MoreMenu
@@ -167,17 +146,6 @@ function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: num
         {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
         <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
-        {reasons.length > 0 && (
-          <div className="mt-4">
-            <p className={LABEL}>Why it matches you</p>
-            <TraitChips keys={reasons} />
-          </div>
-        )}
-
-        <p className="mt-4 text-sm text-neutral-300">
-          {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {printSizeLabel()} print
-          <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
-        </p>
 
       </div>
 

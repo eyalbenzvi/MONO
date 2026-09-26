@@ -43,7 +43,10 @@ test.describe("R17: ← Shop after moving between products", () => {
     await expect(sheet).toBeVisible();
     await sheet.getByRole("link", { name: "View bag" }).tap();
     await page.waitForURL(/\/cart\/$/);
-    const b = page.locator('main section a[href*="/shop/mono-"]').first();
+    await page.goBack();
+    await page.waitForURL(new RegExp(`/shop/${a}/$`));
+    const b = page.locator('#similar a[href*="/shop/mono-"], section a[href*="/shop/mono-"]').last();
+    await b.scrollIntoViewIfNeeded();
     await b.tap();
     await page.waitForURL((u) => /\/shop\/mono-\d+\/$/.test(u.pathname) && !u.pathname.includes(a));
     await shopBack(page).tap();
