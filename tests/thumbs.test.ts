@@ -28,3 +28,13 @@ describe("V3: grid thumbnails, so a category switch shows whole tees", () => {
     expect(files[1]).toMatch(/\/models\/.+-(white|black)\.webp$/);
   });
 });
+
+describe("W1: the thumbnail is a bridge — the full print only when it would look soft", () => {
+  it("needsFull: a phone grid at normal zoom keeps the thumbnail; a pinch-zoom or a very dense screen asks for the full file", async () => {
+    const { needsFull } = await import("@/lib/sharpness");
+    expect(needsFull(44, 3, 1, 240)).toBe(false); // phone, 2 columns
+    expect(needsFull(85, 2, 1, 240)).toBe(false); // desktop, 4 columns
+    expect(needsFull(44, 3, 3, 240)).toBe(true); // phone, pinched ×3
+    expect(needsFull(85, 4, 1, 240)).toBe(true); // a 4× screen
+  });
+});

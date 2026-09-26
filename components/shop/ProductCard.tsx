@@ -45,7 +45,7 @@ export const ProductCard = memo(function ProductCard({
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
-        <TeeMockup shirt={shirt} color={tee} thumb className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        <TeeMockup shirt={shirt} color={tee} thumb progressive className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <Link

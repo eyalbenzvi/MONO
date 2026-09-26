@@ -31,6 +31,8 @@ interface TeeMockupProps {
   priority?: boolean;
   /** Grids and lists: the print's small file (see thumbUrl). */
   thumb?: boolean;
+  /** With `thumb`: the full file replaces it when it would look soft (a pinch-zoom). */
+  progressive?: boolean;
 }
 
 /**
@@ -41,12 +43,12 @@ interface TeeMockupProps {
 const layer = (name: "garment" | "shade" | "light", color: BaseColor) => assetUrl(`/tee/${name}-${color}.svg`);
 const LAYER = "pointer-events-none absolute inset-0 h-full w-full select-none";
 
-export function TeeMockup({ shirt, color: wanted, className = "", shadow = true, style, priority, thumb }: TeeMockupProps) {
+export function TeeMockup({ shirt, color: wanted, className = "", shadow = true, style, priority, thumb, progressive }: TeeMockupProps) {
   // A design shown only in the colours it's sold in (T3).
   const color = teeColor(shirt, wanted);
   const black = color === "black";
   const model = modelFor(shirt, color);
-  if (model) return <ModelShot shirt={shirt} color={color} model={model} className={className} style={style} priority={priority} thumb={thumb} />;
+  if (model) return <ModelShot shirt={shirt} color={color} model={model} className={className} style={style} priority={priority} thumb={thumb} progressive={progressive} />;
   return (
     <div
       className={`relative isolate select-none ${className}`}
@@ -58,7 +60,7 @@ export function TeeMockup({ shirt, color: wanted, className = "", shadow = true,
       <img src={layer("garment", color)} alt="" draggable={false} decoding="async" className={LAYER} style={shadow ? { filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.45))" } : undefined} />
       {/* Print: single-ink, blended into the fabric (screen = white ink, multiply = black ink) */}
       <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
-        <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} />
+        <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} progressive={progressive} />
       </div>
       {/* Fabric folds: shadows, then highlights */}
       <img src={layer("shade", color)} alt="" draggable={false} decoding="async" className={LAYER} style={{ mixBlendMode: "multiply" }} />
@@ -73,7 +75,7 @@ export function TeeMockup({ shirt, color: wanted, className = "", shadow = true,
  * white cotton, keeping its texture; white ink screens onto black — the
  * print's black ground disappears into the tee, with no box around it).
  */
-function ModelShot({ shirt, color, model, className, style, priority, thumb }: { shirt: ShirtProduct; color: BaseColor; model: NonNullable<ReturnType<typeof modelFor>>; className: string; style?: React.CSSProperties; priority?: boolean; thumb?: boolean }) {
+function ModelShot({ shirt, color, model, className, style, priority, thumb, progressive }: { shirt: ShirtProduct; color: BaseColor; model: NonNullable<ReturnType<typeof modelFor>>; className: string; style?: React.CSSProperties; priority?: boolean; thumb?: boolean; progressive?: boolean }) {
   const black = color === "black";
   // Never a blank tee: a mockup mounted in the browser (a new category, the
   // next page of the grid) shows the photo and its print together, once the
@@ -92,7 +94,7 @@ function ModelShot({ shirt, color, model, className, style, priority, thumb }: {
       <div className={`absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none ${ready ? "" : "opacity-0"}`} data-ready={ready || undefined}>
         <img src={photo} alt="" draggable={false} decoding="async" loading={priority ? "eager" : "lazy"} className={LAYER} />
         <div className="pointer-events-none absolute overflow-hidden" style={{ ...box, mixBlendMode: black ? "screen" : "multiply" }}>
-          <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} onReady={() => setReady(true)} />
+          <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} progressive={progressive} onReady={() => setReady(true)} />
         </div>
       </div>
     </div>
