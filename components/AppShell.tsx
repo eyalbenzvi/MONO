@@ -25,7 +25,8 @@ function CatalogGate({ children }: { children: React.ReactNode }) {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [savedOpen, setSavedOpen] = useState(false);
+  const savedOpen = useUiStore((s) => s.savedOpen);
+  const setSavedOpen = useUiStore((s) => s.setSavedOpen);
   const pathname = usePathname();
   const hydrated = useUiStore((s) => s.hydrated);
 
@@ -99,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <MotionConfig reducedMotion="user">
     <div className="app-backdrop relative flex h-[100dvh] flex-col overflow-hidden" data-hydrated={hydrated ? "" : undefined}>
-      <Header onOpenSaved={() => setSavedOpen(true)} />
+      <Header />
       {/* The header floats over the top of main (it slides away with a
           transform, never by changing the layout); main keeps its space.
           Pages that hide it on scroll let their scroller reach under it. */}

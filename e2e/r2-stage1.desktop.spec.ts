@@ -90,11 +90,11 @@ test("I16: another tab clearing storage resets Saved and the bag here", async ({
   await seed(page, { likedIds: ["mono-0501"] }, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
   await page.goto("shop/");
   await hydrated(page);
-  await expect(page.getByRole("button", { name: /^Saved \(3\)/ })).toBeVisible();
+  // (Saved has no count in the header any more: the bag shows while it holds something.)
+  await expect(page.getByRole("link", { name: /^Bag \(1\)/ })).toBeVisible();
   const other = await context.newPage();
   await other.goto("shop/");
   await hydrated(other);
   await other.evaluate(() => localStorage.clear());
-  await expect(page.getByRole("button", { name: /^Saved \(0\)/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^Bag \(0\)/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Bag \(/ })).toHaveCount(0);
 });

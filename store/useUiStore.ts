@@ -35,6 +35,8 @@ interface UiState {
   dialogs: number;
   /** The design shown in the full-screen zoom, if open. */
   zoomId: string | null;
+  /** The Saved drawer is open (opened from the personal area). */
+  savedOpen: boolean;
 
   debug: boolean;
   headerHidden: boolean;
@@ -65,6 +67,7 @@ interface UiState {
   toggleFlip: (value?: boolean) => void;
   showToast: (message: string, action?: ToastState["action"]) => void;
   setZoom: (id: string | null) => void;
+  setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
@@ -109,10 +112,12 @@ export const useUiStore = create<UiState>()((set) => ({
   toast: null,
   dialogs: 0,
   zoomId: null,
+  savedOpen: false,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
   showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
   setZoom: (zoomId) => set({ zoomId }),
+  setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
   shop: { category: null, sort: null, teeView: "original", limit: SHOP_PAGE_SIZE },
