@@ -18,7 +18,7 @@ function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct
           </button>
         )}
       </div>
-      <ShirtStrip shirts={shirts} quickAdd />
+      <ShirtStrip shirts={shirts} quickAdd source="shared_list" />
     </section>
   );
 }

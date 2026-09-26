@@ -11,8 +11,8 @@ import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "@/types/shirt";
-import { track } from "@/lib/analytics";
+import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 
 export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
 
@@ -93,11 +93,18 @@ export function ShopView() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
-  const openFromGrid = useCallback((id: string) => setProductOrigin({ from: "/shop/", id }), [setProductOrigin]);
+  const openFromGrid = useCallback(
+    (id: string) => {
+      setProductOrigin({ from: "/shop/", id });
+      const index = visibleRef.current.findIndex((x) => x.shirt.id === id);
+      const shirt = visibleRef.current[index]?.shirt;
+      if (shirt) trackEcommerce("select_item", { item_list_id: listIdRef.current, items: [itemOf(shirt, { index })] });
+    },
+    [setProductOrigin],
+  );
+  const visibleRef = useRef<{ shirt: ShirtProduct }[]>([]);
+  const listIdRef = useRef("");
 
-  useEffect(() => {
-    if (hydrated) track("shop_view", { category: useUiStore.getState().shop.category, sort: useUiStore.getState().shop.sort });
-  }, [hydrated]);
 
   // Rank with a snapshot of the taste vector taken on entry (and when sort or
   // category change): a heart tap trains the vector, and re-ranking live
@@ -116,7 +123,24 @@ export function ShopView() {
     const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
     return diversify(filtered, { category: !category, color: teeView === "original", wildcardEvery: sort === "match" ? 8 : 0 });
   }, [ranked, category, sort, teeView]);
+  visibleRef.current = visible;
+  listIdRef.current = `shop_${sort}${category ? `_${category}` : ""}`;
   const traits = topTraits(vector, 3);
+
+  // shop_view once per visit, with the order actually shown; the list
+  // itself (first page) each time the order or category changes.
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!viewed.current) track("shop_view", { category, sort, default_sort: chosenSort === null });
+    viewed.current = true;
+    trackEcommerce("view_item_list", {
+      item_list_id: `shop_${sort}${category ? `_${category}` : ""}`,
+      items: visible.slice(0, SHOP_PAGE_SIZE).map(({ shirt }, index) => itemOf(shirt, { index })),
+    });
+    // The list is keyed by what the shopper chose, not by every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, sort, category]);
 
   // Restore scroll position when coming back from a product page.
   const scroller = useRef<HTMLDivElement>(null);

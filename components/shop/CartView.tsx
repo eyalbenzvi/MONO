@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, RotateCcw, Share2, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, STAGE_BG, useShowMatch } from "@/components/ui";
-import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals } from "@/lib/cart";
+import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
 import { SHIRTS, dedupeByFamily, familiesOf, getShirtById } from "@/lib/catalog";
 import { topPicks } from "@/lib/match";
 import { ShirtStrip } from "@/components/ShirtStrip";
@@ -18,7 +18,7 @@ import { apiConfigured, fetchReferral, isEmail } from "@/lib/api";
 import { arrivalRange, formatArrival } from "@/lib/delivery";
 import { COLOR_LABELS, SIZES, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { track } from "@/lib/analytics";
+import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
 
 type Step = "bag" | "details" | "done";
@@ -50,6 +50,15 @@ export function CartView() {
   };
 
   const { lines, count, subtotal, discount, pairs, shipping, total, toFreeShipping: toFree } = cartTotals(cart);
+
+  // view_cart once per visit to the bag, when it has loaded.
+  const viewedCart = useRef(false);
+  useEffect(() => {
+    if (!hydrated || viewedCart.current) return;
+    viewedCart.current = true;
+    const t = cartTotals(useCartStore.getState().cart);
+    trackEcommerce("view_cart", { value: t.total - t.shipping, items: ecomItems(t.lines, t.pairs) });
+  }, [hydrated]);
 
   if (!hydrated) return <div className="flex-1" />;
 
@@ -87,7 +96,7 @@ export function CartView() {
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
-            <Suggestions exclude={[]} title="Picked from your taste" />
+            <Suggestions exclude={[]} title="Picked from your taste" source="empty_bag" />
           </div>
         ) : step === "bag" ? (
           <>
@@ -158,7 +167,7 @@ export function CartView() {
               type="button"
               onClick={() => {
                 go("details");
-                track("begin_checkout", { value: total, items: cart.reduce((n, l) => n + l.qty, 0), currency: "USD" });
+                trackEcommerce("begin_checkout", { value: total, discount, shipping, items: ecomItems(lines, pairs) });
               }}
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
             >
@@ -169,7 +178,7 @@ export function CartView() {
             </p>
               </div>
             </div>
-            <Suggestions exclude={cart.map((l) => l.id)} title="One more from your taste" />
+            <Suggestions exclude={cart.map((l) => l.id)} title="One more from your taste" source="cart_xsell" />
           </>
         ) : (
           <DetailsForm
@@ -196,6 +205,14 @@ export function CartView() {
   );
 }
 
+
+/** Bag lines as GA4 items, each design's pair saving spread over its units. */
+function ecomItems(lines: CartLine[], pairs: { id: string; saving: number }[]) {
+  const saving = new Map(pairs.map((p) => [p.id, p.saving]));
+  const units = new Map<string, number>();
+  for (const l of lines) units.set(l.id, (units.get(l.id) ?? 0) + l.qty);
+  return lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, discount: saving.has(l.id) ? saving.get(l.id)! / units.get(l.id)! : undefined }));
+}
 
 function Steps({ step }: { step: Step }) {
   const steps: Step[] = ["bag", "details", "done"];
@@ -230,7 +247,7 @@ function FreeShippingBar({ toFree }: { toFree: number }) {
  * ("One more from your taste"), an empty bag and after an order ("Your
  * next match").
  */
-function Suggestions({ exclude, title: heading }: { exclude: string[]; title: string }) {
+function Suggestions({ exclude, title: heading, source }: { exclude: string[]; title: string; source: AddSource }) {
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const likedIds = useTasteStore((s) => s.likedIds);
@@ -252,7 +269,7 @@ function Suggestions({ exclude, title: heading }: { exclude: string[]; title: st
   return (
     <section className="mt-8 w-full text-left">
       <h2 className="mb-3 text-sm font-semibold">{title}</h2>
-      <ShirtStrip shirts={picks} layout="grid" quickAdd label={title} />
+      <ShirtStrip shirts={picks} layout="grid" quickAdd label={title} source={source} />
     </section>
   );
 }
@@ -533,7 +550,7 @@ function Confirmation({ order }: { order: Order }) {
           </button>
         )}
 
-        <Suggestions exclude={order.items.map((l) => l.id)} title="Your next match" />
+        <Suggestions exclude={order.items.map((l) => l.id)} title="Your next match" source="confirm" />
 
         {referral && (
           <section className="mt-6 w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/10">

@@ -25,7 +25,7 @@ import { formatPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
-import { track } from "@/lib/analytics";
+import { itemOf, trackEcommerce } from "@/lib/analytics";
 
 type View = "tee" | "print";
 const VIEWS: { value: View; label: string; short: string }[] = [
@@ -138,7 +138,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   }, [hydrated, shirt, setColor]);
 
   useEffect(() => {
-    if (shirt) track("product_view", { id: shirt.id, category: shirt.category, price: shirt.price });
+    if (shirt) trackEcommerce("view_item", { items: [itemOf(shirt)] });
   }, [shirt]);
 
   // Details start closed (everywhere).
@@ -190,7 +190,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   const onBuy = () => {
     if (!size) return needSize();
     if (phase === "view" || pairComplete) return router.push("/cart/");
-    if (both ? addPair(shirt.id, size) : addToCart(shirt.id, size, color)) confirmAdded(addedKey);
+    if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) confirmAdded(addedKey);
   };
   // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
   const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${size}` : pairLabel(pair, shirt.price)) : `Add to bag · ${size}`;

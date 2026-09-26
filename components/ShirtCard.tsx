@@ -197,7 +197,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
             remembered, else pick one), and share. */}
         {showMatch && (
           <div className="mt-3 flex items-center gap-2">
-            <QuickAdd shirt={shirt} long />
+            <QuickAdd shirt={shirt} long source="discover_card" />
             <ShareButton id={shirt.id} title={shirt.title} color={shirt.baseColor} className="relative h-9 w-9" />
           </div>
         )}

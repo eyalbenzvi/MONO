@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Share2, X } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -24,6 +25,9 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const todayCount = daily.day === today() ? daily.count : 0;
   const streak = currentStreak(daily);
   const [sharing, setSharing] = useState(false);
+  useEffect(() => {
+    if (open) track("taste_sheet_open", { level: tasteLevel(useTasteStore.getState().preferenceVector) });
+  }, [open]);
 
   return (
     <AnimatePresence>

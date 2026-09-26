@@ -284,6 +284,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           lastUpdate: null,
         });
         useUiStore.setState({ isFlipped: false, swipeQueue: [], undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() } });
+        track("undo", { id: last.shirtId, action: last.action });
       },
 
 

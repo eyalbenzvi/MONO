@@ -59,6 +59,7 @@ export const ProductCard = memo(function ProductCard({
           shirt={shirt}
           color={tee}
           variant="overlay"
+          source="grid"
           // With a mouse it appears on hover (or keyboard focus); open sizes stay.
           className="absolute bottom-2 right-2 z-10 transition-opacity [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 focus-within:!opacity-100 has-[[role=group]]:!opacity-100"
         />
