@@ -70,7 +70,7 @@ export function matchTier(vector: UserProfileVector, features: FeatureVector): M
 /**
  * The best few designs for a profile, for every "picked for you" row (the
  * bag, after an order, the taste-test screen, the taste card): one per
- * family, none from `excludeFamilies` (already in the bag or bought), no
+ * family, none from `excludeFamilies` (already in the bag or bought), no weak prints, no
  * algorithm twice within `paceWindow`, and at least `minCategories`
  * categories. Top-k selection (a small sorted buffer), not a full sort.
  */
@@ -84,7 +84,7 @@ export function topPicks(
   const top: { shirt: ShirtProduct; score: number; raw: number }[] = [];
   const better = (a: (typeof top)[number], b: (typeof top)[number]) => a.score > b.score || (a.score === b.score && (a.raw > b.raw || (a.raw === b.raw && a.shirt.id < b.shirt.id)));
   for (const shirt of pool) {
-    if (excludeFamilies.has(shirt.family)) continue;
+    if (shirt.weak || excludeFamilies.has(shirt.family)) continue;
     const item = { shirt, ...score(shirt.features) };
     if (top.length === k && !better(item, top[k - 1])) continue;
     let i = top.length;
@@ -102,7 +102,7 @@ export function topPicks(
     let other = unique.find(({ shirt }) => !taken.has(shirt.category));
     if (!other)
       for (const shirt of pool) {
-        if (taken.has(shirt.category) || excludeFamilies.has(shirt.family)) continue;
+        if (shirt.weak || taken.has(shirt.category) || excludeFamilies.has(shirt.family)) continue;
         const item = { shirt, ...score(shirt.features) };
         if (!other || better(item, other)) other = item;
       }

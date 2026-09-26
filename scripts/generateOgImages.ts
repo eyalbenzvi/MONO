@@ -16,10 +16,11 @@ import { Resvg } from "@resvg/resvg-js";
 // @ts-expect-error — upng-js ships no types
 import UPNG from "upng-js";
 import shirtsJson from "../data/shirts.json";
+import { WEAK_QUALITY } from "./gen/quality";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
-import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry, type ShirtProduct } from "../types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
 
-const SHIRTS = shirtsJson as CatalogEntry[];
+const SHIRTS = shirtsJson as unknown as CatalogEntry[];
 const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "public", "og");
 const W = 1200;
@@ -34,13 +35,13 @@ const HOST = process.env.OG_HOST ?? "eyalbenzvi.github.io/MONO";
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Print SVG body (without its outer <svg>), for nesting. */
-function printInner(shirt: ShirtProduct) {
+function printInner(shirt: CatalogEntry) {
   const svg = readFileSync(path.join(ROOT, "public", shirt.backPrintUrl), "utf8");
   return svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
 }
 
 /** The tee with its print, `h` px tall, top-left at (x, y). */
-function tee(shirt: ShirtProduct, x: number, y: number, h: number, idPrefix: string) {
+function tee(shirt: CatalogEntry, x: number, y: number, h: number, idPrefix: string) {
   const s = h / TEE_VIEW.h;
   const c = TEE_COLORS[shirt.baseColor];
   const blend = shirt.baseColor === "black" ? "screen" : "multiply";
@@ -76,7 +77,7 @@ const fit = (text: string, maxW: number, max: number, adv = ADV.bold) => Math.mi
 /** Flat spotlight disc behind a tee (keeps a black tee visible on the dark ground). */
 const spot = (cx: number, cy: number, r: number) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#262626"/><circle cx="${cx}" cy="${cy}" r="${r * 0.72}" fill="#303030"/>`;
 
-function productSvg(shirt: ShirtProduct) {
+function productSvg(shirt: CatalogEntry) {
   const titleSize = fit(shirt.title, 540, 60);
   const other = shirt.baseColor === "black" ? "white" : "black";
   const cta = "Swipe to find your taste →";
@@ -94,7 +95,12 @@ function productSvg(shirt: ShirtProduct) {
 }
 
 function defaultSvg() {
-  const pick = [SHIRTS[2002 - 1], SHIRTS[2155 - 1], SHIRTS[1 - 1]].filter(Boolean);
+  // Three strong prints from different categories, by editorial rank (no weak ones).
+  const pick: CatalogEntry[] = [];
+  for (const s of [...SHIRTS].sort((a, b) => a.rank - b.rank)) {
+    if (s.quality >= WEAK_QUALITY && s.quality >= 70 && !pick.some((p) => p.category === s.category)) pick.push(s);
+    if (pick.length === 3) break;
+  }
   const tees = pick.map((s, i) => tee(s, 650 + i * 180, 165 + (i % 2) * 36, 300, `d${i}`)).join("");
   return frame(`
   ${spot(920, 330, 290)}
@@ -127,10 +133,10 @@ function render(svg: string): Buffer {
   return Buffer.from(UPNG.encode([ab], img.width, img.height, 256));
 }
 
-const outFile = (s: ShirtProduct) => path.join(OUT, `${s.id}.png`);
+const outFile = (s: CatalogEntry) => path.join(OUT, `${s.id}.png`);
 
 /** Renders the given shirts in this process (skipping finished ones unless forced). */
-function renderList(list: ShirtProduct[], force: boolean) {
+function renderList(list: CatalogEntry[], force: boolean) {
   for (const s of list) {
     if (!force && existsSync(outFile(s))) continue;
     writeFileSync(outFile(s), render(productSvg(s)));

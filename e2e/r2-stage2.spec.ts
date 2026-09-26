@@ -229,7 +229,8 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     const details = page.getByRole("button", { name: "Details" });
     await expect(details).toHaveAttribute("aria-expanded", "false");
     await details.tap();
-    await expect(page.getByText("28 × 37 cm")).toBeVisible();
+    // The real size of this print (its ink), from the generator: data/shirts.json.
+    await expect(page.getByText(/^\d+ × \d+ cm$/)).toBeVisible();
   });
 
   test("I15: the zoom reads 'On the tee | Print' and opens in the view on screen", async ({ page }) => {

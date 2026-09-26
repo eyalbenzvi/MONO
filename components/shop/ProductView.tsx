@@ -15,7 +15,7 @@ import { familyMembers, getShirtById } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch } from "@/lib/recommendation";
 import { matchTier } from "@/lib/match";
-import { isNewThisWeek } from "@/lib/taste";
+import { isNew } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -322,14 +322,16 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                 </button>
               ))}
             </div>
-            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} onClose={() => setZoom(false)} />}</AnimatePresence>
+            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} onClose={() => setZoom(false)} />}</AnimatePresence>
           </div>
 
           {/* Info */}
           <div>
             <p className="text-sm text-neutral-400">
+              {/* What the print shows, then where it sits in the catalog. */}
+              {details?.subject && <span className="text-neutral-200">{details.subject} · </span>}
               {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
-              {isNewThisWeek(shirt.dropWeek) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
+              {hydrated && isNew(shirt.dropDate) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
             </p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
@@ -419,7 +421,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                 <dl className="pb-2">
                   <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
                   <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
-                  <Spec label="Print" value={printSizeLabel()} />
+                  <Spec label="Print" value={printSizeLabel(details?.printCm)} />
                   <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
                   <Spec label="Fit" value="Regular" />
                   <Spec label="SKU" value={skuFor(shirt.sku, color)} />

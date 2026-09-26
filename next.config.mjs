@@ -10,9 +10,8 @@ const nextConfig = {
   assetPrefix: basePath || undefined,
   trailingSlash: true,
   images: { unoptimized: true },
-  // One build time for server and client, so "New this week" (lib/taste)
-  // renders the same on both.
-  env: { NEXT_PUBLIC_BUILD_DATE: String(Date.now()) },
+  // No build timestamp in the bundle: "New this week" is judged on the
+  // viewer's clock (lib/taste), so chunk hashes only change with the code.
 };
 
 export default nextConfig;

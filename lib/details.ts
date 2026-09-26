@@ -1,23 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { assetUrl, getShirtById } from "@/lib/catalog";
+import { assetUrl, getShirtById, shardFile, shardOf } from "@/lib/catalog";
 import type { ShirtDetails } from "@/types/shirt";
 
 /**
- * Descriptions and precomputed "similar" lists, fetched on demand from the
- * generator's shards (public/data/details-<k>.json, SHARD_SIZE designs each)
- * so they stay out of the JS bundle. One request per shard, cached.
+ * Descriptions, subjects, print sizes and precomputed "similar" lists,
+ * fetched on demand from the generator's shards (public/data/details-<k>.<hash>.json;
+ * size and hashes come from the index head) so they stay out of the JS
+ * bundle. One request per shard, cached (the hash makes the file immutable).
  */
-const SHARD_SIZE = 100;
-
-type Shard = Record<string, { d: string; s: string[] }>;
+type Shard = Record<string, { d: string; s: string[]; t?: string; p?: [number, number] }>;
 const shards = new Map<number, Promise<Shard>>();
 
 function loadShard(k: number): Promise<Shard> {
   let p = shards.get(k);
   if (!p) {
-    p = fetch(assetUrl(`/data/details-${k}.json`)).then((r) => {
+    p = fetch(assetUrl(shardFile(k))).then((r) => {
       if (!r.ok) throw new Error(`details-${k}: ${r.status}`);
       return r.json() as Promise<Shard>;
     });
@@ -31,8 +30,8 @@ function loadShard(k: number): Promise<Shard> {
 export async function fetchDetails(id: string): Promise<ShirtDetails | null> {
   const shirt = getShirtById(id);
   if (!shirt) return null;
-  const entry = (await loadShard(Math.floor((shirt.n - 1) / SHARD_SIZE)))[id];
-  return entry ? { description: entry.d, similar: entry.s } : null;
+  const entry = (await loadShard(shardOf(shirt)))[id];
+  return entry ? { description: entry.d, similar: entry.s, subject: entry.t, printCm: entry.p ? { width: entry.p[0], height: entry.p[1] } : undefined } : null;
 }
 
 /**

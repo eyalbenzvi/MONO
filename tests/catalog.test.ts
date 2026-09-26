@@ -1,11 +1,12 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { SHIRTS, assetUrl, getShirtById, productHref } from "@/lib/catalog";
+import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from "@/lib/catalog";
+import { WEAK_QUALITY } from "../scripts/gen/quality";
 import full from "@/data/shirts.json";
 import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, type CatalogEntry } from "@/types/shirt";
 
-const FULL = full as CatalogEntry[];
+const FULL = full as unknown as CatalogEntry[];
 /** Description text outside quoted captions (captions are the print's own words). */
 const narrative = (d: string) => d.replace(/“[^”]*”/g, "“”").replace(/"[^"]*"/g, "").replace(/'[^']*'/g, "");
 
@@ -109,8 +110,8 @@ describe("generated catalog (data/shirts.json)", () => {
   it("the lean app index decodes to exactly the generator's catalog", () => {
     expect(SHIRTS).toHaveLength(FULL.length);
     FULL.forEach((f, i) => {
-      const { description: _d, similar: _s, ...lean } = f;
-      expect(SHIRTS[i]).toEqual(lean);
+      const { description: _d, similar: _s, subject: _t, printCm: _p, summary: _u, style: _y, quality, dropDate, ...lean } = f;
+      expect(SHIRTS[i]).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: quality < WEAK_QUALITY });
     });
   });
 
@@ -171,16 +172,17 @@ describe("catalog copy (R13)", () => {
 });
 
 describe("detail shards (public/data)", () => {
+  // File names and size come from the index head (R21), not from constants here.
   const shards = new Map<number, Record<string, { d: string; s: string[] }>>();
   const shard = (k: number) => {
-    if (!shards.has(k)) shards.set(k, JSON.parse(readFileSync(path.join(PUBLIC, "data", `details-${k}.json`), "utf8")));
+    if (!shards.has(k)) shards.set(k, JSON.parse(readFileSync(path.join(PUBLIC, shardFile(k)), "utf8")));
     return shards.get(k)!;
   };
 
-  it("hold every design's description and similar list", () => {
+  it("hold every design's description, similar list, subject and print size", () => {
     for (const f of FULL) {
-      const entry = shard(Math.floor((f.n - 1) / 100))[f.id];
-      expect(entry, f.id).toEqual({ d: f.description, s: f.similar });
+      const entry = shard(shardOf(f))[f.id];
+      expect(entry, f.id).toEqual({ d: f.description, s: f.similar, t: f.subject, p: [f.printCm.width, f.printCm.height] });
     }
   });
 

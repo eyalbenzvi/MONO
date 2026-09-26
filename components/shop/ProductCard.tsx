@@ -7,7 +7,8 @@ import { TeeMockup } from "@/components/TeeMockup";
 import { SaveButton, STAGE_BG, TeeDot } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
-import { isNewThisWeek } from "@/lib/taste";
+import { isNew } from "@/lib/taste";
+import { useHydrated } from "@/store/useUiStore";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
 import { QuickAdd } from "@/components/QuickAdd";
@@ -38,7 +39,9 @@ export const ProductCard = memo(function ProductCard({
   onOpen?: (id: string) => void;
 }) {
   const tee = color ?? shirt.baseColor;
-  const tag = topPick ? "Top pick" : isNewThisWeek(shirt.dropWeek) ? "New this week" : null;
+  // "New" is judged on the viewer's clock, so only once running in the browser.
+  const hydrated = useHydrated();
+  const tag = topPick ? "Top pick" : hydrated && isNew(shirt.dropDate) ? "New this week" : null;
   // `isolate`: the card's own controls (z-10) stack inside the card and
   // never above the shop's sticky filter bar or a page's sticky buy bar.
   return (

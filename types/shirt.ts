@@ -136,8 +136,10 @@ export interface ShirtProduct {
   features: FeatureVector;
   /** Editorial rank (0 = first) from the generator: the order of the "Popular" sort. */
   rank: number;
-  /** The weekly drop a design was released in (the latest drop is "new this week"). */
-  dropWeek: number;
+  /** The day the design dropped (UTC midnight, ms): "New this week" for seven days after. */
+  dropDate: number;
+  /** A weak print (a lone small shape): kept out of the taste test and the top of the shop. */
+  weak: boolean;
 }
 
 /** Longer copy and precomputed neighbours, loaded on demand (public/data shards). */
@@ -145,10 +147,24 @@ export interface ShirtDetails {
   description: string;
   /** Similar prints from other families, one per algorithm, closest first. */
   similar: string[];
+  /** What the print shows ("Solar Eclipse"). */
+  subject?: string;
+  /** The print's real size on the tee (its ink), cm. */
+  printCm?: { width: number; height: number };
 }
 
 /** Full catalog entry (generator output, server-side and tests). */
-export type CatalogEntry = ShirtProduct & ShirtDetails;
+export type CatalogEntry = Omit<ShirtProduct, "dropDate" | "weak"> &
+  Required<ShirtDetails> & {
+    /** The design's own sentence (without the closing line): meta descriptions. */
+    summary: string;
+    /** The print style for the SEO title ("Line-Art"). */
+    style: string;
+    /** 0–100 (see generateCatalog: coverage, extent, detail). */
+    quality: number;
+    /** YYYY-MM-DD. */
+    dropDate: string;
+  };
 
 /** User taste vector — same shape as product features, starts at 0.5. */
 export type UserProfileVector = FeatureVector;
