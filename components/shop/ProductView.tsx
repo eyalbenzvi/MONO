@@ -28,6 +28,7 @@ import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
 
 type View = "tee" | "print";
+type RelatedLink = { href: string; title: string };
 const VIEWS: { value: View; label: string; short: string }[] = [
   { value: "tee", label: "On the tee", short: "Tee" },
   { value: "print", label: "Print", short: "Print" },
@@ -83,7 +84,16 @@ function TeeChoice({ value, original, price, onChange }: { value: Choice; origin
  * `details` come as props from the pre-rendered page (/shop/<id>/); the
  * client route (/shop/p/?id=) leaves them out and they are fetched.
  */
-export function ProductView({ id, details: initialDetails }: { id: string; details?: ShirtDetails | null }) {
+export function ProductView({
+  id,
+  details: initialDetails,
+  related,
+}: {
+  id: string;
+  details?: ShirtDetails | null;
+  /** Build-time links (pre-rendered pages): shown until the page is running, then the visual rows replace them. */
+  related?: { variations: RelatedLink[]; similar: RelatedLink[] };
+}) {
   const shirt = getShirtById(id);
   const details = useShirtDetails(shirt ? id : null, initialDetails);
   const router = useRouter();
@@ -235,11 +245,22 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               <Share2 className="h-5 w-5 shrink-0 text-neutral-300" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">A friend shared this tee with you</p>
-                <p className="text-xs text-neutral-400">{calibrated ? "Your shop is ranked for you — have a look around." : `Swipe ${CALIBRATION_TOTAL} tees and MONO learns your taste.`}</p>
+                <p className="text-xs text-neutral-400">{calibrated ? "Save it and see what else fits your taste." : `Save it, then swipe ${CALIBRATION_TOTAL} tees starting from it.`}</p>
               </div>
-              <Link href={calibrated ? "/shop/" : "/"} className="flex h-9 shrink-0 items-center rounded-full bg-white px-3.5 text-xs font-bold text-black">
-                {calibrated ? "My shop" : "Try it"}
-              </Link>
+              {/* Stays here until asked: the one way on saves the tee first. */}
+              <button
+                type="button"
+                onClick={() => {
+                  // Saving trains the taste on this tee: the test (or the
+                  // shop's "For you") starts from it.
+                  if (!useTasteStore.getState().likedIds.includes(shirt.id)) useTasteStore.getState().toggleSaved(shirt.id);
+                  setSharedVia(null);
+                  router.push(calibrated ? "/shop/" : "/");
+                }}
+                className="flex h-9 shrink-0 items-center rounded-full bg-white px-3.5 text-xs font-bold text-black"
+              >
+                Save &amp; find more like it
+              </button>
               <button type="button" onClick={() => setSharedVia(null)} aria-label="Dismiss" className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white">
                 <X className="h-4 w-4" />
               </button>
@@ -431,6 +452,32 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <p className="mt-2 text-xs text-neutral-400">Free shipping over {formatPrice(FREE_SHIPPING_THRESHOLD)} · demo store, nothing is charged</p>
           </div>
         </div>
+
+        {/* Before the page runs (and in the static HTML crawlers read):
+            plain links onward. Replaced by the visual rows below. */}
+        {!hydrated && related && (related.variations.length > 0 || related.similar.length > 0) && (
+          <nav aria-label="More like this" className="mt-10 space-y-3 text-sm">
+            {[
+              ["Variations", related.variations],
+              ["More like this", related.similar],
+            ].map(([label, links]) =>
+              (links as RelatedLink[]).length ? (
+                <div key={label as string}>
+                  <h2 className="mb-1 text-base font-semibold">{label as string}</h2>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1 text-neutral-300">
+                    {(links as RelatedLink[]).map((l) => (
+                      <li key={l.href}>
+                        <Link href={l.href} className="underline underline-offset-4 hover:text-white">
+                          {l.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null,
+            )}
+          </nav>
+        )}
 
         {/* Client-only: keeps the pre-rendered product pages small. */}
         {hydrated && members.length > 1 && (

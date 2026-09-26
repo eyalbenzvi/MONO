@@ -42,3 +42,49 @@ export function productDescription(s: SeoFields) {
   const price = Number.isInteger(s.price) ? `$${s.price}` : `$${s.price.toFixed(2)}`;
   return `${s.title}: ${s.subject}. ${s.summary} ${s.baseColor === "black" ? "Black" : "White"} tee, also in ${other} · ${price}.`;
 }
+
+/* ------------------------------------------------------------------ */
+/* Page metadata (R22: every page states its URL and canonical)        */
+/* ------------------------------------------------------------------ */
+
+const OG_DEFAULT = { ...ogImage("default"), alt: "MONO — monochrome tees" };
+
+/**
+ * Title, description, canonical and Open Graph for a page at `path`
+ * (relative to the site, e.g. "/shop/"). Open Graph in Next replaces the
+ * layout's object wholesale, so the site name and image come along.
+ */
+export function pageMeta({ path, title, description, image = OG_DEFAULT, index = true }: { path: string; title: string; description: string; image?: { url: string; width: number; height: number; alt: string }; index?: boolean }) {
+  const url = `${SITE_URL}${path}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "website" as const, siteName: "MONO", title, description, url, images: [image] },
+    twitter: { card: "summary_large_image" as const, title, description, images: [image.url] },
+    ...(index ? {} : { robots: { index: false } }),
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Structured data (F03)                                               */
+/* ------------------------------------------------------------------ */
+
+/** JSON inside a <script> tag: escape "<" so no string can close it. */
+export const jsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, "\\u003c");
+
+export const ORGANIZATION = {
+  "@type": "Organization",
+  "@id": `${SITE_URL}/#org`,
+  name: "MONO",
+  url: `${SITE_URL}/`,
+  logo: `${SITE_URL}/icon.svg`,
+};
+
+/** Home: who we are, and the site. */
+export function homeJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [ORGANIZATION, { "@type": "WebSite", "@id": `${SITE_URL}/#site`, name: "MONO", url: `${SITE_URL}/`, publisher: { "@id": ORGANIZATION["@id"] } }],
+  };
+}

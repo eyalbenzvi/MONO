@@ -58,7 +58,10 @@ const CSP = [
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <head>{process.env.NODE_ENV === "production" && <meta httpEquiv="Content-Security-Policy" content={CSP} />}</head>
+      <head>
+        {process.env.NODE_ENV === "production" && <meta httpEquiv="Content-Security-Policy" content={CSP} />}
+        <link rel="sitemap" type="application/xml" href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/sitemap.xml`} />
+      </head>
       <body className="antialiased">
         <AppShell>{children}</AppShell>
       </body>
