@@ -105,9 +105,14 @@ export function ShopView() {
     requestAnimationFrame(() => (restoring.current = false));
   }, [hydrated]);
   const onHeaderScroll = useMemo(() => makeHeaderScrollHandler(), []);
+  // The filter bar gets a hairline once it's stuck (content passes under it).
+  const [stuck, setStuck] = useState(false);
+  const headerHidden = useUiStore((s) => s.headerHidden);
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!restoring.current) onHeaderScroll(e);
     shopScroll.top = e.currentTarget.scrollTop;
+    const isStuck = e.currentTarget.scrollTop > 44;
+    if (isStuck !== stuck) setStuck(isStuck);
   };
 
   // Infinite scroll in batches — thousands of mockups, rendered lazily.
@@ -130,7 +135,12 @@ export function ShopView() {
   };
 
   return (
-    <div ref={scroller} onScroll={onScroll} className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
+    // Reaches up under the floating header (a spacer keeps the content below
+    // it), so when the header slides away the grid fills the space.
+    <div ref={scroller} onScroll={onScroll} className="no-scrollbar -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto">
+      {/* A spacer, not padding: sticky offsets are measured inside the
+          scroller's padding, which would push the filter bar down. */}
+      <div aria-hidden className="h-[var(--header-h)]" />
       <div className="mx-auto max-w-5xl px-4 pb-16">
         {/* One-line taste summary / taste-test nudge (height kept before hydration). */}
         {!hydrated ? (
@@ -166,8 +176,21 @@ export function ShopView() {
         {/* One sticky row: categories scroll sideways; the tee-colour preview
             stays in view (black / white switch without scrolling); the order
             lives behind the sort button. */}
-        <div className="sticky top-0 z-10 -mx-4 flex items-center gap-2 bg-[#050505]/90 py-2 pl-4 pr-4 backdrop-blur-md">
-          <div className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4" role="group" aria-label="Category">
+        {/* Solid, above every card control (cards isolate their own z-index),
+            right under the header while it shows and at the very top once it
+            has slid away — moving with it (same 200 ms). */}
+        <div
+          className={`app-backdrop sticky z-20 -mx-4 flex items-center gap-2 border-b py-2 pl-4 pr-4 transition-[top,border-color] duration-200 ease-out ${
+            stuck ? "border-white/10" : "border-transparent"
+          }`}
+          style={{ top: headerHidden ? 0 : "var(--header-h)" }}
+        >
+          {/* Chips fade out at the edge instead of being cut mid-word. */}
+          <div
+            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
+            role="group"
+            aria-label="Category"
+          >
             <Chip active={category === null} onClick={() => setFilter({ category: null })}>
               All
             </Chip>

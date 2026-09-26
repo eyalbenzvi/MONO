@@ -49,8 +49,11 @@ export const ProductCard = memo(function ProductCard({
   const tee = color ?? shirt.baseColor;
   // Only the upper tiers get a badge; below that it's noise, not information.
   const tier = showMatch ? (topPick ? "top" : tierOf(vector, score)) : null;
+  // `isolate`: the card's own controls (z-10/z-20) stack inside the card and
+  // never above the shop's sticky filter bar. A card with an open "why"
+  // popover rises above its neighbours (still under the bar).
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate has-[[aria-expanded=true]]:z-10">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
         {(wildcard || isNewThisWeek(shirt.dropWeek)) && (

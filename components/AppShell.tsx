@@ -78,9 +78,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[radial-gradient(ellipse_at_top,#161616_0%,#050505_60%)]">
+    <div className="app-backdrop relative flex h-[100dvh] flex-col overflow-hidden">
       <Header onOpenSaved={() => setSavedOpen(true)} />
-      <main className="relative flex min-h-0 flex-1 flex-col">{children}</main>
+      {/* The header floats over the top of main (it slides away with a
+          transform, never by changing the layout); main keeps its space.
+          Pages that hide it on scroll let their scroller reach under it. */}
+      <main className="relative flex min-h-0 flex-1 flex-col pt-[var(--header-h)]">{children}</main>
       <AlgoDebugPanel />
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
       <ShareSheet />
