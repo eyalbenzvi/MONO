@@ -32,11 +32,12 @@ import { FEATURE_KEYS, SKU_CODES, isPhoto, otherColor, type BaseColor, type Cata
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
-import { WEAK_QUALITY, measurePrint } from "./gen/quality";
+import { CHECK_H, CHECK_W, WEAK_QUALITY, measurePrint, rasterInk, solidBlock, svgInk } from "./gen/quality";
+import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
 import { retiredIds } from "./gen/retire";
-import { H, M, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
+import { H, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
 import { EXPANSION_CATEGORIES, EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
 import { asciiArt, asciiBanner, asciiScene, asciiShade } from "./gen/set3/ascii";
@@ -207,8 +208,6 @@ const photographer = (credit: string) => {
   return rest.length && !/smithsonian|museum|zoo/i.test(who) ? who : null;
 };
 
-/** Categories whose designs may be knocked out of a solid ink block. */
-const KNOCKOUT_OK: SourceCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
 
 /* ------------------------------------------------------------------ */
 /* Assembly                                                            */
@@ -538,7 +537,32 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   return bytes;
 }
 
-function main() {
+/**
+ * The solid-block check (content overhaul, Part 0) on every print: a design
+ * that lands on the tee as a slab of ink is refused, whatever it shows.
+ */
+async function solidBlocks(list: Draft[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  for (const s of list) {
+    const file = path.join(ROOT, "public", s.backPrintUrl);
+    let check;
+    if (file.endsWith(".svg")) check = solidBlock(svgInk(readFileSync(file, "utf8"), s.baseColor));
+    else {
+      const { data } = await sharp(file).resize(CHECK_W, CHECK_H, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      check = solidBlock(rasterInk(data, CHECK_W, CHECK_H, s.medium, s.baseColor));
+    }
+    if (check.reject) out.set(s.id, `solid ink ${check.reject} (Part 0)`);
+  }
+  return out;
+}
+
+/** Designs taken out by hand or by a one-off review, with the reason (data/curation/retired.json). */
+function curatedRetirements(): Map<string, string> {
+  const file = path.join(ROOT, "data", "curation", "retired.json");
+  return new Map(existsSync(file) ? Object.entries(JSON.parse(readFileSync(file, "utf8")) as Record<string, string>) : []);
+}
+
+async function main() {
   // Exactly 70% black / 30% white in each set. The first shuffle is the
   // original one, so ids 1–1000 keep their colours (and so on per set).
   // Photographs pick their colour from their own tones (below).
@@ -589,13 +613,12 @@ function main() {
     const ground = baseColor === "black" ? "#000000" : "#FFFFFF";
     const designRng = mulberry32(SEED ^ Math.imul(n, 0x9e3779b1));
 
-    // ~12% of prints are knocked out of a solid ink block (a bold rectangle).
-    const knockRoll = designRng();
-    const knockout = KNOCKOUT_OK.includes(category) && knockRoll < 0.12;
-    const [dInk, dGround] = knockout ? [ground, ink] : [ink, ground];
-    const design = gen(designRng, dInk, dGround);
+    // (One draw that once chose a design's layout variant; kept so every
+    // design still draws the same numbers and keeps its print.)
+    designRng();
+    const design = gen(designRng, ink, ground);
     // New designs bring their own borders; only the originals get the frame overlay.
-    const fr = knockout || isNew ? { svg: "", kind: "none" as const } : frame(designRng, ink);
+    const fr = isNew ? { svg: "", kind: "none" as const } : frame(designRng, ink);
 
     const f: Partial<Record<FeatureKey, number>> = { ...design.features, ...(isNew ? {} : legacyExtras(design.variant)) };
     const add = (k: FeatureKey, d: number) => (f[k] = (f[k] ?? 0) + d);
@@ -603,12 +626,6 @@ function main() {
       add("geometric", 0.05);
       add("clean_minimal", 0.04);
       add("architectural", 0.03);
-    }
-    if (knockout) {
-      add("contrast", 0.15);
-      add("density", 0.25);
-      add("clean_minimal", -0.1);
-      add("dark_industrial", 0.1);
     }
     // White ink on black reads heavier and more industrial; black on white cleaner.
     if (baseColor === "black") {
@@ -623,14 +640,12 @@ function main() {
     const svg = minifySvg(
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">` +
       `<rect width="${W}" height="${H}" fill="${ground}"/>` +
-      (knockout ? `<rect x="${M / 2}" y="${M / 2}" width="${W - M}" height="${H - M}" fill="${ink}"/>` : "") +
       design.body +
       fr.svg +
       `</svg>`,
     );
     writeFileSync(path.join(PRINTS_DIR, `print_${n}.svg`), svg);
-    // A knocked-out block reads completely differently from the plain print.
-    sigs.push({ key: `${design.sig.key}|${knockout ? "ko" : "std"}`, vec: design.sig.vec });
+    sigs.push({ key: design.sig.key, vec: design.sig.vec });
     bytes += svg.length;
 
     // Titles carry no number (that's `no`, shown small, and part of the SKU).
@@ -679,11 +694,11 @@ function main() {
       backPrintUrl: `/prints/print_${n}.svg`,
       category: displayCategory(category, design.variant),
       medium: "drawn",
-      colors: offeredColors(baseColor, knockout || inkShare > INK_HEAVY),
+      colors: offeredColors(baseColor, inkShare > INK_HEAVY),
       source: category,
       variant: design.variant,
       // No ink colour here: every design is sold in both colourways.
-      base: knockout ? `${sentence(design.description)} Knocked out of a solid ink block.` : design.description,
+      base: design.description,
       subject,
       style: STYLE[category],
       quality,
@@ -701,6 +716,8 @@ function main() {
   // titles and prints. Their prints (drawn) are removed; `no` renumbers.
   // (It knows the first four sets: their source categories, their photographs.)
   const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
+  for (const [id, why] of curatedRetirements()) if (!retired.has(id)) retired.set(id, why);
+  for (const [id, why] of await solidBlocks(shirts.filter((s) => !retired.has(s.id)))) retired.set(id, why);
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
     if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
@@ -767,6 +784,9 @@ function main() {
   const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
   console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog[catalog.length - 1].n / SHARD_SIZE)} · retired ${retired.size}`);
   console.log(`  price: $${PRICE} · calibration: ${calibration.join(" ")}`);
+  const reasons = new Map<string, number>();
+  for (const why of retired.values()) reasons.set(why.replace(/:.*$/, ""), (reasons.get(why.replace(/:.*$/, "")) ?? 0) + 1);
+  console.log(`  retired by reason: ${[...reasons].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${r} ${n}`).join(" · ")}`);
   console.log(`  quality: ${catalog.filter((s) => s.quality < WEAK_QUALITY).length} weak prints (< ${WEAK_QUALITY}) · drops ${catalog[0].dropDate} → ${catalog[catalog.length - 1].dropDate}`);
 }
 
@@ -916,4 +936,4 @@ function writeShards(catalog: CatalogEntry[]): string[] {
   return hashes;
 }
 
-main();
+void main();

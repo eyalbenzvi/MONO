@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from "@/lib/catalog";
 import { WEAK_QUALITY } from "../scripts/gen/quality";
+import retired from "@/data/curation/retired.json";
 import { PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
 import { CATEGORY_LABELS, CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type CatalogEntry } from "@/types/shirt";
@@ -15,13 +16,12 @@ const narrative = (d: string) => d.replace(/“[^”]*”/g, "“”").replace(/
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 describe("generated catalog (data/shirts.json)", () => {
-  it("TOTAL were generated and ~40% retired (T7), then new content at least doubled the catalog (T8); ids increasing, unique skus and titles", () => {
+  it("TOTAL were generated and most of them retired (T7, content overhaul); ids increasing, never reused; unique skus and titles", () => {
     const n = SHIRTS.length;
     const firstSets = SHIRTS.filter((s) => s.n <= TOTAL).length;
-    expect(firstSets).toBeGreaterThan(TOTAL * 0.58);
-    expect(firstSets).toBeLessThan(TOTAL * 0.62);
-    // T8: the new sets (ids above TOTAL) at least match everything that was there.
-    expect(n - firstSets).toBeGreaterThanOrEqual(firstSets);
+    expect(firstSets).toBeLessThan(TOTAL * 0.6);
+    // The curated retirements (data/curation/retired.json) are all gone.
+    for (const id of Object.keys(retired)) expect(SHIRTS.some((s) => s.id === id), id).toBe(false);
     SHIRTS.forEach((s, i) => {
       expect(s.id).toBe(`mono-${String(s.n).padStart(4, "0")}`);
       if (i > 0) expect(s.n).toBeGreaterThan(SHIRTS[i - 1].n);

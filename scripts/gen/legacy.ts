@@ -119,7 +119,7 @@ const skyline: Generator = (rng, ink, ground) => {
     const h = range(rng, 0.25, 0.92) * (baseY - Y0);
     body += `<rect x="${n1(x)}" y="${n1(baseY - h)}" width="${n1(w - 1)}" height="${n1(h)}" fill="${ink}"/>`;
     area += w * h;
-    // window grid knocked out in ground colour
+    // window grid in the ground colour
     const wc = Math.max(1, Math.floor(w / 9));
     const wr = Math.floor(h / 12);
     for (let r = 0; r < wr; r++)
@@ -134,7 +134,7 @@ const skyline: Generator = (rng, ink, ground) => {
     body,
     variant: "skyline",
     sig: { key: "skyline", vec: [(towers - 5) / 8, windowP] },
-    description: `${towers > 8 ? "Crowded" : "Sparse"} solid skyline with knocked-out window grids.`,
+    description: `${towers > 8 ? "Crowded" : "Sparse"} skyline of solid towers with grids of windows.`,
     complexity: clamp01(coverage + windowP * 0.3),
     features: {
       geometric: range(rng, 0.55, 0.7),

@@ -54,13 +54,26 @@ const KEEP_TOP: Record<string, number> = {
 /** Homages (famous art): the best 12 of each. */
 const HOMAGE_KEEP = 12;
 
-export function retiredIds(list: RetireInput[]): Set<string> {
-  const out = new Set<string>();
+/**
+ * Photographs and scans whose backdrop was never cut out: the picture lands
+ * on the tee as a rectangle of ink (content overhaul, Part 0). Cut-outs of
+ * them come back through the halftone pipeline (scripts/photos/halftone).
+ */
+export const NOT_CUT_OUT = /^(photo-(wildlife|flight|machines)-frame|archive-(art-photo|archive-photo|locomotion))$/;
+
+/** The retired designs and why each went (the reason before a colon is its kind). */
+export function retiredIds(list: RetireInput[]): Map<string, string> {
+  const out = new Map<string, string>();
+  const add = (id: string, why: string) => out.has(id) || out.set(id, why);
   const byQuality = (a: RetireInput, b: RetireInput) => b.quality - a.quality || a.id.localeCompare(b.id);
   const groups = new Map<string, RetireInput[]>();
   for (const s of list) {
     if (WHOLE_VARIANTS.has(s.variant)) {
-      out.add(s.id);
+      add(s.id, "content review: joke or novelty variant");
+      continue;
+    }
+    if (NOT_CUT_OUT.test(s.variant)) {
+      add(s.id, "backdrop not cut out: prints as a rectangle (Part 0)");
       continue;
     }
     const keep = KEEP_TOP[s.variant] ?? (s.variant.startsWith("art-") ? HOMAGE_KEEP : undefined);
@@ -68,11 +81,11 @@ export function retiredIds(list: RetireInput[]): Set<string> {
   }
   for (const [variant, members] of groups) {
     const keep = KEEP_TOP[variant] ?? HOMAGE_KEEP;
-    members.sort(byQuality).slice(keep).forEach((s) => out.add(s.id));
+    members.sort(byQuality).slice(keep).forEach((s) => add(s.id, "content review: repeats of one variant"));
   }
   // Photographs: one per subject (the best print of it).
   const bySubject = new Map<string, RetireInput[]>();
   for (const s of list) if (s.photo) bySubject.set(`${s.category}|${s.subject}`, [...(bySubject.get(`${s.category}|${s.subject}`) ?? []), s]);
-  for (const members of bySubject.values()) members.sort(byQuality).slice(1).forEach((s) => out.add(s.id));
+  for (const members of bySubject.values()) members.sort(byQuality).slice(1).forEach((s) => add(s.id, "content review: second photograph of a subject"));
   return out;
 }

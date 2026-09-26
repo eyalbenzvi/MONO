@@ -43,7 +43,7 @@ describe("photographs: where they come from", () => {
   });
 
   it("every photo design names its photographer or museum and links its museum record", () => {
-    expect(PHOTO_DESIGNS.length).toBeGreaterThan(400); // 600 fetched, one per subject kept (T7)
+    expect(PHOTO_DESIGNS.length).toBeGreaterThan(150); // 600 fetched; one per subject, cut-outs only (T7, Part 0)
     const byKey = new Map(photos.map((p) => [p.key, p]));
     expect(new Set(PHOTO_DESIGNS.map((s) => s.photo!.image)).size).toBe(PHOTO_DESIGNS.length);
     for (const s of PHOTO_DESIGNS) {

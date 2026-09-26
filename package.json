@@ -11,7 +11,7 @@
     "test": "vitest run",
     "generate": "tsx scripts/generateCatalog.ts",
     "og": "tsx scripts/generateOgImages.ts",
-    "audit:prints": "node scripts/tools/auditPrints.cjs",
+    "audit:prints": "node scripts/tools/auditPrints.cjs && tsx --tsconfig tsconfig.scripts.json scripts/tools/blockCheck.ts",
     "measure:fonts": "node scripts/tools/measureFonts.cjs",
     "smoke": "node scripts/tools/smoke.cjs",
     "e2e": "playwright test",

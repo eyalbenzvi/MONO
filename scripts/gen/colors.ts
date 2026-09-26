@@ -8,7 +8,7 @@ import type { ArchiveGroup } from "../archive/source";
  *   drops out (a light picture on white): its own colour only;
  * - tonal ink (brush paintings, woodblock prints, botanical watercolours)
  *   printed white on black is a negative of the original: white only;
- * - a print that is mostly ink (a knocked-out block, over INK_HEAVY of the
+ * - a print that is mostly ink (over INK_HEAVY of the
  *   area) turns into a solid slab on the other colour: its own colour only;
  * - everything else — line work, drawn two-tone prints — works on both.
  */

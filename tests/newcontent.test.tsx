@@ -53,12 +53,12 @@ describe("T8: the fifth set — generated from real data and maths", () => {
 });
 
 describe("T8: the archive — public-domain works from Smithsonian Open Access", () => {
-  it("each archive design is one committed source, in the fetch tool's order, its print present", () => {
-    expect(ARCHIVE_DESIGNS.length).toBe(SOURCES.length);
+  it("each archive design is one committed source, in the fetch tool's order, its print present (some retired, never renumbered)", () => {
+    expect(ARCHIVE_DESIGNS.length).toBeLessThanOrEqual(SOURCES.length);
     const byN = new Map(FULL.map((s) => [s.n, s]));
     for (const { n, source } of archiveOrder(SOURCES)) {
-      const s = byN.get(n)!;
-      expect(s, String(n)).toBeDefined();
+      const s = byN.get(n);
+      if (!s) continue; // retired (content overhaul): its number stays empty
       expect(s.photo!.image).toBe(source.key);
       expect(s.variant).toBe(`archive-${source.group}`);
       expect(s.photo!.url).toBe(`https://collections.si.edu/search/detail/edanmdm:${source.record}`);
