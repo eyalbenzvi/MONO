@@ -4,6 +4,22 @@
 
 :root {
   color-scheme: dark;
+  /* Header height (measured by Header.tsx; this is the first-paint value). */
+  --header-h: 62px;
+}
+
+/*
+ * The app's backdrop (a soft glow at the top, fading to near-black), for
+ * surfaces that sit over scrolling content at the top of the screen (the
+ * header, the shop's filter bar): fixed to the viewport, so they show the
+ * same slice of the backdrop as the page around them — solid, but seamless.
+ */
+.app-backdrop {
+  background-color: #050505;
+  background-image: radial-gradient(ellipse at top, #161616 0%, #050505 60%);
+  background-size: 100vw 100dvh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 html,

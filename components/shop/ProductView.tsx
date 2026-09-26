@@ -162,7 +162,8 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   };
 
   return (
-    <div onScroll={onScroll} className="no-scrollbar relative min-h-0 flex-1 overflow-y-auto">
+    // Reaches up under the floating header (see ShopView).
+    <div onScroll={onScroll} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-8 pt-1">
         <button type="button" onClick={goBack} className="mb-2 inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
           <ArrowLeft className="h-4 w-4" /> Shop

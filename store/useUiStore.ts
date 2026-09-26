@@ -140,21 +140,47 @@ export function scrollIntoViewQuietly(el: Element | null | undefined, options: S
   el.scrollIntoView(options);
 }
 
-/** Scroll handler for page scrollers: hide the header scrolling down, show it on any scroll up (> 8 px). */
+/** Downward travel (px, one direction) before the header slides away… */
+const HIDE_AFTER = 48;
+/** …upward travel before it comes back… */
+const SHOW_AFTER = 24;
+/** …and a pause while it animates, so momentum jitter can't flip it back. */
+const SETTLE_MS = 220;
+
+/**
+ * Scroll handler for page scrollers: the header slides away after a real
+ * scroll down, and returns after a short scroll up or near the top. Travel
+ * is summed per direction (hysteresis), so small reversals and fling
+ * slow-downs don't toggle it.
+ */
 export function makeHeaderScrollHandler() {
   let last: number | null = null;
+  let travel = 0;
+  let settleUntil = 0;
   return (e: UIEvent<HTMLElement>) => {
     const y = e.currentTarget.scrollTop;
-    if (last === null || Date.now() < programmaticUntil) {
+    const now = Date.now();
+    if (last === null || now < programmaticUntil) {
       // First event after mount (e.g. a restored position), or a scroll we
       // started ourselves: only move the baseline.
       last = y;
+      travel = 0;
       return;
     }
-    const { headerHidden, setHeaderHidden } = useUiStore.getState();
-    if (y > last + 8 && y > 80 && !headerHidden) setHeaderHidden(true);
-    else if ((y < last - 8 || y < 40) && headerHidden) setHeaderHidden(false);
+    const dy = y - last;
     last = y;
+    if (dy === 0 || now < settleUntil) return;
+    travel = Math.sign(dy) === Math.sign(travel) ? travel + dy : dy;
+    const { headerHidden, setHeaderHidden } = useUiStore.getState();
+    if (!headerHidden && travel > HIDE_AFTER && y > 120) {
+      setHeaderHidden(true);
+      settleUntil = now + SETTLE_MS;
+      travel = 0;
+    } else if (headerHidden && (travel < -SHOW_AFTER || y < 40)) {
+      setHeaderHidden(false);
+      settleUntil = now + SETTLE_MS;
+      travel = 0;
+    }
   };
 }
 

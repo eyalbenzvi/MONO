@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,12 +31,14 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   // Always show the header again when the route changes.
   useEffect(() => setHeaderHidden(false), [pathname, setHeaderHidden]);
 
-  // Measure so hiding can collapse the space (not just slide over content).
+  // Publish the header's height (--header-h): main reserves it, and the
+  // shop's sticky filter bar sits right under the header while it shows.
   const ref = useRef<HTMLElement>(null);
-  const [height, setHeight] = useState(0);
   useLayoutEffect(() => {
     if (!ref.current) return;
-    const ro = new ResizeObserver(([e]) => setHeight(e.target.getBoundingClientRect().height));
+    const set = (h: number) => document.documentElement.style.setProperty("--header-h", `${Math.round(h)}px`);
+    set(ref.current.getBoundingClientRect().height);
+    const ro = new ResizeObserver(([e]) => set(e.target.getBoundingClientRect().height));
     ro.observe(ref.current);
     return () => ro.disconnect();
   }, []);
@@ -54,11 +56,16 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   };
 
   return (
+    // Over the content, solid, and moved only by a transform: hiding and
+    // showing never changes the layout, so nothing under the finger jumps.
     <motion.header
       ref={ref}
-      className="relative z-20 shrink-0 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]"
-      animate={{ marginTop: hidden ? -height : 0, opacity: hidden ? 0 : 1 }}
+      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]"
+      initial={false}
+      animate={{ y: hidden ? "-100%" : "0%" }}
       transition={{ duration: 0.2, ease: "easeOut" }}
+      // Tabbing into it while it's slid away brings it back.
+      onFocusCapture={() => hidden && setHeaderHidden(false)}
     >
       <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr]">
         <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95" aria-label="MONO home">
