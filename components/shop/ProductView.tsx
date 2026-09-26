@@ -22,7 +22,7 @@ import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
-import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, isPhoto, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
+import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
@@ -385,14 +385,14 @@ export function ProductView({
               {detailsOpen && (
                 <dl className="pb-2">
                   <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
-                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${isPhoto(shirt) ? " · greyscale photo" : ""}`} />
+                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · greyscale photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
                   <Spec label="Print" value={printSizeLabel(details?.printCm)} />
                   <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
                   <Spec label="Fit" value="Regular" />
                   <Spec label="SKU" value={skuFor(shirt.sku, color)} />
                   {details?.photo && (
                     <p className="py-2 text-xs text-neutral-400">
-                      Photo: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
+                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
                       <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
                         Source record
                       </a>

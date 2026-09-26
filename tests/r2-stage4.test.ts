@@ -9,10 +9,10 @@ import { SHIRTS, CALIBRATION_IDS, checkIndexHead, dedupeByFamily, diversify, get
 import { topPicks } from "@/lib/match";
 import { rankShirts } from "@/lib/recommendation";
 import { productDescription, productTitle } from "@/lib/seo";
-import { FEATURE_KEYS, SHIRT_CATEGORIES, createInitialVector, type CatalogEntry } from "@/types/shirt";
+import { FEATURE_KEYS, createInitialVector, type CatalogEntry } from "@/types/shirt";
 import { WEAK_QUALITY, measurePrint } from "../scripts/gen/quality";
 import { SUBJECT_NOUN_CATEGORIES } from "../scripts/gen/subject";
-import { PER_CATEGORY, TOTAL } from "../scripts/gen/constants";
+import { TOTAL } from "../scripts/gen/constants";
 
 const FULL = full as unknown as CatalogEntry[];
 const byId = new Map(FULL.map((s) => [s.id, s]));
@@ -35,17 +35,20 @@ describe("I01: names that say what the print shows", () => {
 
   it("objects, caricatures and iconic images are named after what they show — no filler nouns", () => {
     const FILLER = /\b(Thing|Relic|Item|Object|Artifact|Gadget|Gizmo|Trinket|Thingamajig|Kit|Utensil|Keepsake|Souvenir|Tool|Piece|Suspect|Character|Type|Specimen|Persona|View|Sight|Wonder|Stop|Mark|Moment)$/;
-    for (const s of FULL.filter((x) => SUBJECT_NOUN_CATEGORIES.includes(x.category))) {
+    // (SUBJECT_NOUN_CATEGORIES: the objects' woodcuts and the iconic images that remain.)
+    expect(SUBJECT_NOUN_CATEGORIES).toContain("iconic");
+    for (const s of FULL.filter((x) => x.variant === "woodcut" || x.variant.startsWith("iconic-"))) {
       expect(s.title, s.id).not.toMatch(FILLER);
     }
     const obj = FULL.find((s) => s.variant === "iconic-landmark")!;
     expect(obj.title.toLowerCase()).toContain(obj.subject.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") || "");
   });
 
-  it("a name's noun repeats at most 15 times within a category", () => {
+  it("a name's noun repeats at most 15 times within a kind of print", () => {
     const counts = new Map<string, number>();
-    for (const s of FULL) {
-      const key = `${s.category}|${s.title.split(" ").slice(1).join(" ")}`;
+    // Generated names only: an archive work keeps its own title ("Harbor", "Twilight").
+    for (const s of FULL.filter((x) => !x.variant.startsWith("archive-"))) {
+      const key = `${s.variant}|${s.title.split(" ").slice(1).join(" ")}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(15);
@@ -85,27 +88,30 @@ describe("F06: print quality", () => {
 });
 
 describe("I12: explicit drop dates", () => {
-  it("every design carries its own drop date: weekly Mondays, forty a week; the photographs dropped together", () => {
+  it("every design carries its own drop date: weekly Mondays, forty a week; the photographs and the new sets dropped together", () => {
     for (const s of FULL) {
       expect(s.dropDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(new Date(`${s.dropDate}T00:00:00Z`).getUTCDay()).toBe(1);
     }
     const perDrop = new Map<string, number>();
-    for (const s of FULL.filter((x) => !x.photo)) perDrop.set(s.dropDate, (perDrop.get(s.dropDate) ?? 0) + 1);
+    for (const s of FULL.filter((x) => x.n <= TOTAL && !x.photo)) perDrop.set(s.dropDate, (perDrop.get(s.dropDate) ?? 0) + 1);
     expect(Math.max(...perDrop.values())).toBe(40);
     // The week they were added, not spread over invented future weeks.
-    expect(new Set(FULL.filter((x) => x.photo).map((x) => x.dropDate))).toEqual(new Set(["2026-09-21"]));
+    expect(new Set(FULL.filter((x) => x.photo || x.n > TOTAL).map((x) => x.dropDate))).toEqual(new Set(["2026-09-21"]));
     expect(SHIRTS[0].dropDate).toBe(Date.parse(`${FULL[0].dropDate}T00:00:00Z`));
   });
 });
 
 describe("R21: the index head describes the data", () => {
   it("carries v, keys, shard size and shard hashes; the app refuses a mismatch", () => {
-    expect(index.v).toBe(4);
+    expect(index.v).toBe(5);
     expect(index.keys).toEqual([...FEATURE_KEYS]);
     expect(index.shards).toHaveLength(Math.ceil(FULL[FULL.length - 1].n / index.shardSize));
-    expect(() => checkIndexHead({ v: 3, keys: [...FEATURE_KEYS] })).toThrow(/v3/);
-    expect(() => checkIndexHead({ v: 4, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
+    expect(() => checkIndexHead({ v: 4, keys: [...FEATURE_KEYS] })).toThrow(/v4/);
+    expect(() => checkIndexHead({ v: 5, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
+    // T8: how each print is made, one letter per design.
+    expect(index.medium).toMatch(/^[dip]+$/);
+    expect(index.medium).toHaveLength(FULL.length);
     expect(() => checkIndexHead(index)).not.toThrow();
   });
 
@@ -119,10 +125,11 @@ describe("R21: the index head describes the data", () => {
     });
   });
 
-  it("ids are unchanged after retiring designs: mono-0001 first, never above mono-<TOTAL>, the index carries each n", () => {
-    for (const c of SHIRT_CATEGORIES) expect(FULL.filter((s) => s.category === c).length).toBeLessThanOrEqual(PER_CATEGORY);
+  it("ids are unchanged after retiring designs: mono-0001 first, the first sets never above mono-<TOTAL>, the index carries each n", () => {
     expect(FULL[0].id).toBe("mono-0001");
-    expect(FULL[FULL.length - 1].n).toBeLessThanOrEqual(TOTAL);
+    // The first four sets keep their numbers; the fifth and sixth run on after them.
+    expect(FULL.filter((s) => s.variant.startsWith("photo-")).every((s) => s.n > 2800 && s.n <= TOTAL)).toBe(true);
+    expect(FULL.filter((s) => s.medium === "ink").every((s) => s.n > TOTAL)).toBe(true);
     expect(index.n).toEqual(FULL.map((s) => s.n));
   });
 });

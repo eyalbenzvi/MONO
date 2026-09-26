@@ -56,7 +56,8 @@ describe("design families", () => {
   });
 
   it("groups the catalog into a few hundred designs with real variations", () => {
-    const families = new Set(SHIRTS.filter((s) => !isPhoto(s)).map((s) => s.family));
+    // Generated designs (an archive work is its own family: one print per record).
+    const families = new Set(SHIRTS.filter((s) => !isPhoto(s) && !s.variant.startsWith("archive-")).map((s) => s.family));
     expect(families.size).toBeGreaterThan(400);
     expect(families.size).toBeLessThan(1200);
     // Photographs: one family per subject, at most two takes each.

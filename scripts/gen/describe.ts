@@ -4,7 +4,7 @@
  * The pick is deterministic, and a catalog-wide pass guarantees that no
  * full description appears more than MAX_REPEATS times.
  */
-import type { ShirtCategory } from "../../types/shirt";
+import type { SourceCategory } from "../../types/shirt";
 import type { Rng } from "./core";
 
 export const MAX_REPEATS = 3;
@@ -13,7 +13,7 @@ export const MAX_REPEATS = 3;
 export const sentence = (text: string) => (/[.!?…”)]$/.test(text.trim()) ? text.trim() : `${text.trim()}.`);
 
 /** How a print wears, per category — honest feel, no claims or counts. */
-const TAILS: Record<ShirtCategory, string[]> = {
+const TAILS: Record<SourceCategory, string[]> = {
   architectural: [
     "Reads like a blueprint from across the room.",
     "Strict lines, softened by cotton.",
@@ -252,6 +252,66 @@ const TAILS: Record<ShirtCategory, string[]> = {
     "Heavy machinery, light cotton.",
     "From the collection to the chest.",
   ],
+  sky: [
+    "A map of the sky, worn close.",
+    "For people who look up.",
+    "Real stars, real positions, soft cotton.",
+    "Quiet, precise and very old news.",
+    "A small piece of the night, printed.",
+    "Navigation for the romantically lost.",
+    "Dots with thousands of years of stories.",
+    "Fine lines, a lot of dark.",
+    "Astronomy, minus the telescope.",
+    "Looks simple until you find the stars you know.",
+  ],
+  curves: [
+    "One line, a lot of patience.",
+    "Maths that happens to be beautiful.",
+    "Hypnotic from across the room.",
+    "Fine lines that shimmer as you move.",
+    "Precise, calm, a little mesmerising.",
+    "Physics you can wear.",
+    "For people who like how things move.",
+    "Delicate, but it holds your eye.",
+    "Science-lab elegance.",
+    "Draws you in, then keeps going.",
+  ],
+  botany: [
+    "Reads like a page from an old herbarium.",
+    "Grown, not drawn.",
+    "Quiet nature, clean lines.",
+    "For people with too many houseplants.",
+    "Precise and organic at once.",
+    "A small field study on your chest.",
+    "Nature, following its own rules.",
+    "Light, branching, easy to wear.",
+    "Botany-class calm.",
+    "Delicate from far, detailed up close.",
+  ],
+  ornament: [
+    "Pattern for its own sake, done properly.",
+    "The kind of detail you only get from rules.",
+    "Old craft, clean geometry.",
+    "Hypnotic, symmetrical, calm.",
+    "Reads like an engraved banknote.",
+    "Ornament without the clutter.",
+    "Balanced from every side.",
+    "Tilework energy, cotton comfort.",
+    "Fine, dense and very even.",
+    "Decoration with discipline.",
+  ],
+  archive: [
+    "Straight from a museum collection, in one ink.",
+    "Old work, printed new.",
+    "For people who linger in print rooms.",
+    "History, worn lightly.",
+    "The original's marks, nothing added.",
+    "A public-domain treasure, now on cotton.",
+    "Looks like it came out of a portfolio.",
+    "Quietly special.",
+    "Made to be looked at twice.",
+    "An archive piece, off the wall and onto a tee.",
+  ],
 };
 
 /**
@@ -259,7 +319,7 @@ const TAILS: Record<ShirtCategory, string[]> = {
  * deterministic pick and moving on while the result is already used
  * MAX_REPEATS times. Input order decides ties, so output is stable.
  */
-export function finishDescriptions(items: { base: string; category: ShirtCategory; rng: Rng }[]): string[] {
+export function finishDescriptions(items: { base: string; category: SourceCategory; rng: Rng }[]): string[] {
   const counts = new Map<string, number>();
   return items.map(({ base: raw, category, rng }) => {
     const base = sentence(raw);

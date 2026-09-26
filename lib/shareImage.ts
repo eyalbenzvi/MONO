@@ -7,7 +7,8 @@
  * The print SVG is fetched and recoloured by swapping its two inks (every
  * print is strictly #FFFFFF / #000000), which works in every browser — the
  * canvas `filter` property doesn't exist in Safari. Photographs are drawn
- * as they are, never swapped (that would print a negative).
+ * as they are, never swapped (that would print a negative); ink prints are
+ * recoloured on a canvas.
  */
 import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
 import { siteRoot } from "@/lib/share";
@@ -25,7 +26,23 @@ const FONT = `-apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Ar
 const MONO_FONT = `ui-monospace, "SF Mono", Menlo, "Courier New", monospace`;
 
 /** Print SVG in `color`, as an image rasterised at 3× for a crisp canvas. */
-export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Promise<HTMLImageElement> {
+export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Promise<CanvasImageSource> {
+  if (shirt.medium === "ink") {
+    // Black ink with alpha: recoloured to the ink of this tee (white on black).
+    const img = new Image();
+    img.src = assetUrl(printUrl(shirt, color));
+    await img.decode();
+    if (!needsInvert(shirt, color)) return img;
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const ctx = c.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    ctx.globalCompositeOperation = "source-in";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, c.width, c.height);
+    return c;
+  }
   if (isPhoto(shirt)) {
     // The greyscale photograph as it is (transparent surround; never inverted).
     const img = new Image();
@@ -49,7 +66,7 @@ export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Pro
 }
 
 /** Draws the tee (top-left of its view box at x,y; `w` px wide). Returns its height. */
-function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, color: BaseColor, print: HTMLImageElement) {
+function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, color: BaseColor, print: CanvasImageSource) {
   const s = w / TEE_VIEW.w;
   const { fabric, seam, collar } = TEE_COLORS[color];
   const body = new Path2D(TEE_BODY);

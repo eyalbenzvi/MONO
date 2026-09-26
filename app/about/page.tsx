@@ -33,8 +33,8 @@ export default function AboutPage() {
         <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-neutral-300">
           <p>Every tee here is black or white. Every print is a single ink. Nothing else.</p>
           <p>
-            Limits make the work. With no colour to hide behind, each design has to stand on its own — drawn graphics, and real photographs from the
-            Smithsonian&apos;s open archive.
+            Limits make the work. With no colour to hide behind, each design has to stand on its own — drawn graphics, star charts and curves
+            generated from real data, and public-domain prints, drawings and photographs from the Smithsonian&apos;s open archive.
           </p>
           <p>You shouldn&apos;t have to scroll through thousands of tees to find yours. Swipe a few, and MONO ranks the rest for you.</p>
           <p className="text-white">
@@ -59,8 +59,9 @@ export default function AboutPage() {
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-neutral-400">
           MONO is a demo store. You can fill a bag and place an order, but no payment details are asked for, nothing is charged and nothing ships. There
-          are no accounts: your taste profile stays in this browser on your device, and Reset clears it. The graphic prints are generated. The
-          photographs are CC0, from Smithsonian Open Access, and each product page credits the photographer or museum and links to the source record.
+          are no accounts: your taste profile stays in this browser on your device, and Reset clears it. The graphic prints are generated (the
+          star charts from a real star catalogue). The archive prints and photographs are CC0, from Smithsonian Open Access, and each product page
+          credits the artist, photographer or museum and links to the source record.
         </p>
         <p className="mt-3 hidden text-xs text-neutral-500 [@media(hover:hover)_and_(pointer:fine)]:block">Keyboard in Discover: ← pass · → like · space details · Z undo</p>
 

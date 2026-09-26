@@ -19,7 +19,7 @@ import shirtsJson from "../data/shirts.json";
 import { WEAK_QUALITY } from "./gen/quality";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
 import sharp from "sharp";
-import { CATEGORY_LABELS, COLOR_LABELS, isPhoto, type CatalogEntry } from "../types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
 
 const ALL = shirtsJson as unknown as CatalogEntry[];
 /**
@@ -42,17 +42,20 @@ const HOST = process.env.OG_HOST ?? "eyalbenzvi.github.io/MONO";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Photo prints (WebP, which resvg can't read) as PNG data, loaded before rendering. */
+/** WebP prints (which resvg can't read) as PNG data, loaded before rendering; ink in the tee's colour. */
 const PHOTO_PNG = new Map<string, string>();
 async function loadPhotos(list: CatalogEntry[]) {
   for (const s of list)
-    if (isPhoto(s) && !PHOTO_PNG.has(s.id))
-      PHOTO_PNG.set(s.id, (await sharp(path.join(ROOT, "public", s.backPrintUrl)).resize(600, 800).png().toBuffer()).toString("base64"));
+    if (s.medium !== "drawn" && !PHOTO_PNG.has(s.id)) {
+      let img = sharp(path.join(ROOT, "public", s.backPrintUrl)).resize(600, 800);
+      if (s.medium === "ink" && s.baseColor === "black") img = img.negate({ alpha: false });
+      PHOTO_PNG.set(s.id, (await img.png().toBuffer()).toString("base64"));
+    }
 }
 
 /** Print SVG body (without its outer <svg>), for nesting. */
 function printInner(shirt: CatalogEntry) {
-  if (isPhoto(shirt))
+  if (shirt.medium !== "drawn")
     return `<rect width="300" height="400" fill="${shirt.baseColor === "black" ? "#000000" : "#FFFFFF"}"/><image href="data:image/png;base64,${PHOTO_PNG.get(shirt.id)}" width="300" height="400"/>`;
   const svg = readFileSync(path.join(ROOT, "public", shirt.backPrintUrl), "utf8");
   return svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");

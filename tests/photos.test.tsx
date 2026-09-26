@@ -11,13 +11,14 @@ import { CALIBRATION_IDS, SHIRTS, getShirtById, needsInvert, printUrl } from "@/
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { productTitle } from "@/lib/seo";
 import { archetypeOf, ARCHETYPE_NAMES } from "@/lib/taste";
-import { FEATURE_KEYS, PHOTO_CATEGORIES, createInitialVector, isPhoto, otherColor, type CatalogEntry } from "@/types/shirt";
+import { FEATURE_KEYS, createInitialVector, isPhoto, otherColor, type CatalogEntry } from "@/types/shirt";
 import { PER_CATEGORY } from "../scripts/gen/constants";
 import { EXCLUDE } from "../scripts/photos/curation";
-import { PRINT_H, PRINT_W, photoOrder, type PhotoSource } from "../scripts/photos/source";
+import { PHOTO_CATEGORIES, PRINT_H, PRINT_W, photoOrder, type PhotoSource } from "../scripts/photos/source";
 
 const FULL = full as unknown as CatalogEntry[];
-const PHOTO_DESIGNS = FULL.filter((s) => s.photo);
+/** The fourth set's photographs (the archive's have their own tests: tests/archive). */
+const PHOTO_DESIGNS = FULL.filter((s) => s.variant.startsWith("photo-"));
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 afterEach(cleanup);
@@ -54,7 +55,7 @@ describe("photographs: where they come from", () => {
       expect(s.photo!.credit).toMatch(/Smithsonian|FONZ|Zoo|Museum/);
     }
     // Drawn designs carry no photo credit.
-    expect(FULL.filter((s) => !isPhoto(s)).every((s) => !s.photo)).toBe(true);
+    expect(FULL.filter((s) => s.medium === "drawn").every((s) => !s.photo)).toBe(true);
   });
 
   it("titles are what the picture shows; one photograph per subject (no 'Take 2')", () => {
@@ -128,7 +129,7 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
     vi.stubGlobal("fetch", fetchSpy);
     Object.defineProperty(HTMLImageElement.prototype, "decode", { configurable: true, value: () => Promise.resolve() });
     const { loadPrintImage } = await import("@/lib/shareImage");
-    const img = await loadPrintImage(photo, otherColor(photo.baseColor));
+    const img = (await loadPrintImage(photo, otherColor(photo.baseColor))) as HTMLImageElement;
     expect(img.src).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
     expect(fetchSpy).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
