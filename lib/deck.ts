@@ -1,5 +1,5 @@
 import { CALIBRATION_IDS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
-import { getNextCard, makeScorer } from "@/lib/recommendation";
+import { centeredCosine, getNextCard, makeScorer } from "@/lib/recommendation";
 import type { RecommendationStrategy, ShirtProduct, UserProfileVector } from "@/types/shirt";
 
 export const DECK_SIZE = 3;
@@ -39,6 +39,8 @@ export function buildDeck(
   history: string[],
   calibrationIds: readonly string[],
   rng: () => number = Math.random,
+  /** The taste isn't known yet after the test: keep probing (see probePick). */
+  probe?: { needLikes: boolean },
 ): DeckEntry[] {
   const seenFamilies = familiesOf(history);
   const next: DeckEntry[] = [];
@@ -70,7 +72,14 @@ export function buildDeck(
     const recentCats = new Set([...history, ...next.map((e) => e.id)].slice(-CATEGORY_SPACING).map((id) => getShirtById(id)?.category));
     const paced = allowed.filter((s) => !recent.has(s.variant) && !recentCats.has(s.category));
     const pool = paced.length ? paced : allowed.filter((s) => !recent.has(s.variant)).length ? allowed.filter((s) => !recent.has(s.variant)) : allowed;
-    const pick = rng() < EXPLORE_SHARE ? getNextCard(vector, pool, [], "explore", rng) : sampleTop(vector, pool, rng);
+    const pick = probe
+      ? // Still short of likes: every other card is a best guess from the passes so far.
+        probe.needLikes && rng() < 0.5
+        ? sampleTop(vector, pool, rng)
+        : probePick(pool, [...history, ...next.map((e) => e.id)])
+      : rng() < EXPLORE_SHARE
+        ? getNextCard(vector, pool, [], "explore", rng)
+        : sampleTop(vector, pool, rng);
     if (!pick) break;
     next.push({ id: pick.shirt.id, strategy: pick.strategy });
     seenFamilies.add(pick.shirt.family);
@@ -99,6 +108,26 @@ function sampleTop(vector: UserProfileVector, pool: ShirtProduct[], rng: () => n
   let r = rng() * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < top.length; i++) if ((r -= w[i]) <= 0) return { shirt: top[i].shirt, strategy: "greedy" as const };
   return { shirt: top[0].shirt, strategy: "greedy" as const };
+}
+
+/** How many recent cards a probe keeps away from. */
+export const PROBE_WINDOW = 20;
+
+/**
+ * A card unlike anything shown lately (the lowest greatest centred cosine to
+ * the last PROBE_WINDOW cards): the taste test's farthest-point idea, carried
+ * on until there are enough likes and passes to know the taste.
+ */
+export function probePick(pool: ShirtProduct[], history: string[]) {
+  const recent = history.slice(-PROBE_WINDOW).map((id) => getShirtById(id)?.features).filter((f): f is ShirtProduct["features"] => !!f);
+  let best: ShirtProduct | null = null;
+  let bestSim = Infinity;
+  for (const s of pool) {
+    let sim = -Infinity;
+    for (const f of recent) sim = Math.max(sim, centeredCosine(s.features, f));
+    if (sim < bestSim) (bestSim = sim), (best = s);
+  }
+  return best ? { shirt: best, strategy: "calibration" as const } : null;
 }
 
 /** Calibration progress in families, so a sibling saved from the shop still counts. */

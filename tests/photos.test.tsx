@@ -196,7 +196,7 @@ describe("taste store v4: the new dimension, for people who already have a profi
     const { useTasteStore, useCalibrationProgress } = await import("@/store/tasteStore");
     // Everything in today's taste test seen except the photographs.
     const seen = CALIBRATION_IDS.filter((id) => !isPhoto(getShirtById(id)!));
-    act(() => useTasteStore.setState({ seen, calibrationAcknowledged: true, deck: [] }));
+    act(() => useTasteStore.setState({ seen, likedIds: seen.slice(0, 3), dislikedIds: seen.slice(3, 6), calibrationAcknowledged: true, deck: [] }));
     const { result } = renderHook(() => useCalibrationProgress());
     expect(result.current.done).toBeLessThan(result.current.total);
     expect(result.current.complete).toBe(true);

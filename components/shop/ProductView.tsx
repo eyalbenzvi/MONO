@@ -20,7 +20,7 @@ import { useWhyId, WhyMatchRows, WhyPanel, WhyToggle } from "@/components/Why";
 import { isNew } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
-import { useTasteStore } from "@/store/tasteStore";
+import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
 import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, teeColor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
@@ -136,7 +136,7 @@ export function ProductView({
   // Opened from a shared link (?c=white&ref=whatsapp): show the tee in the
   // colour it was shared in, and greet the visitor.
   const [sharedVia, setSharedVia] = useState<string | null>(null);
-  const calibrated = useTasteStore((s) => s.calibrationAcknowledged);
+  const calibrated = useCalibrationProgress().complete;
   useEffect(() => {
     if (!hydrated || !shirt) return;
     const { color: c, ref } = parseShareParams(window.location.search);

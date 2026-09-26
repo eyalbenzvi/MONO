@@ -20,8 +20,9 @@ export interface SeedTaste {
 export async function seed(page: Page, { likedIds = [], calibrated = true, onboardingSeen = true, vector }: SeedTaste = {}, cart: { id: string; size: string; color: string; qty: number }[] = []) {
   const taste = {
     state: {
-      likedIds: calibrated ? [...new Set([CALIBRATION_IDS[0], CALIBRATION_IDS[3], ...likedIds])] : likedIds,
-      dislikedIds: calibrated ? CALIBRATION_IDS.filter((_, i) => i !== 0 && i !== 3) : [],
+      // A known taste needs at least 3 likes and 3 passes (store/tasteStore MIN_LIKES / MIN_PASSES).
+      likedIds: calibrated ? [...new Set([CALIBRATION_IDS[0], CALIBRATION_IDS[3], CALIBRATION_IDS[6], ...likedIds])] : likedIds,
+      dislikedIds: calibrated ? CALIBRATION_IDS.filter((_, i) => i !== 0 && i !== 3 && i !== 6) : [],
       seen: calibrated ? [...CALIBRATION_IDS] : [],
       calibrationAcknowledged: calibrated,
       onboardingSeen,

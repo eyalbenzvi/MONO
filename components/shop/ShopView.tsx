@@ -28,7 +28,8 @@ export function ShopView() {
   const limit = useUiStore((s) => s.shop.limit);
   // Before the taste test there's no taste to rank by: "Popular" (the
   // generator's fixed editorial order — not usage data) is the default.
-  const sort: ShopSort = chosenSort ?? (complete ? "match" : "popular");
+  // "For you" needs a known taste (it can be lost again by unsaving): else Popular.
+  const sort: ShopSort = chosenSort === "match" && !complete ? "popular" : (chosenSort ?? (complete ? "match" : "popular"));
   const [sheetOpen, setSheetOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);

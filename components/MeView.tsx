@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
+import { NeedDots } from "@/components/NeedDots";
 import { getShirtById } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { topPicks } from "@/lib/match";
@@ -25,7 +26,7 @@ export function MeView() {
   const hydrated = useUiStore((s) => s.hydrated);
   const vector = useTasteStore((s) => s.preferenceVector);
   const likedIds = useTasteStore((s) => s.likedIds);
-  const { complete: calibrated } = useCalibrationProgress();
+  const { complete: calibrated, phase } = useCalibrationProgress();
   const seen = useTasteStore((s) => s.seen.length);
   const cartCount = useCartCount();
   const lastOrder = useCartStore((s) => s.lastOrder);
@@ -39,7 +40,9 @@ export function MeView() {
   if (!hydrated) return <div className="flex-1" />;
   // Set like the About page: a plain first line, the heavy word on the one inverted bar.
   const name = archetypeOf(vector).name;
-  const [lead, word] = calibrated ? (name.startsWith("The ") ? ["The", name.slice(4)] : ["", name]) : ["Not", "yet."];
+  // Known: the archetype. After the test without enough likes and passes (or
+  // after unsaving below them): not enough to go on. Before it: not yet.
+  const [lead, word] = calibrated ? (name.startsWith("The ") ? ["The", name.slice(4)] : ["", name]) : phase === "more" ? ["Not", "enough."] : ["Not", "yet."];
   // Real counts only (zero shows as 0).
   const facts: [number, string][] = [
     [seen, "rated"],
@@ -55,6 +58,7 @@ export function MeView() {
           {lead && <span className="block">{lead}</span>}
           <span className="-mx-2 my-1 block w-fit bg-white px-2 text-black">{word}</span>
         </h1>
+        {phase === "more" && <NeedDots className="mt-4 -ml-1" />}
 
         <dl className="mt-8 grid grid-cols-3 border-y border-white/15">
           {facts.map(([n, label], i) => (
@@ -86,7 +90,7 @@ export function MeView() {
           </button>
         ) : (
           <Link href="/" className={CTA}>
-            Start swiping
+            {phase === "more" ? "Keep swiping" : "Start swiping"}
           </Link>
         )}
 
@@ -96,7 +100,8 @@ export function MeView() {
           </Section>
         )}
 
-        {calibrated && (
+        {/* Saved stays while it holds anything: it may be what's being edited. */}
+        {(calibrated || saved.length > 0) && (
           <Section
             title="Saved"
             action={
@@ -122,7 +127,7 @@ export function MeView() {
 
         {/* The quiet end: destructive actions as plain text. */}
         <div className="mt-10 flex gap-6" aria-live="polite">
-          {calibrated && (
+          {seen > 0 && (
             <button type="button" onClick={() => startOverWithUndo()} className={QUIET}>
               Reset taste
             </button>

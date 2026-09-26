@@ -14,6 +14,7 @@ import { SHIRTS } from "@/lib/catalog";
 import { archetypeOf, tasteLevel } from "@/lib/taste";
 import { TasteSheet } from "@/components/TasteSheet";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
+import { NeedDots } from "@/components/NeedDots";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { FEATURE_LABELS } from "@/types/shirt";
 
@@ -22,11 +23,13 @@ import { FEATURE_LABELS } from "@/types/shirt";
  * atop the button column: the taste-test counter, then "Your taste".
  */
 function SidewaysStatus() {
-  const { done, total, complete } = useCalibrationProgress();
+  const { done, total, complete, phase } = useCalibrationProgress();
   const [sheet, setSheet] = useState(false);
   return (
     <div className="hidden justify-center pb-1 pr-[max(env(safe-area-inset-right),16px)] sideways:flex">
-      {complete ? (
+      {phase === "more" ? (
+        <NeedDots />
+      ) : complete ? (
         <>
           <button
             type="button"
@@ -53,8 +56,8 @@ function SidewaysStatus() {
  * the card saying what's going on. Phones get the one-line goal instead.
  */
 function HowItWorks() {
-  const { complete } = useCalibrationProgress();
-  if (complete) return null;
+  const { phase } = useCalibrationProgress();
+  if (phase !== "test") return null;
   return (
     <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-22rem))] top-1/3 hidden w-72 lg:block">
       <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
@@ -130,7 +133,7 @@ export function DiscoverPage() {
 }
 
 function TopStrip() {
-  const { done, total, complete } = useCalibrationProgress();
+  const { done, total, complete, phase } = useCalibrationProgress();
   const onboardingSeen = useTasteStore((s) => s.onboardingSeen);
   const vector = useTasteStore((s) => s.preferenceVector);
   const friend = useUiStore((s) => s.friendTaste);
@@ -170,6 +173,14 @@ function TopStrip() {
       </div>
     );
   }
+
+  // After the test, until there are enough of both answers: what's still needed.
+  if (phase === "more")
+    return (
+      <div className={STRIP} data-strip tabIndex={-1}>
+        <NeedDots className="-ml-1" />
+      </div>
+    );
 
   // The one progress indicator: a thin bar (which card of the taste test is on screen).
   const current = Math.min(done + 1, total);

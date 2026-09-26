@@ -16,6 +16,42 @@ export const TASTE_KEY = "mono-taste";
 /** Swipe events kept for Undo, stats and the debug panel (`seen` keeps every id). */
 export const HISTORY_LIMIT = 500;
 
+/**
+ * The taste is known only with both kinds of answer: at least this many
+ * likes and passes (counted on what is liked and passed now, so unsaving can
+ * take it back below). With passes alone the vector is just the mirror of
+ * the cards shown; with a like or two, one card's traits.
+ */
+export const MIN_LIKES = 3;
+export const MIN_PASSES = 3;
+
+export type TastePhase = "test" | "more" | "known";
+export interface TasteProgress {
+  /** Taste-test cards seen (per family) and how many there are. */
+  done: number;
+  total: number;
+  likes: number;
+  passes: number;
+  likesNeeded: number;
+  passesNeeded: number;
+  /** test: the first cards; more: done, but not enough of both answers yet; known. */
+  phase: TastePhase;
+}
+
+type Evidence = Pick<TasteState, "likedIds" | "dislikedIds" | "seen" | "calibrationAcknowledged">;
+
+export function tasteProgress(s: Evidence): TasteProgress {
+  const done = calibrationDone(CALIBRATION_IDS, s.seen);
+  const tested = s.calibrationAcknowledged || done >= CALIBRATION_TOTAL;
+  const likes = s.likedIds.length;
+  const passes = s.dislikedIds.length;
+  const likesNeeded = Math.max(0, MIN_LIKES - likes);
+  const passesNeeded = Math.max(0, MIN_PASSES - passes);
+  return { done, total: CALIBRATION_TOTAL, likes, passes, likesNeeded, passesNeeded, phase: !tested ? "test" : likesNeeded || passesNeeded ? "more" : "known" };
+}
+
+export const tasteKnown = (s: Evidence) => tasteProgress(s).phase === "known";
+
 export interface LastUpdate {
   shirtId: string;
   action: SwipeAction;
@@ -66,7 +102,9 @@ interface TasteActions {
   restore: (snap: TasteState) => void;
 }
 
-const buildDeck = (deck: DeckEntry[], vector: UserProfileVector, seen: string[]) => dealDeck(deck, vector, seen, CALIBRATION_IDS);
+/** Deal the deck; until the taste is known, the cards after the test keep probing (lib/deck). */
+const buildDeck = (deck: DeckEntry[], vector: UserProfileVector, seen: string[], evidence?: Evidence) =>
+  dealDeck(deck, vector, seen, CALIBRATION_IDS, Math.random, evidence && !tasteKnown(evidence) ? { needLikes: tasteProgress(evidence).likesNeeded > 0 } : undefined);
 
 /**
  * The taste without the like of `id`. The vector is the sum of every swipe
@@ -242,8 +280,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
       ...initialTaste(),
 
       fillDeck: () => {
-        const { deck, preferenceVector, seen } = get();
-        set({ deck: buildDeck(deck, preferenceVector, seen) });
+        const s = get();
+        set({ deck: buildDeck(s.deck, s.preferenceVector, s.seen, s) });
       },
 
       requestSwipe: (action) => {
@@ -266,9 +304,12 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         const seen = addSeen(state.seen, shirtId);
         // Keep the card that is already visible underneath; re-rank everything
         // behind it with the freshly updated vector.
-        const deck = buildDeck(state.deck.slice(1, 2), after, seen);
-        const calibrationJustDone =
-          !state.calibrationAcknowledged && calibrationDone(CALIBRATION_IDS, state.seen) < CALIBRATION_TOTAL && calibrationDone(CALIBRATION_IDS, seen) >= CALIBRATION_TOTAL;
+        const likedIds = action === "like" && !state.likedIds.includes(shirtId) ? [...state.likedIds, shirtId] : state.likedIds;
+        const dislikedIds = action === "dislike" && !state.dislikedIds.includes(shirtId) ? [...state.dislikedIds, shirtId] : state.dislikedIds;
+        const evidence = { likedIds, dislikedIds, seen, calibrationAcknowledged: state.calibrationAcknowledged };
+        const deck = buildDeck(state.deck.slice(1, 2), after, seen, evidence);
+        // The taste just became known (enough cards, likes and passes): the result screen.
+        const calibrationJustDone = !state.calibrationAcknowledged && !tasteKnown(state) && tasteKnown(evidence);
 
         // The Daily 5 counts new tees swiped after the taste test — not the
         // test itself, and not a card brought back by Undo (Undo restores it).
@@ -283,8 +324,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           daily,
           milestones: milestone ? [...state.milestones, milestone] : state.milestones,
           // Never list an id twice (it may already be saved from the shop).
-          likedIds: action === "like" && !state.likedIds.includes(shirtId) ? [...state.likedIds, shirtId] : state.likedIds,
-          dislikedIds: action === "dislike" && !state.dislikedIds.includes(shirtId) ? [...state.dislikedIds, shirtId] : state.dislikedIds,
+          likedIds,
+          dislikedIds,
           deck,
           lastUpdate: { shirtId, action, before, after, daily: state.daily },
           // The gesture legend stays until the first real swipe (flipping or
@@ -355,7 +396,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           // is nothing Undo could revert correctly: clear it (canUndo → false)
           // rather than letting Undo roll back this save as if it were the swipe.
           lastUpdate: alreadySeen ? null : { shirtId: id, action: "like", before, after },
-          deck: alreadySeen ? state.deck : buildDeck(topStays, after, seen),
+          deck: alreadySeen ? state.deck : buildDeck(topStays, after, seen, { ...state, likedIds: [...state.likedIds, id], dislikedIds: state.dislikedIds.filter((x) => x !== id), seen }),
         });
         if (!alreadySeen && !topStays.length) useUiStore.setState({ isFlipped: false });
         track("save", { id });
@@ -375,7 +416,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           swipeHistory,
           // Undo last swipe can't roll back across this.
           lastUpdate: null,
-          deck: buildDeck(topStays, preferenceVector, s.seen),
+          deck: buildDeck(topStays, preferenceVector, s.seen, { ...s, likedIds: s.likedIds.filter((x) => x !== id) }),
         });
       },
 
@@ -389,7 +430,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           unlearned.delete(id);
           if (u && u.history === s.swipeHistory) {
             const topStays = s.deck[0] ? [s.deck[0]] : [];
-            return { likedIds, ...u.before, deck: buildDeck(topStays, u.before.preferenceVector, s.seen) };
+            return { likedIds, ...u.before, deck: buildDeck(topStays, u.before.preferenceVector, s.seen, { ...s, likedIds }) };
           }
           return { likedIds };
         }),
@@ -428,10 +469,14 @@ export const useTasteStore = create<TasteState & TasteActions>()(
  */
 export function useCalibrationProgress() {
   // Counted per family: saving a sibling of a calibration print in the shop
-  // also counts. Selects a primitive so the result is referentially stable.
+  // also counts. Primitive selectors, so the result only changes with them.
   const done = useTasteStore((s) => calibrationDone(CALIBRATION_IDS, s.seen));
   const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
-  return { done, total: CALIBRATION_TOTAL, complete: acknowledged || done >= CALIBRATION_TOTAL };
+  const likes = useTasteStore((s) => s.likedIds.length);
+  const passes = useTasteStore((s) => s.dislikedIds.length);
+  const p = tasteProgress({ likedIds: Array(likes), dislikedIds: Array(passes), seen: [], calibrationAcknowledged: acknowledged || done >= CALIBRATION_TOTAL });
+  // `complete`: the taste is known — the one gate for everything personal.
+  return { ...p, done, complete: p.phase === "known" };
 }
 
 /** Reset taste and Saved, with an Undo toast that restores it all. */

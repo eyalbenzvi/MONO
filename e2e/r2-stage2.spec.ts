@@ -267,7 +267,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(d.locator("[data-saved-row] button[aria-label^='Add ']")).toHaveCount(0);
     await d.getByRole("button", { name: "More for Saved" }).tap();
     const menu = page.getByRole("dialog", { name: "More for Saved" });
-    await expect(menu.getByRole("button", { name: "Add all 6 to bag" })).toBeVisible();
+    await expect(menu.getByRole("button", { name: "Add all 7 to bag" })).toBeVisible();
     await expect(menu.getByRole("button", { name: "Share my list" })).toBeVisible();
     await expect(d.locator("input")).toHaveCount(0);
   });

@@ -17,7 +17,7 @@ import { ShirtCard } from "@/components/ShirtCard";
 import { useInPlaceZoom } from "@/hooks/useInPlaceZoom";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore, biggestShift } from "@/lib/recommendation";
-import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { startOverWithUndo, tasteKnown, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, type SwipeAction, FEATURE_LABELS, type UserProfileVector } from "@/types/shirt";
 
@@ -385,8 +385,9 @@ function TopCard({
 const NOTE_EVERY = 5;
 let swipesSinceNote = 0;
 function noteLearning(before: UserProfileVector, action: SwipeAction) {
-  const { calibrationAcknowledged, preferenceVector } = useTasteStore.getState();
-  if (!calibrationAcknowledged || ++swipesSinceNote < NOTE_EVERY) return;
+  const state = useTasteStore.getState();
+  const { preferenceVector } = state;
+  if (!tasteKnown(state) || ++swipesSinceNote < NOTE_EVERY) return;
   const k = biggestShift(before, preferenceVector, action);
   if (!k) return;
   swipesSinceNote = 0;
