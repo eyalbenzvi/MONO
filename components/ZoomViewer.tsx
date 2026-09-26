@@ -7,7 +7,7 @@ import { Minus, Plus, X } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { TeeMockup } from "@/components/TeeMockup";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import type { BaseColor, ShirtProduct } from "@/types/shirt";
+import { PRINT_SIZE_CM, printSizeLabel, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 const MIN = 1;
 const MAX = 5;
@@ -28,13 +28,17 @@ interface Transform {
 export function ZoomViewer({
   shirt,
   color,
-  initialView = "print",
+  initialView = "tee",
   onClose,
   returnFocusTo,
+  printCm = PRINT_SIZE_CM,
 }: {
   shirt: ShirtProduct;
   color: BaseColor;
+  /** The view the shopper was looking at (the zoom opens in it). */
   initialView?: View;
+  /** The print's real size on the tee (defaults to the full print area). */
+  printCm?: { width: number; height: number };
   onClose: () => void;
   /** Where focus goes on close when nothing was focused before (opened by a pinch). */
   returnFocusTo?: () => HTMLElement | null | undefined;
@@ -51,6 +55,18 @@ export function ZoomViewer({
   const lastTap = useRef(0);
   const moved = useRef(false);
   useFocusTrap(panel, true, onClose, returnFocusTo);
+
+  // The print's on-screen width, for the scale bar.
+  const printBox = useRef<HTMLDivElement>(null);
+  const [printWidth, setPrintWidth] = useState(0);
+  useEffect(() => {
+    const el = printBox.current;
+    if (!el) return setPrintWidth(0);
+    // Layout width (offsetWidth ignores the zoom transform, applied separately).
+    const ro = new ResizeObserver(() => setPrintWidth(el.offsetWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [view]);
 
   // Keep the picture on screen: pan is limited by how far the zoom overflows.
   const clamp = useCallback((n: Transform): Transform => {
@@ -155,7 +171,8 @@ export function ZoomViewer({
     >
       <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(12px,env(safe-area-inset-top))]">
         <div className="flex rounded-full bg-white/10 p-0.5 ring-1 ring-white/15" role="group" aria-label="View">
-          {(["print", "tee"] as const).map((v) => (
+          {/* Same order as everywhere: On the tee | Print. */}
+          {(["tee", "print"] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -194,7 +211,7 @@ export function ZoomViewer({
           style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, transition: gesture.current ? "none" : "transform 0.18s ease-out" }}
         >
           {view === "print" ? (
-            <div className="aspect-[3/4] h-full max-w-full overflow-hidden rounded-[3px]" style={{ maxHeight: "min(100%, calc((100vw - 32px) * 4 / 3))" }}>
+            <div ref={printBox} className="aspect-[3/4] h-full max-w-full overflow-hidden rounded-[3px]" style={{ maxHeight: "min(100%, calc((100vw - 32px) * 4 / 3))" }}>
               <PrintImage shirt={shirt} color={color} />
             </div>
           ) : (
@@ -203,6 +220,13 @@ export function ZoomViewer({
         </div>
       </div>
 
+      {/* Scale: a 10 cm bar at the print's real size (it grows with the zoom). */}
+      {view === "print" && printWidth > 0 && (
+        <div className="pointer-events-none flex items-center justify-center gap-2 pt-1 font-mono text-xs text-neutral-400" aria-label={`Print ${printSizeLabel(printCm)}`}>
+          <span className="h-2 border-x border-b border-neutral-400" style={{ width: Math.min(printWidth * t.s * (10 / printCm.width), 280) }} aria-hidden />
+          10 cm · print {printSizeLabel(printCm)}
+        </div>
+      )}
       <div className="flex items-center justify-center gap-3 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2">
         <button type="button" onClick={() => step(1 / 1.6)} disabled={t.s <= MIN} aria-label="Zoom out" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 disabled:opacity-40">
           <Minus className="h-5 w-5" />

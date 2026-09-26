@@ -7,20 +7,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowRight, Check, ChevronDown, Layers, Leaf, Repeat, Ruler, Share2, ShoppingBag, Truck, X, ZoomIn } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { MiniBag } from "@/components/shop/MiniBag";
+import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { ColorSelector, LABEL, MatchBadge, SaveButton, ShareButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
-import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
+import { LABEL, MatchBadge, SaveButton, ShareButton, SizeSelector, Spec, STAGE_BG, TraitChips, radioKeys, useShowMatch } from "@/components/ui";
+import { familyMembers, getShirtById } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
-import { explainMatch, matchScore } from "@/lib/recommendation";
+import { explainMatch } from "@/lib/recommendation";
 import { matchTier } from "@/lib/match";
 import { isNewThisWeek } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
-import { CATEGORY_LABELS, CATEGORY_VIBES, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, SIZE_GUIDE, SIZES, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
@@ -32,6 +32,52 @@ const VIEWS: { value: View; label: string; short: string }[] = [
   { value: "tee", label: "On the tee", short: "Tee" },
   { value: "print", label: "Print", short: "Print" },
 ];
+
+type Choice = BaseColor | "both";
+const CHOICES: readonly Choice[] = ["black", "white", "both"];
+
+/**
+ * The one tee picker, on the picture: black, white, or both (the pair, with
+ * its price anchor). Every design comes in both colours; the original is
+ * marked in the label.
+ */
+function TeeChoice({ value, original, price, onChange }: { value: Choice; original: BaseColor; price: number; onChange: (c: Choice) => void }) {
+  const keys = radioKeys(CHOICES, value, onChange);
+  return (
+    <div className="flex items-center gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
+      {CHOICES.map((c, i) => {
+        const active = value === c;
+        const common = { type: "button" as const, role: "radio", "aria-checked": active, onClick: () => onChange(c), ...keys(i) };
+        if (c === "both")
+          return (
+            <button
+              key={c}
+              {...common}
+              aria-label={`Both tees, black and white: ${formatPrice(PAIR_PRICE)} instead of ${formatPrice(price * 2)}`}
+              className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full pl-1 pr-2.5 text-xs font-semibold transition ${active ? "bg-white text-black" : "text-white hover:bg-white/10"}`}
+            >
+              <span aria-hidden className="h-6 w-6 shrink-0 rounded-full bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-1 ring-white/40" />
+              Both
+              <s className={`font-mono font-normal ${active ? "text-neutral-500" : "text-neutral-400"}`}>{formatPrice(price * 2)}</s>
+              <span className="font-mono">{formatPrice(PAIR_PRICE)}</span>
+            </button>
+          );
+        const label = `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
+        return (
+          <button
+            key={c}
+            {...common}
+            aria-label={label}
+            title={label}
+            className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-shadow before:absolute before:-inset-1 before:content-[''] ${active ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""}`}
+          >
+            <span aria-hidden className={`h-6 w-6 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 /**
  * `details` come as props from the pre-rendered page (/shop/<id>/); the
@@ -95,9 +141,10 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     if (shirt) track("product_view", { id: shirt.id, category: shirt.category, price: shirt.price });
   }, [shirt]);
 
-  // Specs are open by default on desktop, collapsed on phones.
+  // Details start closed (everywhere).
   const [detailsOpen, setDetailsOpen] = useState(false);
-  useEffect(() => setDetailsOpen(window.matchMedia("(min-width: 768px)").matches), []);
+  // "Both": the black + white pair, picked in the same picker as the colour.
+  const [both, setBoth] = useState(false);
 
   if (!shirt) {
     return (
@@ -123,7 +170,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     .filter((s): s is ShirtProduct => !!s)
     .slice(0, 4);
 
-  const addedKey = `${size}-${color}`;
+  const addedKey = `${size}-${both ? "both" : color}`;
   const phase = added?.key === addedKey ? added.phase : null;
   const confirmAdded = (key: string) => {
     setAdded({ key, phase: "added" });
@@ -136,27 +183,27 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     setNudge((n) => n + 1);
   };
 
+  // What "Both" would add now, given the bag (this size): only what's missing.
+  const pair = both && size ? pairStatus(cart, shirt.id, size) : null;
+  const pairComplete = !!pair && pair.missing.length === 0;
   // Never a dead, disabled button: without a size it guides you to the sizes.
   const onBuy = () => {
     if (!size) return needSize();
-    if (phase === "view") return router.push("/cart/");
-    if (addToCart(shirt.id, size, color, 1, { quiet: true })) confirmAdded(addedKey);
+    if (phase === "view" || pairComplete) return router.push("/cart/");
+    if (both ? addPair(shirt.id, size) : addToCart(shirt.id, size, color)) confirmAdded(addedKey);
   };
-  // What "Get it in both" would add now, given the bag (this size).
-  const pair = size ? pairStatus(cart, shirt.id, size) : null;
-  const pairComplete = !!pair && pair.missing.length === 0;
-  const onPair = () => {
-    if (!size) return needSize();
-    if (pairComplete) return router.push("/cart/");
-    if (addPair(shirt.id, size, { quiet: true })) confirmAdded(addedKey);
-  };
-  const buyLabel = !size
-    ? "Choose size"
-    : phase === "added"
-      ? "Added"
-      : phase === "view"
-        ? "View bag · Checkout"
-        : `Add to bag · ${size}`;
+  // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
+  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${size}` : pairLabel(pair, shirt.price)) : `Add to bag · ${size}`;
+  const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
+  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${size}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${size}`;
+  const shownPrice = both ? (
+    <>
+      <s className="mr-1.5 text-[0.8em] font-normal text-neutral-500">{formatPrice(shirt.price * 2)}</s>
+      {formatPrice(PAIR_PRICE)}
+    </>
+  ) : (
+    formatPrice(shirt.price)
+  );
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when this product was
@@ -227,12 +274,12 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               </motion.div>
             </AnimatePresence>
             <div className="absolute right-3 top-3 z-10 flex gap-2">
-              {/* Narrowest phones only: the buy bar has no room for Share. */}
+              {/* Phones under 400 px: the buy bar has no room for Share, so it's here. */}
               <button
                 type="button"
                 onClick={() => useUiStore.getState().openShare(shirt.id, color)}
                 aria-label={`Share ${shirt.title}`}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70 min-[360px]:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70 min-[400px]:hidden"
               >
                 <Share2 className="h-[18px] w-[18px]" />
               </button>
@@ -245,9 +292,17 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                 <ZoomIn className="h-5 w-5" />
               </button>
             </div>
-            {/* Tee colour, right on the picture: visible without scrolling. */}
+            {/* Tee colour (or both), right on the picture: visible without scrolling. */}
             <div className="absolute bottom-3 left-3">
-              <ColorSelector variant="overlay" value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
+              <TeeChoice
+                value={both ? "both" : color}
+                original={shirt.baseColor}
+                price={shirt.price}
+                onChange={(c) => {
+                  setBoth(c === "both");
+                  if (c !== "both") setColor(shirt.id, c);
+                }}
+              />
             </div>
             <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="group" aria-label="View">
               {VIEWS.map((v) => (
@@ -257,13 +312,13 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                   aria-pressed={view === v.value}
                   onClick={() => setView(v.value)}
                   aria-label={v.label}
-                  className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors max-[359px]:px-2.5 ${
+                  className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors max-[399px]:px-2.5 ${
                     view === v.value ? "bg-white text-black" : "text-neutral-200 hover:text-white"
                   }`}
                 >
-                  {/* Short labels on the narrowest phones, clear of the colour swatches. */}
-                  <span className="max-[359px]:hidden">{v.label}</span>
-                  <span className="min-[360px]:hidden">{v.short}</span>
+                  {/* Short labels on phones, clear of the tee picker. */}
+                  <span className="max-[399px]:hidden">{v.label}</span>
+                  <span className="min-[400px]:hidden">{v.short}</span>
                 </button>
               ))}
             </div>
@@ -278,7 +333,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             </p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-              <span className="mt-0.5 font-mono text-xl font-semibold md:text-2xl">{formatPrice(shirt.price)}</span>
+              <span className="mt-0.5 whitespace-nowrap font-mono text-xl font-semibold md:text-2xl">{shownPrice}</span>
             </div>
 
             {reasons.length > 0 && (
@@ -289,7 +344,6 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             )}
 
             <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
-            <p className="mt-2 text-xs text-neutral-400">{CATEGORY_VIBES[shirt.category]}</p>
 
             {members.length > 1 ? (
               <button
@@ -300,14 +354,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                 <Layers className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
                 <ArrowDown className="h-3.5 w-3.5" />
               </button>
-            ) : (
-              <p className="mt-3 text-xs text-neutral-400">One of a kind — no close variations.</p>
-            )}
-
-            <div className="mt-5">
-              <p className={LABEL}>Tee colour</p>
-              <ColorSelector value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
-            </div>
+            ) : null}
 
             <div className="mt-5" ref={sizeRow}>
               <div className="mb-1 flex items-center justify-between">
@@ -358,25 +405,6 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" />
             </div>
 
-            {/* The pair: same print in both tee colours, one tap. */}
-            <button
-              type="button"
-              onClick={onPair}
-              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-white/[0.04] px-4 py-3 text-left ring-1 ring-white/10 hover:bg-white/[0.07]"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex -space-x-2" aria-hidden>
-                  <span className="h-5 w-5 rounded-full bg-black ring-1 ring-white/50" />
-                  <span className="h-5 w-5 rounded-full bg-white ring-1 ring-black/20" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold">{pair ? pairLabel(pair, shirt.price) : "Get it in both"}</span>
-                  <span className="block text-xs text-neutral-400">Black + White{size ? ` · ${size}` : ""}</span>
-                </span>
-              </span>
-              {!pair?.have.length && <span className="font-mono text-sm font-semibold">{formatPrice(PAIR_PRICE)}</span>}
-            </button>
-
             <div className="mt-5 border-t border-white/10">
               <button
                 type="button"
@@ -389,9 +417,9 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               </button>
               {detailsOpen && (
                 <dl className="pb-2">
-                  <Spec label="Tee" value={COLOR_LABELS[color]} />
+                  <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
                   <Spec label="Ink" value={black ? "White, 1 colour" : "Black, 1 colour"} />
-                  <Spec label="Print" value={`${PRINT_SIZE_CM.width}×${PRINT_SIZE_CM.height} cm`} />
+                  <Spec label="Print" value={printSizeLabel()} />
                   <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
                   <Spec label="Fit" value="Regular" />
                   <Spec label="SKU" value={skuFor(shirt.sku, color)} />
@@ -411,38 +439,20 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                 {members.length} versions of this print
               </span>
             </div>
-            <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
-              {members.map((m) => {
-                const current = m.id === shirt.id;
-                return (
-                  <Link
-                    key={m.id}
-                    href={productHref(m.id)}
-                    replace
-                    // Keep the tee colour the user is looking at. Variations
-                    // replace this page in history, so Back still reaches the grid.
-                    onClick={() => {
-                      setColor(m.id, color);
-                      if (productOrigin?.id === shirt.id) setProductOrigin({ ...productOrigin, id: m.id });
-                    }}
-                    aria-current={current ? "page" : undefined}
-                    aria-label={`${m.title}, ${formatPrice(m.price)}${current ? " (showing)" : ""}`}
-                    className={`relative w-28 shrink-0 rounded-2xl p-1.5 transition ${STAGE_BG} ${
-                      current ? "ring-2 ring-white" : "ring-1 ring-white/10 hover:ring-white/40"
-                    }`}
-                  >
-                    {current && (
-                      <span className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-white text-black">
-                        <Check className="h-3 w-3" strokeWidth={3} />
-                      </span>
-                    )}
-                    <TeeMockup shirt={m} color={color} shadow={false} className="w-full" />
-                    <p className="mt-1 truncate px-0.5 text-xs text-neutral-300">{m.title}</p>
-                    <p className="px-0.5 font-mono text-xs text-neutral-400">{formatPrice(m.price)}</p>
-                  </Link>
-                );
-              })}
-            </div>
+            {/* Variations replace this page in history, so Back still reaches the grid. */}
+            <ShirtStrip
+              shirts={members}
+              label="Variations"
+              prices
+              color={color}
+              currentId={shirt.id}
+              replace
+              onOpen={(m) => {
+                // Keep the tee colour the user is looking at.
+                setColor(m.id, color);
+                if (productOrigin?.id === shirt.id) setProductOrigin({ ...productOrigin, id: m.id });
+              }}
+            />
           </section>
         )}
 
@@ -451,30 +461,29 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
             <div className="grid grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-4">
               {similar.map((s) => (
-                <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} vector={vector} showMatch={showMatch} onOpen={clearOrigin} />
+                <ProductCard key={s.id} shirt={s} onOpen={clearOrigin} />
               ))}
             </div>
           </section>
         )}
       </div>
 
-      <MiniBag shirt={shirt} similar={similar} />
-
       {/* Mobile: sticky buy bar, always visible, never disabled */}
-      {/* Narrow phones (< 360 px): tighter gaps, and Share moves up to the
-          image toolbar so price, save and the buy button fit. */}
-      <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
-        <div className="min-w-0 flex-1">
-          <p className="font-mono text-base font-semibold">{formatPrice(shirt.price)}</p>
+      {/* Narrow phones: tighter gaps below 360 px, and below 400 px Share
+          moves up to the image toolbar so price, save and the buy button fit. */}
+      <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
+        {/* The price never gives way: the buy button's label shortens instead. */}
+        <div className="min-w-[4.5rem] flex-1">
+          <p className="whitespace-nowrap font-mono text-base font-semibold">{shownPrice}</p>
           <p className="truncate text-xs text-neutral-400">
-            {COLOR_LABELS[color]}
-            <span className="max-[399px]:hidden"> tee</span>
+            {both ? "Black + White" : COLOR_LABELS[color]}
+            <span className="max-[399px]:hidden">{both ? " tees" : " tee"}</span>
             {size ? ` · ${size}` : ""}
           </p>
         </div>
         <SaveButton id={shirt.id} size="lg" />
-        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" className="max-[359px]:hidden" />
-        <BuyButton label={phase === "view" ? "Checkout" : buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
+        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" className="max-[399px]:hidden" />
+        <BuyButton label={buyLabel} short={shortLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>
   );
@@ -482,12 +491,15 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
 
 function BuyButton({
   label,
+  short,
   phase,
   onClick,
   disabled,
   compact,
 }: {
   label: string;
+  /** Narrow phones (< 400 px): a shorter label, so the price keeps its room. */
+  short?: string;
   phase: "added" | "view" | null;
   onClick: () => void;
   disabled?: boolean;
@@ -499,13 +511,22 @@ function BuyButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
+      // The full label, whichever one is shown.
+      aria-label={label}
       aria-live="polite"
-      className={`flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
-        compact ? "px-5" : "flex-1"
+      className={`flex h-12 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
+        compact ? "px-5 max-[359px]:px-4" : "flex-1"
       }`}
     >
-      <Icon className="h-4 w-4" strokeWidth={phase === "added" ? 3 : 2} />
-      {label}
+      <Icon className="h-4 w-4 shrink-0" strokeWidth={phase === "added" ? 3 : 2} />
+      {short && short !== label ? (
+        <>
+          <span className="truncate max-[399px]:hidden">{label}</span>
+          <span className="truncate min-[400px]:hidden">{short}</span>
+        </>
+      ) : (
+        <span className="truncate">{label}</span>
+      )}
     </button>
   );
 }

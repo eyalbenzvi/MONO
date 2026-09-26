@@ -81,7 +81,8 @@ const ok = (cond, msg) => {
 
     // size + add to bag
     await p.getByRole("radio", { name: /^M\b/ }).first().tap();
-    await p.getByRole("button", { name: /add to bag/i }).first().tap();
+    // The phone's sticky buy bar (its last button is "Add to bag · M").
+    await p.locator(".sticky.bottom-0").getByRole("button").last().tap();
     await p.waitForTimeout(500);
     const bagCount = await p.getByRole("link", { name: /bag \((\d+)\)/i }).first().getAttribute("aria-label");
     ok(/\(1\)/.test(bagCount || ""), `bag count updated (${bagCount})`);

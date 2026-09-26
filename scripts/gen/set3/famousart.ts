@@ -6,19 +6,13 @@
  */
 import { IH, IW, X0, Y0, int, n1, pick, range, smooth, type Generator, type Rng } from "../core";
 import { MONO, SERIF, textEl, toneDefs } from "../art";
+import { clip as clipTo, line, type Box } from "../svg";
+
+const clip = (id: string, b: Box, body: string) => clipTo(id, body, b);
 import { ART, MUSEUM_MEDIUMS } from "../copy3";
 
-interface Box {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
 type P = [number, number];
 
-const clip = (id: string, b: Box, body: string) =>
-  `<clipPath id="${id}"><rect x="${n1(b.x)}" y="${n1(b.y)}" width="${n1(b.w)}" height="${n1(b.h)}"/></clipPath><g clip-path="url(#${id})">${body}</g>`;
-const line = (d: string, ink: string, w: number) => `<path d="${d}" fill="none" stroke="${ink}" stroke-width="${n1(w)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 const poly = (p: P[]) => `M${p.map(([x, y]) => `${n1(x)} ${n1(y)}`).join(" L")}`;
 
 /**

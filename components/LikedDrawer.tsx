@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Heart, Share2, ShoppingBag, Undo2, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
-import { DropSignup } from "@/components/DropSignup";
 import { QuickAdd } from "@/components/QuickAdd";
 import { shareOrCopy } from "@/lib/clipboard";
 import { siteRoot } from "@/lib/share";
@@ -91,11 +90,24 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
           >
             <div className="flex items-center justify-between px-5 pb-3 pt-[max(env(safe-area-inset-top),16px)]">
-              <div>
-                <h2 ref={heading} tabIndex={-1} className="text-lg font-bold tracking-tight outline-none">
-                  Saved
-                </h2>
-                <p className="text-xs text-neutral-400">{items.length} saved</p>
+              <div className="flex items-center gap-2">
+                <div>
+                  <h2 ref={heading} tabIndex={-1} className="text-lg font-bold tracking-tight outline-none">
+                    Saved
+                  </h2>
+                  <p className="text-xs text-neutral-400">{items.length} saved</p>
+                </div>
+                {items.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => shareList(items)}
+                    aria-label="Share my list"
+                    title="Share my list"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/5 hover:text-white"
+                  >
+                    <Share2 className="h-[18px] w-[18px]" />
+                  </button>
+                )}
               </div>
               <button
                 type="button"
@@ -135,7 +147,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 </div>
               ) : (
                 <>
-                <ListActions items={items} />
+                <ListActions items={items} vector={showMatch ? vector : null} />
                 <ul ref={list} className="space-y-2 pb-4">
                   <AnimatePresence initial={false}>
                     {items.map((shirt, row) => (
@@ -144,7 +156,6 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   </AnimatePresence>
                   <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
                 </ul>
-                <DropSignup source="saved" className="!mt-2 pb-6" />
                 </>
               )}
             </div>
@@ -175,43 +186,60 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-/** "Add all · M" and "Share my list" above the Saved rows. */
-function ListActions({ items }: { items: ShirtProduct[] }) {
+/** "Share my list": a link to the shop with these tees on top (newest first). */
+function shareList(items: ShirtProduct[]) {
+  const list = items.map((s) => s.n).join(".");
+  const url = `${siteRoot()}/shop/?list=${list}&utm_source=list&utm_medium=share&utm_campaign=saved_list`;
+  void shareOrCopy({ title: "My MONO list", text: `${items.length} tee${items.length === 1 ? "" : "s"} I saved on MONO`, url });
+  track("share", { channel: "list", count: items.length });
+}
+
+/** Tees "Add your top 3" adds: the best matches once the taste test is done, else the newest saved. */
+const TOP = 3;
+
+/**
+ * One main action above the rows — "Add your top 3 · M · $144" — and
+ * "Add all" as a quiet text link when there are more.
+ */
+function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserProfileVector | null }) {
   const preferred = useCartStore((s) => s.preferredSize);
-  const [pick, setPick] = useState(false);
-  const addAll = (size: ShirtSize) => {
+  const [pick, setPick] = useState<"top" | "all" | null>(null);
+  const top = vector ? [...items].sort((a, b) => matchScore(vector, b.features) - matchScore(vector, a.features)).slice(0, TOP) : items.slice(0, TOP);
+  const add = (which: "top" | "all", size: ShirtSize) => {
     const { addToCart, selectedColors } = useCartStore.getState();
     let added = 0;
-    for (const s of items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { quiet: true })) added++;
-    setPick(false);
+    for (const s of which === "top" ? top : items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { silent: true })) added++;
+    setPick(null);
     useUiStore.getState().showToast(`Added ${added} · ${size}`);
   };
-  const shareList = () => {
-    // Compact ids (the number of each design), newest first.
-    const list = items.map((s) => s.n).join(".");
-    const url = `${siteRoot()}/shop/?list=${list}&utm_source=list&utm_medium=share&utm_campaign=saved_list`;
-    void shareOrCopy({ title: "My MONO list", text: `${items.length} tee${items.length === 1 ? "" : "s"} I saved on MONO`, url });
-    track("share", { channel: "list", count: items.length });
-  };
+  const run = (which: "top" | "all") => (preferred ? add(which, preferred) : setPick((p) => (p === which ? null : which)));
+  const total = top.reduce((sum, s) => sum + s.price, 0);
+  const label = top.length === 1 ? "Add to bag" : top.length === items.length ? `Add all ${top.length}` : `Add your top ${top.length}`;
   return (
     <div className="mb-3">
-      <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => run("top")}
+        aria-expanded={preferred ? undefined : pick === "top"}
+        className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
+      >
+        <ShoppingBag className="h-4 w-4" /> {label}
+        {preferred ? ` · ${preferred}` : ""} · {formatPrice(total)}
+      </button>
+      {items.length > top.length && (
         <button
           type="button"
-          onClick={() => (preferred ? addAll(preferred) : setPick((p) => !p))}
-          aria-expanded={preferred ? undefined : pick}
-          className="flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
+          onClick={() => run("all")}
+          aria-expanded={preferred ? undefined : pick === "all"}
+          className="mx-auto mt-1 flex h-9 items-center px-2 text-xs font-medium text-neutral-300 underline underline-offset-4 hover:text-white"
         >
-          <ShoppingBag className="h-4 w-4" /> Add all{preferred ? ` · ${preferred}` : ""}
+          Add all {items.length}
         </button>
-        <button type="button" onClick={shareList} className="flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5">
-          <Share2 className="h-4 w-4" /> Share my list
-        </button>
-      </div>
+      )}
       {pick && !preferred && (
         <div className="mt-2">
-          <p className="mb-1.5 text-xs text-neutral-400">Size for all</p>
-          <SizeSelector compact onChange={addAll} />
+          <p className="mb-1.5 text-xs text-neutral-400">Size</p>
+          <SizeSelector compact onChange={(size) => add(pick, size)} />
         </div>
       )}
     </div>
@@ -253,7 +281,7 @@ function SavedRow({
       <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
       </Link>
-      {/* Name first, the "+" under it: the name keeps the full width at any size. */}
+      {/* Name and price, then one "+" (the remembered size) and remove. */}
       <div className="min-w-0 flex-1">
         <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
           <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
@@ -262,8 +290,8 @@ function SavedRow({
             {tier ? ` · ${TIER_LABEL[tier]}` : ""}
           </p>
         </Link>
-        <QuickAdd shirt={shirt} color={color} compact className="mt-1 w-fit" />
       </div>
+      <QuickAdd shirt={shirt} color={color} iconOnly />
       <button
         type="button"
         onClick={onRemove}

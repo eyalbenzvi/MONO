@@ -213,14 +213,17 @@ describe("cart store", () => {
     expect(empty.useCartStore.getState().preferredSize).toBeNull();
   });
 
-  it("quick adds confirm with a one-line toast; the product page's add stays quiet", async () => {
+  it("every add confirms once, in the mini bag (no toast); Undo takes back exactly that add (round 2, R13)", async () => {
     const { useCartStore, useUiStore } = await fresh();
     useCartStore.getState().addToCart("mono-0001", "M", "black");
-    expect(useUiStore.getState().toast?.message).toBe("Added · M");
-    useUiStore.setState({ toast: null });
-    useCartStore.getState().addToCart("mono-0001", "M", "black", 1, { quiet: true });
     expect(useUiStore.getState().toast).toBeNull();
-    expect(useUiStore.getState().added).toMatchObject({ id: "mono-0001", size: "M", color: "black" });
+    expect(useUiStore.getState().added).toMatchObject({ id: "mono-0001", size: "M", color: "black", added: ["black"] });
+    useCartStore.getState().addToCart("mono-0001", "M", "black");
+    useCartStore.getState().undoAdd(useUiStore.getState().added!);
+    expect(useCartStore.getState().cart).toEqual([{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
+    useUiStore.setState({ added: null });
+    useCartStore.getState().addToCart("mono-0002", "M", "black", 1, { silent: true });
+    expect(useUiStore.getState().added).toBeNull();
   });
 
   it("addToCart merges identical lines and remembers size + colour", async () => {

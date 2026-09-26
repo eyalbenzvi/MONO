@@ -6,6 +6,7 @@
  */
 import { IH, IW, X0, Y0, an, int, n1, pick, range, type Generator, type Rng } from "../core";
 import { MONO, esc, pixelTextRows, textEl, wrap } from "../art";
+import { CX } from "../svg";
 import { ASCII_ART, BANNER_CAPTIONS, BANNER_WORDS, SCENE_CAPTIONS, SHADE_CAPTIONS } from "../copy3";
 
 /** Advance of one monospace cell, as a fraction of font size. */
@@ -41,7 +42,6 @@ function asciiFrame(ink: string, fs = 11) {
 const mono = (txt: string, x: number, y: number, size: number, ink: string, anchor: "start" | "middle" | "end" = "middle", maxW = IW - 24) =>
   textEl(txt, x, y, size, { fill: ink, font: MONO, anchor, maxW });
 
-const CX = X0 + IW / 2;
 
 /* ------------------------------------------------------------------ */
 /* Banner — big letters built from characters                          */

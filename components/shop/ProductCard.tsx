@@ -4,11 +4,9 @@ import { memo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
-import { MatchBadge, SaveButton, ShareButton, STAGE_BG, TeeDot } from "@/components/ui";
+import { SaveButton, STAGE_BG, TeeDot } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
-import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct, type UserProfileVector } from "@/types/shirt";
-import { TIER_LABEL, tierOf } from "@/lib/match";
-import { explainMatch } from "@/lib/recommendation";
+import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { isNewThisWeek } from "@/lib/taste";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
@@ -17,48 +15,53 @@ import { QuickAdd } from "@/components/QuickAdd";
 /**
  * Grid card. The whole card is one link (a "stretched link": the title's
  * ::after covers the card) and the heart is a sibling on top of it — never a
- * button inside a link. Memoised: the grid re-renders on filter / paging,
- * not on scroll, and unchanged cards skip the work.
+ * button inside a link. Quiet by design: at most one tag ("Top pick" on the
+ * first card of your ranking, else "New this week"); how well a tee matches
+ * is on its product page. Quick add is a small "+" on touch screens and
+ * appears on hover with a mouse. Memoised: the grid re-renders on filter /
+ * paging, not on scroll, and unchanged cards skip the work.
  */
 export const ProductCard = memo(function ProductCard({
   shirt,
-  score,
-  vector,
-  showMatch,
   topPick = false,
   color,
   onOpen,
   variations = 0,
-  wildcard = false,
 }: {
   shirt: ShirtProduct;
-  score: number;
-  /** The profile the grid is ranked with (a stable snapshot, so memo holds). */
-  vector: UserProfileVector;
-  /** Computed once by the parent (match only after the taste test). */
-  showMatch: boolean;
+  /** The first card of the "For you" ranking (after the taste test). */
   topPick?: boolean;
   /** Other designs in this card's family (shown as "+N variations"). */
   variations?: number;
-  /** A deliberate taste probe from outside your usual (shop diversity). */
-  wildcard?: boolean;
   /** Render in this tee colour (and open the product in it); default = original. */
   color?: BaseColor;
   onOpen?: (id: string) => void;
 }) {
   const tee = color ?? shirt.baseColor;
-  const newThisWeek = isNewThisWeek(shirt.dropWeek);
-  // Only the upper tiers get a badge; below that it's noise, not information.
-  const tier = showMatch ? (topPick ? "top" : tierOf(vector, score)) : null;
-  // `isolate`: the card's own controls (z-10/z-20) stack inside the card and
-  // never above the shop's sticky filter bar. A card with an open "why"
-  // popover rises above its neighbours (still under the bar).
+  const tag = topPick ? "Top pick" : isNewThisWeek(shirt.dropWeek) ? "New this week" : null;
+  // `isolate`: the card's own controls (z-10) stack inside the card and
+  // never above the shop's sticky filter bar or a page's sticky buy bar.
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate has-[[aria-expanded=true]]:z-10">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        {tag && (
+          <span
+            className={`absolute left-2 top-2 z-10 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold ${
+              topPick ? "bg-white text-black" : "border border-dashed border-white/50 bg-black/40 font-semibold text-white"
+            }`}
+          >
+            {tag}
+          </span>
+        )}
         {/* Above the stretched link's ::after (z-10 in the same stacking context). */}
-        <QuickAdd shirt={shirt} color={tee} variant="overlay" className="absolute bottom-2 right-2 z-10" />
+        <QuickAdd
+          shirt={shirt}
+          color={tee}
+          variant="overlay"
+          // With a mouse it appears on hover (or keyboard focus); open sizes stay.
+          className="absolute bottom-2 right-2 z-10 transition-opacity [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 focus-within:!opacity-100 has-[[role=group]]:!opacity-100"
+        />
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <Link
@@ -68,7 +71,7 @@ export const ProductCard = memo(function ProductCard({
             onOpen?.(shirt.id);
           }}
           className="block min-w-0 truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
-          aria-label={`${shirt.title}, ${formatPrice(shirt.price)}${tier ? `, ${TIER_LABEL[tier]}` : ""}${variations ? `, ${variations} variations` : ""}`}
+          aria-label={`${shirt.title}, ${formatPrice(shirt.price)}${tag ? `, ${tag}` : ""}${variations ? `, ${variations} variations` : ""}`}
         >
           {shirt.title}
         </Link>
@@ -76,26 +79,9 @@ export const ProductCard = memo(function ProductCard({
       </div>
       <p className="truncate px-0.5 text-xs text-neutral-400">
         <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
+        {variations > 0 && ` · +${variations} variation${variations === 1 ? "" : "s"}`}
       </p>
-      {/* Match, tags and variations live under the name, not on the image,
-          so nothing there can collide with share / save / quick add. The row
-          sits above the stretched link so the badge's "why" can open. */}
-      {(tier || wildcard || newThisWeek || variations > 0) && (
-        <div className="relative z-20 mt-1.5 flex flex-wrap items-center gap-1.5 px-0.5">
-          {tier && <MatchBadge tier={tier} size="sm" quiet={!topPick} why={() => explainMatch(vector, shirt.features)} />}
-          {(newThisWeek || wildcard) && (
-            <span className="rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs font-semibold text-white">{newThisWeek ? "New this week" : "Wildcard"}</span>
-          )}
-          {variations > 0 && (
-            <span className="pointer-events-none text-xs text-neutral-400">
-              +{variations} variation{variations === 1 ? "" : "s"}
-            </span>
-          )}
-        </div>
-      )}
-      {/* Siblings of the link, stacked above its ::after; 14 px apart so
-          their enlarged touch areas don't overlap. */}
-      <ShareButton id={shirt.id} title={shirt.title} color={tee} className="absolute right-[54px] top-2 z-10 h-8 w-8" />
+      {/* A sibling of the link, stacked above its ::after. */}
       <SaveButton id={shirt.id} className="absolute right-2 top-2 z-10 h-8 w-8" />
     </motion.div>
   );

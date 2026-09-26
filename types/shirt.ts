@@ -175,7 +175,11 @@ export interface UserSession {
   swipeHistory: SwipeEvent[];
 }
 
-export const PRINT_SIZE_CM = { width: 30, height: 40 } as const;
+/** The printed area on the tee (the 3:4 print, as screen-printed). */
+export const PRINT_SIZE_CM = { width: 28, height: 37 } as const;
+
+/** "28 × 37 cm" — the print's real size on the tee. */
+export const printSizeLabel = (cm: { width: number; height: number } = PRINT_SIZE_CM) => `${cm.width} × ${cm.height} cm`;
 
 export const SIZE_GUIDE: Record<ShirtSize, { chest: number; length: number }> = {
   S: { chest: 50, length: 70 },

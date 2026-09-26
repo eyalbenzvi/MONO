@@ -1,16 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { RotateCcw, X } from "lucide-react";
+import { RotateCcw, Share2, X } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { DAILY_GOAL, archetypeOf, currentStreak, tasteLevel, today } from "@/lib/taste";
 import { startOverWithUndo, useTasteStore } from "@/store/tasteStore";
+import { shareTaste } from "@/lib/shareTaste";
 import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 
 /**
- * "Your taste": the profile in words and bars (the five strongest leanings),
- * the Daily 5, and a way to start over. Opened from the Discover strip.
+ * "Your taste", the one place for the growth bits: the profile in words and
+ * bars (the five strongest leanings) with its level, the Daily 5 and streak,
+ * Share my taste, and a way to start over. Opened from the Discover strip.
  */
 export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -21,6 +23,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const bars = [...FEATURE_KEYS].sort((a, b) => vector[b] - vector[a]).slice(0, 5);
   const todayCount = daily.day === today() ? daily.count : 0;
   const streak = currentStreak(daily);
+  const [sharing, setSharing] = useState(false);
 
   return (
     <AnimatePresence>
@@ -76,6 +79,22 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
 
             <button
               type="button"
+              onClick={async () => {
+                setSharing(true);
+                try {
+                  await shareTaste(vector);
+                } finally {
+                  setSharing(false);
+                }
+              }}
+              disabled={sharing}
+              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black disabled:opacity-60"
+            >
+              <Share2 className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 onClose();
                 startOverWithUndo();
@@ -83,7 +102,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 // focus lands on the strip above the card instead of the page.
                 requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-strip]")?.focus({ preventScroll: true })));
               }}
-              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5 hover:text-white"
+              className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5 hover:text-white"
             >
               <RotateCcw className="h-4 w-4" /> Reset taste
             </button>

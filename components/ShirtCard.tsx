@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Compass, Share2, X, ZoomIn } from "lucide-react";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
-import { LABEL, MatchBadge, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
+import { LABEL, MatchBadge, ShareButton, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
 import { familySize, productHref } from "@/lib/catalog";
@@ -17,9 +17,7 @@ import { formatPrice } from "@/lib/format";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
-  FEATURE_KEYS,
-  FEATURE_LABELS,
-  PRINT_SIZE_CM,
+  printSizeLabel,
   type RecommendationStrategy,
   type ShirtProduct,
 } from "@/types/shirt";
@@ -81,7 +79,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     <Compass className="h-3.5 w-3.5" /> Wildcard
                   </span>
                 )}
-                {isTop && (
+                {/* Share waits for the taste test: until then the card is for rating. */}
+                {isTop && showMatch && (
                   <button
                     type="button"
                     onClick={() => openShare(shirt.id, shirt.baseColor)}
@@ -147,7 +146,6 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
   const vector = useTasteStore((s) => s.preferenceVector);
   const showMatch = useShowMatch();
-  const top = [...FEATURE_KEYS].sort((a, b) => shirt.features[b] - shirt.features[a]).slice(0, 3);
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
   const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
@@ -191,12 +189,18 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         )}
 
         <p className="mt-4 text-sm text-neutral-300">
-          {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {PRINT_SIZE_CM.width}×{PRINT_SIZE_CM.height} cm print
+          {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {printSizeLabel()} print
           <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
         </p>
 
-        {/* Quick add without leaving Discover (size remembered, else pick one). */}
-        <QuickAdd shirt={shirt} className="mt-3" />
+        {/* After the taste test: add without leaving Discover (size
+            remembered, else pick one), and share. */}
+        {showMatch && (
+          <div className="mt-3 flex items-center gap-2">
+            <QuickAdd shirt={shirt} long />
+            <ShareButton id={shirt.id} title={shirt.title} color={shirt.baseColor} className="relative h-9 w-9" />
+          </div>
+        )}
 
         {familySize(shirt) > 1 && (
           <Link
@@ -207,19 +211,6 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           </Link>
         )}
 
-        <div className="mt-5">
-          <p className={LABEL}>Print DNA</p>
-          <ul className="space-y-2">
-            {top.map((k) => (
-              <li key={k} className="flex items-center gap-3 text-sm">
-                <span className="w-24 shrink-0 text-neutral-300">{FEATURE_LABELS[k]}</span>
-                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                  <span className="block h-full rounded-full bg-white" style={{ width: `${shirt.features[k] * 100}%` }} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
       {/* One action here: Like / Pass / Share already sit on the buttons and the card. */}

@@ -1,14 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { X } from "lucide-react";
-import { QuickAdd } from "@/components/QuickAdd";
-import { TeeMockup } from "@/components/TeeMockup";
-import { STAGE_BG } from "@/components/ui";
+import { ShirtStrip } from "@/components/ShirtStrip";
 import { fetchTrending } from "@/lib/api";
-import { getShirtById, productHref } from "@/lib/catalog";
-import { formatPrice } from "@/lib/format";
+import { getShirtById } from "@/lib/catalog";
 import type { ShirtProduct } from "@/types/shirt";
 
 function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct[]; onClose?: () => void }) {
@@ -22,17 +18,7 @@ function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct
           </button>
         )}
       </div>
-      <ul className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
-        {shirts.map((s) => (
-          <li key={s.id} className="flex w-24 shrink-0 flex-col gap-1.5 sm:w-28">
-            <Link href={productHref(s.id)} className={`rounded-xl p-1.5 ${STAGE_BG}`} aria-label={`${s.title}, ${formatPrice(s.price)}`}>
-              <TeeMockup shirt={s} shadow={false} className="w-full" />
-            </Link>
-            <p className="truncate text-xs text-neutral-300">{s.title}</p>
-            <QuickAdd shirt={s} />
-          </li>
-        ))}
-      </ul>
+      <ShirtStrip shirts={shirts} quickAdd />
     </section>
   );
 }

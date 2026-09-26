@@ -56,7 +56,7 @@ interface UiState {
   productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
   share: { id: string; color: BaseColor } | null;
-  /** The last add to the bag (drives the product page's mini bag). */
+  /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
   /** A friend's taste from a shared /?taste= link (this session), to compare with. */
   friendTaste: UserProfileVector | null;
@@ -83,8 +83,11 @@ export interface ProductOrigin {
 export interface AddedNote {
   id: string;
   size: ShirtSize;
+  /** The tee colour shown in the confirmation. */
   color: BaseColor;
-  /** Added as the black + white pair. */
+  /** The bag lines that got one more (Undo takes exactly these back). */
+  added: BaseColor[];
+  /** Added as (or completing) the black + white pair. */
   pair?: boolean;
   nonce: number;
 }

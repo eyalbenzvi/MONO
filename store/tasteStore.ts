@@ -261,8 +261,6 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           swipeQueue: calibrationJustDone ? [] : fromQueue ? ui.swipeQueue.slice(1) : ui.swipeQueue,
         });
         track("swipe", { action, strategy: top.strategy, matchScore: score, id: shirtId });
-        // Quiet notes, never over the taste-test screen.
-        if (!calibrationJustDone && milestone) useUiStore.getState().showToast(`Your taste: ${milestone}`);
         if (calibrationJustDone) track("calibration_complete", { swipes: seen.length });
       },
 

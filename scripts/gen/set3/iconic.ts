@@ -3,17 +3,16 @@
  * posters, space-age icons and universal motifs. No photographs, logos or
  * trademarks — every picture is an original single-ink drawing.
  */
-import { IH, IW, W, X0, Y0, int, n1, pick, range, smooth, type Generator, type Rng } from "../core";
+import { IH, IW, X0, Y0, int, n1, pick, range, smooth, type Generator, type Rng } from "../core";
 import { MONO, SERIF, drawPrims, fitLines, sizeToFit, textEl, toneDefs } from "../art";
+import { CX, line } from "../svg";
 import { LANDMARK_INFO, MOTIF_CAPTIONS, SPACE_CAPTIONS, TRAVEL_TAGLINES } from "../copy3";
 import { LANDMARKS, LANDMARK_KEYS } from "./landmarks";
 
 /** "NEW YORK" → "New York" (place names are stored in caps for the poster type). */
 const placeName = (place: string) => place.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
-const CX = W / 2;
 type P = [number, number];
-const line = (d: string, ink: string, w: number) => `<path d="${d}" fill="none" stroke="${ink}" stroke-width="${n1(w)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 
 function drawLandmark(key: string, x: number, y: number, size: number, style: "solid" | "line" | "woodcut", ink: string, ground: string, sw = 2.5) {
   const { prims, tilt } = LANDMARKS[key];
