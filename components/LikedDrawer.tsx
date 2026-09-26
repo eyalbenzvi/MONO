@@ -272,7 +272,7 @@ function SavedRow({
       className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
     >
       <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
-        <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
+        <TeeMockup shirt={shirt} color={color} shadow={false} thumb className="w-full" />
       </Link>
       {/* Name and match, then remove (swipe left works too). */}
       <div className="min-w-0 flex-1">

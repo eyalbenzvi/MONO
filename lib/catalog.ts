@@ -139,6 +139,15 @@ export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ??
  */
 export const printUrl = (shirt: Pick<ShirtProduct, "backPrintUrl">, _color?: BaseColor) => shirt.backPrintUrl;
 
+/**
+ * The small version of a print for grids and lists (scripts/tools/thumbs.ts):
+ * raster prints have a 240 × 320 thumbnail; SVG prints are small already.
+ */
+export const thumbUrl = (shirt: Pick<ShirtProduct, "backPrintUrl">, color?: BaseColor) => {
+  const url = printUrl(shirt, color);
+  return url.endsWith(".webp") ? url.replace(/\/prints\/([^/]+)$/, "/prints/t/$1") : url;
+};
+
 /** Whether showing `color` means inverting the print (see printUrl). */
 export const needsInvert = (shirt: Pick<ShirtProduct, "baseColor" | "medium">, color: BaseColor) =>
   shirt.medium === "drawn" ? color !== shirt.baseColor : shirt.medium === "ink" && color === "black";

@@ -148,7 +148,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         <div className="mt-4 flex gap-4">
           {/* Short screens (phones sideways) skip the thumbnail: room for the text. */}
           <div className={`w-24 shrink-0 rounded-2xl p-2 [@media(max-height:500px)]:hidden ${STAGE_BG}`}>
-            <TeeMockup shirt={shirt} shadow={false} className="w-full" />
+            <TeeMockup shirt={shirt} shadow={false} thumb className="w-full" />
           </div>
           <div className="min-w-0">
             <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>

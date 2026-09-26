@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
+import { useEffect, useRef, useState } from "react";
+import { assetUrl, needsInvert, printUrl, thumbUrl } from "@/lib/catalog";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /**
@@ -21,14 +21,26 @@ export function PrintImage({
   color: wanted,
   className = "",
   priority = false,
+  thumb = false,
+  onReady,
 }: {
   shirt: ShirtProduct;
   color?: BaseColor;
   className?: string;
   /** Above-the-fold image (the top Discover card, the main product image): load it first. */
   priority?: boolean;
+  /** Grids and lists: the small file (see thumbUrl). */
+  thumb?: boolean;
+  /** Called once the picture is loaded and decoded (or has failed). */
+  onReady?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
+  const img = useRef<HTMLImageElement>(null);
+  // Loaded before React attached its handler (a cached file, or the static HTML).
+  useEffect(() => {
+    if (img.current?.complete) onReady?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Only the colours it's sold in (T3): anything else shows the original.
   const color = teeColor(shirt, wanted);
   const inverted = needsInvert(shirt, color);
@@ -37,14 +49,19 @@ export function PrintImage({
   if (failed) return <div className={`h-full w-full ${color === "black" ? "bg-black" : "bg-white"} ${className}`} />;
   return (
     <img
-      src={assetUrl(printUrl(shirt, color))}
+      ref={img}
+      src={assetUrl(thumb ? thumbUrl(shirt, color) : printUrl(shirt, color))}
       alt={`${shirt.title} print`}
       draggable={false}
       loading={priority ? "eager" : "lazy"}
       // React 18 doesn't know fetchPriority yet; the lowercase attribute passes through.
       {...{ fetchpriority: priority ? "high" : "auto" }}
       decoding="async"
-      onError={() => setFailed(true)}
+      onLoad={onReady}
+      onError={() => {
+        setFailed(true);
+        onReady?.();
+      }}
       className={`h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${ground} ${className}`}
     />
   );

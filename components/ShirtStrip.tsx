@@ -63,7 +63,7 @@ export function ShirtStrip({
                   <Icon name="check" className="h-3 w-3" strokeWidth={3} />
                 </span>
               )}
-              <TeeMockup shirt={s} color={color} shadow={false} className="w-full" />
+              <TeeMockup shirt={s} color={color} shadow={false} thumb className="w-full" />
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
             {quickAdd && <QuickAdd shirt={s} color={color} source={source} />}

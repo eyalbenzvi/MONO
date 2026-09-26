@@ -121,7 +121,7 @@ export function CartView() {
                     className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
                   >
                     <Link tabIndex={-1} aria-hidden href={productHref(line.id)} className={`w-20 shrink-0 self-start rounded-xl p-1.5 max-[339px]:w-14 ${STAGE_BG}`}>
-                      <TeeMockup shirt={line.shirt} color={line.color} shadow={false} className="w-full" />
+                      <TeeMockup shirt={line.shirt} color={line.color} shadow={false} thumb className="w-full" />
                     </Link>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex items-start justify-between gap-2">
@@ -444,7 +444,7 @@ function DetailsForm({
       <ul className="mt-3 flex gap-2 overflow-x-auto pr-1 pt-2" aria-label="Items">
         {lines.map((l) => (
           <li key={`${l.id}-${l.size}-${l.color}`} className={`relative w-14 shrink-0 rounded-lg p-1 ${STAGE_BG}`}>
-            <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />
+            <TeeMockup shirt={l.shirt} color={l.color} shadow={false} thumb className="w-full" />
             {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
             <span className="sr-only">
               {l.qty} × {l.shirt.title}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}
@@ -504,7 +504,7 @@ function Confirmation({ order }: { order: Order }) {
         <div className="mt-6 flex w-full justify-center -space-x-3">
           {lines.slice(0, 4).map((l) => (
             <div key={`${l.id}-${l.size}-${l.color}`} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
-              <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />
+              <TeeMockup shirt={l.shirt} color={l.color} shadow={false} thumb className="w-full" />
             </div>
           ))}
         </div>

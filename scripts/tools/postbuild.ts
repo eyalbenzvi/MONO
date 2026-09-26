@@ -69,6 +69,7 @@ function pruneRetired(): number {
   let removed = 0;
   for (const [dir, re] of [
     [path.join(OUT, "prints"), /^print_(\d+)\./],
+    [path.join(OUT, "prints", "t"), /^print_(\d+)\./],
     [path.join(OUT, "og"), /^mono-(\d+)\.png$/],
   ] as const) {
     if (!existsSync(dir)) continue;

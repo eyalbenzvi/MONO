@@ -64,7 +64,7 @@ export function MiniBag() {
           className="fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-[45] flex items-center gap-2 rounded-2xl bg-ink-900/95 p-2 pr-2 max-[399px]:pl-3 shadow-2xl shadow-black ring-1 ring-white/15 backdrop-blur-md md:left-auto md:right-6 md:w-[380px]"
         >
           <div className={`w-10 shrink-0 rounded-lg p-0.5 max-[399px]:hidden ${STAGE_BG}`}>
-            <TeeMockup shirt={shirt} color={note.color} shadow={false} className="w-full" />
+            <TeeMockup shirt={shirt} color={note.color} shadow={false} thumb className="w-full" />
           </div>
           <p className="min-w-0 flex-1 truncate text-sm font-semibold" aria-live="polite">
             <Icon name="check" className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />

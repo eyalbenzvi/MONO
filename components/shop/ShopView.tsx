@@ -14,6 +14,7 @@ import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
+import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
 export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
 
@@ -67,6 +68,23 @@ export function ShopView() {
     return diversify(filtered, { category: !category, color: true, wildcardEvery: sort === "match" ? 8 : 0 });
   }, [ranked, category, sort]);
   visibleRef.current = visible;
+
+  // The first cards of every category, in this order: warmed while idle, and
+  // at once when a finger lands on a chip, so a switch shows whole tees.
+  const firstByCategory = useMemo(() => {
+    const out = new Map<ShirtCategory, ShirtProduct[]>();
+    if (!hydrated) return out;
+    const n = typeof window !== "undefined" && window.innerWidth >= 1024 ? 10 : 6;
+    for (const c of SHIRT_CATEGORIES) out.set(c, dedupeByFamily(ranked.filter(({ shirt }) => shirt.category === c)).slice(0, n).map((x) => x.shirt));
+    return out;
+  }, [ranked, hydrated]);
+  useEffect(() => {
+    if (!hydrated || saveData()) return;
+    return whenIdle(() => {
+      for (const list of firstByCategory.values()) preloadMockups(list);
+    });
+  }, [firstByCategory, hydrated]);
+  const warm = (c: ShirtCategory) => preloadMockups(firstByCategory.get(c) ?? [], "high");
   listIdRef.current = `shop_${sort}${category ? `_${category}` : ""}`;
 
   // shop_view once per visit, with the order actually shown; the list
@@ -177,7 +195,7 @@ export function ShopView() {
             </Chip>
             {/* Categories that have designs (the content review can empty one); the catalog is loaded by the time this renders. */}
             {SHIRT_CATEGORIES.filter((c) => SHIRTS.some((s) => s.category === c)).map((c) => (
-              <Chip key={c} active={category === c} onClick={() => setFilter({ category: category === c ? null : c })}>
+              <Chip key={c} active={category === c} onWarm={() => warm(c)} onClick={() => setFilter({ category: category === c ? null : c })}>
                 {CATEGORY_LABELS[c]}
               </Chip>
             ))}
@@ -246,10 +264,13 @@ export function ShopView() {
   );
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({ active, onClick, onWarm, children }: { active: boolean; onClick: () => void; onWarm?: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
+      onPointerDown={onWarm}
+      onPointerEnter={onWarm}
+      onFocus={onWarm}
       onClick={(e) => {
         onClick();
         e.currentTarget.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });

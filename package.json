@@ -17,6 +17,7 @@
     "e2e": "playwright test",
     "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
     "sprites": "tsx scripts/tools/sprites.tsx",
+    "thumbs": "tsx --tsconfig tsconfig.scripts.json scripts/tools/thumbs.ts",
     "prebuild": "tsx scripts/tools/publishIndex.ts"
   },
   "dependencies": {
