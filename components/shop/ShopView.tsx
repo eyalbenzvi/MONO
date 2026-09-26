@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
-import { rankShirts, type ShopSort } from "@/lib/recommendation";
+import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
@@ -51,7 +51,11 @@ export function ShopView() {
   // stored taste arrives (not once with the neutral profile, then again).
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, category]);
-  const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort), [rankVector, sort]);
+  // Refreshed daily (rotation), with what Discover already showed stepping back.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, category]);
+  // (Only once hydrated: the pre-rendered page has no browser to seed from, and must match.)
+  const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort, hydrated ? { rotate: daySeed(), demote: shown } : {}), [rankVector, sort, shown, hydrated]);
   // One design per family (the best-ranked one) — its siblings are offered as
   // variations on the product page. The top of the grid is diversified
   // (display only; scores are untouched): no three in a row of one
