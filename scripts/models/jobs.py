@@ -1,24 +1,26 @@
 """
-The model photos to generate (see generate.py). The tee is the subject:
-plain, quiet urban backgrounds only — a wall, an underpass, an out-of-focus
-street — muted and blurred, framed from the waist up from behind. White
-tees stand against darker walls, black tees against lighter ones.
+The model photos to generate (see generate.py): pleasant, candid shots
+from directly behind — a relaxed man walking away or standing easy, hands
+in his pockets or holding something (never pressed to his sides), shoulders
+square to the camera so the whole back shows, a smooth fitted tee (a
+wrinkled back hides the print), soft warm light, a quiet city background
+softly out of focus. The tee is the subject.
 """
-import json
-SCENES = {
- "white": ["a plain dark grey concrete wall", "a dark grey metal roller shutter", "an empty concrete underpass in shadow, background out of focus",
-           "a plain charcoal stucco wall", "a quiet city street at dusk, background heavily blurred", "a dark painted brick wall"],
- "black": ["a plain light grey concrete wall", "a pale painted brick wall", "a light stone building facade, background out of focus",
-           "a plain off-white plaster wall", "a quiet city sidewalk on an overcast day, background heavily blurred", "a light grey concrete underpass"],
-}
-MEN = ["a young man with short brown hair", "a man in his thirties with a short dark beard and short hair", "a man in his fifties with short grey hair",
-       "a young Black man with short curly hair", "an East Asian man with short black hair", "a South Asian man with short dark hair",
-       "a broad-shouldered man with a buzz cut", "a slim young man with short blond hair"]
+import json, sys
+MOMENTS = [
+  "walking away down a quiet city street in warm evening light, both hands tucked in his front jeans pockets, elbows out",
+  "standing relaxed with both hands tucked in his front jeans pockets, elbows out, facing a softly blurred city skyline at dusk",
+  "walking away through a calm sunlit pedestrian passage, holding a coffee cup in one hand, other hand in pocket",
+  "walking away along a quiet sidewalk in soft morning light, a tote bag in one hand",
+]
+MEN = ["a young man with short brown hair", "a man in his thirties with short dark hair", "a young Black man with short curly hair",
+       "an East Asian man with short black hair", "a man in his fifties with short grey hair", "a South Asian man with short dark hair"]
+only = int(sys.argv[1]) if len(sys.argv) > 1 else None
 jobs = []; k = 0
-for color, scenes in SCENES.items():
-    for i, scene in enumerate(scenes):
-        for v in range(3):
-            man = MEN[k % len(MEN)]; k += 1
-            jobs.append({"id": f"urban-{color}-{i}{v}", "color": color, "seed": 5000 + k * 13,
-              "prompt": f"RAW photo, rear view, waist-up shot of {man} standing in front of {scene}, back to the camera, wearing a plain blank {color} short-sleeved crew-neck cotton t-shirt, the {color} t-shirt fills the frame, shallow depth of field, muted colors, soft overcast light, sharp focus on the shirt"})
+for color in ["white", "black"]:
+    for i, moment in enumerate(MOMENTS):
+        man = MEN[k % len(MEN)]; k += 1
+        jobs.append({"id": f"life-{color}-{i}", "color": color, "seed": 9100 + k * 31, "steps": 8,
+          "prompt": f"photo from directly behind, {man} {moment}, head facing forward away from the camera, shoulders square to the camera, whole back visible, wearing a smooth fitted plain {color} crew-neck t-shirt without wrinkles, pure {color} cotton, background softly out of focus, warm natural light, pleasant mood, 50mm"})
+if only: jobs = [j for j in jobs if int(j["id"][-1]) < only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
