@@ -94,7 +94,7 @@ export function ShopView() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
-  const openFromGrid = useCallback(() => setProductOrigin("/shop/"), [setProductOrigin]);
+  const openFromGrid = useCallback((id: string) => setProductOrigin({ from: "/shop/", id }), [setProductOrigin]);
 
   useEffect(() => {
     if (hydrated) track("shop_view", { category: useUiStore.getState().shop.category, sort: useUiStore.getState().shop.sort });

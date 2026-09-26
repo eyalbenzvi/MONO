@@ -1,5 +1,6 @@
 import { getShirtById } from "@/lib/catalog";
-import type { CartItem, ShirtProduct } from "@/types/shirt";
+import { formatPrice } from "@/lib/format";
+import { COLORS, type BaseColor, type CartItem, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 
 export const FREE_SHIPPING_THRESHOLD = 80;
 export const SHIPPING_FEE = 6;
@@ -23,6 +24,29 @@ export function cartLines(items: CartItem[]): CartLine[] {
  * (the one-tap button or two separate adds), in any sizes.
  */
 export const PAIR_PRICE = 90;
+
+/** What the bag already holds of "the pair" for one design in one size. */
+export interface PairStatus {
+  /** Tee colours of this design + size already in the bag. */
+  have: BaseColor[];
+  /** The colours "Get it in both" would add. */
+  missing: BaseColor[];
+  /** A colour of this design + size is at MAX_QTY: the pair can't be added. */
+  capped: boolean;
+}
+
+export function pairStatus(items: CartItem[], id: string, size: ShirtSize): PairStatus {
+  const line = (c: BaseColor) => items.find((i) => i.id === id && i.size === size && i.color === c);
+  const have = COLORS.filter((c) => line(c));
+  return { have, missing: COLORS.filter((c) => !line(c)), capped: COLORS.some((c) => (line(c)?.qty ?? 0) >= MAX_QTY) };
+}
+
+/** The pair button's label: what one tap on it would do now. */
+export function pairLabel(status: PairStatus, price: number): string {
+  if (status.missing.length === 0) return "In your bag ✓";
+  if (status.have.length > 0) return `Complete the pair · +${formatPrice(PAIR_PRICE - price * status.have.length)}`;
+  return "Get it in both";
+}
 
 /** Complete pairs in the bag: per design, the smaller of its black and white quantities. */
 export function countPairs(lines: CartLine[]): { id: string; pairs: number; saving: number }[] {

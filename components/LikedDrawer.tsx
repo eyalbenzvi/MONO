@@ -18,12 +18,15 @@ import { TIER_LABEL, tierOf } from "@/lib/match";
 import { useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { type BaseColor, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
 export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const likedIds = useTasteStore((s) => s.likedIds);
+  // Read once for the whole list (not per row).
+  const showMatch = useShowMatch();
+  const vector = useTasteStore((s) => s.preferenceVector);
   const cartCount = useCartCount();
   const panel = useRef<HTMLElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -136,7 +139,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 <ul ref={list} className="space-y-2 pb-4">
                   <AnimatePresence initial={false}>
                     {items.map((shirt, row) => (
-                      <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
+                      <SavedRow key={shirt.id} shirt={shirt} vector={showMatch ? vector : null} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
                     ))}
                   </AnimatePresence>
                   <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
@@ -216,11 +219,20 @@ function ListActions({ items }: { items: ShirtProduct[] }) {
 }
 
 /** A quiet row: picture, name, price and match, one "+" (remembered size). */
-function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavigate: () => void; onRemove: () => void }) {
-  const vector = useTasteStore((s) => s.preferenceVector);
+function SavedRow({
+  shirt,
+  vector,
+  onNavigate,
+  onRemove,
+}: {
+  shirt: ShirtProduct;
+  /** The taste to match against, once the taste test is done (else null). */
+  vector: UserProfileVector | null;
+  onNavigate: () => void;
+  onRemove: () => void;
+}) {
   const color: BaseColor = useCartStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
-  const showMatch = useShowMatch();
-  const tier = showMatch ? tierOf(vector, matchScore(vector, shirt.features)) : null;
+  const tier = vector ? tierOf(vector, matchScore(vector, shirt.features)) : null;
 
   return (
     <motion.li

@@ -22,7 +22,7 @@ import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
 import { CATEGORY_LABELS, CATEGORY_VIBES, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE } from "@/lib/cart";
+import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { track } from "@/lib/analytics";
@@ -51,6 +51,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   const setColor = useCartStore((s) => s.setColor);
   const addToCart = useCartStore((s) => s.addToCart);
   const addPair = useCartStore((s) => s.addPair);
+  const cart = useCartStore((s) => s.cart);
   // After adding: "✓ Added" for a moment, then the button leads to the bag
   // (until the size or colour changes).
   const [added, setAdded] = useState<{ key: string; phase: "added" | "view" } | null>(null);
@@ -141,8 +142,12 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     if (phase === "view") return router.push("/cart/");
     if (addToCart(shirt.id, size, color, 1, { quiet: true })) confirmAdded(addedKey);
   };
+  // What "Get it in both" would add now, given the bag (this size).
+  const pair = size ? pairStatus(cart, shirt.id, size) : null;
+  const pairComplete = !!pair && pair.missing.length === 0;
   const onPair = () => {
     if (!size) return needSize();
+    if (pairComplete) return router.push("/cart/");
     if (addPair(shirt.id, size, { quiet: true })) confirmAdded(addedKey);
   };
   const buyLabel = !size
@@ -154,8 +159,10 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
         : `Add to bag · ${size}`;
 
   const goBack = () => {
-    // Return to the exact shop state (filters + scroll) when we came from it.
-    if (productOrigin === "/shop/") {
+    // Return to the exact shop state (filters + scroll) when this product was
+    // opened from the grid; after moving on to another product, history
+    // holds that one, so go to the shop instead.
+    if (productOrigin?.id === shirt.id) {
       setProductOrigin(null);
       router.back();
     } else router.push("/shop/");
@@ -363,11 +370,11 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                   <span className="h-5 w-5 rounded-full bg-white ring-1 ring-black/20" />
                 </span>
                 <span>
-                  <span className="block text-sm font-semibold">Get it in both</span>
+                  <span className="block text-sm font-semibold">{pair ? pairLabel(pair, shirt.price) : "Get it in both"}</span>
                   <span className="block text-xs text-neutral-400">Black + White{size ? ` · ${size}` : ""}</span>
                 </span>
               </span>
-              <span className="font-mono text-sm font-semibold">{formatPrice(PAIR_PRICE)}</span>
+              {!pair?.have.length && <span className="font-mono text-sm font-semibold">{formatPrice(PAIR_PRICE)}</span>}
             </button>
 
             <div className="mt-5 border-t border-white/10">
@@ -412,8 +419,12 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                     key={m.id}
                     href={productHref(m.id)}
                     replace
-                    // Keep the tee colour the user is looking at.
-                    onClick={() => setColor(m.id, color)}
+                    // Keep the tee colour the user is looking at. Variations
+                    // replace this page in history, so Back still reaches the grid.
+                    onClick={() => {
+                      setColor(m.id, color);
+                      if (productOrigin?.id === shirt.id) setProductOrigin({ ...productOrigin, id: m.id });
+                    }}
                     aria-current={current ? "page" : undefined}
                     aria-label={`${m.title}, ${formatPrice(m.price)}${current ? " (showing)" : ""}`}
                     className={`relative w-28 shrink-0 rounded-2xl p-1.5 transition ${STAGE_BG} ${

@@ -4,7 +4,6 @@
 // viewport with touch: 10 swipes → taste-test screen, zoom open / Escape,
 // shop, product page colour toggle on the image, add to bag, checkout.
 // Also loads the main pages on desktop. Fails on any console / page error.
-const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { chromium, devices } = (() => {
@@ -14,28 +13,7 @@ const { chromium, devices } = (() => {
     return require("/opt/node22/lib/node_modules/playwright");
   }
 })();
-
-const OUT = path.resolve(__dirname, "../../out");
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json", ".txt": "text/plain", ".xml": "application/xml", ".webmanifest": "application/manifest+json", ".ico": "image/x-icon", ".woff2": "font/woff2" };
-
-function serve() {
-  const server = http.createServer((req, res) => {
-    let url = decodeURIComponent(req.url.split("?")[0]);
-    if (BASE_PATH && url.startsWith(BASE_PATH)) url = url.slice(BASE_PATH.length) || "/";
-    let file = path.join(OUT, url);
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
-    if (!fs.existsSync(file) && fs.existsSync(file + ".html")) file += ".html";
-    let status = 200;
-    if (!file.startsWith(OUT) || !fs.existsSync(file)) {
-      file = path.join(OUT, "404.html");
-      status = 404;
-    }
-    res.writeHead(status, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
-    fs.createReadStream(file).pipe(res);
-  });
-  return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server)));
-}
+const { serve, OUT, BASE_PATH } = require("./serveOut.cjs");
 
 let failures = 0;
 const ok = (cond, msg) => {

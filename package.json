@@ -13,7 +13,8 @@
     "og": "tsx scripts/generateOgImages.ts",
     "audit:prints": "node scripts/tools/auditPrints.cjs",
     "measure:fonts": "node scripts/tools/measureFonts.cjs",
-    "smoke": "node scripts/tools/smoke.cjs"
+    "smoke": "node scripts/tools/smoke.cjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",
@@ -24,6 +25,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@resvg/resvg-js": "^2.6.2",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",

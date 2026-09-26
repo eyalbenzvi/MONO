@@ -57,7 +57,7 @@ export function ActionButtons() {
         <span aria-hidden className="sideways:hidden" />
       </div>
       {/* Keyboard shortcuts only where there's a keyboard-and-mouse setup. */}
-      <p className="mt-2 hidden text-center text-xs text-neutral-400 sideways:hidden [@media(hover:hover)_and_(pointer:fine)]:sm:block">
+      <p className="mt-2 hidden text-center text-xs text-neutral-400 sideways:!hidden [@media(hover:hover)_and_(pointer:fine)]:sm:block">
         ← pass · → like · space details · Z undo
       </p>
     </div>

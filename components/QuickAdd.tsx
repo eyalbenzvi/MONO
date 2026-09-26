@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
@@ -34,6 +34,19 @@ export function QuickAdd({
   const preferred = useCartStore((s) => s.preferredSize);
   const addToCart = useCartStore((s) => s.addToCart);
   const [open, setOpen] = useState(false);
+  // After a size is picked (or the sizes closed), focus moves to the button
+  // that takes their place instead of falling back to the page.
+  const button = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(false);
+  useEffect(() => {
+    if (!refocus.current || open) return;
+    refocus.current = false;
+    button.current?.focus({ preventScroll: true });
+  });
+  const close = () => {
+    refocus.current = true;
+    setOpen(false);
+  };
   if (!hydrated) return null;
 
   const overlay = variant === "overlay";
@@ -44,6 +57,7 @@ export function QuickAdd({
   if (preferred && !open) {
     return (
       <button
+        ref={button}
         type="button"
         onClick={() => addToCart(shirt.id, preferred, color)}
         aria-label={`Add ${shirt.title} to bag, size ${preferred}`}
@@ -74,7 +88,7 @@ export function QuickAdd({
                 type="button"
                 onClick={() => {
                   addToCart(shirt.id, size, color);
-                  setOpen(false);
+                  close();
                 }}
                 aria-label={`Size ${size}`}
                 className={`h-8 min-w-0 flex-1 rounded-full px-0 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
@@ -82,12 +96,13 @@ export function QuickAdd({
                 {size}
               </button>
             ))}
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close sizes" className="flex h-8 w-7 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
+            <button type="button" onClick={close} aria-label="Close sizes" className="flex h-8 w-7 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
               <X className="h-3.5 w-3.5" />
             </button>
           </motion.div>
         ) : (
           <motion.button
+            ref={button}
             key="plus"
             type="button"
             initial={{ opacity: 0 }}

@@ -4,7 +4,7 @@ import { SHIRTS } from "@/lib/catalog";
 import {
   ARCHETYPE_NAMES,
   DAILY_GOAL,
-  LATEST_DROP,
+  latestDrop,
   archetypeOf,
   countSwipe,
   currentStreak,
@@ -72,9 +72,11 @@ describe("Daily 5 (F10)", () => {
   });
 });
 
+const LATEST_DROP = latestDrop(SHIRTS);
+
 describe("drops (F13)", () => {
   it("the latest drop is the week of 21 Sep 2026", () => {
-    expect(LATEST_DROP).toBe(Math.max(...SHIRTS.map((s) => s.dropWeek)));
+    expect(LATEST_DROP).toBe(SHIRTS.reduce((m, s) => Math.max(m, s.dropWeek), 0));
     expect(dropWeekAt(new Date(2026, 8, 23).getTime())).toBe(LATEST_DROP);
   });
 

@@ -33,6 +33,22 @@ export function CartView() {
   const placeOrder = useCartStore((s) => s.placeOrder);
   const [step, setStep] = useState<Step>("bag");
   const [placed, setPlaced] = useState<Order | null>(null);
+  // The delivery form lives here, in memory only (never saved): going back
+  // to the bag and returning keeps what was typed.
+  const [values, setValues] = useState<Record<Field, string>>(EMPTY_DETAILS);
+  const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
+  // A new step puts focus on its heading (never back on the page body).
+  const heading = useRef<HTMLHeadingElement>(null);
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!moved.current) return;
+    heading.current?.focus({ preventScroll: true });
+    heading.current?.scrollIntoView({ block: "nearest" });
+  }, [step]);
+  const go = (next: Step) => {
+    moved.current = true;
+    setStep(next);
+  };
 
   const { lines, count, subtotal, discount, pairs, shipping, total, toFreeShipping: toFree } = cartTotals(cart);
 
@@ -45,7 +61,7 @@ export function CartView() {
       <div className={`mx-auto px-4 pb-28 pt-1 ${step !== "done" && count > 0 ? "max-w-3xl lg:max-w-5xl" : "max-w-3xl"}`}>
         <div className="mb-4 flex items-center justify-between">
           {step === "details" ? (
-            <button type="button" onClick={() => setStep("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+            <button type="button" onClick={() => go("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
               <ArrowLeft className="h-4 w-4" /> Bag
             </button>
           ) : (
@@ -56,7 +72,9 @@ export function CartView() {
           {count > 0 && <Steps step={step} />}
         </div>
 
-        <h1 className="mb-4 text-2xl font-bold tracking-tight">{step === "bag" ? "Your bag" : "Delivery details"}</h1>
+        <h1 ref={heading} tabIndex={-1} className="mb-4 text-2xl font-bold tracking-tight outline-none">
+          {step === "bag" ? "Your bag" : "Delivery details"}
+        </h1>
 
         {count === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
@@ -142,7 +160,7 @@ export function CartView() {
             <button
               type="button"
               onClick={() => {
-                setStep("details");
+                go("details");
                 track("begin_checkout", { value: total, items: cart.reduce((n, l) => n + l.qty, 0), currency: "USD" });
               }}
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
@@ -158,6 +176,10 @@ export function CartView() {
           </>
         ) : (
           <DetailsForm
+            values={values}
+            setValues={setValues}
+            touched={touched}
+            setTouched={setTouched}
             total={total}
             lines={lines}
             summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
@@ -165,7 +187,9 @@ export function CartView() {
               const order = placeOrder(customer);
               if (order) {
                 setPlaced(order);
-                setStep("done");
+                go("done");
+                setValues(EMPTY_DETAILS);
+                setTouched({});
               }
             }}
           />
@@ -306,20 +330,30 @@ function validate(v: Record<Field, string>): Record<Field, string> {
 /** Express checkout (Apple Pay / Google Pay…) appears only once a provider is configured. */
 const EXPRESS_PAY = process.env.NEXT_PUBLIC_EXPRESS_PAY ?? "";
 
+const EMPTY_DETAILS: Record<Field, string> = { name: "", email: "", address: "", city: "", zip: "", country: "US" };
+
+type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
+
 function DetailsForm({
+  values,
+  setValues,
+  touched,
+  setTouched,
   total,
   lines,
   summary,
   onSubmit,
 }: {
+  values: Record<Field, string>;
+  setValues: Setter<Record<Field, string>>;
+  /** Each field shows its error once it has been left (or on submit). */
+  touched: Partial<Record<Field, boolean>>;
+  setTouched: Setter<Partial<Record<Field, boolean>>>;
   total: number;
   lines: ReturnType<typeof cartLines>;
   summary: React.ReactNode;
   onSubmit: (c: Customer) => void;
 }) {
-  const [values, setValues] = useState<Record<Field, string>>({ name: "", email: "", address: "", city: "", zip: "", country: "US" });
-  // Each field shows its error once it has been left (or on submit).
-  const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
   const [promoOpen, setPromoOpen] = useState(false);
   const [promo, setPromo] = useState("");
   const [promoNote, setPromoNote] = useState("");
@@ -473,6 +507,9 @@ function DetailsForm({
 
 function Confirmation({ order }: { order: Order }) {
   const lines = cartLines(order.items);
+  // Placing the order moves focus to its heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => heading.current?.focus({ preventScroll: true }), []);
   const first = lines[0];
   const [referral, setReferral] = useState<{ code: string; url: string } | null>(null);
   // Referral codes need a backend; without one the block isn't shown.
@@ -485,7 +522,9 @@ function Confirmation({ order }: { order: Order }) {
         <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
           <CheckCircle2 className="h-14 w-14" />
         </motion.div>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">Order placed</h1>
+        <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight outline-none">
+          Order placed
+        </h1>
         <p className="mt-1 text-sm text-neutral-400">
           Thanks, {order.customer.name.split(" ")[0]}. Demo order <span className="whitespace-nowrap font-mono text-white">{order.number}</span> — a confirmation would go to{" "}
           {order.customer.email}.
@@ -518,6 +557,10 @@ function Confirmation({ order }: { order: Order }) {
               <span className="font-mono">−{formatPrice(order.discount)}</span>
             </li>
           )}
+          <li className="flex justify-between text-neutral-300">
+            <span>Shipping</span>
+            <span className="font-mono">{order.shipping === 0 ? "Free" : formatPrice(order.shipping)}</span>
+          </li>
           <li className="flex justify-between border-t border-white/10 pt-2 font-semibold">
             <span>Total</span>
             <span className="font-mono">{formatPrice(order.total)}</span>
