@@ -9,6 +9,7 @@
  *   npx tsx scripts/archive/fetchArchive.ts prep        # again, with the cut-outs
  *   npx tsx scripts/archive/fetchArchive.ts sheet       # numbered contact sheets for review
  *   npx tsx scripts/archive/fetchArchive.ts select      # curation.ts → data/archive + prints
+ *   npx tsx scripts/tools/topAlignPrints.ts             # every picture at the top of its print area
  *
  * Metadata and prints are cached in node_modules/.cache/mono-archive.
  */
@@ -221,7 +222,8 @@ async function placed(input: sharp.Sharp, fit: number): Promise<{ gray: Uint8Arr
   const tw = Math.max(1, Math.round(bw * s));
   const th = Math.max(1, Math.round(bh * s));
   const left = Math.round((ARCHIVE_W - tw) / 2);
-  const top = Math.round((ARCHIVE_H - th) / 2);
+  // Top-aligned (every picture starts the same distance below the collar; scripts/tools/topAlignPrints).
+  const top = Math.round(ARCHIVE_H * 0.03);
   const { data, info } = await input
     .clone()
     .ensureAlpha()
