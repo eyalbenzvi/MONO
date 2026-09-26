@@ -32,16 +32,29 @@ describe("U1: a minimal header", () => {
 });
 
 describe("U2: the personal area", () => {
-  it("before the taste test it invites one; after it, it shows the taste, what it learned from, and picks", () => {
-    const { rerender } = render(<MeView />);
-    expect(screen.getByText("Not learned yet")).toBeTruthy();
+  it("before the taste test it invites one; after it, the taste set like About, real counts, picks, Saved and the quiet actions", () => {
+    const { rerender, container } = render(<MeView />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Notyet.");
+    expect(screen.getByRole("link", { name: "Start swiping" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Reset taste" })).toBeNull();
     act(() => useTasteStore.setState({ seen: [...CALIBRATION_IDS], likedIds: [SHIRTS[5].id] }));
     rerender(<MeView />);
-    expect(screen.queryByText("Not learned yet")).toBeNull();
-    expect(screen.getByText(new RegExp(`learned from ${CALIBRATION_IDS.length} tees you rated`))).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).not.toMatch(/Not/);
+    // Counts from the store: rated, saved, in bag.
+    const counts = [...container.querySelectorAll("dl dd.font-mono")].map((d) => d.textContent);
+    expect(counts).toEqual([String(CALIBRATION_IDS.length), "1", "0"]);
     expect(screen.getByRole("list", { name: "Picked for you" })).toBeTruthy();
-    expect(screen.getByText("Saved · 1")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Share my taste/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Clear all my data/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Edit saved" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Share my taste" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Reset taste" })).toBeTruthy();
+    // No decoration that looks like data, no nags.
+    expect(screen.queryByText(/Keep swiping|streak|learned from/)).toBeNull();
+  });
+
+  it("Clear data asks for a second tap", () => {
+    render(<MeView />);
+    const clear = screen.getByRole("button", { name: "Clear data" });
+    act(() => clear.click());
+    expect(screen.getByRole("button", { name: "Tap again" })).toBeTruthy();
   });
 });

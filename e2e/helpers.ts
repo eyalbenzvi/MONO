@@ -49,9 +49,9 @@ export async function hydrated(page: Page) {
   await page.locator("[data-hydrated]").waitFor({ state: "attached" });
 }
 
-/** Saved lives in the personal area now: the person icon, then "Manage →" (the Saved drawer). */
+/** Saved lives in the personal area now: the person icon, then "Edit" (the Saved drawer). */
 export async function openSaved(page: import("@playwright/test").Page) {
   await page.getByRole("link", { name: "You: taste, saved, orders" }).click();
   await page.waitForURL(/\/me\/$/);
-  await page.getByRole("button", { name: "Manage →" }).click();
+  await page.getByRole("button", { name: "Edit saved" }).click();
 }
