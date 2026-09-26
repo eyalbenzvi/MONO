@@ -10,12 +10,12 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { MiniBag } from "@/components/shop/MiniBag";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { ColorSelector, LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
+import { ColorSelector, LABEL, MatchBadge, SaveButton, ShareButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
 import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch, matchScore } from "@/lib/recommendation";
 import { matchTier } from "@/lib/match";
-import { parseShareParams } from "@/lib/share";
+import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
@@ -83,8 +83,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     // Clean the URL so a reload or a re-share doesn't carry the tag along.
     if (c || ref) {
       const q = new URLSearchParams(window.location.search);
-      q.delete("c");
-      q.delete("ref");
+      for (const k of SHARE_PARAMS) q.delete(k);
       const rest = q.toString();
       window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
     }
@@ -221,14 +220,6 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <div className="absolute right-3 top-3 z-10 flex gap-2">
               <button
                 type="button"
-                onClick={() => useUiStore.getState().openShare(shirt.id, color)}
-                aria-label={`Share ${shirt.title}`}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
-              >
-                <Share2 className="h-[18px] w-[18px]" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setZoom(true)}
                 aria-label="Zoom in on the print"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
@@ -342,6 +333,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             <div className="mt-4 hidden gap-2 md:flex">
               <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} />
               <SaveButton id={shirt.id} size="lg" />
+              <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" />
             </div>
 
             {/* The pair: same print in both tee colours, one tap. */}
@@ -451,6 +443,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
           </p>
         </div>
         <SaveButton id={shirt.id} size="lg" />
+        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" />
         <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>

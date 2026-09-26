@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(`${SITE_URL}/`),
   title: "MONO — Monochrome Tee Discovery",
   description: DESCRIPTION,
+  manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/site.webmanifest`,
   openGraph: {
     type: "website",
     siteName: "MONO",

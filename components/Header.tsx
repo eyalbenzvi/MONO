@@ -17,6 +17,7 @@ const TABS = [
 
 export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
   const pathname = usePathname() ?? "/";
+  const activeTab = TABS.findIndex((t) => t.match(pathname));
   const hydrated = useUiStore((s) => s.hydrated);
   const savedCount = useTasteStore((s) => s.likedIds.length);
   const cartCount = useCartCount();
@@ -65,6 +66,16 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
 
         <nav aria-label="Sections" className="justify-self-center">
           <div className="relative grid w-44 grid-cols-2 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
+            {/* One pill, always rendered, moved under the active tab: the
+                markup never depends on the URL, so a page served at another
+                address (404.html) still hydrates cleanly. */}
+            <motion.span
+              aria-hidden
+              className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white"
+              initial={false}
+              animate={{ x: activeTab === 1 ? "100%" : "0%", opacity: activeTab === -1 ? 0 : 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            />
             {TABS.map((tab) => {
               const active = tab.match(pathname);
               return (
@@ -76,13 +87,6 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
                     active ? "text-black" : "text-neutral-400 hover:text-white"
                   }`}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="tab-pill"
-                      className="absolute inset-0 -z-10 rounded-full bg-white"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    />
-                  )}
                   {tab.label}
                 </Link>
               );

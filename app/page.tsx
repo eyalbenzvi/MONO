@@ -10,9 +10,31 @@ import { CardStack } from "@/components/CardStack";
 import { tierOf } from "@/lib/match";
 import { biggestShift, profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
+import { SHIRTS } from "@/lib/catalog";
+import { STORE_POLICY } from "@/lib/store-policy";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { FEATURE_LABELS } from "@/types/shirt";
+
+/**
+ * Desktop (≥ 1024 px), until the taste test is done: a narrow column beside
+ * the card saying what's going on. Phones get the one-line goal instead.
+ */
+function HowItWorks() {
+  const { complete } = useCalibrationProgress();
+  if (complete) return null;
+  return (
+    <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-19rem))] top-1/3 hidden w-60 lg:block">
+      <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
+      <ul className="mt-3 space-y-2 text-sm text-neutral-300">
+        <li>→ Like what you&apos;d wear, ← pass on the rest.</li>
+        <li>Every swipe teaches MONO your taste in prints.</li>
+        <li>Then the shop ranks all {SHIRTS.length.toLocaleString("en-US")} designs for you.</li>
+      </ul>
+      <p className="mt-4 text-xs text-neutral-400">{STORE_POLICY.firstVisit}</p>
+    </aside>
+  );
+}
 
 /** The top strip keeps one fixed height across phases so the card never jumps. */
 const STRIP = "mx-auto flex h-10 w-full max-w-[420px] shrink-0 flex-col justify-center px-4";
@@ -59,6 +81,7 @@ export default function DiscoverPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col sideways:flex-row">
       <div className="sideways:hidden">{hydrated ? <TopStrip /> : <div className={STRIP} />}</div>
+      {hydrated && <HowItWorks />}
       <section className="relative min-h-0 flex-1 px-4 pb-1 pt-1 sideways:py-2">
         {hydrated ? <CardStack /> : <CardSkeleton />}
         {hydrated && <LearnChip />}
@@ -116,10 +139,13 @@ function TopStrip() {
   // The one progress counter: which card of the taste test is on screen.
   const current = Math.min(done + 1, total);
   const label = flash ?? (done === total - 1 ? "Last one" : `${current}/${total}`);
+  // First visit (before the first swipe) on phones: one quiet line of store
+  // basics under the bar; the strip grows for it, just this once.
+  const firstVisit = !onboardingSeen && done === 0;
   return (
-    <div className={STRIP}>
+    <div className={firstVisit ? STRIP.replace("h-10", "min-h-10 lg:h-10") : STRIP}>
       {!onboardingSeen && (
-        <p className="mb-1.5 truncate text-center text-[13px] font-medium text-white">
+        <p className={`truncate text-center text-[13px] font-medium text-white ${firstVisit ? "mb-1 leading-4" : "mb-1.5"}`}>
           Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.
         </p>
       )}
@@ -157,6 +183,7 @@ function TopStrip() {
           </motion.span>
         </AnimatePresence>
       </div>
+      {firstVisit && <p className="mt-1 truncate text-center text-xs leading-4 text-neutral-400 lg:hidden">{STORE_POLICY.firstVisit}</p>}
     </div>
   );
 }

@@ -16,6 +16,8 @@ export const STORE_POLICY = {
   fit: "Fits true to size. Between sizes? Go up.",
   /** Near the checkout button in the bag. */
   returns: "Free 30-day returns",
+  /** First visit, under the Discover strip. */
+  firstVisit: "Organic cotton · Printed to order · Free returns",
 } as const;
 
 export type TrustKey = (typeof STORE_POLICY.trust)[number]["key"];
