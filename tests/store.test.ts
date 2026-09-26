@@ -258,7 +258,8 @@ describe("cart store", () => {
     useCartStore.getState().addToCart("mono-0001", "M", "white");
     useCartStore.getState().placeOrder(CUSTOMER);
     const saved = storage.getItem("mono-cart")!;
-    for (const v of Object.values(CUSTOMER)) expect(saved).not.toContain(v);
+    // As stored values (quoted): a short one like the country "IL" can turn up inside the random order number.
+    for (const v of Object.values(CUSTOMER)) expect(saved).not.toContain(JSON.stringify(v));
     expect(Object.keys(useCartStore.getState().lastOrder!).sort()).toEqual(["items", "number", "placedAt", "shipping", "subtotal", "total"]);
   });
 

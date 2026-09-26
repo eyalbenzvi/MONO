@@ -234,7 +234,8 @@ async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped
   const tw = Math.max(1, Math.round(bw * s));
   const th = Math.max(1, Math.round(bh * s));
   const left = Math.round((PRINT_W - tw) / 2);
-  const top = Math.round((PRINT_H - th) / 2);
+  // Top-aligned (every picture starts the same distance below the collar; scripts/tools/topAlignPrints).
+  const top = Math.round(PRINT_H * 0.03);
   const placed = await layer
     .resize(tw, th, { kernel: "lanczos3" })
     .extend({ top, left, bottom: PRINT_H - th - top, right: PRINT_W - tw - left, background: { r: 0, g: 0, b: 0, alpha: 0 } })
