@@ -182,7 +182,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     }
   });
 
-  test("R20: at 375 px the price in the buy bar keeps its room", async ({ page }) => {
+  test("R20: at 375 px the buy button's label (with the price) fits in every state", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await seed(page);
     await page.goto("shop/mono-0001/");
@@ -193,8 +193,6 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
       if (step === "added") await bar.getByRole("button").last().tap();
       if (step === "view") await page.waitForTimeout(1400);
       if (step === "both") await page.getByRole("radio", { name: /Both tees/ }).tap();
-      const price = bar.locator("p.font-mono").first();
-      expect(await price.evaluate((p) => p.scrollWidth <= p.clientWidth + 1)).toBe(true);
       const buy = bar.getByRole("button").last();
       const labels = buy.locator("span.truncate:visible");
       expect(await labels.evaluate((s) => s.scrollWidth <= s.clientWidth + 1)).toBe(true);
@@ -217,14 +215,18 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     expect(ids.every(Boolean)).toBe(true);
   });
 
-  test("I07: one tee picker (black, white, both with its price anchor); no extra lines; details closed with the print size", async ({ page }) => {
+  test("I07 / T4: one tee picker (black, white, both); the price only on the buy button; details closed with the print size", async ({ page }) => {
     await seed(page);
     await page.goto("shop/mono-0001/");
     await hydrated(page);
     await expect(page.getByRole("radiogroup", { name: "Tee colour" })).toHaveCount(1);
     const both = page.getByRole("radio", { name: /Both tees/ });
-    await expect(both).toContainText("$96");
-    await expect(both).toContainText("$90");
+    await expect(both).not.toContainText("$");
+    await expect(page.locator("main h1 + span, main h1 ~ span.font-mono")).toHaveCount(0);
+    await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+    await expect(page.getByRole("button", { name: /^Add to bag · \$48$/ }).last()).toBeVisible();
+    await both.tap();
+    await expect(page.getByRole("button", { name: /^Add both · \$90$/ }).last()).toBeVisible();
     await expect(page.getByText(/One of a kind|Get it in both/)).toHaveCount(0);
     const details = page.getByRole("button", { name: "Details" });
     await expect(details).toHaveAttribute("aria-expanded", "false");
@@ -246,7 +248,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(zoom.getByText(/10 cm/)).toBeVisible();
   });
 
-  test("I08: Saved — 'Add your top 3 · M · $144', Add all as a link, share by the title, icon-only +", async ({ page }) => {
+  test("I08 / T4: Saved — 'Add your top 3 · M' (no prices), Add all as a link, share by the title, icon-only +", async ({ page }) => {
     await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700", "mono-0800"] });
     await page.addInitScript(() => {
       const c = JSON.parse(localStorage.getItem("mono-cart")!);
@@ -257,7 +259,8 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await hydrated(page);
     await page.getByRole("button", { name: /^Saved \(/ }).tap();
     const d = page.getByRole("dialog", { name: "Saved tees" });
-    await expect(d.getByRole("button", { name: /Add your top 3 · M · \$144/ })).toBeVisible();
+    await expect(d.getByRole("button", { name: /^Add your top 3 · M$/ })).toBeVisible();
+    await expect(d.getByText(/\$\d/)).toHaveCount(0);
     await expect(d.getByRole("button", { name: /^Add all 6$/ })).toBeVisible();
     await expect(d.getByRole("button", { name: "Share my list" })).toBeVisible();
     const plus = d.locator("[data-saved-row] button[aria-label^='Add ']").first();

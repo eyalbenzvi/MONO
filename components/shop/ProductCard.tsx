@@ -9,7 +9,6 @@ import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { isNew } from "@/lib/taste";
 import { useHydrated } from "@/store/useUiStore";
-import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
 import { QuickAdd } from "@/components/QuickAdd";
 
@@ -75,11 +74,10 @@ export const ProductCard = memo(function ProductCard({
             onOpen?.(shirt.id);
           }}
           className="block min-w-0 truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
-          aria-label={`${shirt.title}, ${formatPrice(shirt.price)}${tag ? `, ${tag}` : ""}${variations ? `, ${variations} variations` : ""}`}
+          aria-label={`${shirt.title}${tag ? `, ${tag}` : ""}${variations ? `, ${variations} variations` : ""}`}
         >
           {shirt.title}
         </Link>
-        <span className="shrink-0 font-mono text-sm">{formatPrice(shirt.price)}</span>
       </div>
       <p className="truncate px-0.5 text-xs text-neutral-400">
         <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
