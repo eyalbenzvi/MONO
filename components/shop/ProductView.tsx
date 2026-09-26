@@ -23,7 +23,7 @@ import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
 import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, isPhoto, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
+import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
@@ -43,7 +43,7 @@ const CHOICES: readonly Choice[] = ["black", "white", "both"];
  * its price anchor). Every design comes in both colours; the original is
  * marked in the label.
  */
-function TeeChoice({ value, original, price, onChange }: { value: Choice; original: BaseColor; price: number; onChange: (c: Choice) => void }) {
+function TeeChoice({ value, original, onChange }: { value: Choice; original: BaseColor; onChange: (c: Choice) => void }) {
   const keys = radioKeys(CHOICES, value, onChange);
   return (
     <div className="flex items-center gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
@@ -55,13 +55,11 @@ function TeeChoice({ value, original, price, onChange }: { value: Choice; origin
             <button
               key={c}
               {...common}
-              aria-label={`Both tees, black and white: ${formatPrice(PAIR_PRICE)} instead of ${formatPrice(price * 2)}`}
+              aria-label="Both tees, black and white"
               className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full pl-1 pr-2.5 text-xs font-semibold transition ${active ? "bg-white text-black" : "text-white hover:bg-white/10"}`}
             >
               <span aria-hidden className="h-6 w-6 shrink-0 rounded-full bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-1 ring-white/40" />
               Both
-              <s className={`font-mono font-normal ${active ? "text-neutral-500" : "text-neutral-400"}`}>{formatPrice(price * 2)}</s>
-              <span className="font-mono">{formatPrice(PAIR_PRICE)}</span>
             </button>
           );
         const label = `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
@@ -205,17 +203,10 @@ export function ProductView({
   };
   // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
   const sizeText = size ? SIZE_LABELS[size] : "";
-  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${sizeText}` : pairLabel(pair, shirt.price)) : `Add to bag · ${sizeText}`;
+  // The price shows here only — where money changes hands (plus the bag).
+  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${formatPrice(PAIR_PRICE)}` : pairLabel(pair, shirt.price)) : `Add to bag · ${formatPrice(shirt.price)}`;
   const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
-  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${sizeText}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${size}`;
-  const shownPrice = both ? (
-    <>
-      <s className="mr-1.5 text-[0.8em] font-normal text-neutral-500">{formatPrice(shirt.price * 2)}</s>
-      {formatPrice(PAIR_PRICE)}
-    </>
-  ) : (
-    formatPrice(shirt.price)
-  );
+  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${formatPrice(PAIR_PRICE)}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${formatPrice(shirt.price)}`;
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when this product was
@@ -320,7 +311,6 @@ export function ProductView({
               <TeeChoice
                 value={both ? "both" : color}
                 original={shirt.baseColor}
-                price={shirt.price}
                 onChange={(c) => {
                   setBoth(c === "both");
                   if (c !== "both") setColor(shirt.id, c);
@@ -357,10 +347,8 @@ export function ProductView({
               {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
               {hydrated && isNew(shirt.dropDate) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
             </p>
-            <div className="mt-0.5 flex items-start justify-between gap-3">
-              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-              <span className="mt-0.5 whitespace-nowrap font-mono text-xl font-semibold md:text-2xl">{shownPrice}</span>
-            </div>
+            <h1 className="mt-0.5 text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+            {both && <p className="mt-0.5 text-sm text-neutral-400">Black + white pair</p>}
 
             {reasons.length > 0 && (
               <div className="mt-3">
@@ -463,7 +451,6 @@ export function ProductView({
                 </dl>
               )}
             </div>
-            <p className="mt-2 text-xs text-neutral-400">Free shipping over {formatPrice(FREE_SHIPPING_THRESHOLD)} · demo store, nothing is charged</p>
           </div>
         </div>
 
@@ -506,7 +493,6 @@ export function ProductView({
             <ShirtStrip
               shirts={members}
               label="Variations"
-              prices
               color={color}
               currentId={shirt.id}
               replace
@@ -535,15 +521,11 @@ export function ProductView({
       {/* Narrow phones: tighter gaps below 360 px, and below 400 px Share
           moves up to the image toolbar so price, save and the buy button fit. */}
       <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
-        {/* The price never gives way: the buy button's label shortens instead. */}
-        <div className="min-w-[4.5rem] flex-1">
-          <p className="whitespace-nowrap font-mono text-base font-semibold">{shownPrice}</p>
-          <p className="truncate text-xs text-neutral-400">
-            {both ? "Black + White" : COLOR_LABELS[color]}
-            <span className="max-[399px]:hidden">{both ? " tees" : " tee"}</span>
-            {size ? ` · ${SIZE_LABELS[size]}` : ""}
-          </p>
-        </div>
+        {/* Colour and size above the button; the price is in the button. */}
+        <p className="min-w-0 flex-1 truncate text-xs text-neutral-400">
+          {both ? "Black + White" : COLOR_LABELS[color]}
+          {size ? ` · ${SIZE_LABELS[size]}` : ""}
+        </p>
         <SaveButton id={shirt.id} size="lg" />
         <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" className="max-[399px]:hidden" />
         <BuyButton label={buyLabel} short={shortLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
@@ -561,7 +543,7 @@ function BuyButton({
   compact,
 }: {
   label: string;
-  /** Narrow phones (< 400 px): a shorter label, so the price keeps its room. */
+  /** Narrow phones (< 400 px): a shorter label. */
   short?: string;
   phase: "added" | "view" | null;
   onClick: () => void;

@@ -6,7 +6,6 @@ import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG } from "@/components/ui";
 import { productHref } from "@/lib/catalog";
-import { formatPrice } from "@/lib/format";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 import type { AddSource } from "@/lib/analytics";
 
@@ -21,7 +20,6 @@ export function ShirtStrip({
   layout = "scroll",
   label,
   names = true,
-  prices = false,
   quickAdd = false,
   color,
   currentId,
@@ -34,7 +32,6 @@ export function ShirtStrip({
   /** Accessible name of the list. */
   label?: string;
   names?: boolean;
-  prices?: boolean;
   quickAdd?: boolean;
   /** Show every tee in this colour (and keep it when opening one). */
   color?: BaseColor;
@@ -58,7 +55,7 @@ export function ShirtStrip({
               replace={replace}
               onClick={() => onOpen?.(s)}
               aria-current={current ? "page" : undefined}
-              aria-label={`${s.title}, ${formatPrice(s.price)}${current ? " (showing)" : ""}`}
+              aria-label={`${s.title}${current ? " (showing)" : ""}`}
               className={`relative block rounded-xl p-1.5 transition ${STAGE_BG} ${current ? "ring-2 ring-white" : currentId ? "ring-1 ring-white/10 hover:ring-white/40" : ""}`}
             >
               {current && (
@@ -69,7 +66,6 @@ export function ShirtStrip({
               <TeeMockup shirt={s} color={color} shadow={false} className="w-full" />
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
-            {prices && <p className="-mt-1 px-0.5 font-mono text-xs text-neutral-400">{formatPrice(s.price)}</p>}
             {quickAdd && <QuickAdd shirt={s} color={color} source={source} />}
           </li>
         );

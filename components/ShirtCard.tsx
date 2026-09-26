@@ -13,7 +13,6 @@ import { familySize, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { formatPrice } from "@/lib/format";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
@@ -115,7 +114,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                 {CATEGORY_LABELS[shirt.category]} · <TeeDot color={shirt.baseColor} /> {COLOR_LABELS[shirt.baseColor]} tee
               </p>
             </div>
-            <span className="shrink-0 font-mono text-lg font-semibold">{formatPrice(shirt.price)}</span>
           </div>
         </motion.div>
 
@@ -219,7 +217,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           href={productHref(shirt.id)}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
-          Full details · {formatPrice(shirt.price)} <Icon name="arrow-right" className="h-4 w-4" />
+          Full details <Icon name="arrow-right" className="h-4 w-4" />
         </Link>
       </div>
     </div>

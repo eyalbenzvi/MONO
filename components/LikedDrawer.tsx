@@ -17,8 +17,7 @@ import { TIER_LABEL, tierOf } from "@/lib/match";
 import { useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { SIZE_LABELS, type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
-import { formatPrice } from "@/lib/format";
+import { CATEGORY_LABELS, SIZE_LABELS, type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
 export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -199,7 +198,7 @@ function shareList(items: ShirtProduct[]) {
 const TOP = 3;
 
 /**
- * One main action above the rows — "Add your top 3 · M · $144" — and
+ * One main action above the rows — "Add your top 3 · M" — and
  * "Add all" as a quiet text link when there are more.
  */
 function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserProfileVector | null }) {
@@ -214,7 +213,6 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
     useUiStore.getState().showToast(`Added ${added} · ${SIZE_LABELS[size]}`);
   };
   const run = (which: "top" | "all") => (preferred ? add(which, preferred) : setPick((p) => (p === which ? null : which)));
-  const total = top.reduce((sum, s) => sum + s.price, 0);
   const label = top.length === 1 ? "Add to bag" : top.length === items.length ? `Add all ${top.length}` : `Add your top ${top.length}`;
   return (
     <div className="mb-3">
@@ -225,7 +223,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
         className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
       >
         <Icon name="shopping-bag" className="h-4 w-4" /> {label}
-        {preferred ? ` · ${SIZE_LABELS[preferred]}` : ""} · {formatPrice(total)}
+        {preferred ? ` · ${SIZE_LABELS[preferred]}` : ""}
       </button>
       {items.length > top.length && (
         <button
@@ -287,8 +285,7 @@ function SavedRow({
         <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
           <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
           <p className="truncate text-xs text-neutral-400">
-            {formatPrice(shirt.price)}
-            {tier ? ` · ${TIER_LABEL[tier]}` : ""}
+            {tier ? TIER_LABEL[tier] : CATEGORY_LABELS[shirt.category]}
           </p>
         </Link>
       </div>

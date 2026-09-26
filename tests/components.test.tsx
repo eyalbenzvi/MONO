@@ -38,9 +38,10 @@ afterEach(() => {
 const shirt = getShirtById("mono-0001")!;
 
 describe("ProductCard", () => {
-  it("one link with name and price; heart and quick add; no share, no match badge", () => {
-    render(<ProductCard shirt={shirt} />);
-    expect(screen.getByRole("link", { name: new RegExp(`^${shirt.title}, \\$`) }).getAttribute("href")).toBe(`/shop/${shirt.id}/`);
+  it("one link with the name (no price: every tee costs the same); heart and quick add; no share, no match badge", () => {
+    const { container } = render(<ProductCard shirt={shirt} />);
+    expect(screen.getByRole("link", { name: new RegExp(`^${shirt.title}`) }).getAttribute("href")).toBe(`/shop/${shirt.id}/`);
+    expect(container.textContent).not.toMatch(/\$\d/);
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
     expect(screen.getByRole("button", { name: `Quick add ${shirt.title}` })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^Share / })).toBeNull();

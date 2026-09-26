@@ -8,11 +8,13 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList, Trending } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
-import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
+import { rankShirts, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
+import { PAIR_PRICE } from "@/lib/cart";
+import { formatPrice } from "@/lib/format";
 
 export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
 
@@ -125,7 +127,6 @@ export function ShopView() {
   }, [ranked, category, sort, teeView]);
   visibleRef.current = visible;
   listIdRef.current = `shop_${sort}${category ? `_${category}` : ""}`;
-  const traits = topTraits(vector, 3);
 
   // shop_view once per visit, with the order actually shown; the list
   // itself (first page) each time the order or category changes.
@@ -213,19 +214,14 @@ export function ShopView() {
                 <span className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-white">
                   <Icon name="sparkles" className="h-4 w-4" /> Ranked for you
                 </span>
-                <div className="flex min-w-0 gap-1.5 overflow-hidden">
-                  {traits.map((k) => (
-                    <span key={k} className="shrink-0 rounded-full bg-white/[0.06] px-2.5 py-1 text-xs text-neutral-200 ring-1 ring-white/10">
-                      {FEATURE_LABELS[k]}
-                    </span>
-                  ))}
-                </div>
+                <PriceLine />
               </>
             ) : (
               <>
                 <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
                   {total} swipes → <span className="max-[339px]:hidden">ranked </span>for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
                 </span>
+                <PriceLine className="max-sm:hidden" />
                 <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
                   Start <Icon name="arrow-right" className="h-3.5 w-3.5" />
                 </Link>
@@ -345,5 +341,14 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     >
       {children}
     </button>
+  );
+}
+
+/** One price for everything: said once, as store policy, instead of on every card. */
+export function PriceLine({ className = "" }: { className?: string }) {
+  return (
+    <span className={`ml-auto shrink-0 text-xs text-neutral-400 ${className}`}>
+      Every tee {formatPrice(SHIRTS[0]?.price ?? 0)} · pair {formatPrice(PAIR_PRICE)}
+    </span>
   );
 }

@@ -17,7 +17,6 @@ import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
-import { formatPrice } from "@/lib/format";
 import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, type SwipeAction } from "@/types/shirt";
@@ -314,7 +313,7 @@ function TopCard({
       tabIndex={0}
       role="group"
       aria-roledescription="card"
-      aria-label={`${shirt.title}: ${CATEGORY_LABELS[shirt.category]}, ${shirt.baseColor} tee, ${formatPrice(shirt.price)}. Left arrow passes, right arrow likes, space shows details.`}
+      aria-label={`${shirt.title}: ${CATEGORY_LABELS[shirt.category]}, ${shirt.baseColor} tee. Left arrow passes, right arrow likes, space shows details.`}
       className={`absolute inset-0 rounded-[28px] outline-none will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
       initial={{ scale: 0.95, y: 16 }}
