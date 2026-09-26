@@ -79,9 +79,9 @@ export const SKU_CODES: Record<ShirtCategory, string> = {
 };
 
 /**
- * Categories made from photographs. A photo print can't be inverted for
- * the other tee colour (that makes a negative), so each carries its own
- * print per colourway: see printUrl in lib/catalog.
+ * Categories made from photographs. A photo print is greyscale (the whole
+ * picture) and is never inverted for the other tee colour — that would
+ * make a negative: see printUrl / needsInvert in lib/catalog.
  */
 export const PHOTO_CATEGORIES = ["wildlife", "flight", "machines"] as const satisfies readonly ShirtCategory[];
 export const isPhoto = (s: { category: ShirtCategory }) => (PHOTO_CATEGORIES as readonly ShirtCategory[]).includes(s.category);
@@ -145,7 +145,7 @@ export interface ShirtProduct {
   price: number;
   /** Tee colour. Prints are single-ink: white ink on black tees, black ink on white. */
   baseColor: BaseColor;
-  /** 3:4 monochrome SVG print, relative to the site root (e.g. /prints/print_1.svg). */
+  /** 3:4 monochrome print, relative to the site root: two-tone SVG (/prints/print_1.svg), or a greyscale WebP photograph. */
   backPrintUrl: string;
   category: ShirtCategory;
   /** Algorithm within the category (e.g. "facade", "ridges"). */

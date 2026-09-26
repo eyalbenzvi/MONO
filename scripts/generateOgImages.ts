@@ -18,7 +18,8 @@ import UPNG from "upng-js";
 import shirtsJson from "../data/shirts.json";
 import { WEAK_QUALITY } from "./gen/quality";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
-import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
+import sharp from "sharp";
+import { CATEGORY_LABELS, COLOR_LABELS, isPhoto, type CatalogEntry } from "../types/shirt";
 
 const ALL = shirtsJson as unknown as CatalogEntry[];
 /**
@@ -41,8 +42,18 @@ const HOST = process.env.OG_HOST ?? "eyalbenzvi.github.io/MONO";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+/** Photo prints (WebP, which resvg can't read) as PNG data, loaded before rendering. */
+const PHOTO_PNG = new Map<string, string>();
+async function loadPhotos(list: CatalogEntry[]) {
+  for (const s of list)
+    if (isPhoto(s) && !PHOTO_PNG.has(s.id))
+      PHOTO_PNG.set(s.id, (await sharp(path.join(ROOT, "public", s.backPrintUrl)).resize(600, 800).png().toBuffer()).toString("base64"));
+}
+
 /** Print SVG body (without its outer <svg>), for nesting. */
 function printInner(shirt: CatalogEntry) {
+  if (isPhoto(shirt))
+    return `<rect width="300" height="400" fill="${shirt.baseColor === "black" ? "#000000" : "#FFFFFF"}"/><image href="data:image/png;base64,${PHOTO_PNG.get(shirt.id)}" width="300" height="400"/>`;
   const svg = readFileSync(path.join(ROOT, "public", shirt.backPrintUrl), "utf8");
   return svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
 }
@@ -101,13 +112,18 @@ function productSvg(shirt: CatalogEntry) {
   <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);
 }
 
-function defaultSvg() {
-  // Three strong prints from different categories, by editorial rank (no weak ones).
+/** Three strong prints from different categories, by editorial rank (no weak ones). */
+function defaultPicks() {
   const pick: CatalogEntry[] = [];
   for (const s of [...ALL].sort((a, b) => a.rank - b.rank)) {
     if (s.quality >= WEAK_QUALITY && s.quality >= 70 && !pick.some((p) => p.category === s.category)) pick.push(s);
     if (pick.length === 3) break;
   }
+  return pick;
+}
+
+function defaultSvg() {
+  const pick = defaultPicks();
   const tees = pick.map((s, i) => tee(s, 650 + i * 180, 165 + (i % 2) * 36, 300, `d${i}`)).join("");
   return frame(`
   ${spot(920, 330, 290)}
@@ -143,10 +159,12 @@ function render(svg: string): Buffer {
 const outFile = (s: CatalogEntry) => path.join(OUT, `${s.id}.png`);
 
 /** Renders the given shirts in this process (skipping finished ones unless forced). */
-function renderList(list: CatalogEntry[], force: boolean) {
+async function renderList(list: CatalogEntry[], force: boolean) {
   for (const s of list) {
     if (!force && existsSync(outFile(s))) continue;
+    await loadPhotos([s]);
     writeFileSync(outFile(s), render(productSvg(s)));
+    PHOTO_PNG.delete(s.id);
   }
 }
 
@@ -174,12 +192,12 @@ async function main() {
   // Worker: OG_RANGE=from-to renders that slice of the catalog.
   const range = process.env.OG_RANGE?.split("-").map(Number);
   if (range) {
-    renderList(SHIRTS.slice(range[0], range[1]), false);
+    await renderList(SHIRTS.slice(range[0], range[1]), false);
     return;
   }
   const only = process.argv[2] ? new Set(process.argv.slice(2)) : null;
   const list = only ? SHIRTS.filter((s) => only.has(s.id)) : SHIRTS;
-  if (only) renderList(list, true);
+  if (only) await renderList(list, true);
   else {
     // Whole catalog: batches over a pool of CPU-count workers (~0.15 s per
     // image), then render anything a worker didn't finish (a few at most).
@@ -194,8 +212,9 @@ async function main() {
     );
     const left = list.filter((s) => !existsSync(outFile(s)));
     if (left.length > 50) throw new Error(`${left.length} OG images failed to render`);
-    renderList(left, true);
+    await renderList(left, true);
   }
+  await loadPhotos(defaultPicks());
   writeFileSync(path.join(OUT, "default.png"), render(defaultSvg()));
   const missing = list.filter((s) => !existsSync(outFile(s)));
   if (missing.length) throw new Error(`${missing.length} OG images missing, e.g. ${missing[0].id}`);

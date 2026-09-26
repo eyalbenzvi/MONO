@@ -12,10 +12,10 @@
  * - ids 2001–2800: ASCII art, caricatures (original archetypes), famous art
  *   (public-domain homages) and iconic images (./gen/set3).
  * - ids 2801–3400: photographs — wildlife, flight, engines & gauges — from
- *   Smithsonian Open Access (CC0), committed under data/photos by
- *   scripts/photos/fetchPhotos.ts and screened here (./gen/photo). Each has
- *   a print per tee colour (print_N.svg and print_N_<colour>.svg): a
- *   photograph inverted is a negative.
+ *   Smithsonian Open Access (CC0). scripts/photos/fetchPhotos.ts commits
+ *   their prints (public/prints/print_N.webp: greyscale, the whole picture)
+ *   and data/photos/photos.json; this reads them (never inverted: a
+ *   photograph inverted is a negative).
  *
  * Every print is single-ink: white ink on a black ground for black tees,
  * black ink on a white ground for white tees (tones come from dot / hatch
@@ -26,7 +26,7 @@
  * Near-identical designs are grouped into families from a visual signature.
  */
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { FEATURE_KEYS, PHOTO_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
@@ -43,8 +43,7 @@ import { caricatureBobble, caricatureMugshot, caricaturePortrait, caricatureWant
 import { greatWave, masterpiece, modernMasters, starryNight } from "./gen/set3/famousart";
 import { landmark, motif, spaceAge, travelPoster } from "./gen/set3/iconic";
 import type { Generator } from "./gen/core";
-import { TREATMENT_LABEL, inkAt, loadPhoto, photoBody, photoCoverage, REGION, type Treatment } from "./gen/photo";
-import { recordUrl, type PhotoSource } from "./photos/source";
+import { photoOrder, recordUrl, type PhotoSource } from "./photos/source";
 
 const SEED = 0x6d6f6e6f; // "mono"
 /** Designs in each of the first two sets (five categories each). */
@@ -188,18 +187,12 @@ export function photoTitle(subject: string, MAX = 32): string {
   return words.join(" ");
 }
 
-/** Photographs, their order within each photo category fixed by a seeded shuffle. */
+/** Photographs (data/photos/photos.json) in design order: see photoOrder. */
 const PHOTO_DIR = path.resolve(__dirname, "..", "data", "photos");
-function photoQueue(): Record<string, PhotoSource[]> {
+function photoQueue(): Map<number, { index: number; photo: PhotoSource }> {
   const all: PhotoSource[] = JSON.parse(readFileSync(path.join(PHOTO_DIR, "photos.json"), "utf8"));
   nameSubjects([...new Set(all.map((p) => p.subject))].sort());
-  return Object.fromEntries(
-    PHOTO_CATEGORIES.map((c, k) => {
-      const list = all.filter((p) => p.category === c).sort((a, b) => a.key.localeCompare(b.key));
-      if (list.length !== PER_CATEGORY) throw new Error(`data/photos: ${list.length} ${c} photographs, expected ${PER_CATEGORY}`);
-      return [c, shuffle(mulberry32(SEED ^ (0x4000 + k)), list)];
-    }),
-  );
+  return new Map(photoOrder(all, PER_CATEGORY).map(({ n, index, photo }) => [n, { index, photo }]));
 }
 
 /** "Roshan Patel, Smithsonian's National Zoo" → "Roshan Patel"; a unit-only credit names no one. */
@@ -309,56 +302,30 @@ function nameSubjects(subjects: string[]) {
 const PHOTO_DROP = "2026-09-21";
 
 /**
- * One photograph as a design: screened for both tee colours, named after
- * what it shows, features read from the picture and its category.
+ * One photograph as a design. Its print is the photograph itself —
+ * greyscale, the whole picture — committed by scripts/photos
+ * (public/prints/print_<n>.webp); this names it and reads its features
+ * from the picture's own measures and its category. One file serves both
+ * tee colours: on a black tee the picture's lights show (white ink), on a
+ * white tee its darks (black ink) — the same positive either way, never an
+ * inverted negative.
  */
-function photoDesign(n: number, index: number, category: PhotoSource["category"], photo: PhotoSource, bySubject: Map<string, Treatment[]>, takenTitles: Set<string>): { entry: Draft; files: [string, string][] } {
-  const rng = mulberry32(SEED ^ Math.imul(n, 0x9e3779b1));
-  const ph = loadPhoto(path.join(PHOTO_DIR, "img", `${photo.key}.png`));
+function photoDesign(n: number, index: number, category: PhotoSource["category"], photo: PhotoSource, takenTitles: Set<string>): Draft {
+  const file = path.join(PRINTS_DIR, `print_${n}.webp`);
+  if (!existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)} (run scripts/photos/fetchPhotos.ts select)`);
   const frame = photo.mode === "frame";
-  // The tee that carries more of the picture: white ink draws the lights,
-  // black ink the darks.
-  const baseColor: BaseColor = photoCoverage(ph, "black", frame) >= photoCoverage(ph, "white", frame) ? "black" : "white";
-  // Fine dots most often; the coarse screen only for full-frame pictures (a
-  // cut-out object turns to a blob in big dots). A second photograph of a
-  // subject never repeats its treatment.
-  const roll = rng();
-  const order: Treatment[] = !frame
-    ? roll < 0.65 ? ["dots", "lines"] : ["lines", "dots"]
-    : roll < 0.5 ? ["dots", "lines", "pop"] : roll < 0.75 ? ["lines", "pop", "dots"] : ["pop", "dots", "lines"];
-  const used = bySubject.get(photo.subject.toLowerCase()) ?? [];
-  const treatment = order.find((t) => !used.includes(t)) ?? order[0];
-  bySubject.set(photo.subject.toLowerCase(), [...used, treatment]);
-
-  const svgFor = (c: BaseColor) =>
-    minifySvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${c === "black" ? "#000000" : "#FFFFFF"}"/>${photoBody(ph, treatment, c, frame)}</svg>`);
-  const other = otherColor(baseColor);
-  const svg = svgFor(baseColor);
-  const files: [string, string][] = [
-    [`print_${n}.svg`, svg],
-    [`print_${n}_${other}.svg`, svgFor(other)],
-  ];
-
-  // Contrast from the picture itself: the spread of ink across the print area.
-  let sum = 0, sq = 0, cnt = 0;
-  for (let y = REGION.y; y < REGION.y + REGION.h; y += 6)
-    for (let x = REGION.x; x < REGION.x + REGION.w; x += 6) {
-      const a = inkAt(ph, x, y, baseColor, frame);
-      sum += a;
-      sq += a * a;
-      cnt++;
-    }
-  const mean = sum / cnt;
-  const spread = Math.sqrt(Math.max(0, sq / cnt - mean * mean));
+  // The tee that shows more of the picture: a light picture on black, a dark one on white.
+  const baseColor: BaseColor = photo.tone >= 0.5 ? "black" : "white";
+  const shown = baseColor === "black" ? photo.tone : 1 - photo.tone;
   const dial = /indicator|gauge|meter|compass|clock|altimeter|tachometer|horizon|barograph|recorder/i.test(photo.subject);
   const f: Partial<Record<FeatureKey, number>> = {
     photographic: 0.95,
     pictorial: 0.7,
-    halftone_raster: { dots: 0.85, pop: 0.95, lines: 0.5 }[treatment],
-    line_art: treatment === "lines" ? 0.45 : 0.05,
-    density: Math.min(1, mean * 1.8),
-    contrast: Math.min(1, 0.3 + spread * 1.6 + (treatment === "pop" ? 0.1 : 0)),
-    clean_minimal: frame ? 0.15 : 0.5,
+    halftone_raster: 0.1,
+    line_art: 0.05,
+    density: Math.min(1, photo.coverage * shown * 2.2),
+    contrast: Math.min(1, 0.2 + photo.contrast * 2.4),
+    clean_minimal: frame ? 0.15 : 0.55,
     abstract: 0.05,
     nature: category === "wildlife" ? 0.9 : 0,
     figurative: category === "wildlife" ? 0.35 : 0,
@@ -371,8 +338,7 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
   if (baseColor === "black") (f.dark_industrial! += 0.12), (f.clean_minimal! -= 0.05);
   else (f.clean_minimal! += 0.12), (f.dark_industrial! -= 0.08);
 
-  // A second photograph of the same subject is its second take; a different
-  // subject that shortens to a taken name keeps more of its own words.
+  // A second photograph of the same subject is its second take (renamed by rank below).
   const first = PHOTO_TITLES.get(photo.subject)!;
   let title = first;
   for (let k = 2; takenTitles.has(title); k++) title = `${first}, Take ${k}`;
@@ -382,30 +348,29 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
   const where =
     photo.unit === "nzp"
       ? `photographed${by ? ` by ${by}` : ""} at the Smithsonian's National Zoo`
-      : `from the National Air and Space Museum, photographed ${frame ? "on display" : "against a plain backdrop"}`;
-  const { quality, printCm } = measurePrint(svg, baseColor);
+      : `from the National Air and Space Museum, photographed ${frame ? "on display" : "against a plain backdrop and cut out"}`;
+  // Quality from the picture: how much of the print it fills, its tonal range, its detail.
+  const quality = Math.round(100 * (0.3 * Math.min(1, photo.coverage / 0.35) + 0.35 * Math.min(1, photo.contrast * 3.5) + 0.35 * Math.min(1, photo.detail * 1.5)));
+  const [x0, y0, x1, y1] = photo.box;
   return {
-    files,
-    entry: {
-      id: `mono-${String(n).padStart(4, "0")}`,
-      n,
-      no: index,
-      sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
-      title,
-      price: PRICE,
-      baseColor,
-      backPrintUrl: `/prints/print_${n}.svg`,
-      category,
-      variant: `photo-${treatment}`,
-      base: `${photo.subject}, ${where}, printed as ${TREATMENT_LABEL[treatment]}.`,
-      subject: photo.subject,
-      style: STYLE[category],
-      quality,
-      printCm,
-      features: vector(f),
-      photo: { credit: photo.credit, url: recordUrl(photo.record), image: photo.key },
-      dropDate: PHOTO_DROP,
-    },
+    id: `mono-${String(n).padStart(4, "0")}`,
+    n,
+    no: index,
+    sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
+    title,
+    price: PRICE,
+    baseColor,
+    backPrintUrl: `/prints/print_${n}.webp`,
+    category,
+    variant: `photo-${category}-${photo.mode}`,
+    base: `${photo.subject}, ${where}, printed in greyscale.`,
+    subject: photo.subject,
+    style: STYLE[category],
+    quality,
+    printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
+    features: vector(f),
+    photo: { credit: photo.credit, url: recordUrl(photo.record), image: photo.key },
+    dropDate: PHOTO_DROP,
   };
 }
 
@@ -416,19 +381,18 @@ function main() {
   const colorSeeds = [SEED, SEED ^ 0x2000, SEED ^ 0x3000];
   const colors = SETS.flatMap((set, k) => (set.photo ? Array<BaseColor>(set.size).fill("black") : colourSplit(mulberry32(colorSeeds[k]), set.size)));
   const photos = photoQueue();
-  const treatmentsBySubject = new Map<string, Treatment[]>();
   const total = colors.length;
   if (total !== TOTAL) throw new Error(`sets add up to ${total} designs, expected ${TOTAL}`);
 
-  rmSync(PRINTS_DIR, { recursive: true, force: true });
+  // The drawn prints are rewritten; the photographs' prints (.webp) are inputs.
   mkdirSync(PRINTS_DIR, { recursive: true });
+  for (const f of readdirSync(PRINTS_DIR)) if (f.endsWith(".svg")) rmSync(path.join(PRINTS_DIR, f));
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
   const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
   const shirts: Draft[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
-  let photoFiles = 0;
   const takenTitles = new Set<string>();
   const spareTitle: Partial<Record<ShirtCategory, number>> = {};
 
@@ -444,15 +408,12 @@ function main() {
     const index = ++counters[category];
 
     if (set.photo) {
-      const photo = photos[category][index - 1];
-      const shirt = photoDesign(n, index, category as PhotoSource["category"], photo, treatmentsBySubject, takenTitles);
-      for (const [file, svg] of shirt.files) {
-        writeFileSync(path.join(PRINTS_DIR, file), svg);
-        bytes += svg.length;
-        photoFiles++;
-      }
-      sigs.push({ key: `photo|${category}|${shirt.entry.subject.toLowerCase()}`, vec: [] });
-      shirts.push(shirt.entry);
+      const { photo, index: at } = photos.get(n)!;
+      if (at !== index || photo.category !== category) throw new Error(`photo order out of step at ${n}`);
+      const shirt = photoDesign(n, index, photo.category, photo, takenTitles);
+      bytes += statSync(path.join(PRINTS_DIR, `print_${n}.webp`)).size;
+      sigs.push({ key: `photo|${category}|${shirt.subject.toLowerCase()}`, vec: [] });
+      shirts.push(shirt);
       continue;
     }
 
@@ -608,7 +569,7 @@ function main() {
   const black = shirts.filter((s) => s.baseColor === "black").length;
   const titles = new Set(shirts.map((s) => s.title)).size;
   console.log(`Generated ${shirts.length} shirts → ${path.relative(ROOT, DATA_FILE)}`);
-  console.log(`  photographs: ${PHOTO_CATEGORIES.length * PER_CATEGORY} (+${photoFiles - PHOTO_CATEGORIES.length * PER_CATEGORY} prints for their second colourway)`);
+  console.log(`  photographs: ${PHOTO_CATEGORIES.length * PER_CATEGORY} (greyscale WebP prints, one per design)`);
   console.log(`  prints: ${shirts.length} SVGs in ${path.relative(ROOT, PRINTS_DIR)} (${(bytes / 1024 / 1024).toFixed(2)} MB, avg ${(bytes / shirts.length / 1024).toFixed(1)} KB)`);
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
   console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families - photoFamilies} second set, ${set3Families} third set, ${photoFamilies} photographs)`);

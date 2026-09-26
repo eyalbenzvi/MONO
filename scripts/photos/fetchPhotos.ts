@@ -1,44 +1,34 @@
 /**
- * Builds data/photos from Smithsonian Open Access (CC0). Needs the network;
- * run by hand, then commit data/photos. The generator never fetches.
+ * Builds the photo designs' sources from Smithsonian Open Access (CC0).
+ * Needs the network; run by hand, then commit data/photos/photos.json and
+ * public/prints/print_<n>.webp. The generator never fetches.
  *
  *   npx tsx scripts/photos/fetchPhotos.ts candidates   # metadata → candidate list
- *   npx tsx scripts/photos/fetchPhotos.ts prep         # download + crop + grey + mask
+ *   npx tsx scripts/photos/fetchPhotos.ts prep         # download, grey, fit whole
+ *   python scripts/photos/cutout.py <needs-cut.txt>    # studio shots: cut-outs (rembg)
+ *   npx tsx scripts/photos/fetchPhotos.ts prep         # again, with the cut-outs
  *   npx tsx scripts/photos/fetchPhotos.ts sheet        # contact sheets for review
- *   npx tsx scripts/photos/fetchPhotos.ts select       # curation.ts → data/photos
+ *   npx tsx scripts/photos/fetchPhotos.ts select       # curation.ts → data/photos + prints
  *
  * Downloads are cached in node_modules/.cache/mono-photos.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
-import { BUCKET, PHOTO_UNITS, type PhotoSource, type PhotoUnit } from "./source";
+import { BUCKET, PHOTO_FIRST_N, PHOTO_UNITS, PRINT_H, PRINT_W, photoOrder, type PhotoSource, type PhotoUnit } from "./source";
 import { EXCLUDE, SUBJECTS, PER_CATEGORY_PHOTOS, fixSubject } from "./curation";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const CACHE = path.join(ROOT, "node_modules", ".cache", "mono-photos");
 const OUT = path.join(ROOT, "data", "photos");
-/** An isolated object that fills less than this of the canvas came apart (a ruler beside a small part, a lost mask). */
-const MIN_OBJECT_COVERAGE = 0.12;
-// Aircraft are wide and cover little of a 3:4 canvas by nature: gauges only.
-const usable = (p: Prepped) => !EXCLUDE.has(p.key) && (p.mode === "frame" || p.category !== "machines" || p.coverage >= MIN_OBJECT_COVERAGE);
-
-/** Stored size of each photograph (3:4, grey + alpha). */
-export const PW = 180;
-export const PH = 240;
-
 type Category = PhotoSource["category"];
 
-interface Candidate extends Omit<PhotoSource, "mode" | "tone"> {
+type Measures = "mode" | "tone" | "contrast" | "coverage" | "detail" | "box";
+interface Candidate extends Omit<PhotoSource, Measures> {
   media: string;
   keywords: string;
 }
-interface Prepped extends Candidate {
-  mode: PhotoSource["mode"];
-  tone: number;
-  sharpness: number;
-  contrast: number;
-  coverage: number;
+interface Prepped extends Candidate, Pick<PhotoSource, Measures> {
   score: number;
 }
 
@@ -171,7 +161,8 @@ async function candidates() {
 }
 
 /* ------------------------------------------------------------------ */
-/* prep: grey, cropped to 3:4, background removed for isolated objects */
+/* prep: the whole photograph, greyscale, high resolution; a studio      */
+/* object cut out of its backdrop (rembg masks from cutout.py)            */
 /* ------------------------------------------------------------------ */
 
 const WORK = 480;
@@ -185,149 +176,126 @@ function percentile(values: Uint8Array | number[], p: number) {
   return 255;
 }
 
-/** Background = the flat colour around the border, flood-filled inwards. */
-function objectMask(g: Uint8Array, w: number, h: number): Uint8Array | null {
+/** A plain studio backdrop: the border is one flat tone (then the object is cut out). */
+function plainBackdrop(g: Uint8Array, w: number, h: number): boolean {
   const ring: number[] = [];
   const b = Math.max(2, Math.round(Math.min(w, h) * 0.02));
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (x < b || y < b || x >= w - b || y >= h - b) ring.push(g[y * w + x]);
   const med = percentile(ring, 0.5);
-  const mad = percentile(ring.map((v) => Math.abs(v - med)), 0.8);
-  if (mad > 14) return null; // busy surroundings: keep the whole frame
-  // Seamless backdrops fade from light to dark and objects cast soft
-  // shadows: grow the background through small steps between neighbours
-  // (a gradient), within a wide band around the border colour.
-  const blur = new Float32Array(w * h);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      let s = 0;
-      let n = 0;
-      for (let dy = -1; dy <= 1; dy++)
-        for (let dx = -1; dx <= 1; dx++) {
-          const xx = x + dx;
-          const yy = y + dy;
-          if (xx >= 0 && yy >= 0 && xx < w && yy < h) (s += g[yy * w + xx]), n++;
-        }
-      blur[y * w + x] = s / n;
-    }
-  const step = Math.max(3, mad * 0.6);
-  const band = Math.max(40, mad * 5);
-  const bg = new Uint8Array(w * h);
-  const stack: number[] = [];
-  const seed = (i: number) => {
-    if (!bg[i] && Math.abs(blur[i] - med) <= Math.max(16, mad * 2.5)) (bg[i] = 1), stack.push(i);
-  };
-  for (let x = 0; x < w; x++) seed(x), seed((h - 1) * w + x);
-  for (let y = 0; y < h; y++) seed(y * w), seed(y * w + w - 1);
-  while (stack.length) {
-    const i = stack.pop()!;
-    const x = i % w;
-    for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, i >= w ? i - w : -1, i < w * (h - 1) ? i + w : -1]) {
-      if (j < 0 || bg[j]) continue;
-      if (Math.abs(blur[j] - blur[i]) <= step && Math.abs(blur[j] - med) <= band) (bg[j] = 1), stack.push(j);
-    }
-  }
-  // Keep the object's large parts; drop dust and stray shadows.
-  const label = new Int32Array(w * h).fill(-1);
-  const sizes: number[] = [];
-  for (let s = 0; s < w * h; s++) {
-    if (bg[s] || label[s] >= 0) continue;
-    const id = sizes.length;
-    let n = 0;
-    const st = [s];
-    label[s] = id;
-    while (st.length) {
-      const i = st.pop()!;
-      n++;
-      const x = i % w;
-      for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, i - w, i + w]) if (j >= 0 && j < w * h && !bg[j] && label[j] < 0) (label[j] = id), st.push(j);
-    }
-    sizes.push(n);
-  }
-  const biggest = Math.max(0, ...sizes);
-  const mask = new Uint8Array(w * h);
-  let area = 0;
-  for (let i = 0; i < w * h; i++) if (label[i] >= 0 && sizes[label[i]] >= biggest * 0.04) (mask[i] = 255), area++;
-  const frac = area / (w * h);
-  return frac > 0.06 && frac < 0.8 ? mask : null;
+  return percentile(ring.map((v) => Math.abs(v - med)), 0.8) <= 14;
 }
 
-async function prepOne(c: Candidate, jpg: Buffer): Promise<{ png: Buffer; meta: Omit<Prepped, keyof Candidate> } | null> {
-  const img = sharp(jpg, { failOn: "none" }).rotate().greyscale();
-  const { data, info } = await img.resize(WORK, WORK, { fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
-  const w = info.width;
-  const h = info.height;
-  const g = new Uint8Array(data.buffer, data.byteOffset, w * h);
-  const mask = objectMask(g, w, h);
-  let gray: Buffer;
-  let alpha: Buffer;
-  let mode: PhotoSource["mode"];
-  if (mask) {
-    mode = "object";
-    let x0 = w, y0 = h, x1 = 0, y1 = 0;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) (x0 = Math.min(x0, x)), (x1 = Math.max(x1, x)), (y0 = Math.min(y0, y)), (y1 = Math.max(y1, y));
-    const bw = x1 - x0 + 1;
-    const bh = y1 - y0 + 1;
-    // Fit the object inside 90% of the 3:4 canvas, centred.
-    const s = Math.min((PW * 0.9) / bw, (PH * 0.9) / bh);
-    const tw = Math.max(1, Math.round(bw * s));
-    const th = Math.max(1, Math.round(bh * s));
-    const left = Math.round((PW - tw) / 2);
-    const top = Math.round((PH - th) / 2);
-    const two = Buffer.alloc(bw * bh * 2);
-    for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
-      const i = (y0 + y) * w + x0 + x;
-      two[(y * bw + x) * 2] = g[i];
-      two[(y * bw + x) * 2 + 1] = mask[i];
+const cutFile = (key: string) => path.join(CACHE, "cut", `${key}.png`);
+const jpgFile = (key: string) => path.join(CACHE, "jpg", `${key}.jpg`);
+
+/**
+ * One print: 750 × 1000 (the whole print area), greyscale with alpha.
+ * - frame: the photograph as taken, never cropped — scaled to fit 94% of
+ *   the area and centred (a wide aircraft stays whole, with room around it);
+ * - object: the cut-out (alpha from rembg), fitted to 90% of the area.
+ * Levels stretch the picture's 0.5–99.5th percentile to the full range.
+ */
+async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped, keyof Candidate> } | "needs-cut" | null> {
+  const src = sharp(jpgFile(c.key), { failOn: "none" }).rotate();
+  const small = await src.clone().greyscale().resize(WORK, WORK, { fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+  const object = plainBackdrop(new Uint8Array(small.data.buffer, small.data.byteOffset, small.info.width * small.info.height), small.info.width, small.info.height);
+  if (object && !existsSync(cutFile(c.key))) return "needs-cut";
+  let layer: sharp.Sharp;
+  let bw: number;
+  let bh: number;
+  if (object) {
+    // Trim to the object's box (alpha), grey, keep the alpha.
+    // The model leaves faint shadow and backdrop residue at low alpha: drop
+    // it, and centre on the solid object (a faint smear would pull it aside).
+    const { data, info } = await sharp(cutFile(c.key)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let x0 = info.width, y0 = info.height, x1 = -1, y1 = -1, area = 0;
+    for (let i = 0; i < info.width * info.height; i++) {
+      const a = data[i * 4 + 3];
+      data[i * 4 + 3] = a < 64 ? 0 : Math.round(((a - 64) / 191) * 255);
+      if (data[i * 4 + 3] > 128) {
+        const x = i % info.width;
+        const y = Math.floor(i / info.width);
+        (x0 = Math.min(x0, x)), (x1 = Math.max(x1, x)), (y0 = Math.min(y0, y)), (y1 = Math.max(y1, y)), area++;
+      }
     }
-    const placed = await sharp(two, { raw: { width: bw, height: bh, channels: 2 } })
-      .resize(tw, th, { kernel: "lanczos3" })
-      .extend({ top, left, bottom: PH - th - top, right: PW - tw - left, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    const ch = placed.info.channels;
-    gray = Buffer.alloc(PW * PH);
-    alpha = Buffer.alloc(PW * PH);
-    for (let i = 0; i < PW * PH; i++) (gray[i] = placed.data[i * ch]), (alpha[i] = placed.data[i * ch + ch - 1]);
+    if (x1 < 0 || area < info.width * info.height * 0.03) return null; // the model found nothing solid
+    bw = x1 - x0 + 1;
+    bh = y1 - y0 + 1;
+    layer = sharp(await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).extract({ left: x0, top: y0, width: bw, height: bh }).png().toBuffer());
   } else {
-    mode = "frame";
-    const r = await sharp(jpg, { failOn: "none" }).rotate().greyscale().resize(PW, PH, { fit: "cover", position: sharp.strategy.attention, kernel: "lanczos3" }).raw().toBuffer({ resolveWithObject: true });
-    gray = Buffer.alloc(PW * PH);
-    for (let i = 0; i < PW * PH; i++) gray[i] = r.data[i * r.info.channels];
-    alpha = Buffer.alloc(PW * PH, 255);
+    const meta = await src.clone().metadata();
+    const swap = (meta.orientation ?? 1) >= 5;
+    bw = (swap ? meta.height : meta.width) ?? 1;
+    bh = (swap ? meta.width : meta.height) ?? 1;
+    layer = src.clone().ensureAlpha();
   }
-  // Levels: stretch the subject's 1st–99th percentile to the full range.
+  const fit = object ? 0.9 : 0.94;
+  const s = Math.min((PRINT_W * fit) / bw, (PRINT_H * fit) / bh);
+  const tw = Math.max(1, Math.round(bw * s));
+  const th = Math.max(1, Math.round(bh * s));
+  const left = Math.round((PRINT_W - tw) / 2);
+  const top = Math.round((PRINT_H - th) / 2);
+  const placed = await layer
+    .resize(tw, th, { kernel: "lanczos3" })
+    .extend({ top, left, bottom: PRINT_H - th - top, right: PRINT_W - tw - left, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const ch = placed.info.channels;
+  const n = PRINT_W * PRINT_H;
+  const gray = new Uint8Array(n);
+  const alpha = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const r = placed.data[i * ch], g = placed.data[i * ch + 1], b = placed.data[i * ch + 2];
+    gray[i] = Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b);
+    alpha[i] = placed.data[i * ch + ch - 1];
+  }
   const inside: number[] = [];
-  for (let i = 0; i < PW * PH; i++) if (alpha[i] > 128) inside.push(gray[i]);
-  if (inside.length < PW * PH * 0.05) return null;
-  const lo = percentile(inside, 0.01);
-  const hi = percentile(inside, 0.99);
-  if (hi - lo < 40) return null;
-  for (let i = 0; i < PW * PH; i++) gray[i] = Math.max(0, Math.min(255, Math.round(((gray[i] - lo) / (hi - lo)) * 255)));
-  // Metrics: detail (mean |Laplacian|), contrast (std), coverage, tone.
-  let lap = 0, n = 0, sum = 0, sq = 0, cover = 0;
-  for (let y = 1; y < PH - 1; y++) for (let x = 1; x < PW - 1; x++) {
-    const i = y * PW + x;
-    if (alpha[i] < 128) continue;
-    lap += Math.abs(4 * gray[i] - gray[i - 1] - gray[i + 1] - gray[i - PW] - gray[i + PW]);
-    n++;
-  }
-  for (let i = 0; i < PW * PH; i++) if (alpha[i] >= 128) (sum += gray[i]), (sq += gray[i] * gray[i]), cover++;
+  for (let i = 0; i < n; i += 3) if (alpha[i] > 128) inside.push(gray[i]);
+  const lo = percentile(inside, 0.005);
+  const hi = percentile(inside, 0.995);
+  if (hi - lo < 50) return null; // flat, washed-out picture
+  for (let i = 0; i < n; i++) gray[i] = Math.max(0, Math.min(255, Math.round(((gray[i] - lo) / (hi - lo)) * 255)));
+  // Measures (on the print itself).
+  let sum = 0, sq = 0, cover = 0, lap = 0, lapN = 0;
+  let bx0 = PRINT_W, by0 = PRINT_H, bx1 = 0, by1 = 0;
+  for (let y = 1; y < PRINT_H - 1; y++)
+    for (let x = 1; x < PRINT_W - 1; x++) {
+      const i = y * PRINT_W + x;
+      if (alpha[i] < 128) continue;
+      cover++;
+      sum += gray[i];
+      sq += gray[i] * gray[i];
+      bx0 = Math.min(bx0, x), bx1 = Math.max(bx1, x), by0 = Math.min(by0, y), by1 = Math.max(by1, y);
+      if (alpha[i - 1] > 128 && alpha[i + 1] > 128 && alpha[i - PRINT_W] > 128 && alpha[i + PRINT_W] > 128) {
+        lap += Math.abs(4 * gray[i] - gray[i - 1] - gray[i + 1] - gray[i - PRINT_W] - gray[i + PRINT_W]);
+        lapN++;
+      }
+    }
   const mean = sum / cover;
-  const contrast = Math.sqrt(sq / cover - mean * mean) / 128;
-  const sharpness = lap / Math.max(1, n) / 40;
-  const coverage = cover / (PW * PH);
-  const tone = mean / 255;
-  const ga = Buffer.alloc(PW * PH * 2);
-  for (let i = 0; i < PW * PH; i++) (ga[i * 2] = gray[i]), (ga[i * 2 + 1] = alpha[i]);
-  const png = await sharp(ga, { raw: { width: PW, height: PH, channels: 2 } }).png({ compressionLevel: 9, palette: false }).toBuffer();
-  const score = Math.min(1, sharpness) * 0.45 + Math.min(1, contrast) * 0.35 + (mode === "object" ? Math.min(1, coverage / 0.45) : 0.8) * 0.2;
-  return { png, meta: { mode, tone: Math.round(tone * 1000) / 1000, sharpness, contrast, coverage, score } };
+  const r3 = (v: number) => Math.round(v * 1000) / 1000;
+  const la = Buffer.alloc(n * 2);
+  for (let i = 0; i < n; i++) (la[i * 2] = gray[i]), (la[i * 2 + 1] = alpha[i]);
+  const webp = await sharp(la, { raw: { width: PRINT_W, height: PRINT_H, channels: 2 } }).webp({ quality: 80, alphaQuality: 90, effort: 6 }).toBuffer();
+  const contrast = Math.sqrt(Math.max(0, sq / cover - mean * mean)) / 255;
+  const detail = Math.min(1, lap / Math.max(1, lapN) / 30);
+  const coverage = cover / n;
+  const score = Math.min(1, detail * 1.5) * 0.35 + Math.min(1, contrast * 3.5) * 0.35 + Math.min(1, coverage / 0.4) * 0.3;
+  return {
+    webp,
+    meta: {
+      mode: object ? "object" : "frame",
+      tone: r3(mean / 255),
+      contrast: r3(contrast),
+      coverage: r3(coverage),
+      detail: r3(detail),
+      box: [r3(bx0 / PRINT_W), r3(by0 / PRINT_H), r3((bx1 + 1) / PRINT_W), r3((by1 + 1) / PRINT_H)],
+      score,
+    },
+  };
 }
 
 async function prep() {
   const all: Candidate[] = JSON.parse(readFileSync(path.join(CACHE, "candidates.json"), "utf8"));
-  const limit = Number(process.env.PREP_LIMIT ?? Infinity);
-  // A few per subject is plenty; cap before downloading.
   const perSubject = new Map<string, number>();
   const list = all.filter((c) => {
     if (EXCLUDE.has(c.key)) return false;
@@ -335,85 +303,80 @@ async function prep() {
     const n = (perSubject.get(k) ?? 0) + 1;
     perSubject.set(k, n);
     return n <= (c.category === "wildlife" ? 3 : 2);
-  }).slice(0, limit);
-  const dir = mkdir(path.join(CACHE, "prep"));
-  const redo = process.env.PREP_REDO; // unit to process again (e.g. "nasm")
-  const results: Prepped[] = (existsSync(path.join(CACHE, "prepped.json")) ? JSON.parse(readFileSync(path.join(CACHE, "prepped.json"), "utf8")) : []).filter((r: Prepped) => r.unit !== redo);
-  const done = new Set(results.map((r) => r.key));
-  const failed = new Set<string>(existsSync(path.join(CACHE, "failed.json")) ? JSON.parse(readFileSync(path.join(CACHE, "failed.json"), "utf8")) : []);
+  });
+  const dir = mkdir(path.join(CACHE, "prep2"));
+  const results: Prepped[] = [];
+  const needsCut: string[] = [];
   let k = 0;
-  await pool(list.filter((c) => !done.has(c.key) && !failed.has(c.key)), 8, async (c) => {
+  await pool(list, 6, async (c) => {
     try {
-      const jpgFile = path.join(mkdir(path.join(CACHE, "jpg")), `${c.key}.jpg`);
-      if (!existsSync(jpgFile)) {
+      if (!existsSync(jpgFile(c.key))) {
         const r = await get(`${BUCKET}/${c.media}`);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        writeFileSync(jpgFile, Buffer.from(await r.arrayBuffer()));
+        writeFileSync(jpgFile(c.key), Buffer.from(await r.arrayBuffer()));
       }
-      const out = await prepOne(c, readFileSync(jpgFile));
-      if (!out) throw new Error("flat or empty");
-      writeFileSync(path.join(dir, `${c.key}.png`), out.png);
+      const out = await prepOne(c);
+      if (out === "needs-cut") return void needsCut.push(c.key);
+      if (!out) throw new Error("flat, empty or no solid object");
+      writeFileSync(path.join(dir, `${c.key}.webp`), out.webp);
       results.push({ ...c, ...out.meta });
     } catch (e) {
-      failed.add(c.key);
       console.warn(`skip ${c.key}: ${(e as Error).message}`);
     }
-    if (++k % 25 === 0) {
-      console.log(`  ${k} done`);
-      writeFileSync(path.join(CACHE, "prepped.json"), JSON.stringify(results));
-      writeFileSync(path.join(CACHE, "failed.json"), JSON.stringify([...failed]));
-    }
+    if (++k % 50 === 0) console.log(`  ${k}/${list.length}`);
   });
-  writeFileSync(path.join(CACHE, "prepped.json"), JSON.stringify(results));
-  writeFileSync(path.join(CACHE, "failed.json"), JSON.stringify([...failed]));
-  console.log(`prepped ${results.length} (failed ${failed.size})`);
+  results.sort((a, b) => a.key.localeCompare(b.key));
+  writeFileSync(path.join(CACHE, "prepped2.json"), JSON.stringify(results));
+  writeFileSync(path.join(CACHE, "needs-cut.txt"), needsCut.join("\n"));
+  console.log(`prepped ${results.length}; ${needsCut.length} studio shots need a cut-out first (python scripts/photos/cutout.py ${path.relative(ROOT, path.join(CACHE, "needs-cut.txt"))})`);
 }
 
 /* ------------------------------------------------------------------ */
 /* sheet: numbered contact sheets per category (review)                */
 /* ------------------------------------------------------------------ */
 
+const prepped = (): Prepped[] => JSON.parse(readFileSync(path.join(CACHE, "prepped2.json"), "utf8"));
+
 async function sheet() {
-  const prepped: Prepped[] = JSON.parse(readFileSync(path.join(CACHE, "prepped.json"), "utf8"));
-  const dir = mkdir(path.join(CACHE, "sheets"));
+  const dir = mkdir(path.join(CACHE, "sheets2"));
   const only = process.argv[3];
   for (const cat of ["wildlife", "flight", "machines"] as Category[]) {
     if (only && only !== cat) continue;
-    const list = prepped.filter((p) => p.category === cat && usable(p)).sort((a, b) => b.score - a.score);
-    const cols = 10;
-    const cw = PW / 2 + 6;
-    const chh = PH / 2 + 18;
-    for (let page = 0; page * 60 < list.length; page++) {
-      const part = list.slice(page * 60, page * 60 + 60);
+    const list = prepped().filter((p) => p.category === cat && !EXCLUDE.has(p.key)).sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
+    const cols = 8;
+    const TW = 150, TH = 200;
+    const cw = TW + 6;
+    const chh = TH + 18;
+    for (let page = 0; page * 48 < list.length; page++) {
+      const part = list.slice(page * 48, page * 48 + 48);
       const rows = Math.ceil(part.length / cols);
-      const composites = await Promise.all(part.map(async (p, i) => {
-        const img = await sharp(path.join(CACHE, "prep", `${p.key}.png`)).flatten({ background: "#7f7f7f" }).resize(PW / 2, PH / 2).png().toBuffer();
-        return { input: img, left: (i % cols) * cw + 3, top: Math.floor(i / cols) * chh + 3 };
-      }));
-      const labels = part.map((p, i) => `<text x="${(i % cols) * cw + 4}" y="${Math.floor(i / cols) * chh + PH / 2 + 15}" font-size="10" font-family="DejaVu Sans" fill="#000">${page * 60 + i} ${p.mode === "object" ? "o" : "f"} ${p.subject.replace(/[<&>"]/g, "").slice(0, 14)}</text>`).join("");
+      const composites = await Promise.all(part.map(async (p, i) => ({
+        input: await sharp(path.join(CACHE, "prep2", `${p.key}.webp`)).flatten({ background: "#000" }).resize(TW, TH).png().toBuffer(),
+        left: (i % cols) * cw + 3,
+        top: Math.floor(i / cols) * chh + 3,
+      })));
+      const labels = part.map((p, i) => `<text x="${(i % cols) * cw + 4}" y="${Math.floor(i / cols) * chh + TH + 15}" font-size="10" font-family="DejaVu Sans" fill="#000">${page * 48 + i} ${p.mode === "object" ? "o" : "f"} ${p.subject.replace(/[<&>"]/g, "").slice(0, 18)}</text>`).join("");
       const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${cols * cw}" height="${rows * chh}"><rect width="100%" height="100%" fill="#fff"/>${labels}</svg>`);
       await sharp(svg).composite(composites).png().toFile(path.join(dir, `${cat}-${page}.png`));
     }
-    writeFileSync(path.join(dir, `${cat}.json`), JSON.stringify(list.map((p, i) => [i, p.key, p.subject, p.title, p.mode, Math.round(p.score * 100)])));
-    console.log(`${cat}: ${list.length} → ${Math.ceil(list.length / 60)} sheets`);
+    writeFileSync(path.join(dir, `${cat}.json`), JSON.stringify(list.map((p, i) => [i, p.key, p.subject, p.mode])));
+    console.log(`${cat}: ${list.length} → ${Math.ceil(list.length / 48)} sheets`);
   }
 }
 
 /* ------------------------------------------------------------------ */
-/* select: the best PER_CATEGORY_PHOTOS per category → data/photos     */
+/* select: the best PER_CATEGORY_PHOTOS per category → data/photos and  */
+/* the prints public/prints/print_<n>.webp                              */
 /* ------------------------------------------------------------------ */
 
 function select() {
-  const prepped: Prepped[] = JSON.parse(readFileSync(path.join(CACHE, "prepped.json"), "utf8"));
-  rmSync(OUT, { recursive: true, force: true });
-  mkdir(path.join(OUT, "img"));
+  const all = prepped();
   const chosen: PhotoSource[] = [];
-  // Two records can share one image (a set and its part): one design per image.
   const usedKeys = new Set<string>();
   for (const cat of ["wildlife", "flight", "machines"] as Category[]) {
     const perSubject = new Map<string, number>();
-    const list = prepped
-      .filter((p) => p.category === cat && usable(p))
+    const list = all
+      .filter((p) => p.category === cat && !EXCLUDE.has(p.key))
       .sort((a, b) => b.score - a.score || a.key.localeCompare(b.key))
       .filter((p) => !usedKeys.has(p.key) && !!usedKeys.add(p.key))
       .filter((p) => {
@@ -425,14 +388,19 @@ function select() {
       .slice(0, PER_CATEGORY_PHOTOS);
     if (list.length < PER_CATEGORY_PHOTOS) throw new Error(`${cat}: only ${list.length} photographs`);
     for (const p of list) {
-      writeFileSync(path.join(OUT, "img", `${p.key}.png`), readFileSync(path.join(CACHE, "prep", `${p.key}.png`)));
-      chosen.push({ key: p.key, category: p.category, unit: p.unit, title: p.title, subject: SUBJECTS[p.key] ?? fixSubject(p.subject), credit: p.credit, record: p.record, kind: p.kind, mode: p.mode, tone: p.tone });
+      const { media: _m, keywords: _k, score: _s, ...src } = p;
+      chosen.push({ ...src, subject: SUBJECTS[p.key] ?? fixSubject(p.subject) });
     }
   }
-  // Stable order: category, then key (the generator orders them itself).
   chosen.sort((a, b) => a.category.localeCompare(b.category) || a.key.localeCompare(b.key));
+  rmSync(OUT, { recursive: true, force: true });
+  mkdir(OUT);
   writeFileSync(path.join(OUT, "photos.json"), `[\n${chosen.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
-  console.log(`data/photos: ${chosen.length} photographs`);
+  // The prints, named by the design id they become.
+  const prints = path.join(ROOT, "public", "prints");
+  for (const f of readdirSync(prints)) if (f.endsWith(".webp")) rmSync(path.join(prints, f));
+  for (const { n, photo } of photoOrder(chosen, PER_CATEGORY_PHOTOS)) writeFileSync(path.join(prints, `print_${n}.webp`), readFileSync(path.join(CACHE, "prep2", `${photo.key}.webp`)));
+  console.log(`data/photos/photos.json: ${chosen.length} photographs · public/prints/print_${PHOTO_FIRST_N}…${PHOTO_FIRST_N + chosen.length - 1}.webp`);
 }
 
 const cmd = process.argv[2];
@@ -445,4 +413,3 @@ run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-void readdirSync;
