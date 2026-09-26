@@ -229,7 +229,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await both.tap();
     await expect(page.getByRole("button", { name: /^Add both · \$90$/ }).last()).toBeVisible();
     await expect(page.getByText(/One of a kind|Get it in both/)).toHaveCount(0);
-    const details = page.getByRole("button", { name: "Details" });
+    const details = page.getByRole("button", { name: "About this design" });
     await expect(details).toHaveAttribute("aria-expanded", "false");
     await details.tap();
     // The real size of this print (its ink), from the generator: data/shirts.json.

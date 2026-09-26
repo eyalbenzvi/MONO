@@ -2,27 +2,16 @@
 
 import { motion } from "framer-motion";
 import { Icon } from "@/components/Icon";
-import { canUndo, useTasteStore } from "@/store/tasteStore";
+import { useTasteStore } from "@/store/tasteStore";
 
 export function ActionButtons() {
   const requestSwipe = useTasteStore((s) => s.requestSwipe);
-  const undoLast = useTasteStore((s) => s.undoLast);
   const empty = useTasteStore((s) => s.deck.length === 0);
-  const undoable = useTasteStore(canUndo);
 
   return (
     <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
-      {/* Two main buttons and a small undo (details: tap the card or swipe up). Sideways phones: one column beside the card. */}
-      {/* Narrowest phones (< 340 px): smaller gaps and main buttons so the row fits. */}
-      <div className="mx-auto grid max-w-[420px] grid-cols-[44px_1fr_44px] items-center max-[339px]:grid-cols-[36px_1fr_36px] max-[339px]:gap-x-1.5 sideways:flex sideways:flex-col sideways:gap-3">
-        <RoundButton
-          label="Undo last swipe"
-          disabled={!undoable}
-          onClick={undoLast}
-          className="h-11 w-11 bg-ink-800 text-neutral-300 ring-1 ring-white/10 hover:bg-ink-700 max-[339px]:h-9 max-[339px]:w-9"
-        >
-          <Icon name="rotate-ccw" className="h-[18px] w-[18px]" />
-        </RoundButton>
+      {/* Two buttons only: pass and like (undo: Z, or ⋯ on the card's details). Sideways phones: one column beside the card. */}
+      <div className="mx-auto flex max-w-[420px] items-center justify-center sideways:flex-col sideways:gap-3">
         <div className="flex items-center justify-center gap-6 max-[339px]:gap-2 sideways:flex-col sideways:gap-3">
           <RoundButton
             label="Pass"
@@ -41,7 +30,6 @@ export function ActionButtons() {
             <Icon name="heart" className="h-7 w-7 fill-current" />
           </RoundButton>
         </div>
-        <span aria-hidden className="sideways:hidden" />
       </div>
     </div>
   );

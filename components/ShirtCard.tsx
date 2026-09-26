@@ -11,7 +11,7 @@ import { tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
-import { useTasteStore } from "@/store/tasteStore";
+import { canUndo, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import {
   CATEGORY_LABELS,
@@ -104,6 +104,7 @@ function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: num
   const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
   const openShare = useUiStore((s) => s.openShare);
+  const undoable = useTasteStore(canUndo);
 
   return (
     <div className="flex h-full flex-col">
@@ -118,9 +119,11 @@ function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: num
             items={[
               ...(onZoom ? [{ label: "Zoom in on the print", icon: "zoom-in" as const, onSelect: onZoom }] : []),
               { label: "Share", icon: "share-2" as const, onSelect: () => openShare(shirt.id, shirt.baseColor) },
+              // Undo lives here (and on Z), not as a button under the card.
+              ...(undoable ? [{ label: "Undo last swipe", icon: "rotate-ccw" as const, onSelect: () => useTasteStore.getState().undoLast() }] : []),
             ]}
           />
-          {/* Closes the details (Undo keeps the ↺ icon to itself). */}
+          {/* Closes the details. */}
           <button
             type="button"
             onClick={() => toggleFlip(false)}

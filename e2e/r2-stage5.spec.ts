@@ -73,7 +73,7 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
   test("a friend's taste link greets with their archetype", async ({ page }) => {
     await page.goto(`?taste=${"2i" + "0a".repeat(15)}`);
     await hydrated(page);
-    await expect(page.getByText(/^Your friend is The [A-Za-z ]+ — swipe 10 to see how alike you are$/)).toBeVisible();
+    await expect(page.getByText(/^Your friend is The [A-Za-z ]+ — swipe 10 to compare$/)).toBeVisible();
   });
 
   test("an empty bag starts from Saved: three with quick add", async ({ page }) => {

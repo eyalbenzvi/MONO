@@ -325,24 +325,58 @@ export function ProductView({
 
           {/* Info */}
           <div>
-            <p className="text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
-            <h1 className="mt-0.5 text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-            {both && <p className="mt-0.5 text-sm text-neutral-400">Black + white pair</p>}
+            {/* Just the name; everything about the design sits behind ⓘ. */}
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+              <button
+                type="button"
+                onClick={() => setDetailsOpen((o) => !o)}
+                aria-expanded={detailsOpen}
+                aria-label="About this design"
+                title="About this design"
+                className={`-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/10 ${detailsOpen ? "text-white" : "text-neutral-400"}`}
+              >
+                <Icon name="info" className="h-5 w-5" />
+              </button>
+            </div>
+            <AnimatePresence initial={false}>
+              {detailsOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                  <p className="mt-2 text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">{details?.description}</p>
+                  <dl className="mt-2 border-t border-white/10 pb-2">
+                  <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
+                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · greyscale photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
+                  <Spec label="Print" value={printSizeLabel(details?.printCm)} />
+                  <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
+                  <Spec label="Fit" value="Regular" />
+                  <Spec label="SKU" value={skuFor(shirt.sku, color)} />
+                  {details?.photo && (
+                    <p className="py-2 text-xs text-neutral-400">
+                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
+                      <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
+                        Source record
+                      </a>
+                    </p>
+                  )}
+                </dl>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
 
-            <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
-
-
-            <div className="mt-5" ref={sizeRow}>
-              <div className="mb-1 flex items-center justify-between">
-                <p className="text-xs font-medium text-neutral-400">Size</p>
+            <div className="relative mt-5" ref={sizeRow}>
+              {/* The size guide: an icon on the "Kids' sizes" line, not a row of its own. */}
+              <div className="absolute right-0 top-[2.875rem] z-10">
                 <button
                   type="button"
                   onClick={() => setGuideOpen((o) => !o)}
                   aria-expanded={guideOpen}
-                  className="-mr-2 flex h-10 items-center gap-1.5 px-2 text-xs text-neutral-300 hover:text-white"
+                  aria-label="Size guide"
+                  title="Size guide"
+                  className={`-mr-2 flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${guideOpen ? "text-white" : "text-neutral-400"}`}
                 >
-                  <Icon name="ruler" className="h-3.5 w-3.5" /> Size guide
+                  <Icon name="ruler" className="h-4 w-4" />
                 </button>
               </div>
               <SizeSelector key={nudge} value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
@@ -383,35 +417,6 @@ export function ProductView({
               <SaveButton id={shirt.id} size="lg" />
             </div>
 
-            <div className="mt-5 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => setDetailsOpen((o) => !o)}
-                aria-expanded={detailsOpen}
-                className="flex h-12 w-full items-center justify-between text-sm font-medium"
-              >
-                Details
-                <Icon name="chevron-down" className={`h-4 w-4 transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
-              </button>
-              {detailsOpen && (
-                <dl className="pb-2">
-                  <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
-                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · greyscale photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
-                  <Spec label="Print" value={printSizeLabel(details?.printCm)} />
-                  <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
-                  <Spec label="Fit" value="Regular" />
-                  <Spec label="SKU" value={skuFor(shirt.sku, color)} />
-                  {details?.photo && (
-                    <p className="py-2 text-xs text-neutral-400">
-                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
-                      <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
-                        Source record
-                      </a>
-                    </p>
-                  )}
-                </dl>
-              )}
-            </div>
           </div>
         </div>
 
@@ -446,9 +451,6 @@ export function ProductView({
           <section ref={variationsRef} id="variations" className="mt-10 scroll-mt-4">
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="text-base font-semibold">Variations</h2>
-              <span className="text-xs text-neutral-400">
-                {members.length} versions of this print
-              </span>
             </div>
             {/* Variations replace this page in history, so Back still reaches the grid. */}
             <ShirtStrip
@@ -482,11 +484,7 @@ export function ProductView({
       {/* Narrow phones: tighter gaps below 360 px, and below 400 px Share
           moves up to the image toolbar so price, save and the buy button fit. */}
       <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
-        {/* Colour and size above the button; the price is in the button. */}
-        <p className="min-w-0 flex-1 truncate text-xs text-neutral-400">
-          {both ? "Black + White" : COLOR_LABELS[color]}
-          {size ? ` · ${SIZE_LABELS[size]}` : ""}
-        </p>
+        {/* Just save and buy (the price is in the button). */}
         <SaveButton id={shirt.id} size="lg" />
         <BuyButton label={buyLabel} short={shortLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
@@ -520,7 +518,7 @@ function BuyButton({
       aria-label={label}
       aria-live="polite"
       className={`flex h-12 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
-        compact ? "px-5 max-[359px]:px-4" : "flex-1"
+        compact ? "flex-1 px-5 max-[359px]:px-4" : "flex-1"
       }`}
     >
       <Icon name={icon} className="h-4 w-4 shrink-0" strokeWidth={phase === "added" ? 3 : 2} />
