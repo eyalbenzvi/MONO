@@ -12,11 +12,13 @@ import { useCartStore } from "@/store/cartStore";
 import { migrateLegacySession } from "@/store/legacySession";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
   const pathname = usePathname();
+  const hydrated = useUiStore((s) => s.hydrated);
 
   // Leaving the shop area forgets where a product page was opened from;
   // any navigation closes the zoom view.
@@ -28,10 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Another tab changed the saved session (a save, the bag…): reload it here
   // instead of overwriting it with this tab's stale copy on the next write.
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      for (const store of [useTasteStore, useCartStore])
-        if (e.key === store.persist.getOptions().name) void store.persist.rehydrate();
-    };
+    const onStorage = (e: StorageEvent) => void syncFromStorage(e.key);
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
@@ -78,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="app-backdrop relative flex h-[100dvh] flex-col overflow-hidden">
+    <div className="app-backdrop relative flex h-[100dvh] flex-col overflow-hidden" data-hydrated={hydrated ? "" : undefined}>
       <Header onOpenSaved={() => setSavedOpen(true)} />
       {/* The header floats over the top of main (it slides away with a
           transform, never by changing the layout); main keeps its space.

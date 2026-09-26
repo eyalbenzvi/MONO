@@ -7,8 +7,8 @@ import { CALIBRATION_IDS, CALIBRATION_TOTAL, DECK_SIZE, buildDeck as dealDeck, c
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { useUiStore } from "@/store/useUiStore";
-import { FEATURE_KEYS, createInitialVector, type SwipeAction, type SwipeEvent, type UserProfileVector } from "@/types/shirt";
-import { DAILY_GOAL, countSwipe, emptyDaily, type Daily } from "@/lib/taste";
+import { FEATURE_KEYS, createInitialVector, type RecommendationStrategy, type SwipeAction, type SwipeEvent, type UserProfileVector } from "@/types/shirt";
+import { TASTE_LEVELS, countSwipe, emptyDaily, tasteLevel, type Daily, type TasteLevel } from "@/lib/taste";
 
 export { DECK_SIZE, type DeckEntry };
 
@@ -21,6 +21,8 @@ export interface LastUpdate {
   action: SwipeAction;
   before: UserProfileVector;
   after: UserProfileVector;
+  /** The Daily 5 before this swipe (Undo puts it back). */
+  daily?: Daily;
 }
 
 /** Everything about the user's taste that survives a reload. */
@@ -38,8 +40,10 @@ export interface TasteState {
   calibrationAcknowledged: boolean;
   /** First-run coach marks dismissed (after the first swipe). */
   onboardingSeen: boolean;
-  /** "Daily 5": new tees swiped today, and the streak of days that reached five. */
+  /** "Daily 5": new tees swiped today (after the taste test), and the streak of days that reached five. */
   daily: Daily;
+  /** Taste levels already reached (announced once, never again after an undo). */
+  milestones: TasteLevel[];
 }
 
 interface TasteActions {
@@ -75,6 +79,7 @@ export const initialTaste = (): TasteState => ({
   calibrationAcknowledged: false,
   onboardingSeen: false,
   daily: emptyDaily(),
+  milestones: [],
 });
 
 export const tasteOf = (s: TasteState): TasteState => ({
@@ -88,15 +93,23 @@ export const tasteOf = (s: TasteState): TasteState => ({
   calibrationAcknowledged: s.calibrationAcknowledged,
   onboardingSeen: s.onboardingSeen,
   daily: s.daily,
+  milestones: s.milestones,
 });
 
 const pushEvent = (history: SwipeEvent[], e: SwipeEvent) => [...history, e].slice(-HISTORY_LIMIT);
 const addSeen = (seen: string[], id: string) => (seen.includes(id) ? seen : [...seen, id]);
 
-/** The last swipe can be undone only if it came from Discover and nothing trained since. */
-export const canUndo = (s: Pick<TasteState, "swipeHistory" | "lastUpdate">) => {
+/**
+ * The last swipe can be undone only if it came from Discover, nothing
+ * trained since, and taking it back wouldn't reopen a taste test whose
+ * result screen was already shown.
+ */
+export const canUndo = (s: Pick<TasteState, "swipeHistory" | "lastUpdate" | "seen" | "calibrationAcknowledged">) => {
   const last = s.swipeHistory[s.swipeHistory.length - 1];
-  return !!last && last.source !== "shop" && !!s.lastUpdate && s.lastUpdate.shirtId === last.shirtId;
+  if (!last || last.source === "shop" || !s.lastUpdate || s.lastUpdate.shirtId !== last.shirtId) return false;
+  if (!s.calibrationAcknowledged) return true;
+  const without = s.seen.filter((id) => id !== last.shirtId);
+  return calibrationDone(CALIBRATION_IDS, without) >= CALIBRATION_TOTAL;
 };
 
 /* ------------------------------------------------------------------ */
@@ -117,13 +130,30 @@ function vectorOf(x: unknown): UserProfileVector {
   return v;
 }
 
+const STRATEGIES: readonly RecommendationStrategy[] = ["calibration", "greedy", "explore"];
+const strategyOf = (x: unknown): RecommendationStrategy => (STRATEGIES.includes(x as RecommendationStrategy) ? (x as RecommendationStrategy) : "greedy");
+const num = (x: unknown, max = Infinity) => (typeof x === "number" && Number.isFinite(x) ? Math.min(max, Math.max(0, x)) : 0);
+const isAction = (x: unknown): x is SwipeAction => x === "like" || x === "dislike";
+
+/** A history event, field by field: anything else it carried is dropped. */
+function eventOf(x: unknown): SwipeEvent | null {
+  const e = x as Partial<Record<keyof SwipeEvent, unknown>> | null;
+  if (!e || !isStr(e.shirtId) || !isAction(e.action) || !getShirtById(e.shirtId)) return null;
+  return {
+    shirtId: e.shirtId,
+    action: e.action,
+    source: e.source === "shop" ? "shop" : "swipe",
+    matchScore: num(e.matchScore, 100),
+    strategy: strategyOf(e.strategy),
+    timestamp: num(e.timestamp),
+  };
+}
+
 export function sanitizeTaste(raw: unknown): TasteState {
   const d = initialTaste();
   if (!raw || typeof raw !== "object") return d;
   const r = raw as Partial<Record<keyof TasteState, unknown>>;
-  const history = Array.isArray(r.swipeHistory)
-    ? (r.swipeHistory as SwipeEvent[]).filter((e) => e && isStr(e.shirtId) && (e.action === "like" || e.action === "dislike") && !!getShirtById(e.shirtId)).slice(-HISTORY_LIMIT)
-    : [];
+  const history = Array.isArray(r.swipeHistory) ? r.swipeHistory.map(eventOf).filter((e): e is SwipeEvent => !!e).slice(-HISTORY_LIMIT) : [];
   const seen = ids(r.seen);
   for (const e of history) if (!seen.includes(e.shirtId)) seen.push(e.shirtId);
   const lu = r.lastUpdate as LastUpdate | null | undefined;
@@ -133,11 +163,17 @@ export function sanitizeTaste(raw: unknown): TasteState {
     preferenceVector: vectorOf(r.preferenceVector),
     swipeHistory: history,
     seen,
-    deck: Array.isArray(r.deck) ? (r.deck as DeckEntry[]).filter((e) => e && isStr(e.id) && !!getShirtById(e.id)) : [],
-    lastUpdate: lu && isStr(lu.shirtId) && (lu.action === "like" || lu.action === "dislike") ? { shirtId: lu.shirtId, action: lu.action, before: vectorOf(lu.before), after: vectorOf(lu.after) } : null,
+    deck: Array.isArray(r.deck)
+      ? (r.deck as Partial<DeckEntry>[]).filter((e) => e && isStr(e.id) && !!getShirtById(e.id)).map((e) => ({ id: e.id as string, strategy: strategyOf(e.strategy) }))
+      : [],
+    lastUpdate:
+      lu && isStr(lu.shirtId) && isAction(lu.action)
+        ? { shirtId: lu.shirtId, action: lu.action, before: vectorOf(lu.before), after: vectorOf(lu.after), ...(lu.daily ? { daily: dailyOf(lu.daily) } : {}) }
+        : null,
     calibrationAcknowledged: r.calibrationAcknowledged === true,
     onboardingSeen: r.onboardingSeen === true,
     daily: dailyOf(r.daily),
+    milestones: Array.isArray(r.milestones) ? TASTE_LEVELS.filter((l) => (r.milestones as unknown[]).includes(l)) : [],
   };
 }
 
@@ -149,16 +185,17 @@ function dailyOf(x: unknown): Daily {
   return { day: d.day, count: n(d.count), streak: n(d.streak), last: isDay(d.last) ? d.last : null };
 }
 
-/** v1 → v2 adds the Daily 5 counter (starting empty). */
+/**
+ * v1 → v2 adds the Daily 5 counter (starting empty); v2 → v3 adds the
+ * taste levels already reached (none yet: the next one is announced once).
+ */
 export function migrateTaste(persisted: unknown, version: number): unknown {
   if (!persisted || typeof persisted !== "object") return persisted;
   const s = { ...(persisted as Record<string, unknown>) };
   if (version < 2) s.daily = emptyDaily();
+  if (version < 3) s.milestones = [];
   return s;
 }
-
-/** Quiet level-ups after the taste test (Discover swipes). */
-export const MILESTONES: Record<number, string> = { 25: "Profile level 2 — Focused", 50: "Profile level 3 — Dialled in" };
 
 export const useTasteStore = create<TasteState & TasteActions>()(
   persist(
@@ -194,17 +231,23 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         const calibrationJustDone =
           !state.calibrationAcknowledged && calibrationDone(CALIBRATION_IDS, state.seen) < CALIBRATION_TOTAL && calibrationDone(CALIBRATION_IDS, seen) >= CALIBRATION_TOTAL;
 
-        const daily = countSwipe(state.daily);
+        // The Daily 5 counts new tees swiped after the taste test — not the
+        // test itself, and not a card brought back by Undo (Undo restores it).
+        const daily = state.calibrationAcknowledged && !state.seen.includes(shirtId) ? countSwipe(state.daily) : state.daily;
+        // A taste level reached for the first time (after the taste test).
+        const level = tasteLevel(after);
+        const milestone = state.calibrationAcknowledged && level !== TASTE_LEVELS[0] && !state.milestones.includes(level) ? level : null;
         set({
           preferenceVector: after,
           swipeHistory,
           seen,
           daily,
+          milestones: milestone ? [...state.milestones, milestone] : state.milestones,
           // Never list an id twice (it may already be saved from the shop).
           likedIds: action === "like" && !state.likedIds.includes(shirtId) ? [...state.likedIds, shirtId] : state.likedIds,
           dislikedIds: action === "dislike" && !state.dislikedIds.includes(shirtId) ? [...state.dislikedIds, shirtId] : state.dislikedIds,
           deck,
-          lastUpdate: { shirtId, action, before, after },
+          lastUpdate: { shirtId, action, before, after, daily: state.daily },
           // The gesture legend stays until the first real swipe (flipping or
           // zooming doesn't count as having learned to swipe).
           onboardingSeen: true,
@@ -219,12 +262,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         });
         track("swipe", { action, strategy: top.strategy, matchScore: score, id: shirtId });
         // Quiet notes, never over the taste-test screen.
-        if (!calibrationJustDone) {
-          const swipes = swipeHistory.filter((e) => e.source !== "shop").length;
-          if (MILESTONES[swipes] && calibrationDone(CALIBRATION_IDS, seen) >= CALIBRATION_TOTAL) useUiStore.getState().showToast(MILESTONES[swipes]);
-          else if (daily.count === DAILY_GOAL && daily.last === daily.day)
-            useUiStore.getState().showToast(daily.streak > 1 ? `Daily 5 done · ${daily.streak}-day streak` : "Daily 5 done");
-        }
+        if (!calibrationJustDone && milestone) useUiStore.getState().showToast(`Your taste: ${milestone}`);
         if (calibrationJustDone) track("calibration_complete", { swipes: seen.length });
       },
 
@@ -244,6 +282,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           likedIds: last.action === "like" ? drop(state.likedIds) : state.likedIds,
           dislikedIds: last.action === "dislike" ? drop(state.dislikedIds) : state.dislikedIds,
           deck: [restored, ...state.deck.filter((e) => e.id !== restored.id)].slice(0, DECK_SIZE),
+          daily: state.lastUpdate.daily ?? state.daily,
           lastUpdate: null,
         });
         useUiStore.setState({ isFlipped: false, swipeQueue: [], undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() } });
@@ -259,10 +298,12 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           return;
         }
         // Saving from the shop is an explicit like: train on it, and mark it
-        // seen so Discover doesn't serve it again.
+        // seen so Discover doesn't serve it again. Each design trains once:
+        // one already swiped or saved before (save → unsave → save…) is
+        // saved again without moving the vector.
         const alreadySeen = state.seen.includes(id);
         const before = state.preferenceVector;
-        const after = updateUserVector(before, shirt.features, "like");
+        const after = alreadySeen ? before : updateUserVector(before, shirt.features, "like");
         const swipeHistory = alreadySeen
           ? state.swipeHistory
           : pushEvent(state.swipeHistory, { shirtId: id, action: "like", source: "shop", matchScore: matchScore(before, shirt.features), strategy: "greedy", timestamp: Date.now() });
@@ -278,9 +319,9 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           // is nothing Undo could revert correctly: clear it (canUndo → false)
           // rather than letting Undo roll back this save as if it were the swipe.
           lastUpdate: alreadySeen ? null : { shirtId: id, action: "like", before, after },
-          deck: buildDeck(topStays, after, seen),
+          deck: alreadySeen ? state.deck : buildDeck(topStays, after, seen),
         });
-        if (!topStays.length) useUiStore.setState({ isFlipped: false });
+        if (!alreadySeen && !topStays.length) useUiStore.setState({ isFlipped: false });
         track("save", { id });
       },
 
@@ -308,7 +349,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
     }),
     {
       name: TASTE_KEY,
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateTaste,
       skipHydration: true,

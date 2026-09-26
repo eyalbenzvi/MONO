@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { MAX_QTY, PAIR_PRICE, addItem, cartTotals, changeItem, setItemQty } from "@/lib/cart";
+import { MAX_QTY, PAIR_PRICE, addItem, cartTotals, changeItem, pairStatus, setItemQty } from "@/lib/cart";
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { useUiStore } from "@/store/useUiStore";
@@ -156,18 +156,22 @@ export const useCartStore = create<CartState & CartActions>()(
       addPair: (id, size, options = {}) => {
         const shirt = getShirtById(id);
         if (!shirt) return false;
-        let { items, capped } = addItem(get().cart, { id, size, color: "black", qty: 1 });
-        const second = addItem(items, { id, size, color: "white", qty: 1 });
-        items = second.items;
-        capped ||= second.capped;
-        set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
-        if (capped) toast(`Max ${MAX_QTY} per item`);
-        else {
-          if (!options.quiet) toast(`Added the pair · ${size}`);
-          useUiStore.getState().noteAdded({ id, size, color: shirt.baseColor, pair: true });
-          track("add_to_cart", { id, size, color: "pair", qty: 2, price: PAIR_PRICE });
+        // Only what's missing: with one colour already in the bag, this
+        // completes the pair; with both, there's nothing to add.
+        const status = pairStatus(get().cart, id, size);
+        if (status.capped) {
+          toast(`Max ${MAX_QTY} per item — the pair wasn't added`);
+          return false;
         }
-        return !capped;
+        if (status.missing.length === 0) return false;
+        let items = get().cart;
+        for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1 }).items;
+        set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
+        const completes = status.have.length > 0;
+        if (!options.quiet) toast(completes ? `Completed the pair · ${size}` : `Added the pair · ${size}`);
+        useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, pair: true });
+        track("add_to_cart", { id, size, color: completes ? status.missing[0] : "pair", qty: status.missing.length, price: completes ? PAIR_PRICE - shirt.price : PAIR_PRICE });
+        return true;
       },
 
       setCartQty: (line, qty) => set((s) => ({ cart: setItemQty(s.cart, line, qty) })),

@@ -31,6 +31,8 @@ interface UiState {
   /** Set by undo so the restored card flies back in from where it left. */
   undoFx: { id: string; action: SwipeAction; nonce: number } | null;
   toast: ToastState | null;
+  /** Open dialogs (zoom, share, sheets, the taste-test screen): while any is, the page's shortcuts stand down. */
+  dialogs: number;
   /** The design shown in the full-screen zoom, if open. */
   zoomId: string | null;
 
@@ -44,12 +46,14 @@ interface UiState {
     limit: number;
   };
   /**
-   * Where the current product page was opened from, when "← Shop" may simply
-   * go back in history (restoring filters + scroll): "/shop/" when opened from
-   * the grid. Cleared when a product is opened from anywhere else (similar
-   * prints) and when leaving the shop, so Back never lands somewhere odd.
+   * Where a product page was opened from, when "← Shop" may simply go back in
+   * history (restoring filters + scroll): the grid ("/shop/") and the product
+   * it opened. Back is used only while that product is the one on screen —
+   * after moving on to another (from Saved, the mini bag, similar prints)
+   * history holds the previous product, so "← Shop" goes to the shop.
+   * Cleared when leaving the shop.
    */
-  productOrigin: string | null;
+  productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
   share: { id: string; color: BaseColor } | null;
   /** The last add to the bag (drives the product page's mini bag). */
@@ -64,11 +68,16 @@ interface UiState {
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
-  setProductOrigin: (path: string | null) => void;
+  setProductOrigin: (origin: ProductOrigin | null) => void;
   openShare: (id: string, color: BaseColor) => void;
   closeShare: () => void;
   noteAdded: (note: Omit<AddedNote, "nonce">) => void;
   clearAdded: () => void;
+}
+
+export interface ProductOrigin {
+  from: "/shop/";
+  id: string;
 }
 
 export interface AddedNote {
@@ -95,6 +104,7 @@ export const useUiStore = create<UiState>()((set) => ({
   swipeQueue: [],
   undoFx: null,
   toast: null,
+  dialogs: 0,
   zoomId: null,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
@@ -125,6 +135,17 @@ export const useUiStore = create<UiState>()((set) => ({
   noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
   clearAdded: () => set({ added: null }),
 }));
+
+/** Count a dialog as open; the returned function closes it (once). */
+export function openDialog() {
+  useUiStore.setState((s) => ({ dialogs: s.dialogs + 1 }));
+  let open = true;
+  return () => {
+    if (!open) return;
+    open = false;
+    useUiStore.setState((s) => ({ dialogs: Math.max(0, s.dialogs - 1) }));
+  };
+}
 
 /** Until this time, scroll events come from code (scrollIntoView), not the user. */
 let programmaticUntil = 0;

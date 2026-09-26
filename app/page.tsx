@@ -12,6 +12,7 @@ import { biggestShift, profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { SHIRTS } from "@/lib/catalog";
 import { STORE_POLICY } from "@/lib/store-policy";
+import { tasteLevel } from "@/lib/taste";
 import { TasteSheet } from "@/components/TasteSheet";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
@@ -69,7 +70,7 @@ function HowItWorks() {
 }
 
 /** The top strip keeps one fixed height across phases so the card never jumps. */
-const STRIP = "mx-auto flex h-10 w-full max-w-[420px] shrink-0 flex-col justify-center px-4";
+const STRIP = "mx-auto flex h-10 w-full max-w-[420px] shrink-0 flex-col justify-center px-4 outline-none";
 
 export default function DiscoverPage() {
   const hydrated = useHydrated();
@@ -78,8 +79,10 @@ export default function DiscoverPage() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Any open dialog (zoom, share, taste-test screen) owns the keyboard:
-      // Escape there closes only that dialog, never the card flip.
-      if (document.querySelector('[role="dialog"]')) return;
+      // Escape there closes only that dialog, never the card flip. Read from
+      // state, not the DOM: a closing dialog stays in the DOM while it
+      // animates out, and must not swallow the next key.
+      if (useUiStore.getState().dialogs > 0) return;
       // Leave browser / OS shortcuts alone (⌘Z, Ctrl+R, Alt+←…).
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       // Keys typed into a field, or pressed on a focused control, belong to
@@ -149,9 +152,9 @@ function TopStrip() {
 
   if (complete) {
     const sharp = profileSharpness(vector);
-    const word = sharp < 0.4 ? "Sharpening" : sharp < 0.75 ? "Focused" : "Dialled in";
+    const word = tasteLevel(vector);
     return (
-      <div className={STRIP}>
+      <div className={STRIP} data-strip tabIndex={-1}>
         <div className="flex items-center justify-between gap-3 text-xs">
           <button
             type="button"
@@ -187,7 +190,7 @@ function TopStrip() {
   // basics under the bar; the strip grows for it, just this once.
   const firstVisit = !onboardingSeen && done === 0;
   return (
-    <div className={firstVisit ? STRIP.replace("h-10", "min-h-10 lg:h-10") : STRIP}>
+    <div className={firstVisit ? STRIP.replace("h-10", "min-h-10 lg:h-10") : STRIP} data-strip tabIndex={-1}>
       {!onboardingSeen && (
         <p className={`truncate text-center text-[13px] font-medium text-white ${firstVisit ? "mb-1 leading-4" : "mb-1.5"}`}>
           <span className="max-[379px]:hidden">Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.</span>

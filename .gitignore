@@ -7,3 +7,5 @@ out
 npm-debug.log*
 coverage
 public/og
+test-results
+playwright-report

@@ -4,8 +4,7 @@ import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, X } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { DAILY_GOAL, archetypeOf, currentStreak, today } from "@/lib/taste";
-import { profileSharpness } from "@/lib/recommendation";
+import { DAILY_GOAL, archetypeOf, currentStreak, tasteLevel, today } from "@/lib/taste";
 import { startOverWithUndo, useTasteStore } from "@/store/tasteStore";
 import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 
@@ -59,7 +58,9 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-xs text-neutral-400">Profile defined: {Math.round(profileSharpness(vector) * 100)}% — every swipe sharpens it.</p>
+            <p className="mt-3 text-xs text-neutral-400">
+              <span className="font-semibold text-white">{tasteLevel(vector)}</span> — every swipe sharpens it.
+            </p>
 
             <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/[0.04] px-4 py-3 ring-1 ring-white/10">
               <div>
@@ -78,6 +79,9 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
               onClick={() => {
                 onClose();
                 startOverWithUndo();
+                // The button that opened this sheet goes with the old profile:
+                // focus lands on the strip above the card instead of the page.
+                requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-strip]")?.focus({ preventScroll: true })));
               }}
               className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5 hover:text-white"
             >

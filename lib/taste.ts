@@ -1,5 +1,4 @@
-import { SHIRTS } from "@/lib/catalog";
-import { centeredCosine, topTraits } from "@/lib/recommendation";
+import { centeredCosine, profileSharpness, topTraits } from "@/lib/recommendation";
 import { FEATURE_KEYS, createInitialVector, type FeatureKey, type UserProfileVector } from "@/types/shirt";
 
 /**
@@ -65,7 +64,16 @@ export function tasteOverlap(a: UserProfileVector, b: UserProfileVector): number
 const WEEK = 7 * 86_400_000;
 /** Monday the first weekly drop went out (drop n = this + n weeks). */
 export const DROP_EPOCH = Date.UTC(2025, 4, 26); // Mon 26 May 2025 → drop 69 = week of Mon 21 Sep 2026
-export const LATEST_DROP = Math.max(...SHIRTS.map((s) => s.dropWeek));
+
+/**
+ * The newest drop in a list of designs. A plain loop: spreading a large
+ * catalog into Math.max(...) overflows the argument limit (Safari: ~65k).
+ */
+export function latestDrop(shirts: readonly { dropWeek: number }[]): number {
+  let max = 0;
+  for (const s of shirts) if (s.dropWeek > max) max = s.dropWeek;
+  return max;
+}
 
 /** The drop running in the week of `date` (may be past the last generated one). */
 export const dropWeekAt = (date: number) => Math.floor((date - DROP_EPOCH) / WEEK);
@@ -114,7 +122,28 @@ export function countSwipe(d: Daily, day = today()): Daily {
   return { day, count, streak, last };
 }
 
-/** The streak as it stands today (broken if yesterday's goal was missed). */
+/**
+ * The streak as it stands today (broken if yesterday's goal was missed).
+ * One day isn't a streak yet: it counts from the second day in a row.
+ */
 export function currentStreak(d: Daily, day = today()): number {
-  return d.last === day || d.last === prevDay(day) ? d.streak : 0;
+  const alive = d.last === day || d.last === prevDay(day);
+  return alive && d.streak >= 2 ? d.streak : 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* How defined the taste profile is, in one word                       */
+/* ------------------------------------------------------------------ */
+
+export const TASTE_LEVELS = ["Sharpening", "Focused", "Dialled in"] as const;
+export type TasteLevel = (typeof TASTE_LEVELS)[number];
+
+/**
+ * The one source for the level word (the strip above the card, Your taste,
+ * milestones): from how far the profile has moved from neutral — never a
+ * percentage or a count of swipes.
+ */
+export function tasteLevel(vector: UserProfileVector): TasteLevel {
+  const sharp = profileSharpness(vector);
+  return sharp < 0.4 ? "Sharpening" : sharp < 0.75 ? "Focused" : "Dialled in";
 }
