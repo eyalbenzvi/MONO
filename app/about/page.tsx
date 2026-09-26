@@ -1,79 +1,70 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SHIRTS } from "@/lib/catalog";
-import { CALIBRATION_TOTAL } from "@/lib/deck";
-import { PAIR_PRICE } from "@/lib/cart";
 import { pageMeta } from "@/lib/seo";
 
 // Facts from the catalog itself (never hard-coded).
 const COUNT = SHIRTS.length.toLocaleString("en-US");
-const PRICE = SHIRTS[0]?.price ?? 0;
 
 export const metadata: Metadata = pageMeta({
   path: "/about/",
   title: "About MONO — Monochrome Tees, Ranked by Your Taste",
-  description: `Black or white tees, single-ink prints, one price. Swipe a short taste test and MONO ranks all ${COUNT} designs for you. A demo store: nothing is charged.`,
+  description: `Black or white tees, one-ink prints. Swipe a few and MONO ranks all ${COUNT} designs for you. A demo store: nothing is charged.`,
 });
 
-const STEPS: [string, string][] = [
-  ["Swipe.", `Like what you'd wear, pass on the rest. ${CALIBRATION_TOTAL} cards is enough to start.`],
-  ["Shop.", "The whole catalog, ranked by your taste. It keeps learning as you save."],
-  ["Pick your tee.", "Black, white or both. 100% organic cotton, 220 gsm, a single-ink print up to 28 × 37 cm."],
+/** The brand's three words, set like the mark: heavy caps, wide tracking. */
+const WORDS: { word: string; inverse?: boolean }[] = [{ word: "Black." }, { word: "White.", inverse: true }, { word: "One ink." }];
+
+const FACTS: [string, string][] = [
+  [COUNT, "designs"],
+  ["2", "colours"],
+  ["1", "ink"],
 ];
 
 /**
- * The brand story (the logo leads here): what MONO is, how it works, and
- * an honest note about this site. Plain facts only — no invented claims.
+ * The brand page (the logo leads here): three words set like the mark, one line, and
+ * the honest note about this demo. Short on purpose.
  */
 export default function AboutPage() {
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
-      <article className="mx-auto max-w-[560px] px-5 pb-16 pt-8">
-        <h1 className="text-3xl font-bold leading-tight tracking-tight">Black. White. One ink. Your taste.</h1>
-        <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-neutral-300">
-          <p>Every tee here is black or white. Every print is a single ink. Nothing else.</p>
-          <p>
-            Limits make the work. With no colour to hide behind, each design has to stand on its own — drawn graphics, star charts and curves
-            generated from real data, and public-domain prints, drawings and photographs from the Smithsonian&apos;s open archive.
-          </p>
-          <p>You shouldn&apos;t have to scroll through thousands of tees to find yours. Swipe a few, and MONO ranks the rest for you.</p>
-          <p className="text-white">
-            One price. ${PRICE} a tee, or ${PAIR_PRICE} for the pair in black and white.
-          </p>
-        </div>
-
-        <h2 className="mt-10 text-xs font-medium uppercase tracking-[0.18em] text-neutral-400">How it works</h2>
-        <ol className="mt-3 space-y-3">
-          {STEPS.map(([title, text], i) => (
-            <li key={title} className="flex gap-4 rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/10">
-              <span className="font-mono text-sm text-neutral-400">{i + 1}</span>
-              <p className="text-sm leading-relaxed text-neutral-300">
-                <span className="font-semibold text-white">{title}</span> {text}
-              </p>
-            </li>
+      <article className="mx-auto flex max-w-[560px] flex-col px-5 pb-14 pt-8">
+        <h1 className="mt-6 font-black uppercase leading-[0.95] tracking-[0.08em]">
+          {WORDS.map(({ word, inverse }) => (
+            <span
+              key={word}
+              className={`block w-fit text-[clamp(2.75rem,14vw,4.5rem)] ${inverse ? "-mx-2 my-1 bg-white px-2 text-black" : "text-white"}`}
+            >
+              {word}
+            </span>
           ))}
-        </ol>
+        </h1>
 
-        <h2 id="this-site" className="mt-10 scroll-mt-24 text-xs font-medium uppercase tracking-[0.18em] text-neutral-400">
-          About this site
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-          MONO is a demo store. You can fill a bag and place an order, but no payment details are asked for, nothing is charged and nothing ships. There
-          are no accounts: your taste profile stays in this browser on your device, and Reset clears it. The graphic prints are generated (the
-          star charts from a real star catalogue). The archive prints and photographs are CC0, from Smithsonian Open Access, and each product page
-          credits the artist, photographer or museum and links to the source record.
-          The photos of people wearing the tees are generated images, not real people; the print is laid onto each one digitally.
-        </p>
-        <p className="mt-3 hidden text-xs text-neutral-500 [@media(hover:hover)_and_(pointer:fine)]:block">Keyboard in Discover: ← pass · → like · space details · Z undo</p>
+        <p className="mt-8 max-w-[22rem] text-base leading-relaxed text-neutral-300">Swipe a few. MONO ranks every design to your taste.</p>
 
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/" className="flex h-12 items-center rounded-full bg-white px-6 text-sm font-bold text-black">
-            Start swiping
-          </Link>
-          <Link href="/shop/" className="flex h-12 items-center rounded-full px-6 text-sm font-semibold ring-1 ring-white/20 hover:bg-white/5">
-            Browse the shop
-          </Link>
-        </div>
+        <dl className="mt-10 grid grid-cols-3 border-y border-white/15">
+          {FACTS.map(([n, label], i) => (
+            <div key={label} className={`py-5 ${i ? "border-l border-white/15 pl-4" : ""}`}>
+              <dt className="sr-only">{label}</dt>
+              <dd className="font-mono text-2xl font-bold tabular-nums text-white">{n}</dd>
+              <dd className="mt-1 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500">{label}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <Link href="/" className="mt-10 flex h-14 items-center justify-center rounded-full bg-white text-sm font-black uppercase tracking-[0.2em] text-black">
+          Start swiping
+        </Link>
+
+        <section aria-labelledby="this-site" className="mt-14">
+          <h2 id="this-site" className="scroll-mt-24 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500">
+            About this site
+          </h2>
+          <p className="mt-3 text-xs leading-relaxed text-neutral-500">
+            A demo store: nothing is charged and nothing ships. Your taste stays in this browser. Archive prints are CC0 from Smithsonian Open
+            Access, credited on each tee; the models are generated images.
+          </p>
+        </section>
       </article>
     </div>
   );

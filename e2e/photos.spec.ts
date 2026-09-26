@@ -75,14 +75,16 @@ test("sizes: XXL and kids' sizes on the product page, labelled in the bag", asyn
   await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
 });
 
-test("T5: the logo opens About — the story, how it works, an honest note; the bag links to it", async ({ page }) => {
+test("T5 / U6: the logo opens About — three words, one line, an honest note; the bag links to it", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("");
   await hydrated(page);
   await page.getByRole("link", { name: "About MONO" }).tap();
   await expect(page).toHaveURL(/\/about\/$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Black. White. One ink. Your taste.");
-  await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Black.White.One ink.");
+  // Short on purpose: well under a hundred words on the page.
+  const words = (await page.locator("main article").innerText()).split(/\s+/).filter(Boolean).length;
+  expect(words).toBeLessThan(80);
   await expect(page.locator("#this-site")).toHaveText("About this site");
   await expect(page.getByText(/nothing is charged/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
