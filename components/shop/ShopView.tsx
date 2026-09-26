@@ -142,6 +142,19 @@ export function ShopView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, sort, category]);
 
+  // Opened at /shop/?page=N (the "Show more" link): that many pages, once.
+  useEffect(() => {
+    if (!hydrated) return;
+    const q = new URLSearchParams(window.location.search);
+    const page = Number(q.get("page"));
+    if (Number.isInteger(page) && page > 1) setShop({ limit: Math.min(page, 200) * SHOP_PAGE_SIZE });
+    if (q.has("page")) {
+      q.delete("page");
+      const rest = q.toString();
+      window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : ""));
+    }
+  }, [hydrated, setShop]);
+
   // Restore scroll position when coming back from a product page.
   const scroller = useRef<HTMLDivElement>(null);
   // The programmatic restore must not count as "scrolling down" (which would hide the header).
@@ -288,13 +301,19 @@ export function ShopView() {
               </div>
               {limit < visible.length && (
                 <div ref={sentinel} className="flex justify-center pt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShop({ limit: limit + SHOP_PAGE_SIZE })}
-                    className="h-11 rounded-full px-5 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5"
+                  {/* A real link (?page=N) for crawlers and new tabs; here it just shows more. */}
+                  <Link
+                    href={`/shop/?page=${Math.ceil(limit / SHOP_PAGE_SIZE) + 1}`}
+                    scroll={false}
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                      e.preventDefault();
+                      setShop({ limit: limit + SHOP_PAGE_SIZE });
+                    }}
+                    className="flex h-11 items-center rounded-full px-5 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5"
                   >
                     Show more · {visible.length - limit} left
-                  </button>
+                  </Link>
                 </div>
               )}
             </>

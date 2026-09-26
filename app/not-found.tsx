@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { pageMeta } from "@/lib/seo";
+
+// Not a page to index; its canonical is the home page.
+export const metadata: Metadata = pageMeta({ path: "/", title: "Not in the drop — MONO", description: "This page isn't in the MONO drop. Everything else is still here.", index: false });
 
 /**
  * 404 (static export: served as 404.html for any unknown path). Static

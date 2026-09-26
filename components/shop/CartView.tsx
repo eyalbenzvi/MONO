@@ -96,7 +96,7 @@ export function CartView() {
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
-            <Suggestions exclude={[]} title="Picked from your taste" source="empty_bag" />
+            <Suggestions exclude={[]} title="Picked from your taste" source="empty_bag" savedFirst />
           </div>
         ) : step === "bag" ? (
           <>
@@ -242,12 +242,13 @@ function FreeShippingBar({ toFree }: { toFree: number }) {
 
 /**
  * Three prints not already chosen (no family already in the bag or just
- * bought): the best matches once the taste test is done (topPicks),
- * otherwise from Saved, otherwise the editors' picks. Used in the bag
+ * bought): on an empty bag, from Saved first; then the best matches once
+ * the taste test is done (topPicks), otherwise from Saved, otherwise the
+ * editors' picks. Used in the bag
  * ("One more from your taste"), an empty bag and after an order ("Your
  * next match").
  */
-function Suggestions({ exclude, title: heading, source }: { exclude: string[]; title: string; source: AddSource }) {
+function Suggestions({ exclude, title: heading, source, savedFirst = false }: { exclude: string[]; title: string; source: AddSource; savedFirst?: boolean }) {
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const likedIds = useTasteStore((s) => s.likedIds);
@@ -256,6 +257,9 @@ function Suggestions({ exclude, title: heading, source }: { exclude: string[]; t
   const { picks, title } = useMemo(() => {
     const skip = familiesOf([...exclude, ...(lastOrder?.items.map((l) => l.id) ?? [])]);
     const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
+    // An empty bag starts from what was saved (F05).
+    const saved = pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
+    if (savedFirst && saved.length) return { picks: saved, title: "From your Saved" };
     const fromTaste = showMatch
       ? topPicks(vector, 3, { excludeFamilies: skip })
       : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
@@ -264,7 +268,7 @@ function Suggestions({ exclude, title: heading, source }: { exclude: string[]; t
     // fixed ranking — not usage data), titled as exactly that.
     return { picks: pool([...SHIRTS].sort((a, b) => a.rank - b.rank).slice(0, 60)).slice(0, 3), title: "Editors' picks" };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, lastOrder, showMatch, vector, likedIds, heading]);
+  }, [key, lastOrder, showMatch, vector, likedIds, heading, savedFirst]);
   if (picks.length === 0) return null;
   return (
     <section className="mt-8 w-full text-left">
