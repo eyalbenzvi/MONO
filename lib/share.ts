@@ -24,11 +24,20 @@ export function siteRoot(origin?: string) {
   return `${o.replace(/\/$/, "")}${BASE_PATH}`;
 }
 
-/** Link to the product page, opening in `color`, tagged with the channel. */
+/** Query parameters a shared link carries (removed from the address bar on landing). */
+export const SHARE_PARAMS = ["c", "ref", "utm_source", "utm_medium", "utm_campaign"] as const;
+
+/**
+ * Link to the product page, opening in `color`, tagged with the channel as
+ * standard UTM parameters (utm_source = channel, utm_medium = share,
+ * utm_campaign = tee_share), so any analytics tool attributes the visit.
+ */
 export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string) {
   const q = new URLSearchParams();
   if (color !== shirt.baseColor) q.set("c", color);
-  q.set("ref", ref);
+  q.set("utm_source", ref);
+  q.set("utm_medium", "share");
+  q.set("utm_campaign", "tee_share");
   const href = productHref(shirt.id);
   return `${siteRoot(origin)}${href}${href.includes("?") ? "&" : "?"}${q.toString()}`;
 }
@@ -65,11 +74,11 @@ export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: B
   }
 }
 
-/** Reads ?c= and ?ref= from a product page URL (for the recipient's landing). */
+/** Reads ?c= and the channel (utm_source, or ?ref= on older links) from a product page URL. */
 export function parseShareParams(search: string): { color: BaseColor | null; ref: ShareChannel | null } {
   const q = new URLSearchParams(search);
   const c = q.get("c");
-  const r = q.get("ref") as ShareChannel | null;
+  const r = (q.get("utm_source") ?? q.get("ref")) as ShareChannel | null;
   return {
     color: c === "black" || c === "white" ? c : null,
     ref: r && REF_CHANNELS.includes(r) ? r : null,

@@ -131,8 +131,10 @@ export function ShopView() {
   return (
     <div ref={scroller} onScroll={onScroll} className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto max-w-5xl px-4 pb-16">
-        {/* One-line taste summary / taste-test nudge */}
-        {hydrated && (
+        {/* One-line taste summary / taste-test nudge (height kept before hydration). */}
+        {!hydrated ? (
+          <div className="h-11" />
+        ) : (
           <div className="flex h-11 items-center gap-2">
             {complete ? (
               <>
@@ -190,10 +192,13 @@ export function ShopView() {
         <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />
         <div className="h-2" />
 
-        {hydrated ? (
-          visible.length > 0 ? (
+        {/* Rendered on the server too, in the default order ("Popular" — no
+            personal data needed), so the page arrives with products. A
+            personal order after hydration swaps in with a short fade (same
+            card sizes, nothing moves). */}
+        {visible.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+              <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
                 {visible.slice(0, limit).map(({ shirt, score, variations }) => (
                   <ProductCard
                     key={shirt.id}
@@ -227,14 +232,7 @@ export function ShopView() {
                 Show all
               </button>
             </div>
-          )
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-white/[0.04]" />
-            ))}
-          </div>
-        )}
+          )}
       </div>
     </div>
   );

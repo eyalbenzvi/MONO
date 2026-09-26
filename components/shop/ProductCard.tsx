@@ -4,7 +4,7 @@ import { memo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
-import { MatchBadge, SaveButton, STAGE_BG, TeeDot } from "@/components/ui";
+import { MatchBadge, SaveButton, ShareButton, STAGE_BG, TeeDot } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct, type UserProfileVector } from "@/types/shirt";
 import { TIER_LABEL, tierOf } from "@/lib/match";
@@ -83,6 +83,7 @@ export const ProductCard = memo(function ProductCard({
           <MatchBadge tier={tier} size="sm" quiet={!topPick} why={() => explainMatch(vector, shirt.features)} />
         </div>
       )}
+      <ShareButton id={shirt.id} title={shirt.title} color={tee} className="absolute right-12 top-2 z-10 h-8 w-8" />
       <SaveButton id={shirt.id} className="absolute right-2 top-2 z-10 h-8 w-8" />
     </motion.div>
   );

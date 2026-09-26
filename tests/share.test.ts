@@ -7,7 +7,7 @@ const shirt = getShirtById("mono-2002")!; // a black tee
 
 describe("share links", () => {
   it("links to the product page, tagged with the channel", () => {
-    expect(productShareUrl(shirt, shirt.baseColor, "whatsapp", ORIGIN)).toBe(`${ORIGIN}/shop/mono-2002/?ref=whatsapp`);
+    expect(productShareUrl(shirt, shirt.baseColor, "whatsapp", ORIGIN)).toBe(`${ORIGIN}/shop/mono-2002/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
   });
 
   it("carries the colourway only when it differs from the original", () => {
@@ -18,6 +18,8 @@ describe("share links", () => {
 
   it("ignores unknown or malformed params on landing", () => {
     expect(parseShareParams("?c=purple&ref=spam")).toEqual({ color: null, ref: null });
+    // links shared before UTM tags still land as shared
+    expect(parseShareParams("?c=white&ref=whatsapp")).toEqual({ color: "white", ref: "whatsapp" });
     expect(parseShareParams("")).toEqual({ color: null, ref: null });
   });
 
@@ -26,10 +28,10 @@ describe("share links", () => {
     expect(wa.startsWith("https://wa.me/?text=")).toBe(true);
     const text = decodeURIComponent(wa.split("text=")[1]);
     expect(text).toContain(shirt.title);
-    expect(text).toContain(`${ORIGIN}/shop/mono-2002/?ref=whatsapp`);
+    expect(text).toContain(`${ORIGIN}/shop/mono-2002/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
 
     const fb = channelLink("facebook", shirt, "black", ORIGIN)!;
-    expect(decodeURIComponent(fb.split("u=")[1])).toBe(`${ORIGIN}/shop/mono-2002/?ref=facebook`);
+    expect(decodeURIComponent(fb.split("u=")[1])).toBe(`${ORIGIN}/shop/mono-2002/?utm_source=facebook&utm_medium=share&utm_campaign=tee_share`);
 
     expect(channelLink("email", shirt, "black", ORIGIN)!.startsWith("mailto:?subject=")).toBe(true);
     expect(channelLink("sms", shirt, "black", ORIGIN)!.startsWith("sms:")).toBe(true);

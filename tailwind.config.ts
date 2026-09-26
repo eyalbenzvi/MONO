@@ -6,6 +6,9 @@ const config: Config = {
   darkMode: "class",
   theme: {
     extend: {
+      keyframes: {
+        "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+      },
       colors: {
         ink: {
           950: "#050505",

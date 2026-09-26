@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Heart, Share2 } from "lucide-react";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { TIER_LABEL, type MatchTier } from "@/lib/match";
@@ -319,6 +319,31 @@ export function SaveButton({ id, size = "sm", className = "" }: { id: string; si
     >
       <Heart className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
     </motion.button>
+  );
+}
+
+/**
+ * Share, next to the heart: opens the share sheet (native share where there
+ * is one, else the channels, copy link and save image; links carry UTM tags).
+ */
+export function ShareButton({ id, title, color, size = "sm", className = "" }: { id: string; title: string; color: BaseColor; size?: "sm" | "lg"; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        useUiStore.getState().openShare(id, color);
+      }}
+      aria-label={`Share ${title}`}
+      className={`flex items-center justify-center rounded-full transition-colors ${
+        size === "sm"
+          ? "bg-black/55 text-white ring-1 ring-white/15 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/75"
+          : "h-12 w-12 shrink-0 bg-white/5 text-white ring-1 ring-white/15 hover:bg-white/10"
+      } ${className}`}
+    >
+      <Share2 className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} />
+    </button>
   );
 }
 
