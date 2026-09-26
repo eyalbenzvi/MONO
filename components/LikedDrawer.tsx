@@ -5,15 +5,20 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Heart, Share2, ShoppingBag, Undo2, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
-import { ColorSelector, SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
+import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
+import { DropSignup } from "@/components/DropSignup";
+import { QuickAdd } from "@/components/QuickAdd";
+import { shareOrCopy } from "@/lib/clipboard";
+import { siteRoot } from "@/lib/share";
+import { track } from "@/lib/analytics";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById, productHref } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { TIER_LABEL, tierOf } from "@/lib/match";
-import { sizeFor, useCartCount, useCartStore } from "@/store/cartStore";
+import { useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { type BaseColor, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 
 /** "Saved" — every tee liked in Discover or hearted in the shop. */
@@ -126,7 +131,9 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   <p className="text-sm">Swipe right in Discover, or tap ♥ in the shop, to save a tee here.</p>
                 </div>
               ) : (
-                <ul ref={list} className="space-y-3 pb-4">
+                <>
+                <ListActions items={items} />
+                <ul ref={list} className="space-y-2 pb-4">
                   <AnimatePresence initial={false}>
                     {items.map((shirt, row) => (
                       <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
@@ -134,6 +141,8 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   </AnimatePresence>
                   <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
                 </ul>
+                <DropSignup source="saved" className="!mt-2 pb-6" />
+                </>
               )}
             </div>
 
@@ -163,17 +172,55 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
+/** "Add all · M" and "Share my list" above the Saved rows. */
+function ListActions({ items }: { items: ShirtProduct[] }) {
+  const preferred = useCartStore((s) => s.preferredSize);
+  const [pick, setPick] = useState(false);
+  const addAll = (size: ShirtSize) => {
+    const { addToCart, selectedColors } = useCartStore.getState();
+    let added = 0;
+    for (const s of items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { quiet: true })) added++;
+    setPick(false);
+    useUiStore.getState().showToast(`Added ${added} · ${size}`);
+  };
+  const shareList = () => {
+    // Compact ids (the number of each design), newest first.
+    const list = items.map((s) => s.n).join(".");
+    const url = `${siteRoot()}/shop/?list=${list}&utm_source=list&utm_medium=share&utm_campaign=saved_list`;
+    void shareOrCopy({ title: "My MONO list", text: `${items.length} tee${items.length === 1 ? "" : "s"} I saved on MONO`, url });
+    track("share", { channel: "list", count: items.length });
+  };
+  return (
+    <div className="mb-3">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => (preferred ? addAll(preferred) : setPick((p) => !p))}
+          aria-expanded={preferred ? undefined : pick}
+          className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-white text-sm font-bold text-black"
+        >
+          <ShoppingBag className="h-4 w-4" /> Add all{preferred ? ` · ${preferred}` : ""}
+        </button>
+        <button type="button" onClick={shareList} className="flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5">
+          <Share2 className="h-4 w-4" /> Share my list
+        </button>
+      </div>
+      {pick && !preferred && (
+        <div className="mt-2">
+          <p className="mb-1.5 text-xs text-neutral-400">Size for all</p>
+          <SizeSelector compact onChange={addAll} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A quiet row: picture, name, price and match, one "+" (remembered size). */
 function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavigate: () => void; onRemove: () => void }) {
   const vector = useTasteStore((s) => s.preferenceVector);
-  // The size picked for this tee, else the one remembered from any other.
-  const size = useCartStore((s) => sizeFor(s, shirt.id));
   const color: BaseColor = useCartStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
-  const setSize = useCartStore((s) => s.setSize);
-  const setColor = useCartStore((s) => s.setColor);
-  const addToCart = useCartStore((s) => s.addToCart);
   const showMatch = useShowMatch();
-  const [nudge, setNudge] = useState(0);
-  const remove = onRemove;
+  const tier = showMatch ? tierOf(vector, matchScore(vector, shirt.features)) : null;
 
   return (
     <motion.li
@@ -186,58 +233,30 @@ function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavi
       dragElastic={{ left: 0.7, right: 0 }}
       dragDirectionLock
       onDragEnd={(_, info) => {
-        if (info.offset.x < -90 || info.velocity.x < -500) remove();
+        if (info.offset.x < -90 || info.velocity.x < -500) onRemove();
       }}
       data-saved-row={shirt.id}
-      className="relative flex gap-3 rounded-2xl bg-ink-850 p-2.5 ring-1 ring-white/10"
+      className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
     >
-      <Link href={productHref(shirt.id)} onClick={onNavigate} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
+      <Link href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
       </Link>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-1">
-          <Link href={productHref(shirt.id)} onClick={onNavigate} className="min-w-0 py-0.5">
-            <p className="truncate text-sm font-semibold">{shirt.title}</p>
-            <p className="truncate text-xs text-neutral-400">
-              {formatPrice(shirt.price)}
-              {showMatch && tierOf(vector, matchScore(vector, shirt.features)) ? ` · ${TIER_LABEL[tierOf(vector, matchScore(vector, shirt.features))!]}` : ""}
-            </p>
-          </Link>
-          <button
-            type="button"
-            onClick={() => useUiStore.getState().openShare(shirt.id, color)}
-            aria-label={`Share ${shirt.title}`}
-            className="-mt-1.5 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={remove}
-            aria-label={`Remove ${shirt.title}`}
-            className="-mr-1.5 -mt-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ColorSelector variant="dots" value={color} original={shirt.baseColor} onChange={(c) => setColor(shirt.id, c)} />
-          <span className="text-xs text-neutral-400">{COLOR_LABELS[color]}</span>
-        </div>
-
-        <SizeSelector key={nudge} compact value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
-
-        <button
-          type="button"
-          onClick={() => (size ? addToCart(shirt.id, size, color) : setNudge((n) => n + 1))}
-          className={`flex h-10 items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition active:scale-[0.97] ${
-            size ? "bg-white text-black" : "bg-white/10 text-white"
-          }`}
-        >
-          <ShoppingBag className="h-3.5 w-3.5" /> {size ? `Add to bag · ${size}` : "Pick a size"}
-        </button>
-      </div>
+      <Link href={productHref(shirt.id)} onClick={onNavigate} className="min-w-0 flex-1 py-0.5">
+        <p className="truncate text-sm font-semibold">{shirt.title}</p>
+        <p className="truncate text-xs text-neutral-400">
+          {formatPrice(shirt.price)}
+          {tier ? ` · ${TIER_LABEL[tier]}` : ""}
+        </p>
+      </Link>
+      <QuickAdd shirt={shirt} color={color} />
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${shirt.title}`}
+        className="flex h-10 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </motion.li>
   );
 }

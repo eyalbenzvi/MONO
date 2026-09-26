@@ -1,9 +1,16 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Share2, Sparkles } from "lucide-react";
+import { DropSignup } from "@/components/DropSignup";
+import { archetypeOf, encodeTaste, tasteOverlap } from "@/lib/taste";
+import { renderTasteImage } from "@/lib/shareImage";
+import { shareOrCopy } from "@/lib/clipboard";
+import { siteRoot } from "@/lib/share";
+import { track } from "@/lib/analytics";
+import { FEATURE_LABELS } from "@/types/shirt";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -29,6 +36,20 @@ export function CalibrationComplete() {
   // Three clearly different designs: different families and algorithms.
   const picks = open ? paceByVariant(dedupeByFamily(rankShirts(vector, SHIRTS)), 3).slice(0, 3) : [];
   const traits = open ? topTraits(vector, 3) : [];
+  const archetype = archetypeOf(vector);
+  const friend = useUiStore((s) => s.friendTaste);
+  const [sharing, setSharing] = useState(false);
+  const shareTaste = async () => {
+    setSharing(true);
+    try {
+      const url = `${siteRoot()}/?taste=${encodeTaste(vector)}&utm_source=taste&utm_medium=share&utm_campaign=taste_profile`;
+      const blob = await renderTasteImage(archetype.name, traits.map((k) => FEATURE_LABELS[k]), picks.map((p) => p.shirt));
+      await shareOrCopy({ title: `${archetype.name} — MONO`, text: `My taste in tees: ${archetype.name}. What's yours?`, url, image: { blob, name: "mono-my-taste.png" } });
+      track("share", { channel: "taste" });
+    } finally {
+      setSharing(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -45,7 +66,7 @@ export function CalibrationComplete() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="calib-title"
-            className="w-full max-w-md rounded-[28px] border border-white/10 bg-ink-900 p-5 pb-[max(env(safe-area-inset-bottom),16px)] shadow-2xl"
+            className="no-scrollbar max-h-[calc(100dvh-24px)] w-full max-w-md overflow-y-auto rounded-[28px] border border-white/10 bg-ink-900 p-5 pb-[max(env(safe-area-inset-bottom),16px)] shadow-2xl"
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 60, opacity: 0 }}
@@ -55,8 +76,9 @@ export function CalibrationComplete() {
               <Burst /> Taste test complete
             </div>
             <h2 id="calib-title" className="mt-2 text-2xl font-bold tracking-tight">
-              Your shop is ready
+              You&apos;re {archetype.name}
             </h2>
+            <p className="text-sm text-neutral-300">Your shop is ready.</p>
             <p className="mt-1 text-sm text-neutral-400">
               You liked {likedInTest} of {total}.{traits.length > 0 ? " Here's what you're into:" : ""}
             </p>
@@ -83,6 +105,30 @@ export function CalibrationComplete() {
                 </Link>
               ))}
             </div>
+
+            {friend && (
+              <div className="mt-4 rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10" role="status">
+                <p className="text-sm font-semibold">Compared with your friend: {tasteOverlap(vector, friend)}% alike</p>
+                <p className="mt-0.5 text-xs text-neutral-400">
+                  They&apos;re {archetypeOf(friend).name}
+                  {(() => {
+                    const both = topTraits(friend, 5).filter((k) => traits.includes(k)).map((k) => FEATURE_LABELS[k]);
+                    return both.length ? ` · you're both into ${both.join(", ")}` : "";
+                  })()}
+                </p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={shareTaste}
+              disabled={sharing}
+              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-50"
+            >
+              <Share2 className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
+            </button>
+
+            <DropSignup source="calibration" className="!mt-4" />
 
             <div className="mt-5 grid gap-1">
               <Link

@@ -10,6 +10,7 @@ import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, COLORS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { track } from "@/lib/analytics";
+import { copyText, downloadBlob } from "@/lib/clipboard";
 
 /* Monochrome platform glyphs (24×24), drawn to match the UI's line icons. */
 const glyph = (children: React.ReactNode, filled = false) => (
@@ -76,34 +77,6 @@ const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat) =>
   return cache.get(key)!;
 };
 
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    // Older browsers / insecure contexts: a selected textarea + execCommand.
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand("copy");
-    ta.remove();
-    return ok;
-  }
-}
-
-function downloadBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 export function ShareSheet() {
   const share = useUiStore((s) => s.share);

@@ -3,7 +3,7 @@
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { ShopSort } from "@/lib/recommendation";
-import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
 
 export interface ToastState {
   message: string;
@@ -54,6 +54,8 @@ interface UiState {
   share: { id: string; color: BaseColor } | null;
   /** The last add to the bag (drives the product page's mini bag). */
   added: AddedNote | null;
+  /** A friend's taste from a shared /?taste= link (this session), to compare with. */
+  friendTaste: UserProfileVector | null;
 
   setHydrated: () => void;
   toggleFlip: (value?: boolean) => void;
@@ -104,6 +106,7 @@ export const useUiStore = create<UiState>()((set) => ({
   productOrigin: null,
   share: null,
   added: null,
+  friendTaste: null,
 
   setDebug: (on) => {
     try {

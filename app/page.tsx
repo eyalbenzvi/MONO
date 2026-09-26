@@ -12,6 +12,7 @@ import { biggestShift, profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { SHIRTS } from "@/lib/catalog";
 import { STORE_POLICY } from "@/lib/store-policy";
+import { TasteSheet } from "@/components/TasteSheet";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { FEATURE_LABELS } from "@/types/shirt";
@@ -96,6 +97,7 @@ function TopStrip() {
   const { done, total, complete } = useCalibrationProgress();
   const onboardingSeen = useTasteStore((s) => s.onboardingSeen);
   const vector = useTasteStore((s) => s.preferenceVector);
+  const [sheet, setSheet] = useState(false);
 
   // Milestone copy: "Halfway there" flashes for 1.5 s at 5/10; "Last one!" at 9/10.
   const [flash, setFlash] = useState<string | null>(null);
@@ -116,7 +118,13 @@ function TopStrip() {
     return (
       <div className={STRIP}>
         <div className="flex items-center justify-between gap-3 text-xs">
-          <div className="flex min-w-0 items-center gap-2 text-neutral-400">
+          <button
+            type="button"
+            onClick={() => setSheet(true)}
+            aria-haspopup="dialog"
+            aria-label={`Your taste: ${word}. Open your taste profile`}
+            className="-ml-1 flex h-10 min-w-0 items-center gap-2 rounded-full px-1 text-neutral-400 hover:text-white"
+          >
             <span>Your taste</span>
             <span className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10" aria-hidden>
               <motion.span
@@ -127,7 +135,8 @@ function TopStrip() {
               />
             </span>
             <span className="truncate font-medium text-white">{word}</span>
-          </div>
+          </button>
+          <TasteSheet open={sheet} onClose={() => setSheet(false)} />
           <Link href="/shop/" className="flex h-10 shrink-0 items-center gap-1 font-semibold text-white">
             Your shop <ArrowRight className="h-3.5 w-3.5" />
           </Link>

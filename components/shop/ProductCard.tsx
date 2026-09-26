@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct, type UserProfileVector } from "@/types/shirt";
 import { TIER_LABEL, tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
+import { isNewThisWeek } from "@/lib/taste";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
 import { QuickAdd } from "@/components/QuickAdd";
@@ -28,6 +29,7 @@ export const ProductCard = memo(function ProductCard({
   color,
   onOpen,
   variations = 0,
+  wildcard = false,
 }: {
   shirt: ShirtProduct;
   score: number;
@@ -38,6 +40,8 @@ export const ProductCard = memo(function ProductCard({
   topPick?: boolean;
   /** Other designs in this card's family (shown as "+N variations"). */
   variations?: number;
+  /** A deliberate taste probe from outside your usual (shop diversity). */
+  wildcard?: boolean;
   /** Render in this tee colour (and open the product in it); default = original. */
   color?: BaseColor;
   onOpen?: (id: string) => void;
@@ -49,6 +53,11 @@ export const ProductCard = memo(function ProductCard({
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        {(wildcard || isNewThisWeek(shirt.dropWeek)) && (
+          <span className="absolute bottom-2 left-2 rounded-full border border-dashed border-white/50 bg-black/60 px-2 py-0.5 text-xs font-semibold text-white">
+            {isNewThisWeek(shirt.dropWeek) ? "New this week" : "Wildcard"}
+          </span>
+        )}
         {/* Above the stretched link's ::after (z-10 in the same stacking context). */}
         <QuickAdd shirt={shirt} color={tee} variant="overlay" className="absolute bottom-2 right-2 z-10" />
       </div>

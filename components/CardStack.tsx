@@ -19,7 +19,7 @@ import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { formatPrice } from "@/lib/format";
-import { canUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { canUndo, startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, type SwipeAction } from "@/types/shirt";
 
@@ -50,13 +50,7 @@ export function CardStack() {
   const vector = useTasteStore((s) => s.preferenceVector);
   const isFlipped = useUiStore((s) => s.isFlipped);
   // "Start over" wipes taste and Saved: offer an Undo that restores it all.
-  const startOver = () => {
-    const { snapshot, reset, restore } = useTasteStore.getState();
-    const { showToast } = useUiStore.getState();
-    const before = snapshot();
-    reset();
-    showToast("Started over", { label: "Undo", run: () => restore(before) });
-  };
+  const startOver = startOverWithUndo;
   const likedCount = useTasteStore((s) => s.likedIds.length);
   const [hearts, setHearts] = useState<{ id: number; from: DOMRect; to: DOMRect }[]>([]);
   const reduceMotion = useReducedMotion();
