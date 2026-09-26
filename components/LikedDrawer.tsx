@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
-import { QuickAdd } from "@/components/QuickAdd";
+import { MoreMenu } from "@/components/MoreMenu";
 import { shareOrCopy } from "@/lib/clipboard";
 import { siteRoot } from "@/lib/share";
 import { track } from "@/lib/analytics";
@@ -26,6 +26,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const cartCount = useCartCount();
+  const [addAll, setAddAll] = useState(0);
   const panel = useRef<HTMLElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const list = useRef<HTMLUListElement>(null);
@@ -97,15 +98,13 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   <p className="text-xs text-neutral-400">{items.length} saved</p>
                 </div>
                 {items.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => shareList(items)}
-                    aria-label="Share my list"
-                    title="Share my list"
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/5 hover:text-white"
-                  >
-                    <Icon name="share-2" className="h-[18px] w-[18px]" />
-                  </button>
+                  <MoreMenu
+                    label="More for Saved"
+                    items={[
+                      ...(items.length > TOP ? [{ label: `Add all ${items.length} to bag`, icon: "shopping-bag" as const, onSelect: () => setAddAll((n) => n + 1) }] : []),
+                      { label: "Share my list", icon: "share-2" as const, onSelect: () => shareList(items) },
+                    ]}
+                  />
                 )}
               </div>
               <button
@@ -146,14 +145,13 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 </div>
               ) : (
                 <>
-                <ListActions items={items} vector={showMatch ? vector : null} />
+                <ListActions items={items} vector={showMatch ? vector : null} addAll={addAll} />
                 <ul ref={list} className="space-y-2 pb-4">
                   <AnimatePresence initial={false}>
                     {items.map((shirt, row) => (
                       <SavedRow key={shirt.id} shirt={shirt} vector={showMatch ? vector : null} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
                     ))}
                   </AnimatePresence>
-                  <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
                 </ul>
                 </>
               )}
@@ -198,10 +196,10 @@ function shareList(items: ShirtProduct[]) {
 const TOP = 3;
 
 /**
- * One main action above the rows — "Add your top 3 · M" — and
- * "Add all" as a quiet text link when there are more.
+ * One main action above the rows — "Add your top 3 · M"; "Add all" is in
+ * the ⋯ menu when there are more.
  */
-function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserProfileVector | null }) {
+function ListActions({ items, vector, addAll }: { items: ShirtProduct[]; vector: UserProfileVector | null; addAll: number }) {
   const preferred = useCartStore((s) => s.preferredSize);
   const [pick, setPick] = useState<"top" | "all" | null>(null);
   const top = vector ? [...items].sort((a, b) => matchScore(vector, b.features) - matchScore(vector, a.features)).slice(0, TOP) : items.slice(0, TOP);
@@ -213,6 +211,12 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
     useUiStore.getState().showToast(`Added ${added} · ${SIZE_LABELS[size]}`);
   };
   const run = (which: "top" | "all") => (preferred ? add(which, preferred) : setPick((p) => (p === which ? null : which)));
+  // "Add all" comes from the ⋯ menu in the header.
+  const first = useRef(addAll);
+  useEffect(() => {
+    if (addAll !== first.current) run("all");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addAll]);
   const label = top.length === 1 ? "Add to bag" : top.length === items.length ? `Add all ${top.length}` : `Add your top ${top.length}`;
   return (
     <div className="mb-3">
@@ -225,16 +229,6 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
         <Icon name="shopping-bag" className="h-4 w-4" /> {label}
         {preferred ? ` · ${SIZE_LABELS[preferred]}` : ""}
       </button>
-      {items.length > top.length && (
-        <button
-          type="button"
-          onClick={() => run("all")}
-          aria-expanded={preferred ? undefined : pick === "all"}
-          className="mx-auto mt-1 flex h-9 items-center px-2 text-xs font-medium text-neutral-300 underline underline-offset-4 hover:text-white"
-        >
-          Add all {items.length}
-        </button>
-      )}
       {pick && !preferred && (
         <div className="mt-2">
           <p className="mb-1.5 text-xs text-neutral-400">Size</p>
@@ -245,7 +239,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
   );
 }
 
-/** A quiet row: picture, name, price and match, one "+" (remembered size). */
+/** A quiet row: picture, name and match, remove. Tap to open the tee. */
 function SavedRow({
   shirt,
   vector,
@@ -280,7 +274,7 @@ function SavedRow({
       <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
       </Link>
-      {/* Name and price, then one "+" (the remembered size) and remove. */}
+      {/* Name and match, then remove (swipe left works too). */}
       <div className="min-w-0 flex-1">
         <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
           <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
@@ -289,7 +283,6 @@ function SavedRow({
           </p>
         </Link>
       </div>
-      <QuickAdd shirt={shirt} color={color} iconOnly source="saved" />
       <button
         type="button"
         onClick={onRemove}

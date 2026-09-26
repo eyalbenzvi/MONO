@@ -6,7 +6,6 @@ import Link from "next/link";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { archetypeOf, tasteOverlap } from "@/lib/taste";
-import { shareTaste } from "@/lib/shareTaste";
 import { topPicks } from "@/lib/match";
 import { TraitChips } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -17,7 +16,7 @@ import { useUiStore } from "@/store/useUiStore";
 /**
  * Shown once, when the taste test is finished: the hand-off into the shop.
  * Just the result — archetype, three traits, three tees — one way on
- * ("See my shop"), a quiet "Keep swiping", and a small share icon.
+ * ("See my shop") and a quiet "Keep swiping" (sharing your taste is in Your taste).
  */
 export function CalibrationComplete() {
   const hydrated = useUiStore((s) => s.hydrated);
@@ -34,15 +33,7 @@ export function CalibrationComplete() {
   const traits = open ? topTraits(vector, 3) : [];
   const archetype = archetypeOf(vector);
   const friend = useUiStore((s) => s.friendTaste);
-  const [sharing, setSharing] = useState(false);
-  const share = async () => {
-    setSharing(true);
-    try {
-      await shareTaste(vector);
-    } finally {
-      setSharing(false);
-    }
-  };
+
 
   return (
     <AnimatePresence>
@@ -74,16 +65,6 @@ export function CalibrationComplete() {
                   You&apos;re {archetype.name}
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={share}
-                disabled={sharing}
-                aria-label="Share my taste"
-                title="Share my taste"
-                className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/15 hover:text-white disabled:opacity-50"
-              >
-                <Icon name="share-2" className="h-[18px] w-[18px]" />
-              </button>
             </div>
             <TraitChips keys={traits} className="mt-3" stagger />
 

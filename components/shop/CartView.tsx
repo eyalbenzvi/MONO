@@ -44,6 +44,13 @@ export function CartView() {
     heading.current?.focus({ preventScroll: true });
     heading.current?.scrollIntoView({ block: "nearest" });
   }, [step]);
+  // Adding from the empty bag's suggestions swaps the page for the bag: the
+  // control that had focus is gone, so focus goes to the bag's heading.
+  const wasEmpty = useRef(cart.length === 0);
+  useEffect(() => {
+    if (wasEmpty.current && cart.length > 0 && (!document.activeElement || document.activeElement === document.body)) heading.current?.focus({ preventScroll: true });
+    wasEmpty.current = cart.length === 0;
+  }, [cart.length]);
   const go = (next: Step) => {
     moved.current = true;
     setStep(next);
@@ -122,10 +129,8 @@ export function CartView() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
-                          {/* Colour and size are the controls themselves: no meta line repeating them. */}
-                          <div className="mt-1.5">
-                            <ColorSelector variant="pills" value={line.color} original={line.shirt.baseColor} onChange={(color) => changeCartItem(line, { color })} />
-                          </div>
+                          {/* The colour, in words (change it on the product page); the size is the control below. */}
+                          <p className="text-xs text-neutral-400">{COLOR_LABELS[line.color]} tee</p>
                         </div>
                         <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
                       </div>
@@ -146,6 +151,8 @@ export function CartView() {
                             </optgroup>
                           ))}
                         </select>
+                        {/* Quantity only once there's more than one (add again for another). */}
+                        {line.qty > 1 && (
                         <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
                           <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
                             <Icon name="minus" className="h-3.5 w-3.5" />
@@ -155,6 +162,7 @@ export function CartView() {
                             <Icon name="plus" className="h-3.5 w-3.5" />
                           </button>
                         </div>
+                        )}
                         <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
                           <Icon name="trash-2" className="h-4 w-4" />
                         </button>
@@ -552,13 +560,12 @@ function Confirmation({ order }: { order: Order }) {
           <button
             type="button"
             onClick={() => useUiStore.getState().openShare(first.id, first.color)}
-            className="mt-6 flex h-11 items-center gap-2 rounded-full px-5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5"
+            className="mt-6 h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white"
           >
-            <Icon name="share-2" className="h-4 w-4" /> Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}
+            Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}
           </button>
         )}
 
-        <Suggestions exclude={order.items.map((l) => l.id)} title="Your next match" source="confirm" />
 
         {referral && (
           <section className="mt-6 w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/10">

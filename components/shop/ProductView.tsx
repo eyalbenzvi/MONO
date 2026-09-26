@@ -6,12 +6,13 @@ import type { IconName } from "@/lib/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { MoreMenu } from "@/components/MoreMenu";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { LABEL, MatchBadge, SaveButton, ShareButton, SizeSelector, Spec, STAGE_BG, TraitChips, radioKeys, useShowMatch } from "@/components/ui";
+import { LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, radioKeys, useShowMatch } from "@/components/ui";
 import { familyMembers, getShirtById } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch } from "@/lib/recommendation";
@@ -30,10 +31,6 @@ import { itemOf, trackEcommerce } from "@/lib/analytics";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };
-const VIEWS: { value: View; label: string; short: string }[] = [
-  { value: "tee", label: "On the tee", short: "Tee" },
-  { value: "print", label: "Print", short: "Print" },
-];
 
 type Choice = BaseColor | "both";
 const CHOICES: readonly Choice[] = ["black", "white", "both"];
@@ -222,9 +219,23 @@ export function ProductView({
     // Reaches up under the floating header (see ShopView).
     <div onScroll={onScroll} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
-        <button type="button" onClick={goBack} className="mb-2 inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-          <Icon name="arrow-left" className="h-4 w-4" /> Shop
-        </button>
+        <div className="mb-2 flex items-center justify-between">
+          <button type="button" onClick={goBack} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+            <Icon name="arrow-left" className="h-4 w-4" /> Shop
+          </button>
+          {/* Everything secondary, in one menu. */}
+          <MoreMenu
+            label={`More for ${shirt.title}`}
+            className="-mr-2"
+            items={[
+              { label: "Zoom in on the print", icon: "zoom-in", onSelect: () => setZoom(true) },
+              view === "print"
+                ? { label: "Show on the tee", icon: "layers", onSelect: () => setView("tee") }
+                : { label: "Show the print only", icon: "layers", onSelect: () => setView("print") },
+              { label: "Share", icon: "share-2", onSelect: () => useUiStore.getState().openShare(shirt.id, color) },
+            ]}
+          />
+        </div>
 
         <AnimatePresence>
           {sharedVia && (
@@ -276,7 +287,12 @@ export function ProductView({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.2 }}
-                className="flex h-full w-full items-center justify-center p-5 pb-14"
+                className="flex h-full w-full cursor-zoom-in items-center justify-center p-5 pb-14"
+                onClick={() => setZoom(true)}
+                role="button"
+                tabIndex={0}
+                aria-label="Zoom in on the print"
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setZoom(true))}
               >
                 {view === "print" ? (
                   <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
@@ -287,25 +303,6 @@ export function ProductView({
                 )}
               </motion.div>
             </AnimatePresence>
-            <div className="absolute right-3 top-3 z-10 flex gap-2">
-              {/* Phones under 400 px: the buy bar has no room for Share, so it's here. */}
-              <button
-                type="button"
-                onClick={() => useUiStore.getState().openShare(shirt.id, color)}
-                aria-label={`Share ${shirt.title}`}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70 min-[400px]:hidden"
-              >
-                <Icon name="share-2" className="h-[18px] w-[18px]" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoom(true)}
-                aria-label="Zoom in on the print"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
-              >
-                <Icon name="zoom-in" className="h-5 w-5" />
-              </button>
-            </div>
             {/* Tee colour (or both), right on the picture: visible without scrolling. */}
             <div className="absolute bottom-3 left-3">
               <TeeChoice
@@ -316,24 +313,6 @@ export function ProductView({
                   if (c !== "both") setColor(shirt.id, c);
                 }}
               />
-            </div>
-            <div className="absolute bottom-3 right-3 flex rounded-full bg-black/50 p-0.5 ring-1 ring-white/15 backdrop-blur-md" role="group" aria-label="View">
-              {VIEWS.map((v) => (
-                <button
-                  key={v.value}
-                  type="button"
-                  aria-pressed={view === v.value}
-                  onClick={() => setView(v.value)}
-                  aria-label={v.label}
-                  className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors max-[399px]:px-2.5 ${
-                    view === v.value ? "bg-white text-black" : "text-neutral-200 hover:text-white"
-                  }`}
-                >
-                  {/* Short labels on phones, clear of the tee picker. */}
-                  <span className="max-[399px]:hidden">{v.label}</span>
-                  <span className="min-[400px]:hidden">{v.short}</span>
-                </button>
-              ))}
             </div>
             <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} onClose={() => setZoom(false)} />}</AnimatePresence>
           </div>
@@ -358,25 +337,7 @@ export function ProductView({
             )}
 
             <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
-            {details?.photo && (
-              <p className="mt-1 text-xs text-neutral-400">
-                Photo: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
-                <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
-                  Source record
-                </a>
-              </p>
-            )}
 
-            {members.length > 1 ? (
-              <button
-                type="button"
-                onClick={() => scrollIntoViewQuietly(variationsRef.current, { behavior: "smooth", block: "start" })}
-                className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
-              >
-                <Icon name="layers" className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
-                <Icon name="arrow-down" className="h-3.5 w-3.5" />
-              </button>
-            ) : null}
 
             <div className="mt-5" ref={sizeRow}>
               <div className="mb-1 flex items-center justify-between">
@@ -427,7 +388,6 @@ export function ProductView({
             <div className="mt-4 hidden gap-2 md:flex">
               <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} />
               <SaveButton id={shirt.id} size="lg" />
-              <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" />
             </div>
 
             <div className="mt-5 border-t border-white/10">
@@ -448,6 +408,14 @@ export function ProductView({
                   <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
                   <Spec label="Fit" value="Regular" />
                   <Spec label="SKU" value={skuFor(shirt.sku, color)} />
+                  {details?.photo && (
+                    <p className="py-2 text-xs text-neutral-400">
+                      Photo: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
+                      <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
+                        Source record
+                      </a>
+                    </p>
+                  )}
                 </dl>
               )}
             </div>
@@ -527,7 +495,6 @@ export function ProductView({
           {size ? ` · ${SIZE_LABELS[size]}` : ""}
         </p>
         <SaveButton id={shirt.id} size="lg" />
-        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" className="max-[399px]:hidden" />
         <BuyButton label={buyLabel} short={shortLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>

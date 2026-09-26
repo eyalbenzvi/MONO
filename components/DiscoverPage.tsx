@@ -167,9 +167,6 @@ function TopStrip() {
             </AnimatePresence>
           </button>
           <TasteSheet open={sheet} onClose={() => setSheet(false)} />
-          <Link href="/shop/" className="flex h-10 shrink-0 items-center gap-1 font-semibold text-white">
-            Your shop <Icon name="arrow-right" className="h-3.5 w-3.5" />
-          </Link>
         </div>
       </div>
     );
@@ -227,13 +224,13 @@ function TopStrip() {
 /**
  * "The app is learning" feedback: after each swipe, the trait that moved most
  * shows for a moment inside the top of the card ("More geometric" / "Less
- * minimal"). Only for the first 20 swipes, so it teaches without nagging.
+ * minimal"). Only for the first 10 swipes, so it teaches without nagging.
  */
 function LearnChip() {
   const lastUpdate = useTasteStore((s) => s.lastUpdate);
   const history = useTasteStore((s) => s.swipeHistory);
   const last = history[history.length - 1];
-  const show = lastUpdate && last && last.source !== "shop" && last.shirtId === lastUpdate.shirtId && history.length <= 20;
+  const show = lastUpdate && last && last.source !== "shop" && last.shirtId === lastUpdate.shirtId && history.length <= 10;
 
   let text: string | null = null;
   if (show) {

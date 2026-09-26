@@ -38,12 +38,12 @@ afterEach(() => {
 const shirt = getShirtById("mono-0001")!;
 
 describe("ProductCard", () => {
-  it("one link with the name (no price: every tee costs the same); heart and quick add; no share, no match badge", () => {
+  it("one link with the name (no price: every tee costs the same) and a heart — no quick add, share or match badge", () => {
     const { container } = render(<ProductCard shirt={shirt} />);
     expect(screen.getByRole("link", { name: new RegExp(`^${shirt.title}`) }).getAttribute("href")).toBe(`/shop/${shirt.id}/`);
     expect(container.textContent).not.toMatch(/\$\d/);
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: `Quick add ${shirt.title}` })).toBeTruthy();
+    expect(screen.getAllByRole("button")).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /^Share / })).toBeNull();
     expect(screen.queryByText(/match/i)).toBeNull();
   });
@@ -60,14 +60,13 @@ describe("ProductCard", () => {
 });
 
 describe("MiniBag", () => {
-  it("confirms an add in one row, and Undo takes exactly that add back", () => {
+  it("confirms an add in one row — 'Added · M' and View bag, no other buttons", () => {
     render(<MiniBag />);
     act(() => void useCartStore.getState().addToCart(shirt.id, "M", "black", 1, { source: "grid" }));
     const region = screen.getByRole("region", { name: "Added to bag" });
     expect(region.textContent).toContain("Added · M");
     expect(screen.getByRole("link", { name: "View bag" }).getAttribute("href")).toBe("/cart/");
-    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
-    expect(useCartStore.getState().cart).toEqual([]);
+    expect(region.querySelectorAll("button")).toHaveLength(0);
   });
 
   it("leaves by itself after 2.5 s", () => {
@@ -81,14 +80,16 @@ describe("MiniBag", () => {
 });
 
 describe("TasteSheet", () => {
-  it("holds the level, five trait bars, Daily 5, Share my taste and Reset — no percentages", () => {
+  it("holds the level, five trait bars, Daily 5 and one button (Share my taste); Reset behind ⋯ — no percentages", () => {
     render(<TasteSheet open onClose={() => {}} />);
     const sheet = screen.getByRole("dialog", { name: "Your taste" });
     expect(screen.getAllByRole("meter")).toHaveLength(5);
     expect(sheet.textContent).toMatch(/Sharpening|Focused|Dialled in/);
     expect(sheet.textContent).toContain("Daily 5");
     expect(screen.getByRole("button", { name: "Share my taste" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Reset taste" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Reset taste/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "More for your taste" }));
+    expect(screen.getByRole("button", { name: /^Reset taste/ })).toBeTruthy();
     expect(sheet.textContent).not.toMatch(/\d+%/);
   });
 });

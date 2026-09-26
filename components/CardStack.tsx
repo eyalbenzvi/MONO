@@ -162,8 +162,6 @@ function TopCard({
   const firstEver = useTasteStore((s) => s.seen.length === 0);
   const undoFx = useUiStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
   const reduceMotion = useReducedMotion();
-  const [coarse, setCoarse] = useState(false);
-  useEffect(() => setCoarse(window.matchMedia("(pointer: coarse)").matches), []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -379,9 +377,7 @@ function TopCard({
         {isFlipped ? "Back" : "Details"}
       </motion.div>
 
-      {/* First-run gesture legend, until the first swipe. Swipe-up (details)
-          and pinch (zoom) are real gestures too, so they're named — quietly,
-          on the second line, and only on touch screens. */}
+      {/* First-run gesture legend, until the first swipe: one line. */}
       <AnimatePresence>
         {!onboardingSeen && !isFlipped && (
           <motion.div
@@ -391,8 +387,7 @@ function TopCard({
             transition={{ delay: 0.4 }}
             className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-2xl bg-black/75 px-3.5 py-1.5 text-center text-xs font-medium text-white ring-1 ring-white/15"
           >
-            ← Pass · {coarse ? "Tap" : "Click"} for details · Like →
-            {coarse && <span className="block text-neutral-300">Swipe up for details · pinch to zoom</span>}
+            ← Pass · Like →
           </motion.div>
         )}
       </AnimatePresence>
