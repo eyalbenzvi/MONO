@@ -51,10 +51,11 @@ export function MeView() {
   ];
 
   return (
-    <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
+    <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-clip">
       <div className="mx-auto max-w-[560px] px-5 pb-16 pt-8">
         <p className={LABEL}>Your taste</p>
-        <h1 className="mt-4 font-black uppercase leading-[0.95] tracking-[0.08em] text-[clamp(2.25rem,11vw,3.75rem)]">
+        {/* Sized to its longest word, so a long name (RETROFUTURIST) still fits the screen. */}
+        <h1 className="mt-4 font-black uppercase leading-[0.95] tracking-[0.08em]" style={{ fontSize: fitFont(Math.max(...`${lead} ${word}`.split(" ").map((w) => w.length))) }}>
           {lead && <span className="block">{lead}</span>}
           <span className="-mx-2 my-1 block w-fit bg-white px-2 text-black">{word}</span>
         </h1>
@@ -152,6 +153,9 @@ export function MeView() {
     </div>
   );
 }
+
+/** Heavy caps with wide tracking run about 0.85em a letter: the largest size (to 3.75rem) that fits `chars` in the column. */
+const fitFont = (chars: number) => `min(3.75rem, 11vw, calc((min(100vw, 560px) - 3.5rem) / ${(chars * 0.85).toFixed(2)}))`;
 
 const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500";
 const ACTION = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 hover:text-white";
