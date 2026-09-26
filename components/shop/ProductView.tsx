@@ -351,7 +351,8 @@ export function ProductView({
           <div>
             <p className="text-sm text-neutral-400">
               {/* What the print shows, then where it sits in the catalog. */}
-              {details?.subject && <span className="text-neutral-200">{details.subject} · </span>}
+              {/* A photograph is named after its subject: don't say it twice. */}
+              {details?.subject && !shirt.title.startsWith(details.subject) && <span className="text-neutral-200">{details.subject} · </span>}
               {CATEGORY_LABELS[shirt.category]} <span className="ml-1 font-mono text-xs">No. {String(shirt.no).padStart(3, "0")}</span>
               {hydrated && isNew(shirt.dropDate) && <span className="ml-2 rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs text-white">New this week</span>}
             </p>
@@ -368,6 +369,14 @@ export function ProductView({
             )}
 
             <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
+            {details?.photo && (
+              <p className="mt-1 text-xs text-neutral-400">
+                Photo: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
+                <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
+                  Source record
+                </a>
+              </p>
+            )}
 
             {members.length > 1 ? (
               <button

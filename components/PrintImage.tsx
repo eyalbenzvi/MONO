@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { assetUrl } from "@/lib/catalog";
+import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 
 /**
  * The flat print artwork: a local monochrome 3:4 SVG from /public/prints.
  *
  * Prints are strictly two-colour (#000/#FFF), drawn for the design's original
- * tee. The reverse colourway is the exact inversion — white ink on black
- * becomes black ink on white — so `color` just flips it with a CSS invert.
+ * tee. For a drawn print the reverse colourway is the exact inversion —
+ * white ink on black becomes black ink on white — so `color` just flips it
+ * with a CSS invert. Photographs have their own print per colour (an
+ * inverted photograph is a negative): see printUrl.
  */
 export function PrintImage({
   shirt,
@@ -24,12 +26,12 @@ export function PrintImage({
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  const inverted = color !== shirt.baseColor;
+  const inverted = needsInvert(shirt, color);
   // Blank ground in the tee colour if a file is ever missing, so nothing looks broken.
   if (failed) return <div className={`h-full w-full ${color === "black" ? "bg-black" : "bg-white"} ${className}`} />;
   return (
     <img
-      src={assetUrl(shirt.backPrintUrl)}
+      src={assetUrl(printUrl(shirt, color))}
       alt={`${shirt.title} print`}
       draggable={false}
       loading={priority ? "eager" : "lazy"}

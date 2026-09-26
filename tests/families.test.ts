@@ -8,7 +8,9 @@ import {
 } from "@/lib/catalog";
 import { CALIBRATION_IDS, DECK_SIZE, VARIANT_SPACING, buildDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
-import { createInitialVector } from "@/types/shirt";
+import { createInitialVector, isPhoto, type CatalogEntry } from "@/types/shirt";
+import FULL_CATALOG from "@/data/shirts.json";
+import { PER_CATEGORY } from "../scripts/gen/constants";
 
 /** The other designs in a shirt's family (was lib/catalog's variationsOf; only tests need it). */
 const variationsOf = (shirt: (typeof SHIRTS)[number]) => familyMembers(shirt).filter((s) => s.id !== shirt.id);
@@ -39,21 +41,27 @@ function simulate(swipes: number) {
 }
 
 describe("design families", () => {
-  it("every shirt belongs to a family; families never mix algorithms", () => {
+  it("every shirt belongs to a family; drawn families never mix algorithms, a photo family is one subject", () => {
+    const full = new Map((FULL_CATALOG as unknown as CatalogEntry[]).map((f) => [f.id, f]));
     for (const s of SHIRTS) {
       const members = familyMembers(s);
       expect(members.map((m) => m.id)).toContain(s.id);
       for (const m of members) {
-        expect(m.variant).toBe(s.variant);
         expect(m.category).toBe(s.category);
+        // Two photographs of one subject are its takes (treatments differ on purpose).
+        if (isPhoto(s)) expect(full.get(m.id)!.subject).toBe(full.get(s.id)!.subject);
+        else expect(m.variant).toBe(s.variant);
       }
     }
   });
 
   it("groups the catalog into a few hundred designs with real variations", () => {
-    const families = new Set(SHIRTS.map((s) => s.family));
+    const families = new Set(SHIRTS.filter((s) => !isPhoto(s)).map((s) => s.family));
     expect(families.size).toBeGreaterThan(400);
     expect(families.size).toBeLessThan(1200);
+    // Photographs: one family per subject, at most two takes each.
+    const photoFamilies = new Set(SHIRTS.filter(isPhoto).map((s) => s.family));
+    expect(photoFamilies.size).toBeGreaterThanOrEqual(PER_CATEGORY * 3 / 2);
     expect(SHIRTS.filter((s) => variationsOf(s).length > 0).length).toBeGreaterThan(400);
   });
 
@@ -134,10 +142,10 @@ describe("display pacing", () => {
 });
 
 describe("precomputed calibration (I8)", () => {
-  it("matches the runtime algorithm: farthest-point over family leaders, boldest first", () => {
+  it("matches the runtime algorithm: farthest-point over family leaders, a photograph among them, boldest first", () => {
     // Each family's first strong design (weak prints never rate taste).
     const leaders = [...new Map([...SHIRTS].reverse().filter((s) => !s.weak).map((s) => [s.family, s])).values()].sort((a, b) => a.n - b.n);
-    const queue = getCalibrationQueue(leaders, 10, (s) => s.category);
+    const queue = getCalibrationQueue(leaders, 10, (s) => s.category, isPhoto);
     const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
     const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
     expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));

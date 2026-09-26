@@ -167,7 +167,7 @@ describe("taste store v2 (F10)", () => {
     useTasteStore.getState().fillDeck(); // as AppShell does after hydration
     useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "like");
     expect(useTasteStore.getState().daily.count).toBe(1);
-    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(3);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(4);
   });
 });
 

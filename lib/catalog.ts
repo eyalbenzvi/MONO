@@ -1,5 +1,5 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
-import { FEATURE_KEYS, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { FEATURE_KEYS, SKU_CODES, isPhoto, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
 export const INDEX_VERSION = 3;
@@ -12,8 +12,9 @@ export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
 const DAY = 86_400_000;
 
 /**
- * The catalog: 2,800 procedurally generated shirts in 14 categories (see
- * scripts/generateCatalog.ts — run `npm run generate` to rebuild).
+ * The catalog: 3,400 shirts in 17 categories — 2,800 procedurally generated,
+ * 600 screened photographs (see scripts/generateCatalog.ts — run
+ * `npm run generate` to rebuild).
  *
  * The app reads the lean index (data/shirts.index.json): what the
  * recommender, cards and grid need. Descriptions and precomputed neighbours
@@ -119,6 +120,18 @@ export const shardOf = (shirt: Pick<ShirtProduct, "n">) => Math.floor((shirt.n -
 
 /** Public asset URLs need the GitHub Pages base path (e.g. /MONO) in front. */
 export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${url}`;
+
+/**
+ * The print file for a tee colour. Drawn prints have one file, flipped
+ * with a CSS invert for the other colour (they're strictly two-tone, so
+ * that's exact). A photograph inverted is a negative, so photo designs
+ * carry a second, positive print: print_<n>_<colour>.svg.
+ */
+export const printUrl = (shirt: Pick<ShirtProduct, "n" | "baseColor" | "backPrintUrl" | "category">, color: BaseColor = shirt.baseColor) =>
+  color !== shirt.baseColor && isPhoto(shirt) ? `/prints/print_${shirt.n}_${color}.svg` : shirt.backPrintUrl;
+
+/** Whether showing `color` means inverting the print (drawn prints only). */
+export const needsInvert = (shirt: Pick<ShirtProduct, "baseColor" | "category">, color: BaseColor) => color !== shirt.baseColor && !isPhoto(shirt);
 
 /* ------------------------------------------------------------------ */
 /* Product links                                                       */

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import index from "../data/shirts.index.json";
 import { hydrated, seed } from "./helpers";
 
 test("I14: on desktop no category chip is cut off", async ({ page }) => {
@@ -8,7 +9,7 @@ test("I14: on desktop no category chip is cut off", async ({ page }) => {
   const group = page.getByRole("group", { name: "Category" });
   const box = (await group.boundingBox())!;
   const chips = await group.getByRole("button").all();
-  expect(chips.length).toBe(15);
+  expect(chips.length).toBe(index.categories.length + 1); // "All" + every category
   for (const chip of chips) {
     const b = (await chip.boundingBox())!;
     expect(b.x).toBeGreaterThanOrEqual(box.x - 0.5);

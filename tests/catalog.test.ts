@@ -5,7 +5,7 @@ import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from 
 import { WEAK_QUALITY } from "../scripts/gen/quality";
 import { PER_CATEGORY, PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
-import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, type CatalogEntry } from "@/types/shirt";
+import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, isPhoto, type CatalogEntry } from "@/types/shirt";
 
 const FULL = full as unknown as CatalogEntry[];
 /** Description text outside quoted captions (captions are the print's own words). */
@@ -21,18 +21,22 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(TOTAL);
   });
 
-  it("is 70% black / 30% white tees in each set", () => {
-    for (const set of [SHIRTS.slice(0, 1000), SHIRTS.slice(1000, 2000), SHIRTS.slice(2000)]) {
+  it("is 70% black / 30% white tees in each drawn set; photographs take the tee that carries more of the picture", () => {
+    for (const set of [SHIRTS.slice(0, 1000), SHIRTS.slice(1000, 2000), SHIRTS.slice(2000, 2800)]) {
       expect(set.filter((s) => s.baseColor === "black")).toHaveLength(set.length * 0.7);
       expect(set.filter((s) => s.baseColor === "white")).toHaveLength(set.length * 0.3);
     }
+    const photos = SHIRTS.slice(2800);
+    expect(photos.every(isPhoto)).toBe(true);
+    expect(new Set(photos.map((s) => s.baseColor))).toEqual(new Set(["black", "white"]));
   });
 
-  it("has fourteen categories, PER_CATEGORY designs each (each set adds its own)", () => {
-    expect(SHIRT_CATEGORIES).toHaveLength(14);
+  it("has seventeen categories, PER_CATEGORY designs each (each set adds its own)", () => {
+    expect(SHIRT_CATEGORIES).toHaveLength(17);
     const cats = (list: typeof SHIRTS) => [...new Set(list.map((s) => s.category))].sort();
     expect(cats(SHIRTS.slice(1000, 2000))).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
-    expect(cats(SHIRTS.slice(2000))).toEqual(["ascii", "caricatures", "famousart", "iconic"]);
+    expect(cats(SHIRTS.slice(2000, 2800))).toEqual(["ascii", "caricatures", "famousart", "iconic"]);
+    expect(cats(SHIRTS.slice(2800))).toEqual(["flight", "machines", "wildlife"]);
   });
 
   it("covers all generative categories evenly", () => {
@@ -111,7 +115,7 @@ describe("generated catalog (data/shirts.json)", () => {
   it("the lean app index decodes to exactly the generator's catalog", () => {
     expect(SHIRTS).toHaveLength(FULL.length);
     FULL.forEach((f, i) => {
-      const { description: _d, similar: _s, subject: _t, printCm: _p, summary: _u, style: _y, quality, dropDate, ...lean } = f;
+      const { description: _d, similar: _s, subject: _t, printCm: _p, photo: _c, summary: _u, style: _y, quality, dropDate, ...lean } = f;
       expect(SHIRTS[i]).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: quality < WEAK_QUALITY });
     });
   });
@@ -125,7 +129,8 @@ describe("generated catalog (data/shirts.json)", () => {
 describe("catalog copy (R13)", () => {
   it("titles carry no catalog number (that's `no`, 1–PER_CATEGORY per category)", () => {
     for (const s of SHIRTS) {
-      expect(s.title).not.toMatch(/No\.|#|\d{2,}/);
+      // Photographs keep the real model names ("Curtiss R3C-2"); no catalog number either way.
+      expect(s.title).not.toMatch(isPhoto(s) ? /No\.|#/ : /No\.|#|\d{2,}/);
       expect(s.no).toBeGreaterThanOrEqual(1);
       expect(s.no).toBeLessThanOrEqual(PER_CATEGORY);
     }
@@ -153,7 +158,8 @@ describe("catalog copy (R13)", () => {
     const units = "dots?|lines?|families|family|mass(es)?|shapes?|bars?|circles?|rings?|stripes?|waves?|squares?|rays?|points?|characters?|blocks?|cells?|bays?|layers?|strokes?|stars?|peaks?";
     const count = new RegExp(`\\b\\d+\\s+(hand-set\\s+)?(${units})\\b`, "i");
     for (const s of FULL) {
-      const text = narrative(s.description);
+      // A photograph's subject is a proper name ("A-7-A In-line 4 Engine"): only the prose around it counts.
+      const text = narrative(s.photo ? s.description.replace(s.subject, "") : s.description);
       expect(text, s.id).not.toMatch(count);
       expect(text, s.id).not.toMatch(/\b[Aa] [aeioAEIO][a-z]/);
       // Lowercase only: "an LED grid" is right.
@@ -180,10 +186,10 @@ describe("detail shards (public/data)", () => {
     return shards.get(k)!;
   };
 
-  it("hold every design's description, similar list, subject and print size", () => {
+  it("hold every design's description, similar list, subject and print size (and a photograph's credit)", () => {
     for (const f of FULL) {
       const entry = shard(shardOf(f))[f.id];
-      expect(entry, f.id).toEqual({ d: f.description, s: f.similar, t: f.subject, p: [f.printCm.width, f.printCm.height] });
+      expect(entry, f.id).toEqual({ d: f.description, s: f.similar, t: f.subject, p: [f.printCm.width, f.printCm.height], ...(f.photo ? { c: f.photo.credit, u: f.photo.url } : {}) });
     }
   });
 

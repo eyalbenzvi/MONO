@@ -11,6 +11,11 @@
  *   pixel & retro, badges, illustrated objects.
  * - ids 2001–2800: ASCII art, caricatures (original archetypes), famous art
  *   (public-domain homages) and iconic images (./gen/set3).
+ * - ids 2801–3400: photographs — wildlife, flight, engines & gauges — from
+ *   Smithsonian Open Access (CC0), committed under data/photos by
+ *   scripts/photos/fetchPhotos.ts and screened here (./gen/photo). Each has
+ *   a print per tee colour (print_N.svg and print_N_<colour>.svg): a
+ *   photograph inverted is a negative.
  *
  * Every print is single-ink: white ink on a black ground for black tees,
  * black ink on a white ground for white tees (tones come from dot / hatch
@@ -21,9 +26,9 @@
  * Near-identical designs are grouped into families from a visual signature.
  */
 import { createHash } from "node:crypto";
-import { mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, SKU_CODES, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
+import { FEATURE_KEYS, PHOTO_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
@@ -38,6 +43,8 @@ import { caricatureBobble, caricatureMugshot, caricaturePortrait, caricatureWant
 import { greatWave, masterpiece, modernMasters, starryNight } from "./gen/set3/famousart";
 import { landmark, motif, spaceAge, travelPoster } from "./gen/set3/iconic";
 import type { Generator } from "./gen/core";
+import { TREATMENT_LABEL, inkAt, loadPhoto, photoBody, photoCoverage, REGION, type Treatment } from "./gen/photo";
+import { recordUrl, type PhotoSource } from "./photos/source";
 
 const SEED = 0x6d6f6e6f; // "mono"
 /** Designs in each of the first two sets (five categories each). */
@@ -61,6 +68,8 @@ interface DesignSet {
   generatorsFor: (category: ShirtCategory) => Generator[];
   size: number;
   legacy: boolean;
+  /** Made from photographs (data/photos), not generators. */
+  photo?: boolean;
 }
 /** Typed per set (every category of the set must have generators). */
 function set<C extends ShirtCategory>(s: { cats: readonly C[]; gens: Record<C, Generator[]>; size: number; legacy: boolean }): DesignSet {
@@ -81,6 +90,7 @@ const SETS: DesignSet[] = [
   set({ cats: LEGACY_CATEGORIES, gens: LEGACY_GENERATORS, size: PER_SET, legacy: true }),
   set({ cats: NEW_CATEGORIES, gens: EXPANSION_GENERATORS, size: PER_SET, legacy: false }),
   set({ cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false }),
+  { cats: PHOTO_CATEGORIES, size: PHOTO_CATEGORIES.length * PER_CATEGORY, legacy: false, photo: true, generatorsFor: () => [] },
 ];
 
 
@@ -104,7 +114,9 @@ const SHARD_DIR = path.join(ROOT, "public", "data");
 /* Titles & SKUs                                                       */
 /* ------------------------------------------------------------------ */
 
-const TITLE_WORDS: Record<ShirtCategory, [string[], string[]]> = {
+/** Drawn categories (the photographs are named after their subject). */
+type DrawnCategory = Exclude<ShirtCategory, (typeof PHOTO_CATEGORIES)[number]>;
+const TITLE_WORDS: Record<DrawnCategory, [string[], string[]]> = {
   architectural: [
     ["Concrete", "Brutal", "Monolith", "Facade", "Structural", "Civic", "Steel", "Tectonic", "Transit", "Pillar", "Modular", "Grid", "Poured", "Cantilever", "Plinth"],
     ["Lattice", "Elevation", "Section", "Frame", "Plan", "Module", "Stack", "Corridor", "Array", "Bay", "Tower", "Atrium", "Span", "Block", "Terrace"],
@@ -163,6 +175,38 @@ const TITLE_WORDS: Record<ShirtCategory, [string[], string[]]> = {
   ],
 };
 
+
+/** A name that fits a card: no parentheses, a long name gives way to its nickname, then to its first words. */
+export function photoTitle(subject: string, MAX = 32): string {
+  let t = subject.replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+  const nick = t.match(/"([^"]+)"/)?.[1];
+  if (t.length > MAX && nick && nick.length >= 5) return nick;
+  t = t.replace(/\s*"[^"]*"/g, "").trim();
+  const words = t.split(" ");
+  while (words.join(" ").length > MAX && words.length > 2) words.pop();
+  while (words.length > 1 && /^(and|of|&|for|the|a|in|or|\/)$/i.test(words[words.length - 1])) words.pop();
+  return words.join(" ");
+}
+
+/** Photographs, their order within each photo category fixed by a seeded shuffle. */
+const PHOTO_DIR = path.resolve(__dirname, "..", "data", "photos");
+function photoQueue(): Record<string, PhotoSource[]> {
+  const all: PhotoSource[] = JSON.parse(readFileSync(path.join(PHOTO_DIR, "photos.json"), "utf8"));
+  nameSubjects([...new Set(all.map((p) => p.subject))].sort());
+  return Object.fromEntries(
+    PHOTO_CATEGORIES.map((c, k) => {
+      const list = all.filter((p) => p.category === c).sort((a, b) => a.key.localeCompare(b.key));
+      if (list.length !== PER_CATEGORY) throw new Error(`data/photos: ${list.length} ${c} photographs, expected ${PER_CATEGORY}`);
+      return [c, shuffle(mulberry32(SEED ^ (0x4000 + k)), list)];
+    }),
+  );
+}
+
+/** "Roshan Patel, Smithsonian's National Zoo" → "Roshan Patel"; a unit-only credit names no one. */
+const photographer = (credit: string) => {
+  const [who, ...rest] = credit.split(/,\s*/);
+  return rest.length && !/smithsonian|museum|zoo/i.test(who) ? who : null;
+};
 
 /** Categories whose designs may be knocked out of a solid ink block. */
 const KNOCKOUT_OK: ShirtCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
@@ -233,11 +277,146 @@ const colourSplit = (rng: Rng, n: number): BaseColor[] =>
     ...Array<BaseColor>(n - Math.round(n * BLACK_SHARE)).fill("white"),
   ]);
 
+type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & { base: string };
+
+/**
+ * One name per subject. Where two different subjects shorten to the same
+ * name (or to another's full name), both keep more words until they
+ * differ — so ", Take 2" only ever means another photograph of the same thing.
+ */
+const PHOTO_TITLES = new Map<string, string>();
+function nameSubjects(subjects: string[]) {
+  const max = new Map(subjects.map((s) => [s, 32]));
+  for (let round = 0; round < 12; round++) {
+    const names = new Map(subjects.map((s) => [s, photoTitle(s, max.get(s))]));
+    const bySubjects = new Map<string, Set<string>>();
+    for (const [s, t] of names) bySubjects.set(t, (bySubjects.get(t) ?? new Set()).add(s));
+    let clash = false;
+    for (const [s, t] of names)
+      if (bySubjects.get(t)!.size > 1 || (t !== s && subjects.includes(t))) {
+        clash = true;
+        max.set(s, max.get(s)! + 8);
+      }
+    if (!clash) {
+      for (const [s, t] of names) PHOTO_TITLES.set(s, t);
+      return;
+    }
+  }
+  throw new Error("photo titles: couldn't tell some subjects apart");
+}
+
+/** The day the photographs dropped: the Monday of the week they were added. */
+const PHOTO_DROP = "2026-09-21";
+
+/**
+ * One photograph as a design: screened for both tee colours, named after
+ * what it shows, features read from the picture and its category.
+ */
+function photoDesign(n: number, index: number, category: PhotoSource["category"], photo: PhotoSource, bySubject: Map<string, Treatment[]>, takenTitles: Set<string>): { entry: Draft; files: [string, string][] } {
+  const rng = mulberry32(SEED ^ Math.imul(n, 0x9e3779b1));
+  const ph = loadPhoto(path.join(PHOTO_DIR, "img", `${photo.key}.png`));
+  const frame = photo.mode === "frame";
+  // The tee that carries more of the picture: white ink draws the lights,
+  // black ink the darks.
+  const baseColor: BaseColor = photoCoverage(ph, "black", frame) >= photoCoverage(ph, "white", frame) ? "black" : "white";
+  // Fine dots most often; the coarse screen only for full-frame pictures (a
+  // cut-out object turns to a blob in big dots). A second photograph of a
+  // subject never repeats its treatment.
+  const roll = rng();
+  const order: Treatment[] = !frame
+    ? roll < 0.65 ? ["dots", "lines"] : ["lines", "dots"]
+    : roll < 0.5 ? ["dots", "lines", "pop"] : roll < 0.75 ? ["lines", "pop", "dots"] : ["pop", "dots", "lines"];
+  const used = bySubject.get(photo.subject.toLowerCase()) ?? [];
+  const treatment = order.find((t) => !used.includes(t)) ?? order[0];
+  bySubject.set(photo.subject.toLowerCase(), [...used, treatment]);
+
+  const svgFor = (c: BaseColor) =>
+    minifySvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${c === "black" ? "#000000" : "#FFFFFF"}"/>${photoBody(ph, treatment, c, frame)}</svg>`);
+  const other = otherColor(baseColor);
+  const svg = svgFor(baseColor);
+  const files: [string, string][] = [
+    [`print_${n}.svg`, svg],
+    [`print_${n}_${other}.svg`, svgFor(other)],
+  ];
+
+  // Contrast from the picture itself: the spread of ink across the print area.
+  let sum = 0, sq = 0, cnt = 0;
+  for (let y = REGION.y; y < REGION.y + REGION.h; y += 6)
+    for (let x = REGION.x; x < REGION.x + REGION.w; x += 6) {
+      const a = inkAt(ph, x, y, baseColor, frame);
+      sum += a;
+      sq += a * a;
+      cnt++;
+    }
+  const mean = sum / cnt;
+  const spread = Math.sqrt(Math.max(0, sq / cnt - mean * mean));
+  const dial = /indicator|gauge|meter|compass|clock|altimeter|tachometer|horizon|barograph|recorder/i.test(photo.subject);
+  const f: Partial<Record<FeatureKey, number>> = {
+    photographic: 0.95,
+    pictorial: 0.7,
+    halftone_raster: { dots: 0.85, pop: 0.95, lines: 0.5 }[treatment],
+    line_art: treatment === "lines" ? 0.45 : 0.05,
+    density: Math.min(1, mean * 1.8),
+    contrast: Math.min(1, 0.3 + spread * 1.6 + (treatment === "pop" ? 0.1 : 0)),
+    clean_minimal: frame ? 0.15 : 0.5,
+    abstract: 0.05,
+    nature: category === "wildlife" ? 0.9 : 0,
+    figurative: category === "wildlife" ? 0.35 : 0,
+    dark_industrial: category === "machines" ? 0.6 : category === "flight" ? 0.35 : 0.05,
+    retro: category === "wildlife" ? 0 : 0.45,
+    geometric: category === "machines" && dial ? 0.35 : 0.05,
+    architectural: category === "flight" ? 0.1 : 0,
+  };
+  // Same colourway adjustment as every other design.
+  if (baseColor === "black") (f.dark_industrial! += 0.12), (f.clean_minimal! -= 0.05);
+  else (f.clean_minimal! += 0.12), (f.dark_industrial! -= 0.08);
+
+  // A second photograph of the same subject is its second take; a different
+  // subject that shortens to a taken name keeps more of its own words.
+  const first = PHOTO_TITLES.get(photo.subject)!;
+  let title = first;
+  for (let k = 2; takenTitles.has(title); k++) title = `${first}, Take ${k}`;
+  takenTitles.add(title);
+
+  const by = photographer(photo.credit);
+  const where =
+    photo.unit === "nzp"
+      ? `photographed${by ? ` by ${by}` : ""} at the Smithsonian's National Zoo`
+      : `from the National Air and Space Museum, photographed ${frame ? "on display" : "against a plain backdrop"}`;
+  const { quality, printCm } = measurePrint(svg, baseColor);
+  return {
+    files,
+    entry: {
+      id: `mono-${String(n).padStart(4, "0")}`,
+      n,
+      no: index,
+      sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
+      title,
+      price: PRICE,
+      baseColor,
+      backPrintUrl: `/prints/print_${n}.svg`,
+      category,
+      variant: `photo-${treatment}`,
+      base: `${photo.subject}, ${where}, printed as ${TREATMENT_LABEL[treatment]}.`,
+      subject: photo.subject,
+      style: STYLE[category],
+      quality,
+      printCm,
+      features: vector(f),
+      photo: { credit: photo.credit, url: recordUrl(photo.record), image: photo.key },
+      dropDate: PHOTO_DROP,
+    },
+  };
+}
+
 function main() {
   // Exactly 70% black / 30% white in each set. The first shuffle is the
   // original one, so ids 1–1000 keep their colours (and so on per set).
+  // Photographs pick their colour from their own tones (below).
   const colorSeeds = [SEED, SEED ^ 0x2000, SEED ^ 0x3000];
-  const colors = SETS.flatMap((set, k) => colourSplit(mulberry32(colorSeeds[k]), set.size));
+  const colors = SETS.flatMap((set, k) => (set.photo ? Array<BaseColor>(set.size).fill("black") : colourSplit(mulberry32(colorSeeds[k]), set.size)));
+  const photos = photoQueue();
+  const treatmentsBySubject = new Map<string, Treatment[]>();
   const total = colors.length;
   if (total !== TOTAL) throw new Error(`sets add up to ${total} designs, expected ${TOTAL}`);
 
@@ -246,9 +425,10 @@ function main() {
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
   const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
-  const shirts: (Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & { base: string })[] = [];
+  const shirts: Draft[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
+  let photoFiles = 0;
   const takenTitles = new Set<string>();
   const spareTitle: Partial<Record<ShirtCategory, number>> = {};
 
@@ -262,6 +442,20 @@ function main() {
     // Interleave categories so neighbouring ids differ in style.
     const category = set.cats[(i - setStart) % set.cats.length];
     const index = ++counters[category];
+
+    if (set.photo) {
+      const photo = photos[category][index - 1];
+      const shirt = photoDesign(n, index, category as PhotoSource["category"], photo, treatmentsBySubject, takenTitles);
+      for (const [file, svg] of shirt.files) {
+        writeFileSync(path.join(PRINTS_DIR, file), svg);
+        bytes += svg.length;
+        photoFiles++;
+      }
+      sigs.push({ key: `photo|${category}|${shirt.entry.subject.toLowerCase()}`, vec: [] });
+      shirts.push(shirt.entry);
+      continue;
+    }
+
     const gens = set.generatorsFor(category);
     const gen = gens[(index - 1) % gens.length];
 
@@ -320,7 +514,7 @@ function main() {
     // A pair another category already used moves to one of this category's
     // spare combinations (taken from the top, past its designs; checked after
     // the loop), keeping titles unique across the catalog.
-    const [adjs, nouns] = TITLE_WORDS[category];
+    const [adjs, nouns] = TITLE_WORDS[category as DrawnCategory];
     const combos = adjs.length * nouns.length;
     const titleAt = (k: number) => `${adjs[k % adjs.length]} ${nouns[(Math.floor(k / adjs.length) + k) % nouns.length]}`;
     // What the print shows, read from its own description (the SEO title
@@ -385,6 +579,15 @@ function main() {
     description: descriptions[i],
     rank: ranks[i],
   }));
+  // Takes of one subject: the plain name goes to the one the shop shows
+  // first (best rank), the rest are its later takes.
+  const takes = new Map<string, typeof withFamily>();
+  for (const s of withFamily) if (s.photo) takes.set(s.subject, [...(takes.get(s.subject) ?? []), s]);
+  for (const list of takes.values()) {
+    if (list.length < 2) continue;
+    const base = list.map((s) => s.title).find((t) => !/, Take \d+$/.test(t))!;
+    [...list].sort((a, b) => a.rank - b.rank).forEach((s, k) => (s.title = k === 0 ? base : `${base}, Take ${k + 1}`));
+  }
   const similar = neighbours(withFamily);
   const catalog: CatalogEntry[] = withFamily.map((s, i) => ({ ...s, similar: similar[i] }));
   const calibration = calibrationIds(catalog);
@@ -400,13 +603,15 @@ function main() {
   const sizes = new Map<string, number>();
   for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
   const newFamilies = new Set(catalog.slice(PER_SET).map((s) => s.family)).size;
-  const set3Families = new Set(catalog.slice(PER_SET * 2).map((s) => s.family)).size;
+  const set3Families = new Set(catalog.slice(PER_SET * 2, PER_SET * 2 + SET3_CATEGORIES.length * SET3_PER_CATEGORY).map((s) => s.family)).size;
+  const photoFamilies = new Set(catalog.filter((s) => s.photo).map((s) => s.family)).size;
   const black = shirts.filter((s) => s.baseColor === "black").length;
   const titles = new Set(shirts.map((s) => s.title)).size;
   console.log(`Generated ${shirts.length} shirts → ${path.relative(ROOT, DATA_FILE)}`);
+  console.log(`  photographs: ${PHOTO_CATEGORIES.length * PER_CATEGORY} (+${photoFiles - PHOTO_CATEGORIES.length * PER_CATEGORY} prints for their second colourway)`);
   console.log(`  prints: ${shirts.length} SVGs in ${path.relative(ROOT, PRINTS_DIR)} (${(bytes / 1024 / 1024).toFixed(2)} MB, avg ${(bytes / shirts.length / 1024).toFixed(1)} KB)`);
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
-  console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families} second set, ${set3Families} third set)`);
+  console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families - photoFamilies} second set, ${set3Families} third set, ${photoFamilies} photographs)`);
   console.log(`  categories: ${Object.entries(counters).map(([c, n]) => `${c} ${n}`).join(" · ")}`);
   const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
   console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog.length / SHARD_SIZE)}`);
@@ -456,14 +661,14 @@ function neighbours(list: Omit<CatalogEntry, "similar">[]): string[][] {
 
 /**
  * The taste test (see lib/deck): one design per family, covering as many
- * categories as there are slots, boldest first. Precomputed so the app
+ * categories as there are slots, at least one photograph, boldest first. Precomputed so the app
  * doesn't run farthest-point sampling on every load.
  */
 function calibrationIds(catalog: CatalogEntry[]): string[] {
   const leaders = new Map<string, CatalogEntry>();
   // Families led by their first strong design; weak prints never rate taste.
   for (const s of catalog) if (s.quality >= WEAK_QUALITY && !leaders.has(s.family)) leaders.set(s.family, s);
-  const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category);
+  const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category, isPhoto);
   const bold = (s: CatalogEntry) => s.features.contrast + s.features.density;
   const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
   return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
@@ -538,7 +743,7 @@ function writeShards(catalog: CatalogEntry[]): string[] {
   const hashes: string[] = [];
   for (let k = 0; k * SHARD_SIZE < catalog.length; k++) {
     const part = Object.fromEntries(
-      catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height] }]),
+      catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height], ...(s.photo ? { c: s.photo.credit, u: s.photo.url } : {}) }]),
     );
     const json = JSON.stringify(part);
     const hash = createHash("sha256").update(json).digest("hex").slice(0, 10);
