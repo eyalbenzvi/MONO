@@ -46,6 +46,17 @@ beforeEach(() => storage.clear());
 /* ------------------------------------------------------------------ */
 
 describe("taste store", () => {
+  it("the gesture legend stays through flips and zoom, and goes after the first swipe (R8)", async () => {
+    const { useTasteStore, useUiStore } = await fresh();
+    useUiStore.getState().toggleFlip();
+    useUiStore.getState().toggleFlip(false);
+    useUiStore.getState().setZoom(useTasteStore.getState().deck[0].id);
+    useUiStore.getState().setZoom(null);
+    expect(useTasteStore.getState().onboardingSeen).toBe(false);
+    useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "dislike");
+    expect(useTasteStore.getState().onboardingSeen).toBe(true);
+  });
+
   it("commitSwipe: like trains the vector, records history + seen and advances the deck", async () => {
     const { useTasteStore } = await fresh();
     const s0 = useTasteStore.getState();

@@ -49,7 +49,7 @@ export function MatchBadge({
       initial={{ scale: 0.9, opacity: 0.6 }}
       animate={{ scale: 1, opacity: 1 }}
       className={`relative inline-flex shrink-0 items-center overflow-hidden rounded-full font-mono font-bold ${
-        size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
+        size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"
       } ${tone}`}
     >
       {text}

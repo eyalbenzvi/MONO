@@ -224,12 +224,12 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             ) : failed ? (
               <span className="px-2 text-center text-xs text-neutral-400">Preview unavailable</span>
             ) : (
-              <Loader2 className="h-6 w-6 animate-spin text-neutral-500" aria-label="Preparing image" />
+              <Loader2 className="h-6 w-6 animate-spin text-neutral-400" aria-label="Preparing image" />
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500">Tee</p>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tee</p>
               <div className="flex gap-2" role="radiogroup" aria-label="Tee colour">
                 {COLORS.map((c) => (
                   <button
@@ -247,7 +247,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
               </div>
             </div>
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500">Image</p>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Image</p>
               <div className="flex gap-2" role="radiogroup" aria-label="Image format">
                 {(["story", "square"] as const).map((f) => (
                   <button
@@ -282,7 +282,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
           {CHANNELS.map((c) => (
             <button key={c.id} type="button" onClick={() => act(c.id)} disabled={(c.id === "download" || c.id === "instagram" || c.id === "tiktok") && !blob} className="group flex flex-col items-center gap-1.5 disabled:opacity-40">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10 transition-colors group-hover:bg-white/20 group-active:scale-95">{c.icon}</span>
-              <span className="text-[11px] leading-tight text-neutral-300">{c.label}</span>
+              <span className="text-xs leading-tight text-neutral-300">{c.label}</span>
             </button>
           ))}
         </div>

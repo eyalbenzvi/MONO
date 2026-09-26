@@ -60,7 +60,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
       <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr]">
         <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95" aria-label="MONO home">
           <MonoLogo size="sm" />
-          <span className="hidden text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
+          <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
         </Link>
 
         <nav aria-label="Sections" className="justify-self-center">

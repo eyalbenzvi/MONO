@@ -52,7 +52,6 @@ interface TasteActions {
   /** Put a removed tee back in Saved without training on it again. */
   restoreSaved: (id: string) => void;
   acknowledgeCalibration: () => void;
-  dismissOnboarding: () => void;
   reset: () => void;
   /** The persisted part of the state (e.g. to undo a reset). */
   snapshot: () => TasteState;
@@ -178,6 +177,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           dislikedIds: action === "dislike" && !state.dislikedIds.includes(shirtId) ? [...state.dislikedIds, shirtId] : state.dislikedIds,
           deck,
           lastUpdate: { shirtId, action, before, after },
+          // The gesture legend stays until the first real swipe (flipping or
+          // zooming doesn't count as having learned to swipe).
           onboardingSeen: true,
         });
         const ui = useUiStore.getState();
@@ -213,7 +214,6 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         useUiStore.setState({ isFlipped: false, swipeQueue: [], undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() } });
       },
 
-      dismissOnboarding: () => set({ onboardingSeen: true }),
 
       toggleSaved: (id) => {
         const state = get();

@@ -7,20 +7,32 @@ import {
   AnimatePresence,
   motion,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useTransform,
   type PanInfo,
 } from "framer-motion";
 import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
+import { TeeMockup } from "@/components/TeeMockup";
 import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
-import { useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { formatPrice } from "@/lib/format";
+import { canUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import type { SwipeAction } from "@/types/shirt";
+import { CATEGORY_LABELS, type SwipeAction } from "@/types/shirt";
 
+/** Pointer travel that commits a swipe on release. */
 const SWIPE_DISTANCE = 110;
+/** Sideways drag elasticity: the card moves this share of the pointer travel. */
+const ELASTIC_X = 0.9;
+/** Card travel at the commit point, where the LIKE / NOPE stamp locks in. */
+const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
+/** How long the pull-back tab of the last swiped card stays at the edge. */
+const PULL_BACK_MS = 3000;
+/** Inward drag on the pull-back tab that brings the card back. */
+const PULL_BACK_DISTANCE = 40;
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
 const FLIP_DISTANCE = 80;
@@ -113,6 +125,8 @@ export function CardStack() {
           );
         })}
 
+      <PullBack />
+
       {/* Heart flights (fixed layer, above everything) */}
       <AnimatePresence>
         {hearts.map((h) => (
@@ -162,12 +176,25 @@ function TopCard({
   const firstEver = useTasteStore((s) => s.seen.length === 0);
   const undoFx = useUiStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
   const reduceMotion = useReducedMotion();
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => setCoarse(window.matchMedia("(pointer: coarse)").matches), []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-240, 0, 240], [-16, 0, 16]);
-  const likeOpacity = useTransform(x, [20, SWIPE_DISTANCE], [0, 1]);
-  const nopeOpacity = useTransform(x, [-SWIPE_DISTANCE, -20], [1, 0]);
+  const likeOpacity = useTransform(x, [20, STAMP_LOCK], [0, 1]);
+  const nopeOpacity = useTransform(x, [-STAMP_LOCK, -20], [1, 0]);
+  // Crossing the commit point: the stamp pops and the phone ticks once, so
+  // you know letting go now counts. Back under, it settles again.
+  const [locked, setLocked] = useState<SwipeAction | null>(null);
+  const lockedRef = useRef<SwipeAction | null>(null);
+  useMotionValueEvent(x, "change", (v) => {
+    const next: SwipeAction | null = v >= STAMP_LOCK ? "like" : v <= -STAMP_LOCK ? "dislike" : null;
+    if (next === lockedRef.current) return;
+    lockedRef.current = next;
+    setLocked(next);
+    if (next && !leaving.current) navigator.vibrate?.(4);
+  });
   const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
@@ -268,6 +295,7 @@ function TopCard({
   }, [undoFx, x]);
 
   // First-run hint: one gentle wiggle so LIKE / NOPE reveal themselves.
+  // With reduced motion only the legend below explains the gestures.
   const hinted = useRef(false);
   useEffect(() => {
     if (onboardingSeen || !firstEver || reduceMotion || hinted.current) return;
@@ -275,7 +303,7 @@ function TopCard({
     const t = setTimeout(() => {
       if (dragged.current || leaving.current) return;
       animate(x, [0, 36, -36, 0], { duration: 0.9, ease: "easeInOut" });
-    }, 1000);
+    }, 600);
     return () => clearTimeout(t);
   }, [onboardingSeen, firstEver, reduceMotion, x]);
 
@@ -294,7 +322,13 @@ function TopCard({
       ref={cardRef}
       // will-change: the card is its own compositor layer, so dragging and
       // flying it moves a cached bitmap instead of repainting the tee.
-      className={`absolute inset-0 will-change-transform ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
+      // Keyboard users reach the card itself: ← / → / space act on it (see
+      // app/page.tsx), and the ring follows the card's corners.
+      tabIndex={0}
+      role="group"
+      aria-roledescription="card"
+      aria-label={`${shirt.title}: ${CATEGORY_LABELS[shirt.category]}, ${shirt.baseColor} tee, ${formatPrice(shirt.price)}. Left arrow passes, right arrow likes, space shows details.`}
+      className={`absolute inset-0 rounded-[28px] outline-none will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
       initial={{ scale: 0.95, y: 16 }}
       animate={{ scale: 1, y: 0 }}
@@ -307,7 +341,7 @@ function TopCard({
       drag={!isFlipped && !isLeaving && !zoom}
       // Sideways swipes are free; vertical travel is heavily damped so the
       // card never slides over the header.
-      dragElastic={{ left: 0.9, right: 0.9, top: 0.12, bottom: 0.08 }}
+      dragElastic={{ left: ELASTIC_X, right: ELASTIC_X, top: 0.12, bottom: 0.08 }}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragMomentum={false}
       onDragStart={() => {
@@ -324,18 +358,31 @@ function TopCard({
       }}
     >
       <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop onZoom={openZoom} />
-      <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={shirt.baseColor} onClose={() => useUiStore.getState().setZoom(null)} />}</AnimatePresence>
+      <AnimatePresence>
+        {zoom && (
+          <ZoomViewer
+            shirt={shirt}
+            color={shirt.baseColor}
+            onClose={() => useUiStore.getState().setZoom(null)}
+            returnFocusTo={() => cardRef.current?.querySelector<HTMLElement>("[data-zoom-button]")}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Swipe stamps */}
+      {/* Swipe stamps: monochrome — LIKE solid white, NOPE an outline. */}
       <motion.div
-        style={{ opacity: likeOpacity }}
-        className="pointer-events-none absolute left-6 top-16 flex -rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-emerald-400 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-emerald-400 will-change-[opacity]"
+        style={{ opacity: likeOpacity, rotate: -12 }}
+        animate={{ scale: locked === "like" ? 1.1 : 1 }}
+        transition={{ type: "spring", stiffness: 600, damping: 18 }}
+        className="pointer-events-none absolute left-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-white bg-white px-3 py-1.5 text-2xl font-black tracking-widest text-black will-change-[opacity]"
       >
         <Heart className="h-6 w-6 fill-current" /> LIKE
       </motion.div>
       <motion.div
-        style={{ opacity: nopeOpacity }}
-        className="pointer-events-none absolute right-6 top-16 flex rotate-12 items-center gap-1.5 rounded-xl border-[3px] border-rose-500 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-rose-500 will-change-[opacity]"
+        style={{ opacity: nopeOpacity, rotate: 12 }}
+        animate={{ scale: locked === "dislike" ? 1.1 : 1 }}
+        transition={{ type: "spring", stiffness: 600, damping: 18 }}
+        className="pointer-events-none absolute right-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-neutral-200 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-neutral-100 will-change-[opacity]"
       >
         <X className="h-6 w-6" strokeWidth={3} /> NOPE
       </motion.div>
@@ -346,7 +393,9 @@ function TopCard({
         {isFlipped ? "Back" : "Details"}
       </motion.div>
 
-      {/* First-run gesture legend */}
+      {/* First-run gesture legend, until the first swipe. Swipe-up (details)
+          and pinch (zoom) are real gestures too, so they're named — quietly,
+          on the second line, and only on touch screens. */}
       <AnimatePresence>
         {!onboardingSeen && !isFlipped && (
           <motion.div
@@ -354,12 +403,69 @@ function TopCard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.4 }}
-            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-full bg-black/75 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15"
+            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-2xl bg-black/75 px-3.5 py-1.5 text-center text-xs font-medium text-white ring-1 ring-white/15"
           >
             ← Pass · Tap for details · Like →
+            {coarse && <span className="block text-neutral-300">Swipe up for details · pinch to zoom</span>}
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+/**
+ * Pull-back undo: for a few seconds after a swipe, the swiped card peeks in
+ * from the edge it left by. Drag it back in (or tap it) to undo. Only while
+ * the swipe can still be undone.
+ */
+function PullBack() {
+  const last = useTasteStore((s) => s.lastUpdate);
+  const undoable = useTasteStore(canUndo);
+  const undoLast = useTasteStore((s) => s.undoLast);
+  // Only swipes made while this is on screen (a restored session's last
+  // swipe doesn't peek on load).
+  const initial = useRef(last);
+  const [peek, setPeek] = useState<{ id: string; side: "left" | "right" } | null>(null);
+  useEffect(() => {
+    if (!last || last === initial.current || !undoable) {
+      setPeek(null);
+      return;
+    }
+    setPeek({ id: last.shirtId, side: last.action === "like" ? "right" : "left" });
+    const t = setTimeout(() => setPeek(null), PULL_BACK_MS);
+    return () => clearTimeout(t);
+  }, [last, undoable]);
+
+  const shirt = peek ? getShirtById(peek.id) : undefined;
+  const dir = peek?.side === "left" ? -1 : 1;
+  return (
+    <AnimatePresence>
+      {peek && shirt && (
+        <motion.button
+          key={peek.id}
+          type="button"
+          aria-label={`Bring back ${shirt.title} (undo)`}
+          onClick={undoLast}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.6}
+          dragSnapToOrigin
+          onDragEnd={(_, info) => {
+            if (-dir * info.offset.x > PULL_BACK_DISTANCE) undoLast();
+          }}
+          initial={{ x: dir * 40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: dir * 40, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 34 }}
+          // 56 px wide, hung over the edge: on phones only a sliver shows
+          // (the rest is off screen), on wide screens the whole tab.
+          style={{ [peek.side]: -44, y: "-50%" }}
+          className="absolute top-1/2 z-20 flex h-40 w-14 touch-none items-center justify-center overflow-hidden rounded-2xl bg-ink-900/90 shadow-xl shadow-black/60 ring-1 ring-white/20 backdrop-blur-md"
+        >
+          <TeeMockup shirt={shirt} shadow={false} className="w-24 max-w-none opacity-80" />
+        </motion.button>
+      )}
+    </AnimatePresence>
   );
 }

@@ -59,7 +59,7 @@ export function CartView() {
               Browse the shop
             </Link>
             {lastOrder && (
-              <p className="mt-4 text-xs text-neutral-500">
+              <p className="mt-4 text-xs text-neutral-400">
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
@@ -84,7 +84,7 @@ export function CartView() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
-                          <p className="text-xs text-neutral-500">
+                          <p className="text-xs text-neutral-400">
                             {COLOR_LABELS[line.color]} tee · {skuFor(line.shirt.sku, line.color)}
                           </p>
                           <div className="mt-1.5">
@@ -115,7 +115,7 @@ export function CartView() {
                             <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 hover:bg-white/5 hover:text-rose-400">
+                        <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -190,7 +190,7 @@ function Summary({
       {!compact && <Row label="Subtotal" value={`${formatPrice(subtotal)}`} />}
       <Row label="Shipping" value={shipping === 0 ? "Free" : `${formatPrice(shipping)}`} />
       {toFree > 0 && !compact && (
-        <p className="text-xs text-neutral-500">Add {formatPrice(toFree)} more for free shipping.</p>
+        <p className="text-xs text-neutral-400">Add {formatPrice(toFree)} more for free shipping.</p>
       )}
       <div className="border-t border-white/10 pt-2">
         <Row label="Total" value={`${formatPrice(total)}`} bold />
@@ -253,16 +253,23 @@ function DetailsForm({
               value={values[key]}
               onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
               aria-invalid={touched && !!errors[key]}
-              className={`h-12 w-full rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none ring-1 transition placeholder:text-neutral-600 focus:ring-white/50 ${
-                touched && errors[key] ? "ring-rose-500/70" : "ring-white/10"
+              aria-describedby={touched && errors[key] ? `err-${key}` : undefined}
+              className={`h-12 w-full rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none transition placeholder:text-neutral-600 ${
+                touched && errors[key] ? "ring-2 ring-white" : "ring-1 ring-white/10 focus:ring-white/50"
               }`}
             />
-            {touched && errors[key] && <span className="mt-1 block text-xs text-rose-400">{errors[key]}</span>}
+            {/* Monochrome errors: a thick white ring plus a marked message, no red. */}
+            {touched && errors[key] && (
+              <span id={`err-${key}`} className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-white">
+                <span aria-hidden className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[11px] font-black text-black">!</span>
+                {errors[key]}
+              </span>
+            )}
           </label>
         ))}
       </div>
       {summary}
-      <p className="mt-3 text-center text-xs text-neutral-500">
+      <p className="mt-3 text-center text-xs text-neutral-400">
         Demo store — no payment is taken and nothing ships.
       </p>
       <button

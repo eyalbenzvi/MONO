@@ -14,8 +14,9 @@ export function ActionButtons() {
   const undoable = useTasteStore(canUndo);
 
   return (
-    <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
-      <div className="mx-auto grid max-w-[420px] grid-cols-[44px_1fr_44px] items-center">
+    <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
+      {/* Sideways phones: one column beside the card (undo, pass, details, like). */}
+      <div className="mx-auto grid max-w-[420px] grid-cols-[44px_1fr_44px] items-center sideways:flex sideways:flex-col sideways:gap-3">
         <RoundButton
           label="Undo last swipe"
           disabled={!undoable}
@@ -24,12 +25,12 @@ export function ActionButtons() {
         >
           <RotateCcw className="h-[18px] w-[18px]" />
         </RoundButton>
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-6 sideways:flex-col sideways:gap-3">
           <RoundButton
             label="Pass"
             disabled={empty}
             onClick={() => requestSwipe("dislike")}
-            className="h-16 w-16 bg-ink-800 text-rose-500 ring-1 ring-white/10 hover:bg-ink-700"
+            className="h-16 w-16 bg-ink-800 text-neutral-200 ring-1 ring-white/10 hover:bg-ink-700"
           >
             <X className="h-7 w-7" strokeWidth={2.75} />
           </RoundButton>
@@ -52,9 +53,9 @@ export function ActionButtons() {
             <Heart className="h-7 w-7 fill-current" />
           </RoundButton>
         </div>
-        <span aria-hidden />
+        <span aria-hidden className="sideways:hidden" />
       </div>
-      <p className="mt-2 hidden text-center text-[11px] text-neutral-500 sm:block">
+      <p className="mt-2 hidden text-center text-xs text-neutral-400 sm:block sideways:hidden">
         ← pass · → like · space details · Z undo
       </p>
     </div>
@@ -90,7 +91,7 @@ function RoundButton({
       whileTap={{ scale: 0.86 }}
       whileHover={{ scale: 1.05 }}
       transition={{ type: "spring", stiffness: 500, damping: 18 }}
-      className={`flex items-center justify-center rounded-full shadow-lg shadow-black/50 transition-colors disabled:opacity-30 ${className}`}
+      className={`flex items-center justify-center rounded-full shadow-lg shadow-black/50 transition-colors disabled:opacity-50 ${className}`}
     >
       {children}
     </motion.button>
