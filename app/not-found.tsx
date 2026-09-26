@@ -13,7 +13,7 @@ export const metadata: Metadata = pageMeta({ path: "/", title: "Not in the drop 
  * content only — nothing here reads the stores, so it hydrates cleanly
  * whatever URL it's served at.
  */
-const REDIRECT = productRedirectScript(process.env.NEXT_PUBLIC_BASE_PATH ?? "", SHIRTS.length);
+const REDIRECT = productRedirectScript(process.env.NEXT_PUBLIC_BASE_PATH ?? "", SHIRTS[SHIRTS.length - 1]?.n ?? 0);
 
 export default function NotFound() {
   return (

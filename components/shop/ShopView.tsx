@@ -189,7 +189,8 @@ export function ShopView() {
             <Chip active={category === null} onClick={() => setFilter({ category: null })}>
               All
             </Chip>
-            {SHIRT_CATEGORIES.map((c) => (
+            {/* Categories that have designs (the content review can empty one); the catalog is loaded by the time this renders. */}
+            {SHIRT_CATEGORIES.filter((c) => SHIRTS.some((s) => s.category === c)).map((c) => (
               <Chip key={c} active={category === c} onClick={() => setFilter({ category: category === c ? null : c })}>
                 {CATEGORY_LABELS[c]}
               </Chip>

@@ -10,7 +10,7 @@ import { topPicks } from "@/lib/match";
 import { rankShirts } from "@/lib/recommendation";
 import { productDescription, productTitle } from "@/lib/seo";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, createInitialVector, type CatalogEntry } from "@/types/shirt";
-import { WEAK_QUALITY } from "../scripts/gen/quality";
+import { WEAK_QUALITY, measurePrint } from "../scripts/gen/quality";
 import { SUBJECT_NOUN_CATEGORIES } from "../scripts/gen/subject";
 import { PER_CATEGORY, TOTAL } from "../scripts/gen/constants";
 
@@ -38,7 +38,8 @@ describe("I01: names that say what the print shows", () => {
     for (const s of FULL.filter((x) => SUBJECT_NOUN_CATEGORIES.includes(x.category))) {
       expect(s.title, s.id).not.toMatch(FILLER);
     }
-    expect(byId.get("mono-1010")!.title.toLowerCase()).toContain(byId.get("mono-1010")!.subject.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") || "");
+    const obj = FULL.find((s) => s.variant === "iconic-landmark")!;
+    expect(obj.title.toLowerCase()).toContain(obj.subject.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") || "");
   });
 
   it("a name's noun repeats at most 15 times within a category", () => {
@@ -52,14 +53,12 @@ describe("I01: names that say what the print shows", () => {
 });
 
 describe("F06: print quality", () => {
-  it("scores every print; a lone small square is weak", () => {
-    for (const s of FULL) expect(s.quality).toBeGreaterThanOrEqual(0);
-    const kinetic = FULL.find((s) => s.title === "Kinetic Unit")!;
-    expect(kinetic.quality).toBeLessThan(WEAK_QUALITY);
-    expect(getShirtById(kinetic.id)!.weak).toBe(true);
-    const weak = FULL.filter((s) => s.quality < WEAK_QUALITY).length;
-    expect(weak).toBeGreaterThan(5);
-    expect(weak).toBeLessThan(FULL.length * 0.05);
+  it("scores every print; a lone small square is weak (and after the T7 review no weak print is left)", () => {
+    for (const s of FULL) expect(s.quality).toBeGreaterThanOrEqual(WEAK_QUALITY);
+    const square = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400"><rect width="300" height="400" fill="#000000"/><rect x="130" y="180" width="40" height="40" fill="#FFFFFF"/></svg>`;
+    const m = measurePrint(square, "black");
+    expect(m.quality).toBeLessThan(WEAK_QUALITY);
+    expect(m.printCm.width).toBeLessThan(14);
   });
 
   it("weak prints never rate taste, never lead the shop and never get picked for you", () => {
@@ -82,7 +81,6 @@ describe("F06: print quality", () => {
       expect(s.printCm.width).toBeLessThanOrEqual(28);
       expect(s.printCm.height).toBeLessThanOrEqual(37);
     }
-    expect(FULL.find((s) => s.title === "Kinetic Unit")!.printCm.width).toBeLessThan(14);
   });
 });
 
@@ -103,11 +101,11 @@ describe("I12: explicit drop dates", () => {
 
 describe("R21: the index head describes the data", () => {
   it("carries v, keys, shard size and shard hashes; the app refuses a mismatch", () => {
-    expect(index.v).toBe(3);
+    expect(index.v).toBe(4);
     expect(index.keys).toEqual([...FEATURE_KEYS]);
-    expect(index.shards).toHaveLength(Math.ceil(FULL.length / index.shardSize));
-    expect(() => checkIndexHead({ v: 2, keys: [...FEATURE_KEYS] })).toThrow(/v2/);
-    expect(() => checkIndexHead({ v: 3, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
+    expect(index.shards).toHaveLength(Math.ceil(FULL[FULL.length - 1].n / index.shardSize));
+    expect(() => checkIndexHead({ v: 3, keys: [...FEATURE_KEYS] })).toThrow(/v3/);
+    expect(() => checkIndexHead({ v: 4, keys: [...FEATURE_KEYS].reverse() })).toThrow(/feature keys/);
     expect(() => checkIndexHead(index)).not.toThrow();
   });
 
@@ -121,9 +119,10 @@ describe("R21: the index head describes the data", () => {
     });
   });
 
-  it("categories stay 14 × PER_CATEGORY (ids mono-0001…mono-<TOTAL> unchanged)", () => {
-    for (const c of SHIRT_CATEGORIES) expect(FULL.filter((s) => s.category === c)).toHaveLength(PER_CATEGORY);
+  it("ids are unchanged after retiring designs: mono-0001 first, never above mono-<TOTAL>, the index carries each n", () => {
+    for (const c of SHIRT_CATEGORIES) expect(FULL.filter((s) => s.category === c).length).toBeLessThanOrEqual(PER_CATEGORY);
     expect(FULL[0].id).toBe("mono-0001");
-    expect(FULL[FULL.length - 1].id).toBe(`mono-${String(TOTAL).padStart(4, "0")}`);
+    expect(FULL[FULL.length - 1].n).toBeLessThanOrEqual(TOTAL);
+    expect(index.n).toEqual(FULL.map((s) => s.n));
   });
 });

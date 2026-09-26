@@ -252,7 +252,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
   });
 
   test("I08 / T1 / T4: Saved — one button 'Add your top 3 · M' (no prices); Add all and Share behind ⋯; rows without +", async ({ page }) => {
-    await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700", "mono-0800"] });
+    await seed(page, { likedIds: ["mono-0501", "mono-0601", "mono-0701", "mono-0801"] });
     await page.addInitScript(() => {
       const c = JSON.parse(localStorage.getItem("mono-cart")!);
       c.state.preferredSize = "M";

@@ -67,7 +67,7 @@ test.describe("R26: focus never falls back to the page", () => {
 
   test("quick add from an empty bag: focus lands on the bag's heading, not the page", async ({ page }) => {
     // Quick add now lives only on "From your Saved" in an empty bag.
-    await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700"], calibrated: false });
+    await seed(page, { likedIds: ["mono-0501", "mono-0601", "mono-0701"], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
     const add = page.getByRole("button", { name: /^Quick add / }).first();
@@ -87,7 +87,7 @@ test("R28: no keyboard legend on a phone held sideways", async ({ page }) => {
 });
 
 test("I16: another tab clearing storage resets Saved and the bag here", async ({ page, context }) => {
-  await seed(page, { likedIds: ["mono-0500"] }, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
+  await seed(page, { likedIds: ["mono-0501"] }, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
   await page.goto("shop/");
   await hydrated(page);
   await expect(page.getByRole("button", { name: /^Saved \(3\)/ })).toBeVisible();
