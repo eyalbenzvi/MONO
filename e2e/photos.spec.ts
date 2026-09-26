@@ -12,8 +12,8 @@ const other = photo.baseColor === "black" ? "white" : "black";
 test("a photo tee: credit and source link; the whole greyscale photograph, on its own tee only, never inverted", async ({ page }) => {
   await page.goto(`shop/${photo.id}/`);
   await hydrated(page);
-  // T1: the credit sits in Details (the description already names the photographer).
-  await page.getByRole("button", { name: "Details" }).tap();
+  // The credit sits behind ⓘ (About this design).
+  await page.getByRole("button", { name: "About this design" }).tap();
   const credit = page.getByText(`Photo: ${photo.photo!.credit}`);
   await expect(credit).toBeVisible();
   // Named after its subject, which isn't repeated above the name.

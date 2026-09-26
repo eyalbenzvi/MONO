@@ -19,7 +19,7 @@ pipe = StableDiffusionPipeline.from_pretrained("SG161222/Realistic_Vision_V5.1_n
 pipe.load_lora_weights("latent-consistency/lcm-lora-sdv1-5"); pipe.fuse_lora()
 pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
 jobs = json.load(open(sys.argv[1])); out = sys.argv[2]; os.makedirs(out, exist_ok=True)
-NEG = "logo, print, graphic, text, letters, pattern, stripes, drawing on shirt, deformed, extra arms, cartoon, 3d render, painting, blurry, watermark"
+NEG = "logo, print, graphic, text, letters, pattern, stripes, drawing on shirt, deformed, extra arms, cartoon, 3d render, painting, blurry shirt, watermark, trees, plants, nature, colorful, busy background, crowd, people, cars, signs, graffiti"
 for j in jobs:
     f = os.path.join(out, j["id"] + ".png")
     if os.path.exists(f): continue

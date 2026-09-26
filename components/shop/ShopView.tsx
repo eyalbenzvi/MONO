@@ -142,31 +142,10 @@ export function ShopView() {
           scroller's padding, which would push the filter bar down. */}
       <div aria-hidden className="h-[var(--header-h)]" />
       <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        {/* One-line taste summary / taste-test nudge (height kept before hydration). */}
-        {!hydrated ? (
-          <div className="h-11" />
-        ) : (
-          <div className="flex h-11 items-center gap-2">
-            {complete ? (
-              <>
-                <span className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-white">
-                  <Icon name="sparkles" className="h-4 w-4" /> Ranked for you
-                </span>
-                <PriceLine />
-              </>
-            ) : (
-              <>
-                <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
-                  {total} swipes → <span className="max-[339px]:hidden">ranked </span>for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
-                </span>
-                <PriceLine className="max-sm:hidden" />
-                <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
-                  Start <Icon name="arrow-right" className="h-3.5 w-3.5" />
-                </Link>
-              </>
-            )}
-          </div>
-        )}
+        {/* One quiet line: the one price (T4). The taste test lives in Discover, not here. */}
+        <div className="flex h-9 items-center">
+          <PriceLine />
+        </div>
 
         {/* One sticky row: categories scroll sideways; the tee-colour preview
             stays in view (black / white switch without scrolling); the order

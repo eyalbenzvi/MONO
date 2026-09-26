@@ -228,8 +228,8 @@ function ecomItems(lines: CartLine[], pairs: { id: string; saving: number }[]) {
 /**
  * Three prints not already chosen (no family already in the bag or just
  * bought): on an empty bag, from Saved first; then the best matches once
- * the taste test is done (topPicks), otherwise from Saved, otherwise the
- * editors' picks. Used in the bag
+ * the taste test is done (topPicks), otherwise from Saved, otherwise none.
+ * Used in the bag
  * ("One more from your taste"), an empty bag and after an order ("Your
  * next match").
  */
@@ -249,9 +249,8 @@ function Suggestions({ exclude, title: heading, source, savedFirst = false }: { 
       ? topPicks(vector, 3, { excludeFamilies: skip })
       : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
     if (fromTaste.length) return { picks: fromTaste, title: heading };
-    // No taste yet and nothing saved: the editors' order (the generator's
-    // fixed ranking — not usage data), titled as exactly that.
-    return { picks: pool([...SHIRTS].sort((a, b) => a.rank - b.rank).slice(0, 60)).slice(0, 3), title: "Editors' picks" };
+    // No taste yet and nothing saved: nothing — an empty bag stays quiet.
+    return { picks: [] as ShirtProduct[], title: "" };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, lastOrder, showMatch, vector, likedIds, heading, savedFirst]);
   if (picks.length === 0) return null;

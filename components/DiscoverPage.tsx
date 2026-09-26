@@ -171,27 +171,17 @@ function TopStrip() {
     );
   }
 
-  // The one progress counter: which card of the taste test is on screen.
+  // The one progress indicator: a thin bar (which card of the taste test is on screen).
   const current = Math.min(done + 1, total);
-  const label = done === total - 1 ? "Last one" : `${current}/${total}`;
-  // The strip keeps one height: the goal line above the bar fades out after
-  // the first swipe instead of collapsing, so the card never moves.
   return (
     <div className={STRIP} data-strip tabIndex={-1}>
-      <p
-        className={`h-4 truncate text-center text-[13px] font-medium leading-4 text-white transition-opacity duration-300 ${onboardingSeen ? "opacity-0" : "opacity-100"}`}
-        aria-hidden={onboardingSeen}
-      >
-        {friend ? (
-          // Arrived from a friend's taste link (/?taste=…).
-          <>Your friend is {archetypeOf(friend).name} — swipe {CALIBRATION_TOTAL} to see how alike you are</>
-        ) : (
-          <>
-            Rate {CALIBRATION_TOTAL} tees
-          </>
-        )}
-      </p>
-      <div className="mt-1 flex items-center gap-3">
+      {/* Minimal: just the bar (a friend's link says whose taste this is, once). */}
+      {friend && !onboardingSeen && (
+        <p className="h-4 truncate text-center text-[13px] font-medium leading-4 text-white">
+          Your friend is {archetypeOf(friend).name} — swipe {CALIBRATION_TOTAL} to compare
+        </p>
+      )}
+      <div className="mt-1 flex items-center">
         <div
           className="flex flex-1 gap-1"
           role="progressbar"
@@ -211,9 +201,7 @@ function TopStrip() {
             />
           ))}
         </div>
-        <span className={`w-14 shrink-0 text-right font-mono text-xs ${done === total - 1 ? "font-semibold text-white" : "text-neutral-300"}`} aria-hidden>
-          {label}
-        </span>
+
       </div>
     </div>
   );

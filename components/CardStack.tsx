@@ -377,20 +377,6 @@ function TopCard({
         {isFlipped ? "Back" : "Details"}
       </motion.div>
 
-      {/* First-run gesture legend, until the first swipe: one line. */}
-      <AnimatePresence>
-        {!onboardingSeen && !isFlipped && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 0.4 }}
-            className="pointer-events-none absolute inset-x-0 bottom-[84px] mx-auto w-fit whitespace-nowrap rounded-2xl bg-black/75 px-3.5 py-1.5 text-center text-xs font-medium text-white ring-1 ring-white/15"
-          >
-            ← Pass · Like →
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
