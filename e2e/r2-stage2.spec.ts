@@ -116,12 +116,12 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
 });
 
 test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I13, I15, R04, R09)", () => {
-  test("grid: one Top pick, no match badges, no Share, no Wildcard", async ({ page }) => {
+  test("grid (T1 minimal): no tags or badges at all — no Top pick, New, match or Wildcard — and no Share", async ({ page }) => {
     await seed(page);
     await page.goto("shop/");
     await hydrated(page);
     const grid = page.locator("main .grid").first();
-    await expect(grid.getByText("Top pick", { exact: true })).toHaveCount(1);
+    await expect(grid.getByText(/Top pick|New this week/)).toHaveCount(0);
     await expect(grid.getByText(/Strong match|Good match|Wildcard/)).toHaveCount(0);
     await expect(grid.getByRole("button", { name: /^Share / })).toHaveCount(0);
   });
@@ -170,14 +170,14 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(sheet).toBeVisible();
   });
 
-  test("R13: the mini bag never covers the sizes or the trust line", async ({ page }) => {
+  test("R13: the mini bag never covers the sizes", async ({ page }) => {
     await seed(page);
     await page.goto("shop/mono-0001/");
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
     const sheet = (await page.getByRole("region", { name: "Added to bag" }).boundingBox())!;
-    for (const el of [page.getByRole("radiogroup", { name: "Size" }), page.getByText("Free size exchanges")]) {
+    for (const el of [page.getByRole("radiogroup", { name: "Size" })]) {
       const b = await el.boundingBox();
       if (b) expect(overlap(sheet, b)).toBe(false);
     }

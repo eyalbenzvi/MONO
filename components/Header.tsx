@@ -75,7 +75,6 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
         {/* The logo tells the brand story (Discover is the home tab). */}
         <Link href="/about/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="About MONO">
           <MonoLogo size="sm" />
-          <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
         </Link>
 
         {/* Rendered afresh once mounted: a page served at another address

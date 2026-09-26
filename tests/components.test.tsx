@@ -48,14 +48,14 @@ describe("ProductCard", () => {
     expect(screen.queryByText(/match/i)).toBeNull();
   });
 
-  it("at most one tag: Top pick wins over New this week", () => {
+  it("no visible tags (T1 minimal): Top pick is for screen readers only; New this week isn't shown", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(shirt.dropDate + 86_400_000);
-    const { rerender } = render(<ProductCard shirt={shirt} />);
-    expect(screen.getByText("New this week")).toBeTruthy();
+    const { rerender, container } = render(<ProductCard shirt={shirt} />);
+    expect(container.textContent).not.toMatch(/New this week|Top pick/);
     rerender(<ProductCard shirt={shirt} topPick />);
-    expect(screen.getByText("Top pick")).toBeTruthy();
-    expect(screen.queryByText("New this week")).toBeNull();
+    expect(container.textContent).not.toMatch(/Top pick/);
+    expect(screen.getByRole("link", { name: /Top pick/ })).toBeTruthy();
   });
 });
 
