@@ -62,6 +62,7 @@ export default function AboutPage() {
           are no accounts: your taste profile stays in this browser on your device, and Reset clears it. The graphic prints are generated (the
           star charts from a real star catalogue). The archive prints and photographs are CC0, from Smithsonian Open Access, and each product page
           credits the artist, photographer or museum and links to the source record.
+          The photos of people wearing the tees are generated images, not real people; the print is laid onto each one digitally.
         </p>
         <p className="mt-3 hidden text-xs text-neutral-500 [@media(hover:hover)_and_(pointer:fine)]:block">Keyboard in Discover: ← pass · → like · space details · Z undo</p>
 

@@ -22,9 +22,9 @@ cloth_session = new_session("u2net_cloth_seg")
 
 OUT_W, OUT_H = 512, 704
 SHOULDERS, COLLAR = 0.56, 0.24
-# The print: 46% of the shoulders wide (3:4), its top 0.42 shoulder-widths below the collar.
+# The print: 46% of the shoulders wide (3:4), its top 0.34 shoulder-widths below the collar.
 _pw = SHOULDERS * 0.46; _ph = _pw * OUT_W / OUT_H * 4 / 3
-PRINT_BOX = [round(0.5 - _pw / 2, 4), round(COLLAR + SHOULDERS * 0.42 * OUT_W / OUT_H, 4), round(_pw, 4), round(_ph, 4)]
+PRINT_BOX = [round(0.5 - _pw / 2, 4), round(COLLAR + SHOULDERS * 0.34 * OUT_W / OUT_H, 4), round(_pw, 4), round(_ph, 4)]
 out = []
 for j in JOBS:
     f = os.path.join(SRC, j["id"] + ".png")
@@ -72,6 +72,24 @@ for j in JOBS:
         while R < w - 1 and cloth[r, R + 1]: R += 1
         if R - L > shoulders * 0.4: mids.append((L + R) / 2)
     if len(mids) >= 5: cx = float(np.median(mids))
+    # The tee: the clothing model's upper-body mask (clean on a white tee,
+    # shadows and folds included, neck and arms left out), holes closed.
+    upper = np.asarray(cloth_session.predict(img)[0].convert("L")) > 128
+    upper &= person
+    filled = np.asarray(Image.fromarray((upper * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))) > 128
+    tee = filled & person
+    # Only between the collar and the hem (the model can stray into hair or jeans).
+    rows_w = tee.sum(1)
+    hem = max((r for r in range(h) if rows_w[r] >= shoulders * 0.6), default=h - 1)
+    tee[: max(0, neck - 2)] = False
+    tee[hem + 1 :] = False
+    # The centre of the back from the tee itself (clean mask): the midpoint of
+    # its edges over the chest, below the sleeves.
+    mids = []
+    for r in range(int(neck + shoulders * 0.55), int(neck + shoulders * 0.95)):
+        c = np.nonzero(tee[r])[0] if r < h else []
+        if len(c) > shoulders * 0.5: mids.append((c.min() + c.max()) / 2)
+    if len(mids) >= 5: cx = float(np.median(mids))
     # One framing for every photo: scaled and cropped so the shoulders span
     # SHOULDERS of the width, the spine is the centre line and the collar
     # sits at COLLAR of the height. The print box is then the same on every
@@ -85,17 +103,6 @@ for j in JOBS:
     crop = Image.fromarray(padded).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS)
     # Its black-tee twin: the tee (the white cloth on the person, the part
     # joined to the back) darkened, keeping its folds and shading.
-    # The tee: the clothing model's upper-body mask (clean on a white tee,
-    # shadows and folds included, neck and arms left out), holes closed.
-    upper = np.asarray(cloth_session.predict(img)[0].convert("L")) > 128
-    upper &= person
-    filled = np.asarray(Image.fromarray((upper * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))) > 128
-    tee = filled & person
-    # Only between the collar and the hem (the model can stray into hair or jeans).
-    rows_w = tee.sum(1)
-    hem = max((r for r in range(h) if rows_w[r] >= shoulders * 0.6), default=h - 1)
-    tee[: max(0, neck - 2)] = False
-    tee[hem + 1 :] = False
     if tee.sum() < shoulders * shoulders * 0.5:
         print("skip", j["id"], "(tee not found)"); continue
     soft = np.asarray(Image.fromarray((tee * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))) / 255.0

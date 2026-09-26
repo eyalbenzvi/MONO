@@ -41,7 +41,9 @@ describe("T3: designs that suit one tee colour are sold in that colour only", ()
 
   it("the mockup never shows a one-colour design on the other tee", () => {
     const { container } = render(<TeeMockup shirt={single} color={otherColor(single.baseColor)} />);
-    expect(container.querySelector("img")!.getAttribute("src")).toContain(`garment-${single.baseColor}`);
+    // A model photo of that tee colour (or, with none, the drawn tee in it).
+    const src = container.querySelector("img")!.getAttribute("src")!;
+    expect(src.includes(`-${single.baseColor}.webp`) || src.includes(`garment-${single.baseColor}`), src).toBe(true);
   });
 
   it("search copy and structured data offer only the colours it's sold in", () => {
@@ -98,5 +100,26 @@ describe("T3: the bag (cart store v4)", () => {
     s.changeCartItem({ id: single.id, size: "M", color: single.baseColor }, { color: otherColor(single.baseColor) });
     expect(useCartStore.getState().cart[0].color).toBe(single.baseColor);
     expect(s.addPair(both.id, "M", { silent: true })).toBe(true);
+  });
+});
+
+describe("T2: the tee worn — model photos", () => {
+  it("every photo exists, in both tee colours, with the same print box", async () => {
+    const { MODEL_PHOTOS, modelFor } = await import("@/lib/models");
+    const { existsSync } = await import("node:fs");
+    expect(MODEL_PHOTOS.length).toBeGreaterThanOrEqual(2);
+    for (const m of MODEL_PHOTOS) expect(existsSync(`public/models/${m.id}.webp`), m.id).toBe(true);
+    expect(new Set(MODEL_PHOTOS.map((m) => m.color))).toEqual(new Set(["white", "black"]));
+    expect(new Set(MODEL_PHOTOS.map((m) => m.box.join()))).toHaveProperty("size", 1);
+    // A design always gets a photo of the tee colour asked for, the same one each time.
+    expect(modelFor(both, "black")!.color).toBe("black");
+    expect(modelFor(both, "white")).toEqual(modelFor(both, "white"));
+  });
+
+  it("the mockup lays the print on the photo, never on a photo of the other colour", () => {
+    const { container } = render(<TeeMockup shirt={both} color="black" />);
+    const imgs = [...container.querySelectorAll("img")].map((i) => i.getAttribute("src"));
+    expect(imgs[0]).toMatch(/\/models\/.+-black\.webp$/);
+    expect(imgs.some((s) => s?.includes(`/prints/print_${both.n}.`))).toBe(true);
   });
 });
