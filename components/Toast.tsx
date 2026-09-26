@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check } from "lucide-react";
 import { useUiStore } from "@/store/useUiStore";
 
 export function Toast() {
@@ -37,7 +37,7 @@ export function Toast() {
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className="flex max-w-full items-center gap-2 whitespace-nowrap rounded-full bg-white py-2 pl-4 pr-2 text-sm font-semibold text-black shadow-2xl shadow-black"
           >
-            {!toast.action && <Check className="h-4 w-4" />}
+            {!toast.action && <Icon name="check" className="h-4 w-4" />}
             <span className="truncate pr-2">{toast.message}</span>
             {toast.action && (
               <button

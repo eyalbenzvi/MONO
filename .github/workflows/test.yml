@@ -1,0 +1,53 @@
+name: Test
+
+# Checks every push to the same branches the Pages deploy publishes
+# (deploy-pages.yml is unchanged): unit tests, types, lint, the static
+# build, then the browser tests against it — the smoke run and the
+# Playwright suite (e2e/).
+on:
+  push:
+    branches: [main, claude/tshirt-discovery-mvp-pc6mk9]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+
+      - name: Build static site
+        run: npm run build
+        env:
+          # A build on Actions must name its public origin (see next.config.mjs).
+          NEXT_PUBLIC_SITE_ORIGIN: https://example.invalid
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - run: npm run smoke
+      - run: npm run e2e
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

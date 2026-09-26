@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart, Info, RotateCcw, X } from "lucide-react";
+import { Icon } from "@/components/Icon";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
@@ -24,7 +24,7 @@ export function ActionButtons() {
           onClick={undoLast}
           className="h-11 w-11 bg-ink-800 text-neutral-300 ring-1 ring-white/10 hover:bg-ink-700 max-[339px]:h-9 max-[339px]:w-9"
         >
-          <RotateCcw className="h-[18px] w-[18px]" />
+          <Icon name="rotate-ccw" className="h-[18px] w-[18px]" />
         </RoundButton>
         <div className="flex items-center justify-center gap-6 max-[339px]:gap-2 sideways:flex-col sideways:gap-3">
           <RoundButton
@@ -33,7 +33,7 @@ export function ActionButtons() {
             onClick={() => requestSwipe("dislike")}
             className="h-16 w-16 bg-ink-800 text-neutral-200 ring-1 ring-white/10 hover:bg-ink-700 max-[339px]:h-[52px] max-[339px]:w-[52px]"
           >
-            <X className="h-7 w-7" strokeWidth={2.75} />
+            <Icon name="x" className="h-7 w-7" strokeWidth={2.75} />
           </RoundButton>
           <RoundButton
             label={isFlipped ? "Back to the tee" : "Show details"}
@@ -43,7 +43,7 @@ export function ActionButtons() {
               isFlipped ? "bg-white text-black" : "bg-ink-800 text-neutral-200 hover:bg-ink-700"
             }`}
           >
-            <Info className="h-5 w-5" />
+            <Icon name="info" className="h-5 w-5" />
           </RoundButton>
           <RoundButton
             label="Like"
@@ -51,7 +51,7 @@ export function ActionButtons() {
             onClick={() => requestSwipe("like")}
             className="h-16 w-16 bg-white text-black hover:bg-neutral-200 max-[339px]:h-[52px] max-[339px]:w-[52px]"
           >
-            <Heart className="h-7 w-7 fill-current" />
+            <Icon name="heart" className="h-7 w-7 fill-current" />
           </RoundButton>
         </div>
         <span aria-hidden className="sideways:hidden" />

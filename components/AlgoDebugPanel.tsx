@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Activity, ChevronDown, RotateCcw } from "lucide-react";
 import { getShirtById } from "@/lib/catalog";
 import {
   centeredCosine,
@@ -60,7 +60,7 @@ function DebugPanel() {
                 onClick={reset}
                 className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] uppercase tracking-wider text-neutral-400 ring-1 ring-white/10 hover:bg-white/5 hover:text-white"
               >
-                <RotateCcw className="h-3 w-3" /> Reset
+                <Icon name="rotate-ccw" className="h-3 w-3" /> Reset
               </button>
             </div>
 
@@ -172,7 +172,7 @@ function DebugPanel() {
           open ? "bg-white text-black" : "bg-ink-850/90 text-neutral-300 hover:text-white"
         }`}
       >
-        {open ? <ChevronDown className="h-4 w-4" /> : <Activity className="h-4 w-4" />}
+        {open ? <Icon name="chevron-down" className="h-4 w-4" /> : <Icon name="activity" className="h-4 w-4" />}
       </button>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
@@ -15,7 +15,14 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
+import { catalogReady, isCatalogReady } from "@/lib/catalog";
 import { captureLanding, track } from "@/lib/analytics";
+
+/** Suspends (keeping the server HTML) until the catalog index has loaded. */
+function CatalogGate({ children }: { children: React.ReactNode }) {
+  if (!isCatalogReady()) throw catalogReady();
+  return <>{children}</>;
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
@@ -50,9 +57,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // first move an old single-store session into the split stores, then load
   // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
-    migrateLegacySession();
-    removeRetiredKeys();
-    void Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]).then(() => {
+    // Stored state is checked against the catalog, so it loads after it.
+    void catalogReady().then(async () => {
+      migrateLegacySession();
+      removeRetiredKeys();
+      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]);
       useTasteStore.getState().fillDeck();
       useUiStore.getState().setHydrated();
     });
@@ -94,7 +103,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* The header floats over the top of main (it slides away with a
           transform, never by changing the layout); main keeps its space.
           Pages that hide it on scroll let their scroller reach under it. */}
-      <main className="relative flex min-h-0 flex-1 flex-col pt-[var(--header-h)]">{children}</main>
+      <main className="relative flex min-h-0 flex-1 flex-col pt-[var(--header-h)]">
+        {/* Pages read the catalog: until its index has arrived, React keeps
+            the server-rendered HTML and hydrates them once it's there. */}
+        <Suspense fallback={null}>
+          <CatalogGate>{children}</CatalogGate>
+        </Suspense>
+      </main>
       <AlgoDebugPanel />
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
       <ShareSheet />

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { track } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
-import { RotateCcw, Share2, X } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { DAILY_GOAL, archetypeOf, currentStreak, tasteLevel, today } from "@/lib/taste";
 import { startOverWithUndo, useTasteStore } from "@/store/tasteStore";
@@ -51,7 +51,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 <h2 className="text-xl font-bold tracking-tight">{name}</h2>
               </div>
               <button type="button" onClick={onClose} data-autofocus aria-label="Close" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
-                <X className="h-5 w-5" />
+                <Icon name="x" className="h-5 w-5" />
               </button>
             </div>
 
@@ -94,7 +94,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
               disabled={sharing}
               className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black disabled:opacity-60"
             >
-              <Share2 className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
+              <Icon name="share-2" className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
             </button>
 
             <button
@@ -108,7 +108,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
               }}
               className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5 hover:text-white"
             >
-              <RotateCcw className="h-4 w-4" /> Reset taste
+              <Icon name="rotate-ccw" className="h-4 w-4" /> Reset taste
             </button>
             <p className="mt-1.5 text-center text-xs text-neutral-400">Clears your profile and Saved — you can undo right after.</p>
           </motion.div>

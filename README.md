@@ -74,12 +74,21 @@ npm install
 npm run dev        # http://localhost:3000
 npm test           # unit tests (Vitest)
 npm run og         # link-preview images (optional locally; built in CI)
-npm run typecheck && npm run lint && npm run build
+npm run typecheck && npm run lint && npm run build   # prebuild publishes the index, postbuild writes JSON-LD + CSP
+npm run smoke      # end-to-end smoke run against out/
+npm run e2e        # Playwright suite (e2e/) against out/: phone + desktop projects
+npm run sprites    # regenerate public/icons.svg and public/tee/*.svg (tests check they match)
 ```
 
 ## Deploy (GitHub Pages)
 
-**Product pages and scale.** Every product page is pre-rendered (about 2,800 pages, ~90 MB of `out/shop`). To keep the export small as the catalog grows, build with `NEXT_PUBLIC_PRERENDER_LIMIT=<N>`: only the top N designs of the editorial rank get a static page at `/shop/<id>/`, and every other design opens through the client route `/shop/p/?id=<id>`, which reads the lean index and fetches its details shard. All in-app links and share links go through `productHref()` in `lib/catalog.ts`, so they point at the right one. Beyond that, the next step is a server (or edge function) rendering product pages on demand.
+**Product pages and scale.** Every product page is pre-rendered by default (2,800 pages: `out/shop` is ~132 MB, a product page ~35 KB / ~7.4 KB gzipped; `out/` is ~240 MB, of which ~84 MB are link-preview PNGs and ~23 MB the prints). To keep the export small as the catalog grows, build with `NEXT_PUBLIC_PRERENDER_LIMIT=<N>`: only the top N designs of the editorial rank get a static page at `/shop/<id>/` and a link-preview image (`npm run og` follows the same rule); every other design opens through the client route `/shop/p/?id=<id>`, and an old link to its `/shop/<id>/` lands on the 404, whose one script sends it there (query and hash kept, `lib/notFound.ts`). All in-app links and share links go through `productHref()` in `lib/catalog.ts`. Beyond that, the next step is a server (or edge function) rendering product pages on demand.
+
+**What a page carries.** The catalog index isn't in the JavaScript: `npm run build` first publishes it as `public/data/index.<hash>.json` (`scripts/tools/publishIndex.ts`); every page preloads it and `lib/catalog` fills in when it arrives, while React keeps the server HTML and hydrates once it has (`<CatalogGate>` in AppShell). First Load JS went from ~238 KB to ~182 KB on Discover (the index is ~54 KB gzipped, cached forever under its hash, and code changes no longer re-download it; there's no build timestamp in the bundle either). Icons come from one sprite (`public/icons.svg`, `<Icon name>` + `<use>`), the tee mockup's garment, shadows and highlights from shared files (`public/tee/`), and structured data is written after the build rather than rendered by React (so it isn't repeated in the page's React payload).
+
+**Security.** Each page's Content-Security-Policy meta tag is written after the build, first in `<head>`, with the sha256 of that page's own inline scripts — no `'unsafe-inline'` for scripts (`lib/csp.ts`, `scripts/tools/postbuild.ts`; `e2e/r2-stage6.desktop.spec.ts` checks the main pages run without a violation).
+
+**CI.** `.github/workflows/test.yml` runs the unit tests, types, lint, the build, the smoke run and the Playwright suite on every push to the deployed branches (the Pages workflow itself is unchanged). Tests take their numbers from `scripts/gen/constants.ts` rather than copying them.
 
 **SEO under `/MONO`.** Every page states its canonical URL and Open Graph URL (`pageMeta` in `lib/seo.ts`); the home page carries Organization and WebSite JSON-LD, product pages a ProductGroup (colour × size variants with offers, shipping and return policy) and a breadcrumb; `og:type=product` and `product:price:*` are written after the build (`scripts/tools/postbuild.cjs`, which also fails the build if a pre-rendered product has no link-preview image). Pre-rendered HTML carries an H1 on the home page and the shop, a real "Show more" link (`/shop/?page=2`) and links to variations and similar prints on every product page. The robots.txt paths include the base path, but crawlers only read robots.txt at a host's root — under `github.io/MONO/` it has no effect until the site has its own domain; the sitemap is linked from every page instead. A CI build without `NEXT_PUBLIC_SITE_ORIGIN` fails (it would publish localhost URLs); locally it falls back to `http://localhost:3000`.
 

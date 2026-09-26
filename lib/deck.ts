@@ -13,8 +13,7 @@ export const VARIANT_SPACING = 5;
  * slots, boldest print first. Precomputed by the generator (getCalibrationQueue
  * over the family leaders); tests check it matches the runtime algorithm.
  */
-export { CALIBRATION_IDS };
-export const CALIBRATION_TOTAL = CALIBRATION_IDS.length;
+export { CALIBRATION_IDS, CALIBRATION_TOTAL } from "@/lib/catalog";
 
 export interface DeckEntry {
   id: string;

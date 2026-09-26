@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Link2, Loader2, Mail, MessageSquare, Send, Share2, X } from "lucide-react";
 import { getShirtById } from "@/lib/catalog";
 import { channelLink, productShareUrl, shareFileName, shareMessage, shareTitle, type ShareChannel } from "@/lib/share";
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
@@ -52,12 +52,12 @@ const CHANNELS: { id: ShareChannel; label: string; icon: React.ReactNode }[] = [
   { id: "instagram", label: "Instagram", icon: GLYPHS.instagram },
   { id: "facebook", label: "Facebook", icon: GLYPHS.facebook },
   { id: "tiktok", label: "TikTok", icon: GLYPHS.tiktok },
-  { id: "telegram", label: "Telegram", icon: <Send className="h-6 w-6" /> },
+  { id: "telegram", label: "Telegram", icon: <Icon name="send" className="h-6 w-6" /> },
   { id: "x", label: "X", icon: GLYPHS.x },
-  { id: "email", label: "Email", icon: <Mail className="h-6 w-6" /> },
-  { id: "sms", label: "Message", icon: <MessageSquare className="h-6 w-6" /> },
-  { id: "copy", label: "Copy link", icon: <Link2 className="h-6 w-6" /> },
-  { id: "download", label: "Save image", icon: <Download className="h-6 w-6" /> },
+  { id: "email", label: "Email", icon: <Icon name="mail" className="h-6 w-6" /> },
+  { id: "sms", label: "Message", icon: <Icon name="message-square" className="h-6 w-6" /> },
+  { id: "copy", label: "Copy link", icon: <Icon name="link-2" className="h-6 w-6" /> },
+  { id: "download", label: "Save image", icon: <Icon name="download" className="h-6 w-6" /> },
 ];
 
 const HOW_TO: Partial<Record<ShareChannel, string>> = {
@@ -191,7 +191,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             <p className="truncate text-sm text-neutral-400">{shirt.title}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Close share" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/15">
-            <X className="h-5 w-5" />
+            <Icon name="x" className="h-5 w-5" />
           </button>
         </div>
 
@@ -210,7 +210,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             ) : failed ? (
               <span className="px-2 text-center text-xs text-neutral-400">Preview unavailable</span>
             ) : (
-              <Loader2 className="h-6 w-6 animate-spin text-neutral-400" aria-label="Preparing image" />
+              <Icon name="loader" className="h-6 w-6 animate-spin text-neutral-400" aria-label="Preparing image" />
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -260,7 +260,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             onClick={() => nativeShare("native", canShareFiles)}
             className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98] disabled:opacity-60"
           >
-            <Share2 className="h-4 w-4" /> Share…
+            <Icon name="share-2" className="h-4 w-4" /> Share…
           </button>
         )}
 

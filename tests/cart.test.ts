@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PRICE } from "../scripts/gen/constants";
 import {
   FREE_SHIPPING_THRESHOLD,
   MAX_QTY,
@@ -120,7 +121,7 @@ describe("cart", () => {
       { id: b.id, size: "M", color: "white", qty: 1 },
     ]);
     expect(mixed.discount).toBe(6);
-    expect(mixed.total).toBe(48 * 4 - 6);
+    expect(mixed.total).toBe(PRICE * 4 - (2 * PRICE - PAIR_PRICE));
     // two full pairs
     expect(cartTotals([{ id: a.id, size: "S", color: "black", qty: 2 }, { id: a.id, size: "XL", color: "white", qty: 2 }]).discount).toBe(12);
     // one colour only: no discount
@@ -129,7 +130,7 @@ describe("cart", () => {
 
   it("free shipping progress counts the discounted goods", () => {
     const one = cartTotals([{ id: a.id, size: "M", color: "black", qty: 1 }]);
-    expect(one.toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD - 48);
+    expect(one.toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD - PRICE);
     expect(cartTotals([]).toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD);
   });
 

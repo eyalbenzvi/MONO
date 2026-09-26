@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, RotateCcw, Share2, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
@@ -70,11 +70,11 @@ export function CartView() {
         <div className="mb-4 flex items-center justify-between">
           {step === "details" ? (
             <button type="button" onClick={() => go("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <ArrowLeft className="h-4 w-4" /> Bag
+              <Icon name="arrow-left" className="h-4 w-4" /> Bag
             </button>
           ) : (
             <Link href="/shop/" className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <ArrowLeft className="h-4 w-4" /> Continue shopping
+              <Icon name="arrow-left" className="h-4 w-4" /> Continue shopping
             </Link>
           )}
           {count > 0 && <Steps step={step} />}
@@ -86,7 +86,7 @@ export function CartView() {
 
         {count === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <ShoppingBag className="h-10 w-10 text-neutral-600" />
+            <Icon name="shopping-bag" className="h-10 w-10 text-neutral-600" />
             <p className="text-sm text-neutral-400">Your bag is empty.</p>
             <Link href="/shop/" className="flex h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black">
               Browse the shop
@@ -144,15 +144,15 @@ export function CartView() {
                         </select>
                         <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
                           <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
-                            <Minus className="h-3.5 w-3.5" />
+                            <Icon name="minus" className="h-3.5 w-3.5" />
                           </button>
                           <span className="w-5 text-center font-mono text-sm" aria-live="polite">{line.qty}</span>
                           <button type="button" aria-label="Increase quantity" disabled={line.qty >= MAX_QTY} onClick={() => setCartQty(line, line.qty + 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
-                            <Plus className="h-3.5 w-3.5" />
+                            <Icon name="plus" className="h-3.5 w-3.5" />
                           </button>
                         </div>
                         <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
-                          <Trash2 className="h-4 w-4" />
+                          <Icon name="trash-2" className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -171,10 +171,10 @@ export function CartView() {
               }}
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
             >
-              <Lock className="h-4 w-4" /> Checkout · {formatPrice(total)}
+              <Icon name="lock" className="h-4 w-4" /> Checkout · {formatPrice(total)}
             </button>
             <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
-              <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
+              <Icon name="rotate-ccw" className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
             </p>
               </div>
             </div>
@@ -470,7 +470,7 @@ function DetailsForm({
       </ul>
       {summary}
       <p className="mt-3 flex items-center justify-center gap-1.5 text-sm text-neutral-300">
-        <Truck className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Arrives {arrives}
+        <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Arrives {arrives}
       </p>
       <p className="mt-2 text-center text-xs text-neutral-400">Demo store — no payment is taken and nothing ships.</p>
       <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
@@ -497,7 +497,7 @@ function Confirmation({ order }: { order: Order }) {
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mx-auto flex max-w-md flex-col items-center px-4 pb-28 pt-8 text-center">
         <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
-          <CheckCircle2 className="h-14 w-14" />
+          <Icon name="check-circle" className="h-14 w-14" />
         </motion.div>
         <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight outline-none">
           Order placed
@@ -508,7 +508,7 @@ function Confirmation({ order }: { order: Order }) {
         </p>
         {/* Icon and text wrap as one centred group; the city never splits. */}
         <p className="mt-2 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-neutral-300">
-          <Truck className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+          <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden />
           <span>Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })}</span>
           <span className="whitespace-nowrap">in {order.customer.city}</span>
         </p>
@@ -550,7 +550,7 @@ function Confirmation({ order }: { order: Order }) {
             onClick={() => useUiStore.getState().openShare(first.id, first.color)}
             className="mt-6 flex h-11 items-center gap-2 rounded-full px-5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5"
           >
-            <Share2 className="h-4 w-4" /> Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}
+            <Icon name="share-2" className="h-4 w-4" /> Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}
           </button>
         )}
 

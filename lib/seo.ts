@@ -65,26 +65,3 @@ export function pageMeta({ path, title, description, image = OG_DEFAULT, index =
     ...(index ? {} : { robots: { index: false } }),
   };
 }
-
-/* ------------------------------------------------------------------ */
-/* Structured data (F03)                                               */
-/* ------------------------------------------------------------------ */
-
-/** JSON inside a <script> tag: escape "<" so no string can close it. */
-export const jsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, "\\u003c");
-
-export const ORGANIZATION = {
-  "@type": "Organization",
-  "@id": `${SITE_URL}/#org`,
-  name: "MONO",
-  url: `${SITE_URL}/`,
-  logo: `${SITE_URL}/icon.svg`,
-};
-
-/** Home: who we are, and the site. */
-export function homeJsonLd() {
-  return {
-    "@context": "https://schema.org",
-    "@graph": [ORGANIZATION, { "@type": "WebSite", "@id": `${SITE_URL}/#site`, name: "MONO", url: `${SITE_URL}/`, publisher: { "@id": ORGANIZATION["@id"] } }],
-  };
-}

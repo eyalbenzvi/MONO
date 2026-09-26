@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import full from "@/data/shirts.json";
 import index from "@/data/shirts.index.json";
+import manifest from "@/data/shirts.index.manifest.json";
 import { SHIRTS, CALIBRATION_IDS, checkIndexHead, dedupeByFamily, diversify, getShirtById, shardFile } from "@/lib/catalog";
 import { topPicks } from "@/lib/match";
 import { rankShirts } from "@/lib/recommendation";
@@ -11,6 +12,7 @@ import { productDescription, productTitle } from "@/lib/seo";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, createInitialVector, type CatalogEntry } from "@/types/shirt";
 import { WEAK_QUALITY } from "../scripts/gen/quality";
 import { SUBJECT_NOUN_CATEGORIES } from "../scripts/gen/subject";
+import { PER_CATEGORY, TOTAL } from "../scripts/gen/constants";
 
 const FULL = full as unknown as CatalogEntry[];
 const byId = new Map(FULL.map((s) => [s.id, s]));
@@ -107,19 +109,19 @@ describe("R21: the index head describes the data", () => {
     expect(() => checkIndexHead(index)).not.toThrow();
   });
 
-  it("shard files are named by their content hash, and nothing else sits in public/data", () => {
+  it("shard files (and the published index) are named by their content hash, and nothing else sits in public/data", () => {
     const dir = path.resolve(__dirname, "..", "public", "data");
     const files = readdirSync(dir).sort();
-    expect(files).toEqual(index.shards.map((_, k) => path.basename(shardFile(k))).sort());
+    expect(files).toEqual([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file].sort());
     index.shards.forEach((hash, k) => {
       const json = readFileSync(path.join(dir, path.basename(shardFile(k))), "utf8");
       expect(createHash("sha256").update(json).digest("hex").slice(0, 10)).toBe(hash);
     });
   });
 
-  it("categories stay 14 × 200 (ids mono-0001…mono-2800 unchanged)", () => {
-    for (const c of SHIRT_CATEGORIES) expect(FULL.filter((s) => s.category === c)).toHaveLength(200);
+  it("categories stay 14 × PER_CATEGORY (ids mono-0001…mono-<TOTAL> unchanged)", () => {
+    for (const c of SHIRT_CATEGORIES) expect(FULL.filter((s) => s.category === c)).toHaveLength(PER_CATEGORY);
     expect(FULL[0].id).toBe("mono-0001");
-    expect(FULL[FULL.length - 1].id).toBe("mono-2800");
+    expect(FULL[FULL.length - 1].id).toBe(`mono-${String(TOTAL).padStart(4, "0")}`);
   });
 });

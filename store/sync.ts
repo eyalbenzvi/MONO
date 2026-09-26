@@ -2,6 +2,7 @@
 
 import { initialCart, useCartStore } from "@/store/cartStore";
 import { initialTaste, useTasteStore } from "@/store/tasteStore";
+import { catalogReady } from "@/lib/catalog";
 
 /**
  * Another tab changed storage (a save, the bag…): reload it here instead of
@@ -10,6 +11,8 @@ import { initialTaste, useTasteStore } from "@/store/tasteStore";
  * starts over, like a first visit.
  */
 export async function syncFromStorage(key: string | null) {
+  // Stored state is checked against the catalog.
+  await catalogReady();
   const stores = [
     { store: useTasteStore, initial: initialTaste },
     { store: useCartStore, initial: initialCart },

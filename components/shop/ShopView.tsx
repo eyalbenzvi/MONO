@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
-import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
 import { radioKeys } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
@@ -211,7 +211,7 @@ export function ShopView() {
             {complete ? (
               <>
                 <span className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-white">
-                  <Sparkles className="h-4 w-4" /> Ranked for you
+                  <Icon name="sparkles" className="h-4 w-4" /> Ranked for you
                 </span>
                 <div className="flex min-w-0 gap-1.5 overflow-hidden">
                   {traits.map((k) => (
@@ -227,7 +227,7 @@ export function ShopView() {
                   {total} swipes → <span className="max-[339px]:hidden">ranked </span>for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
                 </span>
                 <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
-                  Start <ArrowRight className="h-3.5 w-3.5" />
+                  Start <Icon name="arrow-right" className="h-3.5 w-3.5" />
                 </Link>
               </>
             )}
@@ -273,7 +273,7 @@ export function ShopView() {
               chosenSort ? "bg-white text-black ring-white" : "bg-white/[0.04] text-neutral-200 ring-white/10 hover:bg-white/10"
             }`}
           >
-            <ArrowUpDown className="h-4 w-4" /> <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
+            <Icon name="arrow-up-down" className="h-4 w-4" /> <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
           </button>
         </div>
         <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />

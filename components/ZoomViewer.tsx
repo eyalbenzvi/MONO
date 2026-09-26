@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { Minus, Plus, X } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { TeeMockup } from "@/components/TeeMockup";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -194,7 +194,7 @@ export function ZoomViewer({
           aria-label="Close zoom"
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 hover:bg-white/20"
         >
-          <X className="h-5 w-5" />
+          <Icon name="x" className="h-5 w-5" />
         </button>
       </div>
 
@@ -229,13 +229,13 @@ export function ZoomViewer({
       )}
       <div className="flex items-center justify-center gap-3 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2">
         <button type="button" onClick={() => step(1 / 1.6)} disabled={t.s <= MIN} aria-label="Zoom out" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 disabled:opacity-40">
-          <Minus className="h-5 w-5" />
+          <Icon name="minus" className="h-5 w-5" />
         </button>
         <span className="min-w-28 whitespace-nowrap text-center font-mono text-xs text-neutral-400">
           {t.s > 1.02 ? `${t.s.toFixed(1)}×` : coarse ? "Pinch or double-tap" : "Scroll or double-click"}
         </span>
         <button type="button" onClick={() => step(1.6)} disabled={t.s >= MAX} aria-label="Zoom in" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 disabled:opacity-40">
-          <Plus className="h-5 w-5" />
+          <Icon name="plus" className="h-5 w-5" />
         </button>
       </div>
     </motion.div>,

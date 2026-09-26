@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PRICE } from "../scripts/gen/constants";
+import { PAIR_PRICE } from "@/lib/cart";
 
 vi.mock("@/lib/shareImage", () => ({ renderTasteImage: async () => new Blob(["png"], { type: "image/png" }) }));
 
@@ -25,8 +27,8 @@ describe("R06: commerce events in GA4's shape", () => {
     const s = await fresh();
     s.useCartStore.getState().addToCart("mono-0001", "M", "white", 1, { source: "grid" });
     const [e] = events("add_to_cart");
-    expect(e).toMatchObject({ currency: "USD", value: 48, source: "grid" });
-    expect(e.items).toEqual([{ item_id: "mono-0001", item_name: expect.any(String), item_category: expect.any(String), item_variant: "white", size: "M", price: 48, quantity: 1 }]);
+    expect(e).toMatchObject({ currency: "USD", value: PRICE, source: "grid" });
+    expect(e.items).toEqual([{ item_id: "mono-0001", item_name: expect.any(String), item_category: expect.any(String), item_variant: "white", size: "M", price: PRICE, quantity: 1 }]);
   });
 
   it("the pair counts as $90 (not $96), its saving as the items' discount; completing it counts +$42", async () => {
@@ -35,8 +37,8 @@ describe("R06: commerce events in GA4's shape", () => {
     const [pair] = events("add_to_cart");
     expect(pair.value).toBe(90);
     expect(pair.items.map((i: any) => [i.item_variant, i.price, i.discount])).toEqual([
-      ["black", 48, 3],
-      ["white", 48, 3],
+      ["black", PRICE, PRICE - PAIR_PRICE / 2],
+      ["white", PRICE, PRICE - PAIR_PRICE / 2],
     ]);
     const t = await fresh();
     t.useCartStore.getState().addToCart("mono-0002", "M", "black");

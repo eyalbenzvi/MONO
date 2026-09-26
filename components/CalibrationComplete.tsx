@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Share2, Sparkles } from "lucide-react";
 import { archetypeOf, tasteOverlap } from "@/lib/taste";
 import { shareTaste } from "@/lib/shareTaste";
 import { topPicks } from "@/lib/match";
@@ -82,7 +82,7 @@ export function CalibrationComplete() {
                 title="Share my taste"
                 className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/15 hover:text-white disabled:opacity-50"
               >
-                <Share2 className="h-[18px] w-[18px]" />
+                <Icon name="share-2" className="h-[18px] w-[18px]" />
               </button>
             </div>
             <TraitChips keys={traits} className="mt-3" stagger />
@@ -108,7 +108,7 @@ export function CalibrationComplete() {
                 data-autofocus
                 className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
               >
-                See my shop <ArrowRight className="h-4 w-4" />
+                See my shop <Icon name="arrow-right" className="h-4 w-4" />
               </Link>
               <button type="button" onClick={close} className="h-10 rounded-full text-sm font-medium text-neutral-400 underline-offset-4 hover:text-white hover:underline">
                 Keep swiping
@@ -126,7 +126,7 @@ function Burst() {
   const reduce = useReducedMotion();
   return (
     <span className="relative inline-flex h-4 w-4 items-center justify-center">
-      <Sparkles className="h-4 w-4" />
+      <Icon name="sparkles" className="h-4 w-4" />
       {!reduce &&
         Array.from({ length: 12 }, (_, i) => {
           const angle = (i / 12) * Math.PI * 2;

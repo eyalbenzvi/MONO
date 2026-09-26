@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, Share2 } from "lucide-react";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { TIER_LABEL, type MatchTier } from "@/lib/match";
@@ -321,7 +321,7 @@ export function SaveButton({ id, size = "sm", className = "" }: { id: string; si
         size === "sm" ? "before:absolute before:-inset-1.5 before:content-['']" : "h-12 w-12 shrink-0 ring-1 ring-white/15"
       } ${saved ? "bg-white text-black" : size === "sm" ? "bg-black/55 text-white ring-1 ring-white/15 hover:bg-black/75" : "bg-white/5 text-white hover:bg-white/10"} ${className}`}
     >
-      <Heart className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
+      <Icon name="heart" className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
     </motion.button>
   );
 }
@@ -346,7 +346,7 @@ export function ShareButton({ id, title, color, size = "sm", className = "" }: {
           : "h-12 w-12 shrink-0 bg-white/5 text-white ring-1 ring-white/15 hover:bg-white/10"
       } ${className}`}
     >
-      <Share2 className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} />
+      <Icon name="share-2" className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} />
     </button>
   );
 }

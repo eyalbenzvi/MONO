@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PRICE } from "../scripts/gen/constants";
+import { PAIR_PRICE } from "@/lib/cart";
 import { MemoryStorage } from "./memoryStorage";
 import { FEATURE_KEYS, createInitialVector, type UserProfileVector } from "@/types/shirt";
 
@@ -162,7 +164,7 @@ describe("R10: Get it in both adds only what's missing", () => {
 
   it("labels the button by what the bag already holds", async () => {
     const { pairStatus, pairLabel } = await import("@/lib/cart");
-    const price = 48;
+    const price = PRICE;
     expect(pairLabel(pairStatus([], "mono-0001", "M"), price)).toBe("Get it in both");
     expect(pairLabel(pairStatus([{ id: "mono-0001", size: "M", color: "white", qty: 1 }], "mono-0001", "M"), price)).toBe("Complete the pair · +$42");
     expect(

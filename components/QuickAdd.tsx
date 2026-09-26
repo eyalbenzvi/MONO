@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useHydrated } from "@/store/useUiStore";
 import { SIZES, type BaseColor, type ShirtProduct } from "@/types/shirt";
@@ -77,7 +77,7 @@ export function QuickAdd({
         aria-label={`Add ${shirt.title} to bag, size ${preferred}`}
         className={`flex shrink-0 items-center gap-1 whitespace-nowrap ${chip} ${shape} ${className}`}
       >
-        <Plus className="h-3.5 w-3.5" /> {words(compact ? preferred : `${long ? "Add to bag" : "Add"} · ${preferred}`)}
+        <Icon name="plus" className="h-3.5 w-3.5" /> {words(compact ? preferred : `${long ? "Add to bag" : "Add"} · ${preferred}`)}
       </button>
     );
   }
@@ -111,7 +111,7 @@ export function QuickAdd({
               </button>
             ))}
             <button type="button" onClick={close} aria-label="Close sizes" className="flex h-8 w-7 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
-              <X className="h-3.5 w-3.5" />
+              <Icon name="x" className="h-3.5 w-3.5" />
             </button>
           </motion.div>
         ) : (
@@ -127,7 +127,7 @@ export function QuickAdd({
             aria-expanded={false}
             className={`flex shrink-0 items-center gap-1 ${chip} ${shape} ${overlay ? "ml-auto" : ""}`}
           >
-            <Plus className="h-3.5 w-3.5" /> {words(long ? "Add to bag" : "Add")}
+            <Icon name="plus" className="h-3.5 w-3.5" /> {words(long ? "Add to bag" : "Add")}
           </motion.button>
         )}
       </AnimatePresence>

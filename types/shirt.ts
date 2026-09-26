@@ -184,13 +184,6 @@ export interface SwipeEvent {
 
 export type RecommendationStrategy = "calibration" | "greedy" | "explore";
 
-export interface UserSession {
-  likedIds: string[];
-  dislikedIds: string[];
-  preferenceVector: UserProfileVector;
-  swipeHistory: SwipeEvent[];
-}
-
 /** The printed area on the tee (the 3:4 print, as screen-printed). */
 export const PRINT_SIZE_CM = { width: 28, height: 37 } as const;
 
