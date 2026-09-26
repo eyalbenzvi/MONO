@@ -66,7 +66,7 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     await expect(card.getByRole("link", { name: /View tee/ })).toBeVisible();
   });
 
-  test("T1: after the taste test the back has one action (View tee); Share is behind ⋯ (zoom is a pinch on the picture); no streak in the header", async ({ page }) => {
+  test("T1: after the taste test the back has one action (View tee); Share is a direct button (zoom is a pinch on the picture); no streak in the header", async ({ page }) => {
     await seed(page);
     await page.addInitScript(() => {
       const t = JSON.parse(localStorage.getItem("mono-taste")!);
@@ -82,11 +82,11 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     await back.tap();
     await page.waitForTimeout(700);
     await expect(back.getByRole("link", { name: /View tee/ })).toBeVisible();
-    await expect(back.getByRole("button", { name: /Quick add|^Share / })).toHaveCount(0);
-    await back.getByRole("button", { name: /^More for / }).tap();
-    const menu = page.getByRole("dialog", { name: /^More for / });
-    await expect(menu.getByRole("button", { name: "Share" })).toBeVisible();
-    await expect(menu.getByRole("button", { name: "Zoom in on the print" })).toHaveCount(0);
+    await expect(back.getByRole("button", { name: /Quick add/ })).toHaveCount(0);
+    // No ⋯ menu holding one item: share is a direct button (undo too, once there's a swipe).
+    await expect(back.getByRole("button", { name: /^More for / })).toHaveCount(0);
+    await expect(back.getByRole("button", { name: /^Share / })).toBeVisible();
+    await expect(back.getByRole("button", { name: "Zoom in on the print" })).toHaveCount(0);
   });
 
   test("Your taste holds streak, Daily 5, level and Share my taste — no percentages", async ({ page }) => {

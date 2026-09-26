@@ -124,15 +124,27 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         <div className="flex items-center justify-between">
           <span />
           <div className="flex items-center gap-1">
-          {/* Secondary actions live in one menu, not on the card. */}
-          <MoreMenu
-            label={`More for ${shirt.title}`}
-            items={[
-              { label: "Share", icon: "share-2" as const, onSelect: () => openShare(shirt.id, shirt.baseColor) },
-              // Undo lives here (and on Z), not as a button under the card.
-              ...(undoable ? [{ label: "Undo last swipe", icon: "rotate-ccw" as const, onSelect: () => useTasteStore.getState().undoLast() }] : []),
-            ]}
-          />
+          {/* Direct actions, same round buttons as the close: share, and undo when there's a swipe to undo. */}
+          {undoable && (
+            <button
+              type="button"
+              onClick={() => useTasteStore.getState().undoLast()}
+              aria-label="Undo last swipe"
+              title="Undo last swipe"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
+            >
+              <Icon name="rotate-ccw" className="h-5 w-5" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => openShare(shirt.id, shirt.baseColor)}
+            aria-label={`Share ${shirt.title}`}
+            title="Share"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
+          >
+            <Icon name="share-2" className="h-5 w-5" />
+          </button>
           {/* Closes the details. */}
           <button
             type="button"
