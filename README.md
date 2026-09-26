@@ -53,8 +53,8 @@ Feature vectors are computed from each design's real parameters (line/cell count
 
 1. **Discover / calibration** (`/`): the first 10 cards are the most mutually different prints. Finishing them shows the "taste profile ready" screen with your top traits and top picks.
 2. **Shop** (`/shop`): the full catalog ranked by match, with category chips (10), tee-colour view and sort, rendered 24 at a time as you scroll. ♥ saves a tee *and* trains the vector.
-3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,800 pages are statically generated.
-4. **Bag & checkout** (`/cart`): change size/quantity, shipping (free over the `FREE_SHIPPING_THRESHOLD` in `lib/cart.ts`), a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships.
+3. **Product** (`/shop/[id]`): on-tee and flat print views, why it matches you, size guide, add to bag, similar prints. All 2,800 pages are statically generated. Size is remembered once chosen anywhere ("Add to bag · M" in one tap, and quick add on grid cards, the Discover details face, Saved and the bag). After adding, the button reads "✓ Added", then "View bag · Checkout", and a small sheet shows the way to checkout plus prints that pair well. "Get it in both" adds the black and the white tee as the pair ($90, `PAIR_PRICE`).
+4. **Bag & checkout** (`/cart`): change size/colour/quantity, a free-shipping progress bar (free over `FREE_SHIPPING_THRESHOLD` in `lib/cart.ts`), the pair discount, "One more from your taste", a delivery form and an order confirmation. It is a demo: no payment details are collected and nothing ships. Store promises (exchanges, shipping time, fabric, returns, fit advice) live in `lib/store-policy.ts`, pending approval.
 
 Discover keeps training after calibration (80% best match / 20% explore).
 

@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cartStore";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
+import { QuickAdd } from "@/components/QuickAdd";
 
 /** Below this the % adds noise, not information. */
 const SHOW_BADGE_FROM = 80;
@@ -48,12 +49,9 @@ export const ProductCard = memo(function ProductCard({
             <MatchBadge score={score} size="sm" variant={topPick ? "top" : "quiet"} />
           </div>
         )}
-        {variations > 0 && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15">
-            +{variations} variation{variations === 1 ? "" : "s"}
-          </span>
-        )}
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        {/* Above the stretched link's ::after (z-10 in the same stacking context). */}
+        <QuickAdd shirt={shirt} color={tee} variant="overlay" className="absolute bottom-2 right-2 z-10" />
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <div className="min-w-0">
@@ -71,6 +69,11 @@ export const ProductCard = memo(function ProductCard({
           <p className="truncate text-xs text-neutral-400">
             <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
           </p>
+          {variations > 0 && (
+            <p className="truncate text-xs text-neutral-400">
+              +{variations} variation{variations === 1 ? "" : "s"}
+            </p>
+          )}
         </div>
         <span className="shrink-0 font-mono text-sm">{formatPrice(shirt.price)}</span>
       </div>

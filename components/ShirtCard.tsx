@@ -4,6 +4,7 @@ import { memo } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Compass, Share2, X, ZoomIn } from "lucide-react";
+import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, STAGE_BG, STRONG_MATCH, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { explainMatch } from "@/lib/recommendation";
@@ -184,6 +185,9 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           {black ? "Black" : "White"} tee · {black ? "white" : "black"} ink · {PRINT_SIZE_CM.width}×{PRINT_SIZE_CM.height} cm print
           <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
         </p>
+
+        {/* Quick add without leaving Discover (size remembered, else pick one). */}
+        <QuickAdd shirt={shirt} className="mt-3" />
 
         {familySize(shirt) > 1 && (
           <Link

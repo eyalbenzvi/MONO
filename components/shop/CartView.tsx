@@ -3,13 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Lock, Minus, Plus, RotateCcw, ShoppingBag, Trash2 } from "lucide-react";
+import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
-import { ColorSelector, STAGE_BG } from "@/components/ui";
+import { ColorSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals } from "@/lib/cart";
+import { SHIRTS, dedupeByFamily, familiesOf, getShirtById } from "@/lib/catalog";
+import { rankShirts } from "@/lib/recommendation";
+import { STORE_POLICY } from "@/lib/store-policy";
 import { useCartStore } from "@/store/cartStore";
+import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated } from "@/store/useUiStore";
-import { COLOR_LABELS, SIZES, skuFor, type Order, type ShirtSize } from "@/types/shirt";
+import { COLOR_LABELS, SIZES, type CartItem, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
@@ -26,8 +31,7 @@ export function CartView() {
   const [step, setStep] = useState<Step>("bag");
   const [placed, setPlaced] = useState<Order | null>(null);
 
-  const { lines, count, subtotal, shipping, total } = cartTotals(cart);
-  const toFree = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const { lines, count, subtotal, discount, pairs, shipping, total, toFreeShipping: toFree } = cartTotals(cart);
 
   if (!hydrated) return <div className="flex-1" />;
 
@@ -66,6 +70,7 @@ export function CartView() {
           </div>
         ) : step === "bag" ? (
           <>
+            <FreeShippingBar toFree={toFree} />
             <ul className="space-y-3">
               <AnimatePresence initial={false}>
                 {lines.map((line) => (
@@ -85,7 +90,7 @@ export function CartView() {
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
                           <p className="text-xs text-neutral-400">
-                            {COLOR_LABELS[line.color]} tee · {skuFor(line.shirt.sku, line.color)}
+                            {COLOR_LABELS[line.color]} · {line.size}
                           </p>
                           <div className="mt-1.5">
                             <ColorSelector variant="pills" value={line.color} original={line.shirt.baseColor} onChange={(color) => changeCartItem(line, { color })} />
@@ -124,7 +129,7 @@ export function CartView() {
                 ))}
               </AnimatePresence>
             </ul>
-            <Summary subtotal={subtotal} shipping={shipping} total={total} toFree={toFree} />
+            <Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} />
             <button
               type="button"
               onClick={() => {
@@ -135,11 +140,15 @@ export function CartView() {
             >
               <Lock className="h-4 w-4" /> Checkout · {formatPrice(total)}
             </button>
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
+              <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
+            </p>
+            <OneMore cart={cart} />
           </>
         ) : (
           <DetailsForm
             total={total}
-            summary={<Summary subtotal={subtotal} shipping={shipping} total={total} toFree={toFree} compact itemCount={count} />}
+            summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
             onSubmit={(customer) => {
               const order = placeOrder(customer);
               if (order) {
@@ -167,18 +176,67 @@ function Steps({ step }: { step: Step }) {
   );
 }
 
+/** Thin black-and-white progress towards free shipping. */
+function FreeShippingBar({ toFree }: { toFree: number }) {
+  const done = toFree <= 0;
+  const pct = Math.round(((FREE_SHIPPING_THRESHOLD - toFree) / FREE_SHIPPING_THRESHOLD) * 100);
+  return (
+    <div className="mb-4">
+      <p className="mb-1.5 text-xs text-neutral-300">{done ? "Free shipping" : `${formatPrice(toFree)} to free shipping`}</p>
+      <div className="h-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Towards free shipping">
+        <motion.div className="h-full rounded-full bg-white" initial={false} animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 200, damping: 30 }} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * "One more from your taste": three prints not in the bag — the best
+ * matches once the taste test is done, otherwise from Saved. Nothing to
+ * suggest → nothing shown.
+ */
+function OneMore({ cart }: { cart: CartItem[] }) {
+  const showMatch = useShowMatch();
+  const vector = useTasteStore((s) => s.preferenceVector);
+  const likedIds = useTasteStore((s) => s.likedIds);
+  const inBag = familiesOf(cart.map((l) => l.id));
+  const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !inBag.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
+  const picks = showMatch
+    ? pool(rankShirts(vector, SHIRTS).map((r) => r.shirt)).slice(0, 3)
+    : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
+  if (picks.length === 0) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="mb-3 text-sm font-semibold">One more from your taste</h2>
+      <ul className="grid grid-cols-3 gap-3">
+        {picks.map((p) => (
+          <li key={p.id} className="flex min-w-0 flex-col gap-1.5">
+            <Link href={productHref(p.id)} className={`rounded-xl p-1.5 ${STAGE_BG}`} aria-label={`${p.title}, ${formatPrice(p.price)}`}>
+              <TeeMockup shirt={p} shadow={false} className="w-full" />
+            </Link>
+            <p className="truncate text-xs text-neutral-300">{p.title}</p>
+            <QuickAdd shirt={p} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function Summary({
   subtotal,
+  discount,
+  pairCount,
   shipping,
   total,
-  toFree,
   compact,
   itemCount,
 }: {
   subtotal: number;
+  discount: number;
+  pairCount: number;
   shipping: number;
   total: number;
-  toFree: number;
   compact?: boolean;
   itemCount?: number;
 }) {
@@ -188,10 +246,8 @@ function Summary({
         <Row label={`${itemCount} item${itemCount === 1 ? "" : "s"}`} value={`${formatPrice(subtotal)}`} />
       )}
       {!compact && <Row label="Subtotal" value={`${formatPrice(subtotal)}`} />}
+      {discount > 0 && <Row label={`The pair${pairCount > 1 ? ` ×${pairCount}` : ""} · black + white`} value={`−${formatPrice(discount)}`} />}
       <Row label="Shipping" value={shipping === 0 ? "Free" : `${formatPrice(shipping)}`} />
-      {toFree > 0 && !compact && (
-        <p className="text-xs text-neutral-400">Add {formatPrice(toFree)} more for free shipping.</p>
-      )}
       <div className="border-t border-white/10 pt-2">
         <Row label="Total" value={`${formatPrice(total)}`} bold />
       </div>
@@ -315,6 +371,12 @@ function Confirmation({ order }: { order: Order }) {
               <span className="font-mono">{formatPrice(l.lineTotal)}</span>
             </li>
           ))}
+          {!!order.discount && (
+            <li className="flex justify-between text-neutral-300">
+              <span>The pair · black + white</span>
+              <span className="font-mono">−{formatPrice(order.discount)}</span>
+            </li>
+          )}
           <li className="flex justify-between border-t border-white/10 pt-2 font-semibold">
             <span>Total</span>
             <span className="font-mono">{formatPrice(order.total)}</span>

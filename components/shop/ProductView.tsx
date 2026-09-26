@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, Check, ChevronDown, Layers, Ruler, Share2, ShoppingBag, X, ZoomIn } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, Check, ChevronDown, Layers, Leaf, Repeat, Ruler, Share2, ShoppingBag, Truck, X, ZoomIn } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
+import { MiniBag } from "@/components/shop/MiniBag";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { ColorSelector, LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, useShowMatch } from "@/components/ui";
@@ -14,12 +15,13 @@ import { familyMembers, getShirtById, productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { explainMatch, matchScore } from "@/lib/recommendation";
 import { parseShareParams } from "@/lib/share";
-import { useCartStore } from "@/store/cartStore";
+import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
-import { makeHeaderScrollHandler, useUiStore, useHydrated } from "@/store/useUiStore";
+import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
 import { CATEGORY_LABELS, CATEGORY_VIBES, COLOR_LABELS, PRINT_SIZE_CM, SIZE_GUIDE, SIZES, skuFor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { FREE_SHIPPING_THRESHOLD } from "@/lib/cart";
+import { FREE_SHIPPING_THRESHOLD, PAIR_PRICE } from "@/lib/cart";
+import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { track } from "@/lib/analytics";
 
@@ -40,11 +42,16 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   const hydrated = useHydrated();
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
-  const selected = useCartStore((s) => s.selectedSizes[id]);
+  // The size picked for this tee, else the one remembered from any other.
+  const selected = useCartStore((s) => sizeFor(s, id));
   const setSize = useCartStore((s) => s.setSize);
   const pickedColor = useCartStore((s) => s.selectedColors[id]);
   const setColor = useCartStore((s) => s.setColor);
   const addToCart = useCartStore((s) => s.addToCart);
+  const addPair = useCartStore((s) => s.addPair);
+  // After adding: "✓ Added" for a moment, then the button leads to the bag
+  // (until the size or colour changes).
+  const [added, setAdded] = useState<{ key: string; phase: "added" | "view" } | null>(null);
   const productOrigin = useUiStore((s) => s.productOrigin);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const clearOrigin = useCallback(() => setProductOrigin(null), [setProductOrigin]);
@@ -60,7 +67,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   const variationsRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (hydrated && window.location.hash === "#variations")
-      requestAnimationFrame(() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      requestAnimationFrame(() => scrollIntoViewQuietly(variationsRef.current, { behavior: "smooth", block: "start" }));
   }, [hydrated]);
 
   // Opened from a shared link (?c=white&ref=whatsapp): show the tee in the
@@ -114,13 +121,36 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
     .filter((s): s is ShirtProduct => !!s)
     .slice(0, 4);
 
-  // Never a dead, disabled button: without a size it guides you to the sizes.
-  const onBuy = () => {
-    if (size) return addToCart(shirt.id, size, color);
-    sizeRow.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  const addedKey = `${size}-${color}`;
+  const phase = added?.key === addedKey ? added.phase : null;
+  const confirmAdded = (key: string) => {
+    setAdded({ key, phase: "added" });
+    // The header comes back so the bag (and its count) is in view.
+    useUiStore.getState().setHeaderHidden(false);
+    setTimeout(() => setAdded((a) => (a?.key === key ? { key, phase: "view" } : a)), 1200);
+  };
+  const needSize = () => {
+    scrollIntoViewQuietly(sizeRow.current);
     setNudge((n) => n + 1);
   };
-  const buyLabel = size ? `Add to bag · ${formatPrice(shirt.price)}` : "Choose size";
+
+  // Never a dead, disabled button: without a size it guides you to the sizes.
+  const onBuy = () => {
+    if (!size) return needSize();
+    if (phase === "view") return router.push("/cart/");
+    if (addToCart(shirt.id, size, color, 1, { quiet: true })) confirmAdded(addedKey);
+  };
+  const onPair = () => {
+    if (!size) return needSize();
+    if (addPair(shirt.id, size, { quiet: true })) confirmAdded(addedKey);
+  };
+  const buyLabel = !size
+    ? "Choose size"
+    : phase === "added"
+      ? "Added"
+      : phase === "view"
+        ? "View bag · Checkout"
+        : `Add to bag · ${size}`;
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when we came from it.
@@ -251,7 +281,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
             {members.length > 1 ? (
               <button
                 type="button"
-                onClick={() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                onClick={() => scrollIntoViewQuietly(variationsRef.current, { behavior: "smooth", block: "start" })}
                 className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
               >
                 <Layers className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
@@ -281,12 +311,9 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               <SizeSelector key={nudge} value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
               <AnimatePresence initial={false}>
                 {guideOpen && (
-                  <motion.table
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 w-full overflow-hidden text-left font-mono text-xs text-neutral-300"
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                  <p className="mt-3 text-xs text-neutral-300">{STORE_POLICY.fit}</p>
+                  <table className="mt-2 w-full text-left font-mono text-xs text-neutral-300">
                     <thead className="text-neutral-400">
                       <tr>
                         <th className="py-1 font-normal">cm</th>
@@ -303,16 +330,38 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                         {SIZES.map((s) => <td key={s}>{SIZE_GUIDE[s].length}</td>)}
                       </tr>
                     </tbody>
-                  </motion.table>
+                  </table>
+                  </motion.div>
                 )}
               </AnimatePresence>
+              <TrustLine />
             </div>
+
 
             {/* Desktop: inline buy row (mobile uses the sticky bar below) */}
             <div className="mt-4 hidden gap-2 md:flex">
-              <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} />
+              <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} />
               <SaveButton id={shirt.id} size="lg" />
             </div>
+
+            {/* The pair: same print in both tee colours, one tap. */}
+            <button
+              type="button"
+              onClick={onPair}
+              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-white/[0.04] px-4 py-3 text-left ring-1 ring-white/10 hover:bg-white/[0.07]"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex -space-x-2" aria-hidden>
+                  <span className="h-5 w-5 rounded-full bg-black ring-1 ring-white/50" />
+                  <span className="h-5 w-5 rounded-full bg-white ring-1 ring-black/20" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold">Get it in both</span>
+                  <span className="block text-xs text-neutral-400">Black + White{size ? ` · ${size}` : ""}</span>
+                </span>
+              </span>
+              <span className="font-mono text-sm font-semibold">{formatPrice(PAIR_PRICE)}</span>
+            </button>
 
             <div className="mt-5 border-t border-white/10">
               <button
@@ -391,6 +440,8 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
         )}
       </div>
 
+      <MiniBag shirt={shirt} similar={similar} />
+
       {/* Mobile: sticky buy bar, always visible, never disabled */}
       <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
         <div className="min-w-0 flex-1">
@@ -400,25 +451,57 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
           </p>
         </div>
         <SaveButton id={shirt.id} size="lg" />
-        <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} compact />
+        <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>
   );
 }
 
-function BuyButton({ label, onClick, disabled, compact }: { label: string; onClick: () => void; disabled?: boolean; compact?: boolean }) {
+function BuyButton({
+  label,
+  phase,
+  onClick,
+  disabled,
+  compact,
+}: {
+  label: string;
+  phase: "added" | "view" | null;
+  onClick: () => void;
+  disabled?: boolean;
+  compact?: boolean;
+}) {
+  const Icon = phase === "added" ? Check : phase === "view" ? ArrowRight : ShoppingBag;
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
+      aria-live="polite"
+      className={`flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
         compact ? "px-5" : "flex-1"
       }`}
     >
-      <ShoppingBag className="h-4 w-4" />
+      <Icon className="h-4 w-4" strokeWidth={phase === "added" ? 3 : 2} />
       {label}
     </button>
+  );
+}
+
+const TRUST_ICONS: Record<TrustKey, typeof Truck> = { exchange: Repeat, shipping: Truck, fabric: Leaf };
+
+/** Quiet store promises under the sizes (lib/store-policy, pending approval). */
+function TrustLine() {
+  return (
+    <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
+      {STORE_POLICY.trust.map(({ key, text }) => {
+        const Icon = TRUST_ICONS[key];
+        return (
+          <li key={key} className="flex items-center gap-1.5">
+            <Icon className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {text}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

@@ -156,6 +156,57 @@ describe("taste store", () => {
 });
 
 describe("cart store", () => {
+  it("remembers one size for every design once chosen (F1)", async () => {
+    const { useCartStore, sizeFor } = await fresh();
+    expect(sizeFor(useCartStore.getState(), "mono-0002")).toBeUndefined();
+    useCartStore.getState().setSize("mono-0001", "L");
+    expect(sizeFor(useCartStore.getState(), "mono-0002")).toBe("L");
+    useCartStore.getState().addToCart("mono-0003", "S", "black");
+    expect(useCartStore.getState().preferredSize).toBe("S");
+    // a size picked for one design still wins for that design
+    expect(sizeFor(useCartStore.getState(), "mono-0001")).toBe("L");
+    expect(sizeFor(useCartStore.getState(), "mono-0009")).toBe("S");
+  });
+
+  it("addPair adds one black and one white in the size, priced as the pair (F5)", async () => {
+    const { useCartStore, useUiStore } = await fresh();
+    const { cartTotals } = await import("@/lib/cart");
+    expect(useCartStore.getState().addPair("mono-0004", "M")).toBe(true);
+    const { cart } = useCartStore.getState();
+    expect(cart).toEqual([
+      { id: "mono-0004", size: "M", color: "black", qty: 1 },
+      { id: "mono-0004", size: "M", color: "white", qty: 1 },
+    ]);
+    expect(cartTotals(cart).total).toBe(90);
+    expect(useUiStore.getState().added).toMatchObject({ id: "mono-0004", size: "M", pair: true });
+  });
+
+  it("migrates cart v1 → v2, seeding the remembered size", async () => {
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "S", color: "black", qty: 1 }, { id: "mono-0002", size: "XL", color: "white", qty: 1 }], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
+    const { useCartStore } = await fresh();
+    await useCartStore.persist.rehydrate();
+    expect(useCartStore.getState().preferredSize).toBe("XL");
+    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(2);
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
+    const again = await fresh();
+    await again.useCartStore.persist.rehydrate();
+    expect(again.useCartStore.getState().preferredSize).toBe("M");
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [] }, version: 1 }));
+    const empty = await fresh();
+    await empty.useCartStore.persist.rehydrate();
+    expect(empty.useCartStore.getState().preferredSize).toBeNull();
+  });
+
+  it("quick adds confirm with a one-line toast; the product page's add stays quiet", async () => {
+    const { useCartStore, useUiStore } = await fresh();
+    useCartStore.getState().addToCart("mono-0001", "M", "black");
+    expect(useUiStore.getState().toast?.message).toBe("Added · M");
+    useUiStore.setState({ toast: null });
+    useCartStore.getState().addToCart("mono-0001", "M", "black", 1, { quiet: true });
+    expect(useUiStore.getState().toast).toBeNull();
+    expect(useUiStore.getState().added).toMatchObject({ id: "mono-0001", size: "M", color: "black" });
+  });
+
   it("addToCart merges identical lines and remembers size + colour", async () => {
     const { useCartStore } = await fresh();
     const st = useCartStore.getState();

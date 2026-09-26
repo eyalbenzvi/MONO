@@ -17,12 +17,39 @@ export function cartLines(items: CartItem[]): CartLine[] {
   });
 }
 
+/**
+ * "The pair": the same print in black and in white for PAIR_PRICE. Priced
+ * as a bundle discount in the bag, so it applies however the two got there
+ * (the one-tap button or two separate adds), in any sizes.
+ */
+export const PAIR_PRICE = 90;
+
+/** Complete pairs in the bag: per design, the smaller of its black and white quantities. */
+export function countPairs(lines: CartLine[]): { id: string; pairs: number; saving: number }[] {
+  const byId = new Map<string, { black: number; white: number; price: number }>();
+  for (const l of lines) {
+    const e = byId.get(l.id) ?? { black: 0, white: 0, price: l.shirt.price };
+    e[l.color] += l.qty;
+    byId.set(l.id, e);
+  }
+  const out: { id: string; pairs: number; saving: number }[] = [];
+  for (const [id, e] of byId) {
+    const pairs = Math.min(e.black, e.white);
+    const saving = Math.max(0, 2 * e.price - PAIR_PRICE) * pairs;
+    if (pairs > 0 && saving > 0) out.push({ id, pairs, saving });
+  }
+  return out;
+}
+
 export function cartTotals(items: CartItem[]) {
   const lines = cartLines(items);
   const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
   const count = lines.reduce((sum, l) => sum + l.qty, 0);
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  return { lines, count, subtotal, shipping, total: subtotal + shipping };
+  const pairs = countPairs(lines);
+  const discount = pairs.reduce((sum, p) => sum + p.saving, 0);
+  const goods = subtotal - discount;
+  const shipping = goods <= 0 || goods >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+  return { lines, count, subtotal, pairs, discount, shipping, total: goods + shipping, toFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - goods) };
 }
 
 type LineKey = Pick<CartItem, "id" | "size" | "color">;
