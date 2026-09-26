@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
-import { STRONG_MATCH } from "@/components/ui";
+import { tierOf } from "@/lib/match";
 import { biggestShift, profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -174,7 +174,9 @@ function LearnChip() {
 
   let text: string | null = null;
   if (show) {
-    if (lastUpdate.action === "like" && last.strategy === "greedy" && last.matchScore >= STRONG_MATCH) text = "Nailed it";
+    // A like on a card the engine rated a top or strong match for you.
+    const tier = lastUpdate.action === "like" && last.strategy === "greedy" ? tierOf(lastUpdate.before, last.matchScore) : null;
+    if (tier === "top" || tier === "strong") text = "Nailed it";
     else {
       const key = biggestShift(lastUpdate.before, lastUpdate.after, lastUpdate.action);
       if (key) text = `${lastUpdate.action === "like" ? "More" : "Less"} ${FEATURE_LABELS[key].toLowerCase()}`;

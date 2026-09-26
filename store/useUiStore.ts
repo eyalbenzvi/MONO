@@ -38,7 +38,8 @@ interface UiState {
   headerHidden: boolean;
   shop: {
     category: ShirtCategory | null;
-    sort: ShopSort;
+    /** Chosen order; null = the default ("For you" after the taste test, else "Popular"). */
+    sort: ShopSort | null;
     teeView: BaseColor | "original";
     limit: number;
   };
@@ -99,7 +100,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setZoom: (zoomId) => set({ zoomId }),
   debug: false,
   headerHidden: false,
-  shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE },
+  shop: { category: null, sort: null, teeView: "original", limit: SHOP_PAGE_SIZE },
   productOrigin: null,
   share: null,
   added: null,

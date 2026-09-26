@@ -238,7 +238,12 @@ export function similarityBreakdown(userVec: UserProfileVector, features: Featur
 /* Shop helpers                                                        */
 /* ------------------------------------------------------------------ */
 
-export type ShopSort = "match" | "price-asc" | "price-desc";
+/**
+ * Shop orders. "match" ranks by your taste; "popular" is the generator's
+ * fixed editorial rank (not usage data); "new" is the latest weekly drop
+ * first. (Every tee is one price, so there's no price sort.)
+ */
+export type ShopSort = "match" | "popular" | "new";
 
 export interface RankedShirt {
   shirt: ShirtProduct;
@@ -254,8 +259,9 @@ export function rankShirts(
   const score = makeScorer(userVec);
   const ranked = shirts.map((shirt) => ({ shirt, ...score(shirt.features) }));
   ranked.sort((a, b) => {
-    if (sort === "price-asc" && a.shirt.price !== b.shirt.price) return a.shirt.price - b.shirt.price;
-    if (sort === "price-desc" && a.shirt.price !== b.shirt.price) return b.shirt.price - a.shirt.price;
+    if (sort === "popular") return a.shirt.rank - b.shirt.rank;
+    if (sort === "new" && a.shirt.dropWeek !== b.shirt.dropWeek) return b.shirt.dropWeek - a.shirt.dropWeek;
+    if (sort === "new") return a.shirt.rank - b.shirt.rank;
     return b.score - a.score || b.raw - a.raw || a.shirt.id.localeCompare(b.shirt.id);
   });
   return ranked.map(({ shirt, score }) => ({ shirt, score }));

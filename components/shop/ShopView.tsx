@@ -3,20 +3,53 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpDown, Sparkles } from "lucide-react";
-import { useShowMatch } from "@/components/ui";
+import { radioKeys, useShowMatch } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { SHIRTS, dedupeByFamily, paceByVariant } from "@/lib/catalog";
+import { SortSheet } from "@/components/shop/SortSheet";
+import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { rankShirts, topTraits, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, COLOR_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "@/types/shirt";
+import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "@/types/shirt";
 import { track } from "@/lib/analytics";
 
-const SORTS: { value: ShopSort; label: string }[] = [
-  { value: "match", label: "For you" },
-  { value: "price-asc", label: "Price: low–high" },
-  { value: "price-desc", label: "Price: high–low" },
+export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
+
+type TeeView = BaseColor | "original";
+const TEE_VIEWS: { value: TeeView; label: string }[] = [
+  { value: "original", label: "Original colours" },
+  { value: "black", label: "Black tees" },
+  { value: "white", label: "White tees" },
 ];
+
+/** Preview every print on one tee colour (each comes in both). */
+function TeeViewToggle({ value, onChange }: { value: TeeView; onChange: (v: TeeView) => void }) {
+  const keys = radioKeys(TEE_VIEWS.map((v) => v.value), value, onChange);
+  return (
+    <div className="flex shrink-0 rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="radiogroup" aria-label="Preview tees in">
+      {TEE_VIEWS.map((v, i) => (
+        <button
+          key={v.value}
+          type="button"
+          role="radio"
+          aria-checked={value === v.value}
+          aria-label={v.label}
+          title={v.label}
+          onClick={() => onChange(v.value)}
+          {...keys(i)}
+          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${value === v.value ? "bg-white/15 ring-1 ring-white" : ""}`}
+        >
+          <span
+            aria-hidden
+            className={`h-4 w-4 rounded-full ring-1 ${
+              v.value === "original" ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-white/40" : v.value === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function ShopView() {
   const hydrated = useHydrated();
@@ -24,10 +57,14 @@ export function ShopView() {
   const { done, total, complete } = useCalibrationProgress();
   // One primitive per selector: the grid re-renders only when these change.
   const category = useUiStore((s) => s.shop.category);
-  const sort = useUiStore((s) => s.shop.sort);
+  const chosenSort = useUiStore((s) => s.shop.sort);
   const teeView = useUiStore((s) => s.shop.teeView);
   const limit = useUiStore((s) => s.shop.limit);
   const showMatch = useShowMatch();
+  // Before the taste test there's no taste to rank by: "Popular" (the
+  // generator's fixed editorial order — not usage data) is the default.
+  const sort: ShopSort = chosenSort ?? (complete ? "match" : "popular");
+  const [sheetOpen, setSheetOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const openFromGrid = useCallback(() => setProductOrigin("/shop/"), [setProductOrigin]);
@@ -46,12 +83,14 @@ export function ShopView() {
   const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort), [rankVector, sort]);
   const bestId = ranked[0]?.shirt.id;
   // One design per family (the best-ranked one) — its siblings are offered as
-  // variations on the product page. With "For you", neighbouring cards also
-  // never share an algorithm (display-only pacing; scores are untouched).
+  // variations on the product page. The top of the grid is diversified
+  // (display only; scores are untouched): no three in a row of one
+  // category or tee colour, no algorithm repeats, and a wildcard every 8th
+  // card when ranking for you.
   const visible = useMemo(() => {
     const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
-    return sort === "match" ? paceByVariant(filtered, 3) : filtered;
-  }, [ranked, category, sort]);
+    return diversify(filtered, { category: !category, color: teeView === "original", wildcardEvery: sort === "match" ? 8 : 0 });
+  }, [ranked, category, sort, teeView]);
   const traits = topTraits(vector, 3);
 
   // Restore scroll position when coming back from a product page.
@@ -83,7 +122,7 @@ export function ShopView() {
     return () => io.disconnect();
   }, [hydrated, visible.length, setShop]);
 
-  const setFilter = (patch: Partial<{ category: ShirtCategory | null; sort: ShopSort; teeView: BaseColor | "original" }>) => {
+  const setFilter = (patch: Partial<{ category: ShirtCategory | null; sort: ShopSort | null; teeView: BaseColor | "original" }>) => {
     shopScroll.top = 0;
     setShop({ ...patch, limit: SHOP_PAGE_SIZE });
     scroller.current?.scrollTo({ top: 0 });
@@ -111,7 +150,7 @@ export function ShopView() {
             ) : (
               <>
                 <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
-                  Take the {total}-tee taste test for real picks <span className="text-neutral-400">· {done}/{total}</span>
+                  {total} swipes → ranked for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
                 </span>
                 <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
                   Start <ArrowRight className="h-3.5 w-3.5" />
@@ -121,53 +160,11 @@ export function ShopView() {
           </div>
         )}
 
-        {/* Sticky controls */}
-        <div className="sticky top-0 z-10 -mx-4 bg-[#050505]/90 px-4 pb-3 pt-2 backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-neutral-400">Show on</span>
-              <div className="flex rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="radiogroup" aria-label="Show tees in">
-                {(["original", "black", "white"] as const).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    role="radio"
-                    aria-checked={teeView === v}
-                    aria-label={v === "original" ? "Original colours" : `${COLOR_LABELS[v]} tees`}
-                    onClick={() => setFilter({ teeView: v })}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${teeView === v ? "bg-white/15 ring-1 ring-white" : ""}`}
-                  >
-                    <span
-                      aria-hidden
-                      className={`h-5 w-5 rounded-full ring-1 ${
-                        v === "original"
-                          ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-white/40"
-                          : v === "black"
-                            ? "bg-black ring-white/40"
-                            : "bg-white ring-black/20"
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <label className="relative ml-auto flex h-10 items-center gap-1.5 rounded-full bg-white/[0.05] px-3 text-xs text-neutral-300 ring-1 ring-white/10">
-              <ArrowUpDown className="h-3.5 w-3.5" />
-              <select
-                value={sort}
-                onChange={(e) => setFilter({ sort: e.target.value as ShopSort })}
-                className="cursor-pointer appearance-none bg-transparent font-semibold text-white"
-                aria-label="Sort"
-              >
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value} className="bg-ink-900">
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="no-scrollbar -mx-4 mt-2 flex gap-1.5 overflow-x-auto px-4">
+        {/* One sticky row: categories scroll sideways; the tee-colour preview
+            stays in view (black / white switch without scrolling); the order
+            lives behind the sort button. */}
+        <div className="sticky top-0 z-10 -mx-4 flex items-center gap-2 bg-[#050505]/90 py-2 pl-4 pr-4 backdrop-blur-md">
+          <div className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4" role="group" aria-label="Category">
             <Chip active={category === null} onClick={() => setFilter({ category: null })}>
               All
             </Chip>
@@ -177,11 +174,21 @@ export function ShopView() {
               </Chip>
             ))}
           </div>
+          <TeeViewToggle value={teeView} onChange={(v) => setFilter({ teeView: v })} />
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={`Sort: ${SORT_LABELS[sort]}`}
+            className={`relative flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium ring-1 ${
+              chosenSort ? "bg-white text-black ring-white" : "bg-white/[0.04] text-neutral-200 ring-white/10 hover:bg-white/10"
+            }`}
+          >
+            <ArrowUpDown className="h-4 w-4" /> <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
+          </button>
         </div>
-
-        <p className="mb-3 text-xs text-neutral-400">
-          {visible.length} design{visible.length === 1 ? "" : "s"} · tap one to see its variations
-        </p>
+        <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />
+        <div className="h-2" />
 
         {hydrated ? (
           visible.length > 0 ? (
@@ -195,6 +202,7 @@ export function ShopView() {
                     variations={variations}
                     color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && shirt.id === bestId}
+                    vector={rankVector}
                     showMatch={showMatch}
                     onOpen={openFromGrid}
                   />

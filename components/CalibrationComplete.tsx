@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import Link from "next/link";
-import { animate, AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, TraitChips } from "@/components/ui";
@@ -63,17 +63,22 @@ export function CalibrationComplete() {
             <TraitChips keys={traits} className="mt-3" stagger />
 
             <div className="mt-4 grid grid-cols-3 gap-2">
-              {picks.map(({ shirt, score }, i) => (
+              {picks.map(({ shirt }, i) => (
                 <Link
                   key={shirt.id}
                   href={productHref(shirt.id)}
                   onClick={close}
-                  aria-label={`${shirt.title}, ${score}% match`}
+                  aria-label={`${shirt.title}, top pick`}
                   className={`relative block rounded-2xl p-2 pt-8 ring-1 ring-white/10 transition active:scale-95 ${STAGE_BG}`}
                 >
-                  <span className="absolute left-1.5 top-1.5 rounded-full bg-white px-2 py-0.5 font-mono text-xs font-bold text-black">
-                    <CountUp to={score} delay={0.55 + i * 0.08} />% Match
-                  </span>
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.55 + i * 0.08 }}
+                    className="absolute left-1.5 top-1.5 rounded-full bg-white px-2 py-0.5 text-xs font-bold text-black"
+                  >
+                    Top pick
+                  </motion.span>
                   <TeeMockup shirt={shirt} shadow={false} className="w-full" />
                 </Link>
               ))}
@@ -97,18 +102,6 @@ export function CalibrationComplete() {
       )}
     </AnimatePresence>
   );
-}
-
-/** Match % counts up from 0 — a small "reveal" beat. */
-function CountUp({ to, delay }: { to: number; delay: number }) {
-  const reduce = useReducedMotion();
-  const [value, setValue] = useState(reduce ? to : 0);
-  useEffect(() => {
-    if (reduce) return setValue(to);
-    const controls = animate(0, to, { duration: 0.6, delay, ease: "easeOut", onUpdate: (v) => setValue(Math.round(v)) });
-    return () => controls.stop();
-  }, [to, delay, reduce]);
-  return <>{value}</>;
 }
 
 /** Sparkles icon with a one-time monochrome burst of 12 short rays. */

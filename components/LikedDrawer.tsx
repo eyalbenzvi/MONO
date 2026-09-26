@@ -9,6 +9,7 @@ import { ColorSelector, SizeSelector, STAGE_BG, useShowMatch } from "@/component
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById, productHref } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
+import { TIER_LABEL, tierOf } from "@/lib/match";
 import { sizeFor, useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -199,7 +200,7 @@ function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavi
             <p className="truncate text-sm font-semibold">{shirt.title}</p>
             <p className="truncate text-xs text-neutral-400">
               {formatPrice(shirt.price)}
-              {showMatch ? ` · ${matchScore(vector, shirt.features)}% match` : ""}
+              {showMatch && tierOf(vector, matchScore(vector, shirt.features)) ? ` · ${TIER_LABEL[tierOf(vector, matchScore(vector, shirt.features))!]}` : ""}
             </p>
           </Link>
           <button

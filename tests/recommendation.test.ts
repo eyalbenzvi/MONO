@@ -161,11 +161,12 @@ describe("shop ranking", () => {
     for (let i = 1; i < ranked.length; i++) expect(ranked[i - 1].score).toBeGreaterThanOrEqual(ranked[i].score);
   });
 
-  it("sorts by price when asked", () => {
-    const asc = rankShirts(userVec, SHIRTS, "price-asc").map((r) => r.shirt.price);
-    const desc = rankShirts(userVec, SHIRTS, "price-desc").map((r) => r.shirt.price);
-    expect(asc).toEqual([...asc].sort((a, b) => a - b));
-    expect(desc).toEqual([...desc].sort((a, b) => b - a));
+  it("popular follows the generator's fixed rank; new puts the latest drop first (I12)", () => {
+    const popular = rankShirts(userVec, SHIRTS, "popular").map((r) => r.shirt.rank);
+    expect(popular).toEqual([...popular].sort((a, b) => a - b));
+    expect(popular[0]).toBe(0);
+    const weeks = rankShirts(userVec, SHIRTS, "new").map((r) => r.shirt.dropWeek);
+    expect(weeks).toEqual([...weeks].sort((a, b) => b - a));
   });
 
   it("similarShirts excludes the shirt itself and returns the closest styles", () => {
