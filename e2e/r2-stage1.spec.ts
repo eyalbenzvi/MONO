@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hydrated, seed } from "./helpers";
+import { hydrated, seed, openSaved } from "./helpers";
 
 const B = "mono-0501";
 const shopBack = (page: import("@playwright/test").Page) => page.getByRole("button", { name: "Shop", exact: true });
@@ -26,7 +26,7 @@ test.describe("R17: ← Shop after moving between products", () => {
   test("grid → A → Saved → B → ← Shop returns to the grid, not A", async ({ page }) => {
     await seed(page, { likedIds: [B] });
     const a = await openFromGrid(page);
-    await page.getByRole("button", { name: /^Saved \(/ }).tap();
+    await openSaved(page);
     await page.getByRole("dialog", { name: "Saved tees" }).locator(`a[href*="${B}"]`).last().tap();
     await page.waitForURL(new RegExp(`${B}/$`));
     await shopBack(page).tap();
@@ -105,7 +105,7 @@ test.describe("R25–R27, R29: bag, checkout and Saved", () => {
     await seed(page, { likedIds: [B] });
     await page.goto("shop/");
     await hydrated(page);
-    await page.getByRole("button", { name: /^Saved \(/ }).tap();
+    await openSaved(page);
     const row = page.locator(`[data-saved-row="${B}"]`);
     const pic = row.locator("a").first();
     await expect(pic).toHaveAttribute("tabindex", "-1");

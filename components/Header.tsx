@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount } from "@/store/cartStore";
-import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
 const TABS = [
@@ -15,11 +14,10 @@ const TABS = [
   { href: "/shop/", label: "Shop", match: (p: string) => p.startsWith("/shop") },
 ];
 
-export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
+export function Header() {
   const pathname = usePathname() ?? "/";
   const activeTab = TABS.findIndex((t) => t.match(pathname));
   const hydrated = useUiStore((s) => s.hydrated);
-  const savedCount = useTasteStore((s) => s.likedIds.length);
   const cartCount = useCartCount();
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
@@ -112,11 +110,19 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 justify-self-end max-[399px]:gap-2.5">
-          <IconButton label={`Saved (${savedCount})`} count={hydrated ? savedCount : 0} onClick={onOpenSaved} savedTarget>
-            <Icon name="heart" className="h-5 w-5" />
-          </IconButton>
-          <IconButton label={`Bag (${cartCount})`} count={hydrated ? cartCount : 0} href="/cart/" active={pathname.startsWith("/cart")}>
-            <Icon name="shopping-bag" className="h-5 w-5" />
+          {/* Minimal: the bag shows only once it holds something; Saved,
+              taste and the rest live in the personal area (the heart flies here). */}
+          <AnimatePresence initial={false}>
+            {hydrated && (cartCount > 0 || pathname.startsWith("/cart")) && (
+              <motion.span key="bag" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }}>
+                <IconButton label={`Bag (${cartCount})`} count={cartCount} href="/cart/" active={pathname.startsWith("/cart")}>
+                  <Icon name="shopping-bag" className="h-5 w-5" />
+                </IconButton>
+              </motion.span>
+            )}
+          </AnimatePresence>
+          <IconButton label="You: taste, saved, orders" count={0} href="/me/" active={pathname.startsWith("/me")} savedTarget>
+            <Icon name="user" className="h-5 w-5" />
           </IconButton>
         </div>
       </div>
@@ -143,8 +149,9 @@ function IconButton({
   active?: boolean;
   children: React.ReactNode;
 }) {
-  const className = `relative flex h-11 w-11 items-center justify-center rounded-full ring-1 transition active:scale-90 max-[399px]:h-10 max-[399px]:w-10 ${
-    active ? "bg-white text-black ring-white" : "bg-white/5 ring-white/10 hover:bg-white/10"
+  // Quiet icons: no filled circles, just the glyph (white pill when its page is open).
+  const className = `relative flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${
+    active ? "bg-white text-black" : "text-neutral-200 hover:bg-white/10"
   }`;
   const badge = (
     <AnimatePresence>
@@ -167,7 +174,7 @@ function IconButton({
   );
   const target = savedTarget ? { "data-saved-target": "" } : {};
   return href ? (
-    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
+    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className} {...target}>
       {children}
       {badge}
     </Link>

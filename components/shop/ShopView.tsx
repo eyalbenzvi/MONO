@@ -13,8 +13,6 @@ import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
-import { PAIR_PRICE } from "@/lib/cart";
-import { formatPrice } from "@/lib/format";
 
 export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
 
@@ -142,10 +140,7 @@ export function ShopView() {
           scroller's padding, which would push the filter bar down. */}
       <div aria-hidden className="h-[var(--header-h)]" />
       <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        {/* One quiet line: the one price (T4). The taste test lives in Discover, not here. */}
-        <div className="flex h-9 items-center">
-          <PriceLine />
-        </div>
+        <div className="h-3" />
 
         {/* One sticky row: categories scroll sideways; the tee-colour preview
             stays in view (black / white switch without scrolling); the order
@@ -257,11 +252,3 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-/** One price for everything: said once, as store policy, instead of on every card. */
-export function PriceLine({ className = "" }: { className?: string }) {
-  return (
-    <span className={`ml-auto shrink-0 text-xs text-neutral-400 ${className}`}>
-      Every tee {formatPrice(SHIRTS[0]?.price ?? 0)} · pair {formatPrice(PAIR_PRICE)}
-    </span>
-  );
-}

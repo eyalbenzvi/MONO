@@ -36,6 +36,7 @@ export const ICONS = {
   sparkles: "Sparkles",
   "trash-2": "Trash2",
   truck: "Truck",
+  user: "User",
   "undo-2": "Undo2",
   x: "X",
   "zoom-in": "ZoomIn",

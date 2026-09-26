@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated, seed } from "./helpers";
+import { hydrated, seed, openSaved } from "./helpers";
 
 const overlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -260,7 +260,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     });
     await page.goto("shop/");
     await hydrated(page);
-    await page.getByRole("button", { name: /^Saved \(/ }).tap();
+    await openSaved(page);
     const d = page.getByRole("dialog", { name: "Saved tees" });
     await expect(d.getByRole("button", { name: /^Add your top 3 · M$/ })).toBeVisible();
     await expect(d.getByText(/\$\d/)).toHaveCount(0);
