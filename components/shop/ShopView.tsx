@@ -9,10 +9,11 @@ import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { archetypeOf } from "@/lib/taste";
-import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
+import { rankShirts, topTraits, type ShopSort, daySeed } from "@/lib/recommendation";
+import { WhyPanel, WhyRow, WhyToggle, YourTasteLink } from "@/components/Why";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
@@ -31,6 +32,7 @@ export function ShopView() {
   // generator's fixed editorial order — not usage data) is the default.
   const sort: ShopSort = chosenSort ?? (complete ? "match" : "popular");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const openFromGrid = useCallback(
@@ -165,9 +167,20 @@ export function ShopView() {
       <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
         {/* One quiet line, only when the grid is ranked for this visitor: whose taste it follows. */}
         {hydrated && sort === "match" && complete ? (
-          <Link href="/me/" className="flex h-9 items-center gap-1.5 text-xs text-neutral-400 hover:text-white">
-            <Icon name="sparkles" className="h-3.5 w-3.5" /> For you · {archetypeOf(rankVector).name}
-          </Link>
+          // The line is its own "why?": how this order was made (the same snapshot it ranks with).
+          <div className="pb-2 pt-2">
+            <WhyToggle text={`For you · ${archetypeOf(rankVector).name}`} open={whyOpen} onToggle={setWhyOpen} controls="why-shop" className="text-xs" />
+            <WhyPanel id="why-shop" open={whyOpen}>
+              <dl>
+                <WhyRow label="Ranked by">
+                  {topTraits(rankVector).length ? topTraits(rankVector).map((k) => FEATURE_LABELS[k]).join(" · ") : "No strong leanings yet. Keep swiping."}
+                </WhyRow>
+              </dl>
+              <p className="border-b border-white/5 py-2.5 text-xs text-neutral-400">Mixed a little each day, with a wildcard every 8th.</p>
+              {shown.size > 0 && <p className="border-b border-white/5 py-2.5 text-xs text-neutral-400">Ones you&apos;ve already swiped sit a bit lower.</p>}
+              <YourTasteLink />
+            </WhyPanel>
+          </div>
         ) : (
           <div className="h-3" />
         )}

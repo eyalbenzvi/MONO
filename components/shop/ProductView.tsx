@@ -12,11 +12,11 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { LABEL, MatchBadge, SaveButton, SizeSelector, Spec, STAGE_BG, TraitChips, radioKeys, useShowMatch } from "@/components/ui";
+import { SaveButton, SizeSelector, Spec, STAGE_BG, radioKeys, useShowMatch } from "@/components/ui";
 import { familyMembers, getShirtById } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
-import { explainMatch } from "@/lib/recommendation";
-import { matchTier } from "@/lib/match";
+import { whyMatch } from "@/lib/why";
+import { useWhyId, WhyMatchRows, WhyPanel, WhyToggle } from "@/components/Why";
 import { isNew } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
@@ -157,6 +157,9 @@ export function ProductView({
 
   // Details start closed (everywhere).
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
+  const whyId = useWhyId();
+  const likedIds = useTasteStore((s) => s.likedIds);
   // "Both": the black + white pair, picked in the same picker as the colour.
   const [pickBoth, setBoth] = useState(false);
 
@@ -175,8 +178,7 @@ export function ProductView({
   const both = pickBoth && shirt.colors.length > 1;
   const black = color === "black";
   const size = hydrated ? selected : undefined;
-  const tier = showMatch ? matchTier(vector, shirt.features) : null;
-  const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
+  const why = showMatch ? whyMatch(vector, shirt, likedIds) : null;
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
   // the variations above) and at most one per algorithm. Precomputed by the
@@ -329,12 +331,27 @@ export function ProductView({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-                {/* The learning, felt: said only when it's true (a top or strong match for this taste). */}
-                {tier && tier !== "good" && <p className="mt-0.5 text-sm text-neutral-400">{tier === "top" ? "Top pick for you" : "A strong match for you"}</p>}
+                {/* The learning, felt: said only when it's true (a top or strong match, with traits in
+                    common), and the line itself opens why. */}
+                {why && (
+                  <WhyToggle
+                    text={why.tier === "top" ? "Top pick for you" : "A strong match for you"}
+                    open={whyOpen}
+                    controls={whyId}
+                    onToggle={(o) => {
+                      setWhyOpen(o);
+                      if (o) setDetailsOpen(false);
+                    }}
+                    className="mt-0.5"
+                  />
+                )}
               </div>
               <button
                 type="button"
-                onClick={() => setDetailsOpen((o) => !o)}
+                onClick={() => {
+                  setDetailsOpen((o) => !o);
+                  setWhyOpen(false);
+                }}
                 aria-expanded={detailsOpen}
                 aria-label="About this design"
                 title="About this design"
@@ -343,6 +360,11 @@ export function ProductView({
                 <Icon name="info" className="h-5 w-5" />
               </button>
             </div>
+            {why && (
+              <WhyPanel id={whyId} open={whyOpen}>
+                <WhyMatchRows why={why} />
+              </WhyPanel>
+            )}
             <AnimatePresence initial={false}>
               {detailsOpen && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">

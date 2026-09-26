@@ -6,10 +6,11 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
-import { LABEL, MatchBadge, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
+import { STAGE_BG, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
-import { explainMatch } from "@/lib/recommendation";
 import { becauseOf } from "@/lib/because";
+import { whyMatch } from "@/lib/why";
+import { WhyMatchRows, WhyRow, YourTasteLink } from "@/components/Why";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
@@ -79,7 +80,12 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
               {/* The learning, felt: the closest thing you liked (once the taste is known). */}
-              {because && <p className="mt-0.5 truncate text-xs text-neutral-400">Because you liked {because.title}</p>}
+              {/* Dotted like every "why?" line: a tap turns the card, where the reasons are. */}
+              {because && (
+                <p className="mt-0.5 truncate text-xs text-neutral-400 underline decoration-neutral-600 decoration-dotted underline-offset-4">
+                  Because you liked {because.title}
+                </p>
+              )}
             </div>
           </div>
         </motion.div>
@@ -92,7 +98,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           aria-hidden={!showDetails}
           {...inert(!showDetails)}
         >
-          {isTop && <CardDetails shirt={shirt} score={score} />}
+          {isTop && <CardDetails shirt={shirt} score={score} strategy={strategy} />}
         </motion.div>
       </motion.div>
     </div>
@@ -107,11 +113,14 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
  */
 const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
 
-function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
+function CardDetails({ shirt, score, strategy }: { shirt: ShirtProduct; score: number; strategy: RecommendationStrategy }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
   const vector = useTasteStore((s) => s.preferenceVector);
+  const likedIds = useTasteStore((s) => s.likedIds);
   const showMatch = useShowMatch();
-  const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
+  // Why this card: by how it was dealt (the deck's strategy), from real data only.
+  const why = useMemo(() => (showMatch && strategy === "greedy" ? whyMatch(vector, shirt, likedIds) : null), [showMatch, strategy, vector, shirt, likedIds]);
+  const because = useMemo(() => (showMatch && !why ? becauseOf(shirt, likedIds) : null), [showMatch, why, shirt, likedIds]);
   const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
   const openShare = useUiStore((s) => s.openShare);
@@ -159,6 +168,22 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
         <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
+        {why ? (
+          <section aria-label="Why it's for you" className="mt-4 border-y border-white/15">
+            <WhyMatchRows why={why} />
+          </section>
+        ) : because ? (
+          <section aria-label="Why it's for you" className="mt-4 border-y border-white/15">
+            <dl>
+              <WhyRow label="Like">{because.title}</WhyRow>
+            </dl>
+            <YourTasteLink />
+          </section>
+        ) : strategy === "explore" && showMatch ? (
+          <p className="mt-4 border-y border-white/15 py-3 text-xs text-neutral-500">A wildcard, to test something new.</p>
+        ) : strategy === "calibration" ? (
+          <p className="mt-4 border-y border-white/15 py-3 text-xs text-neutral-500">Taste test: each one different.</p>
+        ) : null}
 
       </div>
 

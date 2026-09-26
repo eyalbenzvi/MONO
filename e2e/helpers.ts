@@ -9,13 +9,15 @@ export interface SeedTaste {
   likedIds?: string[];
   calibrated?: boolean;
   onboardingSeen?: boolean;
+  /** A formed taste (feature → 0–1); unset = the app's neutral start. */
+  vector?: Record<string, number>;
 }
 
 /**
  * Start a page with stored state: a finished taste test (by default), saved
  * tees and bag lines. Written before the app loads, as a returning visitor's.
  */
-export async function seed(page: Page, { likedIds = [], calibrated = true, onboardingSeen = true }: SeedTaste = {}, cart: { id: string; size: string; color: string; qty: number }[] = []) {
+export async function seed(page: Page, { likedIds = [], calibrated = true, onboardingSeen = true, vector }: SeedTaste = {}, cart: { id: string; size: string; color: string; qty: number }[] = []) {
   const taste = {
     state: {
       likedIds: calibrated ? [...new Set([CALIBRATION_IDS[0], CALIBRATION_IDS[3], ...likedIds])] : likedIds,
@@ -23,6 +25,7 @@ export async function seed(page: Page, { likedIds = [], calibrated = true, onboa
       seen: calibrated ? [...CALIBRATION_IDS] : [],
       calibrationAcknowledged: calibrated,
       onboardingSeen,
+      ...(vector ? { preferenceVector: vector } : {}),
     },
     version: 3,
   };
@@ -55,3 +58,8 @@ export async function openSaved(page: import("@playwright/test").Page) {
   await page.waitForURL(/\/me\/$/);
   await page.getByRole("button", { name: "Edit saved" }).click();
 }
+
+/** A taste that leans somewhere (pictures of nature, classic, figurative), for personal lines. */
+export const LEANING: Record<string, number> = Object.fromEntries(
+  index.keys.map((k: string) => [k, { nature: 0.82, pictorial: 0.78, classic: 0.74, figurative: 0.7 }[k] ?? 0.42]),
+);
