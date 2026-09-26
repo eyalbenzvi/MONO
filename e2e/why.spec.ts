@@ -15,25 +15,23 @@ test.describe("V4: a personal line opens why", () => {
     await line.click();
     const panel = page.getByRole("region", { name: "Why it's for you" });
     await expect(panel).toBeVisible();
-    await expect(panel.getByText("Shared")).toBeVisible();
-    await expect(panel.getByText(/^Top \d+% of [\d,]+$/)).toBeVisible();
-    await expect(panel.getByRole("link", { name: "Your taste →" })).toHaveAttribute("href", /\/me\/$/);
+    // One quiet line: the traits in common and the rank, and an arrow to the whole taste.
+    await expect(panel.getByText(/ · Top \d+%$/)).toBeVisible();
+    expect((await panel.innerText()).split(/\s+/).length).toBeLessThan(14);
+    await expect(panel.getByRole("link", { name: "Your taste" })).toHaveAttribute("href", /\/me\/$/);
     await page.keyboard.press("Escape");
     await expect(panel).toHaveCount(0);
     await expect(line).toBeFocused();
   });
 
-  test("shop: 'For you' says how the order was made", async ({ page }) => {
+  test("shop: 'For you' opens one line — what the order follows", async ({ page }) => {
     await seed(page, { vector: LEANING });
     await page.goto("shop/");
     await hydrated(page);
     await page.getByRole("button", { name: /^For you · / }).tap();
     const panel = page.getByRole("region", { name: "Why it's for you" });
-    await expect(panel.getByText("Ranked by")).toBeVisible();
     await expect(panel.getByText(/Nature/)).toBeVisible();
-    await expect(panel.getByText(/wildcard every 8th/)).toBeVisible();
-    // The taste test's cards were swiped: they sit lower, and the panel says so.
-    await expect(panel.getByText(/already swiped sit a bit lower/)).toBeVisible();
+    expect((await panel.innerText()).split(/\s+/).length).toBeLessThan(10);
   });
 
   test("a taste with no leanings gets no personal line (a percentile alone is no reason)", async ({ page }) => {

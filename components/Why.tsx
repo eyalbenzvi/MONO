@@ -3,11 +3,8 @@
 import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { productHref } from "@/lib/catalog";
 import type { WhyMatch } from "@/lib/why";
 import { FEATURE_LABELS } from "@/types/shirt";
-
-const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500";
 
 /** A personalised line that is its own "why?": tap it (dotted underline) to see the reasons. */
 export function WhyToggle({
@@ -66,55 +63,31 @@ export function WhyPanel({ id, open, children }: { id: string; open: boolean; ch
           transition={{ duration: reduce ? 0.15 : 0.25 }}
           className="overflow-hidden"
         >
-          <div className="mt-3 border-y border-white/15">{children}</div>
+          <div>{children}</div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
 
-export function WhyRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-white/5 py-2.5 last:border-b-0">
-      <dt className={`shrink-0 ${LABEL}`}>{label}</dt>
-      <dd className="text-right text-sm text-neutral-200">{children}</dd>
-    </div>
-  );
-}
-
-export function YourTasteLink() {
-  return (
-    <Link href="/me/" className="block py-3 text-xs text-neutral-400 hover:text-white">
-      Your taste →
-    </Link>
-  );
-}
-
-/** The reasons behind a match (lib/why): shared traits, rank, the saved design it's like. */
+/** The reasons behind a match (lib/why), in one quiet line: the traits in common and the rank. */
 export function WhyMatchRows({ why }: { why: WhyMatch }) {
   return (
-    <>
-      <dl>
-        <WhyRow label="Shared">{why.shared.map((k) => FEATURE_LABELS[k]).join(" · ")}</WhyRow>
-        <WhyRow label="Rank">
-          <span className="font-mono tabular-nums">
-            Top {why.rankPct}% of {why.total.toLocaleString("en-US")}
-          </span>
-        </WhyRow>
-        {why.saved ? (
-          <WhyRow label="Saved">You saved this</WhyRow>
-        ) : (
-          why.like && (
-            <WhyRow label="Like">
-              <Link href={productHref(why.like.id)} className="underline decoration-neutral-600 underline-offset-4 hover:text-white">
-                {why.like.title}
-              </Link>
-            </WhyRow>
-          )
-        )}
-      </dl>
-      <YourTasteLink />
-    </>
+    <WhyLine>
+      {why.shared.map((k) => FEATURE_LABELS[k]).join(" · ")} · <span className="tabular-nums">Top {why.rankPct}%</span>
+    </WhyLine>
+  );
+}
+
+/** One line of reasons, and a small arrow to the whole taste. */
+export function WhyLine({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-center justify-between gap-3 pt-2 text-xs text-neutral-400">
+      <span>{children}</span>
+      <Link href="/me/" aria-label="Your taste" className="-m-2 shrink-0 p-2 text-neutral-500 hover:text-white">
+        →
+      </Link>
+    </p>
   );
 }
 

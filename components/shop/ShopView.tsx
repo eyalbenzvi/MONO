@@ -10,7 +10,7 @@ import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { archetypeOf } from "@/lib/taste";
 import { rankShirts, topTraits, type ShopSort, daySeed } from "@/lib/recommendation";
-import { WhyPanel, WhyRow, WhyToggle, YourTasteLink } from "@/components/Why";
+import { WhyLine, WhyPanel, WhyToggle } from "@/components/Why";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
@@ -171,14 +171,7 @@ export function ShopView() {
           <div className="pb-2 pt-2">
             <WhyToggle text={`For you · ${archetypeOf(rankVector).name}`} open={whyOpen} onToggle={setWhyOpen} controls="why-shop" className="text-xs" />
             <WhyPanel id="why-shop" open={whyOpen}>
-              <dl>
-                <WhyRow label="Ranked by">
-                  {topTraits(rankVector).length ? topTraits(rankVector).map((k) => FEATURE_LABELS[k]).join(" · ") : "No strong leanings yet. Keep swiping."}
-                </WhyRow>
-              </dl>
-              <p className="border-b border-white/5 py-2.5 text-xs text-neutral-400">Mixed a little each day, with a wildcard every 8th.</p>
-              {shown.size > 0 && <p className="border-b border-white/5 py-2.5 text-xs text-neutral-400">Ones you&apos;ve already swiped sit a bit lower.</p>}
-              <YourTasteLink />
+              <WhyLine>{topTraits(rankVector).length ? topTraits(rankVector).map((k) => FEATURE_LABELS[k]).join(" · ") : "No leanings yet"}</WhyLine>
             </WhyPanel>
           </div>
         ) : (

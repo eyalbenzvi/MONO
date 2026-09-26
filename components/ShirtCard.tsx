@@ -10,7 +10,7 @@ import { STAGE_BG, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { becauseOf } from "@/lib/because";
 import { whyMatch } from "@/lib/why";
-import { WhyMatchRows, WhyRow, YourTasteLink } from "@/components/Why";
+import { WhyLine, WhyMatchRows } from "@/components/Why";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
@@ -168,21 +168,17 @@ function CardDetails({ shirt, score, strategy }: { shirt: ShirtProduct; score: n
         {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
         <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
+        {/* Why this card, in one line. */}
         {why ? (
-          <section aria-label="Why it's for you" className="mt-4 border-y border-white/15">
+          <section aria-label="Why it's for you" className="mt-4">
             <WhyMatchRows why={why} />
           </section>
         ) : because ? (
-          <section aria-label="Why it's for you" className="mt-4 border-y border-white/15">
-            <dl>
-              <WhyRow label="Like">{because.title}</WhyRow>
-            </dl>
-            <YourTasteLink />
+          <section aria-label="Why it's for you" className="mt-4">
+            <WhyLine>Like {because.title}</WhyLine>
           </section>
         ) : strategy === "explore" && showMatch ? (
-          <p className="mt-4 border-y border-white/15 py-3 text-xs text-neutral-500">A wildcard, to test something new.</p>
-        ) : strategy === "calibration" ? (
-          <p className="mt-4 border-y border-white/15 py-3 text-xs text-neutral-500">Taste test: each one different.</p>
+          <p className="mt-4 text-xs text-neutral-500">A wildcard</p>
         ) : null}
 
       </div>
