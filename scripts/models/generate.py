@@ -12,21 +12,27 @@ VAE and the LCM LoRA (6 steps). These are generated images, not photos of
 real people; the site says so (About).
 """
 import sys, time, json, os, torch
-from diffusers import StableDiffusionPipeline, AutoencoderKL, LCMScheduler
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL, LCMScheduler
+from PIL import Image
 torch.set_num_threads(4)
 vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float32)
-pipe = StableDiffusionPipeline.from_pretrained("SG161222/Realistic_Vision_V5.1_noVAE", vae=vae, torch_dtype=torch.float32, safety_checker=None)
+# The pose is locked (ControlNet OpenPose): every photo stands the same natural,
+# straight-on way (poses/*.png, skeletons taken from approved photos), so
+# every generation comes out usable; the prompt only varies the man and the street.
+controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-openpose", torch_dtype=torch.float32)
+pipe = StableDiffusionControlNetPipeline.from_pretrained("SG161222/Realistic_Vision_V5.1_noVAE", vae=vae, controlnet=controlnet, torch_dtype=torch.float32, safety_checker=None)
+POSES = [Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses", f)).convert("RGB") for f in sorted(os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses")))]
 pipe.load_lora_weights("latent-consistency/lcm-lora-sdv1-5"); pipe.fuse_lora()
 pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
 jobs = json.load(open(sys.argv[1])); out = sys.argv[2]; os.makedirs(out, exist_ok=True)
-NEG = "angle, perspective, three-quarter view, side view, head turned, turned body, leaning, arms hanging at sides, hands at sides, face, profile, head turned, dark grey shirt, charcoal shirt, wrinkled shirt, creases, folds, baggy shirt, loose shirt, twisted torso, turning around, face, looking at camera, front view, stiff pose, arms pressed to sides, standing against a wall, mugshot, symmetrical pose, grey shirt, logo, print, graphic, text, letters, pattern, stripes, drawing on shirt, deformed, extra arms, extra fingers, cartoon, 3d render, painting, blurry shirt, watermark, crowd, cars, signs, graffiti"
+NEG = "white pants, white shorts, light trousers, arms pressed to body, long sleeves, sweater, jacket, hoodie, angle, perspective, three-quarter view, side view, head turned, turned body, leaning, arms hanging at sides, hands at sides, face, profile, head turned, dark grey shirt, charcoal shirt, wrinkled shirt, creases, folds, baggy shirt, loose shirt, twisted torso, turning around, face, looking at camera, front view, stiff pose, arms pressed to sides, standing against a wall, mugshot, symmetrical pose, grey shirt, logo, print, graphic, text, letters, pattern, stripes, drawing on shirt, deformed, extra arms, extra fingers, cartoon, 3d render, painting, blurry shirt, watermark, crowd, cars, signs, graffiti"
 for j in jobs:
     f = os.path.join(out, j["id"] + ".png")
     if os.path.exists(f): continue
     t = time.time()
     # The tee must come out in the colour asked for: check the middle of the back, retry with other seeds.
     for attempt in range(8):
-        img = pipe(j["prompt"], negative_prompt=NEG + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=2.0, width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
+        img = pipe(j["prompt"], image=POSES[j.get("pose", 0) % len(POSES)], controlnet_conditioning_scale=0.9, negative_prompt=NEG + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=2.0, width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
         g = img.convert("L").crop((250, 290, 390, 470)); px = list(g.getdata()); m = sum(px) / len(px)
         ok = (m > 150) if j.get("color") == "white" else (m < 22) if j.get("color") == "black" else True
         print(j["id"], attempt, round(m), "ok" if ok else "retry", round(time.time() - t, 1), flush=True)
