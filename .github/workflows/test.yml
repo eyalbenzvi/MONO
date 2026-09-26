@@ -17,6 +17,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Anything that loads next.config.mjs on Actions (lint, build) must name
+      # a public origin, or the config stops the run.
+      NEXT_PUBLIC_SITE_ORIGIN: https://example.invalid
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -32,10 +37,6 @@ jobs:
 
       - name: Build static site
         run: npm run build
-        env:
-          # A build on Actions must name its public origin (see next.config.mjs).
-          NEXT_PUBLIC_SITE_ORIGIN: https://example.invalid
-          NEXT_TELEMETRY_DISABLED: 1
 
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
