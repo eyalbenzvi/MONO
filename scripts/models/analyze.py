@@ -10,7 +10,7 @@ tee colour and print box (fractions of the photo: x, y, width, height).
 """
 import json, os, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 from rembg import new_session, remove
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
@@ -18,6 +18,7 @@ SRC, JOBS = sys.argv[1], json.load(open(sys.argv[2]))
 OUT = os.path.join(ROOT, "public", "models"); DATA = os.path.join(ROOT, "data", "models")
 os.makedirs(OUT, exist_ok=True); os.makedirs(DATA, exist_ok=True)
 session = new_session("isnet-general-use")
+cloth_session = new_session("u2net_cloth_seg")
 
 OUT_W, OUT_H = 512, 704
 SHOULDERS, COLLAR = 0.56, 0.24
@@ -82,9 +83,37 @@ for j in JOBS:
     pad = int(max(cw, ch))
     padded = np.pad(arr, pad, mode="edge")
     crop = Image.fromarray(padded).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS)
-    # Black and white, like the prints.
-    crop.save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
-    out.append({"id": j["id"], "color": j["color"], "box": PRINT_BOX})
+    # Its black-tee twin: the tee (the white cloth on the person, the part
+    # joined to the back) darkened, keeping its folds and shading.
+    # The tee: the clothing model's upper-body mask (clean on a white tee,
+    # shadows and folds included, neck and arms left out), holes closed.
+    upper = np.asarray(cloth_session.predict(img)[0].convert("L")) > 128
+    upper &= person
+    filled = np.asarray(Image.fromarray((upper * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))) > 128
+    tee = filled & person
+    # Only between the collar and the hem (the model can stray into hair or jeans).
+    rows_w = tee.sum(1)
+    hem = max((r for r in range(h) if rows_w[r] >= shoulders * 0.6), default=h - 1)
+    tee[: max(0, neck - 2)] = False
+    tee[hem + 1 :] = False
+    if tee.sum() < shoulders * shoulders * 0.5:
+        print("skip", j["id"], "(tee not found)"); continue
+    soft = np.asarray(Image.fromarray((tee * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))) / 255.0
+    g = np.asarray(img.convert("L")).astype(np.float32) / 255
+    def framed(arr, name):
+        a8 = np.pad((np.clip(arr, 0, 1) * 255).astype(np.uint8), pad, mode="edge")
+        Image.fromarray(a8).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS).save(os.path.join(OUT, name + ".webp"), quality=82, method=6)
+    # Full white: the tee's greys lifted towards white, its folds kept faint.
+    lo = float(np.percentile(g[tee], 5))
+    white = 1 - 0.3 * np.clip((1 - g) / max(1e-3, 1 - lo), 0, 1) ** 1.4
+    framed(g * (1 - soft) + white * soft, j["id"] + "-white")
+    out.append({"id": j["id"] + "-white", "color": "white", "box": PRINT_BOX})
+    # Full black twin: the tee darkened, its folds keeping a faint sheen.
+    if True:
+        dark = 0.02 + 0.14 * np.clip((g - lo) / max(1e-3, 1 - lo), 0, 1) ** 2
+        twin = g * (1 - soft) + dark * soft
+        framed(twin, j["id"] + "-black")
+        out.append({"id": j["id"] + "-black", "color": "black", "box": PRINT_BOX})
     print(j["id"], "framed", round(f, 2), flush=True)
 json.dump(out, open(os.path.join(DATA, "models.json"), "w"), indent=1)
 print(len(out), "photos")
