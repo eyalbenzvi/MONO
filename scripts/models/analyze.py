@@ -65,11 +65,14 @@ for j in JOBS:
     left, right = cols.min(), cols.max(); cx = (left + right) / 2; back = right - left
     pw = back * 0.4; ph = pw * 4 / 3
     py = top + back * 0.14
+    # A "white" tee that came out grey (or a black one that's washed out) isn't used.
+    tone = float(lum[tee].mean())
+    if (j["color"] == "white" and tone < 0.62) or (j["color"] == "black" and tone > 0.25):
+        print("reject", j["id"], "tee tone", round(tone, 2)); continue
     box = [round(float((cx - pw / 2) / w), 4), round(float(py / h), 4), round(float(pw / w), 4), round(float(ph / h), 4)]
     Image.fromarray((tee * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2)).save(os.path.join(OUT, j["id"] + "-mask.png"), optimize=True)
     img.save(os.path.join(OUT, j["id"] + ".webp"), quality=82, method=6)
-    cat, color, _ = j["id"].rsplit("-", 2)
-    out.append({"id": j["id"], "category": cat, "color": color, "box": box})
+    out.append({"id": j["id"], "color": j["color"], "box": box})
     print(j["id"], box, flush=True)
 json.dump(out, open(os.path.join(DATA, "models.json"), "w"), indent=1)
 print(len(out), "photos")
