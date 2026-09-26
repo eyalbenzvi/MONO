@@ -85,8 +85,8 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(mean("typography", "halftone_raster")).toBeLessThan(0.3);
   });
 
-  it("every print exists on disk as a valid 3:4 SVG", () => {
-    for (const s of SHIRTS) {
+  it("every drawn print exists on disk as a valid 3:4 SVG (photographs: tests/photos)", () => {
+    for (const s of SHIRTS.filter((x) => !isPhoto(x))) {
       const file = path.join(PUBLIC, s.backPrintUrl);
       expect(existsSync(file), s.backPrintUrl).toBe(true);
       expect(statSync(file).size).toBeLessThan(80 * 1024);
@@ -98,8 +98,8 @@ describe("generated catalog (data/shirts.json)", () => {
 
   // The reverse colourway is rendered with a CSS invert, which is only exact
   // if every print uses nothing but pure black and pure white.
-  it("prints are strictly two-colour, so the reverse colourway is an exact inversion", () => {
-    for (const s of SHIRTS) {
+  it("drawn prints are strictly two-colour, so the reverse colourway is an exact inversion", () => {
+    for (const s of SHIRTS.filter((x) => !isPhoto(x))) {
       const svg = readFileSync(path.join(PUBLIC, s.backPrintUrl), "utf8");
       const colors = new Set(svg.match(/#[0-9A-Fa-f]{6}\b/g));
       for (const c of colors) expect(["#000000", "#FFFFFF"]).toContain(c.toUpperCase());

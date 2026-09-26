@@ -67,7 +67,8 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
       title,
       price: index.price[i],
       baseColor,
-      backPrintUrl: `/prints/print_${n}.svg`,
+      // Photographs are greyscale WebP (the whole picture), drawings SVG.
+      backPrintUrl: `/prints/print_${n}.${isPhoto({ category: cat }) ? "webp" : "svg"}`,
       category: cat,
       variant: index.variants[index.variant[i]],
       family: `fam-${pad4(index.family[i])}`,
@@ -122,13 +123,13 @@ export const shardOf = (shirt: Pick<ShirtProduct, "n">) => Math.floor((shirt.n -
 export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${url}`;
 
 /**
- * The print file for a tee colour. Drawn prints have one file, flipped
- * with a CSS invert for the other colour (they're strictly two-tone, so
- * that's exact). A photograph inverted is a negative, so photo designs
- * carry a second, positive print: print_<n>_<colour>.svg.
+ * The print file for a tee colour. Every design has one: a drawn print is
+ * strictly two-tone and flips exactly with a CSS invert for the other
+ * colour (needsInvert); a photograph is never inverted (that would be a
+ * negative) — its greyscale print shows the lights on a black tee and the
+ * darks on a white one, the same positive picture.
  */
-export const printUrl = (shirt: Pick<ShirtProduct, "n" | "baseColor" | "backPrintUrl" | "category">, color: BaseColor = shirt.baseColor) =>
-  color !== shirt.baseColor && isPhoto(shirt) ? `/prints/print_${shirt.n}_${color}.svg` : shirt.backPrintUrl;
+export const printUrl = (shirt: Pick<ShirtProduct, "backPrintUrl">, _color?: BaseColor) => shirt.backPrintUrl;
 
 /** Whether showing `color` means inverting the print (drawn prints only). */
 export const needsInvert = (shirt: Pick<ShirtProduct, "baseColor" | "category">, color: BaseColor) => color !== shirt.baseColor && !isPhoto(shirt);

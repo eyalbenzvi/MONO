@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { Resvg } from "@resvg/resvg-js";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, renderHook } from "@testing-library/react";
 import full from "@/data/shirts.json";
@@ -11,51 +11,31 @@ import { CALIBRATION_IDS, SHIRTS, getShirtById, needsInvert, printUrl } from "@/
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { productTitle } from "@/lib/seo";
 import { archetypeOf, ARCHETYPE_NAMES } from "@/lib/taste";
-import { FEATURE_KEYS, PHOTO_CATEGORIES, createInitialVector, isPhoto, otherColor, type BaseColor, type CatalogEntry } from "@/types/shirt";
+import { FEATURE_KEYS, PHOTO_CATEGORIES, createInitialVector, isPhoto, otherColor, type CatalogEntry } from "@/types/shirt";
 import { PER_CATEGORY } from "../scripts/gen/constants";
 import { EXCLUDE } from "../scripts/photos/curation";
-import { REGION, loadPhoto } from "../scripts/gen/photo";
+import { PRINT_H, PRINT_W, photoOrder, type PhotoSource } from "../scripts/photos/source";
 
 const FULL = full as unknown as CatalogEntry[];
 const PHOTO_DESIGNS = FULL.filter((s) => s.photo);
 const PUBLIC = path.resolve(__dirname, "..", "public");
-const file = (s: CatalogEntry, c: BaseColor) => path.join(PUBLIC, printUrl(getShirtById(s.id)!, c));
 
 afterEach(cleanup);
-
-/** Render width and cell size (px) for comparing prints: a cell spans 20 print units, several screen dots. */
-const RW = 150;
-const CELL = 10;
-/** How the print looks, 0 (dark) – 1 (light), averaged per cell (the pixel is what you see, ink or tee). */
-function appearance(svg: string): number[] {
-  const img = new Resvg(svg, { fitTo: { mode: "width", value: RW } }).render();
-  const px = img.pixels; // a copy per access: read once
-  const out: number[] = [];
-  for (let y = 0; y + CELL <= img.height; y += CELL)
-    for (let x = 0; x + CELL <= img.width; x += CELL) {
-      let s = 0;
-      for (let dy = 0; dy < CELL; dy++) for (let dx = 0; dx < CELL; dx++) s += px[((y + dy) * img.width + x + dx) * 4];
-      out.push(s / CELL / CELL / 255);
-    }
-  return out;
-}
-const corr = (a: number[], b: number[]) => {
-  const n = a.length;
-  const ma = a.reduce((x, y) => x + y) / n;
-  const mb = b.reduce((x, y) => x + y) / n;
-  let sab = 0, sa = 0, sb = 0;
-  for (let i = 0; i < n; i++) (sab += (a[i] - ma) * (b[i] - mb)), (sa += (a[i] - ma) ** 2), (sb += (b[i] - mb) ** 2);
-  return sab / Math.sqrt(sa * sb);
-};
 
 describe("photographs: where they come from", () => {
   it("600 CC0 photographs from Smithsonian Open Access, 200 per photo category, each file present", () => {
     expect(photos).toHaveLength(PER_CATEGORY * PHOTO_CATEGORIES.length);
     for (const c of PHOTO_CATEGORIES) expect(photos.filter((p) => p.category === c)).toHaveLength(PER_CATEGORY);
     for (const p of photos) {
-      expect(existsSync(path.resolve(__dirname, "..", "data", "photos", "img", `${p.key}.png`)), p.key).toBe(true);
       expect(EXCLUDE.has(p.key), p.key).toBe(false);
       expect(p.record).toMatch(/^(nzp|nasm)_/);
+    }
+    // Each design's print is its photograph, in the fetch tool's order.
+    for (const { n, photo } of photoOrder(photos as PhotoSource[], PER_CATEGORY)) {
+      const s = FULL[n - 1];
+      expect(s.photo!.image, s.id).toBe(photo.key);
+      expect(s.backPrintUrl).toBe(`/prints/print_${n}.webp`);
+      expect(existsSync(path.join(PUBLIC, s.backPrintUrl)), s.backPrintUrl).toBe(true);
     }
   });
 
@@ -88,106 +68,69 @@ describe("photographs: where they come from", () => {
   });
 });
 
-describe("photographs: the other colour is a positive, not a negative (invert)", () => {
-  it("each photo design has a print per tee colour, strictly two-tone and small", () => {
-    for (const s of PHOTO_DESIGNS) {
-      for (const c of ["black", "white"] as const) {
-        const f = file(s, c);
-        expect(existsSync(f), f).toBe(true);
-        expect(statSync(f).size).toBeLessThan(80 * 1024);
-        const svg = readFileSync(f, "utf8");
-        expect(svg).toContain(`fill="${c === "black" ? "#000000" : "#FFFFFF"}"`);
-        for (const hex of new Set(svg.match(/#[0-9A-Fa-f]{6}\b/g))) expect(["#000000", "#FFFFFF"]).toContain(hex.toUpperCase());
+describe("photographs: whole, sharp, greyscale — and never inverted", () => {
+  it("each print is the whole photograph: 750 × 1000, greyscale, transparent around the picture, not screened into dots", async () => {
+    // Every 20th (30 prints): decoding all 600 is slow.
+    for (const s of PHOTO_DESIGNS.filter((_, i) => i % 20 === 0)) {
+      const file = path.join(PUBLIC, s.backPrintUrl);
+      const img = sharp(file);
+      const meta = await img.metadata();
+      expect([meta.width, meta.height, meta.hasAlpha], s.id).toEqual([PRINT_W, PRINT_H, true]);
+      const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
+      let colour = 0, mid = 0, solid = 0;
+      for (let i = 0; i < info.width * info.height; i++) {
+        const [r, g, b, a] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]];
+        if (a < 250) continue;
+        solid++;
+        if (Math.max(r, g, b) - Math.min(r, g, b) > 8) colour++;
+        if (r > 40 && r < 215) mid++;
       }
+      expect(colour / solid, s.id).toBeLessThan(0.01);
+      // Continuous tone: plenty of mid-greys (a halftone or line screen is only black and white).
+      expect(mid / solid, s.id).toBeGreaterThan(0.3);
     }
   });
 
-  it("both colourways look like the same picture; a CSS invert would look like its negative", () => {
-    // Every 10th photograph (60), rendered as seen on its tee and compared
-    // inside the picture (where the photograph's own mask is solid — not
-    // the bare tee around a cut-out object, which is just the tee colour).
-    const seen: number[] = [];
-    let compared = 0;
-    for (const s of PHOTO_DESIGNS.filter((_, i) => i % 10 === 0)) {
-      const other = otherColor(s.baseColor);
-      const a = appearance(readFileSync(file(s, s.baseColor), "utf8"));
-      const b = appearance(readFileSync(file(s, other), "utf8"));
-      const ph = loadPhoto(path.resolve(__dirname, "..", "data", "photos", "img", `${s.photo!.image}.png`));
-      // Cell k's centre in print units (300-unit print rendered RW px wide).
-      const cols = Math.floor(RW / CELL);
-      const unit = 300 / RW;
-      const inside = a.map((_, k) => {
-        const x = ((k % cols) * CELL + CELL / 2) * unit;
-        const y = (Math.floor(k / cols) * CELL + CELL / 2) * unit;
-        // The whole cell (and a little around it) must be picture, not tee.
-        const half = (CELL * unit) / 2 + 2;
-        for (let yy = y - half; yy <= y + half; yy += 1)
-          for (let xx = x - half; xx <= x + half; xx += 1) {
-            const u = Math.floor(((xx - REGION.x) / REGION.w) * ph.w);
-            const v = Math.floor(((yy - REGION.y) / REGION.h) * ph.h);
-            if (u < 0 || v < 0 || u >= ph.w || v >= ph.h || ph.alpha[v * ph.w + u] < 0.95) return false;
-          }
-        return true;
-      });
-      const pa = a.filter((_, k) => inside[k]);
-      const pb = b.filter((_, k) => inside[k]);
-      // A thin or flat cut-out leaves too little solid, varied picture to compare.
-      const sd = (l: number[]) => Math.sqrt(l.reduce((x, v) => x + (v - l.reduce((p, q) => p + q) / l.length) ** 2, 0) / l.length);
-      if (pa.length < 20 || sd(pa) < 0.08) continue;
-      compared++;
-      // Screened at different angles and gammas the match is loose, but always positive;
-      // the inverted print always goes the other way.
-      expect(corr(pa, pb), s.id).toBeGreaterThan(0.2);
-      expect(corr(pa.map((v) => 1 - v), pb), s.id).toBeLessThan(-0.2);
-      seen.push(corr(pa, pb));
+  it("the picture is never cut: a photograph keeps its whole frame, and nothing touches the print's edge", () => {
+    for (const p of photos as PhotoSource[]) {
+      const [x0, y0, x1, y1] = p.box;
+      expect(Math.min(x0, y0, 1 - x1, 1 - y1), p.key).toBeGreaterThan(0.02);
+      // The long side fills the print area (fitted, not shrunk).
+      expect(Math.max(x1 - x0, y1 - y0), p.key).toBeGreaterThan(0.7); // measured on solid alpha: a cut-out's soft edges and thin wires sit inside its 90% box
     }
-    expect(compared).toBeGreaterThan(30);
-    // And on the whole, clearly the same picture.
-    expect(seen.reduce((x, y) => x + y) / seen.length).toBeGreaterThan(0.6);
   });
 
-  it("printUrl / needsInvert: drawn prints flip with CSS, photographs switch file", () => {
+  it("printUrl / needsInvert: drawn prints flip with CSS; a photograph is the same positive file on both tees", () => {
     const drawn = SHIRTS[0];
     const photo = SHIRTS.find(isPhoto)!;
     const other = otherColor(photo.baseColor);
     expect(printUrl(drawn, otherColor(drawn.baseColor))).toBe(drawn.backPrintUrl);
     expect(needsInvert(drawn, otherColor(drawn.baseColor))).toBe(true);
-    expect(printUrl(photo, other)).toBe(`/prints/print_${photo.n}_${other}.svg`);
-    expect(printUrl(photo, photo.baseColor)).toBe(photo.backPrintUrl);
+    expect(printUrl(photo, other)).toBe(photo.backPrintUrl);
     expect(needsInvert(photo, other)).toBe(false);
   });
 
-  it("PrintImage shows a photograph's other colour from its own file, without the invert class", () => {
+  it("PrintImage never inverts a photograph; it sits on the tee colour", () => {
     const photo = SHIRTS.find(isPhoto)!;
     const other = otherColor(photo.baseColor);
     const { container, rerender } = render(<PrintImage shirt={photo} color={other} />);
     const img = container.querySelector("img")!;
-    expect(img.getAttribute("src")).toMatch(new RegExp(`/prints/print_${photo.n}_${other}\\.svg$`));
+    expect(img.getAttribute("src")).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
     expect(img.className).not.toMatch(/\binvert\b/);
+    expect(img.className).toMatch(other === "black" ? /\bbg-black\b/ : /\bbg-white\b/);
     rerender(<PrintImage shirt={SHIRTS[0]} color={otherColor(SHIRTS[0].baseColor)} />);
     expect(container.querySelector("img")!.className).toMatch(/\binvert\b/);
   });
 
-  it("the share image fetches the photograph's own file and doesn't swap its inks", async () => {
+  it("the share image draws the photograph as it is (no ink swap)", async () => {
     const photo = SHIRTS.find(isPhoto)!;
-    const other = otherColor(photo.baseColor);
-    const svg = readFileSync(path.join(PUBLIC, printUrl(photo, other)), "utf8");
-    const fetched: string[] = [];
-    let blobText = "";
-    vi.stubGlobal("fetch", vi.fn(async (u: string) => (fetched.push(u), new Response(svg))));
-    const RealBlob = Blob;
-    vi.stubGlobal("Blob", class extends RealBlob {
-      constructor(parts: BlobPart[], opts?: BlobPropertyBag) {
-        super(parts, opts);
-        blobText = String(parts[0]);
-      }
-    });
-    Object.assign(URL, { createObjectURL: () => "blob:x", revokeObjectURL: () => {} });
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
     Object.defineProperty(HTMLImageElement.prototype, "decode", { configurable: true, value: () => Promise.resolve() });
     const { loadPrintImage } = await import("@/lib/shareImage");
-    await loadPrintImage(photo, other);
-    expect(fetched[0]).toMatch(new RegExp(`print_${photo.n}_${other}\\.svg$`));
-    expect(blobText.replace('width="900" height="1200"', 'width="300" height="400"')).toBe(svg);
+    const img = await loadPrintImage(photo, otherColor(photo.baseColor));
+    expect(img.src).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
+    expect(fetchSpy).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 });
@@ -204,7 +147,7 @@ describe("photographs: tagging and measuring taste", () => {
       const l = SHIRTS.filter((s) => s.category === c);
       return l.reduce((a, s) => a + s.features[k], 0) / l.length;
     };
-    expect(mean("wildlife", "nature")).toBeGreaterThan(0.8);
+    expect(mean("wildlife", "nature")).toBeGreaterThan(0.7); // measured on solid alpha: a cut-out's soft edges and thin wires sit inside its 90% box
     expect(mean("machines", "dark_industrial")).toBeGreaterThan(mean("wildlife", "dark_industrial"));
   });
 

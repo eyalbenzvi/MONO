@@ -7,7 +7,7 @@ const PHOTOS = (full as unknown as Entry[]).filter((s) => s.photo);
 const photo = PHOTOS[0];
 const other = photo.baseColor === "black" ? "white" : "black";
 
-test("a photo tee: credit and source link; the other colour loads its own positive print, never an inverted one", async ({ page }) => {
+test("a photo tee: credit and source link; the whole greyscale photograph on both tees, never inverted", async ({ page }) => {
   await page.goto(`shop/${photo.id}/`);
   await hydrated(page);
   const credit = page.getByText(`Photo: ${photo.photo!.credit}`);
@@ -17,9 +17,9 @@ test("a photo tee: credit and source link; the other colour loads its own positi
   await expect(page.getByRole("link", { name: "Source record" })).toHaveAttribute("href", photo.photo!.url);
 
   const print = page.locator(`main img[alt="${photo.title} print"]`).first();
-  await expect(print).toHaveAttribute("src", new RegExp(`/prints/print_${photo.n}\\.svg$`));
+  await expect(print).toHaveAttribute("src", new RegExp(`/prints/print_${photo.n}\\.webp$`));
   await page.getByRole("radio", { name: new RegExp(`^${other === "black" ? "Black" : "White"} tee`) }).first().tap();
-  await expect(print).toHaveAttribute("src", new RegExp(`/prints/print_${photo.n}_${other}\\.svg$`));
+  await expect(print).toHaveAttribute("src", new RegExp(`/prints/print_${photo.n}\\.webp$`));
   await expect(print).not.toHaveClass(/\binvert\b/);
   expect(await print.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 });

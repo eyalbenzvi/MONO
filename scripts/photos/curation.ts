@@ -663,6 +663,7 @@ export const SUBJECT_FIXES: [RegExp, string][] = [
   [/^Hitachi Hatsukaze 11 Ha 11 Model 11$/, "Hitachi Hatsukaze Ha 11 Engine"],
   [/^Clerget 9 A Diesel Radial 9 Engine$/, "Clerget 9-A Diesel Radial Engine"],
   [/^Mercury #15B Capsule$/, "Mercury Capsule 15B"],
+  [/ #(\d+)/g, " $1"],
   // A scale model of an aircraft whose name already says "Model".
   [/^(.*\bModel\b.*) Model$/, "$1 Miniature"],
 ];

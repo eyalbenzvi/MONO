@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
-import type { BaseColor, ShirtProduct } from "@/types/shirt";
+import { isPhoto, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /**
  * The flat print artwork: a local monochrome 3:4 SVG from /public/prints.
@@ -10,8 +10,9 @@ import type { BaseColor, ShirtProduct } from "@/types/shirt";
  * Prints are strictly two-colour (#000/#FFF), drawn for the design's original
  * tee. For a drawn print the reverse colourway is the exact inversion —
  * white ink on black becomes black ink on white — so `color` just flips it
- * with a CSS invert. Photographs have their own print per colour (an
- * inverted photograph is a negative): see printUrl.
+ * with a CSS invert. A photograph is greyscale with a transparent surround
+ * and is never inverted (that would be a negative): it sits on the tee
+ * colour, which shows through its surround.
  */
 export function PrintImage({
   shirt,
@@ -39,7 +40,7 @@ export function PrintImage({
       {...{ fetchpriority: priority ? "high" : "auto" }}
       decoding="async"
       onError={() => setFailed(true)}
-      className={`h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${className}`}
+      className={`h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${isPhoto(shirt) ? (color === "black" ? "bg-black" : "bg-white") : ""} ${className}`}
     />
   );
 }
