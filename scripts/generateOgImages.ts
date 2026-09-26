@@ -20,7 +20,14 @@ import { WEAK_QUALITY } from "./gen/quality";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
 import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
 
-const SHIRTS = shirtsJson as unknown as CatalogEntry[];
+const ALL = shirtsJson as unknown as CatalogEntry[];
+/**
+ * Only pages that are pre-rendered get a link-preview image: the top
+ * NEXT_PUBLIC_PRERENDER_LIMIT of the editorial rank (the same rule as
+ * lib/catalog's isPrerendered), or every design when unset.
+ */
+const LIMIT = Number(process.env.NEXT_PUBLIC_PRERENDER_LIMIT) || Infinity;
+const SHIRTS = ALL.filter((s) => s.rank < LIMIT);
 const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "public", "og");
 const W = 1200;
@@ -97,7 +104,7 @@ function productSvg(shirt: CatalogEntry) {
 function defaultSvg() {
   // Three strong prints from different categories, by editorial rank (no weak ones).
   const pick: CatalogEntry[] = [];
-  for (const s of [...SHIRTS].sort((a, b) => a.rank - b.rank)) {
+  for (const s of [...ALL].sort((a, b) => a.rank - b.rank)) {
     if (s.quality >= WEAK_QUALITY && s.quality >= 70 && !pick.some((p) => p.category === s.category)) pick.push(s);
     if (pick.length === 3) break;
   }
@@ -108,7 +115,7 @@ function defaultSvg() {
   ${logo(70, 110)}
   <text x="70" y="262" font-size="50" font-weight="700" ${FONT} fill="#fff">Swipe your taste</text>
   <text x="70" y="322" font-size="50" font-weight="700" ${FONT} fill="#fff">in tees.</text>
-  <text x="70" y="386" font-size="24" ${FONT} fill="#fff" fill-opacity="0.72">${SHIRTS.length.toLocaleString("en-US")} monochrome prints</text>
+  <text x="70" y="386" font-size="24" ${FONT} fill="#fff" fill-opacity="0.72">${ALL.length.toLocaleString("en-US")} monochrome prints</text>
   <text x="70" y="420" font-size="24" ${FONT} fill="#fff" fill-opacity="0.72">black or white, back print</text>
   <text x="70" y="560" font-size="22" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);
 }

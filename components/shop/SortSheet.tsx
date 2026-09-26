@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X } from "lucide-react";
 import { radioKeys } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import type { ShopSort } from "@/lib/recommendation";
@@ -56,7 +56,7 @@ export function SortSheet({
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold">Sort</h2>
               <button type="button" onClick={onClose} data-autofocus aria-label="Close" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
-                <X className="h-5 w-5" />
+                <Icon name="x" className="h-5 w-5" />
               </button>
             </div>
 
@@ -76,7 +76,7 @@ export function SortSheet({
                     <span className="block text-sm font-semibold">{s.label}</span>
                     <span className="block text-xs text-neutral-400">{s.hint}</span>
                   </span>
-                  {sort === s.value && <Check className="h-4 w-4" />}
+                  {sort === s.value && <Icon name="check" className="h-4 w-4" />}
                 </button>
               ))}
             </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Heart, Share2, ShoppingBag, Undo2, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { QuickAdd } from "@/components/QuickAdd";
@@ -105,7 +105,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                     title="Share my list"
                     className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/5 hover:text-white"
                   >
-                    <Share2 className="h-[18px] w-[18px]" />
+                    <Icon name="share-2" className="h-[18px] w-[18px]" />
                   </button>
                 )}
               </div>
@@ -115,7 +115,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 aria-label="Close"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
               >
-                <X className="h-5 w-5" />
+                <Icon name="x" className="h-5 w-5" />
               </button>
             </div>
 
@@ -131,7 +131,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                     <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-white/[0.06] py-2 pl-4 pr-2 text-sm ring-1 ring-white/10">
                       <span className="min-w-0 truncate text-neutral-300">Removed {removed.shirt.title}</span>
                       <button type="button" onClick={undo} className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-bold text-black">
-                        <Undo2 className="h-3.5 w-3.5" /> Undo
+                        <Icon name="undo-2" className="h-3.5 w-3.5" /> Undo
                       </button>
                     </div>
                   </motion.div>
@@ -142,7 +142,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
               </p>
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 pb-20 text-center text-neutral-400">
-                  <Heart className="h-10 w-10" />
+                  <Icon name="heart" className="h-10 w-10" />
                   <p className="text-sm">Swipe right in Discover, or tap ♥ in the shop, to save a tee here.</p>
                 </div>
               ) : (
@@ -167,7 +167,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   onClick={onClose}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98]"
                 >
-                  <ShoppingBag className="h-4 w-4" /> View bag ({cartCount})
+                  <Icon name="shopping-bag" className="h-4 w-4" /> View bag ({cartCount})
                 </Link>
               ) : (
                 <Link
@@ -175,7 +175,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   onClick={onClose}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white/10 text-sm font-bold text-white transition active:scale-[0.98]"
                 >
-                  Keep discovering <ArrowRight className="h-4 w-4" />
+                  Keep discovering <Icon name="arrow-right" className="h-4 w-4" />
                 </Link>
               )}
             </div>
@@ -224,7 +224,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
         aria-expanded={preferred ? undefined : pick === "top"}
         className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
       >
-        <ShoppingBag className="h-4 w-4" /> {label}
+        <Icon name="shopping-bag" className="h-4 w-4" /> {label}
         {preferred ? ` · ${preferred}` : ""} · {formatPrice(total)}
       </button>
       {items.length > top.length && (
@@ -299,7 +299,7 @@ function SavedRow({
         aria-label={`Remove ${shirt.title}`}
         className="flex h-10 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white"
       >
-        <X className="h-4 w-4" />
+        <Icon name="x" className="h-4 w-4" />
       </button>
     </motion.li>
   );

@@ -1,9 +1,9 @@
 "use client";
 
 import { memo } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Compass, Share2, X, ZoomIn } from "lucide-react";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { LABEL, MatchBadge, ShareButton, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
@@ -76,7 +76,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     className="flex items-center gap-1.5 rounded-full border border-dashed border-white/50 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white"
                     title="Outside your usual — tells us more"
                   >
-                    <Compass className="h-3.5 w-3.5" /> Wildcard
+                    <Icon name="compass" className="h-3.5 w-3.5" /> Wildcard
                   </span>
                 )}
                 {/* Share waits for the taste test: until then the card is for rating. */}
@@ -87,7 +87,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     aria-label={`Share ${shirt.title}`}
                     className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
                   >
-                    <Share2 className="h-[17px] w-[17px]" />
+                    <Icon name="share-2" className="h-[17px] w-[17px]" />
                   </button>
                 )}
                 {isTop && onZoom && (
@@ -98,7 +98,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     aria-label="Zoom in on the print"
                     className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
                   >
-                    <ZoomIn className="h-[18px] w-[18px]" />
+                    <Icon name="zoom-in" className="h-[18px] w-[18px]" />
                   </button>
                 )}
               </div>
@@ -163,7 +163,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
             aria-label="Back to the tee"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
           >
-            <X className="h-5 w-5" />
+            <Icon name="x" className="h-5 w-5" />
           </button>
         </div>
 
@@ -207,7 +207,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
             href={productHref(shirt.id, "#variations")}
             className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
           >
-            {familySize(shirt) - 1} close variation{familySize(shirt) === 2 ? "" : "s"} in the shop <ArrowRight className="h-3.5 w-3.5" />
+            {familySize(shirt) - 1} close variation{familySize(shirt) === 2 ? "" : "s"} in the shop <Icon name="arrow-right" className="h-3.5 w-3.5" />
           </Link>
         )}
 
@@ -219,7 +219,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           href={productHref(shirt.id)}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
-          Full details · {formatPrice(shirt.price)} <ArrowRight className="h-4 w-4" />
+          Full details · {formatPrice(shirt.price)} <Icon name="arrow-right" className="h-4 w-4" />
         </Link>
       </div>
     </div>

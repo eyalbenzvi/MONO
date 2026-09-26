@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  FAMILY_LEADERS,
   SHIRTS,
   dedupeByFamily,
   familiesOf,
   familyMembers,
   getShirtById,
-  variationsOf,
 } from "@/lib/catalog";
 import { CALIBRATION_IDS, DECK_SIZE, VARIANT_SPACING, buildDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { createInitialVector } from "@/types/shirt";
+
+/** The other designs in a shirt's family (was lib/catalog's variationsOf; only tests need it). */
+const variationsOf = (shirt: (typeof SHIRTS)[number]) => familyMembers(shirt).filter((s) => s.id !== shirt.id);
 
 /** Deterministic PRNG so simulated runs are reproducible. */
 function rng(seed = 7) {
@@ -56,7 +57,7 @@ describe("design families", () => {
     expect(SHIRTS.filter((s) => variationsOf(s).length > 0).length).toBeGreaterThan(400);
   });
 
-  it("variationsOf excludes the shirt itself", () => {
+  it("a family's variations exclude the shirt itself", () => {
     const withSiblings = SHIRTS.find((s) => familyMembers(s).length > 3)!;
     const v = variationsOf(withSiblings);
     expect(v).toHaveLength(familyMembers(withSiblings).length - 1);

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, ShoppingBag } from "lucide-react";
 import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
@@ -113,10 +113,10 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
 
         <div className="flex shrink-0 items-center gap-2 justify-self-end max-[399px]:gap-2.5">
           <IconButton label={`Saved (${savedCount})`} count={hydrated ? savedCount : 0} onClick={onOpenSaved} savedTarget>
-            <Heart className="h-5 w-5" />
+            <Icon name="heart" className="h-5 w-5" />
           </IconButton>
           <IconButton label={`Bag (${cartCount})`} count={hydrated ? cartCount : 0} href="/cart/" active={pathname.startsWith("/cart")}>
-            <ShoppingBag className="h-5 w-5" />
+            <Icon name="shopping-bag" className="h-5 w-5" />
           </IconButton>
         </div>
       </div>

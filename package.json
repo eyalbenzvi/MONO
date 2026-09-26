@@ -15,7 +15,9 @@
     "measure:fonts": "node scripts/tools/measureFonts.cjs",
     "smoke": "node scripts/tools/smoke.cjs",
     "e2e": "playwright test",
-    "postbuild": "node scripts/tools/postbuild.cjs"
+    "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
+    "sprites": "tsx scripts/tools/sprites.tsx",
+    "prebuild": "tsx scripts/tools/publishIndex.ts"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",

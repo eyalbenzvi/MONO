@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
+import type { IconName } from "@/lib/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, ArrowRight, Check, ChevronDown, Layers, Leaf, Repeat, Ruler, Share2, ShoppingBag, Truck, X, ZoomIn } from "lucide-react";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
@@ -230,7 +231,7 @@ export function ProductView({
     <div onScroll={onScroll} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
         <button type="button" onClick={goBack} className="mb-2 inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-          <ArrowLeft className="h-4 w-4" /> Shop
+          <Icon name="arrow-left" className="h-4 w-4" /> Shop
         </button>
 
         <AnimatePresence>
@@ -242,7 +243,7 @@ export function ProductView({
               className="mb-3 flex items-center gap-3 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10"
               role="status"
             >
-              <Share2 className="h-5 w-5 shrink-0 text-neutral-300" />
+              <Icon name="share-2" className="h-5 w-5 shrink-0 text-neutral-300" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">A friend shared this tee with you</p>
                 <p className="text-xs text-neutral-400">{calibrated ? "Save it and see what else fits your taste." : `Save it, then swipe ${CALIBRATION_TOTAL} tees starting from it.`}</p>
@@ -262,7 +263,7 @@ export function ProductView({
                 Save &amp; find more like it
               </button>
               <button type="button" onClick={() => setSharedVia(null)} aria-label="Dismiss" className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white">
-                <X className="h-4 w-4" />
+                <Icon name="x" className="h-4 w-4" />
               </button>
             </motion.div>
           )}
@@ -302,7 +303,7 @@ export function ProductView({
                 aria-label={`Share ${shirt.title}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70 min-[400px]:hidden"
               >
-                <Share2 className="h-[18px] w-[18px]" />
+                <Icon name="share-2" className="h-[18px] w-[18px]" />
               </button>
               <button
                 type="button"
@@ -310,7 +311,7 @@ export function ProductView({
                 aria-label="Zoom in on the print"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70"
               >
-                <ZoomIn className="h-5 w-5" />
+                <Icon name="zoom-in" className="h-5 w-5" />
               </button>
             </div>
             {/* Tee colour (or both), right on the picture: visible without scrolling. */}
@@ -374,8 +375,8 @@ export function ProductView({
                 onClick={() => scrollIntoViewQuietly(variationsRef.current, { behavior: "smooth", block: "start" })}
                 className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
               >
-                <Layers className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
-                <ArrowDown className="h-3.5 w-3.5" />
+                <Icon name="layers" className="h-4 w-4" /> See {members.length - 1} close variation{members.length === 2 ? "" : "s"}
+                <Icon name="arrow-down" className="h-3.5 w-3.5" />
               </button>
             ) : null}
 
@@ -388,7 +389,7 @@ export function ProductView({
                   aria-expanded={guideOpen}
                   className="-mr-2 flex h-10 items-center gap-1.5 px-2 text-xs text-neutral-300 hover:text-white"
                 >
-                  <Ruler className="h-3.5 w-3.5" /> Size guide
+                  <Icon name="ruler" className="h-3.5 w-3.5" /> Size guide
                 </button>
               </div>
               <SizeSelector key={nudge} value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
@@ -436,7 +437,7 @@ export function ProductView({
                 className="flex h-12 w-full items-center justify-between text-sm font-medium"
               >
                 Details
-                <ChevronDown className={`h-4 w-4 transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
+                <Icon name="chevron-down" className={`h-4 w-4 transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
               </button>
               {detailsOpen && (
                 <dl className="pb-2">
@@ -554,7 +555,7 @@ function BuyButton({
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const Icon = phase === "added" ? Check : phase === "view" ? ArrowRight : ShoppingBag;
+  const icon: IconName = phase === "added" ? "check" : phase === "view" ? "arrow-right" : "shopping-bag";
   return (
     <button
       type="button"
@@ -567,7 +568,7 @@ function BuyButton({
         compact ? "px-5 max-[359px]:px-4" : "flex-1"
       }`}
     >
-      <Icon className="h-4 w-4 shrink-0" strokeWidth={phase === "added" ? 3 : 2} />
+      <Icon name={icon} className="h-4 w-4 shrink-0" strokeWidth={phase === "added" ? 3 : 2} />
       {short && short !== label ? (
         <>
           <span className="truncate max-[399px]:hidden">{label}</span>
@@ -580,17 +581,16 @@ function BuyButton({
   );
 }
 
-const TRUST_ICONS: Record<TrustKey, typeof Truck> = { exchange: Repeat, shipping: Truck, fabric: Leaf };
+const TRUST_ICONS: Record<TrustKey, IconName> = { exchange: "repeat", shipping: "truck", fabric: "leaf" };
 
 /** Quiet store promises under the sizes (lib/store-policy, pending approval). */
 function TrustLine() {
   return (
     <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
       {STORE_POLICY.trust.map(({ key, text }) => {
-        const Icon = TRUST_ICONS[key];
         return (
           <li key={key} className="flex items-center gap-1.5">
-            <Icon className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {text}
+            <Icon name={TRUST_ICONS[key]} className="h-3.5 w-3.5" strokeWidth={1.5} /> {text}
           </li>
         );
       })}

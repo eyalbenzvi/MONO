@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG } from "@/components/ui";
 import { getShirtById } from "@/lib/catalog";
@@ -71,7 +71,7 @@ export function MiniBag() {
             <TeeMockup shirt={shirt} color={note.color} shadow={false} className="w-full" />
           </div>
           <p className="min-w-0 flex-1 truncate text-sm font-semibold" aria-live="polite">
-            <Check className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />
+            <Icon name="check" className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />
             {note.pair ? "Added the pair" : "Added"} · {note.size}
           </p>
           <button type="button" onClick={undo} className="h-10 shrink-0 px-2 text-xs font-semibold text-neutral-300 underline underline-offset-4 hover:text-white">
@@ -81,7 +81,7 @@ export function MiniBag() {
             View bag
           </Link>
           <button type="button" onClick={close} aria-label="Close" className="flex h-10 w-8 shrink-0 items-center justify-center text-neutral-400 hover:text-white">
-            <X className="h-4 w-4" />
+            <Icon name="x" className="h-4 w-4" />
           </button>
         </motion.div>
       )}

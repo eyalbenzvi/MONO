@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { fetchTrending } from "@/lib/api";
 import { getShirtById } from "@/lib/catalog";
@@ -14,7 +14,7 @@ function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct
         <h2 className="text-sm font-semibold">{title}</h2>
         {onClose && (
           <button type="button" onClick={onClose} aria-label={`Hide ${title}`} className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:text-white">
-            <X className="h-4 w-4" />
+            <Icon name="x" className="h-4 w-4" />
           </button>
         )}
       </div>

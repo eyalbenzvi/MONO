@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
@@ -168,7 +168,7 @@ function TopStrip() {
           </button>
           <TasteSheet open={sheet} onClose={() => setSheet(false)} />
           <Link href="/shop/" className="flex h-10 shrink-0 items-center gap-1 font-semibold text-white">
-            Your shop <ArrowRight className="h-3.5 w-3.5" />
+            Your shop <Icon name="arrow-right" className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

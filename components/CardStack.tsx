@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import {
   animate,
@@ -12,7 +13,6 @@ import {
   useTransform,
   type PanInfo,
 } from "framer-motion";
-import { ArrowRight, Heart, RefreshCw, X } from "lucide-react";
 import { ShirtCard } from "@/components/ShirtCard";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { getShirtById } from "@/lib/catalog";
@@ -68,7 +68,7 @@ export function CardStack() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-          <RefreshCw className="h-7 w-7 text-neutral-400" />
+          <Icon name="refresh-cw" className="h-7 w-7 text-neutral-400" />
         </div>
         <h2 className="text-lg font-semibold">You&apos;ve seen the whole drop</h2>
         <p className="max-w-xs text-sm text-neutral-400">
@@ -80,7 +80,7 @@ export function CardStack() {
           href="/shop/"
           className="mt-2 flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black active:scale-95"
         >
-          See my shop <ArrowRight className="h-4 w-4" />
+          See my shop <Icon name="arrow-right" className="h-4 w-4" />
         </Link>
         <button type="button" onClick={startOver} className="h-11 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white">
           Start over
@@ -139,7 +139,7 @@ function HeartFlight({ from, to, onDone }: { from: DOMRect; to: DOMRect; onDone:
       onAnimationComplete={onDone}
       aria-hidden
     >
-      <Heart className="h-4 w-4 fill-current" />
+      <Icon name="heart" className="h-4 w-4 fill-current" />
     </motion.div>
   );
 }
@@ -363,7 +363,7 @@ function TopCard({
         transition={{ type: "spring", stiffness: 600, damping: 18 }}
         className="pointer-events-none absolute left-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-white bg-white px-3 py-1.5 text-2xl font-black tracking-widest text-black will-change-[opacity]"
       >
-        <Heart className="h-6 w-6 fill-current" /> LIKE
+        <Icon name="heart" className="h-6 w-6 fill-current" /> LIKE
       </motion.div>
       <motion.div
         style={{ opacity: nopeOpacity, rotate: 12 }}
@@ -371,7 +371,7 @@ function TopCard({
         transition={{ type: "spring", stiffness: 600, damping: 18 }}
         className="pointer-events-none absolute right-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-neutral-200 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-neutral-100 will-change-[opacity]"
       >
-        <X className="h-6 w-6" strokeWidth={3} /> NOPE
+        <Icon name="x" className="h-6 w-6" strokeWidth={3} /> NOPE
       </motion.div>
       <motion.div
         style={{ opacity: infoOpacity }}

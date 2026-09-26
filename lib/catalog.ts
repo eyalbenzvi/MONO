@@ -1,4 +1,4 @@
-import index from "@/data/shirts.index.json";
+import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
 import { FEATURE_KEYS, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
@@ -8,77 +8,113 @@ export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
   if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
   if (head.keys.join() !== FEATURE_KEYS.join()) throw new Error("catalog index feature keys don't match FEATURE_KEYS — run npm run generate");
 }
-checkIndexHead(index);
 
 const DAY = 86_400_000;
-const DROP_EPOCH = Date.parse(`${index.dropEpoch}T00:00:00Z`);
 
 /**
  * The catalog: 2,800 procedurally generated shirts in 14 categories (see
  * scripts/generateCatalog.ts — run `npm run generate` to rebuild).
  *
- * The app bundles only the lean index (data/shirts.index.json): what the
+ * The app reads the lean index (data/shirts.index.json): what the
  * recommender, cards and grid need. Descriptions and precomputed neighbours
  * live in public/data shards (lib/details); the full catalog
  * (data/shirts.json) is read at build time only (lib/catalogServer).
+ *
+ * In the browser the index is a hashed static JSON file fetched once
+ * (lib/catalogIndex), so the collections below start empty and fill in
+ * place when it arrives: `catalogReady()` resolves then, and AppShell's
+ * <CatalogGate> holds hydration until it has. On the server (and in scripts
+ * and tests) they're filled before anything else runs.
  */
 
 const pad4 = (n: number) => String(n).padStart(4, "0");
 
-/** Feature values are stored one symbol per design (see writeIndex). */
-const DIGIT = new Map([...index.digits].map((c, v) => [c, v]));
+/** Every design, in catalog order (filled in place when the index arrives). */
+export const SHIRTS: ShirtProduct[] = [];
+/** The taste test, precomputed by the generator (see calibrationIds there). */
+export const CALIBRATION_IDS: string[] = [];
+/** Its length (a live binding: 0 until the index arrives). */
+export let CALIBRATION_TOTAL = 0;
+/** Designs per detail shard (from the index head). */
+export let SHARD_SIZE = 0;
+/** Product pages that get a static page at /shop/<id>/ (see isPrerendered). */
+export const PRERENDERED: ShirtProduct[] = [];
+let shardHashes: string[] = [];
 
-/** Running count within each category: the design's "No.". */
-const categoryCount = new Map<number, number>();
+const BY_ID = new Map<string, ShirtProduct>();
+const FAMILIES = new Map<string, ShirtProduct[]>();
 
-/**
- * Design n sits at position n − 1 of every column (see writeIndex in the
- * generator). Must be called in order: `no` is a running count.
- */
-const countIn = (category: number) => {
-  const no = (categoryCount.get(category) ?? 0) + 1;
-  categoryCount.set(category, no);
-  return no;
-};
-
-function decode(i: number): ShirtProduct {
-  const n = i + 1;
-  const cat = index.categories[index.category[i]] as ShirtCategory;
-  const white = index.white[i] === "1";
-  const baseColor: BaseColor = white ? "white" : "black";
-  const features = {} as FeatureVector;
-  (index.keys as FeatureKey[]).forEach((k, j) => (features[k] = DIGIT.get(index.features[j][i])! / 100));
-  return {
-    id: `mono-${pad4(n)}`,
-    n,
-    no: countIn(index.category[i]),
-    sku: `MN-${SKU_CODES[cat]}-${white ? "W" : "B"}-${pad4(n)}`,
-    title: index.title[i],
-    price: index.price[i],
-    baseColor,
-    backPrintUrl: `/prints/print_${n}.svg`,
-    category: cat,
-    variant: index.variants[index.variant[i]],
-    family: `fam-${pad4(index.family[i])}`,
-    features,
-    rank: index.rank[i],
-    dropDate: DROP_EPOCH + index.drop[i] * DAY,
-    weak: index.weak[i] === "1",
-  };
+function decodeAll(index: CatalogIndex): ShirtProduct[] {
+  const digit = new Map([...index.digits].map((c, v) => [c, v]));
+  const dropEpoch = Date.parse(`${index.dropEpoch}T00:00:00Z`);
+  // Design n sits at position n − 1 of every column; `no` is a running count per category.
+  const counts = new Map<number, number>();
+  return index.title.map((title, i) => {
+    const n = i + 1;
+    const cat = index.categories[index.category[i]] as ShirtCategory;
+    const white = index.white[i] === "1";
+    const baseColor: BaseColor = white ? "white" : "black";
+    const features = {} as FeatureVector;
+    (index.keys as FeatureKey[]).forEach((k, j) => (features[k] = digit.get(index.features[j][i])! / 100));
+    const no = (counts.get(index.category[i]) ?? 0) + 1;
+    counts.set(index.category[i], no);
+    return {
+      id: `mono-${pad4(n)}`,
+      n,
+      no,
+      sku: `MN-${SKU_CODES[cat]}-${white ? "W" : "B"}-${pad4(n)}`,
+      title,
+      price: index.price[i],
+      baseColor,
+      backPrintUrl: `/prints/print_${n}.svg`,
+      category: cat,
+      variant: index.variants[index.variant[i]],
+      family: `fam-${pad4(index.family[i])}`,
+      features,
+      rank: index.rank[i],
+      dropDate: dropEpoch + index.drop[i] * DAY,
+      weak: index.weak[i] === "1",
+    };
+  });
 }
 
-export const SHIRTS: ShirtProduct[] = index.title.map((_, i) => decode(i));
+function init(index: CatalogIndex) {
+  checkIndexHead(index);
+  SHIRTS.push(...decodeAll(index));
+  CALIBRATION_IDS.push(...index.calibration);
+  CALIBRATION_TOTAL = CALIBRATION_IDS.length;
+  SHARD_SIZE = index.shardSize;
+  shardHashes = index.shards;
+  for (const s of SHIRTS) {
+    BY_ID.set(s.id, s);
+    const list = FAMILIES.get(s.family);
+    if (list) list.push(s);
+    else FAMILIES.set(s.family, [s]);
+  }
+  for (const s of SHIRTS) if (isPrerendered(s)) PRERENDERED.push(s);
+}
 
-/** The taste test, precomputed by the generator (see calibrationIds there). */
-export const CALIBRATION_IDS: readonly string[] = index.calibration;
+let ready = false;
+const loading = (() => {
+  const src = loadIndex();
+  if (src instanceof Promise)
+    return src.then((index) => {
+      init(index);
+      ready = true;
+    });
+  init(src);
+  ready = true;
+  return Promise.resolve();
+})();
 
-const BY_ID = new Map(SHIRTS.map((s) => [s.id, s]));
+/** Resolves once the catalog is filled in (at once on the server). */
+export const catalogReady = () => loading;
+export const isCatalogReady = () => ready;
 
 export const getShirtById = (id: string) => BY_ID.get(id);
 
-/** Designs per detail shard, and each shard's file (named by its content hash). Both from the index head. */
-export const SHARD_SIZE: number = index.shardSize;
-export const shardFile = (k: number) => `/data/details-${k}.${index.shards[k]}.json`;
+/** Each detail shard's file (named by its content hash, from the index head). */
+export const shardFile = (k: number) => `/data/details-${k}.${shardHashes[k]}.json`;
 export const shardOf = (shirt: Pick<ShirtProduct, "n">) => Math.floor((shirt.n - 1) / SHARD_SIZE);
 
 /** Public asset URLs need the GitHub Pages base path (e.g. /MONO) in front. */
@@ -92,12 +128,13 @@ export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ??
  * How many product pages are pre-rendered (the top of the editorial rank).
  * Unset = all of them. The rest open through the client route /shop/p/?id=.
  */
-const PRERENDER_LIMIT = Number(process.env.NEXT_PUBLIC_PRERENDER_LIMIT) || Infinity;
+function prerenderLimit() {
+  return Number(process.env.NEXT_PUBLIC_PRERENDER_LIMIT) || Infinity;
+}
 
-export const isPrerendered = (shirt: ShirtProduct) => shirt.rank < PRERENDER_LIMIT;
-
-/** Product pages that get a static page at /shop/<id>/. */
-export const PRERENDERED = SHIRTS.filter(isPrerendered);
+export function isPrerendered(shirt: ShirtProduct) {
+  return shirt.rank < prerenderLimit();
+}
 
 /** Link to a product page (relative to the base path, like next/link hrefs). */
 export function productHref(id: string, hash = "") {
@@ -109,25 +146,12 @@ export function productHref(id: string, hash = "") {
 /* Design families (near-identical variations of one print)            */
 /* ------------------------------------------------------------------ */
 
-const FAMILIES = new Map<string, ShirtProduct[]>();
-for (const s of SHIRTS) {
-  const list = FAMILIES.get(s.family);
-  if (list) list.push(s);
-  else FAMILIES.set(s.family, [s]);
-}
-
-/** One representative per family (its first design), in catalog order. */
-export const FAMILY_LEADERS = [...FAMILIES.values()].map((members) => members[0]);
-
 export const familyOf = (id: string) => BY_ID.get(id)?.family;
 
 export const familySize = (shirt: ShirtProduct) => FAMILIES.get(shirt.family)?.length ?? 1;
 
 /** Every design in the shirt's family, itself included, in catalog order. */
 export const familyMembers = (shirt: ShirtProduct) => FAMILIES.get(shirt.family) ?? [shirt];
-
-/** The other designs in the shirt's family. */
-export const variationsOf = (shirt: ShirtProduct) => familyMembers(shirt).filter((s) => s.id !== shirt.id);
 
 /** Families touched by any of the given shirt ids. */
 export function familiesOf(ids: Iterable<string>): Set<string> {

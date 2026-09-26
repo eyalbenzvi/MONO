@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from "@/lib/catalog";
 import { WEAK_QUALITY } from "../scripts/gen/quality";
+import { PER_CATEGORY, PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
 import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, type CatalogEntry } from "@/types/shirt";
 
@@ -13,11 +14,11 @@ const narrative = (d: string) => d.replace(/“[^”]*”/g, "“”").replace(/
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 describe("generated catalog (data/shirts.json)", () => {
-  it("has 2,800 shirts with unique ids, skus and titles", () => {
-    expect(SHIRTS).toHaveLength(2800);
-    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(2800);
-    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(2800);
-    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(2800);
+  it("has TOTAL shirts with unique ids, skus and titles", () => {
+    expect(SHIRTS).toHaveLength(TOTAL);
+    expect(new Set(SHIRTS.map((s) => s.id)).size).toBe(TOTAL);
+    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(TOTAL);
+    expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(TOTAL);
   });
 
   it("is 70% black / 30% white tees in each set", () => {
@@ -27,7 +28,7 @@ describe("generated catalog (data/shirts.json)", () => {
     }
   });
 
-  it("has fourteen categories, 200 designs each (each set adds its own)", () => {
+  it("has fourteen categories, PER_CATEGORY designs each (each set adds its own)", () => {
     expect(SHIRT_CATEGORIES).toHaveLength(14);
     const cats = (list: typeof SHIRTS) => [...new Set(list.map((s) => s.category))].sort();
     expect(cats(SHIRTS.slice(1000, 2000))).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
@@ -35,12 +36,12 @@ describe("generated catalog (data/shirts.json)", () => {
   });
 
   it("covers all generative categories evenly", () => {
-    for (const c of SHIRT_CATEGORIES) expect(SHIRTS.filter((s) => s.category === c)).toHaveLength(200);
+    for (const c of SHIRT_CATEGORIES) expect(SHIRTS.filter((s) => s.category === c)).toHaveLength(PER_CATEGORY);
   });
 
-  it("one flat price ($48) and features within [0, 1]", () => {
+  it("one flat price (PRICE) and features within [0, 1]", () => {
     for (const s of SHIRTS) {
-      expect(s.price).toBe(48);
+      expect(s.price).toBe(PRICE);
       for (const k of FEATURE_KEYS) {
         expect(s.features[k]).toBeGreaterThanOrEqual(0);
         expect(s.features[k]).toBeLessThanOrEqual(1);
@@ -122,15 +123,15 @@ describe("generated catalog (data/shirts.json)", () => {
 });
 
 describe("catalog copy (R13)", () => {
-  it("titles carry no catalog number (that's `no`, 1–200 per category)", () => {
+  it("titles carry no catalog number (that's `no`, 1–PER_CATEGORY per category)", () => {
     for (const s of SHIRTS) {
       expect(s.title).not.toMatch(/No\.|#|\d{2,}/);
       expect(s.no).toBeGreaterThanOrEqual(1);
-      expect(s.no).toBeLessThanOrEqual(200);
+      expect(s.no).toBeLessThanOrEqual(PER_CATEGORY);
     }
     for (const c of SHIRT_CATEGORIES) {
       const nos = SHIRTS.filter((s) => s.category === c).map((s) => s.no);
-      expect(new Set(nos).size).toBe(200);
+      expect(new Set(nos).size).toBe(PER_CATEGORY);
     }
   });
 

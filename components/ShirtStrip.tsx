@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Icon } from "@/components/Icon";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG } from "@/components/ui";
@@ -63,7 +63,7 @@ export function ShirtStrip({
             >
               {current && (
                 <span className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-white text-black">
-                  <Check className="h-3 w-3" strokeWidth={3} />
+                  <Icon name="check" className="h-3 w-3" strokeWidth={3} />
                 </span>
               )}
               <TeeMockup shirt={s} color={color} shadow={false} className="w-full" />

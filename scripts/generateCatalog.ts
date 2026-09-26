@@ -28,6 +28,7 @@ import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue
 import { finishDescriptions, sentence } from "./gen/describe";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
 import { WEAK_QUALITY, measurePrint } from "./gen/quality";
+import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
 import { H, M, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
@@ -39,12 +40,13 @@ import { landmark, motif, spaceAge, travelPoster } from "./gen/set3/iconic";
 import type { Generator } from "./gen/core";
 
 const SEED = 0x6d6f6e6f; // "mono"
-const PER_SET = 1000;
+/** Designs in each of the first two sets (five categories each). */
+const PER_SET = 5 * PER_CATEGORY;
 const BLACK_SHARE = 0.7;
 
 const NEW_CATEGORIES = EXPANSION_CATEGORIES;
 const SET3_CATEGORIES = ["ascii", "caricatures", "famousart", "iconic"] as const satisfies readonly ShirtCategory[];
-const SET3_PER_CATEGORY = 200;
+const SET3_PER_CATEGORY = PER_CATEGORY;
 
 const SET3_GENERATORS: Record<(typeof SET3_CATEGORIES)[number], Generator[]> = {
   ascii: [asciiBanner, asciiShade, asciiArt, asciiScene],
@@ -81,18 +83,13 @@ const SETS: DesignSet[] = [
   set({ cats: SET3_CATEGORIES, gens: SET3_GENERATORS, size: SET3_CATEGORIES.length * SET3_PER_CATEGORY, legacy: false }),
 ];
 
-/** Every tee costs the same (both colourways too). */
-const PRICE = 48;
-/** Designs per weekly drop (ids in order). */
-const DROP_SIZE = 40;
+
 /** Monday of the first weekly drop; each design gets its drop date explicitly. */
 const DROP_EPOCH = Date.UTC(2025, 4, 26);
 const DAY = 86_400_000;
 
 /** Precomputed neighbours per design (other families, one per algorithm). */
 const SIMILAR_K = 6;
-/** Designs per detail shard in public/data. */
-export const SHARD_SIZE = 100;
 
 const ROOT = path.resolve(__dirname, "..");
 const PRINTS_DIR = path.join(ROOT, "public", "prints");
@@ -242,6 +239,7 @@ function main() {
   const colorSeeds = [SEED, SEED ^ 0x2000, SEED ^ 0x3000];
   const colors = SETS.flatMap((set, k) => colourSplit(mulberry32(colorSeeds[k]), set.size));
   const total = colors.length;
+  if (total !== TOTAL) throw new Error(`sets add up to ${total} designs, expected ${TOTAL}`);
 
   rmSync(PRINTS_DIR, { recursive: true, force: true });
   mkdirSync(PRINTS_DIR, { recursive: true });
