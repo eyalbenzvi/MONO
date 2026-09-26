@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
@@ -15,11 +15,20 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
+import { captureLanding, track } from "@/lib/analytics";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [savedOpen, setSavedOpen] = useState(false);
   const pathname = usePathname();
   const hydrated = useUiStore((s) => s.hydrated);
+
+  // How this visit arrived (UTM, ref, a shared taste or list), recorded
+  // before any page removes those tags from the address bar: layout
+  // effects run before every page's passive effects.
+  useLayoutEffect(() => void captureLanding(), []);
+
+  // One page_view per page, client-side navigations included.
+  useEffect(() => track("page_view", { page_path: pathname }), [pathname]);
 
   // Leaving the shop area forgets where a product page was opened from;
   // any navigation closes the zoom view.

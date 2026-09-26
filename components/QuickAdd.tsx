@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useHydrated } from "@/store/useUiStore";
 import { SIZES, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import type { AddSource } from "@/lib/analytics";
 
 /**
  * Add to bag without opening the product. With a remembered size it's one
@@ -23,6 +24,7 @@ export function QuickAdd({
   compact = false,
   long = false,
   iconOnly = false,
+  source,
   className = "",
 }: {
   shirt: ShirtProduct;
@@ -34,6 +36,8 @@ export function QuickAdd({
   long?: boolean;
   /** Just a round "+" (lists with little room); the label says the size. */
   iconOnly?: boolean;
+  /** Where the add happens (analytics). */
+  source?: AddSource;
   className?: string;
 }) {
   const hydrated = useHydrated();
@@ -69,7 +73,7 @@ export function QuickAdd({
       <button
         ref={button}
         type="button"
-        onClick={() => addToCart(shirt.id, preferred, color)}
+        onClick={() => addToCart(shirt.id, preferred, color, 1, { source })}
         aria-label={`Add ${shirt.title} to bag, size ${preferred}`}
         className={`flex shrink-0 items-center gap-1 whitespace-nowrap ${chip} ${shape} ${className}`}
       >
@@ -97,7 +101,7 @@ export function QuickAdd({
                 key={size}
                 type="button"
                 onClick={() => {
-                  addToCart(shirt.id, size, color);
+                  addToCart(shirt.id, size, color, 1, { source });
                   close();
                 }}
                 aria-label={`Size ${size}`}

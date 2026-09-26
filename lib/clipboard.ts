@@ -29,22 +29,26 @@ export function downloadBlob(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** How a share ended: shared through the device sheet, link copied, cancelled or failed. */
+export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
+
 /**
  * The device share sheet when there is one (with the image, if the browser
  * can share files); otherwise save the image (if any), copy the link and say so.
  */
-export async function shareOrCopy({ title, text, url, image }: { title: string; text: string; url: string; image?: { blob: Blob; name: string } }) {
+export async function shareOrCopy({ title, text, url, image }: { title: string; text: string; url: string; image?: { blob: Blob; name: string } }): Promise<ShareOutcome> {
   const file = image ? new File([image.blob], image.name, { type: "image/png" }) : null;
   const withFile = file && navigator.canShare?.({ files: [file] });
   if (navigator.share) {
     try {
       await navigator.share(withFile ? { title, text: `${text}\n${url}`, files: [file!] } : { title, text, url });
-      return;
+      return "shared";
     } catch (e) {
-      if ((e as Error)?.name === "AbortError") return;
+      if ((e as Error)?.name === "AbortError") return "cancelled";
     }
   }
   if (image) downloadBlob(image.blob, image.name);
   const copied = await copyText(url);
   useUiStore.getState().showToast(copied ? (image ? "Image saved · link copied" : "Link copied") : "Couldn't copy the link");
+  return copied ? "copied" : "failed";
 }

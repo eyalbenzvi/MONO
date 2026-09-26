@@ -190,8 +190,9 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
 function shareList(items: ShirtProduct[]) {
   const list = items.map((s) => s.n).join(".");
   const url = `${siteRoot()}/shop/?list=${list}&utm_source=list&utm_medium=share&utm_campaign=saved_list`;
-  void shareOrCopy({ title: "My MONO list", text: `${items.length} tee${items.length === 1 ? "" : "s"} I saved on MONO`, url });
-  track("share", { channel: "list", count: items.length });
+  void shareOrCopy({ title: "My MONO list", text: `${items.length} tee${items.length === 1 ? "" : "s"} I saved on MONO`, url }).then((outcome) => {
+    if (outcome === "shared" || outcome === "copied") track("share", { channel: "list", method: outcome, count: items.length });
+  });
 }
 
 /** Tees "Add your top 3" adds: the best matches once the taste test is done, else the newest saved. */
@@ -208,7 +209,7 @@ function ListActions({ items, vector }: { items: ShirtProduct[]; vector: UserPro
   const add = (which: "top" | "all", size: ShirtSize) => {
     const { addToCart, selectedColors } = useCartStore.getState();
     let added = 0;
-    for (const s of which === "top" ? top : items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { silent: true })) added++;
+    for (const s of which === "top" ? top : items) if (addToCart(s.id, size, selectedColors[s.id] ?? s.baseColor, 1, { silent: true, source: "saved" })) added++;
     setPick(null);
     useUiStore.getState().showToast(`Added ${added} · ${size}`);
   };
@@ -291,7 +292,7 @@ function SavedRow({
           </p>
         </Link>
       </div>
-      <QuickAdd shirt={shirt} color={color} iconOnly />
+      <QuickAdd shirt={shirt} color={color} iconOnly source="saved" />
       <button
         type="button"
         onClick={onRemove}

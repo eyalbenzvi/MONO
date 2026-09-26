@@ -119,6 +119,13 @@ State lives in three Zustand stores:
 
 State read back from `localStorage` goes through a guard (`sanitizeTaste` / `sanitizeCart`): malformed or unknown entries fall back to defaults. Sessions from the old single store (`mono-session-v1`, v3–v6) are migrated once into the split stores (`store/legacySession.ts`). Other tabs' writes are picked up through the `storage` event. Product events go to `window.dataLayer` via `lib/analytics.ts` (no third-party script; a tag manager can forward them).
 
+## Analytics (`lib/analytics.ts`)
+
+- **Attribution:** `landing` (utm_source / medium / campaign, ref, has_taste, has_list, landing_path, referrer) is recorded once per page load, before any page strips those tags from the address bar; the session's first touch is kept in sessionStorage and attached to `purchase`. `page_view` fires on every page, client-side navigations included.
+- **Commerce, GA4 shape** (`trackEcommerce`: currency, value, items with item_id, item_name, item_category, item_variant = tee colour, size, price, quantity, discount): `view_item_list`, `select_item`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`, `begin_checkout`, `purchase`. The pair counts as $90, its saving as the items' discount. Every add names its `source`: product, grid, minibag, cart_xsell, empty_bag, saved, confirm, discover_card, shared_list.
+- **Product:** `swipe`, `undo`, `calibration_complete`, `taste_sheet_open`, `shop_view` (with the order actually shown), `select_size`, `save`, `share` and `share_taste` — shares only when they went through or the link was copied, never for a dismissed sheet.
+- Nothing personal is sent (no name, email or address); `e2e/r2-stage3.spec.ts` walks a whole funnel and checks each event fires once.
+
 ## Brand
 
 `components/MonoLogo.tsx` is the brand mark (black square, white "MONO", sizes `sm` / `md` / `lg`); `app/icon.svg` is the favicon.

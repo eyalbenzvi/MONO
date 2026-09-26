@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { MAX_QTY, PAIR_PRICE, addItem, cartTotals, changeItem, pairStatus, setItemQty } from "@/lib/cart";
 import { getShirtById } from "@/lib/catalog";
-import { track } from "@/lib/analytics";
+import { firstTouch, itemOf, track, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
 import { SIZES, type BaseColor, type CartItem, type Customer, type Order, type OrderRecord, type ShirtSize } from "@/types/shirt";
 import { arrivalRange } from "@/lib/delivery";
@@ -29,6 +29,8 @@ export interface CartState {
 export interface AddOptions {
   /** The caller confirms it itself (e.g. "Add all" says how many): no mini bag. */
   silent?: boolean;
+  /** Where the add happened (analytics). */
+  source?: AddSource;
 }
 
 interface CartActions {
@@ -150,7 +152,7 @@ export const useCartStore = create<CartState & CartActions>()(
         else {
           // One confirmation everywhere: the mini bag (with Undo).
           if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee) });
-          track("add_to_cart", { id, size, color: tee, qty, price: shirt.price });
+          trackEcommerce("add_to_cart", { items: [itemOf(shirt, { color: tee, size, quantity: qty })], source: options.source ?? "product" });
         }
         return !capped;
       },
@@ -171,19 +173,35 @@ export const useCartStore = create<CartState & CartActions>()(
         set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
         const completes = status.have.length > 0;
         if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true });
-        track("add_to_cart", { id, size, color: completes ? status.missing[0] : "pair", qty: status.missing.length, price: completes ? PAIR_PRICE - shirt.price : PAIR_PRICE });
+        // The pair is worth PAIR_PRICE, not two full prices: its saving is
+        // the items' discount (all of it on the tee that completes a pair).
+        const saving = 2 * shirt.price - PAIR_PRICE;
+        const discount = saving / status.missing.length;
+        trackEcommerce("add_to_cart", { items: status.missing.map((color) => itemOf(shirt, { color, size, discount })), source: options.source ?? "product", pair: true });
         return true;
       },
 
-      setCartQty: (line, qty) => set((s) => ({ cart: setItemQty(s.cart, line, qty) })),
+      setCartQty: (line, qty) => {
+        const before = get().cart.find((i) => i.id === line.id && i.size === line.size && i.color === line.color)?.qty ?? 0;
+        set((s) => ({ cart: setItemQty(s.cart, line, qty) }));
+        const removed = before - Math.max(0, Math.min(qty, MAX_QTY));
+        const shirt = getShirtById(line.id);
+        if (removed > 0 && shirt) trackEcommerce("remove_from_cart", { items: [itemOf(shirt, { color: line.color, size: line.size, quantity: removed })] });
+      },
 
       undoAdd: ({ id, size, added }) => {
         let items = get().cart;
+        const shirt = getShirtById(id);
+        const removed: BaseColor[] = [];
         for (const color of added) {
           const line = items.find((i) => i.id === id && i.size === size && i.color === color);
-          if (line) items = setItemQty(items, line, line.qty - 1);
+          if (line) {
+            items = setItemQty(items, line, line.qty - 1);
+            removed.push(color);
+          }
         }
         set({ cart: items });
+        if (shirt && removed.length) trackEcommerce("remove_from_cart", { items: removed.map((color) => itemOf(shirt, { color, size })), source: "minibag" });
       },
 
       changeCartItem: (line, to) => {
@@ -210,7 +228,18 @@ export const useCartStore = create<CartState & CartActions>()(
         const order: Order = { ...record, customer, arrives: { from: from.getTime(), to: to.getTime() } };
         // Persist the record only: no name, email or address on the device.
         set({ lastOrder: record, cart: [] });
-        track("purchase", { order: order.number, value: order.total, items: totals.count, currency: "USD" });
+        const saving = new Map(totals.pairs.map((p) => [p.id, p.saving]));
+        const units = new Map<string, number>();
+        for (const l of totals.lines) units.set(l.id, (units.get(l.id) ?? 0) + l.qty);
+        trackEcommerce("purchase", {
+          transaction_id: order.number,
+          value: order.total,
+          shipping: order.shipping,
+          discount: order.discount ?? 0,
+          // A design's pair saving, spread over its units (items add up to the value).
+          items: totals.lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, discount: saving.has(l.id) ? saving.get(l.id)! / units.get(l.id)! : undefined })),
+          first_touch: firstTouch(),
+        });
         return order;
       },
     }),

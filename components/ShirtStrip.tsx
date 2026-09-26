@@ -8,6 +8,7 @@ import { STAGE_BG } from "@/components/ui";
 import { productHref } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
+import type { AddSource } from "@/lib/analytics";
 
 /**
  * The one row of tee thumbnails: a sideways-scrolling strip ("scroll": a
@@ -26,6 +27,7 @@ export function ShirtStrip({
   currentId,
   replace = false,
   onOpen,
+  source,
 }: {
   shirts: ShirtProduct[];
   layout?: "scroll" | "grid";
@@ -41,6 +43,8 @@ export function ShirtStrip({
   /** Replace the current page in history (moving between variations). */
   replace?: boolean;
   onOpen?: (shirt: ShirtProduct) => void;
+  /** Where its quick adds happen (analytics). */
+  source?: AddSource;
 }) {
   const grid = layout === "grid";
   return (
@@ -66,7 +70,7 @@ export function ShirtStrip({
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
             {prices && <p className="-mt-1 px-0.5 font-mono text-xs text-neutral-400">{formatPrice(s.price)}</p>}
-            {quickAdd && <QuickAdd shirt={s} color={color} />}
+            {quickAdd && <QuickAdd shirt={s} color={color} source={source} />}
           </li>
         );
       })}

@@ -122,10 +122,11 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
 
   const nativeShare = async (ref: ShareChannel, withFile: boolean) => {
     const url = productShareUrl(shirt, color, ref);
-    track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
     try {
       if (withFile && file) await navigator.share({ files: [file], title: shareTitle(shirt), text: `${shareMessage(shirt, color)}\n${url}` });
       else await navigator.share({ title: shareTitle(shirt), text: shareMessage(shirt, color), url });
+      // Only a share that went through (not a dismissed sheet).
+      track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
       return true;
     } catch (e) {
       if ((e as Error)?.name !== "AbortError") showToast("Couldn't open the share menu");
@@ -135,15 +136,19 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
 
   const act = async (ch: ShareChannel) => {
     setHint(null);
-    if (!(ch === "instagram" || ch === "tiktok") || !canShareFiles) track("share", { id: shirt.id, channel: ch, color, format });
+    const done = (method: string) => track("share", { id: shirt.id, channel: ch, method, color, format });
     const url = productShareUrl(shirt, color, ch);
     if (ch === "copy") {
-      showToast((await copyText(url)) ? "Link copied" : "Couldn't copy the link");
+      const copied = await copyText(url);
+      showToast(copied ? "Link copied" : "Couldn't copy the link");
+      if (copied) done("copied");
       return;
     }
     if (ch === "download") {
-      if (blob) downloadBlob(blob, shareFileName(shirt, color, format));
+      if (!blob) return;
+      downloadBlob(blob, shareFileName(shirt, color, format));
       showToast("Image saved");
+      done("image");
       return;
     }
     if (ch === "instagram" || ch === "tiktok") {
@@ -153,14 +158,16 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
         return;
       }
       if (blob) downloadBlob(blob, shareFileName(shirt, color, format));
-      await copyText(url);
+      if (await copyText(url)) done("copied");
       setHint(HOW_TO[ch]!);
       return;
     }
     const link = channelLink(ch, shirt, color);
     if (!link) return;
+    // The app's own share screen opens; whether it's sent there can't be known.
     if (link.startsWith("mailto:") || link.startsWith("sms:")) window.location.href = link;
     else window.open(link, "_blank", "noopener,noreferrer");
+    done("intent");
   };
 
   return (
