@@ -71,3 +71,21 @@ test("sizes: XXL and kids' sizes on the product page, labelled in the bag", asyn
   await hydrated(page);
   await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
 });
+
+test("T5: the logo opens About — the story, how it works, an honest note; the bag links to it", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("");
+  await hydrated(page);
+  await page.getByRole("link", { name: "About MONO" }).tap();
+  await expect(page).toHaveURL(/\/about\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Black. White. One ink. Your taste.");
+  await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
+  await expect(page.locator("#this-site")).toHaveText("About this site");
+  await expect(page.getByText(/nothing is charged/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
+  await page.evaluate(() => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })));
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("button", { name: /^Checkout/ }).first().tap();
+  await expect(page.getByRole("link", { name: "About this site" })).toHaveAttribute("href", /\/about\/#this-site$/);
+});

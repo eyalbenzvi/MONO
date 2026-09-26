@@ -484,7 +484,12 @@ function DetailsForm({
       <p className="mt-3 flex items-center justify-center gap-1.5 text-sm text-neutral-300">
         <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Arrives {arrives}
       </p>
-      <p className="mt-2 text-center text-xs text-neutral-400">Demo store — no payment is taken and nothing ships.</p>
+      <p className="mt-2 text-center text-xs text-neutral-400">
+        Demo store — no payment is taken and nothing ships.{" "}
+        <Link href="/about/#this-site" className="underline underline-offset-2 hover:text-white">
+          About this site
+        </Link>
+      </p>
       <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
         Place demo order · {formatPrice(total)}
       </button>
