@@ -72,7 +72,8 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
           Below 400 px the tabs and icons tighten, below 340 the logo gives
           way. The Daily 5 streak lives in "Your taste" only. */}
       <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="MONO home">
+        {/* The logo tells the brand story (Discover is the home tab). */}
+        <Link href="/about/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="About MONO">
           <MonoLogo size="sm" />
           <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
         </Link>
