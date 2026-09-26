@@ -32,11 +32,11 @@ import { FEATURE_KEYS, SKU_CODES, isPhoto, otherColor, type BaseColor, type Cata
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
-import { CHECK_H, CHECK_W, WEAK_QUALITY, measurePrint, rasterInk, solidBlock, svgInk } from "./gen/quality";
+import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, measurePrint, rasterInk, solidBlock, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
 import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
-import { retiredIds } from "./gen/retire";
+import { alwaysRetired, overhaulRetired, retiredIds } from "./gen/retire";
 import { H, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
 import { EXPANSION_CATEGORIES, EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
@@ -381,6 +381,7 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
     subject: photo.subject,
     style: STYLE[category],
     quality,
+    flags: [],
     printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
     features: vector(f),
     photo: { credit: photo.credit, url: recordUrl(photo.record), image: photo.key },
@@ -426,7 +427,7 @@ function fifthSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numbe
     else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
     const { quality, printCm, ink: inkShare } = measurePrint(svg, baseColor);
     // A faint print (a constellation of a few stars) isn't sold: its number stays empty.
-    if (quality < WEAK_QUALITY) {
+    if (quality < FAINT) {
       rmSync(path.join(PRINTS_DIR, `print_${n}.svg`));
       bytes -= svg.length;
       return;
@@ -451,6 +452,7 @@ function fifthSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numbe
       subject: d.subject ?? d.title,
       style: STYLE[d.source],
       quality,
+      flags: [],
       printCm,
       features: vector(f),
       dropDate: SET5_DROP,
@@ -528,6 +530,7 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       subject: a.name,
       style: STYLE.archive,
       quality,
+      flags: [],
       printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
       features: vector(f),
       photo: { credit: a.maker ? `${a.maker}, ${unit}` : unit, url: recordUrl(a.record), image: a.key },
@@ -537,23 +540,32 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   return bytes;
 }
 
+/** A print's ink as it lands on its tee, at the check's size (drawn: rendered; WebP: resized). */
+async function inkOfPrint(s: Pick<Draft, "backPrintUrl" | "baseColor" | "medium">) {
+  const file = path.join(ROOT, "public", s.backPrintUrl);
+  if (file.endsWith(".svg")) return svgInk(readFileSync(file, "utf8"), s.baseColor);
+  const { data } = await sharp(file).resize(CHECK_W, CHECK_H, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return rasterInk(data, CHECK_W, CHECK_H, s.medium, s.baseColor);
+}
+
 /**
- * The solid-block check (content overhaul, Part 0) on every print: a design
- * that lands on the tee as a slab of ink is refused, whatever it shows.
+ * Every print measured from its own ink: the solid-block check (Part 0: a
+ * print that lands as a slab of ink is refused, whatever it shows) and its
+ * quality, real size and flags (Part 6).
  */
-async function solidBlocks(list: Draft[]): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+async function measureAll(list: Draft[]): Promise<Map<string, { check: BlockCheck; assessment: Assessment }>> {
+  const out = new Map<string, { check: BlockCheck; assessment: Assessment }>();
   for (const s of list) {
-    const file = path.join(ROOT, "public", s.backPrintUrl);
-    let check;
-    if (file.endsWith(".svg")) check = solidBlock(svgInk(readFileSync(file, "utf8"), s.baseColor));
-    else {
-      const { data } = await sharp(file).resize(CHECK_W, CHECK_H, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-      check = solidBlock(rasterInk(data, CHECK_W, CHECK_H, s.medium, s.baseColor));
-    }
-    if (check.reject) out.set(s.id, `solid ink ${check.reject} (Part 0)`);
+    const ink = await inkOfPrint(s);
+    out.set(s.id, { check: solidBlock(ink), assessment: assessPrint(ink) });
   }
   return out;
+}
+
+/** Titles set by hand (data/curation/titles.json), by id. */
+function curatedTitles(): Map<string, string> {
+  const file = path.join(ROOT, "data", "curation", "titles.json");
+  return new Map(existsSync(file) ? Object.entries(JSON.parse(readFileSync(file, "utf8")) as Record<string, string>) : []);
 }
 
 /** Designs taken out by hand or by a one-off review, with the reason (data/curation/retired.json). */
@@ -702,6 +714,7 @@ async function main() {
       subject,
       style: STYLE[category],
       quality,
+      flags: [],
       printCm,
       features,
       dropDate: new Date(DROP_EPOCH + Math.floor((n - 1) / DROP_SIZE) * 7 * DAY).toISOString().slice(0, 10),
@@ -715,9 +728,45 @@ async function main() {
   // everything above was generated in full, so the rest keep their ids,
   // titles and prints. Their prints (drawn) are removed; `no` renumbers.
   // (It knows the first four sets: their source categories, their photographs.)
+  // Every print still in play is measured from its own ink first (quality,
+  // real size, the solid-block check): the retirement rules pick by it.
+  const curated = curatedRetirements();
+  const measures = await measureAll(shirts.filter((s) => !curated.has(s.id) && !alwaysRetired(s.variant)));
+  for (const s of shirts) {
+    const m = measures.get(s.id);
+    if (!m) continue;
+    s.quality = m.assessment.quality;
+    s.printCm = m.assessment.printCm;
+    s.flags = m.assessment.flags;
+    // A print that is mostly ink turns into a slab on the other colour: its own colour only.
+    if (s.medium === "drawn") s.colors = offeredColors(s.baseColor, m.assessment.ink > INK_HEAVY);
+  }
+  // Titles set by hand (data/curation/titles.json): a maker's or brand's name gives way to what the picture shows.
+  const titled = curatedTitles();
+  for (const s of shirts) if (titled.has(s.id)) s.title = titled.get(s.id)!;
   const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
-  for (const [id, why] of curatedRetirements()) if (!retired.has(id)) retired.set(id, why);
-  for (const [id, why] of await solidBlocks(shirts.filter((s) => !retired.has(s.id)))) retired.set(id, why);
+  for (const [id, why] of curated) if (!retired.has(id)) retired.set(id, why);
+  for (const [id, { check }] of measures) if (check.reject && !retired.has(id)) retired.set(id, `solid ink ${check.reject} (Part 0)`);
+  // The content overhaul's removals (Part 1), on what's left: families first (near-duplicates go by them).
+  const alive = shirts.map((s, i) => ({ s, sig: sigs[i] })).filter(({ s }) => !retired.has(s.id));
+  const preFamilies = assignFamilies(alive.map((x) => x.sig));
+  const overhaul = overhaulRetired(
+    alive.map(({ s }, i) => ({
+      id: s.id,
+      n: s.n,
+      category: s.source,
+      variant: s.variant,
+      medium: s.medium,
+      quality: s.quality,
+      subject: s.subject,
+      family: String(preFamilies[i]),
+      title: s.title,
+      base: s.base,
+      extent: measures.get(s.id)?.assessment.extent ?? 1,
+      flags: s.flags,
+    })),
+  );
+  for (const [id, why] of overhaul) retired.set(id, why);
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
     if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
@@ -741,18 +790,14 @@ async function main() {
     description: descriptions[i],
     rank: ranks[i],
   }));
-  // Takes of one subject: the plain name goes to the one the shop shows
-  // first (best rank), the rest are its later takes.
-  const takes = new Map<string, typeof withFamily>();
-  for (const s of withFamily) if (s.medium === "photo" && s.photo && !s.variant.startsWith("archive-")) takes.set(s.subject, [...(takes.get(s.subject) ?? []), s]);
-  for (const list of takes.values()) {
-    const base = list[0].title.replace(/, Take \d+$/, "");
-    if (list.length < 2) {
-      list[0].title = base; // the only photograph left of its subject
-      continue;
-    }
-    [...list].sort((a, b) => a.rank - b.rank).forEach((s, k) => (s.title = k === 0 ? base : `${base}, Take ${k + 1}`));
+  // Two designs of one name (two photographs of one subject): the plain name
+  // goes to the one the shop shows first (best rank), the rest are its later takes.
+  const sameName = new Map<string, typeof withFamily>();
+  for (const s of withFamily) {
+    const base = s.title.replace(/, Take \d+$/, "");
+    sameName.set(base, [...(sameName.get(base) ?? []), s]);
   }
+  for (const [base, list] of sameName) [...list].sort((a, b) => a.rank - b.rank).forEach((s, k) => (s.title = k === 0 ? base : `${base}, Take ${k + 1}`));
   const similar = neighbours(withFamily);
   const catalog: CatalogEntry[] = withFamily.map((s, i) => ({ ...s, similar: similar[i] }));
   const calibration = calibrationIds(catalog);

@@ -7,8 +7,14 @@ import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import type { BaseColor, Medium } from "../../types/shirt";
 
-/** Below this quality score (0–100) a print is weak: never in the taste test, link-preview picks or the top of the shop. */
-export const WEAK_QUALITY = 35;
+/** measurePrint's old score under which a generated print is too faint to make at all (the fifth set's sparse constellations). */
+export const FAINT = 35;
+/**
+ * Below this quality score (assessPrint, 0–100) a print is weak: never in
+ * the taste test, the shop window, "picked for you" rows or the default
+ * link preview. Calibrated so about the bottom tenth of the catalogue is weak.
+ */
+export const WEAK_QUALITY = 55;
 /** The printed area on the tee, cm (the 300×400 print; matches PRINT_SIZE_CM). */
 const PRINT_CM = { width: 28, height: 37 };
 
@@ -202,4 +208,103 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
           ? "edges"
           : null;
   return { reject, boxFill, perimeter, panel, edges };
+}
+
+/* ------------------------------------------------------------------ */
+/* Quality score (content overhaul, Part 6)                             */
+/* ------------------------------------------------------------------ */
+
+export interface Assessment {
+  /** 0–100: how well the print carries on a tee (see assessPrint). */
+  quality: number;
+  /** The ink's real size on the tee, cm (its bounding box on the 28 × 37 cm area). */
+  printCm: { width: number; height: number };
+  /** Mean ink over the print area (0–1). */
+  ink: number;
+  /** The ink's bounding box as a share of the print area. */
+  extent: number;
+  /** What's wrong with it: a sliver of a picture, a paper edge or vignette, a flat snapshot. */
+  flags: ("sliver" | "vignette" | "flat")[];
+}
+
+/** Below this share of the print area, the picture is a sliver on the tee. */
+export const SLIVER = 0.35;
+
+/**
+ * Quality 0–100 for any print — drawn, ink or halftone photograph — from
+ * its ink as it lands on the tee:
+ * - coverage (35%): too sparse or too solid both lose;
+ * - extent (25%): how much of the print area the ink's box spans;
+ * - detail (40%): how much the ink density changes from place to place,
+ *   measured on a coarse density map (so a dot screen reads by the picture
+ *   it makes, not by its dots).
+ * Flags: a sliver (box under SLIVER of the area), a vignette or paper edge
+ * (ink crowding the box's outline around an empty middle), a flat picture
+ * (almost no change in density: a dim interior snapshot).
+ */
+export function assessPrint({ w, h, ink }: InkRaster): Assessment {
+  let sum = 0;
+  let [x0, y0, x1, y1] = [w, h, -1, -1];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const a = ink[y * w + x];
+      sum += a;
+      if (a > ON) [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+    }
+  const cover = sum / (w * h);
+  const bw = x1 < 0 ? 0 : (x1 - x0 + 1) / w;
+  const bh = y1 < 0 ? 0 : (y1 - y0 + 1) / h;
+  const extent = bw * bh;
+  // Coarse density map: 4 × 4 px cells (~4 mm on the tee).
+  const C = 4;
+  const cw = Math.floor(w / C);
+  const ch = Math.floor(h / C);
+  const dens = new Float32Array(cw * ch);
+  for (let y = 0; y < ch * C; y++) for (let x = 0; x < cw * C; x++) dens[Math.floor(y / C) * cw + Math.floor(x / C)] += ink[y * w + x] / (C * C);
+  let grad = 0;
+  for (let y = 0; y < ch - 1; y++)
+    for (let x = 0; x < cw - 1; x++) {
+      const d = dens[y * cw + x];
+      grad += Math.abs(dens[y * cw + x + 1] - d) + Math.abs(dens[(y + 1) * cw + x] - d);
+    }
+  // Change per cell of the ink's own box (not the print): a small dense print isn't penalised twice.
+  const boxCells = Math.max(1, extent * cw * ch);
+  const detail = grad / boxCells;
+  const coverScore = cover < 0.08 ? cover / 0.08 : cover <= 0.32 ? 1 : Math.max(0.2, 1 - (cover - 0.32) / 0.4);
+  const extentScore = Math.min(1, Math.sqrt(extent) / 0.72);
+  const detailScore = Math.min(1, detail / 0.35);
+  const quality = Math.round(100 * (0.35 * coverScore + 0.25 * extentScore + 0.4 * detailScore));
+  // Vignette / paper edge: the outer ring of the box carries far more ink than its middle.
+  const flags: Assessment["flags"] = [];
+  if (extent > 0 && extent < SLIVER) flags.push("sliver");
+  if (x1 >= 0) {
+    const ring = Math.max(2, Math.round(Math.min(x1 - x0, y1 - y0) * 0.06));
+    let [rin, rn, min, mn] = [0, 0, 0, 0];
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) {
+        const edge = x - x0 < ring || x1 - x < ring || y - y0 < ring || y1 - y < ring;
+        if (edge) (rin += ink[y * w + x]), rn++;
+        else (min += ink[y * w + x]), mn++;
+      }
+    if (rn && mn && rin / rn > 0.25 && rin / rn > 3 * (min / mn)) flags.push("vignette");
+  }
+  if (detail < 0.06 && cover > 0.02) flags.push("flat");
+  return {
+    quality,
+    printCm: { width: Math.max(1, Math.round(bw * PRINT_CM.width)), height: Math.max(1, Math.round(bh * PRINT_CM.height)) },
+    ink: cover,
+    extent,
+    flags,
+  };
+}
+
+/** Share of a raster's inked pixels that are neither ink nor ground (must be 0 for a one-ink print). */
+export function midtones({ ink }: InkRaster): number {
+  let on = 0;
+  let mid = 0;
+  for (let i = 0; i < ink.length; i++) {
+    if (ink[i] > 0.02) on++;
+    if (ink[i] > 0.02 && ink[i] < 0.98) mid++;
+  }
+  return on ? mid / on : 0;
 }

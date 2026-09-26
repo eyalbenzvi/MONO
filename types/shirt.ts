@@ -241,8 +241,10 @@ export type CatalogEntry = Omit<ShirtProduct, "dropDate" | "weak"> &
     summary: string;
     /** The print style for the SEO title ("Line-Art"). */
     style: string;
-    /** 0–100 (see generateCatalog: coverage, extent, detail). */
+    /** 0–100, from the print's own ink (scripts/gen/quality assessPrint: coverage, extent, detail). */
     quality: number;
+    /** What the quality check found wrong (a sliver of a picture, a paper edge, a flat picture); empty when nothing. */
+    flags: ("sliver" | "vignette" | "flat")[];
     /** YYYY-MM-DD. */
     dropDate: string;
   };
