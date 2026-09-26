@@ -29,6 +29,8 @@ const SAYS_ITS_KIND = /\b(ascii|homage|poster|icon|sprite|sign|badge|crest|stamp
 export function productTitle(s: Pick<SeoFields, "title" | "subject" | "style">) {
   const styleWord = s.style.split("-")[0].toLowerCase();
   const kind = s.subject.toLowerCase().includes(styleWord) || SAYS_ITS_KIND.test(s.subject) ? s.subject : `${s.subject} ${s.style}`;
+  // Photographs are named after their subject: "Gray Seal Photo Tee", not "Gray Seal — Gray Seal Photo Tee".
+  if (s.title === s.subject) return `${kind} Tee | MONO`;
   return `${s.title} — ${kind} Tee | MONO`;
 }
 

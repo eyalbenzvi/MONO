@@ -23,6 +23,7 @@ const ARCHETYPE: Record<FeatureKey, string> = {
   nature: "The Wanderer",
   figurative: "The Portraitist",
   classic: "The Curator",
+  photographic: "The Documentarian",
 };
 
 export const ARCHETYPE_NAMES = Object.values(ARCHETYPE);
@@ -36,15 +37,22 @@ export function archetypeOf(vector: UserProfileVector): { name: string; traits: 
 /* Taste codes for links (/?taste=…)                                   */
 /* ------------------------------------------------------------------ */
 
-/** Two base-36 characters per feature (0–100, whole percent) in FEATURE_KEYS order. */
+/**
+ * Two base-36 characters per feature (0–100, whole percent) in FEATURE_KEYS
+ * order. Codes from before a dimension was added are shorter: the features
+ * they don't carry read as neutral (0.5), so old links keep working.
+ */
 export function encodeTaste(vector: UserProfileVector): string {
   return FEATURE_KEYS.map((k) => Math.round(Math.min(1, Math.max(0, vector[k])) * 100).toString(36).padStart(2, "0")).join("");
 }
 
+/** Code lengths of earlier builds: 16 features (before "photographic"). */
+const LEGACY_CODE_LENGTHS = [32];
+
 export function decodeTaste(code: string | null | undefined): UserProfileVector | null {
-  if (!code || code.length !== FEATURE_KEYS.length * 2 || !/^[0-9a-z]+$/.test(code)) return null;
+  if (!code || !LEGACY_CODE_LENGTHS.concat(FEATURE_KEYS.length * 2).includes(code.length) || !/^[0-9a-z]+$/.test(code)) return null;
   const v = createInitialVector();
-  for (let i = 0; i < FEATURE_KEYS.length; i++) {
+  for (let i = 0; i < code.length / 2; i++) {
     const n = parseInt(code.slice(i * 2, i * 2 + 2), 36);
     if (!(n >= 0 && n <= 100)) return null;
     v[FEATURE_KEYS[i]] = n / 100;

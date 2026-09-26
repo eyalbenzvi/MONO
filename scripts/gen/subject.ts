@@ -203,6 +203,9 @@ export const STYLE: Record<ShirtCategory, string> = {
   caricatures: "Caricature",
   famousart: "Fine-Art",
   iconic: "Graphic",
+  wildlife: "Photo",
+  flight: "Photo",
+  machines: "Photo",
 };
 
 /** Categories whose names take the subject's noun ("Lucky Cactus", "Proud Barista", "Famous Pyramids"). */

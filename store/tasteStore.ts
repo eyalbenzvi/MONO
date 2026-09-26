@@ -187,13 +187,24 @@ function dailyOf(x: unknown): Daily {
 
 /**
  * v1 → v2 adds the Daily 5 counter (starting empty); v2 → v3 adds the
- * taste levels already reached (none yet: the next one is announced once).
+ * taste levels already reached (none yet: the next one is announced once);
+ * v3 → v4 adds the "photographic" dimension, at neutral: nobody has rated
+ * a photograph yet, so it isn't guessed from the drawn prints they liked
+ * (the photographs in the taste test are dealt next and measure it).
  */
 export function migrateTaste(persisted: unknown, version: number): unknown {
   if (!persisted || typeof persisted !== "object") return persisted;
   const s = { ...(persisted as Record<string, unknown>) };
   if (version < 2) s.daily = emptyDaily();
   if (version < 3) s.milestones = [];
+  if (version < 4) {
+    const neutral = (v: unknown) => (v && typeof v === "object" ? { ...(v as object), photographic: 0.5 } : v);
+    s.preferenceVector = neutral(s.preferenceVector);
+    if (s.lastUpdate && typeof s.lastUpdate === "object") {
+      const lu = s.lastUpdate as Record<string, unknown>;
+      s.lastUpdate = { ...lu, before: neutral(lu.before), after: neutral(lu.after) };
+    }
+  }
   return s;
 }
 
@@ -348,7 +359,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
     }),
     {
       name: TASTE_KEY,
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateTaste,
       skipHydration: true,
@@ -359,12 +370,18 @@ export const useTasteStore = create<TasteState & TasteActions>()(
   ),
 );
 
-/** How many calibration prints the user has already seen (any source). */
+/**
+ * How many calibration prints the user has already seen (any source).
+ * Once the result was shown the test stays complete, even when a new
+ * catalog brings new calibration prints (the photographs): those are
+ * still dealt first, but the app doesn't go back into test mode.
+ */
 export function useCalibrationProgress() {
   // Counted per family: saving a sibling of a calibration print in the shop
   // also counts. Selects a primitive so the result is referentially stable.
   const done = useTasteStore((s) => calibrationDone(CALIBRATION_IDS, s.seen));
-  return { done, total: CALIBRATION_TOTAL, complete: done >= CALIBRATION_TOTAL };
+  const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
+  return { done, total: CALIBRATION_TOTAL, complete: acknowledged || done >= CALIBRATION_TOTAL };
 }
 
 /** Reset taste and Saved, with an Undo toast that restores it all. */

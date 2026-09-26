@@ -10,7 +10,8 @@ import type { ShirtDetails } from "@/types/shirt";
  * size and hashes come from the index head) so they stay out of the JS
  * bundle. One request per shard, cached (the hash makes the file immutable).
  */
-type Shard = Record<string, { d: string; s: string[]; t?: string; p?: [number, number] }>;
+/** d description, s similar ids, t subject, p print size (cm), c/u photo credit and record URL. */
+type Shard = Record<string, { d: string; s: string[]; t?: string; p?: [number, number]; c?: string; u?: string }>;
 const shards = new Map<number, Promise<Shard>>();
 
 function loadShard(k: number): Promise<Shard> {
@@ -31,7 +32,7 @@ export async function fetchDetails(id: string): Promise<ShirtDetails | null> {
   const shirt = getShirtById(id);
   if (!shirt) return null;
   const entry = (await loadShard(shardOf(shirt)))[id];
-  return entry ? { description: entry.d, similar: entry.s, subject: entry.t, printCm: entry.p ? { width: entry.p[0], height: entry.p[1] } : undefined } : null;
+  return entry ? { description: entry.d, similar: entry.s, subject: entry.t, printCm: entry.p ? { width: entry.p[0], height: entry.p[1] } : undefined, ...(entry.c ? { photo: { credit: entry.c, url: entry.u ?? "" } } : {}) } : null;
 }
 
 /**

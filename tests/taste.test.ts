@@ -33,11 +33,17 @@ describe("taste archetypes (F3)", () => {
 });
 
 describe("taste codes", () => {
-  it("round-trip a profile in 32 characters", () => {
-    const v = { ...createInitialVector(0.37), wit: 1, nature: 0 };
+  it("round-trip a profile in 34 characters (two per feature)", () => {
+    const v = { ...createInitialVector(0.37), wit: 1, nature: 0, photographic: 0.9 };
     const code = encodeTaste(v);
-    expect(code).toHaveLength(32);
+    expect(code).toHaveLength(34);
     expect(decodeTaste(code)).toEqual(v);
+  });
+
+  it("links shared before the photographs (32 characters) still open, the photo lean at neutral", () => {
+    const old = encodeTaste({ ...createInitialVector(0.37), wit: 1 }).slice(0, 32);
+    expect(decodeTaste(old)).toEqual({ ...createInitialVector(0.37), wit: 1, photographic: 0.5 });
+    expect(decodeTaste(old.slice(0, 30))).toBeNull();
   });
 
   it("reject anything malformed", () => {

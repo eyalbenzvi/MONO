@@ -87,14 +87,16 @@ describe("F06: print quality", () => {
 });
 
 describe("I12: explicit drop dates", () => {
-  it("every design carries its own drop date: weekly Mondays, forty a week", () => {
+  it("every design carries its own drop date: weekly Mondays, forty a week; the photographs dropped together", () => {
     for (const s of FULL) {
       expect(s.dropDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(new Date(`${s.dropDate}T00:00:00Z`).getUTCDay()).toBe(1);
     }
     const perDrop = new Map<string, number>();
-    for (const s of FULL) perDrop.set(s.dropDate, (perDrop.get(s.dropDate) ?? 0) + 1);
+    for (const s of FULL.filter((x) => !x.photo)) perDrop.set(s.dropDate, (perDrop.get(s.dropDate) ?? 0) + 1);
     expect(Math.max(...perDrop.values())).toBe(40);
+    // The week they were added, not spread over invented future weeks.
+    expect(new Set(FULL.filter((x) => x.photo).map((x) => x.dropDate))).toEqual(new Set(["2026-09-21"]));
     expect(SHIRTS[0].dropDate).toBe(Date.parse(`${FULL[0].dropDate}T00:00:00Z`));
   });
 });

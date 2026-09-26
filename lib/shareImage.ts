@@ -6,9 +6,10 @@
  *
  * The print SVG is fetched and recoloured by swapping its two inks (every
  * print is strictly #FFFFFF / #000000), which works in every browser — the
- * canvas `filter` property doesn't exist in Safari.
+ * canvas `filter` property doesn't exist in Safari. Photographs aren't
+ * swapped (that would print a negative): their other colour has its own file.
  */
-import { assetUrl } from "@/lib/catalog";
+import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
 import { siteRoot } from "@/lib/share";
 import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "@/lib/teeShape";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
@@ -25,8 +26,8 @@ const MONO_FONT = `ui-monospace, "SF Mono", Menlo, "Courier New", monospace`;
 
 /** Print SVG in `color`, as an image rasterised at 3× for a crisp canvas. */
 export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Promise<HTMLImageElement> {
-  let svg = await (await fetch(assetUrl(shirt.backPrintUrl))).text();
-  if (color !== shirt.baseColor) svg = svg.replace(/#FFFFFF|#000000/g, (m) => (m === "#FFFFFF" ? "#000000" : "#FFFFFF"));
+  let svg = await (await fetch(assetUrl(printUrl(shirt, color)))).text();
+  if (needsInvert(shirt, color)) svg = svg.replace(/#FFFFFF|#000000/g, (m) => (m === "#FFFFFF" ? "#000000" : "#FFFFFF"));
   svg = svg.replace('width="300" height="400"', 'width="900" height="1200"');
   const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
   try {

@@ -149,6 +149,12 @@ export function getCalibrationQueue<T extends Pick<ShirtProduct, "id" | "feature
   size: number = CALIBRATION_SIZE,
   /** Optional coverage key (e.g. category): prefer candidates whose key is not used yet. */
   keyOf?: (s: T) => string,
+  /**
+   * At least one pick must pass this (the photographs: a taste test without
+   * one would never measure how someone feels about photos). If none does,
+   * the last pick gives way to the passing candidate most unlike the rest.
+   */
+  mustInclude?: (s: T) => boolean,
 ): T[] {
   if (shirts.length === 0) return [];
   const pool = [...shirts];
@@ -174,6 +180,17 @@ export function getCalibrationQueue<T extends Pick<ShirtProduct, "id" | "feature
       }
     });
     chosen.push(pool.splice(bestIdx, 1)[0]);
+  }
+  if (mustInclude && chosen.length > 1 && !chosen.some(mustInclude)) {
+    const rest = chosen.slice(0, -1);
+    let best: T | null = null;
+    let bestScore = Infinity;
+    for (const c of [...pool, chosen[chosen.length - 1]]) {
+      if (!mustInclude(c)) continue;
+      const maxSim = Math.max(...rest.map((r) => centeredCosine(r.features, c.features)));
+      if (maxSim < bestScore) (bestScore = maxSim), (best = c);
+    }
+    if (best) return [...rest, best];
   }
   return chosen;
 }

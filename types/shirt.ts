@@ -21,6 +21,8 @@ export const FEATURE_KEYS = [
   // Added with ASCII art, caricatures, famous art and iconic images:
   "figurative",
   "classic",
+  // Added with the photographs (a photograph vs. a drawn print):
+  "photographic",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -48,6 +50,10 @@ export const SHIRT_CATEGORIES = [
   "caricatures",
   "famousart",
   "iconic",
+  // fourth set: photographs (Smithsonian Open Access, CC0)
+  "wildlife",
+  "flight",
+  "machines",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
@@ -67,7 +73,18 @@ export const SKU_CODES: Record<ShirtCategory, string> = {
   caricatures: "CAR",
   famousart: "ART",
   iconic: "ICN",
+  wildlife: "WLD",
+  flight: "FLT",
+  machines: "MCH",
 };
+
+/**
+ * Categories made from photographs. A photo print can't be inverted for
+ * the other tee colour (that makes a negative), so each carries its own
+ * print per colourway: see printUrl in lib/catalog.
+ */
+export const PHOTO_CATEGORIES = ["wildlife", "flight", "machines"] as const satisfies readonly ShirtCategory[];
+export const isPhoto = (s: { category: ShirtCategory }) => (PHOTO_CATEGORIES as readonly ShirtCategory[]).includes(s.category);
 
 /** One short line on the feel of each category (product page). */
 export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
@@ -85,6 +102,9 @@ export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
   caricatures: "Invented characters, lovingly exaggerated — nobody real.",
   famousart: "Homages to public-domain masterpieces, in one colour.",
   iconic: "Landmarks, space age and symbols, drawn from scratch.",
+  wildlife: "Photographs from the Smithsonian's National Zoo, screened in one ink.",
+  flight: "Aircraft and spacecraft from the Air and Space Museum, as halftones.",
+  machines: "Engines, gauges and instruments, photographed up close.",
 };
 
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
@@ -102,6 +122,9 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   caricatures: "Caricatures",
   famousart: "Famous Art",
   iconic: "Iconic Images",
+  wildlife: "Wildlife",
+  flight: "Flight",
+  machines: "Engines & Gauges",
 };
 
 export type ShirtSize = "S" | "M" | "L" | "XL";
@@ -151,11 +174,23 @@ export interface ShirtDetails {
   subject?: string;
   /** The print's real size on the tee (its ink), cm. */
   printCm?: { width: number; height: number };
+  /** Photographs: who took it and the museum record it comes from. */
+  photo?: PhotoCredit;
+}
+
+/** Where a photograph comes from (Smithsonian Open Access, CC0). */
+export interface PhotoCredit {
+  /** "Roshan Patel, Smithsonian's National Zoo". */
+  credit: string;
+  /** The Smithsonian collection record. */
+  url: string;
+  /** The Smithsonian image id (data/photos/img/<image>.png); full catalog only. */
+  image?: string;
 }
 
 /** Full catalog entry (generator output, server-side and tests). */
 export type CatalogEntry = Omit<ShirtProduct, "dropDate" | "weak"> &
-  Required<ShirtDetails> & {
+  Required<Omit<ShirtDetails, "photo">> & Pick<ShirtDetails, "photo"> & {
     /** The design's own sentence (without the closing line): meta descriptions. */
     summary: string;
     /** The print style for the SEO title ("Line-Art"). */
@@ -274,4 +309,5 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   nature: "Nature",
   figurative: "Figurative",
   classic: "Classic Art",
+  photographic: "Photographic",
 };

@@ -12,5 +12,5 @@ export const getEntry = (id: string) => BY_ID.get(id);
 
 export function getDetails(id: string): ShirtDetails | null {
   const s = BY_ID.get(id);
-  return s ? { description: s.description, similar: s.similar, subject: s.subject, printCm: s.printCm } : null;
+  return s ? { description: s.description, similar: s.similar, subject: s.subject, printCm: s.printCm, ...(s.photo ? { photo: { credit: s.photo.credit, url: s.photo.url } } : {}) } : null;
 }
