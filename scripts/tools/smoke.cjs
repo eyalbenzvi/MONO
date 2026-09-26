@@ -1,7 +1,7 @@
 // End-to-end smoke test of the static export (out/), in Chromium.
 //   npm run build && npm run smoke
 // Serves out/ itself (honouring NEXT_PUBLIC_BASE_PATH), then on a phone
-// viewport with touch: 10 swipes → taste-test screen, zoom open / Escape,
+// viewport with touch: 10 swipes → taste-test screen, zoom in place / tap back,
 // shop, product page colour toggle on the image, add to bag, checkout.
 // Also loads the main pages on desktop. Fails on any console / page error.
 const fs = require("fs");
@@ -53,17 +53,19 @@ const ok = (cond, msg) => {
     await p.keyboard.press("Escape");
     await p.waitForTimeout(500);
 
-    // zoom: tap the card for its details, then ⋯ → Zoom
-    await p.locator('[aria-roledescription="card"]').first().tap();
+    // zoom in place: a double tap zooms the picture on the card, a tap brings it back
+    const card = p.locator('[aria-roledescription="card"]').first();
+    const layer = card.locator("[data-zoom-stage] > div").first();
+    await card.tap({ position: { x: 180, y: 250 } });
+    await p.waitForTimeout(80);
+    await card.tap({ position: { x: 180, y: 250 } });
     await p.waitForTimeout(700);
-    await p.getByRole("button", { name: /^more for /i }).first().tap();
-    await p.getByRole("button", { name: /zoom in on the print/i }).first().tap();
-    const zoom = p.getByRole("dialog", { name: /zoom/i });
-    await zoom.waitFor({ timeout: 3000 }).catch(() => {});
-    ok(await zoom.isVisible(), "zoom opens");
-    await p.keyboard.press("Escape");
-    await p.waitForTimeout(500);
-    ok((await zoom.count()) === 0, "Escape closes zoom");
+    const scaled = await layer.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a);
+    ok(scaled > 2 && (await p.getByRole("dialog").count()) === 0, "double tap zooms the picture in place");
+    await card.tap({ position: { x: 180, y: 250 } });
+    await p.waitForTimeout(700);
+    const back = await layer.evaluate((el) => getComputedStyle(el).transform);
+    ok(back === "none" || new DOMMatrix(back).a === 1, "a tap returns the picture");
 
     // shop → product
     await p.getByRole("link", { name: /^shop$/i }).first().tap();

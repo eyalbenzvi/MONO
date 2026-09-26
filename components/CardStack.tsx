@@ -14,7 +14,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { ShirtCard } from "@/components/ShirtCard";
-import { ZoomViewer } from "@/components/ZoomViewer";
+import { useInPlaceZoom } from "@/hooks/useInPlaceZoom";
 import { getShirtById } from "@/lib/catalog";
 import { matchScore, biggestShift } from "@/lib/recommendation";
 import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
@@ -182,9 +182,6 @@ function TopCard({
   const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
-  // Zoom state lives in the UI store (keyboard shortcuts and navigation read it).
-  const zoom = useUiStore((s) => s.zoomId === entry.id);
-  const openZoom = useCallback(() => useUiStore.getState().setZoom(entry.id), [entry.id]);
   const leaving = useRef(false);
   // Mirrors `leaving` for rendering: a card on its way out takes no gestures.
   const [isLeaving, setIsLeaving] = useState(false);
@@ -247,25 +244,25 @@ function TopCard({
     [commitSwipe, entry.id, onLiked, x, y],
   );
 
-  // Pinch on the card (two fingers) opens the zoom view instead of dragging.
+  // Pinch zooms the picture in place; the card lets go of the finger and
+  // settles, and swipes wait until the picture is back to its whole.
+  const zoom = useInPlaceZoom(cardRef, !isFlipped && !isLeaving, () => {
+    animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
+    animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+  });
+  const { reset: resetZoom } = zoom;
+  // Flipping or leaving shows the whole picture again.
   useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const onTouch = (e: TouchEvent) => {
-      if (e.touches.length < 2 || leaving.current || useUiStore.getState().isFlipped) return;
-      e.preventDefault();
-      animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-      animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
-      useUiStore.getState().setZoom(entry.id);
-    };
-    el.addEventListener("touchstart", onTouch, { passive: false });
-    return () => el.removeEventListener("touchstart", onTouch);
-  }, [x, y, entry.id]);
+    if (isFlipped || isLeaving) resetZoom(true);
+  }, [isFlipped, isLeaving, resetZoom]);
 
   // Queued button / keyboard swipes — the head of the queue runs on this card.
   useEffect(() => {
-    if (queueHead) flyOut(queueHead.action, undefined, true);
-  }, [queueHead, flyOut]);
+    if (!queueHead) return;
+    // Like / Pass while zoomed: the picture comes back whole, then the card goes.
+    resetZoom(true);
+    flyOut(queueHead.action, undefined, true);
+  }, [queueHead, flyOut, resetZoom]);
 
   // Undo: fly back in from the side the card left.
   useEffect(() => {
@@ -295,6 +292,12 @@ function TopCard({
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const { offset, velocity } = info;
+    // A drag that turned into a pinch never swipes: the card settles.
+    if (zoom.zoomed || zoom.moved()) {
+      animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
+      animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+      return;
+    }
     if (offset.x > SWIPE_DISTANCE || velocity.x > SWIPE_VELOCITY) return flyOut("like", velocity);
     if (offset.x < -SWIPE_DISTANCE || velocity.x < -SWIPE_VELOCITY) return flyOut("dislike", velocity);
     if ((offset.y < -FLIP_DISTANCE || velocity.y < -500) && Math.abs(offset.x) < SWIPE_DISTANCE) toggleFlip();
@@ -324,7 +327,7 @@ function TopCard({
       // lock the card to the vertical axis, so it ignored the sideways finger
       // (yet the swipe still counted on release). Vertical travel is damped
       // by dragElastic instead.
-      drag={!isFlipped && !isLeaving && !zoom}
+      drag={!isFlipped && !isLeaving && !zoom.zoomed}
       // Sideways swipes are free; vertical travel is heavily damped so the
       // card never slides over the header.
       dragElastic={{ left: ELASTIC_X, right: ELASTIC_X, top: 0.12, bottom: 0.08 }}
@@ -340,20 +343,15 @@ function TopCard({
       onTap={(e) => {
         // On the details face taps do nothing — flip back via Back / ⓘ / Esc.
         if (isFlipped || leaving.current || dragged.current || fromControl(e)) return;
-        toggleFlip();
+        // Zoomed: a tap brings the whole picture back. Otherwise a second tap
+        // soon after zooms in there; a single tap shows the details.
+        zoom.tap(e as PointerEvent, () => !leaving.current && toggleFlip(true));
       }}
     >
-      <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop onZoom={openZoom} />
-      <AnimatePresence>
-        {zoom && (
-          <ZoomViewer
-            shirt={shirt}
-            color={shirt.baseColor}
-            onClose={() => useUiStore.getState().setZoom(null)}
-            returnFocusTo={() => cardRef.current?.querySelector<HTMLElement>("[data-zoom-button]")}
-          />
-        )}
-      </AnimatePresence>
+      <ShirtCard shirt={shirt} strategy={entry.strategy} score={score} isFlipped={isFlipped} isTop zoom={zoom.values} zoomed={zoom.zoomed} />
+      <span className="sr-only" aria-live="polite">
+        {zoom.announce}
+      </span>
 
       {/* Swipe stamps: monochrome — LIKE solid white, NOPE an outline. */}
       <motion.div

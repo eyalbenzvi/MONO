@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { PrintImage } from "@/components/PrintImage";
 import { TeeMockup } from "@/components/TeeMockup";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { clampPan, zoomAt as zoomAtPoint, type ZoomTransform } from "@/lib/zoom";
 import { PRINT_SIZE_CM, printSizeLabel, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 const MIN = 1;
@@ -14,11 +15,7 @@ const MAX = 5;
 const DOUBLE_TAP = 2.6;
 
 type View = "tee" | "print";
-interface Transform {
-  s: number;
-  x: number;
-  y: number;
-}
+type Transform = ZoomTransform;
 
 /**
  * Full-screen zoom for a print: pinch, drag to pan, double-tap / double-click
@@ -69,23 +66,11 @@ export function ZoomViewer({
   }, [view]);
 
   // Keep the picture on screen: pan is limited by how far the zoom overflows.
-  const clamp = useCallback((n: Transform): Transform => {
-    const el = stage.current;
-    const s = Math.min(MAX, Math.max(MIN, n.s));
-    if (!el || s === 1) return { s, x: 0, y: 0 };
-    const mx = (el.clientWidth * (s - 1)) / 2;
-    const my = (el.clientHeight * (s - 1)) / 2;
-    return { s, x: Math.min(mx, Math.max(-mx, n.x)), y: Math.min(my, Math.max(-my, n.y)) };
-  }, []);
+  const frame = useCallback(() => ({ w: stage.current?.clientWidth ?? 0, h: stage.current?.clientHeight ?? 0 }), []);
+  const clamp = useCallback((n: Transform): Transform => clampPan({ ...n, s: Math.min(MAX, Math.max(MIN, n.s)) }, frame()), [frame]);
 
   /** Zoom to `s` keeping the point (px, py) — relative to the stage centre — fixed. */
-  const zoomAt = useCallback(
-    (s: number, px: number, py: number, from: Transform) => {
-      const k = s / from.s;
-      return clamp({ s, x: px - (px - from.x) * k, y: py - (py - from.y) * k });
-    },
-    [clamp],
-  );
+  const zoomAt = useCallback((s: number, px: number, py: number, from: Transform) => zoomAtPoint(Math.min(MAX, Math.max(MIN, s)), px, py, from, frame()), [frame]);
 
   const local = (e: { clientX: number; clientY: number }) => {
     const r = stage.current!.getBoundingClientRect();

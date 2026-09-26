@@ -35,6 +35,8 @@ interface UiState {
   dialogs: number;
   /** The design shown in the full-screen zoom, if open. */
   zoomId: string | null;
+  /** The Discover card's picture is zoomed in place (swipe keys wait). */
+  cardZoomed: boolean;
   /** The Saved drawer is open (opened from the personal area). */
   savedOpen: boolean;
 
@@ -67,6 +69,7 @@ interface UiState {
   toggleFlip: (value?: boolean) => void;
   showToast: (message: string, action?: ToastState["action"]) => void;
   setZoom: (id: string | null) => void;
+  setCardZoomed: (on: boolean) => void;
   setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
@@ -112,11 +115,13 @@ export const useUiStore = create<UiState>()((set) => ({
   toast: null,
   dialogs: 0,
   zoomId: null,
+  cardZoomed: false,
   savedOpen: false,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
   showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
   setZoom: (zoomId) => set({ zoomId }),
+  setCardZoomed: (cardZoomed) => set({ cardZoomed }),
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,

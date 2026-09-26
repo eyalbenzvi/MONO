@@ -14,6 +14,7 @@ import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import type { InPlaceZoom } from "@/hooks/useInPlaceZoom";
 import {
   CATEGORY_LABELS,
   COLOR_LABELS,
@@ -28,13 +29,14 @@ interface ShirtCardProps {
   score: number;
   isFlipped: boolean;
   isTop: boolean;
-  /** Top card only: opens the full-screen zoom (owned by the swipe card). */
-  onZoom?: () => void;
+  /** Top card only: the in-place zoom of the picture (owned by the swipe card). */
+  zoom?: InPlaceZoom["values"];
+  zoomed?: boolean;
 }
 
 // Memoised: starting a swipe re-renders the stack (leaving flag, heart
 // flight); the card content itself doesn't change, so skip that work.
-export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFlipped, isTop, onZoom }: ShirtCardProps) {
+export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFlipped, isTop, zoom, zoomed = false }: ShirtCardProps) {
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
@@ -63,13 +65,17 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           aria-hidden={showDetails}
           {...inert(showDetails)}
         >
-          <div className={`relative flex min-h-0 flex-1 flex-col ${STAGE_BG}`}>
-            <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]">
+          {/* The frame: a pinch zooms the picture inside it (useInPlaceZoom). */}
+          <div data-zoom-stage className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${STAGE_BG}`}>
+            <motion.div
+              className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]"
+              style={zoom ? { scale: zoom.scale, x: zoom.x, y: zoom.y } : undefined}
+            >
               <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
-            </div>
+            </motion.div>
           </div>
 
-          <div className="flex items-end justify-between gap-3 px-5 pb-4 pt-3">
+          <div className={`flex items-end justify-between gap-3 px-5 pb-4 pt-3 transition-opacity duration-200 ${zoomed ? "opacity-40" : ""}`}>
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
               {/* The learning, felt: the closest thing you liked (once the taste is known). */}
@@ -86,7 +92,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           aria-hidden={!showDetails}
           {...inert(!showDetails)}
         >
-          {isTop && <CardDetails shirt={shirt} score={score} onZoom={onZoom} />}
+          {isTop && <CardDetails shirt={shirt} score={score} />}
         </motion.div>
       </motion.div>
     </div>
@@ -101,7 +107,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
  */
 const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
 
-function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: number; onZoom?: () => void }) {
+function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
   const vector = useTasteStore((s) => s.preferenceVector);
   const showMatch = useShowMatch();
@@ -122,7 +128,6 @@ function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: num
           <MoreMenu
             label={`More for ${shirt.title}`}
             items={[
-              ...(onZoom ? [{ label: "Zoom in on the print", icon: "zoom-in" as const, onSelect: onZoom }] : []),
               { label: "Share", icon: "share-2" as const, onSelect: () => openShare(shirt.id, shirt.baseColor) },
               // Undo lives here (and on Z), not as a button under the card.
               ...(undoable ? [{ label: "Undo last swipe", icon: "rotate-ccw" as const, onSelect: () => useTasteStore.getState().undoLast() }] : []),
