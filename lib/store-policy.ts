@@ -16,6 +16,22 @@ export const STORE_POLICY = {
   fit: "Fits true to size. Between sizes? Go up.",
   /** Near the checkout button in the bag. */
   returns: "Free 30-day returns",
+  /**
+   * Delivery estimate for "Arrives …": business days to print and ship,
+   * plus business days in transit (ranges, low–high).
+   */
+  delivery: { shipDays: [3, 5], transitDays: [2, 4] },
+  /** Countries offered at checkout (ISO code, name). */
+  countries: [
+    ["US", "United States"],
+    ["GB", "United Kingdom"],
+    ["CA", "Canada"],
+    ["IL", "Israel"],
+    ["DE", "Germany"],
+    ["FR", "France"],
+    ["NL", "Netherlands"],
+    ["AU", "Australia"],
+  ],
   /** First visit, under the Discover strip. */
   firstVisit: "Organic cotton · Printed to order · Free returns",
 } as const;

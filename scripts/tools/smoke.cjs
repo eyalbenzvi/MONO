@@ -116,7 +116,7 @@ const ok = (cond, msg) => {
       const f = p.getByLabel(new RegExp(`^${label}`, "i")).first();
       if (await f.count()) await f.fill(value);
     }
-    for (const [label, value] of Object.entries({ Country: "Israel", "ZIP": "12345", "Postal code": "12345" })) {
+    for (const [label, value] of Object.entries({ Country: "Israel", "Postcode": "12345", "ZIP": "12345", "Postal code": "12345" })) {
       const f = p.getByLabel(new RegExp(`^${label}`, "i")).first();
       if ((await f.count()) && (await f.evaluate((el) => el.tagName !== "SELECT"))) await f.fill(value);
     }

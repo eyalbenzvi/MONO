@@ -206,7 +206,11 @@ export const otherColor = (c: BaseColor): BaseColor => (c === "black" ? "white" 
 export const skuFor = (sku: string, color: BaseColor) =>
   sku.replace(/-[BW]-/, `-${color === "black" ? "B" : "W"}-`);
 
-export interface Order {
+/**
+ * What's kept of an order on this device (the bag's "last order"): no name,
+ * email or address — just the number, the items and the money.
+ */
+export interface OrderRecord {
   number: string;
   items: CartItem[];
   subtotal: number;
@@ -214,9 +218,24 @@ export interface Order {
   discount?: number;
   shipping: number;
   total: number;
+  placedAt: number;
+}
+
+/** Delivery details from the checkout form (held in memory only). */
+export interface Customer {
   name: string;
   email: string;
-  placedAt: number;
+  address: string;
+  city: string;
+  zip: string;
+  country: string;
+}
+
+/** A just-placed order, as the confirmation screen sees it (not persisted). */
+export interface Order extends OrderRecord {
+  customer: Customer;
+  /** Estimated arrival window (timestamps, start of day). */
+  arrives: { from: number; to: number };
 }
 
 export const createInitialVector = (value = 0.5): UserProfileVector =>

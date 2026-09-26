@@ -28,9 +28,37 @@ export const viewport: Viewport = {
   themeColor: "#050505",
 };
 
+/**
+ * Content Security Policy (a meta tag: GitHub Pages can't send headers).
+ * Scripts and styles need 'unsafe-inline' — Next's static export inlines its
+ * bootstrap data, and motion styles are inline. Images: our own files plus
+ * data:/blob: (the share image). Requests: our origin, and the API when one
+ * is configured. Production only (the dev server needs eval).
+ */
+const API_ORIGIN = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).origin : "";
+  } catch {
+    return "";
+  }
+})();
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  `connect-src 'self'${API_ORIGIN ? ` ${API_ORIGIN}` : ""}`,
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
+      <head>{process.env.NODE_ENV === "production" && <meta httpEquiv="Content-Security-Policy" content={CSP} />}</head>
       <body className="antialiased">
         <AppShell>{children}</AppShell>
       </body>
