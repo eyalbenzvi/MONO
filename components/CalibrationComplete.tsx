@@ -66,7 +66,7 @@ export function CalibrationComplete() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="calib-title"
-            className="no-scrollbar max-h-[calc(100dvh-24px)] w-full max-w-md overflow-y-auto rounded-[28px] border border-white/10 bg-ink-900 p-5 pb-[max(env(safe-area-inset-bottom),16px)] shadow-2xl"
+            className="no-scrollbar max-h-[calc(100dvh-24px)] w-full max-w-md overflow-y-auto rounded-[28px] border border-white/10 bg-ink-900 p-5 !pb-0 shadow-2xl max-[339px]:p-4"
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 60, opacity: 0 }}
@@ -97,7 +97,7 @@ export function CalibrationComplete() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.55 + i * 0.08 }}
-                    className="absolute left-1.5 top-1.5 rounded-full bg-white px-2 py-0.5 text-xs font-bold text-black"
+                    className="absolute left-1.5 top-1.5 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-xs font-bold text-black max-[339px]:hidden"
                   >
                     Top pick
                   </motion.span>
@@ -130,7 +130,11 @@ export function CalibrationComplete() {
 
             <DropSignup source="calibration" className="!mt-4" />
 
-            <div className="mt-5 grid gap-1">
+            {/* The way out stays in reach on short screens (landscape, 280 px). */}
+            {/* The dialog has no bottom padding (a sticky footer would stop above
+                it and let content show through); the footer carries it. Phones
+                sideways: the two buttons side by side. */}
+            <div className="sticky bottom-0 -mx-5 mt-5 grid gap-1 bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 max-[339px]:-mx-4 max-[339px]:px-4 [@media(max-height:500px)]:grid-cols-2">
               <Link
                 href="/shop/"
                 onClick={close}

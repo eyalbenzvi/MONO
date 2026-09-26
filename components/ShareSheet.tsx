@@ -189,8 +189,14 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
         </div>
 
         {/* Preview + options */}
-        <div className="mt-4 flex gap-4">
-          <div className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 ${format === "story" ? "h-[196px] w-[110px]" : "h-[150px] w-[150px]"}`}>
+        {/* Narrowest phones: preview above the options. Short (landscape)
+            screens: a smaller preview so the channels stay in reach. */}
+        <div className="mt-4 flex gap-4 max-[339px]:flex-col max-[339px]:items-center">
+          <div
+            className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 ${
+              format === "story" ? "h-[196px] w-[110px] [@media(max-height:500px)]:h-[128px] [@media(max-height:500px)]:w-[72px]" : "h-[150px] w-[150px] [@media(max-height:500px)]:h-[110px] [@media(max-height:500px)]:w-[110px]"
+            }`}
+          >
             {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={preview} alt="Share image preview" className="h-full w-full object-cover" />
@@ -203,7 +209,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tee</p>
-              <div className="flex gap-2" role="radiogroup" aria-label="Tee colour">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tee colour">
                 {COLORS.map((c) => (
                   <button
                     key={c}
@@ -221,7 +227,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             </div>
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Image</p>
-              <div className="flex gap-2" role="radiogroup" aria-label="Image format">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Image format">
                 {(["story", "square"] as const).map((f) => (
                   <button
                     key={f}
@@ -251,11 +257,11 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
           </button>
         )}
 
-        <div className="mt-5 grid grid-cols-5 gap-x-1 gap-y-4">
+        <div className="mt-5 grid grid-cols-3 gap-x-1 gap-y-4 min-[340px]:grid-cols-4 min-[400px]:grid-cols-5">
           {CHANNELS.map((c) => (
             <button key={c.id} type="button" onClick={() => act(c.id)} disabled={(c.id === "download" || c.id === "instagram" || c.id === "tiktok") && !blob} className="group flex flex-col items-center gap-1.5 disabled:opacity-40">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10 transition-colors group-hover:bg-white/20 group-active:scale-95">{c.icon}</span>
-              <span className="text-xs leading-tight text-neutral-300">{c.label}</span>
+              <span className="w-full truncate text-center text-xs leading-tight text-neutral-300">{c.label}</span>
             </button>
           ))}
         </div>

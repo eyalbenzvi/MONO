@@ -28,9 +28,9 @@ import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { track } from "@/lib/analytics";
 
 type View = "tee" | "print";
-const VIEWS: { value: View; label: string }[] = [
-  { value: "tee", label: "On the tee" },
-  { value: "print", label: "Print" },
+const VIEWS: { value: View; label: string; short: string }[] = [
+  { value: "tee", label: "On the tee", short: "Tee" },
+  { value: "print", label: "Print", short: "Print" },
 ];
 
 /**
@@ -164,7 +164,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
   return (
     // Reaches up under the floating header (see ShopView).
     <div onScroll={onScroll} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
-      <div className="mx-auto max-w-5xl px-4 pb-8 pt-1">
+      <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
         <button type="button" onClick={goBack} className="mb-2 inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
           <ArrowLeft className="h-4 w-4" /> Shop
         </button>
@@ -220,6 +220,15 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
               </motion.div>
             </AnimatePresence>
             <div className="absolute right-3 top-3 z-10 flex gap-2">
+              {/* Narrowest phones only: the buy bar has no room for Share. */}
+              <button
+                type="button"
+                onClick={() => useUiStore.getState().openShare(shirt.id, color)}
+                aria-label={`Share ${shirt.title}`}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/15 backdrop-blur-md hover:bg-black/70 min-[360px]:hidden"
+              >
+                <Share2 className="h-[18px] w-[18px]" />
+              </button>
               <button
                 type="button"
                 onClick={() => setZoom(true)}
@@ -240,11 +249,14 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
                   type="button"
                   aria-pressed={view === v.value}
                   onClick={() => setView(v.value)}
-                  className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors ${
+                  aria-label={v.label}
+                  className={`h-9 rounded-full px-3.5 text-xs font-semibold transition-colors max-[359px]:px-2.5 ${
                     view === v.value ? "bg-white text-black" : "text-neutral-200 hover:text-white"
                   }`}
                 >
-                  {v.label}
+                  {/* Short labels on the narrowest phones, clear of the colour swatches. */}
+                  <span className="max-[359px]:hidden">{v.label}</span>
+                  <span className="min-[360px]:hidden">{v.short}</span>
                 </button>
               ))}
             </div>
@@ -426,7 +438,7 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
         {hydrated && similar.length > 0 && (
           <section className="mt-10">
             <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-4">
               {similar.map((s) => (
                 <ProductCard key={s.id} shirt={s} score={matchScore(vector, s.features)} vector={vector} showMatch={showMatch} onOpen={clearOrigin} />
               ))}
@@ -438,16 +450,20 @@ export function ProductView({ id, details: initialDetails }: { id: string; detai
       <MiniBag shirt={shirt} similar={similar} />
 
       {/* Mobile: sticky buy bar, always visible, never disabled */}
-      <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
+      {/* Narrow phones (< 360 px): tighter gaps, and Share moves up to the
+          image toolbar so price, save and the buy button fit. */}
+      <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
         <div className="min-w-0 flex-1">
           <p className="font-mono text-base font-semibold">{formatPrice(shirt.price)}</p>
           <p className="truncate text-xs text-neutral-400">
-            {COLOR_LABELS[color]} tee{size ? ` · ${size}` : ""}
+            {COLOR_LABELS[color]}
+            <span className="max-[399px]:hidden"> tee</span>
+            {size ? ` · ${size}` : ""}
           </p>
         </div>
         <SaveButton id={shirt.id} size="lg" />
-        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" />
-        <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
+        <ShareButton id={shirt.id} title={shirt.title} color={color} size="lg" className="max-[359px]:hidden" />
+        <BuyButton label={phase === "view" ? "Checkout" : buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
       </div>
     </div>
   );

@@ -45,7 +45,7 @@ export function DropSignup({ source, className = "" }: { source: SignupSource; c
       <label htmlFor={`drop-${source}`} className="block text-sm font-semibold">
         Save your taste · get new tees that match you
       </label>
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex gap-2 max-[339px]:flex-col">
         <input
           id={`drop-${source}`}
           type="email"
@@ -60,7 +60,7 @@ export function DropSignup({ source, className = "" }: { source: SignupSource; c
           }}
           aria-invalid={state === "error"}
           aria-describedby={state === "error" ? `drop-${source}-err` : undefined}
-          className={`h-11 min-w-0 flex-1 rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none placeholder:text-neutral-600 ${
+          className={`h-11 min-w-0 flex-1 rounded-xl max-[339px]:flex-none bg-white/[0.05] px-3 text-sm text-white outline-none placeholder:text-neutral-600 ${
             state === "error" ? "ring-2 ring-white" : "ring-1 ring-white/10 focus:ring-white/50"
           }`}
         />

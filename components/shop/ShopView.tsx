@@ -23,11 +23,37 @@ const TEE_VIEWS: { value: TeeView; label: string }[] = [
   { value: "white", label: "White tees" },
 ];
 
-/** Preview every print on one tee colour (each comes in both). */
+const swatchClass = (v: TeeView) =>
+  v === "original" ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-white/40" : v === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20";
+
+/**
+ * Preview every print on one tee colour (each comes in both). Phones get
+ * one button that cycles original → black → white (the chips need the
+ * room); wider screens show the three options.
+ */
 function TeeViewToggle({ value, onChange }: { value: TeeView; onChange: (v: TeeView) => void }) {
+  const i = TEE_VIEWS.findIndex((v) => v.value === value);
+  const next = TEE_VIEWS[(i + 1) % TEE_VIEWS.length];
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onChange(next.value)}
+        aria-label={`Preview tees in: ${TEE_VIEWS[i].label}. Change to ${next.label.toLowerCase()}`}
+        title={TEE_VIEWS[i].label}
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.05] ring-1 ring-white/10 sm:hidden"
+      >
+        <span aria-hidden className={`h-5 w-5 rounded-full ring-1 ${swatchClass(value)}`} />
+      </button>
+      <TeeViewRadios value={value} onChange={onChange} />
+    </>
+  );
+}
+
+function TeeViewRadios({ value, onChange }: { value: TeeView; onChange: (v: TeeView) => void }) {
   const keys = radioKeys(TEE_VIEWS.map((v) => v.value), value, onChange);
   return (
-    <div className="flex shrink-0 rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10" role="radiogroup" aria-label="Preview tees in">
+    <div className="hidden shrink-0 rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10 sm:flex" role="radiogroup" aria-label="Preview tees in">
       {TEE_VIEWS.map((v, i) => (
         <button
           key={v.value}
@@ -141,7 +167,7 @@ export function ShopView() {
       {/* A spacer, not padding: sticky offsets are measured inside the
           scroller's padding, which would push the filter bar down. */}
       <div aria-hidden className="h-[var(--header-h)]" />
-      <div className="mx-auto max-w-5xl px-4 pb-16">
+      <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
         {/* One-line taste summary / taste-test nudge (height kept before hydration). */}
         {!hydrated ? (
           <div className="h-11" />
@@ -152,7 +178,7 @@ export function ShopView() {
                 <span className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-white">
                   <Sparkles className="h-4 w-4" /> Ranked for you
                 </span>
-                <div className="no-scrollbar flex min-w-0 gap-1.5 overflow-x-auto">
+                <div className="flex min-w-0 gap-1.5 overflow-hidden">
                   {traits.map((k) => (
                     <span key={k} className="shrink-0 rounded-full bg-white/[0.06] px-2.5 py-1 text-xs text-neutral-200 ring-1 ring-white/10">
                       {FEATURE_LABELS[k]}
@@ -163,7 +189,7 @@ export function ShopView() {
             ) : (
               <>
                 <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
-                  {total} swipes → ranked for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
+                  {total} swipes → <span className="max-[339px]:hidden">ranked </span>for you{done > 0 && <span className="text-neutral-400"> · {done}/{total}</span>}
                 </span>
                 <Link href="/" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-xs font-bold text-black">
                   Start <ArrowRight className="h-3.5 w-3.5" />
@@ -224,7 +250,7 @@ export function ShopView() {
             card sizes, nothing moves). */}
         {visible.length > 0 ? (
             <>
-              <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+              <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6">
                 {visible.slice(0, limit).map(({ shirt, score, variations, wildcard }) => (
                   <ProductCard
                     key={shirt.id}

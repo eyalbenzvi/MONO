@@ -41,6 +41,9 @@ export function ZoomViewer({
 }) {
   const [view, setView] = useState<View>(initialView);
   const [t, setT] = useState<Transform>({ s: 1, x: 0, y: 0 });
+  // The hint names the gestures of the device in hand.
+  const [coarse, setCoarse] = useState(true);
+  useEffect(() => setCoarse(window.matchMedia("(pointer: coarse)").matches), []);
   const panel = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -204,7 +207,9 @@ export function ZoomViewer({
         <button type="button" onClick={() => step(1 / 1.6)} disabled={t.s <= MIN} aria-label="Zoom out" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 disabled:opacity-40">
           <Minus className="h-5 w-5" />
         </button>
-        <span className="w-28 text-center font-mono text-xs text-neutral-400">{t.s > 1.02 ? `${t.s.toFixed(1)}×` : "Pinch or double-tap"}</span>
+        <span className="min-w-28 whitespace-nowrap text-center font-mono text-xs text-neutral-400">
+          {t.s > 1.02 ? `${t.s.toFixed(1)}×` : coarse ? "Pinch or double-tap" : "Scroll or double-click"}
+        </span>
         <button type="button" onClick={() => step(1.6)} disabled={t.s >= MAX} aria-label="Zoom in" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 disabled:opacity-40">
           <Plus className="h-5 w-5" />
         </button>

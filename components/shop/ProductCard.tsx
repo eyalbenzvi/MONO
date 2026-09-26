@@ -47,6 +47,7 @@ export const ProductCard = memo(function ProductCard({
   onOpen?: (id: string) => void;
 }) {
   const tee = color ?? shirt.baseColor;
+  const newThisWeek = isNewThisWeek(shirt.dropWeek);
   // Only the upper tiers get a badge; below that it's noise, not information.
   const tier = showMatch ? (topPick ? "top" : tierOf(vector, score)) : null;
   // `isolate`: the card's own controls (z-10/z-20) stack inside the card and
@@ -56,46 +57,45 @@ export const ProductCard = memo(function ProductCard({
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate has-[[aria-expanded=true]]:z-10">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ring-1 ring-white/10 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
-        {(wildcard || isNewThisWeek(shirt.dropWeek)) && (
-          <span className="absolute bottom-2 left-2 rounded-full border border-dashed border-white/50 bg-black/60 px-2 py-0.5 text-xs font-semibold text-white">
-            {isNewThisWeek(shirt.dropWeek) ? "New this week" : "Wildcard"}
-          </span>
-        )}
         {/* Above the stretched link's ::after (z-10 in the same stacking context). */}
         <QuickAdd shirt={shirt} color={tee} variant="overlay" className="absolute bottom-2 right-2 z-10" />
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
-        <div className="min-w-0">
-          <Link
-            href={productHref(shirt.id)}
-            onClick={() => {
-              if (color) useCartStore.getState().setColor(shirt.id, color);
-              onOpen?.(shirt.id);
-            }}
-            className="block truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
-            aria-label={`${shirt.title}, ${formatPrice(shirt.price)}${tier ? `, ${TIER_LABEL[tier]}` : ""}${variations ? `, ${variations} variations` : ""}`}
-          >
-            {shirt.title}
-          </Link>
-          <p className="truncate text-xs text-neutral-400">
-            <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
-          </p>
-          {variations > 0 && (
-            <p className="truncate text-xs text-neutral-400">
-              +{variations} variation{variations === 1 ? "" : "s"}
-            </p>
-          )}
-        </div>
+        <Link
+          href={productHref(shirt.id)}
+          onClick={() => {
+            if (color) useCartStore.getState().setColor(shirt.id, color);
+            onOpen?.(shirt.id);
+          }}
+          className="block min-w-0 truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
+          aria-label={`${shirt.title}, ${formatPrice(shirt.price)}${tier ? `, ${TIER_LABEL[tier]}` : ""}${variations ? `, ${variations} variations` : ""}`}
+        >
+          {shirt.title}
+        </Link>
         <span className="shrink-0 font-mono text-sm">{formatPrice(shirt.price)}</span>
       </div>
-      {/* Siblings of the link, stacked above its ::after (and outside the
-          image's overflow clip, so the badge's "why" can open over the grid). */}
-      {tier && (
-        <div className="absolute left-2 top-2 z-20">
-          <MatchBadge tier={tier} size="sm" quiet={!topPick} why={() => explainMatch(vector, shirt.features)} />
+      <p className="truncate px-0.5 text-xs text-neutral-400">
+        <TeeDot color={tee} /> {COLOR_LABELS[tee]} · {CATEGORY_LABELS[shirt.category]}
+      </p>
+      {/* Match, tags and variations live under the name, not on the image,
+          so nothing there can collide with share / save / quick add. The row
+          sits above the stretched link so the badge's "why" can open. */}
+      {(tier || wildcard || newThisWeek || variations > 0) && (
+        <div className="relative z-20 mt-1.5 flex flex-wrap items-center gap-1.5 px-0.5">
+          {tier && <MatchBadge tier={tier} size="sm" quiet={!topPick} why={() => explainMatch(vector, shirt.features)} />}
+          {(newThisWeek || wildcard) && (
+            <span className="rounded-full border border-dashed border-white/50 px-2 py-0.5 text-xs font-semibold text-white">{newThisWeek ? "New this week" : "Wildcard"}</span>
+          )}
+          {variations > 0 && (
+            <span className="pointer-events-none text-xs text-neutral-400">
+              +{variations} variation{variations === 1 ? "" : "s"}
+            </span>
+          )}
         </div>
       )}
-      <ShareButton id={shirt.id} title={shirt.title} color={tee} className="absolute right-12 top-2 z-10 h-8 w-8" />
+      {/* Siblings of the link, stacked above its ::after; 14 px apart so
+          their enlarged touch areas don't overlap. */}
+      <ShareButton id={shirt.id} title={shirt.title} color={tee} className="absolute right-[54px] top-2 z-10 h-8 w-8" />
       <SaveButton id={shirt.id} className="absolute right-2 top-2 z-10 h-8 w-8" />
     </motion.div>
   );

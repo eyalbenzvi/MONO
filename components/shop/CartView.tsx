@@ -42,7 +42,7 @@ export function CartView() {
 
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-3xl px-4 pb-28 pt-1">
+      <div className={`mx-auto px-4 pb-28 pt-1 ${step !== "done" && count > 0 ? "max-w-3xl lg:max-w-5xl" : "max-w-3xl"}`}>
         <div className="mb-4 flex items-center justify-between">
           {step === "details" ? (
             <button type="button" onClick={() => setStep("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
@@ -53,7 +53,7 @@ export function CartView() {
               <ArrowLeft className="h-4 w-4" /> Continue shopping
             </Link>
           )}
-          <Steps step={step} />
+          {count > 0 && <Steps step={step} />}
         </div>
 
         <h1 className="mb-4 text-2xl font-bold tracking-tight">{step === "bag" ? "Your bag" : "Delivery details"}</h1>
@@ -70,11 +70,15 @@ export function CartView() {
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
+            <Suggestions exclude={[]} title="Picked from your taste" />
           </div>
         ) : step === "bag" ? (
           <>
-            <FreeShippingBar toFree={toFree} />
-            <ul className="space-y-3">
+            {/* Large screens: lines on the left, summary + checkout on the right (sticky). */}
+            <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
+              <div>
+                <FreeShippingBar toFree={toFree} />
+                <ul className="space-y-3">
               <AnimatePresence initial={false}>
                 {lines.map((line) => (
                   <motion.li
@@ -85,7 +89,7 @@ export function CartView() {
                     exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
                     className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
                   >
-                    <Link href={productHref(line.id)} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>
+                    <Link tabIndex={-1} aria-hidden href={productHref(line.id)} className={`w-20 shrink-0 self-start rounded-xl p-1.5 max-[339px]:w-14 ${STAGE_BG}`}>
                       <TeeMockup shirt={line.shirt} color={line.color} shadow={false} className="w-full" />
                     </Link>
                     <div className="flex min-w-0 flex-1 flex-col">
@@ -101,7 +105,7 @@ export function CartView() {
                         </div>
                         <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
                       </div>
-                      <div className="mt-auto flex items-center gap-2 pt-2">
+                      <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
                         <select
                           value={line.size}
                           onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
@@ -131,7 +135,9 @@ export function CartView() {
                   </motion.li>
                 ))}
               </AnimatePresence>
-            </ul>
+                </ul>
+              </div>
+              <div className="lg:sticky lg:top-4 lg:[&>*:first-child]:mt-0">
             <Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} />
             <button
               type="button"
@@ -146,6 +152,8 @@ export function CartView() {
             <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
               <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
             </p>
+              </div>
+            </div>
             <Suggestions exclude={cart.map((l) => l.id)} title="One more from your taste" />
           </>
         ) : (
@@ -172,7 +180,7 @@ function Steps({ step }: { step: Step }) {
   const steps: Step[] = ["bag", "details", "done"];
   const idx = steps.indexOf(step);
   return (
-    <div className="flex items-center gap-1.5" aria-label={`Step ${idx + 1} of 3`}>
+    <div className="flex items-center gap-1.5" role="img" aria-label={`Step ${idx + 1} of 3`}>
       {steps.map((s, i) => (
         <span key={s} className={`h-1.5 rounded-full transition-all ${i <= idx ? "w-6 bg-white" : "w-3 bg-white/20"}`} />
       ))}
@@ -196,20 +204,25 @@ function FreeShippingBar({ toFree }: { toFree: number }) {
 
 /**
  * Three prints not already chosen: the best matches once the taste test is
- * done, otherwise from Saved. Nothing honest to suggest → nothing shown.
+ * done, otherwise from Saved, otherwise the editors' picks.
  * Used in the bag ("One more from your taste") and after an order ("Your
  * next match").
  */
-function Suggestions({ exclude, title }: { exclude: string[]; title: string }) {
+function Suggestions({ exclude, title: heading }: { exclude: string[]; title: string }) {
+  let title = heading;
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const likedIds = useTasteStore((s) => s.likedIds);
   const skip = familiesOf(exclude);
   const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
-  const picks = showMatch
+  const fromTaste = showMatch
     ? pool(rankShirts(vector, SHIRTS).map((r) => r.shirt)).slice(0, 3)
     : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
+  // No taste yet and nothing saved: the editors' order (the generator's
+  // fixed ranking — not usage data), titled as exactly that.
+  const picks = fromTaste.length ? fromTaste : pool(rankShirts(vector, SHIRTS, "popular").map((r) => r.shirt)).slice(0, 3);
   if (picks.length === 0) return null;
+  if (!fromTaste.length) title = "Editors' picks";
   return (
     <section className="mt-8 w-full text-left">
       <h2 className="mb-3 text-sm font-semibold">{title}</h2>
@@ -362,6 +375,9 @@ function DetailsForm({
         onSubmit({ name: t("name"), email: t("email"), address: t("address"), city: t("city"), zip: t("zip").toUpperCase(), country: values.country });
       }}
     >
+      {/* Large screens: details on the left, the order + pay button on the right (sticky). */}
+      <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
+      <div>
       {EXPRESS_PAY && (
         <>
           <button type="button" className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black">
@@ -372,7 +388,7 @@ function DetailsForm({
       )}
       <div className="grid gap-3">
         {FIELDS.slice(0, 4).map(field)}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
           {field(FIELDS[4])}
           <label className="block">
             <span className="mb-1 block text-xs text-neutral-400">Country</span>
@@ -415,7 +431,7 @@ function DetailsForm({
             </button>
           </div>
         ) : (
-          <button type="button" onClick={() => setPromoOpen(true)} aria-expanded={false} className="text-xs font-medium text-neutral-300 underline underline-offset-4 hover:text-white">
+          <button type="button" onClick={() => setPromoOpen(true)} aria-expanded={false} className="-ml-1 inline-flex h-10 items-center px-1 text-xs font-medium text-neutral-300 underline underline-offset-4 hover:text-white">
             Have a promo code?
           </button>
         )}
@@ -426,12 +442,15 @@ function DetailsForm({
         )}
       </div>
 
+      </div>
+      <div className="lg:sticky lg:top-4">
       {/* What's being ordered, at a glance. */}
-      <ul className="mt-5 flex gap-2 overflow-x-auto" aria-label="Items">
+      {/* pt-2: room for the quantity badges, which sit above the thumbnails. */}
+      <ul className="mt-3 flex gap-2 overflow-x-auto pr-1 pt-2" aria-label="Items">
         {lines.map((l) => (
           <li key={`${l.id}-${l.size}-${l.color}`} className={`relative w-14 shrink-0 rounded-lg p-1 ${STAGE_BG}`}>
             <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />
-            {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-[11px] font-bold text-black">{l.qty}</span>}
+            {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
             <span className="sr-only">
               {l.qty} × {l.shirt.title}, {COLOR_LABELS[l.color]}, {l.size}
             </span>
@@ -446,6 +465,8 @@ function DetailsForm({
       <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
         Place demo order · {formatPrice(total)}
       </button>
+      </div>
+      </div>
     </form>
   );
 }
@@ -466,13 +487,16 @@ function Confirmation({ order }: { order: Order }) {
         </motion.div>
         <h1 className="mt-4 text-2xl font-bold tracking-tight">Order placed</h1>
         <p className="mt-1 text-sm text-neutral-400">
-          Thanks, {order.customer.name.split(" ")[0]}. Demo order <span className="font-mono text-white">{order.number}</span> — a confirmation would go to{" "}
+          Thanks, {order.customer.name.split(" ")[0]}. Demo order <span className="whitespace-nowrap font-mono text-white">{order.number}</span> — a confirmation would go to{" "}
           {order.customer.email}.
         </p>
-        <p className="mt-2 flex items-center gap-1.5 text-sm text-neutral-300">
-          <Truck className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })} · {order.customer.city}
+        {/* Icon and text wrap as one centred group; the city never splits. */}
+        <p className="mt-2 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-neutral-300">
+          <Truck className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+          <span>Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })}</span>
+          <span className="whitespace-nowrap">in {order.customer.city}</span>
         </p>
-        <div className="mt-6 flex w-full justify-center -space-x-6">
+        <div className="mt-6 flex w-full justify-center -space-x-3">
           {lines.slice(0, 4).map((l) => (
             <div key={`${l.id}-${l.size}-${l.color}`} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
               <TeeMockup shirt={l.shirt} color={l.color} shadow={false} className="w-full" />

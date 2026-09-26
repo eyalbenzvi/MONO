@@ -37,7 +37,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 36 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg rounded-t-3xl bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-4 ring-1 ring-white/10"
+            className="no-scrollbar fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] max-w-lg overflow-y-auto rounded-t-3xl bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-4 ring-1 ring-white/10"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -64,9 +64,11 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/[0.04] px-4 py-3 ring-1 ring-white/10">
               <div>
                 <p className="text-sm font-semibold">Daily 5</p>
-                <p className="text-xs text-neutral-400">Swipe five new tees a day{streak > 0 ? ` · ${streak}-day streak` : ""}</p>
+                <p className="text-xs text-neutral-400">
+                  Swipe five new tees a day{streak > 0 && <span className="whitespace-nowrap"> · {streak}-day streak</span>}
+                </p>
               </div>
-              <span className="font-mono text-sm">
+              <span className="ml-3 shrink-0 font-mono text-sm">
                 {Math.min(todayCount, DAILY_GOAL)}/{DAILY_GOAL}
               </span>
             </div>

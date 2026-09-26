@@ -50,7 +50,8 @@ export function SortSheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 36 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg rounded-t-3xl bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-4 ring-1 ring-white/10"
+            // Phones: a bottom sheet. Large screens: a panel near the trigger (top right).
+            className="no-scrollbar fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] max-w-lg overflow-y-auto rounded-t-3xl bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-4 ring-1 ring-white/10 lg:inset-x-auto lg:bottom-auto lg:right-[max(2rem,calc(50%-32rem))] lg:top-[calc(var(--header-h)+112px)] lg:w-80 lg:rounded-3xl lg:pb-5 lg:shadow-2xl lg:shadow-black"
           >
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold">Sort</h2>

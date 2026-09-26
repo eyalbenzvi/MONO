@@ -192,16 +192,16 @@ function ListActions({ items }: { items: ShirtProduct[] }) {
   };
   return (
     <div className="mb-3">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => (preferred ? addAll(preferred) : setPick((p) => !p))}
           aria-expanded={preferred ? undefined : pick}
-          className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-white text-sm font-bold text-black"
+          className="flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 text-sm font-bold text-black"
         >
           <ShoppingBag className="h-4 w-4" /> Add all{preferred ? ` · ${preferred}` : ""}
         </button>
-        <button type="button" onClick={shareList} className="flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5">
+        <button type="button" onClick={shareList} className="flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/5">
           <Share2 className="h-4 w-4" /> Share my list
         </button>
       </div>
@@ -238,17 +238,20 @@ function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavi
       data-saved-row={shirt.id}
       className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
     >
-      <Link href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
+      <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={color} shadow={false} className="w-full" />
       </Link>
-      <Link href={productHref(shirt.id)} onClick={onNavigate} className="min-w-0 flex-1 py-0.5">
-        <p className="truncate text-sm font-semibold">{shirt.title}</p>
-        <p className="truncate text-xs text-neutral-400">
-          {formatPrice(shirt.price)}
-          {tier ? ` · ${TIER_LABEL[tier]}` : ""}
-        </p>
-      </Link>
-      <QuickAdd shirt={shirt} color={color} />
+      {/* Name first, the "+" under it: the name keeps the full width at any size. */}
+      <div className="min-w-0 flex-1">
+        <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
+          <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
+          <p className="truncate text-xs text-neutral-400">
+            {formatPrice(shirt.price)}
+            {tier ? ` · ${TIER_LABEL[tier]}` : ""}
+          </p>
+        </Link>
+        <QuickAdd shirt={shirt} color={color} compact className="mt-1 w-fit" />
+      </div>
       <button
         type="button"
         onClick={onRemove}
