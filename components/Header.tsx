@@ -94,7 +94,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
           <IconButton label={`Saved (${savedCount})`} count={hydrated ? savedCount : 0} onClick={onOpenSaved} savedTarget>
             <Heart className="h-5 w-5" />
           </IconButton>
-          <IconButton label={`Bag (${cartCount})`} count={hydrated ? cartCount : 0} href="/cart/">
+          <IconButton label={`Bag (${cartCount})`} count={hydrated ? cartCount : 0} href="/cart/" active={pathname.startsWith("/cart")}>
             <ShoppingBag className="h-5 w-5" />
           </IconButton>
         </div>
@@ -109,6 +109,7 @@ function IconButton({
   onClick,
   href,
   savedTarget,
+  active = false,
   children,
 }: {
   label: string;
@@ -117,10 +118,13 @@ function IconButton({
   href?: string;
   /** Where the "liked" heart flies to. */
   savedTarget?: boolean;
+  /** The page this icon leads to is open: filled, and aria-current. */
+  active?: boolean;
   children: React.ReactNode;
 }) {
-  const className =
-    "relative flex h-11 w-11 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 transition active:scale-90 hover:bg-white/10";
+  const className = `relative flex h-11 w-11 items-center justify-center rounded-full ring-1 transition active:scale-90 ${
+    active ? "bg-white text-black ring-white" : "bg-white/5 ring-white/10 hover:bg-white/10"
+  }`;
   const badge = (
     <AnimatePresence>
       {count > 0 && (
@@ -131,7 +135,9 @@ function IconButton({
           animate={{ scale: [0.4, 1.35, 1], opacity: 1 }}
           exit={{ scale: 0.4, opacity: 0 }}
           transition={{ duration: 0.35, delay: savedTarget ? 0.4 : 0 }}
-          className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 font-mono text-[11px] font-bold text-black"
+          className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 font-mono text-[11px] font-bold ${
+            active ? "bg-black text-white ring-1 ring-white" : "bg-white text-black"
+          }`}
         >
           {count}
         </motion.span>
@@ -140,7 +146,7 @@ function IconButton({
   );
   const target = savedTarget ? { "data-saved-target": "" } : {};
   return href ? (
-    <Link href={href} aria-label={label} className={className}>
+    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
       {children}
       {badge}
     </Link>

@@ -210,6 +210,8 @@ export interface Order {
   number: string;
   items: CartItem[];
   subtotal: number;
+  /** Pair discount (black + white of one print), if any. */
+  discount?: number;
   shipping: number;
   total: number;
   name: string;

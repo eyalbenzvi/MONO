@@ -50,7 +50,8 @@ interface TasteActions {
   toggleSaved: (id: string) => void;
   removeLiked: (id: string) => void;
   /** Put a removed tee back in Saved without training on it again. */
-  restoreSaved: (id: string) => void;
+  /** Put a removed id back (at its old position in likedIds, when given). */
+  restoreSaved: (id: string, at?: number) => void;
   acknowledgeCalibration: () => void;
   reset: () => void;
   /** The persisted part of the state (e.g. to undo a reset). */
@@ -251,7 +252,12 @@ export const useTasteStore = create<TasteState & TasteActions>()(
 
       removeLiked: (id) => set((s) => ({ likedIds: s.likedIds.filter((x) => x !== id) })),
 
-      restoreSaved: (id) => set((s) => (s.likedIds.includes(id) ? {} : { likedIds: [...s.likedIds, id] })),
+      restoreSaved: (id, at) =>
+        set((s) => {
+          if (s.likedIds.includes(id)) return {};
+          const i = at === undefined ? s.likedIds.length : Math.min(Math.max(0, at), s.likedIds.length);
+          return { likedIds: [...s.likedIds.slice(0, i), id, ...s.likedIds.slice(i)] };
+        }),
 
       acknowledgeCalibration: () => set({ calibrationAcknowledged: true }),
 

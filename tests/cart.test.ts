@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   FREE_SHIPPING_THRESHOLD,
   MAX_QTY,
+  PAIR_PRICE,
   SHIPPING_FEE,
   addItem,
   cartTotals,
@@ -99,6 +100,37 @@ describe("cart", () => {
     expect(many.subtotal).toBe(a.price * 2 + b.price);
     expect(many.shipping).toBe(0);
     expect(cartTotals([]).total).toBe(0);
+  });
+
+  it("the pair (same print, black + white) costs $90 as a bundle discount (F5)", () => {
+    expect(PAIR_PRICE).toBe(90);
+    const pair = cartTotals([
+      { id: a.id, size: "M", color: "black", qty: 1 },
+      { id: a.id, size: "L", color: "white", qty: 1 },
+    ]);
+    expect(pair.subtotal).toBe(96);
+    expect(pair.discount).toBe(6);
+    expect(pair.pairs).toEqual([{ id: a.id, pairs: 1, saving: 6 }]);
+    expect(pair.shipping).toBe(0);
+    expect(pair.total).toBe(90);
+    // two black + one white of the same print = one pair; other prints don't pair up
+    const mixed = cartTotals([
+      { id: a.id, size: "M", color: "black", qty: 2 },
+      { id: a.id, size: "M", color: "white", qty: 1 },
+      { id: b.id, size: "M", color: "white", qty: 1 },
+    ]);
+    expect(mixed.discount).toBe(6);
+    expect(mixed.total).toBe(48 * 4 - 6);
+    // two full pairs
+    expect(cartTotals([{ id: a.id, size: "S", color: "black", qty: 2 }, { id: a.id, size: "XL", color: "white", qty: 2 }]).discount).toBe(12);
+    // one colour only: no discount
+    expect(cartTotals([{ id: a.id, size: "M", color: "black", qty: 3 }]).discount).toBe(0);
+  });
+
+  it("free shipping progress counts the discounted goods", () => {
+    const one = cartTotals([{ id: a.id, size: "M", color: "black", qty: 1 }]);
+    expect(one.toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD - 48);
+    expect(cartTotals([]).toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD);
   });
 
   it("ignores unknown ids", () => {

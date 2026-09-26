@@ -1,15 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Heart, Share2, ShoppingBag, X } from "lucide-react";
+import { ArrowRight, Heart, Share2, ShoppingBag, Undo2, X } from "lucide-react";
 import { TeeMockup } from "@/components/TeeMockup";
 import { ColorSelector, SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById, productHref } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
-import { useCartCount, useCartStore } from "@/store/cartStore";
+import { sizeFor, useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
@@ -20,7 +20,39 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const likedIds = useTasteStore((s) => s.likedIds);
   const cartCount = useCartCount();
   const panel = useRef<HTMLElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const list = useRef<HTMLUListElement>(null);
   useFocusTrap(panel, open, onClose);
+  // The last removal, undoable right here (a toast would sit outside the
+  // drawer's focus trap).
+  const [removed, setRemoved] = useState<{ shirt: ShirtProduct; at: number } | null>(null);
+  useEffect(() => {
+    if (!removed) return;
+    const t = setTimeout(() => setRemoved(null), 6000);
+    return () => clearTimeout(t);
+  }, [removed]);
+  useEffect(() => {
+    if (!open) setRemoved(null);
+  }, [open]);
+
+  const remove = (shirt: ShirtProduct, row: number) => {
+    const { likedIds, removeLiked } = useTasteStore.getState();
+    const at = likedIds.indexOf(shirt.id);
+    // Focus the row that moves into its place (or the one above, or the
+    // heading) so keyboard users aren't dropped to the top of the page.
+    const neighbour = items[row + 1] ?? items[row - 1];
+    removeLiked(shirt.id);
+    setRemoved({ shirt, at });
+    requestAnimationFrame(() => {
+      const next = neighbour ? list.current?.querySelector<HTMLElement>(`[data-saved-row="${neighbour.id}"] a`) : null;
+      (next ?? heading.current)?.focus();
+    });
+  };
+  const undo = () => {
+    if (!removed) return;
+    useTasteStore.getState().restoreSaved(removed.shirt.id, removed.at);
+    setRemoved(null);
+  };
 
   const items = likedIds
     .map((id) => getShirtById(id))
@@ -51,7 +83,9 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
           >
             <div className="flex items-center justify-between px-5 pb-3 pt-[max(env(safe-area-inset-top),16px)]">
               <div>
-                <h2 className="text-lg font-bold tracking-tight">Saved</h2>
+                <h2 ref={heading} tabIndex={-1} className="text-lg font-bold tracking-tight outline-none">
+                  Saved
+                </h2>
                 <p className="text-xs text-neutral-400">{items.length} saved</p>
               </div>
               <button
@@ -65,16 +99,36 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
             </div>
 
             <div className="no-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-5">
+              <AnimatePresence initial={false}>
+                {removed && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-white/[0.06] py-2 pl-4 pr-2 text-sm ring-1 ring-white/10">
+                      <span className="min-w-0 truncate text-neutral-300">Removed {removed.shirt.title}</span>
+                      <button type="button" onClick={undo} className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-bold text-black">
+                        <Undo2 className="h-3.5 w-3.5" /> Undo
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <p className="sr-only" aria-live="polite">
+                {removed ? `Removed ${removed.shirt.title}. Undo is available.` : ""}
+              </p>
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 pb-20 text-center text-neutral-400">
                   <Heart className="h-10 w-10" />
                   <p className="text-sm">Swipe right in Discover, or tap ♥ in the shop, to save a tee here.</p>
                 </div>
               ) : (
-                <ul className="space-y-3 pb-4">
+                <ul ref={list} className="space-y-3 pb-4">
                   <AnimatePresence initial={false}>
-                    {items.map((shirt) => (
-                      <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} />
+                    {items.map((shirt, row) => (
+                      <SavedRow key={shirt.id} shirt={shirt} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
                     ))}
                   </AnimatePresence>
                   <li className="pt-1 text-center text-xs text-neutral-400">Swipe a tee left to remove it</li>
@@ -108,23 +162,17 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () => void }) {
+function SavedRow({ shirt, onNavigate, onRemove }: { shirt: ShirtProduct; onNavigate: () => void; onRemove: () => void }) {
   const vector = useTasteStore((s) => s.preferenceVector);
-  const size = useCartStore((s) => s.selectedSizes[shirt.id]);
+  // The size picked for this tee, else the one remembered from any other.
+  const size = useCartStore((s) => sizeFor(s, shirt.id));
   const color: BaseColor = useCartStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
   const setSize = useCartStore((s) => s.setSize);
   const setColor = useCartStore((s) => s.setColor);
-  const removeLiked = useTasteStore((s) => s.removeLiked);
-  const restoreSaved = useTasteStore((s) => s.restoreSaved);
   const addToCart = useCartStore((s) => s.addToCart);
-  const showToast = useUiStore((s) => s.showToast);
   const showMatch = useShowMatch();
   const [nudge, setNudge] = useState(0);
-
-  const remove = () => {
-    removeLiked(shirt.id);
-    showToast("Removed", { label: "Undo", run: () => restoreSaved(shirt.id) });
-  };
+  const remove = onRemove;
 
   return (
     <motion.li
@@ -139,6 +187,7 @@ function SavedRow({ shirt, onNavigate }: { shirt: ShirtProduct; onNavigate: () =
       onDragEnd={(_, info) => {
         if (info.offset.x < -90 || info.velocity.x < -500) remove();
       }}
+      data-saved-row={shirt.id}
       className="relative flex gap-3 rounded-2xl bg-ink-850 p-2.5 ring-1 ring-white/10"
     >
       <Link href={productHref(shirt.id)} onClick={onNavigate} className={`w-20 shrink-0 rounded-xl p-1.5 ${STAGE_BG}`}>

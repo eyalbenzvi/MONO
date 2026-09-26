@@ -3,7 +3,7 @@
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { ShopSort } from "@/lib/recommendation";
-import type { BaseColor, ShirtCategory, SwipeAction } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction } from "@/types/shirt";
 
 export interface ToastState {
   message: string;
@@ -51,6 +51,8 @@ interface UiState {
   productOrigin: string | null;
   /** The tee the share sheet is open for (and in which colourway). */
   share: { id: string; color: BaseColor } | null;
+  /** The last add to the bag (drives the product page's mini bag). */
+  added: AddedNote | null;
 
   setHydrated: () => void;
   toggleFlip: (value?: boolean) => void;
@@ -62,6 +64,17 @@ interface UiState {
   setProductOrigin: (path: string | null) => void;
   openShare: (id: string, color: BaseColor) => void;
   closeShare: () => void;
+  noteAdded: (note: Omit<AddedNote, "nonce">) => void;
+  clearAdded: () => void;
+}
+
+export interface AddedNote {
+  id: string;
+  size: ShirtSize;
+  color: BaseColor;
+  /** Added as the black + white pair. */
+  pair?: boolean;
+  nonce: number;
 }
 
 export const SHOP_PAGE_SIZE = 24;
@@ -89,6 +102,7 @@ export const useUiStore = create<UiState>()((set) => ({
   shop: { category: null, sort: "match", teeView: "original", limit: SHOP_PAGE_SIZE },
   productOrigin: null,
   share: null,
+  added: null,
 
   setDebug: (on) => {
     try {
@@ -104,15 +118,33 @@ export const useUiStore = create<UiState>()((set) => ({
   setProductOrigin: (productOrigin) => set({ productOrigin }),
   openShare: (id, color) => set({ share: { id, color } }),
   closeShare: () => set({ share: null }),
+  noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
+  clearAdded: () => set({ added: null }),
 }));
 
-/** Scroll handler for page scrollers: hide the header scrolling down, show it scrolling up. */
+/** Until this time, scroll events come from code (scrollIntoView), not the user. */
+let programmaticUntil = 0;
+
+/**
+ * Scroll an element into view without it counting as the user scrolling
+ * down (which would hide the header). E.g. "Choose size" jumping to sizes.
+ */
+export function scrollIntoViewQuietly(el: Element | null | undefined, options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" }) {
+  if (!el) return;
+  programmaticUntil = Date.now() + 900;
+  useUiStore.getState().setHeaderHidden(false);
+  el.scrollIntoView(options);
+}
+
+/** Scroll handler for page scrollers: hide the header scrolling down, show it on any scroll up (> 8 px). */
 export function makeHeaderScrollHandler() {
   let last: number | null = null;
   return (e: UIEvent<HTMLElement>) => {
     const y = e.currentTarget.scrollTop;
-    if (last === null) {
-      last = y; // first event after mount (e.g. a restored position) only sets the baseline
+    if (last === null || Date.now() < programmaticUntil) {
+      // First event after mount (e.g. a restored position), or a scroll we
+      // started ourselves: only move the baseline.
+      last = y;
       return;
     }
     const { headerHidden, setHeaderHidden } = useUiStore.getState();
