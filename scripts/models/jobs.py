@@ -25,5 +25,16 @@ for i, man in enumerate(MEN):
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": i % 2,
       # The model reads only ~75 tokens: the tee first, the rest short.
       "prompt": f"plain white short-sleeved t-shirt, smooth taut fabric, back view, {man} {moment}, dark jeans, relaxed arms, straight-on from directly behind, symmetrical, shoulders level, head straight, blurred quiet street, soft light, photo"})
-if only: jobs = jobs[:only]
+# More models: same pose, a different man, build and quiet urban scene each.
+MORE = [
+  ("a stocky broad-shouldered man with a shaved head", "blurred concrete plaza"),
+  ("a tall slim man with short wavy hair", "blurred underpass, soft light"),
+  ("a muscular man with short black hair and a short beard", "blurred plain stone steps"),
+  ("a lean young man with short curly red hair", "blurred empty loft with a large window"),
+]
+for k, (man, scene) in enumerate(MORE):
+    i = len(MEN) + k
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": i % 2,
+      "prompt": f"plain white short-sleeved t-shirt, smooth taut fabric, back view, {man} standing still, dark jeans, relaxed arms, straight-on from directly behind, symmetrical, shoulders level, head straight, {scene}, soft light, photo"})
+if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))

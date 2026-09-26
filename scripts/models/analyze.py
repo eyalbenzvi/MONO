@@ -117,7 +117,7 @@ for j in JOBS:
     out.append({"id": j["id"] + "-white", "color": "white", "box": PRINT_BOX})
     # Full black twin: the tee darkened, its folds keeping a faint sheen.
     if True:
-        dark = 0.02 + 0.14 * np.clip((g - lo) / max(1e-3, 1 - lo), 0, 1) ** 2
+        dark = 0.012 + 0.09 * np.clip((g - lo) / max(1e-3, 1 - lo), 0, 1) ** 2
         twin = g * (1 - soft) + dark * soft
         framed(twin, j["id"] + "-black")
         out.append({"id": j["id"] + "-black", "color": "black", "box": PRINT_BOX})

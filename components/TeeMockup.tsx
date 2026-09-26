@@ -66,8 +66,8 @@ export function TeeMockup({ shirt, color: wanted, className = "", shadow = true,
 /**
  * The tee worn (T2): a greyscale model photo with the print laid onto the
  * middle of the back, blended into the fabric (black ink multiplies onto
- * white cotton, keeping its texture; white ink screens onto black, then the
- * fabric's own shading goes back over the print area).
+ * white cotton, keeping its texture; white ink screens onto black — the
+ * print's black ground disappears into the tee, with no box around it).
  */
 function ModelShot({ shirt, color, model, className, style, priority }: { shirt: ShirtProduct; color: BaseColor; model: NonNullable<ReturnType<typeof modelFor>>; className: string; style?: React.CSSProperties; priority?: boolean }) {
   const black = color === "black";
@@ -85,16 +85,6 @@ function ModelShot({ shirt, color, model, className, style, priority }: { shirt:
       <div className="pointer-events-none absolute overflow-hidden" style={{ ...box, mixBlendMode: black ? "screen" : "multiply" }}>
         <PrintImage shirt={shirt} color={color} priority={priority} />
       </div>
-      {black && (
-        <img
-          src={photo}
-          alt=""
-          draggable={false}
-          decoding="async"
-          className={LAYER}
-          style={{ mixBlendMode: "multiply", opacity: 0.25, clipPath: `inset(${y * 100}% ${(1 - x - w) * 100}% ${(1 - y - h) * 100}% ${x * 100}%)` }}
-        />
-      )}
     </div>
   );
 }
