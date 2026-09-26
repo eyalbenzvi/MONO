@@ -272,16 +272,56 @@ export function rankShirts(
   userVec: UserProfileVector,
   shirts: ShirtProduct[],
   sort: ShopSort = "match",
+  { rotate, demote, rotation = ROTATION }: { rotate?: string | number; demote?: ReadonlySet<string>; rotation?: number } = {},
 ): RankedShirt[] {
   const score = makeScorer(userVec);
-  const ranked = shirts.map((shirt) => ({ shirt, ...score(shirt.features) }));
+  // Rotation (seeded, e.g. by the day): a small, stable nudge per design so
+  // the order refreshes from one day to the next without losing relevance;
+  // `demote`: designs already shown (Discover) step back a little.
+  const nudge = (id: string) => (rotate === undefined ? 0 : hash01(`${rotate}:${id}`));
+  const scored = shirts.map((shirt) => ({ shirt, ...score(shirt.features) }));
+  // The nudge is a share of this profile's own spread of scores (a weak
+  // profile scores everything close together; a fixed nudge would swamp it).
+  const mean = scored.reduce((a, x) => a + x.score, 0) / Math.max(1, scored.length);
+  const sd = Math.sqrt(scored.reduce((a, x) => a + (x.score - mean) ** 2, 0) / Math.max(1, scored.length)) || 1;
+  const ranked = scored.map((x) => ({
+    ...x,
+    key: x.score + (nudge(x.shirt.id) - 0.5) * rotation * sd - (demote?.has(x.shirt.id) ? SEEN_PENALTY * sd : 0),
+    rankKey: x.shirt.rank + nudge(x.shirt.id) * ROTATION_RANKS,
+  }));
   ranked.sort((a, b) => {
-    if (sort === "popular") return a.shirt.rank - b.shirt.rank;
+    if (sort === "popular") return a.rankKey - b.rankKey;
     if (sort === "new" && a.shirt.dropDate !== b.shirt.dropDate) return b.shirt.dropDate - a.shirt.dropDate;
     if (sort === "new") return a.shirt.rank - b.shirt.rank;
-    return b.score - a.score || b.raw - a.raw || a.shirt.id.localeCompare(b.shirt.id);
+    return b.key - a.key || b.raw - a.raw || a.shirt.id.localeCompare(b.shirt.id);
   });
   return ranked.map(({ shirt, score }) => ({ shirt, score }));
+}
+
+/** How far the rotation can move a design: a share of the profile's score spread (sd); editorial ranks. */
+export const ROTATION = 0.5;
+export const ROTATION_RANKS = 120;
+/** What a design already shown in Discover gives up in the shop (in score sd). */
+export const SEEN_PENALTY = 0.3;
+
+/** A stable pseudo-random number in [0, 1) for a string (FNV-1a). */
+export function hash01(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return (h >>> 0) / 2 ** 32;
+}
+
+/** Today's rotation seed (changes at local midnight), personal to this browser: everyone gets their own order. */
+export function daySeed(d = new Date()): string {
+  const day = Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+  let salt = "";
+  try {
+    salt = localStorage.getItem("mono-seed") ?? "";
+    if (!salt) localStorage.setItem("mono-seed", (salt = Math.random().toString(36).slice(2, 10)));
+  } catch {
+    /* storage blocked: a shared order for today */
+  }
+  return `${salt}:${day}`;
 }
 
 /**
