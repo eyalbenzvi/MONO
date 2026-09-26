@@ -60,7 +60,8 @@ test("R06: a dismissed share sheet sends nothing; a copied link counts once", as
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("shop/mono-0001/");
   await hydrated(page);
-  await page.getByRole("button", { name: /^Share / }).first().tap();
+  await page.getByRole("button", { name: /^More for / }).tap();
+  await page.getByRole("button", { name: "Share", exact: true }).tap();
   const sheet = page.getByRole("dialog", { name: /^Share / });
   await sheet.getByRole("button", { name: "Share…" }).tap();
   await page.waitForTimeout(300);

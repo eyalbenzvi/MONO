@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { MoreMenu } from "@/components/MoreMenu";
 import { track } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -13,7 +14,7 @@ import { FEATURE_KEYS, FEATURE_LABELS } from "@/types/shirt";
 /**
  * "Your taste", the one place for the growth bits: the profile in words and
  * bars (the five strongest leanings) with its level, the Daily 5 and streak,
- * Share my taste, and a way to start over. Opened from the Discover strip.
+ * Share my taste; starting over is behind ⋯. Opened from the Discover strip.
  */
 export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -50,9 +51,29 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 <p className="text-xs text-neutral-400">Your taste</p>
                 <h2 className="text-xl font-bold tracking-tight">{name}</h2>
               </div>
-              <button type="button" onClick={onClose} data-autofocus aria-label="Close" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
-                <Icon name="x" className="h-5 w-5" />
-              </button>
+              <div className="-mr-2 flex items-center">
+                {/* Starting over is rare and clears Saved too: behind ⋯ (with Undo right after). */}
+                <MoreMenu
+                  label="More for your taste"
+                  items={[
+                    {
+                      label: "Reset taste (clears Saved, undo right after)",
+                      icon: "rotate-ccw",
+                      danger: true,
+                      onSelect: () => {
+                        onClose();
+                        startOverWithUndo();
+                        // The button that opened this sheet goes with the old profile:
+                        // focus lands on the strip above the card instead of the page.
+                        requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-strip]")?.focus({ preventScroll: true })));
+                      },
+                    },
+                  ]}
+                />
+                <button type="button" onClick={onClose} data-autofocus aria-label="Close" className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
+                  <Icon name="x" className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             <ul className="mt-4 space-y-2.5">
@@ -97,20 +118,6 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
               <Icon name="share-2" className="h-4 w-4" /> {sharing ? "Making your card…" : "Share my taste"}
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                startOverWithUndo();
-                // The button that opened this sheet goes with the old profile:
-                // focus lands on the strip above the card instead of the page.
-                requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-strip]")?.focus({ preventScroll: true })));
-              }}
-              className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5 hover:text-white"
-            >
-              <Icon name="rotate-ccw" className="h-4 w-4" /> Reset taste
-            </button>
-            <p className="mt-1.5 text-center text-xs text-neutral-400">Clears your profile and Saved — you can undo right after.</p>
           </motion.div>
         </>
       )}

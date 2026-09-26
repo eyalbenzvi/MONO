@@ -6,7 +6,7 @@ import Link from "next/link";
 import { radioKeys } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
-import { SharedList, Trending } from "@/components/shop/ShopExtras";
+import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
 import { rankShirts, type ShopSort } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -18,67 +18,6 @@ import { formatPrice } from "@/lib/format";
 
 export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
 
-type TeeView = BaseColor | "original";
-const TEE_VIEWS: { value: TeeView; label: string }[] = [
-  { value: "original", label: "Original colours" },
-  { value: "black", label: "Black tees" },
-  { value: "white", label: "White tees" },
-];
-
-const swatchClass = (v: TeeView) =>
-  v === "original" ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-white/40" : v === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20";
-
-/**
- * Preview every print on one tee colour (each comes in both). Phones get
- * one button that cycles original → black → white (the chips need the
- * room); wider screens show the three options.
- */
-function TeeViewToggle({ value, onChange }: { value: TeeView; onChange: (v: TeeView) => void }) {
-  const i = TEE_VIEWS.findIndex((v) => v.value === value);
-  const next = TEE_VIEWS[(i + 1) % TEE_VIEWS.length];
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => onChange(next.value)}
-        aria-label={`Preview tees in: ${TEE_VIEWS[i].label}. Change to ${next.label.toLowerCase()}`}
-        title={TEE_VIEWS[i].label}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.05] ring-1 ring-white/10 sm:hidden"
-      >
-        <span aria-hidden className={`h-5 w-5 rounded-full ring-1 ${swatchClass(value)}`} />
-      </button>
-      <TeeViewRadios value={value} onChange={onChange} />
-    </>
-  );
-}
-
-function TeeViewRadios({ value, onChange }: { value: TeeView; onChange: (v: TeeView) => void }) {
-  const keys = radioKeys(TEE_VIEWS.map((v) => v.value), value, onChange);
-  return (
-    <div className="hidden shrink-0 rounded-full bg-white/[0.05] p-0.5 ring-1 ring-white/10 sm:flex" role="radiogroup" aria-label="Preview tees in">
-      {TEE_VIEWS.map((v, i) => (
-        <button
-          key={v.value}
-          type="button"
-          role="radio"
-          aria-checked={value === v.value}
-          aria-label={v.label}
-          title={v.label}
-          onClick={() => onChange(v.value)}
-          {...keys(i)}
-          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${value === v.value ? "bg-white/15 ring-1 ring-white" : ""}`}
-        >
-          <span
-            aria-hidden
-            className={`h-4 w-4 rounded-full ring-1 ${
-              v.value === "original" ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-white/40" : v.value === "black" ? "bg-black ring-white/40" : "bg-white ring-black/20"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export function ShopView() {
   const hydrated = useHydrated();
@@ -87,7 +26,6 @@ export function ShopView() {
   // One primitive per selector: the grid re-renders only when these change.
   const category = useUiStore((s) => s.shop.category);
   const chosenSort = useUiStore((s) => s.shop.sort);
-  const teeView = useUiStore((s) => s.shop.teeView);
   const limit = useUiStore((s) => s.shop.limit);
   // Before the taste test there's no taste to rank by: "Popular" (the
   // generator's fixed editorial order — not usage data) is the default.
@@ -123,8 +61,8 @@ export function ShopView() {
   // card when ranking for you.
   const visible = useMemo(() => {
     const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
-    return diversify(filtered, { category: !category, color: teeView === "original", wildcardEvery: sort === "match" ? 8 : 0 });
-  }, [ranked, category, sort, teeView]);
+    return diversify(filtered, { category: !category, color: true, wildcardEvery: sort === "match" ? 8 : 0 });
+  }, [ranked, category, sort]);
   visibleRef.current = visible;
   listIdRef.current = `shop_${sort}${category ? `_${category}` : ""}`;
 
@@ -242,11 +180,9 @@ export function ShopView() {
           }`}
           style={{ top: headerHidden ? 0 : "var(--header-h)" }}
         >
-          {/* Chips fade out at the edge instead of being cut mid-word. */}
-          {/* Phones: one scrolling row that fades out at the edge. Desktop:
-              the chips wrap, so none is ever cut. */}
+          {/* One scrolling row of categories at every width, fading out at the edge. */}
           <div
-            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] lg:flex-wrap lg:overflow-visible lg:pr-0 lg:[mask-image:none]"
+            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
             role="group"
             aria-label="Category"
           >
@@ -259,7 +195,6 @@ export function ShopView() {
               </Chip>
             ))}
           </div>
-          <TeeViewToggle value={teeView} onChange={(v) => setFilter({ teeView: v })} />
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
@@ -275,7 +210,6 @@ export function ShopView() {
         <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />
         <div className="h-2" />
         <SharedList />
-        <Trending />
 
         {/* Rendered on the server too, in the default order ("Popular" — no
             personal data needed), so the page arrives with products. A
@@ -289,7 +223,6 @@ export function ShopView() {
                     key={shirt.id}
                     shirt={shirt}
                     variations={variations}
-                    color={teeView === "original" ? undefined : teeView}
                     topPick={complete && sort === "match" && i === 0}
                     onOpen={openFromGrid}
                   />

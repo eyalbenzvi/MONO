@@ -14,6 +14,7 @@ export const ICONS = {
   "chevron-down": "ChevronDown",
   compass: "Compass",
   download: "Download",
+  ellipsis: "Ellipsis",
   heart: "Heart",
   info: "Info",
   layers: "Layers",

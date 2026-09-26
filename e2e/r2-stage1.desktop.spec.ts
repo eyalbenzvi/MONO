@@ -59,20 +59,23 @@ test.describe("R26: focus never falls back to the page", () => {
     await page.goto("");
     await hydrated(page);
     await page.getByRole("button", { name: /Open your taste profile/ }).click();
-    await page.getByRole("button", { name: "Reset taste" }).click();
+    await page.getByRole("button", { name: "More for your taste" }).click();
+    await page.getByRole("button", { name: /^Reset taste/ }).click();
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => !!document.activeElement?.closest("[data-strip]"))).toBe(true);
   });
 
-  test("picking a size in quick add focuses the button that replaces the sizes", async ({ page }) => {
-    await seed(page);
-    await page.goto("shop/");
+  test("quick add from an empty bag: focus lands on the bag's heading, not the page", async ({ page }) => {
+    // Quick add now lives only on "From your Saved" in an empty bag.
+    await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700"], calibrated: false });
+    await page.goto("cart/");
     await hydrated(page);
     const add = page.getByRole("button", { name: /^Quick add / }).first();
     await add.focus();
     await page.keyboard.press("Enter");
     await page.getByRole("button", { name: "Size M" }).first().click();
-    await expect(page.locator(":focus")).toHaveAttribute("aria-label", /size M$/);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toMatch(/^H[12]$/);
   });
 });
 

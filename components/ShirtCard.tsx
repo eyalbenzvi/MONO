@@ -4,12 +4,12 @@ import { memo } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { QuickAdd } from "@/components/QuickAdd";
+import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
-import { LABEL, MatchBadge, ShareButton, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
+import { LABEL, MatchBadge, STAGE_BG, TeeDot, TraitChips, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { explainMatch } from "@/lib/recommendation";
-import { familySize, productHref } from "@/lib/catalog";
+import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -39,7 +39,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showMatch = useShowMatch();
   const vector = useTasteStore((s) => s.preferenceVector);
   const tier = showMatch ? tierOf(vector, score) : null;
-  const openShare = useUiStore((s) => s.openShare);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -78,28 +77,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
                     <Icon name="compass" className="h-3.5 w-3.5" /> Wildcard
                   </span>
                 )}
-                {/* Share waits for the taste test: until then the card is for rating. */}
-                {isTop && showMatch && (
-                  <button
-                    type="button"
-                    onClick={() => openShare(shirt.id, shirt.baseColor)}
-                    aria-label={`Share ${shirt.title}`}
-                    className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
-                  >
-                    <Icon name="share-2" className="h-[17px] w-[17px]" />
-                  </button>
-                )}
-                {isTop && onZoom && (
-                  <button
-                    type="button"
-                    onClick={onZoom}
-                    data-zoom-button
-                    aria-label="Zoom in on the print"
-                    className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/80"
-                  >
-                    <Icon name="zoom-in" className="h-[18px] w-[18px]" />
-                  </button>
-                )}
               </div>
             </div>
             <div className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-1 [container-type:size]">
@@ -125,7 +102,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           aria-hidden={!showDetails}
           {...inert(!showDetails)}
         >
-          {isTop && <CardDetails shirt={shirt} score={score} />}
+          {isTop && <CardDetails shirt={shirt} score={score} onZoom={onZoom} />}
         </motion.div>
       </motion.div>
     </div>
@@ -140,13 +117,14 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
  */
 const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
 
-function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
+function CardDetails({ shirt, score, onZoom }: { shirt: ShirtProduct; score: number; onZoom?: () => void }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
   const vector = useTasteStore((s) => s.preferenceVector);
   const showMatch = useShowMatch();
   const reasons = showMatch ? explainMatch(vector, shirt.features) : [];
   const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
+  const openShare = useUiStore((s) => s.openShare);
 
   return (
     <div className="flex h-full flex-col">
@@ -154,6 +132,15 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
       <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4 [mask-image:linear-gradient(#000_calc(100%-24px),transparent)]">
         <div className="flex items-center justify-between">
           {showMatch && tierOf(vector, score) ? <MatchBadge tier={tierOf(vector, score)!} /> : <span />}
+          <div className="flex items-center gap-1">
+          {/* Secondary actions live in one menu, not on the card. */}
+          <MoreMenu
+            label={`More for ${shirt.title}`}
+            items={[
+              ...(onZoom ? [{ label: "Zoom in on the print", icon: "zoom-in" as const, onSelect: onZoom }] : []),
+              { label: "Share", icon: "share-2" as const, onSelect: () => openShare(shirt.id, shirt.baseColor) },
+            ]}
+          />
           {/* Closes the details (Undo keeps the ↺ icon to itself). */}
           <button
             type="button"
@@ -163,6 +150,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           >
             <Icon name="x" className="h-5 w-5" />
           </button>
+          </div>
         </div>
 
         <div className="mt-4 flex gap-4">
@@ -191,33 +179,15 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
           <span className="block text-xs text-neutral-400">Also available in {black ? "white" : "black"}</span>
         </p>
 
-        {/* After the taste test: add without leaving Discover (size
-            remembered, else pick one), and share. */}
-        {showMatch && (
-          <div className="mt-3 flex items-center gap-2">
-            <QuickAdd shirt={shirt} long source="discover_card" />
-            <ShareButton id={shirt.id} title={shirt.title} color={shirt.baseColor} className="relative h-9 w-9" />
-          </div>
-        )}
-
-        {familySize(shirt) > 1 && (
-          <Link
-            href={productHref(shirt.id, "#variations")}
-            className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-white/10"
-          >
-            {familySize(shirt) - 1} close variation{familySize(shirt) === 2 ? "" : "s"} in the shop <Icon name="arrow-right" className="h-3.5 w-3.5" />
-          </Link>
-        )}
-
       </div>
 
-      {/* One action here: Like / Pass / Share already sit on the buttons and the card. */}
+      {/* One action here: Like / Pass sit on the buttons below the card. */}
       <div className="border-t border-white/10 bg-ink-900 px-4 py-3">
         <Link
           href={productHref(shirt.id)}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
         >
-          Full details <Icon name="arrow-right" className="h-4 w-4" />
+          View tee <Icon name="arrow-right" className="h-4 w-4" />
         </Link>
       </div>
     </div>

@@ -46,23 +46,27 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     expect(fits).toBe(true);
     await expect(dialog.getByRole("link", { name: /See my shop/ })).toHaveCount(1);
     await expect(dialog.getByRole("button", { name: "Keep swiping" })).toBeVisible();
-    await expect(dialog.getByRole("button", { name: "Share my taste" })).toBeVisible();
+    // T1: no share icon here (sharing your taste lives in Your taste).
+    await expect(dialog.getByRole("button", { name: "Share my taste" })).toHaveCount(0);
     await expect(dialog.locator('a[href*="/shop/mono-"]')).toHaveCount(3);
     await expect(dialog.getByText(/You liked|Your shop is ready|email|Notify/i)).toHaveCount(0);
     await expect(dialog.locator("input")).toHaveCount(0);
   });
 
-  test("before the taste test the card has no Share and no quick add; after, the back offers both", async ({ page }) => {
+  test("T1: the card face holds the tee and its name only — no share, zoom or info buttons; tapping it shows the details", async ({ page }) => {
     await page.goto("");
     await hydrated(page);
-    await expect(page.getByRole("button", { name: /^Share / })).toHaveCount(0);
-    await page.getByRole("button", { name: "Show details" }).tap();
+    const card = page.locator('[aria-roledescription="card"]').first();
+    await expect(page.getByRole("button", { name: /^Share |Zoom in on the print|Show details/ })).toHaveCount(0);
+    await expect(page.getByText(/\$\d/)).toHaveCount(0);
+    await card.tap();
     await page.waitForTimeout(700);
     await expect(page.getByText("Print DNA")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Quick add|Add .* to bag/ })).toHaveCount(0);
+    await expect(card.getByRole("link", { name: /View tee/ })).toBeVisible();
   });
 
-  test("after it: the back says 'Add to bag', has Share, no Print DNA; no streak in the header", async ({ page }) => {
+  test("T1: after the taste test the back has one action (View tee); Share and Zoom are behind ⋯; no streak in the header", async ({ page }) => {
     await seed(page);
     await page.addInitScript(() => {
       const t = JSON.parse(localStorage.getItem("mono-taste")!);
@@ -74,13 +78,15 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     await page.goto("");
     await hydrated(page);
     await expect(page.getByLabel(/streak/i)).toHaveCount(0);
-    await expect(page.locator("header svg.lucide-flame")).toHaveCount(0);
-    await page.getByRole("button", { name: "Show details" }).tap();
+    const back = page.locator('[aria-roledescription="card"]').first();
+    await back.tap();
     await page.waitForTimeout(700);
-    const back = page.locator('[aria-roledescription="card"]');
-    await expect(back.getByRole("button", { name: /Quick add/ })).toContainText("Add to bag");
-    await expect(back.getByRole("button", { name: /^Share / }).last()).toBeVisible();
-    await expect(page.getByText("Print DNA")).toHaveCount(0);
+    await expect(back.getByRole("link", { name: /View tee/ })).toBeVisible();
+    await expect(back.getByRole("button", { name: /Quick add|^Share / })).toHaveCount(0);
+    await back.getByRole("button", { name: /^More for / }).tap();
+    const menu = page.getByRole("dialog", { name: /^More for / });
+    await expect(menu.getByRole("button", { name: "Share" })).toBeVisible();
+    await expect(menu.getByRole("button", { name: "Zoom in on the print" })).toBeVisible();
   });
 
   test("Your taste holds streak, Daily 5, level and Share my taste — no percentages", async ({ page }) => {
@@ -100,7 +106,8 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     await page.goto("");
     await hydrated(page);
     await page.getByRole("button", { name: /Open your taste profile/ }).tap();
-    await page.getByRole("button", { name: "Reset taste" }).tap();
+    await page.getByRole("button", { name: "More for your taste" }).tap();
+    await page.getByRole("button", { name: /^Reset taste/ }).tap();
     const toast = page.locator('div[role="status"][aria-live="polite"] > div').last();
     await expect(toast).toContainText("Started over");
     const title = page.locator('[aria-roledescription="card"] h2').first();
@@ -119,38 +126,32 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(grid.getByRole("button", { name: /^Share / })).toHaveCount(0);
   });
 
-  test("R18: at 375 px quick add's sizes (and their ✕) stay inside the card", async ({ page }) => {
+  test("T1: a grid card is one link and a heart — no quick add, no price", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await seed(page);
     await page.goto("shop/");
     await hydrated(page);
     const card = page.locator("main .grid > div").nth(1);
-    await card.getByRole("button", { name: /^Quick add/ }).tap();
-    const close = card.getByRole("button", { name: "Close sizes" });
-    await expect(close).toBeVisible();
-    const img = (await card.locator("div.overflow-hidden").first().boundingBox())!;
-    const x = (await close.boundingBox())!;
-    expect(x.x + x.width).toBeLessThanOrEqual(img.x + img.width + 0.5);
-    expect(x.x).toBeGreaterThanOrEqual(img.x);
+    await expect(card.getByRole("link")).toHaveCount(1);
+    await expect(card.getByRole("button")).toHaveCount(1);
+    await expect(card.getByRole("button", { name: /Save/ })).toBeVisible();
+    await expect(card.getByText(/\$\d/)).toHaveCount(0);
   });
 
-  test("R13: every add confirms in one row (Added · M, Undo, View bag), also from the grid", async ({ page }) => {
+  test("R13: every add confirms in one row (Added · M, View bag) — nothing else to press", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/");
+    await page.goto("shop/mono-0001/");
     await hydrated(page);
-    const card = page.locator("main .grid > div").first();
-    await card.getByRole("button", { name: /^Quick add/ }).tap();
-    await card.getByRole("button", { name: "Size M" }).tap();
+    await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+    await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toContainText("Added · M");
-    await expect(sheet.getByText("Pairs well with")).toHaveCount(0);
+    await expect(sheet.getByRole("link", { name: "View bag" })).toBeVisible();
+    await expect(sheet.getByRole("button")).toHaveCount(0);
     await expect(page.getByRole("link", { name: /^Bag \(1\)/ })).toBeVisible();
-    await sheet.getByRole("button", { name: "Undo" }).tap();
-    await expect(page.getByRole("link", { name: /^Bag \(0\)/ })).toBeVisible();
-    await expect(sheet).toBeHidden();
   });
 
-  test("R13: closing the mini bag after touching it doesn't leave the next one stuck open", async ({ page }) => {
+  test("R13: the mini bag stays while hovered and leaves by itself after; the next add shows again", async ({ page }) => {
     await seed(page);
     await page.goto("shop/mono-0001/");
     await hydrated(page);
@@ -160,13 +161,13 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toBeVisible();
     await sheet.hover();
-    await sheet.getByRole("button", { name: "Close" }).tap();
-    await expect(sheet).toBeHidden();
-    await page.getByRole("radio", { name: /^Black tee/ }).tap();
-    await buy.tap();
+    await page.waitForTimeout(3000);
     await expect(sheet).toBeVisible();
     await page.mouse.move(5, 5);
     await expect(sheet).toBeHidden({ timeout: 4500 });
+    await page.getByRole("radio", { name: /^Black tee/ }).tap();
+    await buy.tap();
+    await expect(sheet).toBeVisible();
   });
 
   test("R13: the mini bag never covers the sizes or the trust line", async ({ page }) => {
@@ -235,11 +236,13 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(page.getByText(/^\d+ × \d+ cm$/)).toBeVisible();
   });
 
-  test("I15: the zoom reads 'On the tee | Print' and opens in the view on screen", async ({ page }) => {
+  test("I15 / T1: the print-only view is in ⋯; tapping the picture zooms, in the view on screen", async ({ page }) => {
     await seed(page);
     await page.goto("shop/mono-0001/");
     await hydrated(page);
-    await page.getByRole("button", { name: "Print", exact: true }).first().tap();
+    await page.getByRole("button", { name: /^More for / }).tap();
+    await page.getByRole("button", { name: "Show the print only" }).tap();
+    await page.waitForTimeout(500); // the picture cross-fades to the print
     await page.getByRole("button", { name: "Zoom in on the print" }).tap();
     const zoom = page.getByRole("dialog", { name: /zoom/ });
     const views = zoom.getByRole("group", { name: "View" }).getByRole("button");
@@ -248,7 +251,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(zoom.getByText(/10 cm/)).toBeVisible();
   });
 
-  test("I08 / T4: Saved — 'Add your top 3 · M' (no prices), Add all as a link, share by the title, icon-only +", async ({ page }) => {
+  test("I08 / T1 / T4: Saved — one button 'Add your top 3 · M' (no prices); Add all and Share behind ⋯; rows without +", async ({ page }) => {
     await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700", "mono-0800"] });
     await page.addInitScript(() => {
       const c = JSON.parse(localStorage.getItem("mono-cart")!);
@@ -261,10 +264,11 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     const d = page.getByRole("dialog", { name: "Saved tees" });
     await expect(d.getByRole("button", { name: /^Add your top 3 · M$/ })).toBeVisible();
     await expect(d.getByText(/\$\d/)).toHaveCount(0);
-    await expect(d.getByRole("button", { name: /^Add all 6$/ })).toBeVisible();
-    await expect(d.getByRole("button", { name: "Share my list" })).toBeVisible();
-    const plus = d.locator("[data-saved-row] button[aria-label^='Add ']").first();
-    expect((await plus.innerText()).trim()).toBe("");
+    await expect(d.locator("[data-saved-row] button[aria-label^='Add ']")).toHaveCount(0);
+    await d.getByRole("button", { name: "More for Saved" }).tap();
+    const menu = page.getByRole("dialog", { name: "More for Saved" });
+    await expect(menu.getByRole("button", { name: "Add all 6 to bag" })).toBeVisible();
+    await expect(menu.getByRole("button", { name: "Share my list" })).toBeVisible();
     await expect(d.locator("input")).toHaveCount(0);
   });
 

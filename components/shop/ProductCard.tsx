@@ -10,15 +10,14 @@ import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from
 import { isNew } from "@/lib/taste";
 import { useHydrated } from "@/store/useUiStore";
 import { productHref } from "@/lib/catalog";
-import { QuickAdd } from "@/components/QuickAdd";
 
 /**
  * Grid card. The whole card is one link (a "stretched link": the title's
  * ::after covers the card) and the heart is a sibling on top of it — never a
  * button inside a link. Quiet by design: at most one tag ("Top pick" on the
  * first card of your ranking, else "New this week"); how well a tee matches
- * is on its product page. Quick add is a small "+" on touch screens and
- * appears on hover with a mouse. Memoised: the grid re-renders on filter /
+ * is on its product page; adding to the bag (it needs a size) happens there.
+ * The heart shows on hover with a mouse. Memoised: the grid re-renders on filter /
  * paging, not on scroll, and unchanged cards skip the work.
  */
 export const ProductCard = memo(function ProductCard({
@@ -56,15 +55,6 @@ export const ProductCard = memo(function ProductCard({
             {tag}
           </span>
         )}
-        {/* Above the stretched link's ::after (z-10 in the same stacking context). */}
-        <QuickAdd
-          shirt={shirt}
-          color={tee}
-          variant="overlay"
-          source="grid"
-          // With a mouse it appears on hover (or keyboard focus); open sizes stay.
-          className="absolute bottom-2 right-2 z-10 transition-opacity [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 focus-within:!opacity-100 has-[[role=group]]:!opacity-100"
-        />
       </div>
       <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
         <Link
@@ -84,7 +74,11 @@ export const ProductCard = memo(function ProductCard({
         {variations > 0 && ` · +${variations} variation${variations === 1 ? "" : "s"}`}
       </p>
       {/* A sibling of the link, stacked above its ::after. */}
-      <SaveButton id={shirt.id} className="absolute right-2 top-2 z-10 h-8 w-8" />
+      {/* With a mouse it shows on hover (a saved heart always shows). */}
+      <SaveButton
+        id={shirt.id}
+        className="absolute right-2 top-2 z-10 h-8 w-8 transition-opacity focus-visible:opacity-100 aria-pressed:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
+      />
     </motion.div>
   );
 });
