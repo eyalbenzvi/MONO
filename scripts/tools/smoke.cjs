@@ -53,7 +53,10 @@ const ok = (cond, msg) => {
     await p.keyboard.press("Escape");
     await p.waitForTimeout(500);
 
-    // zoom
+    // zoom: tap the card for its details, then ⋯ → Zoom
+    await p.locator('[aria-roledescription="card"]').first().tap();
+    await p.waitForTimeout(700);
+    await p.getByRole("button", { name: /^more for /i }).first().tap();
     await p.getByRole("button", { name: /zoom in on the print/i }).first().tap();
     const zoom = p.getByRole("dialog", { name: /zoom/i });
     await zoom.waitFor({ timeout: 3000 }).catch(() => {});
