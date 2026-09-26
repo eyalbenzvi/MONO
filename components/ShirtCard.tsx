@@ -154,7 +154,8 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-4">
+      {/* Fades at the bottom so text scrolling under the footer never looks cut. */}
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4 [mask-image:linear-gradient(#000_calc(100%-24px),transparent)]">
         <div className="flex items-center justify-between">
           {showMatch && tierOf(vector, score) ? <MatchBadge tier={tierOf(vector, score)!} /> : <span />}
           {/* Closes the details (Undo keeps the ↺ icon to itself). */}
@@ -169,7 +170,8 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         </div>
 
         <div className="mt-4 flex gap-4">
-          <div className={`w-24 shrink-0 rounded-2xl p-2 ${STAGE_BG}`}>
+          {/* Short screens (phones sideways) skip the thumbnail: room for the text. */}
+          <div className={`w-24 shrink-0 rounded-2xl p-2 [@media(max-height:500px)]:hidden ${STAGE_BG}`}>
             <TeeMockup shirt={shirt} shadow={false} className="w-full" />
           </div>
           <div className="min-w-0">

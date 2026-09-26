@@ -319,7 +319,9 @@ function main() {
     const combos = adjs.length * nouns.length;
     const titleAt = (k: number) => `${adjs[k % adjs.length]} ${nouns[(Math.floor(k / adjs.length) + k) % nouns.length]}`;
     let title = titleAt(index - 1);
-    while (takenTitles.has(title)) {
+    // Also skip pairs that repeat a word ("Postcard Postcard").
+    const repeats = (t: string) => new Set(t.split(" ")).size < t.split(" ").length;
+    while (takenTitles.has(title) || repeats(title)) {
       const spare = (spareTitle[category] ?? combos) - 1;
       spareTitle[category] = spare;
       title = titleAt(spare);

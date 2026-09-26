@@ -60,20 +60,23 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
     // showing never changes the layout, so nothing under the finger jumps.
     <motion.header
       ref={ref}
-      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]"
+      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)] max-[339px]:px-3"
       initial={false}
       animate={{ y: hidden ? "-100%" : "0%" }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       // Tabbing into it while it's slid away brings it back.
       onFocusCapture={() => hidden && setHeaderHidden(false)}
     >
-      <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr]">
-        <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95" aria-label="MONO home">
+      {/* Narrow phones: everything must stay on screen (the bag above all).
+          Below 420 px the streak hides (it's in "Your taste"), below 400 the
+          tabs and icons tighten, below 340 the logo gives way. */}
+      <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
+        <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="MONO home">
           <MonoLogo size="sm" />
           <span className="hidden text-xs uppercase tracking-[0.18em] text-neutral-400 sm:inline">Monochrome tees</span>
           {/* Daily 5 streak (days in a row with five new swipes); only once there is one. */}
           {hydrated && streak > 0 && (
-            <span className="flex items-center gap-0.5 font-mono text-xs text-neutral-300" title={`Daily 5 streak: ${streak} day${streak === 1 ? "" : "s"}`} aria-label={`Daily 5 streak: ${streak} days`}>
+            <span className="hidden items-center gap-0.5 font-mono text-xs text-neutral-300 min-[420px]:flex" title={`Daily 5 streak: ${streak} day${streak === 1 ? "" : "s"}`} aria-label={`Daily 5 streak: ${streak} days`}>
               <Flame className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
               {streak}
             </span>
@@ -81,7 +84,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
         </Link>
 
         <nav aria-label="Sections" className="justify-self-center">
-          <div className="relative grid w-44 grid-cols-2 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
+          <div className="relative grid w-44 grid-cols-2 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-40 max-[339px]:w-36">
             {/* One pill, always rendered, moved under the active tab: the
                 markup never depends on the URL, so a page served at another
                 address (404.html) still hydrates cleanly. */}
@@ -99,7 +102,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={`relative z-10 flex h-9 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                  className={`relative z-10 flex h-9 items-center justify-center rounded-full text-sm font-semibold transition-colors max-[399px]:text-[13px] max-[339px]:text-xs ${
                     active ? "text-black" : "text-neutral-400 hover:text-white"
                   }`}
                 >
@@ -110,7 +113,7 @@ export function Header({ onOpenSaved }: { onOpenSaved: () => void }) {
           </div>
         </nav>
 
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="flex shrink-0 items-center gap-2 justify-self-end max-[399px]:gap-2.5">
           <IconButton label={`Saved (${savedCount})`} count={hydrated ? savedCount : 0} onClick={onOpenSaved} savedTarget>
             <Heart className="h-5 w-5" />
           </IconButton>
@@ -142,7 +145,7 @@ function IconButton({
   active?: boolean;
   children: React.ReactNode;
 }) {
-  const className = `relative flex h-11 w-11 items-center justify-center rounded-full ring-1 transition active:scale-90 ${
+  const className = `relative flex h-11 w-11 items-center justify-center rounded-full ring-1 transition active:scale-90 max-[399px]:h-10 max-[399px]:w-10 ${
     active ? "bg-white text-black ring-white" : "bg-white/5 ring-white/10 hover:bg-white/10"
   }`;
   const badge = (
@@ -155,7 +158,7 @@ function IconButton({
           animate={{ scale: [0.4, 1.35, 1], opacity: 1 }}
           exit={{ scale: 0.4, opacity: 0 }}
           transition={{ duration: 0.35, delay: savedTarget ? 0.4 : 0 }}
-          className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 font-mono text-[11px] font-bold ${
+          className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 font-mono text-xs font-bold ${
             active ? "bg-black text-white ring-1 ring-white" : "bg-white text-black"
           }`}
         >

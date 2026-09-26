@@ -18,6 +18,37 @@ import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { FEATURE_LABELS } from "@/types/shirt";
 
 /**
+ * Phones held sideways hide the strip above the card, so its essentials sit
+ * atop the button column: the taste-test counter, then "Your taste".
+ */
+function SidewaysStatus() {
+  const { done, total, complete } = useCalibrationProgress();
+  const [sheet, setSheet] = useState(false);
+  return (
+    <div className="hidden justify-center pb-1 pr-[max(env(safe-area-inset-right),16px)] sideways:flex">
+      {complete ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setSheet(true)}
+            aria-haspopup="dialog"
+            aria-label="Your taste profile"
+            className="flex h-10 items-center rounded-full px-3 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:text-white"
+          >
+            Your taste
+          </button>
+          <TasteSheet open={sheet} onClose={() => setSheet(false)} />
+        </>
+      ) : (
+        <span className="font-mono text-xs text-neutral-300" aria-label={`Taste test: card ${Math.min(done + 1, total)} of ${total}`}>
+          {Math.min(done + 1, total)}/{total}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
  * Desktop (≥ 1024 px), until the taste test is done: a narrow column beside
  * the card saying what's going on. Phones get the one-line goal instead.
  */
@@ -25,7 +56,7 @@ function HowItWorks() {
   const { complete } = useCalibrationProgress();
   if (complete) return null;
   return (
-    <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-19rem))] top-1/3 hidden w-60 lg:block">
+    <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-22rem))] top-1/3 hidden w-72 lg:block">
       <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
       <ul className="mt-3 space-y-2 text-sm text-neutral-300">
         <li>→ Like what you&apos;d wear, ← pass on the rest.</li>
@@ -87,7 +118,11 @@ export default function DiscoverPage() {
         {hydrated ? <CardStack /> : <CardSkeleton />}
         {hydrated && <LearnChip />}
       </section>
-      <ActionButtons />
+      {/* `contents` in portrait (no box); sideways, a column: status + buttons. */}
+      <div className="contents sideways:flex sideways:flex-col sideways:justify-center">
+        {hydrated && <SidewaysStatus />}
+        <ActionButtons />
+      </div>
       <CalibrationComplete />
     </div>
   );
@@ -125,7 +160,7 @@ function TopStrip() {
             aria-label={`Your taste: ${word}. Open your taste profile`}
             className="-ml-1 flex h-10 min-w-0 items-center gap-2 rounded-full px-1 text-neutral-400 hover:text-white"
           >
-            <span>Your taste</span>
+            <span className="max-[339px]:hidden">Your taste</span>
             <span className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10" aria-hidden>
               <motion.span
                 className="block h-full rounded-full bg-white"
@@ -155,7 +190,8 @@ function TopStrip() {
     <div className={firstVisit ? STRIP.replace("h-10", "min-h-10 lg:h-10") : STRIP}>
       {!onboardingSeen && (
         <p className={`truncate text-center text-[13px] font-medium text-white ${firstVisit ? "mb-1 leading-4" : "mb-1.5"}`}>
-          Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.
+          <span className="max-[379px]:hidden">Rate {CALIBRATION_TOTAL} tees. We&apos;ll build your shop from your taste.</span>
+          <span className="min-[380px]:hidden">Rate {CALIBRATION_TOTAL} tees → your own shop</span>
         </p>
       )}
       <div className="flex items-center gap-3">
@@ -192,7 +228,7 @@ function TopStrip() {
           </motion.span>
         </AnimatePresence>
       </div>
-      {firstVisit && <p className="mt-1 truncate text-center text-xs leading-4 text-neutral-400 lg:hidden">{STORE_POLICY.firstVisit}</p>}
+      {firstVisit && <p className="mt-1 truncate text-center text-xs leading-4 text-neutral-400 max-[339px]:whitespace-normal lg:hidden">{STORE_POLICY.firstVisit}</p>}
     </div>
   );
 }

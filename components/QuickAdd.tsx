@@ -20,11 +20,14 @@ export function QuickAdd({
   shirt,
   color,
   variant = "inline",
+  compact = false,
   className = "",
 }: {
   shirt: ShirtProduct;
   color?: BaseColor;
   variant?: "overlay" | "inline";
+  /** Tight spaces: "+ M" instead of "+ Add · M". */
+  compact?: boolean;
   className?: string;
 }) {
   const hydrated = useHydrated();
@@ -44,9 +47,9 @@ export function QuickAdd({
         type="button"
         onClick={() => addToCart(shirt.id, preferred, color)}
         aria-label={`Add ${shirt.title} to bag, size ${preferred}`}
-        className={`flex items-center gap-1 ${chip} ${className}`}
+        className={`flex items-center gap-1 whitespace-nowrap ${chip} ${className}`}
       >
-        <Plus className="h-3.5 w-3.5" /> Add · {preferred}
+        <Plus className="h-3.5 w-3.5" /> {compact ? preferred : `Add · ${preferred}`}
       </button>
     );
   }
@@ -63,7 +66,7 @@ export function QuickAdd({
             transition={{ duration: 0.15 }}
             role="group"
             aria-label={`Add ${shirt.title}: pick a size`}
-            className={`flex items-center gap-1 ${overlay ? "w-full rounded-full bg-black/70 p-1 ring-1 ring-white/20 backdrop-blur-sm" : ""}`}
+            className={`flex items-center gap-0.5 ${overlay ? "w-full min-w-0 rounded-full bg-black/70 p-1 ring-1 ring-white/20 backdrop-blur-sm" : ""}`}
           >
             {SIZES.map((size) => (
               <button
@@ -74,12 +77,12 @@ export function QuickAdd({
                   setOpen(false);
                 }}
                 aria-label={`Size ${size}`}
-                className={`h-8 min-w-8 flex-1 rounded-full px-2 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
+                className={`h-8 min-w-0 flex-1 rounded-full px-0 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
               >
                 {size}
               </button>
             ))}
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close sizes" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close sizes" className="flex h-8 w-7 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
               <X className="h-3.5 w-3.5" />
             </button>
           </motion.div>

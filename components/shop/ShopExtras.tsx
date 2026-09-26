@@ -24,7 +24,7 @@ function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct
       </div>
       <ul className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
         {shirts.map((s) => (
-          <li key={s.id} className="flex w-28 shrink-0 flex-col gap-1.5">
+          <li key={s.id} className="flex w-24 shrink-0 flex-col gap-1.5 sm:w-28">
             <Link href={productHref(s.id)} className={`rounded-xl p-1.5 ${STAGE_BG}`} aria-label={`${s.title}, ${formatPrice(s.price)}`}>
               <TeeMockup shirt={s} shadow={false} className="w-full" />
             </Link>

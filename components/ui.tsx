@@ -66,16 +66,19 @@ export function MatchBadge({
   }, [open]);
 
   const tone = quiet ? "bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-sm" : "bg-white text-black";
-  const cls = `relative inline-flex shrink-0 items-center overflow-hidden rounded-full font-bold ${size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"} ${tone}`;
+  // No overflow-hidden here: it would clip the button's enlarged touch area
+  // (::before). The shimmer clips itself inside its own rounded box.
+  const cls = `relative inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-bold ${size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"} ${tone}`;
   const label = TIER_LABEL[tier];
   const shimmer = strong && (
-    <motion.span
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent"
-      initial={{ x: "-120%" }}
-      animate={{ x: "260%" }}
-      transition={{ duration: 0.6, delay: 0.25, ease: "easeInOut" }}
-    />
+    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+      <motion.span
+        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent"
+        initial={{ x: "-120%" }}
+        animate={{ x: "260%" }}
+        transition={{ duration: 0.6, delay: 0.25, ease: "easeInOut" }}
+      />
+    </span>
   );
   if (!why) {
     return (
@@ -112,7 +115,8 @@ export function MatchBadge({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full z-30 mt-2 block w-max max-w-[220px] rounded-2xl bg-ink-900 p-3 text-left text-xs font-normal text-neutral-300 shadow-2xl shadow-black ring-1 ring-white/15"
+            // Opens upward (the badge sits low on a card), within the screen width.
+            className="absolute bottom-full left-0 z-30 mb-2 block w-max max-w-[min(220px,calc(100vw-2rem))] rounded-2xl bg-ink-900 p-3 text-left text-xs font-normal text-neutral-300 shadow-2xl shadow-black ring-1 ring-white/15"
           >
             <span className="mb-1.5 block font-semibold text-white">Why it matches you</span>
             {reasons.length > 0 ? (
@@ -228,7 +232,7 @@ export function ColorSelector({
   const label = (c: BaseColor) => `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
   const wrap = {
     cards: "grid grid-cols-2 gap-2",
-    pills: "flex items-center gap-1.5",
+    pills: "flex flex-wrap items-center gap-1.5",
     dots: "flex items-center gap-2",
     overlay: "flex gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15",
   }[variant];

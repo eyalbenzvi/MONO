@@ -133,6 +133,13 @@ describe("catalog copy (R13)", () => {
     }
   });
 
+  it("titles never repeat a word (\"Postcard Postcard\")", () => {
+    for (const s of SHIRTS) {
+      const words = s.title.split(" ");
+      expect(new Set(words).size, s.title).toBe(words.length);
+    }
+  });
+
   it("no description repeats more than 3 times", () => {
     const counts = new Map<string, number>();
     for (const s of FULL) counts.set(s.description, (counts.get(s.description) ?? 0) + 1);
