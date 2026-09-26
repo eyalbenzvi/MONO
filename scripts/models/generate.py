@@ -25,10 +25,10 @@ for j in jobs:
     if os.path.exists(f): continue
     t = time.time()
     # The tee must come out in the colour asked for: check the middle of the back, retry with other seeds.
-    for attempt in range(5):
+    for attempt in range(8):
         img = pipe(j["prompt"], negative_prompt=NEG + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=2.0, width=512, height=704, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
         g = img.convert("L").crop((200, 230, 312, 380)); px = list(g.getdata()); m = sum(px) / len(px)
-        ok = (m > 150) if j.get("color") == "white" else (m < 40) if j.get("color") == "black" else True
+        ok = (m > 150) if j.get("color") == "white" else (m < 22) if j.get("color") == "black" else True
         print(j["id"], attempt, round(m), "ok" if ok else "retry", round(time.time() - t, 1), flush=True)
         if ok: break
     img.save(f)
