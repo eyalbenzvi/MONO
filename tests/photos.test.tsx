@@ -111,14 +111,15 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
     expect(needsInvert(photo, other)).toBe(false);
   });
 
-  it("PrintImage never inverts a photograph; it sits on the tee colour", () => {
+  it("PrintImage never inverts a photograph; it sits on its tee colour (the only one it's sold in, T3)", () => {
     const photo = SHIRTS.find(isPhoto)!;
     const other = otherColor(photo.baseColor);
     const { container, rerender } = render(<PrintImage shirt={photo} color={other} />);
     const img = container.querySelector("img")!;
     expect(img.getAttribute("src")).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
     expect(img.className).not.toMatch(/\binvert\b/);
-    expect(img.className).toMatch(other === "black" ? /\bbg-black\b/ : /\bbg-white\b/);
+    // Asked for the other colour, it stays on its own (T3).
+    expect(img.className).toMatch(photo.baseColor === "black" ? /\bbg-black\b/ : /\bbg-white\b/);
     rerender(<PrintImage shirt={SHIRTS[0]} color={otherColor(SHIRTS[0].baseColor)} />);
     expect(container.querySelector("img")!.className).toMatch(/\binvert\b/);
   });

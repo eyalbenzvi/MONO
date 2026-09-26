@@ -22,7 +22,7 @@ import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
-import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
+import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, teeColor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
@@ -37,11 +37,19 @@ const CHOICES: readonly Choice[] = ["black", "white", "both"];
 
 /**
  * The one tee picker, on the picture: black, white, or both (the pair, with
- * its price anchor). Every design comes in both colours; the original is
- * marked in the label.
+ * its price anchor); the original is marked in the label. A design sold in
+ * one colour only (T3) shows that colour, and no choice.
  */
-function TeeChoice({ value, original, onChange }: { value: Choice; original: BaseColor; onChange: (c: Choice) => void }) {
+function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
   const keys = radioKeys(CHOICES, value, onChange);
+  // Sold in one colour (T3): no choice to make — say so, plainly.
+  if (colors.length < 2)
+    return (
+      <p className="flex h-10 items-center gap-2 rounded-full bg-black/55 py-1 pl-1 pr-3 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-md">
+        <span aria-hidden className={`h-8 w-8 rounded-full ring-1 ${original === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} />
+        {COLOR_LABELS[original]} tee only
+      </p>
+    );
   return (
     <div className="flex items-center gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
       {CHOICES.map((c, i) => {
@@ -150,7 +158,7 @@ export function ProductView({
   // Details start closed (everywhere).
   const [detailsOpen, setDetailsOpen] = useState(false);
   // "Both": the black + white pair, picked in the same picker as the colour.
-  const [both, setBoth] = useState(false);
+  const [pickBoth, setBoth] = useState(false);
 
   if (!shirt) {
     return (
@@ -162,7 +170,9 @@ export function ProductView({
   }
 
   // Before hydration render the original colourway so SSR and client agree.
-  const color = (hydrated && pickedColor) || shirt.baseColor;
+  // Only colours it's sold in (T3).
+  const color = teeColor(shirt, hydrated ? pickedColor : null);
+  const both = pickBoth && shirt.colors.length > 1;
   const black = color === "black";
   const size = hydrated ? selected : undefined;
   const tier = showMatch ? matchTier(vector, shirt.features) : null;
@@ -303,6 +313,7 @@ export function ProductView({
               <TeeChoice
                 value={both ? "both" : color}
                 original={shirt.baseColor}
+                colors={shirt.colors}
                 onChange={(c) => {
                   setBoth(c === "both");
                   if (c !== "both") setColor(shirt.id, c);

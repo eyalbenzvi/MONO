@@ -6,7 +6,7 @@ import { MAX_QTY, PAIR_PRICE, addItem, cartTotals, changeItem, pairStatus, setIt
 import { getShirtById } from "@/lib/catalog";
 import { firstTouch, itemOf, track, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
-import { SIZES, type BaseColor, type CartItem, type Customer, type Order, type OrderRecord, type ShirtSize } from "@/types/shirt";
+import { SIZES, teeColor, type BaseColor, type CartItem, type Customer, type Order, type OrderRecord, type ShirtSize } from "@/types/shirt";
 import { arrivalRange } from "@/lib/delivery";
 
 export const CART_KEY = "mono-cart";
@@ -71,6 +71,23 @@ const lines = (x: unknown): CartItem[] =>
   Array.isArray(x)
     ? (x as CartItem[]).filter((i) => i && getShirtById(i.id) && isSize(i.size) && isColor(i.color) && Number.isInteger(i.qty) && i.qty > 0).map((i) => ({ id: i.id, size: i.size, color: i.color, qty: Math.min(i.qty, MAX_QTY) }))
     : [];
+/**
+ * Bag lines in a colour the design isn't sold in (T3: a design sold in one
+ * colour, or a bag from before) move to the colour it is sold in, merged
+ * with a line already there (up to MAX_QTY) — never silently dropped.
+ */
+export function offeredLines(items: CartItem[]): CartItem[] {
+  const out: CartItem[] = [];
+  for (const i of items) {
+    const shirt = getShirtById(i.id);
+    const color = shirt ? teeColor(shirt, i.color) : i.color;
+    const same = out.find((o) => o.id === i.id && o.size === i.size && o.color === color);
+    if (same) same.qty = Math.min(MAX_QTY, same.qty + i.qty);
+    else out.push({ ...i, color });
+  }
+  return out;
+}
+
 function picks<T>(x: unknown, ok: (v: unknown) => v is T): Record<string, T> {
   const out: Record<string, T> = {};
   if (x && typeof x === "object") for (const [k, v] of Object.entries(x)) if (getShirtById(k) && ok(v)) out[k] = v;
@@ -82,10 +99,11 @@ export function sanitizeCart(raw: unknown): CartState {
   const r = raw as Partial<Record<keyof CartState, unknown>>;
   const o = r.lastOrder as Partial<OrderRecord> | null | undefined;
   return {
-    cart: lines(r.cart),
+    cart: offeredLines(lines(r.cart)),
     lastOrder: o && typeof o.number === "string" && Array.isArray(o.items) ? orderRecord(o as OrderRecord) : null,
     selectedSizes: picks(r.selectedSizes, isSize),
-    selectedColors: picks(r.selectedColors, isColor),
+    // Only colours the design is sold in (T3).
+    selectedColors: Object.fromEntries(Object.entries(picks(r.selectedColors, isColor)).filter(([id, c]) => getShirtById(id)!.colors.includes(c))),
     preferredSize: isSize(r.preferredSize) ? r.preferredSize : null,
   };
 }
@@ -122,6 +140,13 @@ export function migrateCart(persisted: unknown, version: number): unknown {
     const { name: _name, email: _email, ...rest } = s.lastOrder as Record<string, unknown>;
     s.lastOrder = rest;
   }
+  // v3 → v4 (T3): some designs are sold in one colour only — bag lines and
+  // remembered picks in the other colour move to (or fall back on) the original.
+  if (version < 4) {
+    if (Array.isArray(s.cart)) s.cart = offeredLines(lines(s.cart));
+    if (s.selectedColors && typeof s.selectedColors === "object")
+      s.selectedColors = Object.fromEntries(Object.entries(s.selectedColors as Record<string, unknown>).filter(([id, c]) => isColor(c) && getShirtById(id)?.colors.includes(c)));
+  }
   return s;
 }
 
@@ -135,12 +160,16 @@ export const useCartStore = create<CartState & CartActions>()(
         track("select_size", { id, size });
       },
 
-      setColor: (id, color) => set((s) => ({ selectedColors: { ...s.selectedColors, [id]: color } })),
+      setColor: (id, color) => {
+        // A colour the design isn't sold in is never remembered (T3).
+        const shirt = getShirtById(id);
+        if (shirt && shirt.colors.includes(color)) set((s) => ({ selectedColors: { ...s.selectedColors, [id]: color } }));
+      },
 
       addToCart: (id, size, color, qty = 1, options = {}) => {
         const shirt = getShirtById(id);
         if (!shirt) return false;
-        const tee = color ?? get().selectedColors[id] ?? shirt.baseColor;
+        const tee = teeColor(shirt, color ?? get().selectedColors[id]);
         const { items, capped } = addItem(get().cart, { id, size, color: tee, qty });
         set((s) => ({
           cart: items,
@@ -159,7 +188,8 @@ export const useCartStore = create<CartState & CartActions>()(
 
       addPair: (id, size, options = {}) => {
         const shirt = getShirtById(id);
-        if (!shirt) return false;
+        // The pair needs both colours (T3: some designs come in one).
+        if (!shirt || shirt.colors.length < 2) return false;
         // Only what's missing: with one colour already in the bag, this
         // completes the pair; with both, there's nothing to add.
         const status = pairStatus(get().cart, id, size);
@@ -205,6 +235,7 @@ export const useCartStore = create<CartState & CartActions>()(
       },
 
       changeCartItem: (line, to) => {
+        if (to.color && !getShirtById(line.id)?.colors.includes(to.color)) return;
         const { items, capped } = changeItem(get().cart, line, to);
         if (capped) toast(`Max ${MAX_QTY} per item`);
         else set({ cart: items });
@@ -245,7 +276,7 @@ export const useCartStore = create<CartState & CartActions>()(
     }),
     {
       name: CART_KEY,
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateCart,
       skipHydration: true,

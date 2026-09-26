@@ -15,6 +15,8 @@ export interface SeoFields {
   style: string;
   summary: string;
   baseColor: "black" | "white";
+  /** The tee colours it's sold in (T3). */
+  colors: ("black" | "white")[];
   price: number;
 }
 
@@ -42,7 +44,8 @@ export function productTitle(s: Pick<SeoFields, "title" | "subject" | "style">) 
 export function productDescription(s: SeoFields) {
   const other = s.baseColor === "black" ? "white" : "black";
   const price = Number.isInteger(s.price) ? `$${s.price}` : `$${s.price.toFixed(2)}`;
-  return `${s.title}: ${s.subject}. ${s.summary} ${s.baseColor === "black" ? "Black" : "White"} tee, also in ${other} · ${price}.`;
+  const tee = s.baseColor === "black" ? "Black" : "White";
+  return `${s.title}: ${s.subject}. ${s.summary} ${s.colors.length > 1 ? `${tee} tee, also in ${other}` : `${tee} tee only`} · ${price}.`;
 }
 
 /* ------------------------------------------------------------------ */

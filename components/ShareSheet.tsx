@@ -8,7 +8,7 @@ import { channelLink, productShareUrl, shareFileName, shareMessage, shareTitle, 
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useUiStore } from "@/store/useUiStore";
-import { COLOR_LABELS, COLORS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { COLOR_LABELS, COLORS, teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { track } from "@/lib/analytics";
 import { copyText, downloadBlob } from "@/lib/clipboard";
 
@@ -87,7 +87,7 @@ export function ShareSheet() {
 
 function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; onClose: () => void }) {
   const showToast = useUiStore((s) => s.showToast);
-  const [color, setColor] = useState<BaseColor>(initialColor);
+  const [color, setColor] = useState<BaseColor>(teeColor(shirt, initialColor));
   const [format, setFormat] = useState<ShareFormat>("story");
   const [blob, setBlob] = useState<Blob | null>(null);
   const [failed, setFailed] = useState(false);
@@ -217,7 +217,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tee</p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tee colour">
-                {COLORS.map((c) => (
+                {COLORS.filter((c) => shirt.colors.includes(c)).map((c) => (
                   <button
                     key={c}
                     type="button"

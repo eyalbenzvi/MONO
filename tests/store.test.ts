@@ -202,7 +202,7 @@ describe("cart store", () => {
     const { useCartStore } = await fresh();
     await useCartStore.persist.rehydrate();
     expect(useCartStore.getState().preferredSize).toBe("XL");
-    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(3);
+    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(4);
     storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
     const again = await fresh();
     await again.useCartStore.persist.rehydrate();
@@ -275,7 +275,7 @@ describe("cart store", () => {
     expect(JSON.stringify(o)).not.toContain("Ada");
     const saved = storage.getItem("mono-cart")!;
     expect(saved).not.toContain("ada@example.com");
-    expect(JSON.parse(saved).version).toBe(3);
+    expect(JSON.parse(saved).version).toBe(4);
   });
 });
 
