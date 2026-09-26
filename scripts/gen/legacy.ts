@@ -3,7 +3,7 @@
  * the order of random draws here: the prints are expected to stay
  * byte-identical when the catalog is regenerated.
  */
-import type { ShirtCategory } from "../../types/shirt";
+import type { SourceCategory } from "../../types/shirt";
 import {
   IH, IW, M, W, H, X0, Y0,
   clamp01, int, n1, pick, polygon, pts, range, smooth,
@@ -842,7 +842,7 @@ const continuousLine: Generator = (rng, ink) => {
   };
 };
 
-export const LEGACY_CATEGORIES = ["architectural", "geometric", "typography", "halftone", "waves"] as const satisfies readonly ShirtCategory[];
+export const LEGACY_CATEGORIES = ["architectural", "geometric", "typography", "halftone", "waves"] as const satisfies readonly SourceCategory[];
 export const LEGACY_GENERATORS: Record<(typeof LEGACY_CATEGORIES)[number], Generator[]> = {
   architectural: [facadeGrid, perspectiveCorridor, skyline, slabStack],
   geometric: [monoForm, scatter, concentric, truchet],

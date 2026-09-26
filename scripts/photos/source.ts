@@ -6,10 +6,12 @@
  * which only reads what that tool committed: data/photos/photos.json and
  * the prints public/prints/print_<n>.webp.
  */
-import { PHOTO_CATEGORIES, type ShirtCategory } from "../../types/shirt";
 import { mulberry32, shuffle } from "../gen/core";
 
 export const BUCKET = "https://smithsonian-open-access.s3.amazonaws.com";
+
+/** The generator's photo sources (the fourth set), in their order. */
+export const PHOTO_CATEGORIES = ["wildlife", "flight", "machines"] as const;
 
 /** Photo categories and the Smithsonian units they draw from. */
 export const PHOTO_UNITS = { nzp: "Smithsonian's National Zoo", nasm: "National Air and Space Museum" } as const;
@@ -23,7 +25,7 @@ export const PRINT_H = 1000;
 export interface PhotoSource {
   /** The Smithsonian image id (idsId). */
   key: string;
-  category: Extract<ShirtCategory, "wildlife" | "flight" | "machines">;
+  category: (typeof PHOTO_CATEGORIES)[number];
   unit: PhotoUnit;
   /** The record's own title ("Douglas DC-3", "Orangutan"). */
   title: string;

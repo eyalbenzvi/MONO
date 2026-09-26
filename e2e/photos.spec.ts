@@ -2,8 +2,10 @@ import { expect, test } from "@playwright/test";
 import full from "../data/shirts.json";
 import { CALIBRATION_IDS, hydrated, storedTaste } from "./helpers";
 
-type Entry = { id: string; n: number; title: string; baseColor: "black" | "white"; category: string; photo?: { credit: string; url: string } };
-const PHOTOS = (full as unknown as Entry[]).filter((s) => s.photo);
+type Entry = { id: string; n: number; title: string; baseColor: "black" | "white"; category: string; variant: string; medium: string; photo?: { credit: string; url: string } };
+/** Every photograph (the fourth set's and the archive's); the fourth set's first. */
+const ALL_PHOTOS = (full as unknown as Entry[]).filter((s) => s.medium === "photo");
+const PHOTOS = ALL_PHOTOS.filter((s) => s.variant.startsWith("photo-"));
 const photo = PHOTOS[0];
 const other = photo.baseColor === "black" ? "white" : "black";
 
@@ -38,7 +40,7 @@ test("the shop filters the photo categories", async ({ page }) => {
 
 test("someone who took the taste test before the photographs: not sent back into it, profile upgraded, a photo dealt first", async ({ page }) => {
   // A v3 profile: the old taste test done (everything in today's list but the photos), no "photographic" key.
-  const photoIds = new Set(PHOTOS.map((s) => s.id));
+  const photoIds = new Set(ALL_PHOTOS.map((s) => s.id));
   const seen = CALIBRATION_IDS.filter((id) => !photoIds.has(id));
   const v3 = Object.fromEntries(["geometric", "typography", "architectural", "abstract", "line_art", "halftone_raster", "density", "contrast", "dark_industrial", "clean_minimal", "pictorial", "wit", "retro", "nature", "figurative", "classic"].map((k) => [k, 0.5]));
   await page.addInitScript(
@@ -54,7 +56,7 @@ test("someone who took the taste test before the photographs: not sent back into
   await expect(page.getByText(/^Rate \d+ tees/)).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const title = (await page.locator('[aria-roledescription="card"] h2').first().textContent())?.trim();
-  expect(PHOTOS.map((s) => s.title)).toContain(title);
+  expect(ALL_PHOTOS.map((s) => s.title)).toContain(title);
   const state = await storedTaste(page);
   expect(state.preferenceVector).toMatchObject({ wit: 0.8, photographic: 0.5 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(4);

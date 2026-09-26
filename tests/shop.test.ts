@@ -4,10 +4,10 @@ import { TIER_LABEL, matchTier, tierOf, topFraction } from "@/lib/match";
 import { rankShirts, updateUserVector } from "@/lib/recommendation";
 import { createInitialVector } from "@/types/shirt";
 
-/** A formed profile: liked a run of geometric prints, passed on the rest. */
+/** A formed profile: liked a run of abstract prints, passed on the rest. */
 function profile() {
   let v = createInitialVector();
-  for (const s of SHIRTS.slice(0, 60)) v = updateUserVector(v, s.features, s.category === "geometric" ? "like" : "dislike");
+  for (const s of SHIRTS.slice(0, 60)) v = updateUserVector(v, s.features, s.category === "abstract" ? "like" : "dislike");
   return v;
 }
 

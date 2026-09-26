@@ -3,7 +3,7 @@
  * four algorithms each. Pictures are drawn as single-ink illustrations
  * (halftone dots / hatching for tone), captions come from ./copy.
  */
-import type { ShirtCategory } from "../../types/shirt";
+import type { SourceCategory } from "../../types/shirt";
 import {
   IH, IW, H, X0, Y0,
   an, clamp01, int, n1, pick, range, scale, smooth,
@@ -931,7 +931,7 @@ const diagram: Generator = (rng, ink, ground) => {
   };
 };
 
-export const EXPANSION_CATEGORIES = ["scenes", "slogans", "pixel", "emblems", "objects"] as const satisfies readonly ShirtCategory[];
+export const EXPANSION_CATEGORIES = ["scenes", "slogans", "pixel", "emblems", "objects"] as const satisfies readonly SourceCategory[];
 export const EXPANSION_GENERATORS: Record<(typeof EXPANSION_CATEGORIES)[number], Generator[]> = {
   scenes: [mountains, celestialBody, seascape, landscape],
   slogans: [swissPoster, warningSign, receipt, quotePrint],

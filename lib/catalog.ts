@@ -1,8 +1,8 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
-import { FEATURE_KEYS, SKU_CODES, isPhoto, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { FEATURE_KEYS, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
-export const INDEX_VERSION = 4;
+export const INDEX_VERSION = 5;
 /** A stale or mismatched index would decode into nonsense: stop at once. */
 export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
   if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
@@ -45,6 +45,9 @@ let shardHashes: string[] = [];
 const BY_ID = new Map<string, ShirtProduct>();
 const FAMILIES = new Map<string, ShirtProduct[]>();
 
+/** The index's `medium` column: one letter per design. */
+const MEDIUM_CODES = { d: "drawn", i: "ink", p: "photo" } as const satisfies Record<string, Medium>;
+
 function decodeAll(index: CatalogIndex): ShirtProduct[] {
   const digit = new Map([...index.digits].map((c, v) => [c, v]));
   const dropEpoch = Date.parse(`${index.dropEpoch}T00:00:00Z`);
@@ -57,6 +60,7 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
     const baseColor: BaseColor = white ? "white" : "black";
     const features = {} as FeatureVector;
     (index.keys as FeatureKey[]).forEach((k, j) => (features[k] = digit.get(index.features[j][i])! / 100));
+    const medium = MEDIUM_CODES[index.medium[i] as keyof typeof MEDIUM_CODES];
     const no = (counts.get(index.category[i]) ?? 0) + 1;
     counts.set(index.category[i], no);
     return {
@@ -67,9 +71,10 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
       title,
       price: index.price[i],
       baseColor,
-      // Photographs are greyscale WebP (the whole picture), drawings SVG.
-      backPrintUrl: `/prints/print_${n}.${isPhoto({ category: cat }) ? "webp" : "svg"}`,
+      // Drawings are SVG; ink prints and photographs WebP.
+      backPrintUrl: `/prints/print_${n}.${medium === "drawn" ? "svg" : "webp"}`,
       category: cat,
+      medium,
       variant: index.variants[index.variant[i]],
       family: `fam-${pad4(index.family[i])}`,
       features,
@@ -125,14 +130,16 @@ export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ??
 /**
  * The print file for a tee colour. Every design has one: a drawn print is
  * strictly two-tone and flips exactly with a CSS invert for the other
- * colour (needsInvert); a photograph is never inverted (that would be a
- * negative) — its greyscale print shows the lights on a black tee and the
+ * colour; an ink print is black ink on a transparent ground, inverted to
+ * white ink for a black tee; a photograph is never inverted (that would be
+ * a negative) — its greyscale print shows the lights on a black tee and the
  * darks on a white one, the same positive picture.
  */
 export const printUrl = (shirt: Pick<ShirtProduct, "backPrintUrl">, _color?: BaseColor) => shirt.backPrintUrl;
 
-/** Whether showing `color` means inverting the print (drawn prints only). */
-export const needsInvert = (shirt: Pick<ShirtProduct, "baseColor" | "category">, color: BaseColor) => color !== shirt.baseColor && !isPhoto(shirt);
+/** Whether showing `color` means inverting the print (see printUrl). */
+export const needsInvert = (shirt: Pick<ShirtProduct, "baseColor" | "medium">, color: BaseColor) =>
+  shirt.medium === "drawn" ? color !== shirt.baseColor : shirt.medium === "ink" && color === "black";
 
 /* ------------------------------------------------------------------ */
 /* Product links                                                       */

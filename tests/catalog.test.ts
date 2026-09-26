@@ -3,9 +3,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from "@/lib/catalog";
 import { WEAK_QUALITY } from "../scripts/gen/quality";
-import { PER_CATEGORY, PRICE, TOTAL } from "../scripts/gen/constants";
+import { PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
-import { CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, isPhoto, type CatalogEntry } from "@/types/shirt";
+import { CATEGORY_LABELS, CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type CatalogEntry } from "@/types/shirt";
+import { displayCategory } from "../scripts/gen/categories";
 
 const FULL = full as unknown as CatalogEntry[];
 /** Description text outside quoted captions (captions are the print's own words). */
@@ -14,15 +15,17 @@ const narrative = (d: string) => d.replace(/“[^”]*”/g, "“”").replace(/
 const PUBLIC = path.resolve(__dirname, "..", "public");
 
 describe("generated catalog (data/shirts.json)", () => {
-  it("TOTAL were generated and ~40% retired (T7); the rest keep their ids — increasing, unique skus and titles", () => {
+  it("TOTAL were generated and ~40% retired (T7), then new content at least doubled the catalog (T8); ids increasing, unique skus and titles", () => {
     const n = SHIRTS.length;
-    expect(n).toBeGreaterThan(TOTAL * 0.58);
-    expect(n).toBeLessThan(TOTAL * 0.62);
+    const firstSets = SHIRTS.filter((s) => s.n <= TOTAL).length;
+    expect(firstSets).toBeGreaterThan(TOTAL * 0.58);
+    expect(firstSets).toBeLessThan(TOTAL * 0.62);
+    // T8: the new sets (ids above TOTAL) at least match everything that was there.
+    expect(n - firstSets).toBeGreaterThanOrEqual(firstSets);
     SHIRTS.forEach((s, i) => {
       expect(s.id).toBe(`mono-${String(s.n).padStart(4, "0")}`);
       if (i > 0) expect(s.n).toBeGreaterThan(SHIRTS[i - 1].n);
     });
-    expect(SHIRTS[SHIRTS.length - 1].n).toBeLessThanOrEqual(TOTAL);
     expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(n);
     expect(new Set(SHIRTS.map((s) => s.title)).size).toBe(n);
   });
@@ -30,9 +33,8 @@ describe("generated catalog (data/shirts.json)", () => {
   it("T7: none of the retired kinds is left (caricatures, pun icons, joke receipts / signs / quotes, 8-bit jokes, meme icons, novelty badges)", () => {
     const gone = /^(caricature-|objecticon|oddoneout|diagram|receipt|warning|quote|sprite|gamescreen|terminal|ascii$|ascii-banner|ascii-art|badge|label|ticket|iconic-(anchor|astronaut|atom|dna|dove|earthrise|footprint|launch|palms|plane|ufo))/;
     expect(SHIRTS.filter((s) => gone.test(s.variant))).toEqual([]);
-    expect(SHIRTS.some((s) => s.category === "caricatures")).toBe(false);
-    // One photograph per subject.
-    const full = FULL.filter((s) => s.photo);
+    // One photograph per subject (the fourth set's photographs).
+    const full = FULL.filter((s) => s.variant.startsWith("photo-"));
     expect(new Set(full.map((s) => `${s.category}|${s.subject}`)).size).toBe(full.length);
   });
 
@@ -43,22 +45,45 @@ describe("generated catalog (data/shirts.json)", () => {
       expect(black).toBeGreaterThan(0.5);
       expect(black).toBeLessThan(0.8);
     }
-    const photos = SHIRTS.filter((s) => s.n > 2800);
+    const photos = SHIRTS.filter((s) => s.n > 2800 && s.n <= TOTAL);
     expect(photos.every(isPhoto)).toBe(true);
     expect(new Set(photos.map((s) => s.baseColor))).toEqual(new Set(["black", "white"]));
+    // The fifth set (drawn) is 70/30 too, near enough after its faint prints were left out.
+    const fifth = SHIRTS.filter((s) => s.n > TOTAL && s.variant.match(/^(sky|harmonograph|lissajous|lorenz|rossler|phyllotaxis|lsystem|guilloche|rosette|khatam)/));
+    const black = fifth.filter((s) => s.baseColor === "black").length / fifth.length;
+    expect(black).toBeGreaterThan(0.6);
+    expect(black).toBeLessThan(0.8);
   });
 
-  it("has seventeen categories, PER_CATEGORY designs each (each set adds its own)", () => {
-    expect(SHIRT_CATEGORIES).toHaveLength(17);
-    const cats = (list: typeof SHIRTS) => [...new Set(list.map((s) => s.category))].sort();
-    expect(cats(SHIRTS.filter((s) => s.n > 1000 && s.n <= 2000))).toEqual(["emblems", "objects", "pixel", "scenes", "slogans"]);
-    expect(cats(SHIRTS.filter((s) => s.n > 2000 && s.n <= 2800))).toEqual(["ascii", "famousart", "iconic"]);
-    expect(cats(SHIRTS.filter((s) => s.n > 2800))).toEqual(["flight", "machines", "wildlife"]);
+  it("T8: thirteen shop categories, each with real depth and none swamping the shop", () => {
+    expect(SHIRT_CATEGORIES).toHaveLength(13);
+    for (const c of SHIRT_CATEGORIES) {
+      const count = SHIRTS.filter((s) => s.category === c).length;
+      expect(count, c).toBeGreaterThanOrEqual(60);
+      expect(count, c).toBeLessThan(SHIRTS.length * 0.2);
+      expect(CATEGORY_LABELS[c].length).toBeGreaterThan(2);
+      expect(SKU_CODES[c]).toMatch(/^[A-Z]{3}$/);
+      expect(SHIRTS.filter((s) => s.category === c).every((s) => s.sku.startsWith(`MN-${SKU_CODES[c]}-`))).toBe(true);
+    }
+    expect(new Set(Object.values(SKU_CODES)).size).toBe(SHIRT_CATEGORIES.length);
   });
 
-  it("every category was generated at PER_CATEGORY; what's left of each is at most that", () => {
-    for (const c of SHIRT_CATEGORIES) expect(SHIRTS.filter((s) => s.category === c).length).toBeLessThanOrEqual(PER_CATEGORY);
-    expect(SHIRTS.filter((s) => s.category === "architectural")).toHaveLength(PER_CATEGORY);
+  it("T8: designs are filed by what they show, whichever generator made them", () => {
+    expect(displayCategory("famousart", "art-wave")).toBe("masterworks");
+    expect(displayCategory("iconic", "iconic-landmark")).toBe("architecture");
+    expect(displayCategory("geometric", "tiling")).toBe("ornament");
+    expect(displayCategory("geometric", "concentric")).toBe("abstract");
+    expect(displayCategory("scenes", "mountains")).toBe("landscapes");
+    expect(displayCategory("sky", "sky-figure")).toBe("landscapes");
+    expect(displayCategory("flight", "")).toBe("machines");
+    expect(displayCategory("objects", "woodcut")).toBe("engraved");
+    expect(displayCategory("archive", "archive-botanical")).toBe("botanical");
+    expect(displayCategory("archive", "archive-ink-painting")).toBe("ink");
+    expect(displayCategory("archive", "archive-etching")).toBe("engraved");
+    // In the data: every variant sits in one category.
+    const byVariant = new Map<string, Set<string>>();
+    for (const s of SHIRTS) byVariant.set(s.variant, (byVariant.get(s.variant) ?? new Set()).add(s.category));
+    for (const [v, cats] of byVariant) expect(cats.size, v).toBe(1);
   });
 
   it("one flat price (PRICE) and features within [0, 1]", () => {
@@ -72,37 +97,37 @@ describe("generated catalog (data/shirts.json)", () => {
   });
 
   it("feature vectors reflect the algorithm that drew each print", () => {
-    const mean = (cat: string, key: (typeof FEATURE_KEYS)[number]) => {
-      const list = SHIRTS.filter((s) => s.category === cat);
+    const mean = (variants: RegExp, key: (typeof FEATURE_KEYS)[number]) => {
+      const list = SHIRTS.filter((s) => variants.test(s.variant));
+      expect(list.length, String(variants)).toBeGreaterThan(0);
       return list.reduce((sum, s) => sum + s.features[key], 0) / list.length;
     };
-    expect(mean("architectural", "architectural")).toBeGreaterThan(0.75);
-    expect(mean("geometric", "geometric")).toBeGreaterThan(0.75);
-    expect(mean("typography", "typography")).toBeGreaterThan(0.85);
-    expect(mean("halftone", "halftone_raster")).toBeGreaterThan(0.8);
-    expect(mean("waves", "line_art")).toBeGreaterThan(0.8);
-    expect(mean("scenes", "pictorial")).toBeGreaterThan(0.8);
-    expect(mean("scenes", "nature")).toBeGreaterThan(0.75);
-    expect(mean("slogans", "wit")).toBeGreaterThan(0.75);
-    expect(mean("pixel", "retro")).toBeGreaterThan(0.85);
-    expect(mean("emblems", "retro")).toBeGreaterThan(0.65);
-    expect(mean("objects", "pictorial")).toBeGreaterThan(0.65);
-    expect(mean("ascii", "retro")).toBeGreaterThan(0.75);
-    expect(mean("famousart", "classic")).toBeGreaterThan(0.85);
-    expect(mean("iconic", "pictorial")).toBeGreaterThan(0.75);
-    // figurative / classic belong to the third set only
-    expect(mean("objects", "figurative")).toBe(0);
-    expect(mean("slogans", "classic")).toBe(0);
+    expect(mean(/^(facade|perspective|skyline|slabs)$/, "architectural")).toBeGreaterThan(0.75);
+    expect(mean(/^(scatter|concentric|tiling|monoform)$/, "geometric")).toBeGreaterThan(0.75);
+    expect(mean(/^(word|coordinates|repeat|manifesto)$/, "typography")).toBeGreaterThan(0.85);
+    expect(mean(/^(radial|gradient|matrix|stipple)$/, "halftone_raster")).toBeGreaterThan(0.8);
+    expect(mean(/^(ridges|interference|contours|gesture)$/, "line_art")).toBeGreaterThan(0.8);
+    expect(mean(/^(mountains|celestial|seascape|dunes|forest)$/, "nature")).toBeGreaterThan(0.75);
+    expect(mean(/^pixelscape$/, "retro")).toBeGreaterThan(0.85);
+    expect(mean(/^art-/, "classic")).toBeGreaterThan(0.85);
+    expect(mean(/^iconic-/, "pictorial")).toBeGreaterThan(0.75);
+    // the fifth and sixth sets
+    expect(mean(/^(harmonograph|lissajous|lorenz|rossler)$/, "line_art")).toBeGreaterThan(0.8);
+    expect(mean(/^(phyllotaxis|lsystem-)/, "nature")).toBeGreaterThan(0.65);
+    expect(mean(/^(guilloche|rosette|khatam)$/, "geometric")).toBeGreaterThan(0.75);
+    expect(mean(/^sky-/, "nature")).toBeGreaterThan(0.5);
+    expect(mean(/^archive-botanical$/, "nature")).toBeGreaterThan(0.9);
+    expect(mean(/^archive-(etching|woodcut|gallery-print)$/, "classic")).toBeGreaterThan(0.55);
     // the new dimensions stay low on the original abstract families
-    expect(mean("geometric", "wit")).toBeLessThan(0.1);
-    expect(mean("architectural", "nature")).toBeLessThan(0.1);
-    // and not the others
-    expect(mean("waves", "typography")).toBeLessThan(0.1);
-    expect(mean("typography", "halftone_raster")).toBeLessThan(0.3);
+    expect(mean(/^(scatter|concentric|tiling|monoform)$/, "wit")).toBeLessThan(0.1);
+    expect(mean(/^(facade|perspective|skyline|slabs)$/, "nature")).toBeLessThan(0.1);
+    expect(mean(/^(ridges|interference|contours|gesture)$/, "typography")).toBeLessThan(0.1);
+    // only photographs are photographic
+    expect(mean(/^archive-(ink-painting|etching|botanical|ornament)$/, "photographic")).toBe(0);
   });
 
   it("every drawn print exists on disk as a valid 3:4 SVG (photographs: tests/photos)", () => {
-    for (const s of SHIRTS.filter((x) => !isPhoto(x))) {
+    for (const s of SHIRTS.filter((x) => x.medium === "drawn")) {
       const file = path.join(PUBLIC, s.backPrintUrl);
       expect(existsSync(file), s.backPrintUrl).toBe(true);
       expect(statSync(file).size).toBeLessThan(80 * 1024);
@@ -115,7 +140,7 @@ describe("generated catalog (data/shirts.json)", () => {
   // The reverse colourway is rendered with a CSS invert, which is only exact
   // if every print uses nothing but pure black and pure white.
   it("drawn prints are strictly two-colour, so the reverse colourway is an exact inversion", () => {
-    for (const s of SHIRTS.filter((x) => !isPhoto(x))) {
+    for (const s of SHIRTS.filter((x) => x.medium === "drawn")) {
       const svg = readFileSync(path.join(PUBLIC, s.backPrintUrl), "utf8");
       const colors = new Set(svg.match(/#[0-9A-Fa-f]{6}\b/g));
       for (const c of colors) expect(["#000000", "#FFFFFF"]).toContain(c.toUpperCase());
@@ -143,12 +168,11 @@ describe("generated catalog (data/shirts.json)", () => {
 });
 
 describe("catalog copy (R13)", () => {
-  it("titles carry no catalog number (that's `no`, 1–PER_CATEGORY per category)", () => {
+  it("titles carry no catalog number (that's `no`, 1–N per category)", () => {
     for (const s of SHIRTS) {
-      // Photographs keep the real model names ("Curtiss R3C-2"); no catalog number either way.
-      expect(s.title).not.toMatch(isPhoto(s) ? /No\.|#/ : /No\.|#|\d{2,}/);
+      // Photographs and archive works keep their real names ("Curtiss R3C-2", "Boston, 1880"); no catalog number either way.
+      expect(s.title).not.toMatch(s.medium !== "drawn" ? /No\.|#/ : /No\.|#|\d{2,}/);
       expect(s.no).toBeGreaterThanOrEqual(1);
-      expect(s.no).toBeLessThanOrEqual(PER_CATEGORY);
     }
     for (const c of SHIRT_CATEGORIES) {
       const nos = SHIRTS.filter((s) => s.category === c).map((s) => s.no);
@@ -157,7 +181,8 @@ describe("catalog copy (R13)", () => {
   });
 
   it("titles never repeat a word (\"Postcard Postcard\")", () => {
-    for (const s of SHIRTS) {
+    // Generated names (an archive work keeps its record's title: "Molds for Casting Blocks for Printing").
+    for (const s of SHIRTS.filter((x) => !x.variant.startsWith("archive-"))) {
       const words = s.title.split(" ");
       expect(new Set(words).size, s.title).toBe(words.length);
     }

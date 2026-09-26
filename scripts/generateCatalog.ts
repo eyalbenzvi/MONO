@@ -28,7 +28,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, PHOTO_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type ShirtCategory, type ShirtProduct } from "../types/shirt";
+import { FEATURE_KEYS, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
@@ -44,7 +44,11 @@ import { caricatureBobble, caricatureMugshot, caricaturePortrait, caricatureWant
 import { greatWave, masterpiece, modernMasters, starryNight } from "./gen/set3/famousart";
 import { landmark, motif, spaceAge, travelPoster } from "./gen/set3/iconic";
 import type { Generator } from "./gen/core";
-import { photoOrder, recordUrl, type PhotoSource } from "./photos/source";
+import { PHOTO_CATEGORIES, photoOrder, recordUrl, type PhotoSource } from "./photos/source";
+import { set5Designs } from "./gen/set5";
+import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveGroup, type ArchiveSource } from "./archive/source";
+import { archiveOrder } from "./archive/curation";
+import { ARCHIVE_DISPLAY, displayCategory } from "./gen/categories";
 
 const SEED = 0x6d6f6e6f; // "mono"
 /** Designs in each of the first two sets (five categories each). */
@@ -52,7 +56,7 @@ const PER_SET = 5 * PER_CATEGORY;
 const BLACK_SHARE = 0.7;
 
 const NEW_CATEGORIES = EXPANSION_CATEGORIES;
-const SET3_CATEGORIES = ["ascii", "caricatures", "famousart", "iconic"] as const satisfies readonly ShirtCategory[];
+const SET3_CATEGORIES = ["ascii", "caricatures", "famousart", "iconic"] as const satisfies readonly SourceCategory[];
 const SET3_PER_CATEGORY = PER_CATEGORY;
 
 const SET3_GENERATORS: Record<(typeof SET3_CATEGORIES)[number], Generator[]> = {
@@ -64,16 +68,16 @@ const SET3_GENERATORS: Record<(typeof SET3_CATEGORIES)[number], Generator[]> = {
 
 /** A set of designs: its categories, a generator list for each, and its size. */
 interface DesignSet {
-  cats: readonly ShirtCategory[];
-  generatorsFor: (category: ShirtCategory) => Generator[];
+  cats: readonly SourceCategory[];
+  generatorsFor: (category: SourceCategory) => Generator[];
   size: number;
   legacy: boolean;
   /** Made from photographs (data/photos), not generators. */
   photo?: boolean;
 }
 /** Typed per set (every category of the set must have generators). */
-function set<C extends ShirtCategory>(s: { cats: readonly C[]; gens: Record<C, Generator[]>; size: number; legacy: boolean }): DesignSet {
-  const isMine = (c: ShirtCategory): c is C => (s.cats as readonly ShirtCategory[]).includes(c);
+function set<C extends SourceCategory>(s: { cats: readonly C[]; gens: Record<C, Generator[]>; size: number; legacy: boolean }): DesignSet {
+  const isMine = (c: SourceCategory): c is C => (s.cats as readonly SourceCategory[]).includes(c);
   return {
     cats: s.cats,
     size: s.size,
@@ -114,8 +118,8 @@ const SHARD_DIR = path.join(ROOT, "public", "data");
 /* Titles & SKUs                                                       */
 /* ------------------------------------------------------------------ */
 
-/** Drawn categories (the photographs are named after their subject). */
-type DrawnCategory = Exclude<ShirtCategory, (typeof PHOTO_CATEGORIES)[number]>;
+/** The drawn sources of the first three sets (the others are named after their subject). */
+type DrawnCategory = Exclude<SourceCategory, (typeof PHOTO_CATEGORIES)[number] | "sky" | "curves" | "botany" | "ornament" | "archive">;
 const TITLE_WORDS: Record<DrawnCategory, [string[], string[]]> = {
   architectural: [
     ["Concrete", "Brutal", "Monolith", "Facade", "Structural", "Civic", "Steel", "Tectonic", "Transit", "Pillar", "Modular", "Grid", "Poured", "Cantilever", "Plinth"],
@@ -203,7 +207,7 @@ const photographer = (credit: string) => {
 };
 
 /** Categories whose designs may be knocked out of a solid ink block. */
-const KNOCKOUT_OK: ShirtCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
+const KNOCKOUT_OK: SourceCategory[] = [...LEGACY_CATEGORIES, "slogans", "pixel", "objects", "ascii"];
 
 /* ------------------------------------------------------------------ */
 /* Assembly                                                            */
@@ -271,7 +275,13 @@ const colourSplit = (rng: Rng, n: number): BaseColor[] =>
     ...Array<BaseColor>(n - Math.round(n * BLACK_SHARE)).fill("white"),
   ]);
 
-type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & { base: string };
+type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & {
+  base: string;
+  /** The generator family (or archive) it came from: titles, closing lines and retirement go by it. */
+  source: SourceCategory;
+};
+
+const skuOf = (category: ShirtCategory, baseColor: BaseColor, n: number) => `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`;
 
 /**
  * One name per subject. Where two different subjects shorten to the same
@@ -357,12 +367,14 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
     id: `mono-${String(n).padStart(4, "0")}`,
     n,
     no: index,
-    sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
+    sku: skuOf(displayCategory(category, ""), baseColor, n),
     title,
     price: PRICE,
     baseColor,
     backPrintUrl: `/prints/print_${n}.webp`,
-    category,
+    category: displayCategory(category, ""),
+    medium: "photo",
+    source: category,
     variant: `photo-${category}-${photo.mode}`,
     base: `${photo.subject}, ${where}, printed in greyscale.`,
     subject: photo.subject,
@@ -373,6 +385,150 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
     photo: { credit: photo.credit, url: recordUrl(photo.record), image: photo.key },
     dropDate: PHOTO_DROP,
   };
+}
+
+/** The fifth set's number range: ids 3401–3830 (the archive runs on from ARCHIVE_FIRST_N). */
+const SET5_FIRST_N = 3401;
+/** The day the fifth and sixth sets dropped (the Monday of the week they were added). */
+const SET5_DROP = "2026-09-21";
+
+/** Title taken already (a design of another set): the next free numeral. */
+function freeTitle(t: string, taken: Set<string>) {
+  const ROMAN = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  let title = t;
+  for (let k = 0; taken.has(title); k++) title = `${t} ${ROMAN[k] ?? k + 2}`;
+  taken.add(title);
+  return title;
+}
+
+/**
+ * Fifth set (scripts/gen/set5): star charts from the real sky, harmonographs
+ * and attractors, phyllotaxis and L-system plants, guilloche and rosettes.
+ * Drawn in white ink; a white-tee design gets the inks swapped. Returns the bytes written.
+ */
+function fifthSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): number {
+  const designs = set5Designs();
+  if (SET5_FIRST_N + designs.length > ARCHIVE_FIRST_N) throw new Error(`fifth set: ${designs.length} designs overrun the archive's ids`);
+  const colors = colourSplit(mulberry32(SEED ^ 0x5000), designs.length);
+  let bytes = 0;
+  designs.forEach((d, k) => {
+    const n = SET5_FIRST_N + k;
+    const baseColor = colors[k];
+    const [ink, ground] = baseColor === "black" ? ["#FFFFFF", "#000000"] : ["#000000", "#FFFFFF"];
+    const svg = minifySvg(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${ground}"/>${d.body.replace(/#FFFFFF/g, ink)}</svg>`,
+    );
+    writeFileSync(path.join(PRINTS_DIR, `print_${n}.svg`), svg);
+    bytes += svg.length;
+    const f = { ...d.features };
+    if (baseColor === "black") (f.dark_industrial = (f.dark_industrial ?? 0) + 0.12), (f.clean_minimal = (f.clean_minimal ?? 0) - 0.05);
+    else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
+    const { quality, printCm } = measurePrint(svg, baseColor);
+    // A faint print (a constellation of a few stars) isn't sold: its number stays empty.
+    if (quality < WEAK_QUALITY) {
+      rmSync(path.join(PRINTS_DIR, `print_${n}.svg`));
+      bytes -= svg.length;
+      return;
+    }
+    const category = displayCategory(d.source, d.variant);
+    sigs.push({ key: `set5|${d.sigKey}`, vec: [] });
+    shirts.push({
+      id: `mono-${String(n).padStart(4, "0")}`,
+      n,
+      no: 0,
+      sku: skuOf(category, baseColor, n),
+      title: freeTitle(d.title, taken),
+      price: PRICE,
+      baseColor,
+      backPrintUrl: `/prints/print_${n}.svg`,
+      category,
+      medium: "drawn",
+      source: d.source,
+      variant: d.variant,
+      base: d.description,
+      subject: d.subject ?? d.title,
+      style: STYLE[d.source],
+      quality,
+      printCm,
+      features: vector(f),
+      dropDate: SET5_DROP,
+    });
+  });
+  return bytes;
+}
+
+/** Features of an archive design: its group's character, then the print's own measures. */
+const ARCHIVE_FEATURES: Record<ArchiveGroup, Partial<Record<FeatureKey, number>>> = {
+  "ink-painting": { classic: 0.85, nature: 0.75, line_art: 0.45, pictorial: 0.65, abstract: 0.15, clean_minimal: 0.35 },
+  "ukiyo-e": { classic: 0.85, nature: 0.55, pictorial: 0.75, line_art: 0.55, retro: 0.2, architectural: 0.1 },
+  "gallery-print": { classic: 0.75, line_art: 0.75, pictorial: 0.65, architectural: 0.25, nature: 0.25 },
+  woodcut: { classic: 0.6, line_art: 0.55, pictorial: 0.7, retro: 0.3, nature: 0.3, dark_industrial: 0.15 },
+  etching: { classic: 0.75, line_art: 0.8, pictorial: 0.65, architectural: 0.25, nature: 0.3 },
+  botanical: { nature: 0.95, line_art: 0.6, classic: 0.55, pictorial: 0.55, clean_minimal: 0.3 },
+  "art-photo": { photographic: 0.95, classic: 0.55, retro: 0.55, pictorial: 0.7, architectural: 0.25, nature: 0.25 },
+  "archive-photo": { photographic: 0.95, retro: 0.7, classic: 0.45, pictorial: 0.65, architectural: 0.3, dark_industrial: 0.2 },
+  locomotion: { photographic: 0.9, nature: 0.6, retro: 0.65, geometric: 0.35, classic: 0.4, pictorial: 0.5 },
+  patent: { photographic: 0.9, retro: 0.55, dark_industrial: 0.45, classic: 0.4, clean_minimal: 0.45, pictorial: 0.5 },
+  ornament: { geometric: 0.55, abstract: 0.4, classic: 0.75, line_art: 0.6, clean_minimal: 0.2 },
+  stencil: { geometric: 0.5, abstract: 0.45, classic: 0.7, nature: 0.35, clean_minimal: 0.3 },
+};
+
+/**
+ * Sixth set: public-domain artworks and photographs (scripts/archive:
+ * data/archive/archive.json and the prints it committed). An ink print is
+ * the original's marks as black ink (inverted to white for a black tee); a
+ * photograph is greyscale, never inverted. Returns the bytes of the prints.
+ */
+function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): number {
+  const file = path.resolve(__dirname, "..", "data", "archive", "archive.json");
+  if (!existsSync(file)) return 0;
+  const all: ArchiveSource[] = JSON.parse(readFileSync(file, "utf8"));
+  let bytes = 0;
+  for (const { n, source: a } of archiveOrder(all)) {
+    const print = path.join(PRINTS_DIR, `print_${n}.webp`);
+    if (!existsSync(print)) throw new Error(`missing ${path.relative(ROOT, print)} (run scripts/archive/fetchArchive.ts select)`);
+    bytes += statSync(print).size;
+    const g = ARCHIVE_GROUPS[a.group];
+    const medium: Medium = g.mode === "ink" ? "ink" : "photo";
+    // A photograph goes on the tee that shows more of it; ink prints either way (half and half).
+    const baseColor: BaseColor = medium === "photo" ? (a.tone >= 0.5 ? "black" : "white") : mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))() < 0.5 ? "black" : "white";
+    const f: Partial<Record<FeatureKey, number>> = {
+      ...ARCHIVE_FEATURES[a.group],
+      density: Math.min(1, a.coverage * (medium === "ink" ? 2.5 : 1.6)),
+      contrast: Math.min(1, 0.25 + a.contrast * 2.2),
+    };
+    if (baseColor === "black") (f.dark_industrial = (f.dark_industrial ?? 0) + 0.12), (f.clean_minimal = (f.clean_minimal ?? 0) - 0.05);
+    else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
+    const unit = ARCHIVE_UNITS[a.unit].name;
+    const quality = Math.round(100 * (0.3 * Math.min(1, a.coverage / (medium === "ink" ? 0.15 : 0.35)) + 0.35 * Math.min(1, a.contrast * 3.5) + 0.35 * Math.min(1, a.detail * 1.5)));
+    const [x0, y0, x1, y1] = a.box;
+    const category = ARCHIVE_DISPLAY[a.group];
+    const made = [a.maker ? `by ${a.maker}` : "", a.date ? `(${a.date.replace(/\s*\?$/, "").replace(/\?/g, "")}${/\?/.test(a.date) ? ", probably" : ""})` : ""].filter(Boolean).join(" ");
+    sigs.push({ key: `archive|${a.key}`, vec: [] });
+    shirts.push({
+      id: `mono-${String(n).padStart(4, "0")}`,
+      n,
+      no: 0,
+      sku: skuOf(category, baseColor, n),
+      title: freeTitle(a.name, taken),
+      price: PRICE,
+      baseColor,
+      backPrintUrl: `/prints/print_${n}.webp`,
+      category,
+      medium,
+      source: "archive",
+      variant: `archive-${a.group}`,
+      base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" ? "its marks printed as one ink" : "printed in greyscale"}.`,
+      subject: a.name,
+      style: STYLE.archive,
+      quality,
+      printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
+      features: vector(f),
+      photo: { credit: a.maker ? `${a.maker}, ${unit}` : unit, url: recordUrl(a.record), image: a.key },
+      dropDate: SET5_DROP,
+    });
+  }
+  return bytes;
 }
 
 function main() {
@@ -390,12 +546,12 @@ function main() {
   for (const f of readdirSync(PRINTS_DIR)) if (f.endsWith(".svg")) rmSync(path.join(PRINTS_DIR, f));
   mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
-  const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<ShirtCategory, number>;
+  const counters = Object.fromEntries(SETS.flatMap((set) => set.cats).map((c) => [c, 0])) as Record<SourceCategory, number>;
   const shirts: Draft[] = [];
   const sigs: Signature[] = [];
   let bytes = 0;
   const takenTitles = new Set<string>();
-  const spareTitle: Partial<Record<ShirtCategory, number>> = {};
+  const spareTitle: Partial<Record<SourceCategory, number>> = {};
 
   for (let i = 0; i < total; i++) {
     const n = i + 1;
@@ -509,12 +665,14 @@ function main() {
       id: `mono-${String(n).padStart(4, "0")}`,
       n,
       no: index,
-      sku: `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`,
+      sku: skuOf(displayCategory(category, design.variant), baseColor, n),
       title,
       price: PRICE,
       baseColor,
       backPrintUrl: `/prints/print_${n}.svg`,
-      category,
+      category: displayCategory(category, design.variant),
+      medium: "drawn",
+      source: category,
       variant: design.variant,
       // No ink colour here: every design is sold in both colourways.
       base: knockout ? `${sentence(design.description)} Knocked out of a solid ink block.` : design.description,
@@ -527,13 +685,17 @@ function main() {
     });
   }
 
+  bytes += fifthSet(shirts, sigs, takenTitles);
+  bytes += archiveSet(shirts, sigs, takenTitles);
+
   // Retire the designs the content review took out (scripts/gen/retire):
   // everything above was generated in full, so the rest keep their ids,
   // titles and prints. Their prints (drawn) are removed; `no` renumbers.
-  const retired = retiredIds(shirts);
+  // (It knows the first four sets: their source categories, their photographs.)
+  const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
-    if (!shirts[k].photo) rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
+    if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
     shirts.splice(k, 1);
     sigs.splice(k, 1);
   }
@@ -542,10 +704,10 @@ function main() {
 
   const familyIndex = assignFamilies(sigs);
   const descriptions = finishDescriptions(
-    shirts.map((s) => ({ base: s.base, category: s.category, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
+    shirts.map((s) => ({ base: s.base, category: s.source, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
   );
   const ranks = editorialRanks(shirts.map((s) => s.features), shirts.map((s) => s.quality));
-  const withFamily = shirts.map(({ base, ...s }, i) => ({
+  const withFamily = shirts.map(({ base, source: _source, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
     // `summary`: the design's own sentence (meta descriptions); `description`
@@ -557,7 +719,7 @@ function main() {
   // Takes of one subject: the plain name goes to the one the shop shows
   // first (best rank), the rest are its later takes.
   const takes = new Map<string, typeof withFamily>();
-  for (const s of withFamily) if (s.photo) takes.set(s.subject, [...(takes.get(s.subject) ?? []), s]);
+  for (const s of withFamily) if (s.medium === "photo" && s.photo && !s.variant.startsWith("archive-")) takes.set(s.subject, [...(takes.get(s.subject) ?? []), s]);
   for (const list of takes.values()) {
     const base = list[0].title.replace(/, Take \d+$/, "");
     if (list.length < 2) {
@@ -575,22 +737,25 @@ function main() {
   writeIndex(catalog, calibration, writeShards(catalog));
 
   for (const [c, spare] of Object.entries(spareTitle)) {
-    if (spare < counters[c as ShirtCategory]) throw new Error(`not enough title words for ${c}`);
+    if (spare < counters[c as SourceCategory]) throw new Error(`not enough title words for ${c}`);
   }
 
   const sizes = new Map<string, number>();
   for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
   const newFamilies = new Set(catalog.slice(PER_SET).map((s) => s.family)).size;
   const set3Families = new Set(catalog.slice(PER_SET * 2, PER_SET * 2 + SET3_CATEGORIES.length * SET3_PER_CATEGORY).map((s) => s.family)).size;
-  const photoFamilies = new Set(catalog.filter((s) => s.photo).map((s) => s.family)).size;
+  const photoFamilies = new Set(catalog.filter((s) => s.variant.startsWith("photo-")).map((s) => s.family)).size;
   const black = shirts.filter((s) => s.baseColor === "black").length;
   const titles = new Set(shirts.map((s) => s.title)).size;
   console.log(`Generated ${shirts.length} shirts → ${path.relative(ROOT, DATA_FILE)}`);
-  console.log(`  photographs: ${PHOTO_CATEGORIES.length * PER_CATEGORY} (greyscale WebP prints, one per design)`);
+  const byMedium = (m: Medium) => catalog.filter((s) => s.medium === m).length;
+  console.log(`  media: ${byMedium("drawn")} drawn (SVG) · ${byMedium("ink")} ink · ${byMedium("photo")} photographs (WebP)`);
   console.log(`  prints: ${shirts.length} SVGs in ${path.relative(ROOT, PRINTS_DIR)} (${(bytes / 1024 / 1024).toFixed(2)} MB, avg ${(bytes / shirts.length / 1024).toFixed(1)} KB)`);
   console.log(`  colours: ${black} black / ${shirts.length - black} white · unique titles: ${titles}`);
   console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families - photoFamilies} second set, ${set3Families} third set, ${photoFamilies} photographs)`);
-  console.log(`  categories: ${Object.entries(counters).map(([c, n]) => `${c} ${n}`).join(" · ")}`);
+  const shop = new Map<string, number>();
+  for (const s of catalog) shop.set(s.category, (shop.get(s.category) ?? 0) + 1);
+  console.log(`  shop categories: ${[...shop].map(([c, n]) => `${c} ${n}`).join(" · ")}`);
   const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
   console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog[catalog.length - 1].n / SHARD_SIZE)} · retired ${retired.size}`);
   console.log(`  price: $${PRICE} · calibration: ${calibration.join(" ")}`);
@@ -673,6 +838,7 @@ if (FEATURE_DIGITS.length !== 101) throw new Error("feature digits must cover 0�
 
 function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: string[]) {
   const seen: Partial<Record<ShirtCategory, number>> = {};
+  // Designs are stored in id order (the index derives `no` from it).
   catalog.forEach((s, i) => {
     const no = (seen[s.category] = (seen[s.category] ?? 0) + 1);
     if ((i > 0 && s.n <= catalog[i - 1].n) || s.no !== no) throw new Error(`index can't derive ${s.id}`);
@@ -686,6 +852,8 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     family: col((s) => Number(s.family.slice(4))),
     variant: col((s) => variants.indexOf(s.variant)),
     category: col((s) => categories.indexOf(s.category)),
+    // How each print is made: d(rawn) SVG, i(nk) or p(hoto) WebP (lib/catalog MEDIUM_CODES).
+    medium: col((s) => s.medium[0]).join(""),
     white: col((s) => (s.baseColor === "white" ? 1 : 0)).join(""),
     price: col((s) => s.price),
     title: col((s) => s.title),
@@ -710,7 +878,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
 }
 
 /** Index format version (lib/catalog refuses any other). */
-const INDEX_VERSION = 4;
+const INDEX_VERSION = 5;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar

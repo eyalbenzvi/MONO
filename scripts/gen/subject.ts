@@ -6,7 +6,7 @@
  * the title noun in categories whose poetic nouns said nothing ("Everyday
  * Relic" → "Everyday Cactus").
  */
-import type { ShirtCategory } from "../../types/shirt";
+import type { SourceCategory } from "../../types/shirt";
 
 /** Title Case, small words lower-case after the first ("Moonrise over the Sea"). */
 const title = (s: string) =>
@@ -188,7 +188,7 @@ export function subjectOf(variant: string, base: string): { subject: string; nou
 }
 
 /** The print style, for the SEO title ("… Line-Art Tee"). */
-export const STYLE: Record<ShirtCategory, string> = {
+export const STYLE: Record<SourceCategory, string> = {
   architectural: "Architectural",
   geometric: "Geometric",
   typography: "Typographic",
@@ -206,7 +206,12 @@ export const STYLE: Record<ShirtCategory, string> = {
   wildlife: "Photo",
   flight: "Photo",
   machines: "Photo",
+  sky: "Star-Chart",
+  curves: "Line-Art",
+  botany: "Botanical",
+  ornament: "Ornamental",
+  archive: "Vintage",
 };
 
 /** Categories whose names take the subject's noun ("Lucky Cactus", "Proud Barista", "Famous Pyramids"). */
-export const SUBJECT_NOUN_CATEGORIES: readonly ShirtCategory[] = ["objects", "caricatures", "iconic"];
+export const SUBJECT_NOUN_CATEGORIES: readonly SourceCategory[] = ["objects", "caricatures", "iconic"];

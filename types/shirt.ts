@@ -32,8 +32,13 @@ export type FeatureVector = Record<FeatureKey, number>;
 
 export type BaseColor = "black" | "white";
 
-/** Generative category a print belongs to (see scripts/generateCatalog.ts). */
-export const SHIRT_CATEGORIES = [
+/**
+ * Where a design comes from in the generator (scripts only): the generator
+ * family that made it, or the archive. Kept as it was when each set was
+ * made, so ids, prints and names never change; the shop groups designs by
+ * ShirtCategory instead (see displayCategory in scripts/generateCatalog).
+ */
+export const SOURCE_CATEGORIES = [
   "architectural",
   "geometric",
   "typography",
@@ -54,78 +59,99 @@ export const SHIRT_CATEGORIES = [
   "wildlife",
   "flight",
   "machines",
+  // fifth set: generated from data and maths
+  "sky",
+  "curves",
+  "botany",
+  "ornament",
+  // sixth set: public-domain artworks and photographs (Smithsonian Open Access, CC0)
+  "archive",
+] as const;
+export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
+
+/**
+ * The shop's categories (from the content review): what a design shows and
+ * how it was made, in the order the shop lists them.
+ */
+export const SHIRT_CATEGORIES = [
+  "ink",
+  "engraved",
+  "masterworks",
+  "botanical",
+  "wildlife",
+  "archive",
+  "machines",
+  "architecture",
+  "landscapes",
+  "ornament",
+  "abstract",
+  "type",
+  "retro",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
+export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
+  ink: "Ukiyo & Ink",
+  engraved: "Engraved",
+  masterworks: "Masterworks",
+  botanical: "Botanical",
+  wildlife: "Wildlife",
+  archive: "Archive Photography",
+  machines: "Flight & Machines",
+  architecture: "Architecture & Cities",
+  landscapes: "Landscapes & Sky",
+  ornament: "Ornament & Pattern",
+  abstract: "Abstract & Op Art",
+  type: "Type & Emblems",
+  retro: "Retro Digital",
+};
+
 /** SKU code per category: MN-<code>-<B|W>-<n>. */
 export const SKU_CODES: Record<ShirtCategory, string> = {
-  architectural: "ARC",
-  geometric: "GEO",
-  typography: "TYP",
-  halftone: "HLF",
-  waves: "WAV",
-  scenes: "SCN",
-  slogans: "SLG",
-  pixel: "PIX",
-  emblems: "EMB",
-  objects: "OBJ",
-  ascii: "ASC",
-  caricatures: "CAR",
-  famousart: "ART",
-  iconic: "ICN",
+  ink: "INK",
+  engraved: "ENG",
+  masterworks: "ART",
+  botanical: "BOT",
   wildlife: "WLD",
-  flight: "FLT",
+  archive: "PHO",
   machines: "MCH",
+  architecture: "ARC",
+  landscapes: "LND",
+  ornament: "ORN",
+  abstract: "ABS",
+  type: "TYP",
+  retro: "RET",
 };
+
+/** One short line on the feel of each category. */
+export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
+  ink: "Brush, wash and woodblock from Japan and China, in one ink.",
+  engraved: "Etchings, woodcuts and engravings: lines cut by hand.",
+  masterworks: "Homages to public-domain masterpieces, in one colour.",
+  botanical: "Plants drawn, printed and grown by rule, like old herbarium plates.",
+  wildlife: "Animals photographed and studied in motion, from the Smithsonian.",
+  archive: "Old photographs from museum archives: places, machines, sky.",
+  machines: "Aircraft, engines, instruments and patent models.",
+  architecture: "Buildings, landmarks and cities — order you can wear.",
+  landscapes: "Mountains, seas and the night sky, charted and drawn.",
+  ornament: "Lace, stencils, rosettes and tiles: pattern for its own sake.",
+  abstract: "Shapes, dots and curves doing very little, very well.",
+  type: "Words, badges and stamps: set big, set bold, set straight.",
+  retro: "Pixels and characters from the arcade and the command line.",
+};
+
+/** A photograph (Medium "photo"): never inverted for the other tee colour — that would make a negative. */
+export const isPhoto = (s: { medium: Medium }) => s.medium === "photo";
 
 /**
- * Categories made from photographs. A photo print is greyscale (the whole
- * picture) and is never inverted for the other tee colour — that would
- * make a negative: see printUrl / needsInvert in lib/catalog.
+ * How a print is made, which decides its file and how it turns for the
+ * other tee colour:
+ * - drawn: a two-tone SVG, inverted exactly for the other colour;
+ * - ink: a picture's marks as one ink (WebP, black ink with alpha), shown in
+ *   white on a black tee;
+ * - photo: a greyscale photograph (WebP), never inverted (that would be a negative).
  */
-export const PHOTO_CATEGORIES = ["wildlife", "flight", "machines"] as const satisfies readonly ShirtCategory[];
-export const isPhoto = (s: { category: ShirtCategory }) => (PHOTO_CATEGORIES as readonly ShirtCategory[]).includes(s.category);
-
-/** One short line on the feel of each category (product page). */
-export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
-  architectural: "Concrete, grids and cantilevers — order you can wear.",
-  geometric: "Pure shapes doing very little, very well.",
-  typography: "Words as objects: set big, set bold, set straight.",
-  halftone: "Dots doing the work of greys, like a press sheet up close.",
-  waves: "Lines that drift, ripple and refuse to sit still.",
-  scenes: "Quiet landscapes printed like a screen print on a gallery wall.",
-  slogans: "Deadpan statements for people who mean it (mostly).",
-  pixel: "Low-res nostalgia, from the arcade and the command line.",
-  emblems: "Badges, crests and stamps for clubs that don't exist.",
-  objects: "Everyday things, drawn with more care than they asked for.",
-  ascii: "Pictures made of characters, straight out of a terminal.",
-  caricatures: "Invented characters, lovingly exaggerated — nobody real.",
-  famousart: "Homages to public-domain masterpieces, in one colour.",
-  iconic: "Landmarks, space age and symbols, drawn from scratch.",
-  wildlife: "Photographs from the Smithsonian's National Zoo, screened in one ink.",
-  flight: "Aircraft and spacecraft from the Air and Space Museum, as halftones.",
-  machines: "Engines, gauges and instruments, photographed up close.",
-};
-
-export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
-  architectural: "Architectural",
-  geometric: "Geometric",
-  typography: "Typography",
-  halftone: "Halftone",
-  waves: "Line & Wave",
-  scenes: "Scenes",
-  slogans: "Slogans",
-  pixel: "Pixel & Retro",
-  emblems: "Badges",
-  objects: "Objects",
-  ascii: "ASCII Art",
-  caricatures: "Caricatures",
-  famousart: "Famous Art",
-  iconic: "Iconic Images",
-  wildlife: "Wildlife",
-  flight: "Flight",
-  machines: "Engines & Gauges",
-};
+export type Medium = "drawn" | "ink" | "photo";
 
 /** Adult sizes, then kids' sizes (by age). Stored as these codes; shown with SIZE_LABELS. */
 export const ADULT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const;
@@ -157,9 +183,11 @@ export interface ShirtProduct {
   price: number;
   /** Tee colour. Prints are single-ink: white ink on black tees, black ink on white. */
   baseColor: BaseColor;
-  /** 3:4 monochrome print, relative to the site root: two-tone SVG (/prints/print_1.svg), or a greyscale WebP photograph. */
+  /** 3:4 monochrome print, relative to the site root: two-tone SVG (/prints/print_1.svg), or WebP (ink or photograph). */
   backPrintUrl: string;
   category: ShirtCategory;
+  /** How the print is made (see Medium). */
+  medium: Medium;
   /** Algorithm within the category (e.g. "facade", "ridges"). */
   variant: string;
   /**
