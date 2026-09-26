@@ -35,6 +35,7 @@ import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
 import { WEAK_QUALITY, measurePrint } from "./gen/quality";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
+import { retiredIds } from "./gen/retire";
 import { H, M, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
 import { EXPANSION_CATEGORIES, EXPANSION_GENERATORS, legacyExtras } from "./gen/expansion";
@@ -526,6 +527,19 @@ function main() {
     });
   }
 
+  // Retire the designs the content review took out (scripts/gen/retire):
+  // everything above was generated in full, so the rest keep their ids,
+  // titles and prints. Their prints (drawn) are removed; `no` renumbers.
+  const retired = retiredIds(shirts);
+  for (let k = shirts.length - 1; k >= 0; k--) {
+    if (!retired.has(shirts[k].id)) continue;
+    if (!shirts[k].photo) rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
+    shirts.splice(k, 1);
+    sigs.splice(k, 1);
+  }
+  const perCategory: Partial<Record<ShirtCategory, number>> = {};
+  for (const s of shirts) s.no = perCategory[s.category] = (perCategory[s.category] ?? 0) + 1;
+
   const familyIndex = assignFamilies(sigs);
   const descriptions = finishDescriptions(
     shirts.map((s) => ({ base: s.base, category: s.category, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
@@ -545,8 +559,11 @@ function main() {
   const takes = new Map<string, typeof withFamily>();
   for (const s of withFamily) if (s.photo) takes.set(s.subject, [...(takes.get(s.subject) ?? []), s]);
   for (const list of takes.values()) {
-    if (list.length < 2) continue;
-    const base = list.map((s) => s.title).find((t) => !/, Take \d+$/.test(t))!;
+    const base = list[0].title.replace(/, Take \d+$/, "");
+    if (list.length < 2) {
+      list[0].title = base; // the only photograph left of its subject
+      continue;
+    }
     [...list].sort((a, b) => a.rank - b.rank).forEach((s, k) => (s.title = k === 0 ? base : `${base}, Take ${k + 1}`));
   }
   const similar = neighbours(withFamily);
@@ -575,7 +592,7 @@ function main() {
   console.log(`  families: ${sizes.size} (${sizes.size - newFamilies} original, ${newFamilies - set3Families - photoFamilies} second set, ${set3Families} third set, ${photoFamilies} photographs)`);
   console.log(`  categories: ${Object.entries(counters).map(([c, n]) => `${c} ${n}`).join(" · ")}`);
   const uniqueDesc = new Set(catalog.map((s) => s.description)).size;
-  console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog.length / SHARD_SIZE)}`);
+  console.log(`  descriptions: ${uniqueDesc} unique · index ${(statSync(INDEX_FILE).size / 1024).toFixed(0)} KB · shards ${Math.ceil(catalog[catalog.length - 1].n / SHARD_SIZE)} · retired ${retired.size}`);
   console.log(`  price: $${PRICE} · calibration: ${calibration.join(" ")}`);
   console.log(`  quality: ${catalog.filter((s) => s.quality < WEAK_QUALITY).length} weak prints (< ${WEAK_QUALITY}) · drops ${catalog[0].dropDate} → ${catalog[catalog.length - 1].dropDate}`);
 }
@@ -637,7 +654,8 @@ function calibrationIds(catalog: CatalogEntry[]): string[] {
 
 /**
  * Lean index for the app bundle, stored by column (it gzips to a third of
- * the row form). Design n is at position n − 1 in every column:
+ * the row form). Every column is in design order; `n` holds each design's
+ * number (ids are mono-<n>; retired designs leave gaps):
  * family#, variant# and category# point into their tables, `white` is a
  * 0/1 string, `features` has one string per FEATURE_KEYS entry: character
  * k is design k's value ×100 (0–100) written as one symbol of `digits`
@@ -657,12 +675,14 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
   const seen: Partial<Record<ShirtCategory, number>> = {};
   catalog.forEach((s, i) => {
     const no = (seen[s.category] = (seen[s.category] ?? 0) + 1);
-    if (s.n !== i + 1 || s.no !== no) throw new Error(`index can't derive ${s.id}`);
+    if ((i > 0 && s.n <= catalog[i - 1].n) || s.no !== no) throw new Error(`index can't derive ${s.id}`);
   });
   const variants = [...new Set(catalog.map((s) => s.variant))];
   const categories = [...new Set(catalog.map((s) => s.category))];
   const col = <T>(f: (s: CatalogEntry) => T) => catalog.map(f);
   const columns = {
+    // Design numbers (ids are mono-<n>): increasing, with gaps where designs were retired.
+    n: col((s) => s.n),
     family: col((s) => Number(s.family.slice(4))),
     variant: col((s) => variants.indexOf(s.variant)),
     category: col((s) => categories.indexOf(s.category)),
@@ -690,7 +710,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
 }
 
 /** Index format version (lib/catalog refuses any other). */
-const INDEX_VERSION = 3;
+const INDEX_VERSION = 4;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar
@@ -701,10 +721,14 @@ const INDEX_VERSION = 3;
 function writeShards(catalog: CatalogEntry[]): string[] {
   rmSync(SHARD_DIR, { recursive: true, force: true });
   mkdirSync(SHARD_DIR, { recursive: true });
+  // Shard k holds designs n = k·SHARD_SIZE+1 … (k+1)·SHARD_SIZE (lib/catalog shardOf).
+  const count = Math.ceil(catalog[catalog.length - 1].n / SHARD_SIZE);
   const hashes: string[] = [];
-  for (let k = 0; k * SHARD_SIZE < catalog.length; k++) {
+  for (let k = 0; k < count; k++) {
     const part = Object.fromEntries(
-      catalog.slice(k * SHARD_SIZE, (k + 1) * SHARD_SIZE).map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height], ...(s.photo ? { c: s.photo.credit, u: s.photo.url } : {}) }]),
+      catalog
+        .filter((s) => Math.floor((s.n - 1) / SHARD_SIZE) === k)
+        .map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height], ...(s.photo ? { c: s.photo.credit, u: s.photo.url } : {}) }]),
     );
     const json = JSON.stringify(part);
     const hash = createHash("sha256").update(json).digest("hex").slice(0, 10);

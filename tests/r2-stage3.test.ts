@@ -41,8 +41,8 @@ describe("R06: commerce events in GA4's shape", () => {
       ["white", PRICE, PRICE - PAIR_PRICE / 2],
     ]);
     const t = await fresh();
-    t.useCartStore.getState().addToCart("mono-0002", "M", "black");
-    t.useCartStore.getState().addPair("mono-0002", "M");
+    t.useCartStore.getState().addToCart("mono-0006", "M", "black");
+    t.useCartStore.getState().addPair("mono-0006", "M");
     expect(events("add_to_cart")[1]).toMatchObject({ value: 42, items: [{ item_variant: "white", discount: 6 }] });
   });
 

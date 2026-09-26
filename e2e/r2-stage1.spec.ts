@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { hydrated, seed } from "./helpers";
 
-const B = "mono-0500";
+const B = "mono-0501";
 const shopBack = (page: import("@playwright/test").Page) => page.getByRole("button", { name: "Shop", exact: true });
 
 /** Open the first product in the grid (not B) and return its id. */

@@ -57,17 +57,17 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
 
 test.describe("shared links (F04) and the empty bag (F05)", () => {
   test("a shared tee: the page stays until asked; 'Save & find more like it' saves and starts the test", async ({ page }) => {
-    await page.goto("shop/mono-0500/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share");
+    await page.goto("shop/mono-0501/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share");
     await hydrated(page);
     const banner = page.getByRole("status").filter({ hasText: "A friend shared this tee" });
     await expect(banner).toBeVisible();
     await page.waitForTimeout(800);
-    await expect(page).toHaveURL(/\/shop\/mono-0500\/$/);
+    await expect(page).toHaveURL(/\/shop\/mono-0501\/$/);
     await expect(banner.getByRole("link")).toHaveCount(0);
     await banner.getByRole("button", { name: "Save & find more like it" }).tap();
     await page.waitForURL((u) => u.pathname === "/" || u.pathname.endsWith("/MONO/"));
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).state.likedIds);
-    expect(saved).toContain("mono-0500");
+    expect(saved).toContain("mono-0501");
   });
 
   test("a friend's taste link greets with their archetype", async ({ page }) => {
@@ -77,7 +77,7 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
   });
 
   test("an empty bag starts from Saved: three with quick add", async ({ page }) => {
-    await seed(page, { likedIds: ["mono-0500", "mono-0600", "mono-0700", "mono-0800"], calibrated: false });
+    await seed(page, { likedIds: ["mono-0501", "mono-0601", "mono-0701", "mono-0801"], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
     const section = page.locator("section", { has: page.getByRole("heading", { name: "From your Saved" }) });

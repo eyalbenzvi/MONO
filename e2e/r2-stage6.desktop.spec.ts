@@ -20,7 +20,7 @@ test("I04: every page runs under its CSP (script hashes, no 'unsafe-inline' for 
   const problems = await watch(page);
   await seed(page, {}, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
   const seen: string[] = [];
-  for (const route of ["", "shop/", "shop/mono-0001/", "cart/", "shop/p/?id=mono-0002", "shop/mono-9999/"]) {
+  for (const route of ["", "shop/", "shop/mono-0001/", "cart/", "shop/p/?id=mono-0006", "shop/mono-9999/"]) {
     await page.goto(route);
     await page.waitForTimeout(800);
     const meta = await page.evaluate(() => {

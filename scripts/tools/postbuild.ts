@@ -14,7 +14,7 @@
  *    instead of allowing 'unsafe-inline' (lib/csp).
  */
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import full from "../../data/shirts.json";
 import { homeJsonLd, jsonLd, productJsonLd } from "../../lib/structuredData";
@@ -59,7 +59,29 @@ export function withCsp(html: string) {
   return cleaned.replace(/<head>(<meta charSet="utf-8"\/>)?/i, (m) => m + meta);
 }
 
+/**
+ * Files of retired designs (scripts/gen/retire) don't ship: a photograph's
+ * print is an input kept in public/prints, and a link preview may linger in
+ * a local public/og; the export only carries what the catalog lists.
+ */
+function pruneRetired(): number {
+  const alive = new Set(SHIRTS.map((s) => s.n));
+  let removed = 0;
+  for (const [dir, re] of [
+    [path.join(OUT, "prints"), /^print_(\d+)\./],
+    [path.join(OUT, "og"), /^mono-(\d+)\.png$/],
+  ] as const) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      const m = f.match(re);
+      if (m && !alive.has(Number(m[1]))) rmSync(path.join(dir, f)), removed++;
+    }
+  }
+  return removed;
+}
+
 function main() {
+  const pruned = pruneRetired();
   if (!existsSync(path.join(OUT, "index.html"))) {
     console.error("postbuild: out/ not found");
     process.exit(1);
@@ -106,7 +128,7 @@ function main() {
   }
 
   if (!ogRan) console.warn(`postbuild: no link-preview images in out/og (npm run og didn't run)${hasDefault ? ` — ${fallback} pages use og/default.png` : ""}`);
-  console.log(`postbuild: ${pages.length} product pages checked${ogRan ? ", all with their og image" : ""}; JSON-LD written; CSP on ${csp} pages`);
+  console.log(`postbuild: ${pruned} files of retired designs left out; ${pages.length} product pages checked${ogRan ? ", all with their og image" : ""}; JSON-LD written; CSP on ${csp} pages`);
 }
 
 if (require.main === module) main();

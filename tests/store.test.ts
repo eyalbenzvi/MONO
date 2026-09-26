@@ -113,7 +113,7 @@ describe("taste store", () => {
 
   it("toggleSaved: saving trains + records a shop event, unsaving removes it", async () => {
     const { useTasteStore } = await fresh();
-    const id = "mono-0042";
+    const id = "mono-0043";
     const before = useTasteStore.getState().preferenceVector;
     useTasteStore.getState().toggleSaved(id);
     let s = useTasteStore.getState();
@@ -174,9 +174,9 @@ describe("taste store v2 (F10)", () => {
 describe("cart store", () => {
   it("remembers one size for every design once chosen (F1)", async () => {
     const { useCartStore, sizeFor } = await fresh();
-    expect(sizeFor(useCartStore.getState(), "mono-0002")).toBeUndefined();
+    expect(sizeFor(useCartStore.getState(), "mono-0006")).toBeUndefined();
     useCartStore.getState().setSize("mono-0001", "L");
-    expect(sizeFor(useCartStore.getState(), "mono-0002")).toBe("L");
+    expect(sizeFor(useCartStore.getState(), "mono-0006")).toBe("L");
     useCartStore.getState().addToCart("mono-0003", "S", "black");
     expect(useCartStore.getState().preferredSize).toBe("S");
     // a size picked for one design still wins for that design
@@ -198,7 +198,7 @@ describe("cart store", () => {
   });
 
   it("migrates cart v1 → v2, seeding the remembered size", async () => {
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "S", color: "black", qty: 1 }, { id: "mono-0002", size: "XL", color: "white", qty: 1 }], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "S", color: "black", qty: 1 }, { id: "mono-0006", size: "XL", color: "white", qty: 1 }], selectedSizes: { "mono-0003": "M" } }, version: 1 }));
     const { useCartStore } = await fresh();
     await useCartStore.persist.rehydrate();
     expect(useCartStore.getState().preferredSize).toBe("XL");
@@ -222,7 +222,7 @@ describe("cart store", () => {
     useCartStore.getState().undoAdd(useUiStore.getState().added!);
     expect(useCartStore.getState().cart).toEqual([{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
     useUiStore.setState({ added: null });
-    useCartStore.getState().addToCart("mono-0002", "M", "black", 1, { silent: true });
+    useCartStore.getState().addToCart("mono-0006", "M", "black", 1, { silent: true });
     expect(useUiStore.getState().added).toBeNull();
   });
 
@@ -355,7 +355,7 @@ describe("stored state guard", () => {
       "mono-taste",
       JSON.stringify({ state: { likedIds: ["mono-0005", 42, "mono-9999", "mono-0005"], preferenceVector: { geometric: "x", wit: 2, nature: 0.3 }, swipeHistory: "nope", deck: [{ id: "bogus" }], onboardingSeen: "yes" }, version: 1 }),
     );
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "M", color: "black", qty: 3 }, { id: "mono-0001", size: "XXXL", color: "red", qty: -1 }], selectedSizes: { "mono-0001": "L", "mono-0002": 7 } }, version: 1 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "M", color: "black", qty: 3 }, { id: "mono-0001", size: "XXXL", color: "red", qty: -1 }], selectedSizes: { "mono-0001": "L", "mono-0006": 7 } }, version: 1 }));
     const { useTasteStore, useCartStore } = await fresh();
     await useTasteStore.persist.rehydrate();
     await useCartStore.persist.rehydrate();
@@ -427,9 +427,9 @@ describe("migration from the old single store (mono-session-v1)", () => {
   });
 
   it("v4 keeps chosen colours and extends the vector", async () => {
-    const { taste, cart } = await migrateFrom(4, base(TEN, { cart: [{ id: "mono-0002", size: "L", qty: 1, color: "white" }], selectedColors: { "mono-0002": "white" }, lastOrder: null }));
+    const { taste, cart } = await migrateFrom(4, base(TEN, { cart: [{ id: "mono-0006", size: "L", qty: 1, color: "white" }], selectedColors: { "mono-0006": "white" }, lastOrder: null }));
     expect(cart.cart[0].color).toBe("white");
-    expect(cart.selectedColors["mono-0002"]).toBe("white");
+    expect(cart.selectedColors["mono-0006"]).toBe("white");
     expect(taste.preferenceVector.nature).toBe(0.5);
     expect(taste.preferenceVector.classic).toBe(0.5);
   });

@@ -2,7 +2,7 @@ import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
 import { FEATURE_KEYS, SKU_CODES, isPhoto, type BaseColor, type FeatureKey, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
-export const INDEX_VERSION = 3;
+export const INDEX_VERSION = 4;
 /** A stale or mismatched index would decode into nonsense: stop at once. */
 export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
   if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
@@ -51,7 +51,7 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
   // Design n sits at position n − 1 of every column; `no` is a running count per category.
   const counts = new Map<number, number>();
   return index.title.map((title, i) => {
-    const n = i + 1;
+    const n = index.n[i];
     const cat = index.categories[index.category[i]] as ShirtCategory;
     const white = index.white[i] === "1";
     const baseColor: BaseColor = white ? "white" : "black";

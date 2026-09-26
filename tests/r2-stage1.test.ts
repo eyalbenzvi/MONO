@@ -36,18 +36,18 @@ const distance = (a: UserProfileVector, b: UserProfileVector) => Math.sqrt(FEATU
 describe("R05: saving the same tee again doesn't train again", () => {
   it("five save / unsave cycles move the vector exactly as far as one save", async () => {
     const one = await fresh();
-    one.useTasteStore.getState().toggleSaved("mono-0500");
+    one.useTasteStore.getState().toggleSaved("mono-0501");
     const once = one.useTasteStore.getState().preferenceVector;
 
     const s = await fresh();
     for (let i = 0; i < 5; i++) {
-      s.useTasteStore.getState().toggleSaved("mono-0500"); // save
-      s.useTasteStore.getState().toggleSaved("mono-0500"); // unsave
+      s.useTasteStore.getState().toggleSaved("mono-0501"); // save
+      s.useTasteStore.getState().toggleSaved("mono-0501"); // unsave
     }
-    s.useTasteStore.getState().toggleSaved("mono-0500");
+    s.useTasteStore.getState().toggleSaved("mono-0501");
     const cycled = s.useTasteStore.getState().preferenceVector;
     expect(distance(cycled, once)).toBeLessThan(1e-9);
-    expect(s.useTasteStore.getState().likedIds).toEqual(["mono-0500"]);
+    expect(s.useTasteStore.getState().likedIds).toEqual(["mono-0501"]);
   });
 
   it("a tee already swiped in Discover doesn't train again when hearted in the shop", async () => {
@@ -130,7 +130,7 @@ describe("R01: Daily 5, streak and milestones count honestly", () => {
     await s.useTasteStore.persist.rehydrate();
     expect(s.useTasteStore.getState().milestones).toEqual([]);
     expect(s.useTasteStore.getState().likedIds).toEqual(["mono-0001"]);
-    s.useTasteStore.getState().toggleSaved("mono-0002");
+    s.useTasteStore.getState().toggleSaved("mono-0006");
     expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(4);
   });
 });
@@ -236,7 +236,7 @@ describe("I16: stored state is whitelisted field by field", () => {
         state: {
           swipeHistory: [
             { shirtId: "mono-0001", action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5, evil: "<img>" },
-            { shirtId: "mono-0002", action: "dislike", source: "nope", matchScore: "x", strategy: "hax", timestamp: "then" },
+            { shirtId: "mono-0006", action: "dislike", source: "nope", matchScore: "x", strategy: "hax", timestamp: "then" },
           ],
           deck: [{ id: "mono-0003", strategy: "hax", extra: 1 }],
         },
@@ -247,7 +247,7 @@ describe("I16: stored state is whitelisted field by field", () => {
     await s.useTasteStore.persist.rehydrate();
     const [a, b] = s.useTasteStore.getState().swipeHistory;
     expect(a).toEqual({ shirtId: "mono-0001", action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5 });
-    expect(b).toEqual({ shirtId: "mono-0002", action: "dislike", source: "swipe", matchScore: 0, strategy: "greedy", timestamp: 0 });
+    expect(b).toEqual({ shirtId: "mono-0006", action: "dislike", source: "swipe", matchScore: 0, strategy: "greedy", timestamp: 0 });
     const deck = s.useTasteStore.getState().deck.find((e) => e.id === "mono-0003");
     expect(deck === undefined || deck.strategy === "greedy").toBe(true);
     expect(Object.keys(deck ?? { id: 1, strategy: 1 }).sort()).toEqual(["id", "strategy"]);
