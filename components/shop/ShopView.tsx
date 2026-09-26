@@ -8,12 +8,10 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
-import { archetypeOf } from "@/lib/taste";
-import { rankShirts, topTraits, type ShopSort, daySeed } from "@/lib/recommendation";
-import { WhyLine, WhyPanel, WhyToggle } from "@/components/Why";
+import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, FEATURE_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
@@ -32,7 +30,6 @@ export function ShopView() {
   // generator's fixed editorial order — not usage data) is the default.
   const sort: ShopSort = chosenSort ?? (complete ? "match" : "popular");
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [whyOpen, setWhyOpen] = useState(false);
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const openFromGrid = useCallback(
@@ -165,18 +162,8 @@ export function ShopView() {
           scroller's padding, which would push the filter bar down. */}
       <div aria-hidden className="h-[var(--header-h)]" />
       <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        {/* One quiet line, only when the grid is ranked for this visitor: whose taste it follows. */}
-        {hydrated && sort === "match" && complete ? (
-          // The line is its own "why?": how this order was made (the same snapshot it ranks with).
-          <div className="pb-2 pt-2">
-            <WhyToggle text={`For you · ${archetypeOf(rankVector).name}`} open={whyOpen} onToggle={setWhyOpen} controls="why-shop" className="text-xs" />
-            <WhyPanel id="why-shop" open={whyOpen}>
-              <WhyLine>{topTraits(rankVector).length ? topTraits(rankVector).map((k) => FEATURE_LABELS[k]).join(" · ") : "No leanings yet"}</WhyLine>
-            </WhyPanel>
-          </div>
-        ) : (
-          <div className="h-3" />
-        )}
+        {/* No text above the grid: the filter row comes first. */}
+        <div className="h-3" />
 
         {/* One sticky row: categories scroll sideways; the tee-colour preview
             stays in view (black / white switch without scrolling); the order

@@ -9,8 +9,6 @@ import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { becauseOf } from "@/lib/because";
-import { whyMatch } from "@/lib/why";
-import { WhyLine, WhyMatchRows } from "@/components/Why";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
@@ -80,9 +78,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
             <div className="min-w-0">
               <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
               {/* The learning, felt: the closest thing you liked (once the taste is known). */}
-              {/* Dotted like every "why?" line: a tap turns the card, where the reasons are. */}
               {because && (
-                <p className="mt-0.5 truncate text-xs text-neutral-400 underline decoration-neutral-600 decoration-dotted underline-offset-4">
+                <p className="mt-0.5 truncate text-xs text-neutral-400">
                   Because you liked {because.title}
                 </p>
               )}
@@ -98,7 +95,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           aria-hidden={!showDetails}
           {...inert(!showDetails)}
         >
-          {isTop && <CardDetails shirt={shirt} score={score} strategy={strategy} />}
+          {isTop && <CardDetails shirt={shirt} score={score} />}
         </motion.div>
       </motion.div>
     </div>
@@ -113,14 +110,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
  */
 const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
 
-function CardDetails({ shirt, score, strategy }: { shirt: ShirtProduct; score: number; strategy: RecommendationStrategy }) {
+function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
-  const vector = useTasteStore((s) => s.preferenceVector);
-  const likedIds = useTasteStore((s) => s.likedIds);
-  const showMatch = useShowMatch();
-  // Why this card: by how it was dealt (the deck's strategy), from real data only.
-  const why = useMemo(() => (showMatch && strategy === "greedy" ? whyMatch(vector, shirt, likedIds) : null), [showMatch, strategy, vector, shirt, likedIds]);
-  const because = useMemo(() => (showMatch && !why ? becauseOf(shirt, likedIds) : null), [showMatch, why, shirt, likedIds]);
   const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
   const openShare = useUiStore((s) => s.openShare);
@@ -168,18 +159,6 @@ function CardDetails({ shirt, score, strategy }: { shirt: ShirtProduct; score: n
         {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
         <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
 
-        {/* Why this card, in one line. */}
-        {why ? (
-          <section aria-label="Why it's for you" className="mt-4">
-            <WhyMatchRows why={why} />
-          </section>
-        ) : because ? (
-          <section aria-label="Why it's for you" className="mt-4">
-            <WhyLine>Like {because.title}</WhyLine>
-          </section>
-        ) : strategy === "explore" && showMatch ? (
-          <p className="mt-4 text-xs text-neutral-500">A wildcard</p>
-        ) : null}
 
       </div>
 

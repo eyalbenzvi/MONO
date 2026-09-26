@@ -24,14 +24,12 @@ test.describe("V4: a personal line opens why", () => {
     await expect(line).toBeFocused();
   });
 
-  test("shop: 'For you' opens one line — what the order follows", async ({ page }) => {
+  test("shop: no text above the grid", async ({ page }) => {
     await seed(page, { vector: LEANING });
     await page.goto("shop/");
     await hydrated(page);
-    await page.getByRole("button", { name: /^For you · / }).tap();
-    const panel = page.getByRole("region", { name: "Why it's for you" });
-    await expect(panel.getByText(/Nature/)).toBeVisible();
-    expect((await panel.innerText()).split(/\s+/).length).toBeLessThan(10);
+    await expect(page.getByText(/^For you · /)).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "Why it's for you" })).toHaveCount(0);
   });
 
   test("a taste with no leanings gets no personal line (a percentile alone is no reason)", async ({ page }) => {
