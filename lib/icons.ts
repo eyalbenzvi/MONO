@@ -31,6 +31,7 @@ export const ICONS = {
   "rotate-ccw": "RotateCcw",
   ruler: "Ruler",
   send: "Send",
+  "sliders-horizontal": "SlidersHorizontal",
   "share-2": "Share2",
   "shopping-bag": "ShoppingBag",
   sparkles: "Sparkles",

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import full from "../data/shirts.json";
-import { CALIBRATION_IDS, hydrated, storedTaste } from "./helpers";
+import { CALIBRATION_IDS, hydrated, pickCategories, storedTaste } from "./helpers";
 import { W1 } from "../tests/fixtures";
 
 type Entry = { id: string; n: number; title: string; baseColor: "black" | "white"; category: string; variant: string; medium: string; photo?: { credit: string; url: string } };
@@ -37,10 +37,10 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   expect(await print.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(`/img/p/${photo.n}-${photo.baseColor}-`);
 });
 
-test("the shop's Photo style shows the photographs", async ({ page }) => {
+test("the shop's Photographs category shows the photographs", async ({ page }) => {
   await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("group", { name: "Style" }).getByRole("button", { name: "Photo" }).tap();
+  await pickCategories(page, ["Photographs"]);
   const cards = page.locator('main a[href*="/shop/mono-"]');
   await expect(cards.first()).toBeVisible();
   const ids = await cards.evaluateAll((as) => as.slice(0, 12).map((a) => Number(a.getAttribute("href")!.match(/mono-(\d+)/)![1])));

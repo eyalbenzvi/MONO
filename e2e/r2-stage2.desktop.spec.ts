@@ -1,17 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { hydrated, seed } from "./helpers";
 
-test("I14 / T1: on desktop the filter row is one line, all five controls in view, no sort", async ({ page }) => {
+test("I14 / T1: on desktop the filter row is one line: two colour dots and the filter icon, in view, no sort", async ({ page }) => {
   await seed(page);
   await page.goto("shop/");
   await hydrated(page);
   const colour = page.getByRole("group", { name: "Tee colour" });
-  const style = page.getByRole("group", { name: "Style" });
-  await expect(colour.getByRole("button")).toHaveText(["Black", "White"]);
-  await expect(style.getByRole("button")).toHaveText(["Drawn", "Archive", "Photo"]);
-  const row = [(await colour.boundingBox())!, (await style.boundingBox())!];
-  expect(Math.abs(row[0].y - row[1].y)).toBeLessThan(4); // one line
-  for (const b of await page.locator('[role="group"][aria-label="Tee colour"] button, [role="group"][aria-label="Style"] button').all()) await expect(b).toBeInViewport({ ratio: 1 });
+  const filter = page.getByRole("button", { name: /^Categories/ });
+  await expect(colour.getByRole("button")).toHaveCount(2);
+  const row = [(await colour.boundingBox())!, (await filter.boundingBox())!];
+  expect(Math.abs(row[0].y + row[0].height / 2 - (row[1].y + row[1].height / 2))).toBeLessThan(4); // one line
+  for (const b of [...(await colour.getByRole("button").all()), filter]) await expect(b).toBeInViewport({ ratio: 1 });
+  // The popover drops from the icon, over the grid.
+  await filter.click();
+  await expect(page.getByRole("dialog", { name: "Categories" })).toBeInViewport();
   await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
 });
 

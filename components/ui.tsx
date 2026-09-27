@@ -214,9 +214,11 @@ export function SizeSelector({
 }
 
 const COLORS: readonly BaseColor[] = ["black", "white"];
-const swatch = (c: BaseColor, size: string) => (
-  <span className={`${size} shrink-0 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} aria-hidden />
-);
+/** A tee-colour dot: the same one on the product page, the bag, Saved and the shop. */
+export function Swatch({ color, className }: { color: BaseColor; className: string }) {
+  return <span className={`${className} shrink-0 rounded-full ring-1 ${color === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} aria-hidden />;
+}
+const swatch = (c: BaseColor, size: string) => <Swatch color={c} className={size} />;
 
 /**
  * The one tee-colour picker (every design comes in both; the original is

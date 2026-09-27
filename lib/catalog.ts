@@ -1,5 +1,5 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
-import { FEATURE_KEYS, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
 export const INDEX_VERSION = 6;
@@ -322,6 +322,24 @@ export function diversify<T extends { shirt: ShirtProduct }>(
  * sold on its own tee only, so none shows on the other as a negative); a
  * style keeps one medium.
  */
-export function filterShop<T extends { shirt: Pick<ShirtProduct, "colors" | "medium"> }>(list: T[], { tee, medium }: { tee: BaseColor | null; medium: Medium | null }): T[] {
-  return list.filter(({ shirt }) => (!tee || shirt.colors.includes(tee)) && (!medium || shirt.medium === medium));
+export function filterShop<T extends { shirt: Pick<ShirtProduct, "colors" | "category"> }>(list: T[], { tee, cats }: { tee: BaseColor | null; cats: readonly ShirtCategory[] }): T[] {
+  return list.filter(({ shirt }) => (!tee || shirt.colors.includes(tee)) && (!cats.length || cats.includes(shirt.category)));
+}
+
+/** One or more categories (none = all), in the catalogue's order; all of them is the same as none. */
+export function toggleCategory(cats: readonly ShirtCategory[], c: ShirtCategory): ShirtCategory[] {
+  const next = SHIRT_CATEGORIES.filter((k) => (k === c ? !cats.includes(k) : cats.includes(k)));
+  return next.length === SHIRT_CATEGORIES.length ? [] : next;
+}
+
+export type ShopFilters = { tee: BaseColor | null; cats: ShirtCategory[] };
+/**
+ * The shop's filters from its address (/shop/?c=black&cat=photographs.sky): shareable, and back from a product
+ * restores them. Unknown values are dropped; an old ?m=photo (the style filter) is the photographs.
+ */
+export function filtersFromQuery(q: URLSearchParams): ShopFilters {
+  const asked = new Set([...(q.get("cat")?.split(".") ?? []), ...(q.get("m") === "photo" ? ["photographs"] : [])]);
+  const cats = SHIRT_CATEGORIES.filter((c) => asked.has(c));
+  const tee = q.get("c");
+  return { tee: tee === "black" || tee === "white" ? tee : null, cats: cats.length === SHIRT_CATEGORIES.length ? [] : cats };
 }

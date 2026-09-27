@@ -75,12 +75,12 @@ describe("match tiers (I11)", () => {
   });
 });
 
-describe("the shop's filters: tee colour and style (no sort, no category chips)", () => {
+describe("the shop's filters: tee colour and categories (no sort)", () => {
   const all = SHIRTS.map((shirt) => ({ shirt }));
   it("a tee colour keeps only designs sold on it: photographs only on their own tee, never as a negative", async () => {
     const { filterShop } = await import("@/lib/catalog");
     for (const tee of ["black", "white"] as const) {
-      const kept = filterShop(all, { tee, medium: null });
+      const kept = filterShop(all, { tee, cats: [] });
       expect(kept.length).toBe(SHIRTS.filter((s) => s.colors.includes(tee)).length);
       expect(kept.every(({ shirt }) => shirt.colors.includes(tee))).toBe(true);
       // Everything but the photographs of the other tee.
@@ -88,15 +88,36 @@ describe("the shop's filters: tee colour and style (no sort, no category chips)"
     }
   });
 
-  it("a style keeps one medium; the two combine", async () => {
+  it("one or more categories keep those; none is all; they combine with the colour", async () => {
     const { filterShop } = await import("@/lib/catalog");
-    const photos = filterShop(all, { tee: null, medium: "photo" });
-    expect(photos.length).toBeGreaterThan(100);
-    expect(photos.every(({ shirt }) => shirt.medium === "photo")).toBe(true);
-    const whitePhotos = filterShop(all, { tee: "white", medium: "photo" });
-    expect(whitePhotos.every(({ shirt }) => shirt.medium === "photo" && shirt.colors.includes("white"))).toBe(true);
-    expect(filterShop(all, { tee: null, medium: null })).toHaveLength(all.length);
-    // Every combination has designs (no empty grid to explain).
-    for (const tee of [null, "black", "white"] as const) for (const medium of [null, "drawn", "ink", "photo"] as const) expect(filterShop(all, { tee, medium }).length, `${tee} ${medium}`).toBeGreaterThan(20);
+    const { SHIRT_CATEGORIES } = await import("@/types/shirt");
+    expect(filterShop(all, { tee: null, cats: [] })).toHaveLength(all.length);
+    const two = filterShop(all, { tee: null, cats: ["photographs", "sky"] });
+    expect(two.length).toBe(SHIRTS.filter((s) => s.category === "photographs" || s.category === "sky").length);
+    const whitePhotos = filterShop(all, { tee: "white", cats: ["photographs"] });
+    expect(whitePhotos.every(({ shirt }) => shirt.category === "photographs" && shirt.colors.includes("white"))).toBe(true);
+    // Every category has designs with no colour chosen (a colour can empty one: its row is then disabled).
+    for (const c of SHIRT_CATEGORIES) expect(filterShop(all, { tee: null, cats: [c] }).length, c).toBeGreaterThan(20);
+  });
+
+  it("toggling keeps the catalogue's order, and choosing every category is the same as all", async () => {
+    const { toggleCategory } = await import("@/lib/catalog");
+    const { SHIRT_CATEGORIES } = await import("@/types/shirt");
+    expect(toggleCategory(["sky"], "photographs")).toEqual(SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "photographs"));
+    expect(toggleCategory(["sky", "photographs"], "sky")).toEqual(["photographs"]);
+    let cats: (typeof SHIRT_CATEGORIES)[number][] = [];
+    for (const c of SHIRT_CATEGORIES) cats = toggleCategory(cats, c);
+    expect(cats).toEqual([]);
+  });
+
+  it("the address: ?c=&cat=a.b, unknown values dropped, every category = all, an old ?m=photo = photographs", async () => {
+    const { filtersFromQuery } = await import("@/lib/catalog");
+    const { SHIRT_CATEGORIES } = await import("@/types/shirt");
+    const q = (s: string) => filtersFromQuery(new URLSearchParams(s));
+    expect(q("c=black&cat=sky.photographs.nope")).toEqual({ tee: "black", cats: SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "photographs") });
+    expect(q("c=grey")).toEqual({ tee: null, cats: [] });
+    expect(q(`cat=${SHIRT_CATEGORIES.join(".")}`).cats).toEqual([]);
+    expect(q("c=white&m=photo")).toEqual({ tee: "white", cats: ["photographs"] });
+    expect(q("m=ink").cats).toEqual([]);
   });
 });

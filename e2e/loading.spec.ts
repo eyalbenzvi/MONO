@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { hydrated, pickCategories } from "./helpers";
 
 test("V3: switching categories never shows a tee without its print — one baked picture each, sized for the screen, even on a slow network", async ({ page }) => {
   const paths: string[] = [];
@@ -11,7 +11,7 @@ test("V3: switching categories never shows a tee without its print — one baked
   });
   await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("group", { name: "Style" }).getByRole("button", { name: "Archive" }).tap();
+  await pickCategories(page, ["Etched & Cut"]);
   // Sample the grid while it loads: a mockup is one picture — the print can't arrive apart from the tee.
   for (let i = 0; i < 12; i++) {
     const counts = await page.locator('main [role="img"]').evaluateAll((els) => els.map((el) => el.querySelectorAll("img").length));

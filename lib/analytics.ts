@@ -33,6 +33,8 @@ export type AnalyticsEvent =
   | "taste_sheet_open"
   | "shop_view"
   | "shop_filter"
+  | "shop_filter_open"
+  | "shop_filter_close"
   | "select_size"
   | "save"
   | "share"

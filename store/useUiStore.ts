@@ -2,7 +2,7 @@
 
 import type { UIEvent } from "react";
 import { create } from "zustand";
-import type { BaseColor, Medium, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
 
 export interface ToastState {
   message: string;
@@ -45,7 +45,7 @@ interface UiState {
     /** Tee colour: only designs sold on it, all shown on it; null = each on its original tee. */
     tee: BaseColor | null;
     /** Style: drawn, archive (ink) or photo; null = all. */
-    medium: Medium | null;
+    cats: ShirtCategory[];
     limit: number;
   };
   /**
@@ -124,7 +124,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
-  shop: { tee: null, medium: null, limit: SHOP_PAGE_SIZE },
+  shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE },
   productOrigin: null,
   share: null,
   added: null,

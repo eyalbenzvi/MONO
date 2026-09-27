@@ -2,23 +2,18 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { TeeDot } from "@/components/ui";
+import { CategoryFilter, TeeSwatches } from "@/components/shop/ShopFilters";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SharedList } from "@/components/shop/ShopExtras";
-import { SHIRTS, dedupeByFamily, diversify, filterShop } from "@/lib/catalog";
+import { SHIRTS, dedupeByFamily, diversify, filterShop, filtersFromQuery, type ShopFilters } from "@/lib/catalog";
 import { SHOP_WINDOW, rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { COLORS, COLOR_LABELS, MEDIA, MEDIUM_LABELS, type BaseColor, type Medium, type ShirtProduct } from "@/types/shirt";
+import { COLORS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
-type Filters = { tee: BaseColor | null; medium: Medium | null };
-/** The filters in the address (/shop/?c=black&m=photo): shareable, and back from a product restores them. */
-const fromQuery = (q: URLSearchParams): Filters => ({
-  tee: COLORS.find((c) => c === q.get("c")) ?? null,
-  medium: MEDIA.find((m) => m === q.get("m")) ?? null,
-});
+type Filters = ShopFilters;
 
 
 export function ShopView() {
@@ -27,7 +22,7 @@ export function ShopView() {
   const { done, total, complete } = useCalibrationProgress();
   // One primitive per selector: the grid re-renders only when these change.
   const tee = useUiStore((s) => s.shop.tee);
-  const medium = useUiStore((s) => s.shop.medium);
+  const cats = useUiStore((s) => s.shop.cats);
   const limit = useUiStore((s) => s.shop.limit);
   // The order is not a choice: "For you" once the taste is known (it can be
   // lost again by unsaving), before that "Our pick" (the generator's fixed
@@ -54,10 +49,10 @@ export function ShopView() {
   // The snapshot is taken during render, so the grid ranks once when the
   // stored taste arrives (not once with the neutral profile, then again).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, tee, medium]);
+  const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, tee, cats]);
   // Refreshed daily (rotation), with what Discover already showed stepping back.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, tee, medium]);
+  const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, tee, cats]);
   // (Only once hydrated: the pre-rendered page has no browser to seed from, and must match.)
   const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort, hydrated ? { rotate: daySeed(), demote: shown } : {}), [rankVector, sort, shown, hydrated]);
   // One design per family (the best-ranked one) — its siblings are offered as
@@ -66,12 +61,19 @@ export function ShopView() {
   // category or tee colour (not colour once one is chosen: every card is on
   // it), no algorithm repeats, and a wildcard every 8th card when ranking for you.
   const visible = useMemo(() => {
-    const filtered = dedupeByFamily(filterShop(ranked, { tee, medium }));
+    const filtered = dedupeByFamily(filterShop(ranked, { tee, cats }));
     // "Our pick" opens on the shop window as the generator built it (its own rules: every category, one per subject) —
     // with a colour chosen, the window's designs on that colour.
-    const kept = sort === "popular" && !medium ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
-    return [...kept, ...diversify(filtered.slice(kept.length), { category: true, color: !tee, wildcardEvery: sort === "match" ? 8 : 0 })];
-  }, [ranked, tee, medium, sort]);
+    const kept = sort === "popular" && !cats.length ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
+    return [...kept, ...diversify(filtered.slice(kept.length), { category: cats.length !== 1, color: !tee, wildcardEvery: sort === "match" ? 8 : 0 })];
+  }, [ranked, tee, cats, sort]);
+  // How many designs each category holds on the chosen colour (the filter's rows; an empty one is disabled).
+  const counts = useMemo(() => {
+    const on = dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
+    const by = Object.fromEntries(SHIRT_CATEGORIES.map((c) => [c, 0])) as Record<ShirtCategory, number>;
+    for (const { shirt } of on) by[shirt.category]++;
+    return { by, total: on.length };
+  }, [ranked, tee]);
   visibleRef.current = visible;
 
   // The first cards a filter would show (the current one with each change):
@@ -88,11 +90,12 @@ export function ShopView() {
   useEffect(() => {
     if (!hydrated || saveData()) return;
     return whenIdle(() => {
-      for (const c of COLORS) preloadMockups(firstFor({ tee: c, medium }), "low", c);
-      for (const m of MEDIA) preloadMockups(firstFor({ tee, medium: m }), "low", tee);
+      for (const c of COLORS) preloadMockups(firstFor({ tee: c, cats }), "low", c);
     });
-  }, [firstFor, hydrated, tee, medium]);
-  const listId = `shop_${sort}${tee ? `_${tee}` : ""}${medium ? `_${medium}` : ""}`;
+  }, [firstFor, hydrated, tee, cats]);
+  // Opening the filter: each category's first cards, while idle.
+  const warmCategories = () => !saveData() && whenIdle(() => SHIRT_CATEGORIES.forEach((c) => preloadMockups(firstFor({ tee, cats: [c] }), "low", tee)));
+  const listId = `shop_${sort}${tee ? `_${tee}` : ""}${cats.length ? `_${cats.join("+")}` : ""}`;
   listIdRef.current = listId;
 
   // shop_view once per visit, with the order actually shown; the list
@@ -100,7 +103,7 @@ export function ShopView() {
   const viewed = useRef(false);
   useEffect(() => {
     if (!hydrated) return;
-    if (!viewed.current) track("shop_view", { tee, medium, sort });
+    if (!viewed.current) track("shop_view", { tee, cats: cats.join("."), sort });
     viewed.current = true;
     trackEcommerce("view_item_list", {
       item_list_id: listId,
@@ -108,22 +111,23 @@ export function ShopView() {
     });
     // The list is keyed by what the shopper chose, not by every re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, sort, tee, medium]);
+  }, [hydrated, sort, tee, cats]);
 
-  // Opened at /shop/?c=…&m=… (a shared or restored link): those filters, once.
+  // Opened at /shop/?c=…&cat=… (a shared or restored link): those filters, once.
   useEffect(() => {
     if (!hydrated) return;
     const q = new URLSearchParams(window.location.search);
-    if (q.has("c") || q.has("m")) setShop(fromQuery(q));
+    if (q.has("c") || q.has("cat") || q.has("m")) setShop(filtersFromQuery(q));
   }, [hydrated, setShop]);
   // …and the address follows the filters (replaced, not pushed: back leaves the shop).
   useEffect(() => {
     if (!hydrated) return;
     const q = new URLSearchParams(window.location.search);
-    for (const [k, v] of [["c", tee], ["m", medium]] as const) (v ? q.set(k, v) : q.delete(k));
+    for (const [k, v] of [["c", tee], ["cat", cats.join(".")]] as const) (v ? q.set(k, v) : q.delete(k));
+    q.delete("m");
     const next = window.location.pathname + (q.toString() ? `?${q}` : "");
     if (next !== window.location.pathname + window.location.search) window.history.replaceState(window.history.state, "", next);
-  }, [hydrated, tee, medium]);
+  }, [hydrated, tee, cats]);
 
   // Opened at /shop/?page=N (the "Show more" link): that many pages, once.
   useEffect(() => {
@@ -173,7 +177,8 @@ export function ShopView() {
   }, [hydrated, visible.length, setShop]);
 
   const setFilter = (patch: Partial<Filters>) => {
-    for (const [filter, value] of Object.entries(patch)) track("shop_filter", { filter, value });
+    if ("tee" in patch) track("shop_filter", { filter: "tee", value: patch.tee ?? null });
+    if (patch.cats) track("shop_filter", { filter: "category", value: patch.cats.join(".") || "all" });
     shopScroll.top = 0;
     setShop({ ...patch, limit: SHOP_PAGE_SIZE });
     scroller.current?.scrollTo({ top: 0 });
@@ -190,40 +195,28 @@ export function ShopView() {
         {/* No text above the grid: the filter row comes first. */}
         <div className="h-3" />
 
-        {/* One sticky row: the tee colour first (it never scrolls away), then the
-            style. Each is a toggle: tap again to clear. No sort — the order is
-            "For you" once the taste is known, else "Our pick". */}
+        {/* One sticky row: the tee colour (the product page's dots), and the
+            categories behind a filter icon. No sort — the order is "For you"
+            once the taste is known, else "Our pick". */}
         {/* Solid, above every card control (cards isolate their own z-index),
             right under the header while it shows and at the very top once it
             has slid away — moving with it (same 200 ms). */}
         <div
-          className={`app-backdrop sticky z-20 -mx-4 flex items-center gap-2 border-b py-2 pl-4 pr-4 transition-[top,border-color] duration-200 ease-out ${
+          className={`app-backdrop sticky z-20 -mx-4 flex items-center justify-between gap-2 border-b py-2 pl-4 pr-4 transition-[top,border-color] duration-200 ease-out ${
             stuck ? "border-white/10" : "border-transparent"
           }`}
           style={{ top: headerHidden ? 0 : "var(--header-h)" }}
         >
-          <div className="flex shrink-0 gap-1.5" role="group" aria-label="Tee colour">
-            {COLORS.map((c) => (
-              <Chip key={c} active={tee === c} onWarm={() => warm({ tee: c, medium })} onClick={() => setFilter({ tee: tee === c ? null : c })}>
-                <span className="flex items-center gap-2">
-                  <TeeDot color={c} />
-                  {COLOR_LABELS[c]}
-                </span>
-              </Chip>
-            ))}
-          </div>
-          <span aria-hidden className="mx-1 hidden h-6 w-px shrink-0 bg-white/10 sm:block" />
-          <div
-            className="no-scrollbar -mr-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] sm:[mask-image:none]"
-            role="group"
-            aria-label="Style"
-          >
-            {MEDIA.map((m) => (
-              <Chip key={m} active={medium === m} onWarm={() => warm({ tee, medium: m })} onClick={() => setFilter({ medium: medium === m ? null : m })}>
-                {MEDIUM_LABELS[m]}
-              </Chip>
-            ))}
-          </div>
+          <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />
+          <CategoryFilter
+            cats={cats}
+            counts={counts.by}
+            total={counts.total}
+            results={visible.length}
+            onChange={(next) => setFilter({ cats: next })}
+            onWarm={(next) => warm({ tee, cats: next })}
+            onOpen={warmCategories}
+          />
         </div>
         <div className="h-2" />
         <SharedList />
@@ -267,7 +260,7 @@ export function ShopView() {
           ) : (
             <div className="py-16 text-center text-sm text-neutral-400">
               Nothing here.
-              <button type="button" onClick={() => setFilter({ tee: null, medium: null })} className="ml-1 font-semibold text-white underline">
+              <button type="button" onClick={() => setFilter({ tee: null, cats: [] })} className="ml-1 font-semibold text-white underline">
                 Clear
               </button>
             </div>
@@ -276,25 +269,3 @@ export function ShopView() {
     </div>
   );
 }
-
-function Chip({ active, onClick, onWarm, children }: { active: boolean; onClick: () => void; onWarm?: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onPointerDown={onWarm}
-      onPointerEnter={onWarm}
-      onFocus={onWarm}
-      onClick={(e) => {
-        onClick();
-        e.currentTarget.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-      }}
-      aria-pressed={active}
-      className={`h-10 shrink-0 rounded-full px-4 text-sm font-medium transition-colors ${
-        active ? "bg-white text-black" : "bg-white/[0.04] text-neutral-300 ring-1 ring-white/10 hover:bg-white/10"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-

@@ -28,13 +28,36 @@ test("shop: tee colour shows every card on that tee, lands in the address, and s
   await expect(page).not.toHaveURL(/[?&]c=/);
 });
 
-test("shop: a link with filters opens with them set (white photographs)", async ({ page }) => {
-  await page.goto("shop/?c=white&m=photo");
+test("shop: a link with filters opens with them set; the filter sheet ticks categories, shows counts, and closes on Escape", async ({ page }) => {
+  await page.goto("shop/?c=white&cat=photographs");
   await hydrated(page);
   await expect(page.getByRole("group", { name: "Tee colour" }).getByRole("button", { name: "White" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("group", { name: "Style" }).getByRole("button", { name: "Photo" })).toHaveAttribute("aria-pressed", "true");
+  const filter = page.getByRole("button", { name: "Categories, 1 selected" });
+  await expect(filter).toBeVisible();
   const ids = await page.locator('main a[href*="/shop/mono-"]').evaluateAll((as) => as.slice(0, 12).map((a) => a.getAttribute("href")!.match(/mono-[\w-]+/)![0]));
   expect(ids.length).toBeGreaterThan(0);
   for (const id of ids) expect(PHOTOS.has(id), id).toBe(true);
   await expect.poll(() => page.locator("main img[data-mockup]").evaluateAll((els) => els.slice(0, 8).every((i) => /-white-\d+\.webp$/.test((i as HTMLImageElement).getAttribute("src")!)))).toBe(true);
+  // The sheet: focus on All, Photographs ticked; adding one more lands in the address in the catalogue's order.
+  await filter.click();
+  const sheet = page.getByRole("dialog", { name: "Categories" });
+  await expect(sheet.getByRole("checkbox", { name: /^All/ })).toBeFocused();
+  await expect(sheet.getByRole("checkbox", { name: /^Photographs/ })).toHaveAttribute("aria-checked", "true");
+  await sheet.getByRole("checkbox", { name: /^Maps & Sky/ }).click();
+  await expect(page).toHaveURL(/[?&]cat=photographs\.sky/);
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Categories, 2 selected" })).toBeFocused();
+  // All clears them.
+  await page.getByRole("button", { name: /^Categories/ }).click();
+  await sheet.getByRole("checkbox", { name: /^All/ }).click();
+  await expect(page).not.toHaveURL(/[?&]cat=/);
+});
+
+test("shop: an old style link (?m=photo) opens on the photographs", async ({ page }) => {
+  await page.goto("shop/?m=photo");
+  await hydrated(page);
+  await expect(page).toHaveURL(/[?&]cat=photographs(&|$)/);
+  await expect(page).not.toHaveURL(/[?&]m=/);
+  await expect(page.getByRole("button", { name: "Categories, 1 selected" })).toBeVisible();
 });

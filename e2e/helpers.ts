@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import index from "../data/shirts.index.json";
 
 /** The taste test's ten designs (precomputed by the generator). */
@@ -64,3 +64,12 @@ export async function openSaved(page: import("@playwright/test").Page) {
 export const LEANING: Record<string, number> = Object.fromEntries(
   index.keys.map((k: string) => [k, { nature: 0.82, pictorial: 0.78, classic: 0.74, figurative: 0.7 }[k] ?? 0.42]),
 );
+
+/** Opens the shop's filter, ticks these categories and closes it. */
+export async function pickCategories(page: Page, labels: string[]) {
+  await page.getByRole("button", { name: /^Categories/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Categories" });
+  for (const l of labels) await sheet.getByRole("checkbox", { name: new RegExp(`^${l}`) }).click();
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+}
