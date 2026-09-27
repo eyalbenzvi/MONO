@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { PrintImage } from "@/components/PrintImage";
 import { TeeMockup } from "@/components/TeeMockup";
+import { zoomStep } from "@/components/Sharper";
+import { SIZES } from "@/lib/images";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { clampPan, zoomAt as zoomAtPoint, type ZoomTransform } from "@/lib/zoom";
 import { PRINT_SIZE_CM, printSizeLabel, type BaseColor, type ShirtProduct } from "@/types/shirt";
@@ -197,10 +199,10 @@ export function ZoomViewer({
         >
           {view === "print" ? (
             <div ref={printBox} className="aspect-[3/4] h-full max-w-full overflow-hidden rounded-[3px]" style={{ maxHeight: "min(100%, calc((100vw - 32px) * 4 / 3))" }}>
-              <PrintImage shirt={shirt} color={color} />
+              <PrintImage shirt={shirt} color={color} sizes={printWidth ? `${printWidth}px` : SIZES.zoom} zoom={zoomStep(t.s)} />
             </div>
           ) : (
-            <TeeMockup shirt={shirt} color={color} className="max-h-full w-full max-w-[640px]" shadow={false} />
+            <TeeMockup shirt={shirt} color={color} sizes={SIZES.zoom} zoomed={t.s > 1.3} className="max-h-full w-full max-w-[640px]" />
           )}
         </div>
       </div>

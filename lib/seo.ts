@@ -6,7 +6,7 @@
 export const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "http://localhost:3000").replace(/\/$/, "");
 export const SITE_URL = `${SITE_ORIGIN}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
 
-export const ogImage = (name: string) => ({ url: `${SITE_URL}/og/${name}.png`, width: 1200, height: 630 });
+export const ogImage = (name: string) => ({ url: `${SITE_URL}/og/${name}.jpg`, width: 1200, height: 630 });
 
 /** The fields a product's title and description are built from (generator output). */
 export interface SeoFields {

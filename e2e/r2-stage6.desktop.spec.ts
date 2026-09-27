@@ -47,7 +47,7 @@ test("I04: every page runs under its CSP (script hashes, no 'unsafe-inline' for 
   expect(seen).toEqual([]);
 });
 
-test("R23/I03: icons come from the sprite, mockups from shared files, the index from one hashed JSON", async ({ page }) => {
+test("R23/I03: icons come from the sprite, mockups are baked pictures, the index from one hashed JSON", async ({ page }) => {
   const requests: string[] = [];
   page.on("request", (r) => requests.push(new URL(r.url()).pathname));
   await page.goto(`shop/${W1}/`);
@@ -55,10 +55,11 @@ test("R23/I03: icons come from the sprite, mockups from shared files, the index 
   await page.waitForTimeout(500);
   expect(await page.locator("svg use").count()).toBeGreaterThan(3);
   expect(await page.locator("svg use").first().getAttribute("href")).toMatch(/\/icons\.svg#[\w-]+$/);
-  // Mockups are shared files: the model photos (T2), else the drawn tee's layers.
-  const teeImgs = page.locator('img[src*="/models/"], img[src*="/tee/"]');
+  // Mockups are pictures baked at build time (the model photo with the print on it): no photo or print is fetched apart.
+  const teeImgs = page.locator("img[data-mockup]");
   expect(await teeImgs.count()).toBeGreaterThanOrEqual(1);
-  expect(await teeImgs.evaluateAll((imgs) => imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0))).toBe(true);
+  await expect.poll(() => teeImgs.first().evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0 && /\/img\/m\//.test(i.currentSrc))).toBe(true);
+  expect(requests.filter((p) => /\/(prints|models|tee)\//.test(p))).toEqual([]);
   // No mockup paths inlined in the page any more.
   expect(await page.locator("svg path[d^='M150 24 Q200 36']").count()).toBe(0);
   const indexLoads = requests.filter((p) => p.endsWith(`/data/${manifest.file}`));

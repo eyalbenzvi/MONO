@@ -93,40 +93,25 @@ test.describe("U5: zoom in place on the Discover card", () => {
   });
 });
 
-test("recordings: zooming out never shows the frame behind the picture; a halftone print is shrunk properly at every zoom", async ({ page }) => {
+test("recordings: zooming in brings the print's close-up (one plain picture, no canvas); zooming out never shows the frame behind the picture", async ({ page }) => {
   await seed(page);
   await page.goto("");
   await hydrated(page);
-  // A raster print (a halftone or ink one) on the top card.
   const card = () => page.locator('[aria-roledescription="card"]').first();
-  const print = () => card().locator("[data-zoom-stage] img[src$='.webp']:not([src*='/models/'])").first();
-  for (let i = 0; i < 12 && !(await print().count()); i++) {
-    await page.getByRole("button", { name: "Pass", exact: true }).tap();
-    await page.waitForTimeout(600);
-  }
-  // Shown as an image (never a canvas: a phone draws that as its own layer) at its size in device pixels, over the file.
-  const measure = () =>
-    card().evaluate((el) => {
-      const i = el.querySelector<HTMLImageElement>("[data-zoom-stage] img[data-shrunk]");
-      const file = el.querySelector<HTMLImageElement>("[data-zoom-stage] img[src$='.webp']:not([src*='/models/'])")!;
-      return { visible: !!i && i.complete && i.naturalWidth > 0, w: i?.naturalWidth ?? 0, shown: file.getBoundingClientRect().width * devicePixelRatio, canvases: el.querySelectorAll("canvas").length };
-    });
-  await expect.poll(async () => (await measure()).visible).toBe(true);
-  expect((await measure()).canvases).toBe(0);
-  const at1 = await measure();
-  expect(at1.w).toBeGreaterThanOrEqual(at1.shown - 1);
-  expect(at1.w).toBeLessThan(at1.shown * 1.3);
-  expect(await print().evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+  // One baked picture of the tee, sized for the card on this phone (3×).
+  const mockup = card().locator("[data-zoom-stage] img[data-mockup]");
+  await expect.poll(() => mockup.evaluate((i: HTMLImageElement) => i.complete && i.currentSrc)).toMatch(/\/img\/m\/\d+-(black|white)-1080\.webp$/);
+  expect(await card().locator("[data-zoom-stage] img").count()).toBe(1);
 
-  // Zoom in: the shrunk print follows the size (or gives way to the file itself).
+  // Zoom in: the close-up covers the print's area, drawn like any picture.
   const box = (await card().locator("[data-zoom-stage]").boundingBox())!;
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
   await pinch(page, cx, cy, 60, 200);
-  await page.waitForTimeout(600);
-  const zoomed = await measure();
-  if (zoomed.visible) expect(zoomed.w).toBeGreaterThanOrEqual(zoomed.shown - 1);
-  else expect(await print().evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+  const detail = card().locator("img[data-detail]");
+  await expect.poll(() => detail.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0 && getComputedStyle(i).opacity === "1")).toBe(true);
+  expect(await detail.getAttribute("src")).toMatch(/\/img\/d\/\d+-(black|white)\.webp$/);
+  expect(await page.locator("canvas").count()).toBe(0);
 
   // Pan, then pinch back out: at no frame is the picture under 1× or off its frame.
   await page.evaluate(() => {

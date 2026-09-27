@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { animate, useMotionValue, useReducedMotion, type AnimationPlaybackControls, type MotionValue } from "framer-motion";
 import { useUiStore } from "@/store/useUiStore";
-import { scheduleSharpness } from "@/lib/sharpness";
 import { clampPan, rubberBand, zoomAt, zoomBetween, type ZoomTransform } from "@/lib/zoom";
 
 /** Resting zoom range; a pinch may overshoot the top to the rubber-band limit. */
@@ -269,9 +268,6 @@ export function useInPlaceZoom(cardRef: RefObject<HTMLElement | null>, enabled: 
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [reset]);
-
-  // The print redraws for its size as the picture zooms (useSmoothPrint).
-  useEffect(() => scale.on("change", scheduleSharpness), [scale]);
 
   // Leaving the card (unmount) clears the shared flag and timers.
   useEffect(

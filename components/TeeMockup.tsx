@@ -1,102 +1,79 @@
 "use client";
 
 import { useState } from "react";
-import { PrintImage } from "@/components/PrintImage";
-import { useUiStore } from "@/store/useUiStore";
+import { Sharper } from "@/components/Sharper";
+import { usePageZoom } from "@/hooks/usePageZoom";
+import { MODEL_ASPECT, detailBox, detailPath, mockupImage } from "@/lib/images";
 import { assetUrl } from "@/lib/catalog";
-import { MODEL_ASPECT, modelFor } from "@/lib/models";
-import { TEE_PRINT, TEE_VIEW } from "@/lib/teeShape";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
-
-const VIEW = TEE_VIEW;
-const PRINT = TEE_PRINT;
-
-const pct = (v: number, of: number) => `${(v / of) * 100}%`;
-const PRINT_STYLE = {
-  left: pct(PRINT.x - VIEW.x, VIEW.w),
-  top: pct(PRINT.y - VIEW.y, VIEW.h),
-  width: pct(PRINT.w, VIEW.w),
-  height: pct(PRINT.h, VIEW.h),
-};
 
 interface TeeMockupProps {
   shirt: ShirtProduct;
   /** Tee colour to render; defaults to the design's original colourway. */
   color?: BaseColor;
   className?: string;
-  /** Drop shadow under the garment (off for tiny thumbnails). */
-  shadow?: boolean;
   style?: React.CSSProperties;
-  /** Load the print first (see PrintImage). */
+  /** Above the fold (the top Discover card, the product page): load it first. */
   priority?: boolean;
-  /** Grids and lists: the print's small file (see thumbUrl). */
-  thumb?: boolean;
-  /** With `thumb`: the full file replaces it when it would look soft (a pinch-zoom). */
-  progressive?: boolean;
+  /**
+   * How wide the picture is shown, as one CSS length (the browser picks the
+   * file from it; on a pinch-zoomed page a bigger one is laid over it).
+   */
+  sizes: string;
+  /** The picture is zoomed (in place or full screen): the print's close-up covers it. */
+  zoomed?: boolean;
 }
 
 /**
- * The garment, its fold shadows and highlights are shared files
- * (public/tee/<layer>-<colour>.svg, npm run sprites) — the same few cached
- * images for every mockup, instead of paths inlined into each page.
+ * The design worn (T2): one picture, made at build time (lib/images) — the
+ * model photo with the print already on the fabric. Zoomed in, a close-up
+ * of the print (the same picture, finer) covers the print's area.
  */
-const layer = (name: "garment" | "shade" | "light", color: BaseColor) => assetUrl(`/tee/${name}-${color}.svg`);
-const LAYER = "pointer-events-none absolute inset-0 h-full w-full select-none";
-
-export function TeeMockup({ shirt, color: wanted, className = "", shadow = true, style, priority, thumb, progressive }: TeeMockupProps) {
-  // A design shown only in the colours it's sold in (T3).
+export function TeeMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false }: TeeMockupProps) {
   const color = teeColor(shirt, wanted);
-  const black = color === "black";
-  const model = modelFor(shirt, color);
-  if (model) return <ModelShot shirt={shirt} color={color} model={model} className={className} style={style} priority={priority} thumb={thumb} progressive={progressive} />;
+  const page = usePageZoom();
+  const { src, srcSet } = mockupImage(shirt, color);
+  const box = detailBox(shirt, color);
   return (
     <div
-      className={`relative isolate select-none ${className}`}
-      style={{ aspectRatio: `${VIEW.w} / ${VIEW.h}`, ...style }}
+      className={`relative select-none overflow-hidden ${className}`}
+      style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }}
       role="img"
-      aria-label={`${shirt.title} — ${black ? "black" : "white"} tee`}
+      aria-label={`${shirt.title}, worn on a ${color === "black" ? "black" : "white"} tee`}
     >
-      {/* Garment: fabric, seams, hems, collar */}
-      <img src={layer("garment", color)} alt="" draggable={false} decoding="async" className={LAYER} style={shadow ? { filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.45))" } : undefined} />
-      {/* Print: single-ink, blended into the fabric (screen = white ink, multiply = black ink) */}
-      <div className="absolute overflow-hidden" style={{ ...PRINT_STYLE, mixBlendMode: black ? "screen" : "multiply" }}>
-        <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} progressive={progressive} />
-      </div>
-      {/* Fabric folds: shadows, then highlights */}
-      <img src={layer("shade", color)} alt="" draggable={false} decoding="async" className={LAYER} style={{ mixBlendMode: "multiply" }} />
-      <img src={layer("light", color)} alt="" draggable={false} decoding="async" className={LAYER} style={{ mixBlendMode: "screen" }} />
+      <img
+        src={src}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt=""
+        draggable={false}
+        decoding="async"
+        loading={priority ? "eager" : "lazy"}
+        // React 18 doesn't know fetchPriority yet; the lowercase attribute passes through.
+        {...{ fetchpriority: priority ? "high" : "auto" }}
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        data-mockup
+      />
+      {page > 1 && <Sharper key={page} srcSet={srcSet} sizes={sizes} factor={page} />}
+      {zoomed && box && <Detail src={assetUrl(detailPath(shirt, color))} box={box} />}
     </div>
   );
 }
 
-/**
- * The tee worn (T2): a greyscale model photo with the print laid onto the
- * middle of the back, blended into the fabric (black ink multiplies onto
- * white cotton, keeping its texture; white ink screens onto black — the
- * print's black ground disappears into the tee, with no box around it).
- */
-function ModelShot({ shirt, color, model, className, style, priority, thumb, progressive }: { shirt: ShirtProduct; color: BaseColor; model: NonNullable<ReturnType<typeof modelFor>>; className: string; style?: React.CSSProperties; priority?: boolean; thumb?: boolean; progressive?: boolean }) {
-  const black = color === "black";
-  // Never a blank tee: a mockup mounted in the browser (a new category, the
-  // next page of the grid) shows the photo and its print together, once the
-  // print is in. The static HTML (and its hydration) shows everything at once.
-  const [ready, setReady] = useState(() => !useUiStore.getState().hydrated);
-  const [x, y, w, h] = model.box;
-  const photo = assetUrl(`/models/${model.id}.webp`);
-  const box = { left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` };
+/** The print's close-up over its area, shown once it's in (the picture under it stays until then). */
+function Detail({ src, box }: { src: string; box: [number, number, number, number] }) {
+  const [shown, setShown] = useState(false);
+  const [x, y, w, h] = box;
   return (
-    <div
-      className={`relative isolate select-none overflow-hidden ${className}`}
-      style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }}
-      role="img"
-      aria-label={`${shirt.title}, worn on a ${black ? "black" : "white"} tee`}
-    >
-      <div className={`absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none ${ready ? "" : "opacity-0"}`} data-ready={ready || undefined}>
-        <img src={photo} alt="" draggable={false} decoding="async" loading={priority ? "eager" : "lazy"} className={LAYER} />
-        <div className="pointer-events-none absolute overflow-hidden" style={{ ...box, mixBlendMode: black ? "screen" : "multiply" }}>
-          <PrintImage shirt={shirt} color={color} priority={priority} thumb={thumb} progressive={progressive} onReady={() => setReady(true)} />
-        </div>
-      </div>
-    </div>
+    <img
+      src={src}
+      alt=""
+      draggable={false}
+      decoding="async"
+      onLoad={() => setShown(true)}
+      className={`pointer-events-none absolute transition-opacity duration-200 motion-reduce:transition-none ${shown ? "" : "opacity-0"}`}
+      style={{ left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` }}
+      data-detail
+    />
   );
 }

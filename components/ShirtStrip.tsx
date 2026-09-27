@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
+import { SIZES } from "@/lib/images";
 import { STAGE_BG } from "@/components/ui";
 import { productHref } from "@/lib/catalog";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
@@ -63,7 +64,7 @@ export function ShirtStrip({
                   <Icon name="check" className="h-3 w-3" strokeWidth={3} />
                 </span>
               )}
-              <TeeMockup shirt={s} color={color} shadow={false} thumb className="w-full" />
+              <TeeMockup shirt={s} color={color} sizes={SIZES.thumb} className="w-full" />
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
             {quickAdd && <QuickAdd shirt={s} color={color} source={source} />}

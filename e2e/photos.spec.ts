@@ -21,13 +21,20 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   await expect(page.locator("main").getByText(`${photo.title} ·`)).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Source record" })).toHaveAttribute("href", photo.photo!.url);
 
+  // On the tee: one baked picture, on its own tee colour.
+  const tee = page.locator("main img[data-mockup]").first();
+  await expect.poll(() => tee.evaluate((i: HTMLImageElement) => i.currentSrc)).toContain(`/img/m/${photo.n}-${photo.baseColor}-`);
+  // The print alone.
+  await page.getByRole("button", { name: `More for ${photo.title}` }).tap();
+  await page.getByRole("button", { name: "Show the print only" }).tap();
   const print = page.locator(`main img[alt="${photo.title} print"]`).first();
-  await expect(print).toHaveAttribute("src", new RegExp(`/prints/print_${photo.n}\\.webp$`));
+  await expect(print).toHaveAttribute("src", new RegExp(`/img/p/${photo.n}-${photo.baseColor}-1500\\.webp$`));
   // T3: a photograph is sold on its own tee only — no colour choice, never inverted.
   await expect(page.getByText(`${photo.baseColor === "black" ? "Black" : "White"} tee only`)).toBeVisible();
   await expect(page.getByRole("radio", { name: new RegExp(`^${other === "black" ? "Black" : "White"} tee`) })).toHaveCount(0);
   await expect(print).not.toHaveClass(/\binvert\b/);
-  expect(await print.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  await expect.poll(() => print.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  expect(await print.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(`/img/p/${photo.n}-${photo.baseColor}-`);
 });
 
 test("the shop filters the Photographs category", async ({ page }) => {

@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
+import { SIZES } from "@/lib/images";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
 import { MoreMenu } from "@/components/MoreMenu";
 import { shareOrCopy } from "@/lib/clipboard";
@@ -272,7 +273,7 @@ function SavedRow({
       className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
     >
       <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
-        <TeeMockup shirt={shirt} color={color} shadow={false} thumb className="w-full" />
+        <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="w-full" />
       </Link>
       {/* Name and match, then remove (swipe left works too). */}
       <div className="min-w-0 flex-1">

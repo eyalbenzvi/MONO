@@ -37,7 +37,7 @@ describe("R22: every page states its URL", () => {
     const m = pageMeta({ path: "/shop/", title: "Shop", description: "d" });
     expect(m.alternates.canonical).toBe("https://example.github.io/MONO/shop/");
     expect(m.openGraph.url).toBe("https://example.github.io/MONO/shop/");
-    expect(m.openGraph.images[0].url).toBe("https://example.github.io/MONO/og/default.png");
+    expect(m.openGraph.images[0].url).toBe("https://example.github.io/MONO/og/default.jpg");
     expect(pageMeta({ path: "/cart/", title: "Bag", description: "d", index: false }).robots).toEqual({ index: false });
   });
 });

@@ -28,10 +28,9 @@ describe("R23: the 404 sends designs without a static page to the client route",
 });
 
 describe("R23: shared SVG files match their sources", () => {
-  it("icons.svg and the tee layers are what `npm run sprites` writes", async () => {
-    const { iconSprite, teeLayers } = await import("../scripts/tools/sprites");
+  it("icons.svg is what `npm run sprites` writes", async () => {
+    const { iconSprite } = await import("../scripts/tools/sprites");
     expect(readFileSync(path.join(ROOT, "public", "icons.svg"), "utf8")).toBe(iconSprite());
-    for (const [name, svg] of Object.entries(teeLayers())) expect(readFileSync(path.join(ROOT, "public", "tee", `${name}.svg`), "utf8"), name).toBe(svg);
     for (const id of Object.keys(ICONS)) expect(iconSprite()).toContain(`<symbol id="${id}"`);
   });
 });

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
+import { SIZES } from "@/lib/images";
 import { STAGE_BG, useShowMatch } from "@/components/ui";
 import { tierOf } from "@/lib/match";
 import { becauseOf } from "@/lib/because";
@@ -46,8 +47,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
-  // The face turned away is also hidden outright past 90°: a phone draws a face's own
-  // layers (the print's canvas, the photo) through backface-visibility, so while
+  // The face turned away is also hidden outright past 90°: a phone draws a face's
+  // own layers (a picture, a transformed child) through backface-visibility, so while
   // the page was pinch-zoomed the tee showed through the details.
   const turn = useMotionValue(showDetails && !reduceMotion ? 180 : 0);
   const frontVisibility = useTransform(turn, (r) => (r < 90 ? "visible" : "hidden"));
@@ -78,7 +79,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
               className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]"
               style={zoom ? { scale: zoom.scale, x: zoom.x, y: zoom.y } : undefined}
             >
-              <TeeMockup shirt={shirt} priority={isTop} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
+              <TeeMockup shirt={shirt} priority={isTop} sizes={SIZES.card} zoomed={zoomed} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
             </motion.div>
           </div>
 
@@ -169,7 +170,7 @@ function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
         <div className="mt-4 flex gap-4">
           {/* Short screens (phones sideways) skip the thumbnail: room for the text. */}
           <div className={`w-24 shrink-0 rounded-2xl p-2 [@media(max-height:500px)]:hidden ${STAGE_BG}`}>
-            <TeeMockup shirt={shirt} shadow={false} thumb className="w-full" />
+            <TeeMockup shirt={shirt} sizes={SIZES.thumb} className="w-full" />
           </div>
           <div className="min-w-0">
             <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>

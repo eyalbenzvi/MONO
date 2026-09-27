@@ -9,3 +9,4 @@ coverage
 public/og
 test-results
 playwright-report
+public/img

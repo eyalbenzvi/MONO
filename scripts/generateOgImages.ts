@@ -1,10 +1,11 @@
 /**
- * Link-preview images (Open Graph, 1200×630 PNG) for every product page, plus
+ * Link-preview images (Open Graph, 1200×630 JPEG) for every product page, plus
  * a default one for the site. WhatsApp, Facebook, Telegram, X, iMessage and
  * others show these when a MONO link is shared. They need a raster image
- * (SVG isn't accepted), so each is composed as SVG and rendered with resvg.
+ * (SVG isn't accepted), so each is composed as SVG and rendered with resvg,
+ * around the tee as the site shows it (lib/images, baked first if needed).
  *
- *   npm run og            # writes public/og/*.png (git-ignored; built in CI)
+ *   npm run og            # writes public/og/*.jpg (git-ignored; built in CI)
  *
  * Runs before `next build` so the images are exported with the site.
  */
@@ -13,11 +14,10 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import os from "node:os";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
-// @ts-expect-error — upng-js ships no types
-import UPNG from "upng-js";
 import shirtsJson from "../data/shirts.json";
 import { WEAK_QUALITY } from "./gen/quality";
-import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "../lib/teeShape";
+import { MODEL_ASPECT, mockupPath } from "../lib/images";
+import { allJobs, bakeAll } from "./images/bake";
 import sharp from "sharp";
 import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
 
@@ -42,46 +42,21 @@ const HOST = process.env.OG_HOST ?? "eyalbenzvi.github.io/MONO";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** WebP prints (which resvg can't read) as PNG data, loaded before rendering; ink in the tee's colour. */
-const PHOTO_PNG = new Map<string, string>();
-async function loadPhotos(list: CatalogEntry[]) {
+/** Each tee's picture as PNG data (resvg reads no WebP), loaded before rendering. */
+const TEE_PNG = new Map<string, string>();
+async function loadTees(list: CatalogEntry[]) {
   for (const s of list)
-    if (s.medium !== "drawn" && !PHOTO_PNG.has(s.id)) {
-      let img = sharp(path.join(ROOT, "public", s.backPrintUrl)).resize(600, 800);
-      if (s.medium === "ink" && s.baseColor === "black") img = img.negate({ alpha: false });
-      PHOTO_PNG.set(s.id, (await img.png().toBuffer()).toString("base64"));
+    if (!TEE_PNG.has(s.id)) {
+      const file = path.join(ROOT, "public", mockupPath(s, s.baseColor, 720));
+      TEE_PNG.set(s.id, (await sharp(file).resize({ height: 560 }).png().toBuffer()).toString("base64"));
     }
 }
 
-/** Print SVG body (without its outer <svg>), for nesting. */
-function printInner(shirt: CatalogEntry) {
-  if (shirt.medium !== "drawn")
-    return `<rect width="300" height="400" fill="${shirt.baseColor === "black" ? "#000000" : "#FFFFFF"}"/><image href="data:image/png;base64,${PHOTO_PNG.get(shirt.id)}" width="300" height="400"/>`;
-  const svg = readFileSync(path.join(ROOT, "public", shirt.backPrintUrl), "utf8");
-  return svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
-}
-
-/** The tee with its print, `h` px tall, top-left at (x, y). */
+/** The tee (its picture, rounded), `h` px tall, top-left at (x, y). */
 function tee(shirt: CatalogEntry, x: number, y: number, h: number, idPrefix: string) {
-  const s = h / TEE_VIEW.h;
-  const c = TEE_COLORS[shirt.baseColor];
-  const blend = shirt.baseColor === "black" ? "screen" : "multiply";
-  // Pattern / clip ids inside prints are short (t1, l2, c…): prefix them so
-  // several prints can share one document (the default image has three).
-  const inner = printInner(shirt).replace(/id="([^"]+)"/g, `id="${idPrefix}$1"`).replace(/url\(#([^)]+)\)/g, `url(#${idPrefix}$1)`).replace(/href="#([^"]+)"/g, `href="#${idPrefix}$1"`);
-  const shade = shirt.baseColor === "black" ? 0.45 : 0.16;
-  return `<g transform="translate(${x - TEE_VIEW.x * s} ${y - TEE_VIEW.y * s}) scale(${s})">
-    <defs>
-      <clipPath id="${idPrefix}body"><path d="${TEE_BODY}"/></clipPath>
-      <linearGradient id="${idPrefix}side" x1="92" x2="308" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#000" stop-opacity="${shade}"/><stop offset="0.22" stop-opacity="0"/><stop offset="0.78" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${shade}"/></linearGradient>
-    </defs>
-    <path d="${TEE_BODY}" fill="${c.fabric}"/>
-    <path d="${TEE_SEAMS}" fill="none" stroke="${c.seam}" stroke-width="1.4"/>
-    <path d="${TEE_HEMS}" fill="none" stroke="${c.seam}" stroke-width="1.2" stroke-dasharray="3 3"/>
-    <g style="mix-blend-mode:${blend}"><svg x="${TEE_PRINT.x}" y="${TEE_PRINT.y}" width="${TEE_PRINT.w}" height="${TEE_PRINT.h}" viewBox="0 0 300 400">${inner}</svg></g>
-    <path d="${TEE_COLLAR}" fill="none" stroke="${c.collar}" stroke-width="7" stroke-linecap="round"/>
-    <g clip-path="url(#${idPrefix}body)" style="mix-blend-mode:multiply"><rect width="400" height="460" fill="url(#${idPrefix}side)"/></g>
-  </g>`;
+  const w = h * MODEL_ASPECT;
+  return `<clipPath id="${idPrefix}c"><rect x="${x}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="${(w * 0.05).toFixed(1)}"/></clipPath>
+    <image href="data:image/png;base64,${TEE_PNG.get(shirt.id)}" x="${x}" y="${y}" width="${w.toFixed(1)}" height="${h}" preserveAspectRatio="none" clip-path="url(#${idPrefix}c)"/>`;
 }
 
 function logo(x: number, y: number) {
@@ -105,7 +80,7 @@ function productSvg(shirt: CatalogEntry) {
   const ctaW = cta.length * 25 * ADV.bold * 0.92 + 64;
   return frame(`
   ${spot(320, 315, 285)}
-  ${tee(shirt, 90, 45, 540, "p")}
+  ${tee(shirt, Math.round(320 - (540 * MODEL_ASPECT) / 2), 45, 540, "p")}
   ${logo(620, 92)}
   <text x="620" y="245" font-size="${titleSize.toFixed(1)}" font-weight="700" ${FONT} fill="#fff">${esc(shirt.title)}</text>
   <text x="620" y="296" font-size="27" ${FONT} fill="#fff" fill-opacity="0.75">${esc(CATEGORY_LABELS[shirt.category])} · $${shirt.price}</text>
@@ -151,23 +126,21 @@ const FONT_OPTS = FONT_FILES.length
   ? { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "Liberation Sans", serifFamily: "Liberation Serif", monospaceFamily: "Liberation Mono" }
   : { loadSystemFonts: true, defaultFontFamily: "DejaVu Sans" };
 
-/** Render, then re-encode as a 256-colour palette PNG (the art is grey anyway): ~4× smaller. */
-function render(svg: string): Buffer {
+/** Render, then encode as JPEG (a photograph of the tee is in every image; ~70 KB). */
+async function render(svg: string): Promise<Buffer> {
   const img = new Resvg(svg, { fitTo: { mode: "width", value: W }, font: FONT_OPTS }).render();
-  const rgba = img.pixels;
-  const ab = rgba.buffer.slice(rgba.byteOffset, rgba.byteOffset + rgba.byteLength);
-  return Buffer.from(UPNG.encode([ab], img.width, img.height, 256));
+  return sharp(Buffer.from(img.pixels), { raw: { width: img.width, height: img.height, channels: 4 } }).flatten({ background: "#0b0b0b" }).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
 }
 
-const outFile = (s: CatalogEntry) => path.join(OUT, `${s.id}.png`);
+const outFile = (s: CatalogEntry) => path.join(OUT, `${s.id}.jpg`);
 
 /** Renders the given shirts in this process (skipping finished ones unless forced). */
 async function renderList(list: CatalogEntry[], force: boolean) {
   for (const s of list) {
     if (!force && existsSync(outFile(s))) continue;
-    await loadPhotos([s]);
-    writeFileSync(outFile(s), render(productSvg(s)));
-    PHOTO_PNG.delete(s.id);
+    await loadTees([s]);
+    writeFileSync(outFile(s), await render(productSvg(s)));
+    TEE_PNG.delete(s.id);
   }
 }
 
@@ -200,6 +173,8 @@ async function main() {
   }
   const only = process.argv[2] ? new Set(process.argv.slice(2)) : null;
   const list = only ? SHIRTS.filter((s) => only.has(s.id)) : SHIRTS;
+  // The tees' pictures first (the build bakes the rest; unchanged ones are skipped).
+  await bakeAll(allJobs([...list, ...defaultPicks()]).filter((j) => j.color === j.shirt.baseColor));
   if (only) await renderList(list, true);
   else {
     // Whole catalog: batches over a pool of CPU-count workers (~0.15 s per
@@ -217,8 +192,8 @@ async function main() {
     if (left.length > 50) throw new Error(`${left.length} OG images failed to render`);
     await renderList(left, true);
   }
-  await loadPhotos(defaultPicks());
-  writeFileSync(path.join(OUT, "default.png"), render(defaultSvg()));
+  await loadTees(defaultPicks());
+  writeFileSync(path.join(OUT, "default.jpg"), await render(defaultSvg()));
   const missing = list.filter((s) => !existsSync(outFile(s)));
   if (missing.length) throw new Error(`${missing.length} OG images missing, e.g. ${missing[0].id}`);
   const bytes = list.reduce((sum, s) => sum + statSync(outFile(s)).size, 0);

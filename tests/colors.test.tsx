@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import full from "@/data/shirts.json";
 import { TeeMockup } from "@/components/TeeMockup";
+import { MOCKUP_WIDTHS } from "@/lib/images";
 import { SHIRTS } from "@/lib/catalog";
 import { productDescription } from "@/lib/seo";
 import { productJsonLd } from "@/lib/structuredData";
@@ -41,10 +42,10 @@ describe("T3: designs that suit one tee colour are sold in that colour only", ()
   });
 
   it("the mockup never shows a one-colour design on the other tee", () => {
-    const { container } = render(<TeeMockup shirt={single} color={otherColor(single.baseColor)} />);
-    // A model photo of that tee colour (or, with none, the drawn tee in it).
-    const src = container.querySelector("img")!.getAttribute("src")!;
-    expect(src.includes(`-${single.baseColor}.webp`) || src.includes(`garment-${single.baseColor}`), src).toBe(true);
+    const { container } = render(<TeeMockup shirt={single} color={otherColor(single.baseColor)} sizes="300px" />);
+    const img = container.querySelector("img")!;
+    expect(img.getAttribute("src")).toContain(`/img/m/${single.n}-${single.baseColor}-`);
+    expect(img.getAttribute("srcset")).not.toContain(`-${otherColor(single.baseColor)}-`);
   });
 
   it("search copy and structured data offer only the colours it's sold in", () => {
@@ -146,10 +147,11 @@ describe("T2: the tee worn — model photos", () => {
     }
   });
 
-  it("the mockup lays the print on the photo, never on a photo of the other colour", () => {
-    const { container } = render(<TeeMockup shirt={both} color="black" />);
-    const imgs = [...container.querySelectorAll("img")].map((i) => i.getAttribute("src"));
-    expect(imgs[0]).toMatch(/\/models\/.+-black\.webp$/);
-    expect(imgs.some((s) => s?.includes(`/prints/print_${both.n}.`))).toBe(true);
+  it("the mockup is one picture of the print on that colour's photo (baked at build time, never blended on the page)", () => {
+    const { container } = render(<TeeMockup shirt={both} color="black" sizes="300px" />);
+    const imgs = [...container.querySelectorAll("img")];
+    expect(imgs).toHaveLength(1);
+    expect(imgs[0].getAttribute("srcset")).toBe(MOCKUP_WIDTHS.map((w) => `/img/m/${both.n}-black-${w}.webp ${w}w`).join(", "));
+    expect(container.innerHTML).not.toMatch(/mix-blend|invert|\/models\/|\/prints\//);
   });
 });

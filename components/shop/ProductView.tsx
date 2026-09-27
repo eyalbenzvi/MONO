@@ -11,6 +11,7 @@ import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
+import { SIZES } from "@/lib/images";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { SaveButton, SizeSelector, Spec, STAGE_BG, radioKeys, useShowMatch } from "@/components/ui";
 import { familyMembers, getShirtById } from "@/lib/catalog";
@@ -303,10 +304,10 @@ export function ProductView({
               >
                 {view === "print" ? (
                   <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
-                    <PrintImage shirt={shirt} color={color} priority />
+                    <PrintImage shirt={shirt} color={color} priority sizes={SIZES.product} />
                   </div>
                 ) : (
-                  <TeeMockup shirt={shirt} color={color} priority className="h-full max-h-full" />
+                  <TeeMockup shirt={shirt} color={color} priority sizes={SIZES.product} className="h-full max-h-full" />
                 )}
               </motion.div>
             </AnimatePresence>

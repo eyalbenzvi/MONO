@@ -52,7 +52,7 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
     const og = path.join(OUT, "og");
     test.skip(!existsSync(og) || readdirSync(og).length < 2, "link-preview images not generated in this build (npm run og)");
     const ids = readdirSync(path.join(OUT, "shop")).filter((d) => /^mono-\d{4}$/.test(d));
-    for (const id of ids) expect(existsSync(path.join(og, `${id}.png`)), id).toBe(true);
+    for (const id of ids) expect(existsSync(path.join(og, `${id}.jpg`)), id).toBe(true);
   });
 });
 

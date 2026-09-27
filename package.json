@@ -10,15 +10,15 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "generate": "tsx scripts/generateCatalog.ts && tsx scripts/tools/publishIndex.ts",
-    "og": "tsx scripts/generateOgImages.ts",
+    "og": "tsx --tsconfig tsconfig.scripts.json scripts/generateOgImages.ts",
     "audit:prints": "node scripts/tools/auditPrints.cjs && tsx --tsconfig tsconfig.scripts.json scripts/tools/blockCheck.ts",
     "measure:fonts": "node scripts/tools/measureFonts.cjs",
     "smoke": "node scripts/tools/smoke.cjs",
     "e2e": "playwright test",
-    "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
     "sprites": "tsx scripts/tools/sprites.tsx",
-    "thumbs": "tsx --tsconfig tsconfig.scripts.json scripts/tools/thumbs.ts",
-    "prebuild": "tsx scripts/tools/publishIndex.ts"
+    "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
+    "prebuild": "tsx scripts/tools/publishIndex.ts && npm run images",
+    "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",
@@ -45,7 +45,6 @@
     "tailwindcss": "^3.4.19",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
-    "upng-js": "^2.1.0",
     "vitest": "^5.0.2"
   }
 }

@@ -2,9 +2,9 @@
  * After `next build` (npm runs it as "postbuild"), over the static export:
  *
  * 1. Link-preview images (R32): every pre-rendered product page needs
- *    out/og/<id>.png. When the OG step ran (some exist) a missing one fails
+ *    out/og/<id>.jpg. When the OG step ran (some exist) a missing one fails
  *    the build. When it didn't run at all (a quick local build), pages point
- *    at og/default.png instead — or keep their links if that's missing too.
+ *    at og/default.jpg instead — or keep their links if that's missing too.
  * 2. Product pages get og:type=product and product:price:* (Next's Open
  *    Graph types have no "product").
  * 3. Structured data (JSON-LD) goes into <head> here rather than through
@@ -60,17 +60,21 @@ export function withCsp(html: string) {
 }
 
 /**
- * Files of retired designs (scripts/gen/retire) don't ship: a photograph's
- * print is an input kept in public/prints, and a link preview may linger in
- * a local public/og; the export only carries what the catalog lists.
+ * The export carries only what pages show. The prints and model photos are
+ * inputs of the pictures baked into img/ (scripts/images/bake.ts) and don't
+ * ship; baked pictures and link previews of retired designs (left in a
+ * local public/ from earlier builds) don't either.
  */
 function pruneRetired(): number {
-  const alive = new Set(SHIRTS.map((s) => s.n));
   let removed = 0;
+  for (const dir of ["prints", "models"].map((d) => path.join(OUT, d)))
+    if (existsSync(dir)) (removed += readdirSync(dir, { recursive: true }).length), rmSync(dir, { recursive: true });
+  const alive = new Set(SHIRTS.map((s) => s.n));
   for (const [dir, re] of [
-    [path.join(OUT, "prints"), /^print_(\d+)\./],
-    [path.join(OUT, "prints", "t"), /^print_(\d+)\./],
-    [path.join(OUT, "og"), /^mono-(\d+)\.png$/],
+    [path.join(OUT, "img", "m"), /^(\d+)-/],
+    [path.join(OUT, "img", "p"), /^(\d+)-/],
+    [path.join(OUT, "img", "d"), /^(\d+)-/],
+    [path.join(OUT, "og"), /^mono-(\d+)\.(png|jpg)$/],
   ] as const) {
     if (!existsSync(dir)) continue;
     for (const f of readdirSync(dir)) {
@@ -90,8 +94,8 @@ function main() {
   const pages = productPages();
   const byId = new Map(SHIRTS.map((s) => [s.id, s]));
   const og = path.join(OUT, "og");
-  const have = new Set(existsSync(og) ? readdirSync(og).filter((f) => /^mono-\d{4}\.png$/.test(f)).map((f) => f.slice(0, -4)) : []);
-  const hasDefault = existsSync(path.join(og, "default.png"));
+  const have = new Set(existsSync(og) ? readdirSync(og).filter((f) => /^mono-\d{4}\.jpg$/.test(f)).map((f) => f.slice(0, -4)) : []);
+  const hasDefault = existsSync(path.join(og, "default.jpg"));
   const missing = pages.filter((p) => !have.has(p.id)).map((p) => p.id);
   const ogRan = have.size > 0;
   if (ogRan && missing.length) {
@@ -107,7 +111,7 @@ function main() {
     if (html.includes('type="application/ld+json"')) continue; // already processed
     if (!ogRan && hasDefault) {
       const before = html;
-      html = html.replace(new RegExp(`/og/${id}\\.png`, "g"), "/og/default.png");
+      html = html.replace(new RegExp(`/og/${id}\\.jpg`, "g"), "/og/default.jpg");
       if (html !== before) fallback++;
     }
     html = html.replace(
@@ -128,7 +132,7 @@ function main() {
     csp++;
   }
 
-  if (!ogRan) console.warn(`postbuild: no link-preview images in out/og (npm run og didn't run)${hasDefault ? ` — ${fallback} pages use og/default.png` : ""}`);
+  if (!ogRan) console.warn(`postbuild: no link-preview images in out/og (npm run og didn't run)${hasDefault ? ` — ${fallback} pages use og/default.jpg` : ""}`);
   console.log(`postbuild: ${pruned} files of retired designs left out; ${pages.length} product pages checked${ogRan ? ", all with their og image" : ""}; JSON-LD written; CSP on ${csp} pages`);
 }
 

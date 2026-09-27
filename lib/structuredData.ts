@@ -4,6 +4,7 @@
  * so it isn't repeated in each page's React payload.
  */
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/cart";
+import { mockupPath } from "@/lib/images";
 import { SITE_URL, ogImage } from "@/lib/seo";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { COLORS, COLOR_LABELS, SIZES, SIZE_LABELS, skuFor, type CatalogEntry } from "@/types/shirt";
@@ -95,7 +96,7 @@ export function productJsonLd(shirt: CatalogEntry) {
         productGroupID: shirt.id,
         category: `${entry.subject} T-shirt`,
         brand: { "@type": "Brand", name: "MONO" },
-        image: [ogImage(shirt.id).url, `${SITE_URL}${shirt.backPrintUrl}`],
+        image: [ogImage(shirt.id).url, `${SITE_URL}${mockupPath(shirt, shirt.baseColor, 1080)}`],
         url,
         variesBy: ["https://schema.org/color", "https://schema.org/size"],
         hasVariant: variants,

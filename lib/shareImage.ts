@@ -1,19 +1,14 @@
 /**
  * Share images drawn in the browser (canvas → PNG): the tee in the chosen
- * colourway with its print, the design name, and the site. Two formats:
- * "story" 1080×1920 (Instagram / TikTok / WhatsApp status) and "square"
- * 1080×1080 (feeds and chats).
- *
- * The print SVG is fetched and recoloured by swapping its two inks (every
- * print is strictly #FFFFFF / #000000), which works in every browser — the
- * canvas `filter` property doesn't exist in Safari. Photographs are drawn
- * as they are, never swapped (that would print a negative); ink prints are
- * recoloured on a canvas.
+ * colourway — the same picture the site shows (lib/images: the model photo
+ * with the print on it, made at build time) — the design name, and the site.
+ * Two formats: "story" 1080×1920 (Instagram / TikTok / WhatsApp status) and
+ * "square" 1080×1080 (feeds and chats).
  */
-import { assetUrl, needsInvert, printUrl } from "@/lib/catalog";
+import { assetUrl } from "@/lib/catalog";
+import { MODEL_ASPECT, mockupPath } from "@/lib/images";
 import { siteRoot } from "@/lib/share";
-import { TEE_BODY, TEE_COLLAR, TEE_COLORS, TEE_HEMS, TEE_PRINT, TEE_SEAMS, TEE_VIEW } from "@/lib/teeShape";
-import { CATEGORY_LABELS, COLOR_LABELS, isPhoto, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 
 export type ShareFormat = "story" | "square";
@@ -25,98 +20,23 @@ export const SHARE_SIZES: Record<ShareFormat, { w: number; h: number }> = {
 const FONT = `-apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif`;
 const MONO_FONT = `ui-monospace, "SF Mono", Menlo, "Courier New", monospace`;
 
-/** Print SVG in `color`, as an image rasterised at 3× for a crisp canvas. */
-export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Promise<CanvasImageSource> {
-  if (shirt.medium === "ink") {
-    // Black ink with alpha: recoloured to the ink of this tee (white on black).
-    const img = new Image();
-    img.src = assetUrl(printUrl(shirt, color));
-    await img.decode();
-    if (!needsInvert(shirt, color)) return img;
-    const c = document.createElement("canvas");
-    c.width = img.naturalWidth;
-    c.height = img.naturalHeight;
-    const ctx = c.getContext("2d")!;
-    ctx.drawImage(img, 0, 0);
-    ctx.globalCompositeOperation = "source-in";
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, c.width, c.height);
-    return c;
-  }
-  if (isPhoto(shirt)) {
-    // The halftone photograph as it is (transparent surround; never inverted).
-    const img = new Image();
-    img.src = assetUrl(printUrl(shirt, color));
-    await img.decode();
-    return img;
-  }
-  let svg = await (await fetch(assetUrl(printUrl(shirt, color)))).text();
-  if (needsInvert(shirt, color)) svg = svg.replace(/#FFFFFF|#000000/g, (m) => (m === "#FFFFFF" ? "#000000" : "#FFFFFF"));
-  svg = svg.replace('width="300" height="400"', 'width="900" height="1200"');
-  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-  try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    return img;
-  } finally {
-    // decode() has rasterised it; the URL is no longer needed
-    setTimeout(() => URL.revokeObjectURL(url), 0);
-  }
+/** The tee as the site shows it, in `color`, at the largest size made. */
+export async function loadMockup(shirt: ShirtProduct, color: BaseColor): Promise<HTMLImageElement> {
+  const img = new Image();
+  img.src = assetUrl(mockupPath(shirt, color, 1080));
+  await img.decode();
+  return img;
 }
 
-/** Draws the tee (top-left of its view box at x,y; `w` px wide). Returns its height. */
-function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, color: BaseColor, print: CanvasImageSource) {
-  const s = w / TEE_VIEW.w;
-  const { fabric, seam, collar } = TEE_COLORS[color];
-  const body = new Path2D(TEE_BODY);
+/** Draws the picture `w` px wide with rounded corners, top-left at (x, y). Returns its height. */
+function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, img: HTMLImageElement) {
+  const h = w / MODEL_ASPECT;
   ctx.save();
-  ctx.translate(x - TEE_VIEW.x * s, y - TEE_VIEW.y * s);
-  ctx.scale(s, s);
-  // garment with a soft drop shadow
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.55)";
-  ctx.shadowBlur = 60;
-  ctx.shadowOffsetY = 30;
-  ctx.fillStyle = fabric;
-  ctx.fill(body);
+  roundRect(ctx, x, y, w, h, w * 0.05);
+  ctx.clip();
+  ctx.drawImage(img, x, y, w, h);
   ctx.restore();
-  ctx.lineCap = "round";
-  ctx.strokeStyle = seam;
-  ctx.lineWidth = 1.4;
-  ctx.stroke(new Path2D(TEE_SEAMS));
-  ctx.setLineDash([3, 3]);
-  ctx.lineWidth = 1.2;
-  ctx.stroke(new Path2D(TEE_HEMS));
-  ctx.setLineDash([]);
-  // print blended into the fabric: white ink screens onto black, black ink multiplies onto white
-  ctx.save();
-  ctx.globalCompositeOperation = color === "black" ? "screen" : "multiply";
-  ctx.drawImage(print, TEE_PRINT.x, TEE_PRINT.y, TEE_PRINT.w, TEE_PRINT.h);
-  ctx.restore();
-  ctx.strokeStyle = collar;
-  ctx.lineWidth = 7;
-  ctx.stroke(new Path2D(TEE_COLLAR));
-  // fabric shading at the sides and hem
-  ctx.save();
-  ctx.clip(body);
-  ctx.globalCompositeOperation = "multiply";
-  const side = ctx.createLinearGradient(92, 0, 308, 0);
-  const a = color === "black" ? 0.45 : 0.16;
-  side.addColorStop(0, `rgba(0,0,0,${a})`);
-  side.addColorStop(0.22, "rgba(0,0,0,0)");
-  side.addColorStop(0.78, "rgba(0,0,0,0)");
-  side.addColorStop(1, `rgba(0,0,0,${a})`);
-  ctx.fillStyle = side;
-  ctx.fillRect(0, 0, 400, 460);
-  const hem = ctx.createLinearGradient(0, 340, 0, 440);
-  hem.addColorStop(0, "rgba(0,0,0,0)");
-  hem.addColorStop(1, `rgba(0,0,0,${a * 0.7})`);
-  ctx.fillStyle = hem;
-  ctx.fillRect(0, 0, 400, 460);
-  ctx.restore();
-  ctx.restore();
-  return TEE_VIEW.h * s;
+  return h;
 }
 
 /** Sets the largest font (≤ max) at which `text` fits `maxW`. */
@@ -169,7 +89,7 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
-  const print = await loadPrintImage(shirt, color);
+  const tee = await loadMockup(shirt, color);
   const story = format === "story";
 
   // stage background: soft spotlight on near-black
@@ -181,9 +101,9 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
 
   logo(ctx, w / 2, story ? 120 : 52, story ? 1.3 : 0.95);
 
-  const teeW = story ? 840 : 560;
-  const teeTop = story ? 290 : 150;
-  const teeH = drawTee(ctx, (w - teeW) / 2, teeTop, teeW, color, print);
+  const teeW = story ? 700 : 440;
+  const teeTop = story ? 290 : 140;
+  const teeH = drawTee(ctx, (w - teeW) / 2, teeTop, teeW, tee);
 
   // design name + details
   ctx.fillStyle = "#ffffff";
@@ -232,7 +152,7 @@ export async function renderTasteImage(name: string, traits: string[], picks: Sh
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
-  const prints = await Promise.all(picks.slice(0, 3).map((s) => loadPrintImage(s, s.baseColor)));
+  const tees = await Promise.all(picks.slice(0, 3).map((s) => loadMockup(s, s.baseColor)));
 
   const bg = ctx.createRadialGradient(w / 2, h * 0.4, 0, w / 2, h * 0.4, h * 0.75);
   bg.addColorStop(0, "#2a2a2a");
@@ -269,12 +189,12 @@ export async function renderTasteImage(name: string, traits: string[], picks: Sh
   const teeW = 320;
   const colGap = 20;
   const x0 = (w - (teeW * 3 + colGap * 2)) / 2;
-  prints.forEach((p, i) => drawTee(ctx, x0 + i * (teeW + colGap), 760, teeW, picks[i].baseColor, p));
+  tees.forEach((t, i) => drawTee(ctx, x0 + i * (teeW + colGap), 740, teeW, t));
   ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.font = `500 34px ${FONT}`;
   picks.slice(0, 3).forEach((s, i) => {
     fitFont(ctx, s.title, teeW - 10, 34, 500);
-    ctx.fillText(s.title, x0 + i * (teeW + colGap) + teeW / 2, 1230);
+    ctx.fillText(s.title, x0 + i * (teeW + colGap) + teeW / 2, 1250);
   });
 
   const cta = "What's yours? Swipe 10 tees →";

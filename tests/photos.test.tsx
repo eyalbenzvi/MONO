@@ -7,7 +7,7 @@ import { act, cleanup, render, renderHook } from "@testing-library/react";
 import full from "@/data/shirts.json";
 import photos from "@/data/photos/photos.json";
 import { PrintImage } from "@/components/PrintImage";
-import { CALIBRATION_IDS, SHIRTS, getShirtById, needsInvert, printUrl } from "@/lib/catalog";
+import { CALIBRATION_IDS, SHIRTS, getShirtById, needsInvert } from "@/lib/catalog";
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { productTitle } from "@/lib/seo";
 import { archetypeOf, ARCHETYPE_NAMES } from "@/lib/taste";
@@ -103,39 +103,28 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
     }
   });
 
-  it("printUrl / needsInvert: drawn prints flip with CSS; a photograph is the same positive file on both tees", () => {
+  it("needsInvert: drawn prints swap inks for the other colour; a photograph never does", () => {
     const drawn = SHIRTS[0];
     const photo = SHIRTS.find(isPhoto)!;
-    const other = otherColor(photo.baseColor);
-    expect(printUrl(drawn, otherColor(drawn.baseColor))).toBe(drawn.backPrintUrl);
     expect(needsInvert(drawn, otherColor(drawn.baseColor))).toBe(true);
-    expect(printUrl(photo, other)).toBe(photo.backPrintUrl);
-    expect(needsInvert(photo, other)).toBe(false);
+    expect(needsInvert(photo, otherColor(photo.baseColor))).toBe(false);
   });
 
-  it("PrintImage never inverts a photograph; it sits on its tee colour (the only one it's sold in, T3)", () => {
+  it("PrintImage shows a photograph on its own tee colour only (T3), as baked", () => {
     const photo = SHIRTS.find(isPhoto)!;
-    const other = otherColor(photo.baseColor);
-    const { container, rerender } = render(<PrintImage shirt={photo} color={other} />);
+    const { container } = render(<PrintImage shirt={photo} color={otherColor(photo.baseColor)} sizes="300px" />);
     const img = container.querySelector("img")!;
-    expect(img.getAttribute("src")).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
+    expect(img.getAttribute("src")).toBe(`/img/p/${photo.n}-${photo.baseColor}-1500.webp`);
+    expect(img.getAttribute("srcset")).toContain(`/img/p/${photo.n}-${photo.baseColor}-1500.webp 1500w`);
     expect(img.className).not.toMatch(/\binvert\b/);
-    // Asked for the other colour, it stays on its own (T3).
-    expect(img.className).toMatch(photo.baseColor === "black" ? /\bbg-black\b/ : /\bbg-white\b/);
-    rerender(<PrintImage shirt={SHIRTS[0]} color={otherColor(SHIRTS[0].baseColor)} />);
-    expect(container.querySelector("img")!.className).toMatch(/\binvert\b/);
   });
 
-  it("the share image draws the photograph as it is (no ink swap)", async () => {
+  it("the share image draws the tee as the site shows it (the baked picture, in its own colour)", async () => {
     const photo = SHIRTS.find(isPhoto)!;
-    const fetchSpy = vi.fn();
-    vi.stubGlobal("fetch", fetchSpy);
     Object.defineProperty(HTMLImageElement.prototype, "decode", { configurable: true, value: () => Promise.resolve() });
-    const { loadPrintImage } = await import("@/lib/shareImage");
-    const img = (await loadPrintImage(photo, otherColor(photo.baseColor))) as HTMLImageElement;
-    expect(img.src).toMatch(new RegExp(`/prints/print_${photo.n}\\.webp$`));
-    expect(fetchSpy).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
+    const { loadMockup } = await import("@/lib/shareImage");
+    const img = await loadMockup(photo, photo.baseColor);
+    expect(img.src).toMatch(new RegExp(`/img/m/${photo.n}-${photo.baseColor}-1080\\.webp$`));
   });
 });
 

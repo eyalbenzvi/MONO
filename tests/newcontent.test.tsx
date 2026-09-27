@@ -8,9 +8,9 @@ import full from "@/data/shirts.json";
 import archive from "@/data/archive/archive.json";
 import stars from "@/data/sky/stars.json";
 import { PrintImage } from "@/components/PrintImage";
-import { SHIRTS, needsInvert, printUrl } from "@/lib/catalog";
+import { SHIRTS, needsInvert } from "@/lib/catalog";
 import { productTitle } from "@/lib/seo";
-import { type CatalogEntry } from "@/types/shirt";
+import { otherColor, type CatalogEntry } from "@/types/shirt";
 import { TOTAL } from "../scripts/gen/constants";
 import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_W, type ArchiveSource } from "../scripts/archive/source";
 import { EXCLUDE, PER_GROUP, archiveOrder } from "../scripts/archive/curation";
@@ -100,24 +100,23 @@ describe("T8: ink prints turn for a black tee; photographs never do", () => {
   it("needsInvert: an ink print is inverted (to white ink) on a black tee, never on a white one", () => {
     const ink = SHIRTS.find((s) => s.medium === "ink" && s.colors.length === 2)!;
     expect(ink.backPrintUrl).toMatch(/\.webp$/);
-    expect(printUrl(ink, "black")).toBe(ink.backPrintUrl);
     expect(needsInvert(ink, "black")).toBe(true);
     expect(needsInvert(ink, "white")).toBe(false);
   });
 
-  it("PrintImage: an inverted ink print sits on a white ground, which the invert turns black like the tee", () => {
+  it("PrintImage shows the print baked for that tee colour (nothing inverted on the page)", () => {
     const ink = SHIRTS.find((s) => s.medium === "ink" && s.colors.length === 2)!;
-    const { container, rerender } = render(<PrintImage shirt={ink} color="black" />);
-    let cls = container.querySelector("img")!.className;
-    expect(cls).toMatch(/\binvert\b/);
-    expect(cls).toMatch(/\bbg-white\b/);
-    rerender(<PrintImage shirt={ink} color="white" />);
-    cls = container.querySelector("img")!.className;
-    expect(cls).not.toMatch(/\binvert\b/);
-    expect(cls).toMatch(/\bbg-white\b/);
-    // A drawn SVG brings its own ground.
+    const { container, rerender } = render(<PrintImage shirt={ink} color="black" sizes="300px" />);
+    let img = container.querySelector("img")!;
+    expect(img.getAttribute("srcset")).toBe(`/img/p/${ink.n}-black-480.webp 480w, /img/p/${ink.n}-black-1500.webp 1500w`);
+    expect(img.className).not.toMatch(/\binvert\b|\bbg-/);
+    rerender(<PrintImage shirt={ink} color="white" sizes="300px" />);
+    expect(container.querySelector("img")!.getAttribute("src")).toContain(`/img/p/${ink.n}-white-`);
+    // A drawn print stays vector, in that colourway.
     const drawn = SHIRTS.find((s) => s.medium === "drawn")!;
-    rerender(<PrintImage shirt={drawn} color={drawn.baseColor} />);
-    expect(container.querySelector("img")!.className).not.toMatch(/\bbg-(black|white)\b/);
+    rerender(<PrintImage shirt={drawn} color={otherColor(drawn.baseColor)} sizes="300px" />);
+    img = container.querySelector("img")!;
+    expect(img.getAttribute("src")).toBe(`/img/p/${drawn.n}-${otherColor(drawn.baseColor)}.svg`);
+    expect(img.getAttribute("srcset")).toBeNull();
   });
 });
