@@ -90,13 +90,17 @@ for j in JOBS:
     # The clothing model stops short of a loose tee's hem: the white cloth just
     # below it, within the tee's width, is tee too (left out, the black twin
     # showed a white band at the waist).
-    span = np.nonzero(tee[hem])[0]
-    if len(span) and j["color"] == "white":
-        lo_c, hi_c = span.min(), span.max()
-        for r in range(hem + 1, min(h, hem + int(shoulders * 0.4))):
-            row = (lum[r, lo_c : hi_c + 1] > 0.5) & person[r, lo_c : hi_c + 1]
-            if row.sum() < (hi_c - lo_c) * 0.15: break
-            tee[r, lo_c : hi_c + 1] |= row
+    # Only cloth like the tee's (as bright, no colour) and joined to it from above, a
+    # short way down: light trousers below stay trousers (they got dark patches).
+    if tee[hem].any() and j["color"] == "white":
+        sat = a.max(2) - a.min(2)
+        bright = min(0.55, float(np.percentile(lum[tee], 10)))
+        like = (lum >= bright) & (sat < 0.15) & person
+        for r in range(hem + 1, min(h, hem + int(shoulders * 0.08))):  # the hem band is thin; deeper is trousers
+            above = np.convolve(tee[r - 1].astype(int), np.ones(7, int), "same") > 0  # joined from above, give or take a curve
+            row = like[r] & above
+            if row.sum() < 3: break
+            tee[r] |= row
     # The centre of the back from the tee itself (clean mask): the midpoint of
     # its edges over the chest, below the sleeves.
     mids = []
