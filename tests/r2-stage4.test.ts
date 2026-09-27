@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import full from "@/data/shirts.json";
 import index from "@/data/shirts.index.json";
 import manifest from "@/data/shirts.index.manifest.json";
+import searchManifest from "@/data/search.manifest.json";
 import { SHIRTS, CALIBRATION_IDS, checkIndexHead, dedupeByFamily, diversify, getShirtById, shardFile } from "@/lib/catalog";
 import { topPicks } from "@/lib/match";
 import { rankShirts } from "@/lib/recommendation";
@@ -129,7 +130,9 @@ describe("R21: the index head describes the data", () => {
     const dir = path.resolve(__dirname, "..", "public", "data");
     const files = readdirSync(dir).sort();
     // (Empty shards — a range of retired or unused numbers — are one file: same content, same hash.)
-    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file])].sort());
+    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file, searchManifest.file])].sort());
+    const search = readFileSync(path.join(dir, searchManifest.file), "utf8");
+    expect(searchManifest.file).toBe(`search.${createHash("sha256").update(search).digest("hex").slice(0, 10)}.json`);
     index.shards.forEach((hash, k) => {
       const json = readFileSync(path.join(dir, path.basename(shardFile(k))), "utf8");
       expect(createHash("sha256").update(json).digest("hex").slice(0, 10)).toBe(hash);
