@@ -1,12 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Icon } from "@/components/Icon";
 import { CategoryFilter, TeeSwatches } from "@/components/shop/ShopFilters";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SharedList } from "@/components/shop/ShopExtras";
-import { SHIRTS, dedupeByFamily, diversify, filterShop, filtersFromQuery, type ShopFilters } from "@/lib/catalog";
-import { SHOP_WINDOW, rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
+import { SHIRTS, dedupeByFamily, filterShop, filtersFromQuery, getShirtById, type ShopFilters } from "@/lib/catalog";
+import { decodeFacets, encodeFacets, type Facet } from "@/lib/search/facetCodec";
+import { useShopSearch } from "@/components/shop/useShopSearch";
+import { shopList } from "@/components/shop/shopList";
+import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { COLORS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
@@ -14,6 +19,32 @@ import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
 type Filters = ShopFilters;
+
+// The open search box (field, suggestions, prepared parameters) loads only when opened.
+const SearchPanel = dynamic(() => import("@/components/shop/SearchPanel"), {
+  ssr: false,
+  loading: () => <div aria-hidden className="h-10 flex-1 rounded-full bg-white/[0.06] ring-1 ring-white/10" />,
+});
+
+/** The search in the address: /shop/?q=words&f=kind:value,…&like=<id>. */
+function searchFromUrl(): { query: string; facets: Facet[] } {
+  const q = new URLSearchParams(window.location.search);
+  const facets = decodeFacets(q.get("f"));
+  const like = q.get("like");
+  if (like && getShirtById(like)) facets.push({ kind: "like", value: like });
+  return { query: q.get("q") ?? "", facets };
+}
+/** The address follows the search: replaced while typing, pushed when a facet changes or Enter is pressed (Back undoes it). */
+function searchToUrl(query: string, facets: readonly Facet[], push: boolean) {
+  const q = new URLSearchParams(window.location.search);
+  const f = encodeFacets(facets);
+  const like = facets.find((x) => x.kind === "like")?.value;
+  for (const [k, v] of [["q", query], ["f", f], ["like", like]] as const) (v ? q.set(k, v) : q.delete(k));
+  const next = window.location.pathname + (q.toString() ? `?${q}` : "");
+  if (next === window.location.pathname + window.location.search) return;
+  if (push) window.history.pushState(window.history.state, "", next);
+  else window.history.replaceState(window.history.state, "", next);
+}
 
 
 export function ShopView() {
@@ -24,6 +55,15 @@ export function ShopView() {
   const tee = useUiStore((s) => s.shop.tee);
   const cats = useUiStore((s) => s.shop.cats);
   const limit = useUiStore((s) => s.shop.limit);
+  const query = useUiStore((s) => s.shop.query);
+  const facets = useUiStore((s) => s.shop.facets);
+  // The grid follows the typing without holding up the field.
+  const deferredQuery = useDeferredValue(query);
+  const searching = query.trim() !== "" || facets.length > 0;
+  const { runtime, warm: warmSearch } = useShopSearch(searching);
+  const [open, setOpen] = useState(false);
+  const [focusNonce, setFocusNonce] = useState(0);
+  const [literal, setLiteral] = useState(false);
   // The order is not a choice: "For you" once the taste is known (it can be
   // lost again by unsaving), before that "Our pick" (the generator's fixed
   // editorial order — not usage data).
@@ -60,13 +100,24 @@ export function ShopView() {
   // (display only; scores are untouched): no three in a row of one
   // category or tee colour (not colour once one is chosen: every card is on
   // it), no algorithm repeats, and a wildcard every 8th card when ranking for you.
-  const visible = useMemo(() => {
-    const filtered = dedupeByFamily(filterShop(ranked, { tee, cats }));
-    // "Our pick" opens on the shop window as the generator built it (its own rules: every category, one per subject) —
-    // with a colour chosen, the window's designs on that colour.
-    const kept = sort === "popular" && !cats.length ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
-    return [...kept, ...diversify(filtered.slice(kept.length), { category: cats.length !== 1, color: !tee, wildcardEvery: sort === "match" ? 8 : 0 })];
-  }, [ranked, tee, cats, sort]);
+  // Search (lib/search): the colour and categories chosen narrow it too. "Top matches" is worked out here, never sent.
+  const result = useMemo(() => {
+    if (!searching || !runtime) return null;
+    const narrow: Facet[] = [...cats.map((value) => ({ kind: "category", value }) as Facet), ...(tee ? [{ kind: "tee", value: tee } as Facet] : [])];
+    return runtime.mod.search(runtime.index, SHIRTS, {
+      query: deferredQuery,
+      facets: [...facets, ...narrow],
+      vector: rankVector,
+      tasteKnown: complete,
+      seen: shown,
+      matches: facets.some((f) => f.kind === "match") ? runtime.mod.topMatches(rankVector) : undefined,
+      order: ranked,
+      literal,
+    });
+  }, [searching, runtime, deferredQuery, facets, cats, tee, rankVector, complete, shown, ranked, literal]);
+  const visible = useMemo(() => shopList({ ranked, tee, cats, sort, result }), [result, ranked, tee, cats, sort]);
+  // First open: the current grid stays, dimmed, until the index is in (never an empty flash).
+  const pending = searching && runtime === undefined;
   // How many designs each category holds on the chosen colour (the filter's rows; an empty one is disabled).
   const counts = useMemo(() => {
     const on = dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
@@ -176,6 +227,89 @@ export function ShopView() {
     return () => io.disconnect();
   }, [hydrated, visible.length, setShop]);
 
+  // Search state: every change starts the grid from the top.
+  const toTop = () => {
+    shopScroll.top = 0;
+    scroller.current?.scrollTo({ top: 0 });
+  };
+  const setQuery = (q: string) => {
+    setLiteral(false);
+    setShop({ query: q, limit: SHOP_PAGE_SIZE });
+    toTop();
+  };
+  const setFacets = (next: Facet[]) => {
+    setShop({ facets: next, limit: SHOP_PAGE_SIZE });
+    searchToUrl(useUiStore.getState().shop.query, next, true);
+    toTop();
+  };
+  const closeSearch = () => {
+    setOpen(false);
+    if (query) setQuery("");
+  };
+
+  // "search" once per settled search (Enter, a chip, or 1.5 s without typing), never twice for the same one.
+  const committed = useRef("");
+  const commitRef = useRef(() => {});
+  commitRef.current = () => {
+    if (!result || !searching) return;
+    const key = `${query.trim()}|${encodeFacets(facets)}|${facets.find((f) => f.kind === "like")?.value ?? ""}`;
+    if (key === committed.current) return;
+    committed.current = key;
+    track("search", {
+      q: query.trim().slice(0, 64),
+      terms: query.trim().split(/\s+/).filter(Boolean).length,
+      results: visible.length,
+      zero: !!result.relaxed,
+      corrected: result.corrected.length > 0 && !literal,
+      facets: facets.map((f) => f.kind),
+    });
+    trackEcommerce("view_item_list", { item_list_id: "shop_search", items: visible.slice(0, SHOP_PAGE_SIZE).map(({ shirt }, index) => itemOf(shirt, { index, color: tee ?? undefined })) });
+  };
+  useEffect(() => {
+    if (!searching || !result) return;
+    const t = setTimeout(() => commitRef.current(), 1500);
+    return () => clearTimeout(t);
+  }, [deferredQuery, facets, searching, result]);
+  useEffect(() => {
+    if (facets.length) commitRef.current();
+  }, [facets]);
+
+  // Opened at /shop/?q=…&f=…&like=… (a shared link, a reload, "More like this"): that search.
+  useEffect(() => {
+    if (!hydrated) return;
+    const s = searchFromUrl();
+    if (s.query || s.facets.length) {
+      setShop({ query: s.query, facets: s.facets });
+      setOpen(true);
+    }
+    // Back and forward bring the search they left back.
+    const onPop = () => {
+      const s = searchFromUrl();
+      setShop({ query: s.query, facets: s.facets, limit: SHOP_PAGE_SIZE });
+      setOpen(!!(s.query || s.facets.length));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [hydrated, setShop]);
+  useEffect(() => {
+    if (hydrated) searchToUrl(query, useUiStore.getState().shop.facets, false);
+  }, [hydrated, query]);
+
+  // "/" opens the search (desktop), unless a dialog is open or you're typing somewhere.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey || useUiStore.getState().dialogs > 0) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault();
+      warmSearch();
+      setOpen(true);
+      setFocusNonce((n) => n + 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [warmSearch]);
+
   const setFilter = (patch: Partial<Filters>) => {
     if ("tee" in patch) track("shop_filter", { filter: "tee", value: patch.tee ?? null });
     if (patch.cats) track("shop_filter", { filter: "category", value: patch.cats.join(".") || "all" });
@@ -207,16 +341,73 @@ export function ShopView() {
           }`}
           style={{ top: headerHidden ? 0 : "var(--header-h)" }}
         >
-          <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />
-          <CategoryFilter
-            cats={cats}
-            counts={counts.by}
-            total={counts.total}
-            results={visible.length}
-            onChange={(next) => setFilter({ cats: next })}
-            onWarm={(next) => warm({ tee, cats: next })}
-            onOpen={warmCategories}
-          />
+          {(() => {
+            const filter = (
+              <CategoryFilter
+                cats={cats}
+                counts={counts.by}
+                total={counts.total}
+                results={visible.length}
+                onChange={(next) => setFilter({ cats: next })}
+                onWarm={(next) => warm({ tee, cats: next })}
+                onOpen={warmCategories}
+              />
+            );
+            // Open (or a search in effect): the field takes the row, the filter icon stays at its end.
+            if ((open || searching) && runtime !== null)
+              return (
+                <SearchPanel
+                  runtime={runtime}
+                  query={query}
+                  facets={facets}
+                  result={result}
+                  count={visible.length}
+                  literal={literal}
+                  tasteKnown={complete}
+                  tee={tee}
+                  focusNonce={focusNonce}
+                  trailing={filter}
+                  onQuery={setQuery}
+                  onFacets={setFacets}
+                  onTee={(t) => setFilter({ tee: t })}
+                  onLiteral={() => setLiteral(true)}
+                  onCommit={() => {
+                    searchToUrl(query, facets, true);
+                    commitRef.current();
+                  }}
+                  onClose={closeSearch}
+                  onClear={() => {
+                    setShop({ query: "", facets: [], limit: SHOP_PAGE_SIZE });
+                    searchToUrl("", [], true);
+                    setFilter({ tee: null, cats: [] });
+                  }}
+                />
+              );
+            return (
+              <>
+                <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />
+                <div className="flex items-center gap-1">
+                  {runtime !== null && (
+                    <button
+                      type="button"
+                      aria-label="Search"
+                      title="Search (/)"
+                      onPointerDown={warmSearch}
+                      onFocus={warmSearch}
+                      onClick={() => {
+                        setOpen(true);
+                        setFocusNonce((n) => n + 1);
+                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <Icon name="search" className="h-5 w-5" />
+                    </button>
+                  )}
+                  {filter}
+                </div>
+              </>
+            );
+          })()}
         </div>
         <div className="h-2" />
         <SharedList />
@@ -227,7 +418,7 @@ export function ShopView() {
             card sizes, nothing moves). */}
         {visible.length > 0 ? (
             <>
-              <div key={sort} className="grid animate-[fade-in_0.25s_ease-out] grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6">
+              <div key={sort} className={`grid animate-[fade-in_0.25s_ease-out] transition-opacity duration-200 ${pending ? "opacity-40" : ""} grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6`}>
                 {visible.slice(0, limit).map(({ shirt, variations }, i) => (
                   <ProductCard
                     key={shirt.id}

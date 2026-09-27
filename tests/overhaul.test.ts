@@ -101,8 +101,9 @@ describe("Part 7: Our pick opens on the shop window", () => {
       expect(top).toEqual(win.map((s) => s.id));
     }
     const view = readFileSync(path.join(ROOT, "components/shop/ShopView.tsx"), "utf8");
-    // Before the taste test the order is "Our pick" (no sort to choose); a style filter leaves the window, a colour keeps it.
-    expect(view).toMatch(/sort === "popular" && !cats\.length \? filtered\.filter\(\(\{ shirt \}\) => shirt\.rank < SHOP_WINDOW\)/);
+    const list = readFileSync(path.join(ROOT, "components/shop/shopList.ts"), "utf8");
+    // Before the taste test the order is "Our pick" (no sort to choose); a category filter or a search leaves the window, a colour keeps it.
+    expect(list).toMatch(/sort === "popular" && !cats\.length && !result \? filtered\.filter\(\(\{ shirt \}\) => shirt\.rank < SHOP_WINDOW\)/);
     expect(view).toContain('const sort: ShopSort = complete ? "match" : "popular";');
   });
 

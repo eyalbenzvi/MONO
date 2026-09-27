@@ -30,6 +30,7 @@ export const ICONS = {
   repeat: "Repeat",
   "rotate-ccw": "RotateCcw",
   ruler: "Ruler",
+  search: "Search",
   send: "Send",
   "sliders-horizontal": "SlidersHorizontal",
   "share-2": "Share2",

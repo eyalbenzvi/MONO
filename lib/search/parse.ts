@@ -159,7 +159,8 @@ function tableSuggestions(index: SearchIndex, ws: string[], prefix: string | nul
   return out;
 }
 
-export function parseQuery(query: string, index: SearchIndex, catalog: readonly ShirtProduct[]): ParsedQuery {
+/** `literal`: the words as typed, no typo correction (the shopper asked for exactly that). */
+export function parseQuery(query: string, index: SearchIndex, catalog: readonly ShirtProduct[], { literal = false } = {}): ParsedQuery {
   const typing = query.length > 0 && !/\s$/.test(query);
   const ws = words(query);
   const soft: ParsedQuery["soft"] = {};
@@ -204,7 +205,7 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       for (const id of ids.slice(0, PREFIX_TERMS)) add(id, WEIGHT.prefix);
     }
     // (A query naming a design exactly isn't corrected: "mono-0123" isn't a typo for "moon".)
-    if (!alts.size && !named.length) {
+    if (!alts.size && !named.length && !literal) {
       // Against the stems and the words as written ("specixs" is one letter from "species", whose stem is "specy").
       const { list, term, df } = fuzzyList(index);
       // The closest few stand in (the most used is shown as the correction): "sveen" may be "seen" or "seven".

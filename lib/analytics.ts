@@ -35,6 +35,7 @@ export type AnalyticsEvent =
   | "shop_filter"
   | "shop_filter_open"
   | "shop_filter_close"
+  | "search"
   | "select_size"
   | "save"
   | "share"

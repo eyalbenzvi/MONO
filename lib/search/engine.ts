@@ -44,6 +44,8 @@ export interface SearchOptions {
   now?: number;
   /** The shop's current order: facets alone filter it, keeping that order. */
   order?: readonly { shirt: ShirtProduct }[];
+  /** The words exactly as typed (no typo correction). */
+  literal?: boolean;
   /** false: every scored design, best first (for checks on the family collapse). */
   collapse?: boolean;
 }
@@ -177,7 +179,7 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
 }
 
 export function search(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchOptions): SearchResult {
-  const parsed = parseQuery(opts.query, index, catalog);
+  const parsed = parseQuery(opts.query, index, catalog, { literal: opts.literal });
   let slots = parsed.slots;
   let facets = [...opts.facets];
   let out = run(index, catalog, opts, parsed, slots, facets);

@@ -2,6 +2,7 @@
 
 import type { UIEvent } from "react";
 import { create } from "zustand";
+import type { Facet } from "@/lib/search/facetCodec";
 import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
 
 export interface ToastState {
@@ -44,9 +45,12 @@ interface UiState {
   shop: {
     /** Tee colour: only designs sold on it, all shown on it; null = each on its original tee. */
     tee: BaseColor | null;
-    /** Style: drawn, archive (ink) or photo; null = all. */
+    /** Categories shown (none = all). */
     cats: ShirtCategory[];
     limit: number;
+    /** Search: the words typed, and the facets accepted (lib/search). */
+    query: string;
+    facets: Facet[];
   };
   /**
    * Where a product page was opened from, when "← Shop" may simply go back in
@@ -124,7 +128,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
-  shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE },
+  shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE, query: "", facets: [] },
   productOrigin: null,
   share: null,
   added: null,
