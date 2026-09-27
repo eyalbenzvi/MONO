@@ -102,7 +102,7 @@ FIFTH = [
   ("a broad Latino man in his thirties with a curly top and faded sides, a forearm sleeve tattoo", "black jeans", 1, "neon-lit city street at night, blurred"),
   ("a tall athletic Nordic man with a blond undercut", "navy chinos", 4, "lakeside wooden pier, calm water"),
   ("a solid Middle Eastern man with slicked-back dark hair and a trimmed beard", "charcoal trousers", 5, "sunny Mediterranean harbour, blurred"),
-  ("a big tall Pacific Islander man with long wavy hair tied low", "olive cargo pants", 1, "beach boardwalk at sunset"),
+  ("a big tall Pacific Islander man with long wavy hair tied back in a low bun", "olive cargo pants", 1, "beach boardwalk, soft evening light"),
   ("a well-built Black man with neat cornrows, tattoos on both forearms", "raw denim jeans", 4, "old stone bridge over a river"),
   ("a stocky red-haired man with a short neat beard", "brown corduroy trousers", 5, "forest path on an overcast day"),
   ("a fit South Asian man in his forties with a neat side part", "stone chinos", 1, "vineyard rows in soft evening light"),
@@ -111,7 +111,7 @@ FIFTH = [
   ("a solid mixed-race man with a short afro, a small tattoo on one forearm", "navy trousers", 1, "canal with bikes and old houses"),
   ("an athletic man in his twenties with long straight brown hair", "charcoal jeans", 4, "desert road, wide sky"),
   ("a broad grey-haired man in his sixties with a neat buzz cut", "olive chinos", 5, "botanical glasshouse, lush plants"),
-  ("a well-built man with short twisted locs, tattooed forearms", "black trousers", 1, "sports field at dusk, stadium lights"),
+  ("a well-built man with short twisted locs, tattooed forearms", "black trousers", 1, "sports field on a bright afternoon"),
   ("a sturdy man with a neat quiff and full beard", "mid-blue jeans", 4, "snowy mountain village, soft light"),
   ("a fit Latino man with wavy shoulder-length hair", "dark grey chinos", 5, "flower market, blurred stalls"),
   ("a broad-shouldered young man with a clean crew cut, a tattoo on his upper arm", "black jeans", 1, "rooftop garden, city behind"),
@@ -120,6 +120,7 @@ for k, (man, trousers, pose, setting) in enumerate(FIFTH):
     i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 4100 + i * 43, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
       "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
+    if k in (3, 12): jobs[-1]["seed"] += 500  # retried: loose hair over the back; a backlit, dark tee
     if k == 5:  # golden autumn light turned every try beige: another seed, the white said twice
         jobs[-1]["seed"] += 1000
         jobs[-1]["prompt"] = jobs[-1]["prompt"].replace("plain white", "bright pure white")
