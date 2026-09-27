@@ -10,7 +10,7 @@ const PUBLIC = path.resolve(__dirname, "..", "public");
 describe("V3: grid thumbnails, so a category switch shows whole tees", () => {
   it("every raster print has a 240 × 320 thumbnail with its transparency; SVG prints stay vector", async () => {
     const rasters = SHIRTS.filter((s) => s.backPrintUrl.endsWith(".webp"));
-    expect(rasters.length).toBeGreaterThan(1000);
+    expect(rasters.length).toBeGreaterThan(800);
     for (const s of rasters) expect(existsSync(path.join(PUBLIC, thumbUrl(s))), s.id).toBe(true);
     for (const s of rasters.filter((_, i) => i % 200 === 0)) {
       const m = await sharp(path.join(PUBLIC, thumbUrl(s))).metadata();

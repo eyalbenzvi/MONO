@@ -282,6 +282,8 @@ type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar"
   base: string;
   /** The generator family (or archive) it came from: titles, closing lines and retirement go by it. */
   source: SourceCategory;
+  /** An archive work's own record title (a numeral in its name that the record hasn't was added to tell repeats apart). */
+  recordTitle?: string;
 };
 
 const skuOf = (category: ShirtCategory, baseColor: BaseColor, n: number) => `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`;
@@ -535,6 +537,7 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       variant: `archive-${a.group}`,
       base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" && !tonal ? "its marks printed as one ink" : "printed as a one-ink halftone"}.`,
       subject: a.name,
+      recordTitle: a.title,
       style: STYLE.archive,
       quality,
       flags: [],
@@ -854,6 +857,7 @@ async function main() {
       extent: measures.get(s.id)?.assessment.extent ?? 1,
       flags: s.flags,
       maker: s.source === "archive" ? s.photo!.credit.split(",")[0] : undefined,
+      recordTitle: s.recordTitle,
     })),
   );
   for (const [id, why] of overhaul) retired.set(id, why);
@@ -898,7 +902,7 @@ async function main() {
     newPerCat.set(s.category, (newPerCat.get(s.category) ?? 0) + 1);
   }
   for (const { s, i } of thisWeek) if (!keep.has(i)) s.dropDate = LAST_WEEK;
-  const withFamily = shirts.map(({ base, source: _source, ...s }, i) => ({
+  const withFamily = shirts.map(({ base, source: _source, recordTitle: _r, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
     // `summary`: the design's own sentence (meta descriptions); `description`
@@ -985,11 +989,11 @@ function windowPins(): string[] {
  * credit for an archive work, plus how distinct it is from the catalogue's
  * average; weak prints go last. The first WINDOW are the shop window:
  * the pinned designs first, then at least one of every category and no
- * more than three of any, one per subject and per family, only prints in
+ * more than three of any, one per subject, family and drawn template, only prints in
  * the top 30% for quality, at least four archive works — and never two of
  * one category side by side.
  */
-interface Rankable extends Pick<Draft, "id" | "category" | "source" | "subject" | "quality" | "flags" | "features"> {
+interface Rankable extends Pick<Draft, "id" | "category" | "source" | "subject" | "quality" | "flags" | "features" | "medium" | "variant"> {
   family: string;
 }
 function editorialRanks(list: Rankable[], pins: string[]): number[] {
@@ -1004,13 +1008,17 @@ function editorialRanks(list: Rankable[], pins: string[]): number[] {
   const eligible = (i: number) => !weak(i) && list[i].quality >= top30;
   const win: number[] = [];
   const cats = new Map<string, number>();
-  const used = { subject: new Set<string>(), family: new Set<string>() };
-  const fits = (i: number) => !win.includes(i) && (cats.get(list[i].category) ?? 0) < 3 && !used.subject.has(list[i].subject.toLowerCase()) && !used.family.has(list[i].family);
+  const used = { subject: new Set<string>(), family: new Set<string>(), template: new Set<string>() };
+  // A drawn template (one generator's algorithm: seed heads, dot-matrix shapes) appears once; archive groups aren't templates.
+  const template = (i: number) => (list[i].medium === "drawn" ? list[i].variant : `${list[i].id}`);
+  const fits = (i: number) =>
+    !win.includes(i) && (cats.get(list[i].category) ?? 0) < 3 && !used.subject.has(list[i].subject.toLowerCase()) && !used.family.has(list[i].family) && !used.template.has(template(i));
   const add = (i: number) => {
     win.push(i);
     cats.set(list[i].category, (cats.get(list[i].category) ?? 0) + 1);
     used.subject.add(list[i].subject.toLowerCase());
     used.family.add(list[i].family);
+    used.template.add(template(i));
   };
   for (const id of pins) {
     const i = list.findIndex((s) => s.id === id);

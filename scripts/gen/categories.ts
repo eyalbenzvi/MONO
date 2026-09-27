@@ -7,7 +7,7 @@
 import type { ShirtCategory, SourceCategory } from "../../types/shirt";
 import type { ArchiveGroup } from "../archive/source";
 
-/** Archive groups in the shop's categories (an etched view of a building goes to Architecture: see displayCategory). */
+/** Archive groups in the shop's categories (an etched or ornament print of a building goes to Architecture: see displayCategory). */
 export const ARCHIVE_DISPLAY: Record<ArchiveGroup, ShirtCategory> = {
   "ink-painting": "brush",
   "ukiyo-e": "brush",
@@ -69,7 +69,7 @@ export function displayCategory(source: SourceCategory, variant: string, title =
       return "systems";
     case "archive": {
       const shown = ARCHIVE_DISPLAY[variant.replace(/^archive-/, "") as ArchiveGroup];
-      return shown === "etched" && BUILDING.test(title) ? "architecture" : shown;
+      return (shown === "etched" || shown === "pattern") && BUILDING.test(title) ? "architecture" : shown;
     }
   }
 }

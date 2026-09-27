@@ -52,7 +52,7 @@ describe("V4: why a design is 'for you' — every reason is real", () => {
   });
 
   it("a design you saved says so, and names no other", () => {
-    const likes = [3, 400, 1200];
+    const likes = [3, 400, 1200].map((k) => k % SHIRTS.length);
     const v = tasteFrom(likes, [60]);
     const liked = likes.map((i) => SHIRTS[i].id);
     const top = SHIRTS.map((s) => ({ s, why: whyMatch(v, s, [...liked, s.id]) })).find((x) => x.why);

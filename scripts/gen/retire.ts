@@ -109,6 +109,8 @@ export interface OverhaulInput extends RetireInput {
   flags: string[];
   /** An archive work's artist (or its museum when the record names none). */
   maker?: string;
+  /** An archive work's own record title. */
+  recordTitle?: string;
 }
 
 /** Whole variants taken out, with the reason (Part 1.1–1.6). */
@@ -133,8 +135,16 @@ export const PER_MAKER: Record<string, number> = { "Mary Vaux Walcott": 80, "Jam
 export const PER_GENUS = 3;
 /** An archive title that isn't the work's own: a numeral added to tell repeats apart, or a placeholder. */
 const PLACEHOLDER_TITLE = /^(botanical|flower) study\b|\buntitled\b|^[^(]*\)$/i;
-/** A repeat told apart by a numeral the generator added ("Title II"; see freeTitle). */
-const numbered = (s: OverhaulInput) => s.title.startsWith(`${s.subject} `) && /^(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/.test(s.title.slice(s.subject.length + 1));
+/**
+ * A repeat told apart by a numeral that isn't the work's own: added by the generator ("Title II"; see freeTitle) or
+ * by the archive tool naming records alike ("Sidewall XXIII" for a record titled "Sidewall"). An original "Plate IX" stays.
+ */
+const ROMAN_END = /\s(II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX|XXI|XXII|XXIII|XXIV|XXV)$/;
+const numbered = (s: OverhaulInput) => {
+  if (s.title.startsWith(`${s.subject} `) && /^(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/.test(s.title.slice(s.subject.length + 1))) return true;
+  const m = ROMAN_END.exec(s.title);
+  return !!m && s.recordTitle !== undefined && !new RegExp(`\\b${m[1]}\\b`).test(s.recordTitle);
+};
 /** The genus of a plate titled "Common Name (Genus species)". */
 export const genusOf = (title: string) => /\(([A-Z][a-z]+) [a-z]/.exec(title)?.[1];
 /** Archive crops that are a sliver of the print (Part 1.10). */

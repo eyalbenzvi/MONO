@@ -265,11 +265,14 @@ export function paceByVariant<T extends { shirt: ShirtProduct }>(list: T[], wind
  *   from a category not among the previous slots (a taste probe).
  * Rules relax in that order when nothing fits. Only the first `top` items
  * are diversified (the rest keep the variant pacing), so it stays cheap.
+ * Across categories, the first `window` cards show at least `minCategories`
+ * of them (Part 7): the lowest-placed cards of the most repeated category
+ * give way to the best of the missing ones.
  * `sameColor: false` skips the colour rule (all tees shown in one colour).
  */
 export function diversify<T extends { shirt: ShirtProduct }>(
   list: T[],
-  { top = 96, maxRun = 2, wildcardEvery = 8, variantWindow = 3, category = true, color = true } = {},
+  { top = 96, maxRun = 2, wildcardEvery = 8, variantWindow = 3, category = true, color = true, window = 24, minCategories = 6 } = {},
 ): (T & { wildcard?: boolean })[] {
   const pool = [...list];
   const out: (T & { wildcard?: boolean })[] = [];
@@ -300,6 +303,23 @@ export function diversify<T extends { shirt: ShirtProduct }>(
       if (i !== -1) break;
     }
     out.push(pool.splice(i === -1 ? 0 : i, 1)[0]);
+  }
+  // At least minCategories in the first window: swap the last card of the most repeated category for the best of a missing one.
+  if (category) {
+    for (;;) {
+      const head = out.slice(0, window);
+      const count = new Map<string, number>();
+      for (const x of head) count.set(x.shirt.category, (count.get(x.shirt.category) ?? 0) + 1);
+      if (count.size >= minCategories) break;
+      const k = pool.findIndex((x) => !count.has(x.shirt.category));
+      if (k === -1) break;
+      const most = [...count].sort((a, b) => b[1] - a[1])[0][0];
+      let at = -1;
+      for (let i = head.length - 1; i >= 0 && at === -1; i--) if (head[i].shirt.category === most && !head[i].wildcard) at = i;
+      if (at === -1) break;
+      const [gone] = out.splice(at, 1, pool.splice(k, 1)[0]);
+      pool.unshift(gone);
+    }
   }
   // Weak ones go back in by rank, below the diversified top.
   let rest = pool;

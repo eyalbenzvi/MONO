@@ -38,7 +38,8 @@ describe("U3: no longer the same designs for everyone, every day", () => {
       expect(top24(v, `${u}:1`).map((x) => x.shirt.id)).toEqual(b.map((x) => x.shirt.id));
     });
     expect(rotated.size).toBeGreaterThan(fixed.size * 1.1);
-    expect(relRotated).toBeGreaterThanOrEqual(relFixed * 0.95);
+    // (The first 24 now always show six categories — Part 7 — which costs a little of the favourites.)
+    expect(relRotated).toBeGreaterThanOrEqual(relFixed * 0.9);
     expect(fresh / (30 * 24)).toBeGreaterThan(0.5);
   });
 

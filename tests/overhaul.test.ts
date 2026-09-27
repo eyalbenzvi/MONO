@@ -83,6 +83,8 @@ describe("Part 7: Our pick opens on the shop window", () => {
     for (const c of ["specimens", "photographs", "brush"]) expect(cats.get(c), c).toBeGreaterThanOrEqual(1);
     expect(new Set(win.map((s) => s.subject.toLowerCase())).size).toBe(SHOP_WINDOW);
     expect(new Set(win.map((s) => s.family)).size).toBe(SHOP_WINDOW);
+    const drawn = win.filter((s) => s.medium === "drawn").map((s) => s.variant);
+    expect(new Set(drawn).size, "one per drawn template").toBe(drawn.length);
     const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
     for (const s of win) {
       expect(s.quality, s.id).toBeGreaterThanOrEqual(q[Math.floor(q.length * 0.7)]);
@@ -106,6 +108,23 @@ describe("Part 7: Our pick opens on the shop window", () => {
 
   it("no subject appears twice anywhere in the catalogue (so never twice in any 24)", () => {
     expect(new Set(FULL.map((s) => s.subject.toLowerCase())).size).toBe(FULL.length);
+  });
+});
+
+describe("Part 8: For you, simulated for three tastes", () => {
+  it("each sees at least six categories in the first 24, and no subject twice", async () => {
+    const { dedupeByFamily, diversify } = await import("@/lib/catalog");
+    const { updateUserVector } = await import("@/lib/recommendation");
+    const tastes: ((s: (typeof SHIRTS)[number]) => boolean)[] = [(s) => s.medium === "photo", (s) => s.category === "systems" || s.category === "pattern", (s) => ["etched", "brush", "specimens"].includes(s.category)];
+    for (const likes of tastes) {
+      let v = createInitialVector();
+      const strong = SHIRTS.filter((s) => !s.weak);
+      strong.filter(likes).slice(0, 8).forEach((s) => (v = updateUserVector(v, s.features, "like")));
+      strong.filter((s) => !likes(s)).slice(0, 6).forEach((s) => (v = updateUserVector(v, s.features, "dislike")));
+      const top = diversify(dedupeByFamily(rankShirts(v, SHIRTS, "match", { rotate: "day" })), { category: true, color: true, wildcardEvery: 8 }).slice(0, 24);
+      expect(new Set(top.map((x) => x.shirt.category)).size).toBeGreaterThanOrEqual(6);
+      expect(new Set(top.map((x) => byId.get(x.shirt.id)!.subject)).size).toBe(24);
+    }
   });
 });
 
