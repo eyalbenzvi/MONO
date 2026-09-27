@@ -106,13 +106,29 @@ describe("T3: the bag (cart store v4)", () => {
 });
 
 describe("T2: the tee worn — model photos", () => {
-  it("every photo exists, in both tee colours, with the same print box", async () => {
+  it("every photo exists, in both tee colours; a photo's twins share one print box, sized to the man", async () => {
     const { MODEL_PHOTOS, modelFor } = await import("@/lib/models");
     const { existsSync } = await import("node:fs");
     expect(MODEL_PHOTOS.length).toBeGreaterThanOrEqual(2);
     for (const m of MODEL_PHOTOS) expect(existsSync(`public/models/${m.id}.webp`), m.id).toBe(true);
     expect(new Set(MODEL_PHOTOS.map((m) => m.color))).toEqual(new Set(["white", "black"]));
-    expect(new Set(MODEL_PHOTOS.map((m) => m.box.join()))).toHaveProperty("size", 1);
+    // Each pose comes in both colours with the same box; a broader man has a bigger one (analyze.py print_box),
+    // always a centred 3:4 print on the upper back.
+    const byPose = new Map<string, string[]>();
+    for (const m of MODEL_PHOTOS) byPose.set(m.id.replace(/-(black|white)$/, ""), [...(byPose.get(m.id.replace(/-(black|white)$/, "")) ?? []), m.box.join()]);
+    for (const [pose, boxes] of byPose) {
+      expect(boxes, pose).toHaveLength(2);
+      expect(new Set(boxes).size, pose).toBe(1);
+    }
+    for (const { id, box } of MODEL_PHOTOS) {
+      const [x, y, w, h] = box;
+      expect(Math.abs(x + w / 2 - 0.5), id).toBeLessThan(0.005);
+      expect((w * 512) / (h * 704), id).toBeCloseTo(0.75, 2);
+      expect(w, id).toBeGreaterThan(0.24);
+      expect(w, id).toBeLessThan(0.32);
+      expect(y, id).toBeGreaterThan(0.3);
+      expect(y + h, id).toBeLessThan(0.75);
+    }
     // A design always gets a photo of the tee colour asked for, the same one each time.
     expect(modelFor(both, "black")!.color).toBe("black");
     expect(modelFor(both, "white")).toEqual(modelFor(both, "white"));
