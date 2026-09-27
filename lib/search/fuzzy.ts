@@ -4,8 +4,19 @@
  * words with no exact or prefix hit.
  */
 
-/** How many edits a word of this length may carry: none under 4 letters, 1 up to 7, 2 from 8. */
+/**
+ * How many edits a word of this length may carry: none under 5 letters (a 4-letter word only a swap of two
+ * neighbours: "brid"), 1 up to 7, 2 from 8. Short real words are too close to each other ("neon"/"noon").
+ */
 export const maxEdits = (len: number) => (len < 4 ? 0 : len < 8 ? 1 : 2);
+const swapOnly = (len: number) => len === 4;
+/** Two words of the same length that differ only by neighbours swapped once. */
+function isSwap(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let i = 0;
+  while (i < a.length && a[i] === b[i]) i++;
+  return i < a.length - 1 && a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);
+}
 
 // Rows reused across calls (words are short; no allocation per comparison).
 let rows = [new Int32Array(64), new Int32Array(64), new Int32Array(64)];
@@ -50,9 +61,10 @@ function lengths(vocab: readonly string[]) {
 /**
  * The closest words in `vocab` to `word` (lowest distance, then the most
  * used), or none when the word is too short or nothing is close enough.
+ * `typed`: the length the shopper typed, when `word` is its stem ("gatxs" → "gatx" is still a 5-letter word).
  */
-export function closest(word: string, vocab: readonly string[], df: readonly number[], limit = 3): { at: number; dist: number }[] {
-  const k = maxEdits(word.length);
+export function closest(word: string, vocab: readonly string[], df: readonly number[], limit = 3, typed = word.length): { at: number; dist: number }[] {
+  const k = maxEdits(typed);
   if (!k) return [];
   const found: { at: number; dist: number }[] = [];
   const buckets = lengths(vocab);
@@ -60,6 +72,12 @@ export function closest(word: string, vocab: readonly string[], df: readonly num
     for (const i of buckets[len] ?? []) {
       const v = vocab[i];
       if (v === word) continue;
+      if (swapOnly(typed)) {
+        if (isSwap(word, v)) found.push({ at: i, dist: 1 });
+        continue;
+      }
+      // Up to 5 letters, a typo keeps its first letter (else "bats" is "cats", "mars" is "cars").
+      if (typed <= 5 && v.charCodeAt(0) !== word.charCodeAt(0)) continue;
       // Cheap filter for one edit: the words still share a letter among their first two, in place or shifted by one.
       if (k === 1 && v.charCodeAt(0) !== word.charCodeAt(0) && v.charCodeAt(1) !== word.charCodeAt(1) && v.charCodeAt(0) !== word.charCodeAt(1) && v.charCodeAt(1) !== word.charCodeAt(0)) continue;
       const d = distance(word, v, k);

@@ -6,9 +6,10 @@
  */
 import { CATEGORY_LABELS, FEATURE_KEYS, type CatalogEntry } from "@/types/shirt";
 import { FIELDS, Q64, SEARCH_VERSION, VISUAL_KEYS, idsHash, type SearchIndexFile, type TableEntry } from "./format";
-import { EXTRA_TAGS, LOOK_TAGS, MEDIUM_LABELS, TAG_HIGH, TAG_LOW, UNTAGGED_KEYS, WIDE_ASPECT, hasVariantLabel, humanizeId, sourceOf, variantLabel } from "./labels";
+import { eraLabel } from "./facets";
+import { ARTIST_PREFIXES, ARTIST_SUFFIXES, LOOK_TAGS, MEDIUM_LABELS, TAG_HIGH, TAG_LOW, TAG_MAX_SHARE, UNTAGGED_KEYS, hasVariantLabel, humanizeId, sourceOf, variantLabel } from "./labels";
 import { LEXICON } from "./lexicon";
-import { STOPWORDS, clean, stem, terms } from "./normalize";
+import { STOPWORDS, clean, stem, terms, words } from "./normalize";
 
 /** Structured search metadata from the content pipeline (all optional; the builder falls back to parsing text). */
 export interface SearchMeta {
@@ -41,21 +42,51 @@ const nameLike = (s: string) => {
   return w.length >= 2 && w.length <= 6 && !/\d/.test(s) && w.every((x) => /^\p{Lu}/u.test(x) || PARTICLES.has(x));
 };
 
+/**
+ * The artist named in the summary: the last "by …" before a parenthesis (the first may be part of a title),
+ * without attribution prefixes ("follower of"), nationality or place suffixes ("Swiss", "Grand Rapids MI")
+ * and date scraps ("n.d.", "ca.") — lists of such words are data (lib/search/labels).
+ */
 export function artistOf(e: SearchEntry): string | undefined {
   if (e.search?.artist) return e.search.artist;
-  const m = / by ([^()]+?) \(/.exec(e.summary);
-  return m && nameLike(m[1]) ? m[1].trim() : undefined;
+  const m = /.* by ([^()]+?) \(/.exec(e.summary);
+  if (!m) return undefined;
+  let name = m[1].trim().replace(/\s+(n\.d\.|ca\.?)$/i, "");
+  for (const p of ARTIST_PREFIXES) if (name.toLowerCase().startsWith(`${p} `)) name = name.slice(p.length + 1);
+  const w = name.split(/\s+/);
+  // A US state at the end, and the city before it ("Frederick Stuart Church Grand Rapids MI").
+  if (w.length > 3 && /^[A-Z]{2}$/.test(w[w.length - 1])) {
+    w.pop();
+    w.splice(Math.max(3, w.length - 2));
+  }
+  while (w.length > 2 && ARTIST_SUFFIXES.includes(w[w.length - 1])) w.pop();
+  name = w.join(" ");
+  return nameLike(name) ? name : undefined;
 }
 
-/** The year a design was made (a range's middle); a century alone gives its middle. */
+/**
+ * The year a design was made, from the summary's last parenthesis: a year anywhere in it ("ca.1936",
+ * "after 1924", "Dated 1741"); a short range's middle ("1744–56"); a long one (a dynasty, a lifetime)
+ * says nothing about the print and gives no year; a century alone gives its middle.
+ */
 export function yearOf(e: SearchEntry): number | undefined {
   const y = e.search?.year;
   if (typeof y === "number") return y;
-  if (Array.isArray(y)) return Math.round((y[0] + y[1]) / 2);
-  const m = /\((?:ca\.? )?(\d{4})/.exec(e.summary);
-  if (m) return Number(m[1]);
-  const c = /\((?:early |late |mid-?)?(\d{1,2})(?:st|nd|rd|th)(?:[-–]\d{1,2}(?:st|nd|rd|th))? century\)/.exec(e.summary);
-  return c ? (Number(c[1]) - 1) * 100 + 50 : undefined;
+  if (Array.isArray(y)) return y[1] - y[0] > 50 ? undefined : Math.round((y[0] + y[1]) / 2);
+  const parens = [...e.summary.matchAll(/\(([^()]*)\)/g)].map((m) => m[1]);
+  for (const p of parens.reverse()) {
+    const r = /(\d{4})\s*[-–]\s*(\d{2,4})\b/.exec(p);
+    if (r) {
+      const a = Number(r[1]);
+      const b = r[2].length === 4 ? Number(r[2]) : Math.floor(a / 10 ** r[2].length) * 10 ** r[2].length + Number(r[2]);
+      if (b >= a) return b - a > 50 ? undefined : Math.round((a + b) / 2);
+    }
+    const one = /\b(1[0-9]{3})\b/.exec(p);
+    if (one) return Number(one[1]);
+    const c = /(\d{1,2})(?:st|nd|rd|th)\b[^)]*century/i.exec(p);
+    if (c) return (Number(c[1]) - 1) * 100 + 50;
+  }
+  return undefined;
 }
 
 export function scientificOf(e: SearchEntry): string | undefined {
@@ -106,7 +137,7 @@ export function buildSearchIndex(catalog: readonly SearchEntry[], visual: Readon
   const era = years.map((y) => (y === undefined ? -1 : Math.floor(y / 10)));
   // Era values: the centuries and decades that occur.
   const eraEntries = [
-    ...table(era.map((d) => (d < 0 ? null : ([`c${Math.floor(d / 10) + 1}`, `${Math.floor(d / 10) * 100}s`] as const)))).entries,
+    ...table(era.map((d) => (d < 0 ? null : ([`c${Math.floor(d / 10) + 1}`, eraLabel(`c${Math.floor(d / 10) + 1}`)] as const)))).entries,
     ...table(era.map((d) => (d < 0 ? null : ([`d${d * 10}`, `${d * 10}s`] as const)))).entries,
   ];
 
@@ -119,25 +150,46 @@ export function buildSearchIndex(catalog: readonly SearchEntry[], visual: Readon
     const all = catalog.map((_, i) => value(i, t.key));
     const mid = quantile(all, 0.5);
     const cut = quantile(all, t.side === "high" ? TAG_HIGH : TAG_LOW);
-    tags.push({ id: t.id, label: t.label, test: (i) => (t.side === "high" ? value(i, t.key) >= cut && value(i, t.key) > mid : value(i, t.key) <= cut && value(i, t.key) < mid) });
+    const inclusive = (i: number) => (t.side === "high" ? value(i, t.key) >= cut && value(i, t.key) > mid : value(i, t.key) <= cut && value(i, t.key) < mid);
+    // Many designs sharing the cut value would swell the tag: then only those strictly past it.
+    const strict = catalog.filter((_, i) => inclusive(i)).length > catalog.length * TAG_MAX_SHARE;
+    tags.push({ id: t.id, label: t.label, test: (i) => inclusive(i) && (!strict || (t.side === "high" ? value(i, t.key) > cut : value(i, t.key) < cut)) });
   }
-  const typo = catalog.map((e) => e.features.typography ?? 0);
-  const typoLow = quantile(typo, TAG_LOW);
-  tags.push({ id: "wide", label: EXTRA_TAGS[0].label, test: (i) => vis[i].aspect > WIDE_ASPECT });
-  tags.push({ id: "notext", label: EXTRA_TAGS[1].label, test: (i) => typo[i] <= typoLow && !catalog[i].search?.printedText });
   for (const k of FEATURE_KEYS) if (!LOOK_TAGS.some((t) => t.key === k) && !UNTAGGED_KEYS.includes(k)) warnings.push(`feature "${k}" has no look tag label`);
   const lookCounts = tags.map((t) => catalog.filter((_, i) => t.test(i)).length);
   const lookKept = tags.filter((_, j) => lookCounts[j] > 0);
   const look = catalog.map((_, i) => lookKept.reduce((m, t, b) => (t.test(i) ? m | (1 << b) : m), 0));
 
   // Text fields.
-  const fieldText = (e: SearchEntry, i: number): Record<(typeof FIELDS)[number], string> => ({
-    title: e.title,
-    subject: e.subject,
-    tags: [...(e.search?.tags ?? []), e.search?.printedText ?? "", variantLabel(e.variant), e.style, category.entries[category.col[i]].label, medium.entries[medium.col[i]].label].join(" "),
-    credit: [artists[i] ?? "", e.photo?.credit ?? "", sources[i]?.label ?? "", scientificOf(e) ?? ""].join(" "),
-    body: e.description,
-  });
+  // Boilerplate — a sentence (numbers masked) found in more than a tenth of descriptions ("printed as a one-ink
+  // halftone", "The print measures … cm") — says nothing about any one design: it isn't indexed.
+  const sentences = (t: string) => t.split(/(?<=[.!?])\s+/);
+  const mask = (x: string) => clean(x).replace(/\d+/g, "#");
+  const often = new Map<string, number>();
+  for (const e of catalog) for (const x of new Set(sentences(e.description).map(mask))) often.set(x, (often.get(x) ?? 0) + 1);
+  // Also the tail a summary shares with many ("…, printed as a one-ink halftone."): clauses after the last comma.
+  const tail = (x: string) => mask(x.split(",").slice(-1)[0]);
+  const tails = new Map<string, number>();
+  for (const e of catalog) for (const x of sentences(e.description)) tails.set(tail(x), (tails.get(tail(x)) ?? 0) + 1);
+  const boiler = (x: string) => (often.get(mask(x)) ?? 0) > catalog.length * 0.1;
+  const body = (d: string) =>
+    sentences(d)
+      .filter((x) => !boiler(x))
+      .map((x) => ((tails.get(tail(x)) ?? 0) > catalog.length * 0.1 && x.includes(",") ? x.slice(0, x.lastIndexOf(",")) : x))
+      .join(" ");
+  const fieldText = (e: SearchEntry, i: number): Record<(typeof FIELDS)[number], string> => {
+    const titleWords = new Set(terms(e.title));
+    return {
+      title: e.title,
+      // The subject's own words only (it often repeats the title, which would count twice).
+      subject: words(e.subject).filter((w) => !titleWords.has(stem(w))).join(" "),
+      // How it's made and what kind of design (the style — "Vintage" on most — and the source are facets, not words to match).
+      tags: [...(e.search?.tags ?? []), e.search?.printedText ?? "", variantLabel(e.variant), category.entries[category.col[i]].label, medium.entries[medium.col[i]].label].join(" "),
+      // Who made it (the artist, the photographer), not the institution ("…Air and Space Museum" isn't about space).
+      credit: [artists[i] ?? "", (e.photo?.credit ?? "").split(",").filter((seg) => !sourceOf(seg)).join(" "), scientificOf(e) ?? ""].join(" "),
+      body: body(e.description),
+    };
+  };
   const perField = FIELDS.map(() => new Map<string, Map<number, number>>());
   const lens = FIELDS.map(() => [] as number[]);
   const surface = new Map<string, Map<string, number>>();

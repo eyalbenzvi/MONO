@@ -29,7 +29,9 @@ export function subjectChips(index: SearchIndex, catalog: readonly ShirtProduct[
     for (const e of LEXICON) {
       if (!e.expand || e.facet) continue;
       const phrase = e.phrases[0];
-      const count = search(index, catalog, { query: `${phrase} `, facets: [] }).total;
+      const r = search(index, catalog, { query: `${phrase} `, facets: [] });
+      // A chip only for a subject the words really find: not a relaxed fallback, not most of the catalogue.
+      const count = !r.relaxed && r.mode === "text" && r.total <= 0.4 * catalog.length ? r.total : 0;
       if (count >= SUBJECT_MIN && !seen.has(phrase)) {
         seen.add(phrase);
         list.push({ label: phrase.charAt(0).toUpperCase() + phrase.slice(1), query: phrase, count });

@@ -13,7 +13,7 @@ import { LEXICON, type LexiconEntry } from "./lexicon";
 import { STOPWORDS, clean, stem, words } from "./normalize";
 
 /** How much each way of standing for a word counts (engine scores are multiplied by these). */
-export const WEIGHT = { exact: 1, prefix: 0.8, fuzzy1: 0.6, fuzzy2: 0.35, expand: 0.5 } as const;
+export const WEIGHT = { exact: 1, morph: 0.9, prefix: 0.8, fuzzy1: 0.6, fuzzy2: 0.35, expand: 0.5 } as const;
 /** Completions of a word still being typed, at most (the most used first). */
 const PREFIX_TERMS = 50;
 
@@ -25,6 +25,8 @@ export interface Alt {
 export interface Slot {
   word: string;
   alts: Alt[];
+  /** The term that anchors the word (its exact term, else its most used one): nothing standing in for it counts as rarer. */
+  anchor: number;
   /** Its rarest term's IDF (the relaxation drops the most common word first). */
   idf: number;
 }
@@ -42,6 +44,8 @@ export interface ParsedQuery {
   /** Words that could complete the one being typed (shown, most used first). */
   completions: string[];
   soft: Partial<Record<FeatureKey, 1 | -1>>;
+  /** Facets the words name ("on black", "this week", "1880s"): a gentle lift for designs that have them, never a filter. */
+  hints: Facet[];
   corrected: { from: string; to: string }[];
   /** Catalog positions the query names exactly (an id, SKU or number). */
   exact: number[];
@@ -53,7 +57,8 @@ const PHRASES = (() => {
   const m = new Map<string, Phrase[]>();
   for (const entry of LEXICON)
     for (const p of entry.phrases) {
-      const tokens = words(p);
+      // Stemmed, like the query's words ("ships" meets "ship").
+      const tokens = words(p).map(stem);
       if (!tokens.length) continue;
       m.set(tokens[0], [...(m.get(tokens[0]) ?? []), { tokens, entry }]);
     }
@@ -112,51 +117,69 @@ function exactOf(q: string, catalog: readonly ShirtProduct[]): number[] {
   return [];
 }
 
-/** The lexicon phrase starting at word i (exact words; a single long word may carry a typo), if any. */
-function phraseAt(ws: string[], i: number, typing: boolean, known: (w: string) => boolean): { phrase: Phrase; len: number } | null {
-  const tryList = (first: string) => {
-    for (const phrase of PHRASES.get(first) ?? []) {
-      const t = phrase.tokens;
-      if (i + t.length > ws.length) continue;
-      const ok = t.every((tok, k) => tok === ws[i + k] || (k === t.length - 1 && k > 0 && typing && i + k === ws.length - 1 && ws[i + k].length >= 2 && tok.startsWith(ws[i + k])));
-      if (ok) return { phrase, len: t.length };
-    }
-    return null;
-  };
-  const exact = tryList(ws[i]);
-  if (exact) return exact;
+/** The lexicon phrase starting at word i (stems compared; a long unknown word may carry a typo), if any. */
+function phraseAt(ws: string[], i: number, typing: boolean, known: (w: string) => boolean): { phrase: Phrase; len: number; typo?: boolean } | null {
+  const st = ws.map(stem);
+  for (const phrase of PHRASES.get(st[i]) ?? []) {
+    const t = phrase.tokens;
+    if (i + t.length > ws.length) continue;
+    const ok = t.every((tok, k) => tok === st[i + k] || (k === t.length - 1 && k > 0 && typing && i + k === ws.length - 1 && ws[i + k].length >= 2 && tok.startsWith(ws[i + k])));
+    if (ok) return { phrase, len: t.length };
+  }
   const w = ws[i];
-  // "photgraph" → the Photograph chip; "photog" (still typing) too.
+  // "photog" (still typing) → the Photograph chip.
   if (typing && i === ws.length - 1 && w.length >= 3) {
     const hit = SINGLE_WORDS.find((p) => p.length > w.length && p.startsWith(w) && PHRASES.get(p)!.some((x) => x.tokens.length === 1 && x.entry.facet));
     if (hit) return { phrase: PHRASES.get(hit)!.find((x) => x.tokens.length === 1)!, len: 1 };
   }
-  // A word the catalog knows as it is isn't a typo for a lexicon word.
-  const k = known(w) ? 0 : maxEdits(w.length);
+  // A typo for a lexicon word ("photgraph"): only a long word the catalog doesn't know ("bats" isn't "cats").
+  const k = known(w) || w.length < 6 ? 0 : maxEdits(w.length);
   if (k) {
-    const near = closest(w, SINGLE_WORDS, SINGLE_WORDS.map(() => 0), 1)[0];
+    const near = closest(st[i], SINGLE_WORDS, SINGLE_WORDS.map(() => 0), 1)[0];
     if (near) {
       const phrase = PHRASES.get(SINGLE_WORDS[near.at])!.find((x) => x.tokens.length === 1);
-      if (phrase) return { phrase, len: 1 };
+      if (phrase) return { phrase, len: 1, typo: true };
     }
   }
   return null;
 }
 
-/** Facets whose own name the query mentions: an artist, a pattern, a source… (from the index tables, never a fixed list). */
+const PARTICLES = new Set(["de", "van", "von", "da", "di", "del", "della", "der", "la", "le", "du", "y", "ter", "the"]);
+/** Suggestions from the index tables, at most this many (the largest first). */
+const TABLE_SUGGESTIONS = 3;
+
+/**
+ * Facets whose own name the query mentions: an artist (by surname), an era,
+ * a source… (from the index tables, never a fixed list). A word shared by
+ * many labels ("museum", "john") or common in the catalog names nothing.
+ * Looks come from the lexicon only ("text" must not offer "No text").
+ */
 function tableSuggestions(index: SearchIndex, ws: string[], prefix: string | null): Suggestion[] {
-  const said = new Set(ws.filter((w) => w.length >= 4 && !STOPWORDS.has(w)));
-  const out: Suggestion[] = [];
+  const said = new Set(ws.filter((w) => w.length >= 4 && !STOPWORDS.has(w)).map(stem));
+  const common = (t: string) => (index.file.df[index.termId.get(stem(t)) ?? -1] ?? 0) > index.n * 0.2;
+  const out: (Suggestion & { count: number })[] = [];
   for (const kind of TABLE_KINDS) {
-    for (const e of index.file.tables[kind]) {
-      if (!e.count) continue;
+    if (kind === "look") continue;
+    const entries = index.file.tables[kind].filter((e) => e.count > 0);
+    const tokensOf = (label: string) => words(label).filter((t) => !STOPWORDS.has(t) && !PARTICLES.has(t));
+    const uses = new Map<string, number>();
+    for (const e of entries) for (const t of new Set(tokensOf(kind === "era" ? eraLabel(e.id) : e.label))) uses.set(t, (uses.get(t) ?? 0) + 1);
+    for (const e of entries) {
       const label = kind === "era" ? eraLabel(e.id) : e.label;
-      const tokens = words(label).filter((t) => !STOPWORDS.has(t));
-      const hit = tokens.some((t) => said.has(t) || (prefix !== null && prefix.length >= 3 && t.length > prefix.length && t.startsWith(prefix)));
-      if (hit) out.push({ facet: { kind, value: e.id }, label, kind: KIND_LABELS[kind] });
+      const all = tokensOf(label);
+      // An artist by surname (or two of their names); anything else by a telling word of its label.
+      const telling = (kind === "artist" ? all.slice(-1) : all).filter((t) => (uses.get(t) ?? 0) <= 2 && !common(t));
+      const two = kind === "artist" && all.filter((t) => said.has(stem(t))).length >= 2;
+      const typed = kind === "artist" && prefix !== null && prefix.length >= 4 && telling.some((t) => t.length > prefix.length && t.startsWith(prefix));
+      if (two || typed || telling.some((t) => said.has(stem(t)))) out.push({ facet: { kind, value: e.id }, label, kind: KIND_LABELS[kind], count: e.count });
     }
   }
-  return out;
+  const seen = new Set<string>();
+  return out
+    .sort((a, b) => b.count - a.count)
+    .filter((s) => !seen.has(s.label.toLowerCase()) && seen.add(s.label.toLowerCase()))
+    .slice(0, TABLE_SUGGESTIONS)
+    .map(({ count: _count, ...s }) => s);
 }
 
 /** `literal`: the words as typed, no typo correction (the shopper asked for exactly that). */
@@ -165,8 +188,13 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
   const ws = words(query);
   const soft: ParsedQuery["soft"] = {};
   const suggestions: Suggestion[] = [];
+  const hints: Facet[] = [];
   const expansions = new Map<number, string[]>();
-  // Lexicon phrases, longest first; their words still search as text.
+  // Words a facet phrase uses up ("on black", "this week", "no text"): they're the facet, not text to find.
+  const consumed = new Set<number>();
+  // Words read as a lexicon word with a typo ("mountian" → "mountain"): said back, and searched as that word.
+  const typos = new Map<number, string>();
+  // Lexicon phrases, longest first; a single subject word still searches as text.
   for (let i = 0; i < ws.length; ) {
     const hit = phraseAt(ws, i, typing, (w) => index.termId.has(stem(w)));
     if (!hit) {
@@ -174,12 +202,17 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       continue;
     }
     const { entry } = hit.phrase;
-    if (entry.facet) suggestions.push({ facet: entry.facet, label: facetLabel(index, entry.facet), kind: KIND_LABELS[entry.facet.kind] });
+    if (hit.typo) typos.set(i, entry.phrases.find((p) => words(p).map(stem).join(" ") === hit.phrase.tokens[0]) ?? hit.phrase.tokens[0]);
+    if (entry.facet) {
+      suggestions.push({ facet: entry.facet, label: facetLabel(index, entry.facet), kind: KIND_LABELS[entry.facet.kind] });
+      hints.push(entry.facet);
+      if (["tee", "new", "era"].includes(entry.facet.kind) || hit.len > 1) for (let k = i; k < i + hit.len; k++) consumed.add(k);
+    }
     if (entry.soft) Object.assign(soft, entry.soft);
     if (entry.expand) expansions.set(i, [...(expansions.get(i) ?? []), ...entry.expand]);
     // Every other entry for the same phrase counts too (a word can be a look and a leaning).
     for (const other of LEXICON)
-      if (other !== entry && other.phrases.some((p) => words(p).join(" ") === hit.phrase.tokens.join(" "))) {
+      if (other !== entry && other.phrases.some((p) => words(p).map(stem).join(" ") === hit.phrase.tokens.join(" "))) {
         if (other.facet && !suggestions.some((s) => s.facet.kind === other.facet!.kind && s.facet.value === other.facet!.value))
           suggestions.push({ facet: other.facet, label: facetLabel(index, other.facet), kind: KIND_LABELS[other.facet.kind] });
         if (other.soft) Object.assign(soft, other.soft);
@@ -193,32 +226,50 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
   const corrected: ParsedQuery["corrected"] = [];
   const slots: Slot[] = [];
   ws.forEach((w, i) => {
-    if (STOPWORDS.has(w)) return;
+    if (STOPWORDS.has(w) || consumed.has(i)) return;
     const t = stem(w);
     const alts = new Map<number, number>();
     const add = (term: number, weight: number) => alts.set(term, Math.max(alts.get(term) ?? 0, weight));
     const exact = index.termId.get(t);
     if (exact !== undefined) add(exact, WEIGHT.exact);
+    const fixed = typos.get(i);
+    if (fixed !== undefined) {
+      const id = index.termId.get(stem(fixed));
+      if (id !== undefined) add(id, WEIGHT.fuzzy1);
+      corrected.push({ from: w, to: id !== undefined ? shownOf(index, id) : fixed });
+    }
     if (w === prefix) {
       const ids = withPrefix(index, w);
       ids.sort((a, b) => index.file.df[b] - index.file.df[a]);
       for (const id of ids.slice(0, PREFIX_TERMS)) add(id, WEIGHT.prefix);
     }
-    // (A query naming a design exactly isn't corrected: "mono-0123" isn't a typo for "moon".)
-    if (!alts.size && !named.length && !literal) {
-      // Against the stems and the words as written ("specixs" is one letter from "species", whose stem is "specy").
-      const { list, term, df } = fuzzyList(index);
-      // The closest few stand in (the most used is shown as the correction): "sveen" may be "seen" or "seven".
-      const near = [...closest(t, list, df), ...closest(w, list, df)].sort((a, b) => a.dist - b.dist || df[b.at] - df[a.at]);
-      for (const x of near.slice(0, 3)) add(term[x.at], x.dist === 1 ? WEIGHT.fuzzy1 : WEIGHT.fuzzy2);
-      if (near.length) corrected.push({ from: w, to: shownOf(index, term[near[0].at]) });
-    }
     for (const x of expansions.get(i) ?? []) {
       const id = index.termId.get(stem(clean(x)));
       if (id !== undefined) add(id, WEIGHT.expand);
     }
+    // Another form of the word ("engrave" → "engraving"s, "tree" → "trees").
+    if (!alts.size)
+      for (const f of [`${w}s`, `${w.replace(/e$/, "")}ing`, `${w}ed`, `${w}es`]) {
+        const id = index.termId.get(stem(f));
+        if (id !== undefined) add(id, WEIGHT.morph);
+      }
+    // Typos last: never for a word the lexicon already resolved, a number, or a query naming a design ("mono-0123" isn't "moon").
+    if (!alts.size && !named.length && !literal && !/\d/.test(w)) {
+      // Against the stems and the words as written ("specixs" is one letter from "species", whose stem is "specy").
+      const { list, term, df } = fuzzyList(index);
+      // The closest few stand in (the most used is shown as the correction): "sveen" may be "seen" or "seven".
+      // And the word without a final "e" ("engnie" is a swap from "engin", engine's stem).
+      const bare = w.length > 4 && w.endsWith("e") ? [w.slice(0, -1)] : [];
+      const near = [t, w, ...bare]
+        .flatMap((x) => closest(x, list, df, 3, w.length))
+        .sort((a, b) => a.dist - b.dist || df[b.at] - df[a.at])
+        .filter((x, k, all) => all.findIndex((y) => term[y.at] === term[x.at]) === k);
+      for (const x of near.slice(0, 3)) add(term[x.at], x.dist === 1 ? WEIGHT.fuzzy1 : WEIGHT.fuzzy2);
+      if (near.length) corrected.push({ from: w, to: shownOf(index, term[near[0].at]) });
+    }
     const list = [...alts].map(([term, weight]) => ({ term, w: weight }));
-    slots.push({ word: w, alts: list, idf: list.reduce((m, a) => Math.max(m, idfOf(index, a.term)), 0) });
+    const anchor = exact ?? list.reduce((best, a) => (best === -1 || index.file.df[a.term] > index.file.df[best] ? a.term : best), -1);
+    slots.push({ word: w, alts: list, anchor, idf: list.reduce((m, a) => Math.max(m, idfOf(index, a.term)), 0) });
   });
 
   for (const s of tableSuggestions(index, ws, prefix)) if (!suggestions.some((x) => x.facet.kind === s.facet.kind && x.facet.value === s.facet.value)) suggestions.push(s);
@@ -230,7 +281,7 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
           .slice(0, 3)
           .map((id) => shownOf(index, id))
       : [];
-  return { slots, prefix, suggestions, completions, soft, corrected, exact: named };
+  return { slots, prefix, suggestions, completions, soft, hints, corrected, exact: named };
 }
 
 /** A facet's name as the shopper reads it. */

@@ -10,15 +10,11 @@ import { clean } from "./normalize";
 export const VARIANT_LABELS: Record<string, string> = {
   "archive-ukiyo-e": "Ukiyo-e",
   "archive-old-master": "Old master",
-  "archive-natural-history": "Natural history",
   "photo-flight-object": "Aircraft",
-  "photo-machines-object": "Machines",
   "photo-wildlife-object": "Wildlife",
   "sky-chart": "Star chart",
   "sky-figure": "Constellation",
   "sky-night": "Night sky",
-  "type-data": "Typeset data",
-  "terminal-data": "Terminal data",
   "moon-year": "Moon phases",
   "planets-date": "Planets",
   "orbit-halley": "Halley's orbit",
@@ -28,6 +24,38 @@ export const VARIANT_LABELS: Record<string, string> = {
   "logic-gates": "Logic gates",
   "brick-bond": "Brick bond",
   "golden-spiral": "Golden spiral",
+  "archive-etching": "Art print",
+  "archive-gallery-print": "Etching",
+  "archive-patent": "Patent model",
+  "archive-botanical": "Botanical study",
+  "archive-natural-history": "Natural history plate",
+  "archive-stencil": "Katagami stencil",
+  "photo-machines-object": "Engines & instruments",
+  "type-data": "Reference table",
+  "terminal-data": "Terminal & punch card",
+  "ascii-scene": "ASCII scene",
+  "ascii-shade": "ASCII solid",
+  "lsystem-weed": "L-system weed",
+  "lsystem-bush": "L-system bush",
+  "lsystem-stem": "L-system stem",
+  "lsystem-sprig": "L-system sprig",
+  "lsystem-fern": "L-system fern",
+  matrix: "Dot matrix",
+  daylight: "Daylight hours",
+  orders: "Classical orders",
+  radial: "Halftone burst",
+  gradient: "Halftone gradient",
+  interference: "Moiré",
+  contours: "Topographic contours",
+  tiling: "Truchet tiling",
+  monoform: "Primary form",
+  poster: "Slogan poster",
+  lorenz: "Lorenz attractor",
+  rossler: "Rössler attractor",
+  platonic: "Platonic solids",
+  truss: "Bridge truss",
+  dial: "Instrument dial",
+  schematic: "Circuit schematic",
 };
 
 /** Id parts that only say where a design came from, dropped when humanizing. */
@@ -83,11 +111,10 @@ export const LOOK_TAGS: { id: string; label: string; key: string; side: "high" |
   { id: "bold", label: "Bold", key: "contrast", side: "high" },
   { id: "dense", label: "Dense", key: "density", side: "high" },
   { id: "airy", label: "Airy", key: "density", side: "low" },
-  { id: "line", label: "Line", key: "line_art", side: "high" },
-  { id: "halftone", label: "Halftone", key: "halftone_raster", side: "high" },
+  { id: "line", label: "Line art", key: "line_art", side: "high" },
+  { id: "halftone", label: "Halftone dots", key: "halftone_raster", side: "high" },
   { id: "geometric", label: "Geometric", key: "geometric", side: "high" },
-  { id: "figurative", label: "Figurative", key: "figurative", side: "high" },
-  { id: "witty", label: "Witty", key: "wit", side: "high" },
+  { id: "figurative", label: "Figures", key: "figurative", side: "high" },
   { id: "retro", label: "Retro", key: "retro", side: "high" },
   { id: "nature", label: "Nature", key: "nature", side: "high" },
   { id: "symmetric", label: "Symmetric", key: "symmetry", side: "high" },
@@ -95,18 +122,23 @@ export const LOOK_TAGS: { id: string; label: string; key: string; side: "high" |
   { id: "simple", label: "Simple", key: "detail", side: "low" },
   { id: "small", label: "Small print", key: "extent", side: "low" },
   { id: "full", label: "Full print", key: "extent", side: "high" },
+  { id: "wide", label: "Wide format", key: "aspect", side: "high" },
 ];
-/** Two tags that aren't a percentile: a wide print, and one with no lettering. */
-export const WIDE_ASPECT = 1.15;
-export const EXTRA_TAGS = [
-  { id: "wide", label: "Wide" },
-  { id: "notext", label: "No text" },
-];
-/** Feature keys that deliberately have no look tag (covered by a category or medium, or too vague to name). */
-export const UNTAGGED_KEYS = ["typography", "architectural", "abstract", "dark_industrial", "pictorial", "classic", "photographic"];
+/**
+ * Feature keys that deliberately have no look tag: covered by a category or medium, too vague to name, or
+ * useless as a filter ("wit" held a handful; "no text" — low typography — held most of the catalogue).
+ */
+export const UNTAGGED_KEYS = ["typography", "architectural", "abstract", "dark_industrial", "pictorial", "classic", "photographic", "wit"];
+/** A tag's share of the catalogue past which ties at its cut are left out (many designs share a value). */
+export const TAG_MAX_SHARE = 0.25;
 /** Percentiles for a tag's high and low end. */
 export const TAG_HIGH = 0.85;
 export const TAG_LOW = 0.15;
 
 export const MEDIUM_LABELS: Record<string, string> = { drawn: "Drawn", ink: "Archive print", photo: "Photograph" };
 export const TEE_LABELS: Record<string, string> = { black: "Black tee", white: "White tee" };
+
+/** Words that ride along after an artist's name in museum records (nationality). */
+export const ARTIST_SUFFIXES = ["Scottish", "Swiss", "Bohemian", "Flemish", "French", "German", "Dutch", "Italian", "English", "American", "Japanese", "Chinese", "British", "Austrian", "Spanish"];
+/** Attributions before a name ("follower of …"): the name after them is the artist. */
+export const ARTIST_PREFIXES = ["follower of", "style of", "signature of", "inscription and seals of", "school of", "workshop of", "circle of", "attributed to", "after"];

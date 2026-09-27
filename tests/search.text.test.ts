@@ -28,7 +28,7 @@ describe("search: normalizing text (shared by the index and the query)", () => {
   });
 
   it("drops stopwords from terms, but keeps them for phrases like \"on black\"", () => {
-    expect(terms("a tee with the wave on it")).toEqual(["wave", "it"]);
+    expect(terms("a tee with the wave on it")).toEqual(["wave"]);
     expect(words("on black")).toEqual(["on", "black"]);
     const { index } = realIndex();
     const q = parseQuery("wave on black ", index, SHIRTS);

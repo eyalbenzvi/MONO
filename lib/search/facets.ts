@@ -19,7 +19,7 @@ export const KIND_LABELS: Record<FacetKind, string> = {
   category: "category",
   medium: "made",
   style: "style",
-  variant: "pattern",
+  variant: "series",
   source: "source",
   era: "era",
   artist: "artist",
@@ -33,7 +33,9 @@ export const KIND_LABELS: Record<FacetKind, string> = {
 
 /* Era values: "c19" a century (the 1800s), "d1880" a decade ------------- */
 
-export const eraLabel = (value: string) => (value.startsWith("c") ? `${(Number(value.slice(1)) - 1) * 100}s` : `${value.slice(1)}s`);
+const ORDINAL = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+/** "19th century" (a century), "1880s" (a decade) — never two chips reading "1800s". */
+export const eraLabel = (value: string) => (value.startsWith("c") ? `${ORDINAL(Number(value.slice(1)))} century` : `${value.slice(1)}s`);
 /** Whether a design's decade (year / 10) falls in an era value. */
 function inEra(decade: number, value: string) {
   if (decade < 0) return false;

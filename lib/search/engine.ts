@@ -17,8 +17,10 @@ import { parseQuery, type ParsedQuery, type Slot, type Suggestion } from "./pars
 export const FIELD_WEIGHTS = [3, 3, 2, 1.5, 1];
 export const K1 = 1.2;
 export const B = 0.75;
-/** A design that matches every word gets this much more. */
-export const ALL_WORDS_BONUS = 0.15;
+/** Designs whose score is within this much of each other may be reordered to vary the algorithm (never across a bigger gap). */
+export const PACE_BAND = 0.15;
+/** A design that has a facet the words name ("on black", "1880s") rises this much (a lift, not a filter). */
+export const W_HINT = 0.2;
 /** The query is the design's whole title (or subject): it leads. */
 export const W_TITLE = 1;
 
@@ -89,7 +91,9 @@ function textScores(index: SearchIndex, slots: Slot[]): { score: Float64Array; m
           tfw[d] += (FIELD_WEIGHTS[f] * tf[k]) / (1 - B + (B * len[d]) / avg);
         }
       });
-      const idf = Math.log(1 + (n - index.file.df[term] + 0.5) / (index.file.df[term] + 0.5));
+      // A stand-in (completion, expansion, typo) never counts as rarer than the word's own anchor term.
+      const idfOf = (t: number) => Math.log(1 + (n - index.file.df[t] + 0.5) / (index.file.df[t] + 0.5));
+      const idf = w === 1 || slot.anchor < 0 ? idfOf(term) : Math.min(idfOf(term), idfOf(slot.anchor));
       for (const d of touched) {
         const s = w * idf * ((tfw[d] * (K1 + 1)) / (tfw[d] + K1));
         if (s > best[d]) best[d] = s;
@@ -128,8 +132,10 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
   const sim = from !== -1 ? likeScores(index, catalog, from) : null;
   const words = slots.filter((s) => s.alts.length);
 
-  // Facets alone: the shop's own order, narrowed.
-  if (!words.length && !sim && !parsed.exact.length) {
+  const softKeys = Object.entries(parsed.soft) as [keyof ShirtProduct["features"], 1 | -1][];
+  const hints = parsed.hints.map((f) => facetFilter({ index, catalog, now: opts.now }, [f]));
+  // Facets alone: the shop's own order, narrowed. (Words that only lean or name a facet — "minimal", "victorian" — rank instead.)
+  if (!words.length && !sim && !parsed.exact.length && !softKeys.length && !hints.length) {
     const order = opts.order ?? editorial(catalog);
     const at = new Map(catalog.map((s, i) => [s, i]));
     return { mode: "filter", hits: order.filter((x) => pass(at.get(x.shirt) ?? -1)).map((x) => ({ shirt: x.shirt, score: 0, variations: 0 })) };
@@ -140,7 +146,6 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
   let max = 0;
   for (let i = 0; i < n; i++) if (pass(i) && text[i] > max) max = text[i];
   const personal = opts.tasteKnown && opts.vector ? makeScorer(opts.vector) : null;
-  const softKeys = Object.entries(parsed.soft) as [keyof ShirtProduct["features"], 1 | -1][];
   const exact = new Set(parsed.exact);
   const said = slots.map((x) => stem(x.word)).join(" ");
   const titles = titleKey(catalog);
@@ -156,11 +161,14 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
     if (sim && !words.length && s.family === catalog[from].family) continue;
     const isTitle = !!said && titles[i] === said;
     if (isTitle) titled.add(s);
-    let rel = words.length ? (text[i] / max) * (matched[i] === words.length ? 1 + ALL_WORDS_BONUS : 1) + (isTitle ? W_TITLE : 0) : 0;
+    // Relevance scaled by the share of words matched: a design with every word beats one rare word alone.
+    let rel = words.length ? (text[i] / max) * (matched[i] / words.length) + (isTitle ? W_TITLE : 0) : 0;
     if (sim) rel = words.length ? rel + W_LIKE * sim[i] : sim[i];
     const soft = softKeys.length ? softKeys.reduce((a, [k, dir]) => a + (dir === 1 ? s.features[k] : 1 - s.features[k]), 0) / softKeys.length : 0;
+    const hinted = hints.reduce((a, h) => a + (h(i) ? W_HINT : 0), 0);
     const score =
       W_TEXT * rel +
+      hinted +
       W_SOFT * soft +
       W_PERSONAL * (personal ? personal(s.features).score / 100 : 0) +
       W_EDITORIAL * (1 - s.rank / n) +
@@ -175,25 +183,30 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
   // What the query names exactly (an id, a whole title) leads, unpaced; the rest one per family, paced.
   const lead = dedupeByFamily([...named, ...scored.filter((x) => titled.has(x.shirt))]);
   const ledBy = new Set(lead.map((x) => x.shirt.family));
-  return { mode: "text", hits: [...lead, ...paceByVariant(dedupeByFamily(scored.filter((x) => !ledBy.has(x.shirt.family))))] };
+  return { mode: "text", hits: [...lead, ...paceInBands(dedupeByFamily(scored.filter((x) => !ledBy.has(x.shirt.family))))] };
+}
+
+/** Variant pacing within runs of near-equal scores only, so variety never puts a weak match above a strong one. */
+function paceInBands<T extends { shirt: ShirtProduct; score: number }>(list: T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < list.length; ) {
+    let j = i + 1;
+    while (j < list.length && list[i].score - list[j].score <= PACE_BAND) j++;
+    out.push(...paceByVariant(list.slice(i, j)));
+    i = j;
+  }
+  return out;
 }
 
 export function search(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchOptions): SearchResult {
   const parsed = parseQuery(opts.query, index, catalog, { literal: opts.literal });
-  let slots = parsed.slots;
-  let facets = [...opts.facets];
+  const slots = parsed.slots;
+  const facets = [...opts.facets];
   let out = run(index, catalog, opts, parsed, slots, facets);
-  // Never a dead end: drop the most common word, then the latest facet, until something matches.
-  // Words the catalog doesn't know at all were dropped already (the grid shows the closest instead).
-  const droppedTerms: string[] = slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
+  // Never a dead end. Words are ORed (a design needs one), so dropping a known word can't help — only facets
+  // go, latest first. Words the catalog doesn't know at all are reported (nothing stood in for them).
+  const droppedTerms = slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
   const droppedFacets: Facet[] = [];
-  while (!out.hits.length && slots.filter((s) => s.alts.length).length > 1) {
-    const known = slots.filter((s) => s.alts.length);
-    const drop = known.reduce((a, b) => (b.idf < a.idf ? b : a));
-    droppedTerms.push(drop.word);
-    slots = slots.filter((s) => s !== drop);
-    out = run(index, catalog, opts, parsed, slots, facets);
-  }
   while (!out.hits.length && facets.length) {
     droppedFacets.push(facets.pop()!);
     out = run(index, catalog, opts, parsed, slots, facets);

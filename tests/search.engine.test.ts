@@ -188,3 +188,49 @@ describe("search: the index file", () => {
     expect(p95, `p95 ${p95.toFixed(2)} ms`).toBeLessThanOrEqual(8);
   });
 });
+
+describe("search: expert review (algorithm and content)", () => {
+  const ids = (q: string) => run(q).results.map((h) => h.shirt.id);
+
+  it("a word and its other forms meet: engraving = engravings, the stem of engrave", () => {
+    expect(stem("engraving")).toBe(stem("engravings"));
+    expect(stem("engrave")).toBe(stem("engraving"));
+    expect(stem("evening")).toBe("evening");
+    expect(ids("engravings ")).toEqual(ids("engraving "));
+  });
+
+  it("a short real word is never read as another (neon ≠ noon, bats ≠ cats): no correction, an honest no-match", () => {
+    for (const q of ["neon ", "bats "]) {
+      const r = run(q);
+      expect(r.corrected, q).toEqual([]);
+      expect(r.relaxed?.droppedTerms, q).toEqual([q.trim()]);
+    }
+  });
+
+  it("a typo is corrected even in a plural or a word ending in e (gatxs → gate, engnie → engine)", () => {
+    for (const [q, to] of [["gatxs ", "gate"], ["engnie ", "engin"]]) expect(run(q).corrected.map((c) => stem(c.to)), q).toContain(to);
+  });
+
+  it("colour words that name the tee are the tee filter, not text (bird on black)", () => {
+    const r = run("bird on black ");
+    expect(r.relaxed).toBeNull();
+    expect(r.suggestions.some((s) => s.facet.kind === "tee" && s.facet.value === "black")).toBe(true);
+    expect(r.total).toBeGreaterThan(0);
+  });
+
+  it("typed words are never dropped to fill the page: a word that finds nothing says so", () => {
+    const tiger = new Set(ids("tiger "));
+    expect(ids("tiger zzqxv ").every((id) => tiger.has(id))).toBe(true);
+  });
+
+  it("boilerplate in museum text doesn't match: \"space\" finds spacecraft, not every Air and Space Museum credit", () => {
+    expect(run("space ").total).toBeLessThan(SHIRTS.length * 0.2);
+    expect(run("ink ").total).toBeLessThan(SHIRTS.length * 0.2);
+  });
+
+  it("\"text\" doesn't offer a No text look, and \"new york\" isn't the New this week filter", () => {
+    expect(run("text ").suggestions.map((s) => s.label)).not.toContain("No text");
+    expect(run("new york ").suggestions.some((s) => s.facet.kind === "new")).toBe(false);
+    expect(run("new york ").total).toBeGreaterThan(0);
+  });
+});
