@@ -256,7 +256,11 @@ function dailyOf(x: unknown): Daily {
  * taste levels already reached (none yet: the next one is announced once);
  * v3 → v4 adds the "photographic" dimension, at neutral: nobody has rated
  * a photograph yet, so it isn't guessed from the drawn prints they liked
- * (the photographs in the taste test are dealt next and measure it).
+ * (the photographs in the taste test are dealt next and measure it);
+ * v4 → v5 (the content overhaul chose new taste-test prints): whoever had
+ * already answered a whole test's worth of cards stays finished, even if
+ * the result screen was never acknowledged — the new test prints are
+ * dealt, but the test doesn't start over.
  */
 export function migrateTaste(persisted: unknown, version: number): unknown {
   if (!persisted || typeof persisted !== "object") return persisted;
@@ -270,6 +274,10 @@ export function migrateTaste(persisted: unknown, version: number): unknown {
       const lu = s.lastUpdate as Record<string, unknown>;
       s.lastUpdate = { ...lu, before: neutral(lu.before), after: neutral(lu.after) };
     }
+  }
+  if (version < 5) {
+    const answered = (Array.isArray(s.likedIds) ? s.likedIds.length : 0) + (Array.isArray(s.dislikedIds) ? s.dislikedIds.length : 0);
+    if (answered >= CALIBRATION_TOTAL) s.calibrationAcknowledged = true;
   }
   return s;
 }
@@ -450,7 +458,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
     }),
     {
       name: TASTE_KEY,
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateTaste,
       skipHydration: true,

@@ -1,5 +1,5 @@
 import { CALIBRATION_IDS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
-import { centeredCosine, getNextCard, makeScorer } from "@/lib/recommendation";
+import { centeredCosine, makeScorer } from "@/lib/recommendation";
 import type { RecommendationStrategy, ShirtProduct, UserProfileVector } from "@/types/shirt";
 
 export const DECK_SIZE = 3;
@@ -68,17 +68,22 @@ export function buildDeck(
     const allowed = SHIRTS.filter((s) => !seenFamilies.has(s.family));
     if (allowed.length === 0) break;
     const recent = recentVariants();
+    const shown = [...history, ...next.map((e) => e.id)];
     // Nor the category of the last two cards.
-    const recentCats = new Set([...history, ...next.map((e) => e.id)].slice(-CATEGORY_SPACING).map((id) => getShirtById(id)?.category));
-    const paced = allowed.filter((s) => !recent.has(s.variant) && !recentCats.has(s.category));
-    const pool = paced.length ? paced : allowed.filter((s) => !recent.has(s.variant)).length ? allowed.filter((s) => !recent.has(s.variant)) : allowed;
+    const recentCats = new Set(shown.slice(-CATEGORY_SPACING).map((id) => getShirtById(id)?.category));
+    // A drawn template (one generator's algorithm) is dealt once; archive and photo groups aren't templates.
+    const usedTemplates = new Set(shown.map((id) => getShirtById(id)).filter((s) => s?.medium === "drawn").map((s) => s!.variant));
+    const fresh = allowed.filter((s) => s.medium !== "drawn" || !usedTemplates.has(s.variant));
+    const base = fresh.length ? fresh : allowed;
+    const paced = base.filter((s) => !recent.has(s.variant) && !recentCats.has(s.category));
+    const pool = paced.length ? paced : base.filter((s) => !recent.has(s.variant)).length ? base.filter((s) => !recent.has(s.variant)) : base;
     const pick = probe
       ? // Still short of likes: every other card is a best guess from the passes so far.
         probe.needLikes && rng() < 0.5
         ? sampleTop(vector, pool, rng)
-        : probePick(pool, [...history, ...next.map((e) => e.id)])
+        : probePick(pool, shown)
       : rng() < EXPLORE_SHARE
-        ? getNextCard(vector, pool, [], "explore", rng)
+        ? wildcard(pool, shown)
         : sampleTop(vector, pool, rng);
     if (!pick) break;
     next.push({ id: pick.shirt.id, strategy: pick.strategy });
@@ -108,6 +113,25 @@ function sampleTop(vector: UserProfileVector, pool: ShirtProduct[], rng: () => n
   let r = rng() * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < top.length; i++) if ((r -= w[i]) <= 0) return { shirt: top[i].shirt, strategy: "greedy" as const };
   return { shirt: top[0].shirt, strategy: "greedy" as const };
+}
+
+/**
+ * A wildcard: the best design (by the editorial rank, which is led by print
+ * quality) from the category shown least so far — a probe of taste the
+ * profile hasn't met, never a weak print.
+ */
+export function wildcard(pool: ShirtProduct[], shown: string[]) {
+  const strong = pool.filter((s) => !s.weak);
+  const from = strong.length ? strong : pool;
+  if (!from.length) return null;
+  const count = new Map<string, number>();
+  for (const id of shown) {
+    const c = getShirtById(id)?.category;
+    if (c) count.set(c, (count.get(c) ?? 0) + 1);
+  }
+  const least = Math.min(...from.map((s) => count.get(s.category) ?? 0));
+  const best = from.filter((s) => (count.get(s.category) ?? 0) === least).reduce((a, b) => (b.rank < a.rank ? b : a));
+  return { shirt: best, strategy: "explore" as const };
 }
 
 /** How many recent cards a probe keeps away from. */

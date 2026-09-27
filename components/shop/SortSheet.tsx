@@ -9,7 +9,7 @@ import type { ShopSort } from "@/lib/recommendation";
 
 const SORTS: { value: ShopSort; label: string; hint: string }[] = [
   { value: "match", label: "For you", hint: "Ranked by your taste" },
-  { value: "popular", label: "Popular", hint: "Our editors' order" },
+  { value: "popular", label: "Our pick", hint: "A fixed order, before your taste test" },
   { value: "new", label: "Newest", hint: "Latest drop first" },
 ];
 

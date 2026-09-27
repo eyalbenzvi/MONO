@@ -14,7 +14,8 @@ import type { SourceCategory } from "../../types/shirt";
 const WORD_TITLED = new Set<SourceCategory>(["architectural", "geometric", "typography", "halftone", "waves", "scenes", "slogans", "pixel", "emblems", "objects", "ascii", "caricatures", "famousart", "iconic"]);
 /** Tempo words the harmonographs were named with (not what they show). */
 const TEMPO = /^(Slow|Quiet|Long|Late|Still|Soft|Deep|Low|Pale|Faint|Lento|Largo) /;
-const NUMERAL = /\s+(II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|\d+)$/;
+/** Roman numerals only: a year or a figure at the end of a title is part of what it names ("Moon Phases of 1969"). */
+const NUMERAL = /\s+(II|III|IV|V|VI|VII|VIII|IX|X|XI|XII)$/;
 
 export interface TitleInput {
   id: string;

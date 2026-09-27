@@ -8,14 +8,14 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
-import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
+import { SHOP_WINDOW, rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
-export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Popular", new: "Newest" };
+export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Our pick", new: "Newest" };
 
 
 export function ShopView() {
@@ -65,7 +65,9 @@ export function ShopView() {
   // card when ranking for you.
   const visible = useMemo(() => {
     const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
-    return diversify(filtered, { category: !category, color: true, wildcardEvery: sort === "match" ? 8 : 0 });
+    // "Our pick" opens on the shop window as the generator built it (its own rules: every category, one per subject).
+    const kept = sort === "popular" && !category ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
+    return [...kept, ...diversify(filtered.slice(kept.length), { category: !category, color: true, wildcardEvery: sort === "match" ? 8 : 0 })];
   }, [ranked, category, sort]);
   visibleRef.current = visible;
 
@@ -210,7 +212,7 @@ export function ShopView() {
         <div className="h-2" />
         <SharedList />
 
-        {/* Rendered on the server too, in the default order ("Popular" — no
+        {/* Rendered on the server too, in the default order ("Our pick" — no
             personal data needed), so the page arrives with products. A
             personal order after hydration swaps in with a short fade (same
             card sizes, nothing moves). */}

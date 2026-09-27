@@ -85,6 +85,8 @@ export const ARCHIVE_FIRST_N = 3831;
  * written down when it is added and never changes, so adding more never
  * renumbers anything (archive.json's numbers come from its order).
  */
+/** The first addition's number (the archive's last was 5516). */
+export const ADDITIONS_FIRST_N = 5517;
 export interface ArchiveAddition extends ArchiveSource {
   n: number;
 }

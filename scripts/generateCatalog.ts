@@ -28,7 +28,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { firstSentence, isWordTitled, plainTitles } from "./gen/titles";
@@ -49,7 +49,7 @@ import type { Generator } from "./gen/core";
 import { PHOTO_CATEGORIES, photoOrder, recordUrl, type PhotoSource } from "./photos/source";
 import { set5Designs } from "./gen/set5";
 import { set7Designs } from "./gen/set7";
-import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
+import { ADDITIONS_FIRST_N, ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
 import { displayCategory } from "./gen/categories";
 import { INK_HEAVY, TONAL_INK, TONAL_ON_BLACK, offeredColors } from "./gen/colors";
@@ -550,6 +550,9 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
 const SET7_FIRST_N = 7001;
 /** The day the seventh set dropped (the Monday of the week it was added). */
 const SET7_DROP = "2026-09-21";
+/** This week's drop is at most this many designs; the week's other arrivals are dated the week before. */
+const NEW_CAP = 40;
+const LAST_WEEK = "2026-09-14";
 
 /**
  * Seventh set (scripts/gen/set7): designs made from real data — computed
@@ -881,7 +884,19 @@ async function main() {
   const descriptions = finishDescriptions(
     shirts.map((s) => ({ base: s.base, category: s.source, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)), fact: printFact(s) })),
   );
-  const ranks = editorialRanks(shirts.map((s) => s.features), shirts.map((s) => s.quality));
+  const ranks = editorialRanks(shirts.map((s, i) => ({ ...s, family: String(familyIndex[i]) })), windowPins());
+  // "New this week" (Part 7): this week's drop is at most NEW_CAP designs, the best of what the
+  // overhaul added (four at most per category); the rest of the week's arrivals count as last week's.
+  const thisWeek = shirts.map((s, i) => ({ s, i })).filter(({ s }) => s.dropDate === SET7_DROP);
+  const fresh = thisWeek.filter(({ s }) => (s.source === "data" || s.n >= ADDITIONS_FIRST_N) && !isWeak(s)).sort((a, b) => ranks[a.i] - ranks[b.i]);
+  const newPerCat = new Map<string, number>();
+  const keep = new Set<number>();
+  for (const { s, i } of fresh) {
+    if (keep.size >= NEW_CAP || (newPerCat.get(s.category) ?? 0) >= 4) continue;
+    keep.add(i);
+    newPerCat.set(s.category, (newPerCat.get(s.category) ?? 0) + 1);
+  }
+  for (const { s, i } of thisWeek) if (!keep.has(i)) s.dropDate = LAST_WEEK;
   const withFamily = shirts.map(({ base, source: _source, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
@@ -911,6 +926,13 @@ async function main() {
     if (spare < counters[c as SourceCategory]) throw new Error(`not enough title words for ${c}`);
   }
 
+  // One design per subject (Part 7: no subject twice in any 24; with this, never twice anywhere).
+  const subjects = new Map<string, string>();
+  for (const s of catalog) {
+    const k = s.subject.toLowerCase();
+    if (subjects.has(k)) throw new Error(`two designs show "${s.subject}": ${subjects.get(k)} and ${s.id}`);
+    subjects.set(k, s.id);
+  }
   const sizes = new Map<string, number>();
   for (const s of catalog) sizes.set(s.family, (sizes.get(s.family) ?? 0) + 1);
   const newFamilies = new Set(catalog.slice(PER_SET).map((s) => s.family)).size;
@@ -947,13 +969,76 @@ type Features = CatalogEntry["features"];
  * designs closest to the catalog's centre of gravity — broadly appealing —
  * first, nudged towards bold, readable prints.
  */
-function editorialRanks(features: Features[], quality: number[]): number[] {
-  const mean = Object.fromEntries(FEATURE_KEYS.map((k) => [k, features.reduce((sum, f) => sum + f[k], 0) / features.length])) as Features;
-  // Weak prints (a lone small shape) sink below every strong one.
-  const score = features.map((f, i) => ({ i, v: cosineSimilarity(f, mean) / 100 + 0.3 * f.contrast + 0.1 * f.wit + 0.2 * (quality[i] / 100) - (quality[i] < WEAK_QUALITY ? 10 : 0) }));
-  score.sort((a, b) => b.v - a.v || a.i - b.i);
-  const ranks = new Array<number>(features.length);
-  score.forEach(({ i }, r) => (ranks[i] = r));
+/** The shop window: the first designs of "Our pick", built to the rules below (Part 7). */
+export const WINDOW = 24;
+
+/** The window's first slots, picked by hand (data/curation/window.json: ids in order). */
+function windowPins(): string[] {
+  const file = path.join(ROOT, "data", "curation", "window.json");
+  return existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as string[]) : [];
+}
+
+/**
+ * "Our pick" (Part 7): a fixed editorial order, the same for everyone
+ * before the taste test. A design's standing is its print quality, plus
+ * credit for an archive work, plus how distinct it is from the catalogue's
+ * average; weak prints go last. The first WINDOW are the shop window:
+ * the pinned designs first, then at least one of every category and no
+ * more than three of any, one per subject and per family, only prints in
+ * the top 30% for quality, at least four archive works — and never two of
+ * one category side by side.
+ */
+interface Rankable extends Pick<Draft, "id" | "category" | "source" | "subject" | "quality" | "flags" | "features"> {
+  family: string;
+}
+function editorialRanks(list: Rankable[], pins: string[]): number[] {
+  const mean = Object.fromEntries(FEATURE_KEYS.map((k) => [k, list.reduce((sum, s) => sum + s.features[k], 0) / list.length])) as Features;
+  const far = list.map((s) => 1 - cosineSimilarity(s.features, mean) / 100);
+  const maxFar = Math.max(...far) || 1;
+  const weak = (i: number) => isWeak(list[i]);
+  const score = list.map((s, i) => s.quality / 100 + (s.source === "archive" ? 0.08 : 0) + 0.3 * (far[i] / maxFar) - (weak(i) ? 10 : 0));
+  const byScore = list.map((_, i) => i).sort((a, b) => score[b] - score[a] || a - b);
+  const q = [...list.map((s) => s.quality)].sort((a, b) => a - b);
+  const top30 = q[Math.floor(q.length * 0.7)];
+  const eligible = (i: number) => !weak(i) && list[i].quality >= top30;
+  const win: number[] = [];
+  const cats = new Map<string, number>();
+  const used = { subject: new Set<string>(), family: new Set<string>() };
+  const fits = (i: number) => !win.includes(i) && (cats.get(list[i].category) ?? 0) < 3 && !used.subject.has(list[i].subject.toLowerCase()) && !used.family.has(list[i].family);
+  const add = (i: number) => {
+    win.push(i);
+    cats.set(list[i].category, (cats.get(list[i].category) ?? 0) + 1);
+    used.subject.add(list[i].subject.toLowerCase());
+    used.family.add(list[i].family);
+  };
+  for (const id of pins) {
+    const i = list.findIndex((s) => s.id === id);
+    if (i === -1 || !eligible(i) || !fits(i)) throw new Error(`shop window: pinned ${id} is not in the catalogue or breaks the window's rules`);
+    add(i);
+  }
+  for (const c of SHIRT_CATEGORIES) {
+    if (cats.has(c)) continue;
+    const i = byScore.find((j) => list[j].category === c && eligible(j) && fits(j));
+    if (i === undefined) throw new Error(`shop window: no ${c} design in the top 30% for quality`);
+    add(i);
+  }
+  while (win.filter((i) => list[i].source === "archive").length < 4) {
+    const i = byScore.find((j) => list[j].source === "archive" && eligible(j) && fits(j));
+    if (i === undefined) throw new Error("shop window: not enough archive works");
+    add(i);
+  }
+  for (const i of byScore) if (win.length < WINDOW && eligible(i) && fits(i)) add(i);
+  // Pins keep their places; the rest by score, never two of one category side by side.
+  const rest = win.slice(pins.length).sort((a, b) => score[b] - score[a] || a - b);
+  const order = win.slice(0, pins.length);
+  while (rest.length) {
+    const k = rest.findIndex((i) => list[i].category !== list[order[order.length - 1]]?.category);
+    order.push(rest.splice(k === -1 ? 0 : k, 1)[0]);
+  }
+  const ranks = new Array<number>(list.length);
+  order.forEach((i, r) => (ranks[i] = r));
+  let r = order.length;
+  for (const i of byScore) if (ranks[i] === undefined) ranks[i] = r++;
   return ranks;
 }
 
@@ -982,11 +1067,14 @@ function neighbours(list: Omit<CatalogEntry, "similar">[]): string[][] {
  * doesn't run farthest-point sampling on every load.
  */
 function calibrationIds(catalog: CatalogEntry[]): string[] {
+  // Part 7: only prints in the top quarter for quality, never a weak one; one per family; one per category.
+  const q = catalog.map((s) => s.quality).sort((x, y) => x - y);
+  const floor = q[Math.floor(q.length * 0.75)];
   const leaders = new Map<string, CatalogEntry>();
-  // Families led by their first strong design; weak prints never rate taste.
-  for (const s of catalog) if (s.quality >= WEAK_QUALITY && !leaders.has(s.family)) leaders.set(s.family, s);
+  for (const s of catalog) if (s.quality >= floor && !isWeak(s) && !leaders.has(s.family)) leaders.set(s.family, s);
   const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category, isPhoto);
-  const bold = (s: CatalogEntry) => s.features.contrast + s.features.density;
+  // The first card is a graphic (drawn), the boldest one.
+  const bold = (s: CatalogEntry) => s.features.contrast + s.features.density + (s.medium === "drawn" ? 10 : 0);
   const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
   return [opener, ...queue.filter((s) => s !== opener)].map((s) => s.id);
 }

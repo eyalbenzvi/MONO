@@ -256,9 +256,9 @@ export function similarityBreakdown(userVec: UserProfileVector, features: Featur
 /* ------------------------------------------------------------------ */
 
 /**
- * Shop orders. "match" ranks by your taste; "popular" is the generator's
- * fixed editorial rank (not usage data); "new" is the latest weekly drop
- * first. (Every tee is one price, so there's no price sort.)
+ * Shop orders. "match" ranks by your taste; "popular" ("Our pick") is the
+ * generator's fixed editorial rank (not usage data); "new" is the latest
+ * weekly drop first. (Every tee is one price, so there's no price sort.)
  */
 export type ShopSort = "match" | "popular" | "new";
 
@@ -287,7 +287,8 @@ export function rankShirts(
   const ranked = scored.map((x) => ({
     ...x,
     key: x.score + (nudge(x.shirt.id) - 0.5) * rotation * sd - (demote?.has(x.shirt.id) ? SEEN_PENALTY * sd : 0),
-    rankKey: x.shirt.rank + nudge(x.shirt.id) * ROTATION_RANKS,
+    // The shop window (the first SHOP_WINDOW) never moves; the rotation refreshes what follows it.
+    rankKey: x.shirt.rank < SHOP_WINDOW ? x.shirt.rank : x.shirt.rank + nudge(x.shirt.id) * ROTATION_RANKS,
   }));
   ranked.sort((a, b) => {
     if (sort === "popular") return a.rankKey - b.rankKey;
@@ -298,6 +299,8 @@ export function rankShirts(
   return ranked.map(({ shirt, score }) => ({ shirt, score }));
 }
 
+/** "Our pick" opens on this many designs in a fixed order (the generator's shop window). */
+export const SHOP_WINDOW = 24;
 /** How far the rotation can move a design: a share of the profile's score spread (sd); editorial ranks. */
 export const ROTATION = 0.5;
 export const ROTATION_RANKS = 120;
