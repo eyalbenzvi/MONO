@@ -107,6 +107,8 @@ export interface OverhaulInput extends RetireInput {
   /** The ink's bounding box as a share of the print (scripts/gen/quality assessPrint). */
   extent: number;
   flags: string[];
+  /** An archive work's artist (or its museum when the record names none). */
+  maker?: string;
 }
 
 /** Whole variants taken out, with the reason (Part 1.1–1.6). */
@@ -126,6 +128,15 @@ const REAL_PHRASE_POSTERS = new Set(["mono-1082", "mono-1762"]);
 /** Near-duplicates (Part 1.7): at most this many of one family, of one generated subject. */
 export const PER_FAMILY = 2;
 export const PER_SUBJECT = 5;
+/** Archive rebalance (Part 3): at most this many works by one artist, of one genus. */
+export const PER_MAKER: Record<string, number> = { "Mary Vaux Walcott": 80, "James McNeill Whistler": 30 };
+export const PER_GENUS = 3;
+/** An archive title that isn't the work's own: a numeral added to tell repeats apart, or a placeholder. */
+const PLACEHOLDER_TITLE = /^(botanical|flower) study\b|\buntitled\b|^[^(]*\)$/i;
+/** A repeat told apart by a numeral the generator added ("Title II"; see freeTitle). */
+const numbered = (s: OverhaulInput) => s.title.startsWith(`${s.subject} `) && /^(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/.test(s.title.slice(s.subject.length + 1));
+/** The genus of a plate titled "Common Name (Genus species)". */
+export const genusOf = (title: string) => /\(([A-Z][a-z]+) [a-z]/.exec(title)?.[1];
 /** Archive crops that are a sliver of the print (Part 1.10). */
 export const ARCHIVE_SLIVER = 0.25;
 
@@ -163,5 +174,21 @@ export function overhaulRetired(list: OverhaulInput[]): Map<string, string> {
     photos.set(key, [...(photos.get(key) ?? []), s]);
   }
   for (const members of photos.values()) members.sort(best).slice(1).forEach((s) => add(s.id, "Part 2: one photograph per subject"));
+  // Part 3: the archive rebalanced — its own titles only, no genus over and over, no one artist crowding the rest.
+  const archive = list.filter((s) => s.category === "archive");
+  for (const s of archive) if (!out.has(s.id) && (numbered(s) || PLACEHOLDER_TITLE.test(s.title))) add(s.id, "Part 3: numbered or placeholder title");
+  const cap = (key: (s: OverhaulInput) => string | undefined, keep: (k: string) => number | undefined, why: (k: string) => string) => {
+    const by = new Map<string, OverhaulInput[]>();
+    for (const s of archive) {
+      const k = key(s);
+      if (k !== undefined && !out.has(s.id)) by.set(k, [...(by.get(k) ?? []), s]);
+    }
+    for (const [k, members] of by) {
+      const n = keep(k);
+      if (n !== undefined) members.sort(best).slice(n).forEach((s) => add(s.id, why(k)));
+    }
+  };
+  cap((s) => genusOf(s.title), () => PER_GENUS, () => `Part 3: more than ${PER_GENUS} of one genus`);
+  cap((s) => s.maker, (k) => PER_MAKER[k], (k) => `Part 3: more than ${PER_MAKER[k]} by ${k}`);
   return out;
 }

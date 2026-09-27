@@ -12,8 +12,8 @@ import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
  * tee. For a drawn print the reverse colourway is the exact inversion —
  * white ink on black becomes black ink on white — so `color` just flips it
  * with a CSS invert. An ink print (WebP) is black ink on a transparent
- * ground, inverted to white ink for a black tee. A photograph is greyscale
- * with a transparent surround and is never inverted (that would be a
+ * ground, inverted to white ink for a black tee. A photograph is a one-ink
+ * halftone with a transparent surround and is never inverted (that would be a
  * negative). WebP prints sit on a ground in the tee colour (under an invert,
  * the opposite colour, which the invert turns back).
  */

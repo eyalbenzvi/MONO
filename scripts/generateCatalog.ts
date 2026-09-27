@@ -13,7 +13,7 @@
  *   (public-domain homages) and iconic images (./gen/set3).
  * - ids 2801–3400: photographs — wildlife, flight, engines & gauges — from
  *   Smithsonian Open Access (CC0). scripts/photos/fetchPhotos.ts commits
- *   their prints (public/prints/print_N.webp: greyscale, the whole picture)
+ *   their prints (public/prints/print_N.webp: the whole picture as a one-ink halftone)
  *   and data/photos/photos.json; this reads them (never inverted: a
  *   photograph inverted is a negative).
  *
@@ -314,7 +314,7 @@ const PHOTO_DROP = "2026-09-21";
 
 /**
  * One photograph as a design. Its print is the photograph itself —
- * greyscale, the whole picture — committed by scripts/photos
+ * the whole picture, screened as a one-ink halftone — committed by scripts/photos
  * (public/prints/print_<n>.webp); this names it and reads its features
  * from the picture's own measures and its category. One file serves both
  * tee colours: on a black tee the picture's lights show (white ink), on a
@@ -326,7 +326,7 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
   if (!existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)} (run scripts/photos/fetchPhotos.ts select)`);
   const frame = photo.mode === "frame";
   // The tee that shows more of the picture: a light picture on black, a dark one on white.
-  const baseColor: BaseColor = photo.tone >= 0.5 ? "black" : "white";
+  const baseColor = photoTee(n, photo.tone);
   const shown = baseColor === "black" ? photo.tone : 1 - photo.tone;
   const dial = /indicator|gauge|meter|compass|clock|altimeter|tachometer|horizon|barograph|recorder/i.test(photo.subject);
   const f: Partial<Record<FeatureKey, number>> = {
@@ -377,7 +377,7 @@ function photoDesign(n: number, index: number, category: PhotoSource["category"]
     colors: offeredColors(baseColor, true),
     source: category,
     variant: `photo-${category}-${photo.mode}`,
-    base: `${photo.subject}, ${where}, printed in greyscale.`,
+    base: `${photo.subject}, ${where}, printed as a one-ink halftone.`,
     subject: photo.subject,
     style: STYLE[category],
     quality,
@@ -481,7 +481,7 @@ const ARCHIVE_FEATURES: Record<ArchiveGroup, Partial<Record<FeatureKey, number>>
  * Sixth set: public-domain artworks and photographs (scripts/archive:
  * data/archive/archive.json and the prints it committed). An ink print is
  * the original's marks as black ink (inverted to white for a black tee); a
- * photograph is greyscale, never inverted. Returns the bytes of the prints.
+ * photograph is a one-ink halftone, never inverted. Returns the bytes of the prints.
  */
 function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): number {
   const file = path.resolve(__dirname, "..", "data", "archive", "archive.json");
@@ -497,7 +497,7 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
     // A photograph goes on the tee that shows more of it; ink prints either way (half and half).
     const tonal = medium === "ink" && TONAL_INK.includes(a.group);
     // A photograph goes on the tee that shows more of it; tonal ink on white (never a negative); line work either way (half and half).
-    const baseColor: BaseColor = medium === "photo" ? (a.tone >= 0.5 ? "black" : "white") : tonal ? "white" : mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))() < 0.5 ? "black" : "white";
+    const baseColor: BaseColor = medium === "photo" ? photoTee(n, a.tone) : tonal ? "white" : mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))() < 0.5 ? "black" : "white";
     const single = medium === "photo" || tonal || a.coverage > INK_HEAVY;
     const f: Partial<Record<FeatureKey, number>> = {
       ...ARCHIVE_FEATURES[a.group],
@@ -526,7 +526,7 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       colors: offeredColors(baseColor, single),
       source: "archive",
       variant: `archive-${a.group}`,
-      base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" ? "its marks printed as one ink" : "printed in greyscale"}.`,
+      base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" && !tonal ? "its marks printed as one ink" : "printed as a one-ink halftone"}.`,
       subject: a.name,
       style: STYLE.archive,
       quality,
@@ -561,6 +561,17 @@ async function measureAll(list: Draft[]): Promise<Map<string, { check: BlockChec
   }
   return out;
 }
+
+/**
+ * The halftone screen's record (scripts/photos/halftone.py → data/curation/halftone.json):
+ * per print number its mode and, for a photograph, the tee its ink was baked for.
+ */
+const HALFTONE: Record<string, { mode: "halftone" | "line"; tee?: BaseColor }> = (() => {
+  const file = path.join(ROOT, "data", "curation", "halftone.json");
+  return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
+})();
+/** A photograph's tee: the one its halftone was baked for (its ink is white dots or black), else the one that shows more of it. */
+const photoTee = (n: number, tone: number): BaseColor => HALFTONE[n]?.tee ?? (tone >= 0.5 ? "black" : "white");
 
 /** Titles set by hand (data/curation/titles.json), by id. */
 function curatedTitles(): Map<string, string> {
@@ -764,6 +775,7 @@ async function main() {
       base: s.base,
       extent: measures.get(s.id)?.assessment.extent ?? 1,
       flags: s.flags,
+      maker: s.source === "archive" ? s.photo!.credit.split(",")[0] : undefined,
     })),
   );
   for (const [id, why] of overhaul) retired.set(id, why);

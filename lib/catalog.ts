@@ -134,8 +134,8 @@ export const assetUrl = (url: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ??
  * strictly two-tone and flips exactly with a CSS invert for the other
  * colour; an ink print is black ink on a transparent ground, inverted to
  * white ink for a black tee; a photograph is never inverted (that would be
- * a negative) — its greyscale print shows the lights on a black tee and the
- * darks on a white one, the same positive picture.
+ * a negative) — its halftone is baked in the ink of its one tee (white dots
+ * showing the lights on black, black dots the darks on white).
  */
 export const printUrl = (shirt: Pick<ShirtProduct, "backPrintUrl">, _color?: BaseColor) => shirt.backPrintUrl;
 

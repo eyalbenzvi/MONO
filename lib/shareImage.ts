@@ -44,7 +44,7 @@ export async function loadPrintImage(shirt: ShirtProduct, color: BaseColor): Pro
     return c;
   }
   if (isPhoto(shirt)) {
-    // The greyscale photograph as it is (transparent surround; never inverted).
+    // The halftone photograph as it is (transparent surround; never inverted).
     const img = new Image();
     img.src = assetUrl(printUrl(shirt, color));
     await img.decode();

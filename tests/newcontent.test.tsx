@@ -75,7 +75,7 @@ describe("T8: the archive — public-domain works from Smithsonian Open Access",
     }
   });
 
-  it("ink prints are the original's marks as one ink; photographs are greyscale — every picture whole on its print", async () => {
+  it("ink prints are the original's marks as one ink; photographs a one-ink halftone — every picture whole on its print", async () => {
     for (const s of ARCHIVE_DESIGNS.filter((_, i) => i % 40 === 0)) {
       const img = sharp(path.join(PUBLIC, s.backPrintUrl));
       const meta = await img.metadata();

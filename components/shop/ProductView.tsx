@@ -372,7 +372,7 @@ export function ProductView({
                   <p className="mt-2 text-sm leading-relaxed text-neutral-300">{details?.description}</p>
                   <dl className="mt-2 border-t border-white/10 pb-2">
                   <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
-                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · greyscale photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
+                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · halftone photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
                   <Spec label="Print" value={printSizeLabel(details?.printCm)} />
                   <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
                   <Spec label="Fit" value="Regular" />
