@@ -26,7 +26,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import path from "node:path";
 import sharp from "sharp";
 import { BUCKET } from "../photos/source";
-import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveAddition, type ArchiveGroup, type ArchiveSource, type ArchiveUnit } from "./source";
+import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveAddition, type ArchiveGroup, type ArchiveMode, type ArchiveSource, type ArchiveUnit } from "./source";
 import { NAMES, REVIEWED, archiveOrder } from "./curation";
 import { mulberry32, shuffle } from "../gen/core";
 
@@ -375,14 +375,16 @@ function dropEdgeBands(alpha: Uint8Array, where: Uint8Array): Uint8Array {
   return alpha;
 }
 
-async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped, keyof Candidate> } | "needs-cut" | null> {
-  const mode = ARCHIVE_GROUPS[c.group].mode;
-  if (mode === "cut" && !existsSync(cutFile(c.key))) return "needs-cut";
+const prepOne = (c: Candidate) => prepImage(ARCHIVE_GROUPS[c.group].mode, jpgFile(c.key), cutFile(c.key));
+
+/** One picture → the master print (750 × 1000, grey + alpha) and its measures; shared with scripts/sources. */
+export async function prepImage(mode: ArchiveMode, jpg: string, cut: string): Promise<{ webp: Buffer; meta: Omit<Prepped, keyof Candidate> } | "needs-cut" | null> {
+  if (mode === "cut" && !existsSync(cut)) return "needs-cut";
   let gray: Uint8Array, alpha: Uint8Array;
   const n = ARCHIVE_W * ARCHIVE_H;
   if (mode === "cut") {
     // The rembg cut-out: faint residue dropped, trimmed to the solid object.
-    const { data, info } = await sharp(cutFile(c.key)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = await sharp(cut).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     let x0 = info.width, y0 = info.height, x1 = -1, y1 = -1, area = 0;
     for (let i = 0; i < info.width * info.height; i++) {
       const a = data[i * 4 + 3];
@@ -396,7 +398,7 @@ async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped
     const png = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).extract({ left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 }).png().toBuffer();
     ({ gray, alpha } = await placed(sharp(png), 0.9));
   } else {
-    const src = sharp(jpgFile(c.key), { failOn: "none", limitInputPixels: false }).rotate();
+    const src = sharp(jpg, { failOn: "none", limitInputPixels: false }).rotate();
     // Big scans: bring them down first (the print is 750 × 1000).
     const small = sharp(await src.resize(2400, 2400, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 95 }).toBuffer());
     ({ gray, alpha } = await placed(small, 0.94));
@@ -733,6 +735,7 @@ async function metadata() {
   }
 }
 
+if (require.main === module) {
 const cmd = process.argv[2];
 const run = { metadata, candidates, prep, sheet, select: async () => select(), "addition-candidates": additionCandidates, "addition-select": async () => additionSelect() }[cmd as "prep"];
 if (!run) {
@@ -743,3 +746,4 @@ run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+}

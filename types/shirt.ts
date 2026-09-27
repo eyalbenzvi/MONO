@@ -198,6 +198,8 @@ export interface ShirtProduct {
   dropDate: number;
   /** A weak print (a lone small shape): kept out of the taste test and the top of the shop. */
   weak: boolean;
+  /** The content wave that added it (docs/content/waves.md); none for earlier designs. */
+  wave?: number;
 }
 
 /** Longer copy and precomputed neighbours, loaded on demand (public/data shards). */

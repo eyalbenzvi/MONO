@@ -1145,6 +1145,8 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     dropEpoch: new Date(DROP_EPOCH).toISOString().slice(0, 10),
     shardSize: SHARD_SIZE,
     shards,
+    // The content waves' designs, by wave (lib/catalog decodes them into `wave`).
+    waves: catalog.reduce<Record<string, number[]>>((acc, s) => (s.wave ? ((acc[s.wave] ??= []).push(s.n), acc) : acc), {}),
   };
   const body = Object.entries({ ...head, ...columns }).map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`);
   writeFileSync(INDEX_FILE, `{\n${body.join(",\n")}\n}\n`);
