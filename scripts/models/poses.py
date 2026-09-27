@@ -6,7 +6,7 @@ prompt (in pockets, hanging loose). Wider shoulders and hips than the first
 pose (pose-a, taken from a slim model), and a few natural stances instead of
 one stiff, mirror-symmetric one.
 
-  python scripts/models/poses.py        # writes poses/pose-b.png … pose-e.png
+  python scripts/models/poses.py        # writes poses/pose-b.png … pose-l.png
 """
 import os
 from PIL import Image, ImageDraw
@@ -34,6 +34,29 @@ POSES = {
     "pose-e": base({2: (470, 314), 5: (170, 298), 8: (420, 700), 11: (220, 722), 16: (392, 138), 17: (260, 134), 3: (514, 540), 4: (498, 742), 6: (126, 520), 7: (150, 728)}),
     # Upright, arms loose with a slight bend at the elbows, hands by the thighs (a third stance for the lookbook sets).
     "pose-f": base({3: (506, 525), 4: (478, 728), 6: (134, 525), 7: (162, 728)}),
+    # Relaxed and varied (from the sixth set on): the upright stances above, both arms down, read as standing
+    # at attention. Each arm does something different; a hand in front of the body is left out (hidden from behind).
+    # Right hand in the front pocket, the left forearm forward (holding a coffee).
+    "pose-g": base({3: (522, 510), 4: (430, 680), 6: (140, 525)}),
+    # Thumbs hooked in the back pockets, elbows out (the hands sit below the print).
+    "pose-h": base({3: (532, 540), 4: (404, 722), 6: (108, 540), 7: (236, 722)}),
+    # Right hand at the back of the neck, elbow up; the left arm loose, a little out.
+    "pose-i": base({3: (520, 196), 4: (372, 226), 6: (140, 535), 7: (178, 738)}),
+    # Arms folded in front: only the elbows show, out to the sides.
+    "pose-j": base({2: (470, 312), 5: (170, 300), 8: (420, 704), 11: (220, 720), 3: (505, 560), 6: (135, 560)}),
+    # Mid-stride: the right arm swung back and out, the left forward (hand hidden).
+    "pose-k": base({2: (470, 300), 5: (170, 312), 3: (516, 520), 4: (548, 700), 6: (146, 520), 7: (196, 680)}),
+    # Left thumb in the front pocket; the right forearm raised forward (checking a phone).
+    "pose-l": base({3: (508, 545), 6: (118, 510), 7: (210, 680)}),
+}
+# What each relaxed pose's arms are doing, said in the prompt (no hand keypoints: the words place the hands).
+ARMS = {
+    "pose-g": "right hand in front pocket, holding a coffee cup in his left hand in front of him",
+    "pose-h": "thumbs hooked in his back pockets, elbows out, relaxed",
+    "pose-i": "right hand resting on the back of his neck, left arm loose",
+    "pose-j": "arms casually folded in front of his chest, elbows showing",
+    "pose-k": "walking away mid-stride, arms swinging naturally",
+    "pose-l": "looking down at a phone in his right hand, left thumb in front pocket",
 }
 
 def draw(k):

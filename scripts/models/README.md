@@ -19,6 +19,7 @@ Enforced in code, so a run never wastes time on them:
 | Loose long hair falls over the back (the print would sit on it) | `jobs.py` rule: long hair tied; `checks.py` tee tone |
 | Sunset, dusk, golden or back light tints a white tee beige or darkens it | `jobs.py` rule: no such light; `checks.py` tone and tint |
 | Without "short-sleeved" some come out in tank tops (the shop sells tees) | `jobs.py` rule; `checks.py` sleeves |
+| Arms down on every photo (the lookbook stances) looks like standing at attention | `poses.py`: relaxed poses g–l, each arm doing something; `jobs.py`: the sixth set on takes only those, its arms in the prompt, no pose twice before all are used |
 | Light trousers merge with a white tee | `checks.py` trousers |
 | A broad man framed like a slim one needs more than the picture (mirror-filled: a second head) | `analyze.py`: the shoulders take more of the width, the print box follows |
 | The clothing model stops short of a loose tee's hem (a white band on the black twin) | `analyze.py`: the white cloth below it counts as tee |

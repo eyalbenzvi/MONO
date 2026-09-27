@@ -6,7 +6,9 @@ square to the camera so the whole back shows, a smooth fitted tee (a
 wrinkled back hides the print), soft warm light, a quiet city background
 softly out of focus. The tee is the subject.
 """
-import json, sys
+import json, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from poses import ARMS
 MOMENTS = [
   "standing still, hands in pockets",
   "standing still at dusk, hands in pockets",
@@ -124,6 +126,18 @@ for k, (man, trousers, pose, setting) in enumerate(FIFTH):
     if k == 5:  # golden autumn light turned every try beige: another seed, the white said twice
         jobs[-1]["seed"] += 1000
         jobs[-1]["prompt"] = jobs[-1]["prompt"].replace("plain white", "bright pure white")
+# The sixth set and on: relaxed, varied arms (the lookbook stances all stood arms-down, nearly at attention).
+# Each photo takes a relaxed pose (poses.py: pose-g … pose-l) with its arms said in the prompt; a set uses them all.
+# (man, trousers, pose name, setting) — fill in and run; ids continue after the fifth set.
+SIXTH = []
+NEG_SIXTH = ("tank top, sleeveless, shoulder blades, bony back, thin fabric, harsh shadows, wrinkled shirt, slouching, stiff pose, standing at attention, "
+  "military posture, arms straight down, skinny, plastic skin, cgi, face, profile, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, grey shirt, deformed")
+POSE_NAMES = sorted(f[:-4] for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses")))  # generate.py's order
+for k, (man, trousers, pose, setting) in enumerate(SIXTH):
+    i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH) + k
+    assert pose in ARMS, f"m{i:02d}: {pose} is an arms-down stance (looks like standing at attention); take a relaxed one: {', '.join(ARMS)}"
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 3100 + i * 47, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
+      "prompt": f"{TEES4[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, {LOOKBOOK}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 # Prompt rules learnt from thrown-away photos (the lookbook sets and on):
 # light that tints or darkens the tee, loose hair over the back, sleeveless tops.
@@ -135,4 +149,9 @@ for j in jobs:
     assert not any(b in p for b in BAD_LIGHT), f"{j['id']}: light that tints or darkens a white tee ({p})"
     assert not ("long" in p and "hair" in p and not any(t in p for t in ("tied", "bun", "ponytail"))), f"{j['id']}: long hair must be tied back (it falls over the print)"
     assert "short-sleeved" in p, f"{j['id']}: say short-sleeved (else tank tops)"
+    assert j.get("pose_name") in ARMS and ARMS[j["pose_name"]].lower() in p, f"{j['id']}: a relaxed pose with its arms in the prompt (arms-down stances look like standing at attention)"
+# Varied: a set spreads over the relaxed poses (no pose twice before all have been used).
+new = [j["pose_name"] for j in jobs if int(j["id"][1:]) >= RULES_FROM]
+for a in range(0, len(new), len(ARMS)):
+    assert len(set(new[a : a + len(ARMS)])) == len(new[a : a + len(ARMS)]), f"poses repeat before all are used: {new}"
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
