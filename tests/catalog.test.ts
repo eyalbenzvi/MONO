@@ -2,12 +2,13 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SHIRTS, assetUrl, getShirtById, productHref, shardFile, shardOf } from "@/lib/catalog";
-import { WEAK_QUALITY } from "../scripts/gen/quality";
+import { isWeak } from "../scripts/gen/quality";
 import retired from "@/data/curation/retired.json";
 import { PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
 import { CATEGORY_LABELS, CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type CatalogEntry } from "@/types/shirt";
 import { displayCategory } from "../scripts/gen/categories";
+import { W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
 /** Description text outside quoted captions (captions are the print's own words). */
@@ -156,14 +157,14 @@ describe("generated catalog (data/shirts.json)", () => {
   it("the lean app index decodes to exactly the generator's catalog", () => {
     expect(SHIRTS).toHaveLength(FULL.length);
     FULL.forEach((f, i) => {
-      const { description: _d, similar: _s, subject: _t, printCm: _p, photo: _c, summary: _u, style: _y, quality, dropDate, ...lean } = f;
-      expect(SHIRTS[i]).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: quality < WEAK_QUALITY });
+      const { description: _d, similar: _s, subject: _t, printCm: _p, photo: _c, summary: _u, style: _y, quality: _q, flags: _f, dropDate, ...lean } = f;
+      expect(SHIRTS[i]).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: isWeak(f) });
     });
   });
 
   it("product links point at the pre-rendered page by default", () => {
-    expect(productHref("mono-0001")).toBe("/shop/mono-0001/");
-    expect(productHref("mono-0001", "#variations")).toBe("/shop/mono-0001/#variations");
+    expect(productHref(W1)).toBe(`/shop/${W1}/`);
+    expect(productHref(W1, "#variations")).toBe(`/shop/${W1}/#variations`);
   });
 });
 

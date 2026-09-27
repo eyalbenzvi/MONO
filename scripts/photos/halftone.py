@@ -112,7 +112,7 @@ def process(n, medium):
 # Every WebP print's medium, from the sources the generator builds them from (retired ones too, so a
 # re-run of the generator measures the same prints whichever designs it keeps).
 MEDIA = """
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PER_CATEGORY } from "./scripts/gen/constants";
 import { photoOrder } from "./scripts/photos/source";
 import { archiveOrder } from "./scripts/archive/curation";
@@ -122,7 +122,8 @@ const photos = JSON.parse(readFileSync("data/photos/photos.json", "utf8"));
 const archive = JSON.parse(readFileSync("data/archive/archive.json", "utf8"));
 const out: Record<number, string> = {};
 for (const { n } of photoOrder(photos, PER_CATEGORY)) out[n] = "photo";
-for (const { n, source } of archiveOrder(archive)) out[n] = ARCHIVE_GROUPS[source.group as keyof typeof ARCHIVE_GROUPS].mode !== "ink" ? "photo" : TONAL_INK.includes(source.group) ? "tonal" : "line";
+const additions = existsSync("data/archive/additions.json") ? JSON.parse(readFileSync("data/archive/additions.json", "utf8")) : [];
+for (const { n, source } of [...archiveOrder(archive), ...additions.map((source: { n: number }) => ({ n: source.n, source }))]) out[n] = ARCHIVE_GROUPS[source.group as keyof typeof ARCHIVE_GROUPS].mode !== "ink" ? "photo" : TONAL_INK.includes(source.group) ? "tonal" : "line";
 console.log(JSON.stringify(out));
 """
 

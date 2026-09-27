@@ -66,78 +66,68 @@ export const SOURCE_CATEGORIES = [
   "ornament",
   // sixth set: public-domain artworks and photographs (Smithsonian Open Access, CC0)
   "archive",
+  // seventh set: designs made from real data (content overhaul, Part 3)
+  "data",
 ] as const;
 export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
 
 /**
- * The shop's categories (from the content review): what a design shows and
- * how it was made, in the order the shop lists them.
+ * The shop's categories (the brand book's scheme, content overhaul Part 4):
+ * what a design shows and how it was made, in the order the shop lists them.
  */
 export const SHIRT_CATEGORIES = [
-  "ink",
-  "engraved",
-  "masterworks",
-  "botanical",
-  "wildlife",
-  "archive",
-  "machines",
+  "photographs",
+  "specimens",
+  "sky",
   "architecture",
-  "landscapes",
-  "ornament",
-  "abstract",
+  "etched",
+  "brush",
+  "pattern",
+  "systems",
   "type",
-  "retro",
+  "terminal",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
-  ink: "Ukiyo & Ink",
-  engraved: "Engraved",
-  masterworks: "Masterworks",
-  botanical: "Botanical",
-  wildlife: "Wildlife",
-  archive: "Archive Photography",
-  machines: "Flight & Machines",
-  architecture: "Architecture & Cities",
-  landscapes: "Landscapes & Sky",
-  ornament: "Ornament & Pattern",
-  abstract: "Abstract & Op Art",
-  type: "Type & Emblems",
-  retro: "Retro Digital",
+  photographs: "Photographs",
+  specimens: "Plates & Specimens",
+  sky: "Maps & Sky",
+  architecture: "Architecture",
+  etched: "Etched & Cut",
+  brush: "Brush & Woodblock",
+  pattern: "Pattern",
+  systems: "Systems & Op Art",
+  type: "Type",
+  terminal: "Terminal",
 };
 
 /** SKU code per category: MN-<code>-<B|W>-<n>. */
 export const SKU_CODES: Record<ShirtCategory, string> = {
-  ink: "INK",
-  engraved: "ENG",
-  masterworks: "ART",
-  botanical: "BOT",
-  wildlife: "WLD",
-  archive: "PHO",
-  machines: "MCH",
+  photographs: "PHO",
+  specimens: "SPC",
+  sky: "MAP",
   architecture: "ARC",
-  landscapes: "LND",
-  ornament: "ORN",
-  abstract: "ABS",
+  etched: "ETC",
+  brush: "BRU",
+  pattern: "PAT",
+  systems: "SYS",
   type: "TYP",
-  retro: "RET",
+  terminal: "TRM",
 };
 
-/** One short line on the feel of each category. */
+/** One short line on each category. */
 export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
-  ink: "Brush, wash and woodblock from Japan and China, in one ink.",
-  engraved: "Etchings, woodcuts and engravings: lines cut by hand.",
-  masterworks: "Homages to public-domain masterpieces, in one colour.",
-  botanical: "Plants drawn, printed and grown by rule, like old herbarium plates.",
-  wildlife: "Animals photographed and studied in motion, from the Smithsonian.",
-  archive: "Old photographs from museum archives: places, machines, sky.",
-  machines: "Aircraft, engines, instruments and patent models.",
-  architecture: "Buildings, landmarks and cities — order you can wear.",
-  landscapes: "Mountains, seas and the night sky, charted and drawn.",
-  ornament: "Lace, stencils, rosettes and tiles: pattern for its own sake.",
-  abstract: "Shapes, dots and curves doing very little, very well.",
-  type: "Words, badges and stamps: set big, set bold, set straight.",
-  retro: "Pixels and characters from the arcade and the command line.",
+  photographs: "Animals, aircraft, engines and patent models from the Smithsonian, as one-ink halftones.",
+  specimens: "Botanical and natural history plates, and plants grown by rule.",
+  sky: "Star charts of the real sky, orbits and the moon, computed.",
+  architecture: "Buildings and cities: elevations, views and measured drawings.",
+  etched: "Etchings, engravings and woodcuts: lines cut by hand.",
+  brush: "Ink painting and woodblock prints from Japan and China.",
+  pattern: "Lace, stencils, rosettes and tiles.",
+  systems: "Curves, grids, circuits and dials drawn from their equations.",
+  type: "Real data set in type: scales, alphabets, tables.",
+  terminal: "Characters from the command line: ASCII, punch cards, displays.",
 };
 
 /** A photograph (Medium "photo"): never inverted for the other tee colour — that would make a negative. */

@@ -15,6 +15,7 @@ import { FEATURE_KEYS, createInitialVector, isPhoto, otherColor, type CatalogEnt
 import { PER_CATEGORY } from "../scripts/gen/constants";
 import { EXCLUDE } from "../scripts/photos/curation";
 import { PHOTO_CATEGORIES, PRINT_H, PRINT_W, photoOrder, type PhotoSource } from "../scripts/photos/source";
+import { B4, W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
 /** The fourth set's photographs (the archive's have their own tests: tests/archive). */
@@ -180,14 +181,14 @@ describe("taste store v4: the new dimension, for people who already have a profi
 
   it("migrates v3 → v4 with the photo lean at neutral and everything else kept", async () => {
     const v3 = { ...Object.fromEntries(FEATURE_KEYS.filter((k) => k !== "photographic").map((k) => [k, 0.5])), wit: 0.9, geometric: 0.2 };
-    localStorage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ["mono-0001"], preferenceVector: v3, calibrationAcknowledged: true, onboardingSeen: true }, version: 3 }));
+    localStorage.setItem("mono-taste", JSON.stringify({ state: { likedIds: [W1], preferenceVector: v3, calibrationAcknowledged: true, onboardingSeen: true }, version: 3 }));
     vi.resetModules();
     const { useTasteStore } = await import("@/store/tasteStore");
     await useTasteStore.persist.rehydrate();
     const s = useTasteStore.getState();
     expect(s.preferenceVector).toEqual({ ...v3, photographic: 0.5 });
-    expect(s.likedIds).toEqual(["mono-0001"]);
-    s.toggleSaved("mono-0006");
+    expect(s.likedIds).toEqual([W1]);
+    s.toggleSaved(B4);
     expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(4);
   });
 

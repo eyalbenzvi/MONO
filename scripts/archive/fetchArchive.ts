@@ -11,13 +11,21 @@
  *   npx tsx scripts/archive/fetchArchive.ts select      # curation.ts → data/archive + prints
  *   npx tsx scripts/tools/topAlignPrints.ts             # every picture at the top of its print area
  *
+ * Additions (content overhaul, Part 3: masters by name, appended with fixed numbers):
+ *   npx tsx scripts/archive/fetchArchive.ts addition-candidates
+ *   ARCHIVE_SET=additions npx tsx scripts/archive/fetchArchive.ts prep
+ *   ARCHIVE_SET=additions npx tsx scripts/archive/fetchArchive.ts sheet
+ *   (review → scripts/archive/additions-review.json)
+ *   npx tsx scripts/archive/fetchArchive.ts addition-select   # → data/archive/additions.json + prints
+ *   python scripts/photos/halftone.py                         # screen the new prints
+ *
  * Metadata and prints are cached in node_modules/.cache/mono-archive.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { BUCKET } from "../photos/source";
-import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveGroup, type ArchiveSource, type ArchiveUnit } from "./source";
+import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveAddition, type ArchiveGroup, type ArchiveSource, type ArchiveUnit } from "./source";
 import { NAMES, REVIEWED, archiveOrder } from "./curation";
 import { mulberry32, shuffle } from "../gen/core";
 
@@ -26,6 +34,9 @@ sharp.concurrency(2);
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const CACHE = path.join(ROOT, "node_modules", ".cache", "mono-archive");
+/** The candidate list prep and sheet work on: the archive's, or the additions' (ARCHIVE_SET=additions). */
+const ADDITIONS = process.env.ARCHIVE_SET === "additions";
+const CANDIDATES = ADDITIONS ? "candidates-additions.json" : "candidates.json";
 const OUT = path.join(ROOT, "data", "archive");
 const mkdir = (d: string) => (mkdirSync(d, { recursive: true }), d);
 
@@ -143,11 +154,14 @@ const FILTERS: Record<ArchiveGroup, (r: Rec) => boolean> = {
   patent: all(has(/patent model/i), not(PEOPLE)),
   ornament: all(has(/lace|border|ornament|frieze|pattern|design for|engraving|etching|sidewall|textile design|drawing, design|arabesque|grotesque|rosette|trellis|scroll/i), has(/print|engraving|etching|drawing|lace|woodcut|lithograph|pen and|graphite|ink|stencil|paper/i), not(PEOPLE), not(/katagami|stencil|wallpaper|sample book|photograph|poster|advert|packaging|label|furniture|chair|table|glass|ceramic|metal|jewelry|clock|silver|textile fragment|woven|printed cotton|embroider|sampler|costume|dress|shoe/i)),
   stencil: all(has(/katagami|stencil/i), not(PEOPLE)),
+  // Added by maker (additionCandidates), not by these filters.
+  "natural-history": () => false,
+  "old-master": () => false,
 };
 
 /** How many candidates of each group are prepared for review (the best of them are kept). */
 const PREP_CAP: Record<ArchiveGroup, number> = {
-  "ink-painting": 520, "ukiyo-e": 160, "gallery-print": 389, woodcut: 167, etching: 700, botanical: 700, "art-photo": 308, "archive-photo": 600, locomotion: 0, patent: 150, ornament: 900, stencil: 86,
+  "ink-painting": 520, "ukiyo-e": 160, "gallery-print": 389, woodcut: 167, etching: 700, botanical: 700, "art-photo": 308, "archive-photo": 600, locomotion: 0, patent: 150, ornament: 900, stencil: 86, "natural-history": 0, "old-master": 0,
 };
 
 /** The bucket folder of an image: by its id's prefix (a museum's record can show another unit's image), else the unit's. */
@@ -191,7 +205,7 @@ export async function candidates() {
     counts[group] = list.length;
     out.push(...shuffle(mulberry32(0xa4c + group.length * 7919 + group.charCodeAt(0)), list.sort((a, b) => a.key.localeCompare(b.key))).slice(0, PREP_CAP[group]));
   }
-  writeFileSync(path.join(mkdir(CACHE), "candidates.json"), JSON.stringify(out, null, 1));
+  writeFileSync(path.join(mkdir(CACHE), CANDIDATES), JSON.stringify(out, null, 1));
   console.log(`candidates: ${out.length}`, counts);
 }
 
@@ -447,7 +461,7 @@ async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped
 }
 
 async function prep() {
-  const list: Candidate[] = JSON.parse(readFileSync(path.join(CACHE, "candidates.json"), "utf8"));
+  const list: Candidate[] = JSON.parse(readFileSync(path.join(CACHE, CANDIDATES), "utf8"));
   const only = process.argv[3];
   mkdir(path.join(CACHE, "prep"));
   mkdir(path.join(CACHE, "jpg"));
@@ -495,8 +509,8 @@ async function prep() {
 /* ------------------------------------------------------------------ */
 
 /** Prepared prints of the current candidates (their group as the candidates now have it). */
-const prepped = (): Prepped[] => {
-  const current = new Map((JSON.parse(readFileSync(path.join(CACHE, "candidates.json"), "utf8")) as Candidate[]).map((c) => [c.key, c]));
+const prepped = (candidates = CANDIDATES): Prepped[] => {
+  const current = new Map((JSON.parse(readFileSync(path.join(CACHE, candidates), "utf8")) as Candidate[]).map((c) => [c.key, c]));
   return (Object.values(JSON.parse(readFileSync(path.join(CACHE, "prepped.json"), "utf8"))) as (Prepped | null)[])
     .filter((p): p is Prepped => !!p && current.has(p.key) && existsSync(prepFile(p.key)))
     .map((p) => ({ ...p, ...current.get(p.key)! }));
@@ -606,14 +620,100 @@ function select() {
     chosen.push({ ...src, maker: cleanMaker(p.maker), name: names.get(p.key)! });
   }
   chosen.sort((a, b) => a.group.localeCompare(b.group) || a.key.localeCompare(b.key));
-  rmSync(OUT, { recursive: true, force: true });
-  mkdir(OUT);
+  // The additions (addition-select) hold fixed numbers after the archive's: the archive may not grow into them, and they stay.
+  const addFile = path.join(OUT, "additions.json");
+  const additions: ArchiveAddition[] = existsSync(addFile) ? JSON.parse(readFileSync(addFile, "utf8")) : [];
+  const firstAdded = Math.min(Infinity, ...additions.map((a) => a.n));
+  if (ARCHIVE_FIRST_N + chosen.length > firstAdded) throw new Error(`select: ${chosen.length} archive prints would run into the additions at ${firstAdded}`);
   writeFileSync(path.join(OUT, "archive.json"), `[\n${chosen.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
   const prints = path.join(ROOT, "public", "prints");
-  for (const f of readdirSync(prints)) if (f.endsWith(".webp") && Number(f.match(/\d+/)![0]) >= ARCHIVE_FIRST_N) rmSync(path.join(prints, f));
+  for (const f of readdirSync(prints)) {
+    const n = Number(f.match(/\d+/)?.[0]);
+    if (f.endsWith(".webp") && n >= ARCHIVE_FIRST_N && n < firstAdded) rmSync(path.join(prints, f));
+  }
   const order = archiveOrder(chosen);
   for (const { n, source } of order) writeFileSync(path.join(prints, `print_${n}.webp`), readFileSync(prepFile(source.key)));
   console.log(`data/archive/archive.json: ${chosen.length} · prints ${ARCHIVE_FIRST_N}…${ARCHIVE_FIRST_N + chosen.length - 1}`);
+}
+
+/* ------------------------------------------------------------------ */
+/* additions (content overhaul, Part 3)                                */
+/* ------------------------------------------------------------------ */
+
+/** Masters the catalogue was missing, by the maker the record names, and the group each joins. */
+const ADDITION_MAKERS: [RegExp, ArchiveGroup][] = [
+  [/hokusai|hiroshige/i, "ukiyo-e"],
+  [/audubon|catesby/i, "natural-history"],
+  [/d[üu]rer|piranesi|hollar|seymour haden|meryon|rembrandt (?:harmensz|van rijn)/i, "old-master"],
+];
+const GRAPHIC = /print|woodblock|woodcut|engraving|etching|drypoint|aquatint|lithograph|drawing|watercolor|ink on|pen and|graphite|plate/i;
+
+/** Candidates for the additions: every CC0 record by one of those makers, graphic work only, no people, not in the archive already. */
+async function additionCandidates() {
+  const archive: ArchiveSource[] = JSON.parse(readFileSync(path.join(OUT, "archive.json"), "utf8"));
+  const have = new Set(archive.flatMap((a) => [a.key, a.record]));
+  const out: Candidate[] = [];
+  const counts: Record<string, number> = {};
+  for (const unit of Object.keys(ARCHIVE_UNITS) as ArchiveUnit[]) {
+    if (!existsSync(path.join(CACHE, "meta", unit))) continue;
+    for (const r of records(unit)) {
+      const who = r.names.find((n) => /artist|maker|author|engraver|designer|publisher/i.test(n.label))?.content ?? "";
+      const hit = ADDITION_MAKERS.find(([re]) => re.test(who));
+      // People and photographs judged on the title and object type (notes name the artist's family, a photograph of the plate…); the review sees the rest.
+      const own = [r.title, ...r.types].join(" | ");
+      if (!hit || have.has(r.record) || have.has(r.ids[0]) || !GRAPHIC.test(r.blob) || PHOTO.test(own) || PEOPLE.test(own)) continue;
+      have.add(r.record);
+      const group = hit[1];
+      counts[group] = (counts[group] ?? 0) + 1;
+      out.push({ key: r.ids[0], media: `media/${mediaDir(r.ids[0], unit)}/${r.ids[0]}.jpg`, group, unit, title: r.title, maker: maker(r) ?? cleanMaker(clean(who)), date: r.date, credit: r.credit || ARCHIVE_UNITS[unit].name, record: r.record });
+    }
+  }
+  out.sort((a, b) => a.group.localeCompare(b.group) || a.key.localeCompare(b.key));
+  writeFileSync(path.join(mkdir(CACHE), "candidates-additions.json"), JSON.stringify(out, null, 1));
+  console.log(`addition candidates: ${out.length}`, counts);
+}
+
+/**
+ * The additions kept after reviewing their contact sheets
+ * (scripts/archive/additions-review.json: keys per group), appended to
+ * data/archive/additions.json: a work added before keeps its number and
+ * name; a new one takes the next number after everything used so far.
+ * A name another design has already is left out rather than numbered.
+ */
+function additionSelect() {
+  const reviewFile = path.join(__dirname, "additions-review.json");
+  const review: Partial<Record<ArchiveGroup, string[]>> = JSON.parse(readFileSync(reviewFile, "utf8"));
+  const archive: ArchiveSource[] = JSON.parse(readFileSync(path.join(OUT, "archive.json"), "utf8"));
+  const file = path.join(OUT, "additions.json");
+  const existing: ArchiveAddition[] = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : [];
+  const byKey = new Map(prepped("candidates-additions.json").map((p) => [p.key, p]));
+  const taken = new Set([...archive, ...existing].map((a) => a.name.toLowerCase()));
+  const kept = new Set(existing.map((a) => a.key));
+  let next = Math.max(ARCHIVE_FIRST_N + archive.length, ...existing.map((a) => a.n + 1));
+  const added: ArchiveAddition[] = [];
+  for (const [group, keys] of Object.entries(review) as [ArchiveGroup, string[]][])
+    for (const key of keys) {
+      const p = byKey.get(key);
+      if (kept.has(key)) continue;
+      if (!p || p.group !== group) {
+        console.warn(`${group}: ${key} is not prepared`);
+        continue;
+      }
+      const who = cleanMaker(p.maker);
+      const name = NAMES[key] ?? archiveName(p.title, group);
+      if (!name || taken.has(name.toLowerCase())) {
+        console.warn(`${group}: ${key} left out (${name ? `"${name}" is taken` : "no name in its record"})`);
+        continue;
+      }
+      taken.add(name.toLowerCase());
+      const { media: _m, score: _s, ...src } = p;
+      added.push({ ...src, maker: who, name, n: next++ });
+    }
+  const all = [...existing, ...added];
+  writeFileSync(file, `[\n${all.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
+  const prints = path.join(ROOT, "public", "prints");
+  for (const a of added) writeFileSync(path.join(prints, `print_${a.n}.webp`), readFileSync(prepFile(a.key)));
+  console.log(`data/archive/additions.json: ${all.length} (${added.length} new${added.length ? `, ${added[0].n}…${added[added.length - 1].n}` : ""}); run scripts/photos/halftone.py next`);
 }
 
 async function metadata() {
@@ -633,9 +733,9 @@ async function metadata() {
 }
 
 const cmd = process.argv[2];
-const run = { metadata, candidates, prep, sheet, select: async () => select() }[cmd as "prep"];
+const run = { metadata, candidates, prep, sheet, select: async () => select(), "addition-candidates": additionCandidates, "addition-select": async () => additionSelect() }[cmd as "prep"];
 if (!run) {
-  console.error("usage: fetchArchive.ts metadata | candidates | prep [group] | sheet [group] | select");
+  console.error("usage: fetchArchive.ts metadata | candidates | prep [group] | sheet [group] | select | addition-candidates | addition-select\n(ARCHIVE_SET=additions for prep and sheet on the additions' candidates)");
   process.exit(1);
 }
 run().catch((e) => {

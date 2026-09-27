@@ -40,6 +40,9 @@ export const ARCHIVE_GROUPS = {
   patent: { unit: "nmah", mode: "cut", kind: "patent model" },
   ornament: { unit: "chndm", mode: "ink", kind: "ornament print" },
   stencil: { unit: "chndm", mode: "ink", kind: "katagami stencil" },
+  // Added in the content overhaul (Part 3), as data/archive/additions.json: numbered on from the archive, never reordered.
+  "natural-history": { unit: "saam", mode: "ink", kind: "natural history plate" },
+  "old-master": { unit: "chndm", mode: "ink", kind: "print" },
 } as const satisfies Record<string, { unit: ArchiveUnit; mode: ArchiveMode; kind: string }>;
 export type ArchiveGroup = keyof typeof ARCHIVE_GROUPS;
 
@@ -76,3 +79,12 @@ export interface ArchiveSource {
 
 /** First archive design number (ids run on after the generated fifth set's range). */
 export const ARCHIVE_FIRST_N = 3831;
+
+/**
+ * An archive work added later (data/archive/additions.json): its number is
+ * written down when it is added and never changes, so adding more never
+ * renumbers anything (archive.json's numbers come from its order).
+ */
+export interface ArchiveAddition extends ArchiveSource {
+  n: number;
+}

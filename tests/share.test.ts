@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { getShirtById } from "@/lib/catalog";
 import { channelLink, parseShareParams, productShareUrl, shareFileName, shareMessage } from "@/lib/share";
+import { B10 } from "./fixtures";
 
 const ORIGIN = "https://example.github.io";
-const shirt = getShirtById("mono-2005")!; // a black tee
+const shirt = getShirtById(B10)!; // a black tee
 
 describe("share links", () => {
   it("links to the product page, tagged with the channel", () => {
-    expect(productShareUrl(shirt, shirt.baseColor, "whatsapp", ORIGIN)).toBe(`${ORIGIN}/shop/mono-2005/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
+    expect(productShareUrl(shirt, shirt.baseColor, "whatsapp", ORIGIN)).toBe(`${ORIGIN}/shop/${B10}/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
   });
 
   it("carries the colourway only when it differs from the original", () => {
@@ -28,10 +29,10 @@ describe("share links", () => {
     expect(wa.startsWith("https://wa.me/?text=")).toBe(true);
     const text = decodeURIComponent(wa.split("text=")[1]);
     expect(text).toContain(shirt.title);
-    expect(text).toContain(`${ORIGIN}/shop/mono-2005/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
+    expect(text).toContain(`${ORIGIN}/shop/${B10}/?utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
 
     const fb = channelLink("facebook", shirt, "black", ORIGIN)!;
-    expect(decodeURIComponent(fb.split("u=")[1])).toBe(`${ORIGIN}/shop/mono-2005/?utm_source=facebook&utm_medium=share&utm_campaign=tee_share`);
+    expect(decodeURIComponent(fb.split("u=")[1])).toBe(`${ORIGIN}/shop/${B10}/?utm_source=facebook&utm_medium=share&utm_campaign=tee_share`);
 
     expect(channelLink("email", shirt, "black", ORIGIN)!.startsWith("mailto:?subject=")).toBe(true);
     expect(channelLink("sms", shirt, "black", ORIGIN)!.startsWith("sms:")).toBe(true);

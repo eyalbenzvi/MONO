@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import manifest from "../data/shirts.index.manifest.json";
 import { hydrated, seed } from "./helpers";
+import { B4, W1 } from "../tests/fixtures";
 
 /** Collect CSP violations (and page errors) from the start of every page. */
 async function watch(page: Page) {
@@ -18,9 +19,9 @@ async function watch(page: Page) {
 
 test("I04: every page runs under its CSP (script hashes, no 'unsafe-inline' for scripts) without a single violation", async ({ page }) => {
   const problems = await watch(page);
-  await seed(page, {}, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
+  await seed(page, {}, [{ id: W1, size: "M", color: "black", qty: 1 }]);
   const seen: string[] = [];
-  for (const route of ["", "shop/", "shop/mono-0001/", "cart/", "shop/p/?id=mono-0006", "shop/mono-9999/"]) {
+  for (const route of ["", "shop/", `shop/${W1}/`, "cart/", `shop/p/?id=${B4}`, "shop/mono-9999/"]) {
     await page.goto(route);
     await page.waitForTimeout(800);
     const meta = await page.evaluate(() => {
@@ -49,7 +50,7 @@ test("I04: every page runs under its CSP (script hashes, no 'unsafe-inline' for 
 test("R23/I03: icons come from the sprite, mockups from shared files, the index from one hashed JSON", async ({ page }) => {
   const requests: string[] = [];
   page.on("request", (r) => requests.push(new URL(r.url()).pathname));
-  await page.goto("shop/mono-0001/");
+  await page.goto(`shop/${W1}/`);
   await hydrated(page);
   await page.waitForTimeout(500);
   expect(await page.locator("svg use").count()).toBeGreaterThan(3);

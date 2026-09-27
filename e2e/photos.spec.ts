@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import full from "../data/shirts.json";
 import { CALIBRATION_IDS, hydrated, storedTaste } from "./helpers";
+import { W1 } from "../tests/fixtures";
 
 type Entry = { id: string; n: number; title: string; baseColor: "black" | "white"; category: string; variant: string; medium: string; photo?: { credit: string; url: string } };
 /** Every photograph (the fourth set's and the archive's); the fourth set's first. */
@@ -64,7 +65,7 @@ test("someone who took the taste test before the photographs: not sent back into
 });
 
 test("sizes: XXL and kids' sizes on the product page, labelled in the bag", async ({ page }) => {
-  await page.goto("shop/mono-0001/");
+  await page.goto(`shop/${W1}/`);
   await hydrated(page);
   await page.getByRole("radio", { name: "XXL" }).tap();
   await page.getByRole("button", { name: "Kids' sizes" }).tap();
@@ -88,7 +89,7 @@ test("T5 / U6: the logo opens About — three words, one line, an honest note; t
   await expect(page.locator("#this-site")).toHaveText("About this site");
   await expect(page.getByText(/nothing is charged/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
-  await page.evaluate(() => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })));
+  await page.evaluate(() => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })));
   await page.goto("cart/");
   await hydrated(page);
   await page.getByRole("button", { name: /^Checkout/ }).first().tap();

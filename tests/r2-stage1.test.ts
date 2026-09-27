@@ -3,6 +3,7 @@ import { PRICE } from "../scripts/gen/constants";
 import { PAIR_PRICE } from "@/lib/cart";
 import { MemoryStorage } from "./memoryStorage";
 import { FEATURE_KEYS, createInitialVector, type UserProfileVector } from "@/types/shirt";
+import { B1, B4, B9, W1 } from "./fixtures";
 
 const storage = new MemoryStorage();
 vi.stubGlobal("localStorage", storage);
@@ -36,18 +37,18 @@ const distance = (a: UserProfileVector, b: UserProfileVector) => Math.sqrt(FEATU
 describe("R05: saving the same tee again doesn't train again", () => {
   it("five save / unsave cycles move the vector exactly as far as one save", async () => {
     const one = await fresh();
-    one.useTasteStore.getState().toggleSaved("mono-0501");
+    one.useTasteStore.getState().toggleSaved(B9);
     const once = one.useTasteStore.getState().preferenceVector;
 
     const s = await fresh();
     for (let i = 0; i < 5; i++) {
-      s.useTasteStore.getState().toggleSaved("mono-0501"); // save
-      s.useTasteStore.getState().toggleSaved("mono-0501"); // unsave
+      s.useTasteStore.getState().toggleSaved(B9); // save
+      s.useTasteStore.getState().toggleSaved(B9); // unsave
     }
-    s.useTasteStore.getState().toggleSaved("mono-0501");
+    s.useTasteStore.getState().toggleSaved(B9);
     const cycled = s.useTasteStore.getState().preferenceVector;
     expect(distance(cycled, once)).toBeLessThan(1e-9);
-    expect(s.useTasteStore.getState().likedIds).toEqual(["mono-0501"]);
+    expect(s.useTasteStore.getState().likedIds).toEqual([B9]);
   });
 
   it("a tee already swiped in Discover doesn't train again when hearted in the shop", async () => {
@@ -125,12 +126,12 @@ describe("R01: Daily 5, streak and milestones count honestly", () => {
   });
 
   it("migrates taste v2 → v3: milestones start empty", async () => {
-    storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ["mono-0001"], daily: { day: "2026-09-25", count: 2, streak: 1, last: null } }, version: 2 }));
+    storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: [W1], daily: { day: "2026-09-25", count: 2, streak: 1, last: null } }, version: 2 }));
     const s = await fresh();
     await s.useTasteStore.persist.rehydrate();
     expect(s.useTasteStore.getState().milestones).toEqual([]);
-    expect(s.useTasteStore.getState().likedIds).toEqual(["mono-0001"]);
-    s.useTasteStore.getState().toggleSaved("mono-0006");
+    expect(s.useTasteStore.getState().likedIds).toEqual([W1]);
+    s.useTasteStore.getState().toggleSaved(B4);
     expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(4);
   });
 });
@@ -138,50 +139,50 @@ describe("R01: Daily 5, streak and milestones count honestly", () => {
 describe("R10: Get it in both adds only what's missing", () => {
   it("with black already in the bag it adds the white one only", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addToCart("mono-0001", "M", "black");
-    s.useCartStore.getState().addPair("mono-0001", "M");
+    s.useCartStore.getState().addToCart(W1, "M", "black");
+    s.useCartStore.getState().addPair(W1, "M");
     expect(s.useCartStore.getState().cart).toEqual([
-      { id: "mono-0001", size: "M", color: "black", qty: 1 },
-      { id: "mono-0001", size: "M", color: "white", qty: 1 },
+      { id: W1, size: "M", color: "black", qty: 1 },
+      { id: W1, size: "M", color: "white", qty: 1 },
     ]);
   });
 
   it("with both in the bag it adds nothing", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addPair("mono-0001", "M");
+    s.useCartStore.getState().addPair(W1, "M");
     const before = s.useCartStore.getState().cart;
-    expect(s.useCartStore.getState().addPair("mono-0001", "M")).toBe(false);
+    expect(s.useCartStore.getState().addPair(W1, "M")).toBe(false);
     expect(s.useCartStore.getState().cart).toEqual(before);
   });
 
   it("with one colour at the limit of 9 it adds nothing and says why", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addToCart("mono-0001", "M", "black", 9);
-    expect(s.useCartStore.getState().addPair("mono-0001", "M")).toBe(false);
-    expect(s.useCartStore.getState().cart).toEqual([{ id: "mono-0001", size: "M", color: "black", qty: 9 }]);
+    s.useCartStore.getState().addToCart(W1, "M", "black", 9);
+    expect(s.useCartStore.getState().addPair(W1, "M")).toBe(false);
+    expect(s.useCartStore.getState().cart).toEqual([{ id: W1, size: "M", color: "black", qty: 9 }]);
     expect(s.useUiStore.getState().toast?.message).toMatch(/9/);
   });
 
   it("labels the button by what the bag already holds", async () => {
     const { pairStatus, pairLabel } = await import("@/lib/cart");
     const price = PRICE;
-    expect(pairLabel(pairStatus([], "mono-0001", "M"), price)).toBe("Get it in both");
-    expect(pairLabel(pairStatus([{ id: "mono-0001", size: "M", color: "white", qty: 1 }], "mono-0001", "M"), price)).toBe("Complete the pair · +$42");
+    expect(pairLabel(pairStatus([], W1, "M"), price)).toBe("Get it in both");
+    expect(pairLabel(pairStatus([{ id: W1, size: "M", color: "white", qty: 1 }], W1, "M"), price)).toBe("Complete the pair · +$42");
     expect(
       pairLabel(
         pairStatus(
           [
-            { id: "mono-0001", size: "M", color: "white", qty: 1 },
-            { id: "mono-0001", size: "M", color: "black", qty: 2 },
+            { id: W1, size: "M", color: "white", qty: 1 },
+            { id: W1, size: "M", color: "black", qty: 2 },
           ],
-          "mono-0001",
+          W1,
           "M",
         ),
         price,
       ),
     ).toBe("In your bag ✓");
     // Another size doesn't count as this pair.
-    expect(pairLabel(pairStatus([{ id: "mono-0001", size: "L", color: "white", qty: 1 }], "mono-0001", "M"), price)).toBe("Get it in both");
+    expect(pairLabel(pairStatus([{ id: W1, size: "L", color: "white", qty: 1 }], W1, "M"), price)).toBe("Get it in both");
   });
 });
 
@@ -235,10 +236,10 @@ describe("I16: stored state is whitelisted field by field", () => {
       JSON.stringify({
         state: {
           swipeHistory: [
-            { shirtId: "mono-0001", action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5, evil: "<img>" },
-            { shirtId: "mono-0006", action: "dislike", source: "nope", matchScore: "x", strategy: "hax", timestamp: "then" },
+            { shirtId: W1, action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5, evil: "<img>" },
+            { shirtId: B4, action: "dislike", source: "nope", matchScore: "x", strategy: "hax", timestamp: "then" },
           ],
-          deck: [{ id: "mono-0003", strategy: "hax", extra: 1 }],
+          deck: [{ id: B1, strategy: "hax", extra: 1 }],
         },
         version: 3,
       }),
@@ -246,9 +247,9 @@ describe("I16: stored state is whitelisted field by field", () => {
     const s = await fresh();
     await s.useTasteStore.persist.rehydrate();
     const [a, b] = s.useTasteStore.getState().swipeHistory;
-    expect(a).toEqual({ shirtId: "mono-0001", action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5 });
-    expect(b).toEqual({ shirtId: "mono-0006", action: "dislike", source: "swipe", matchScore: 0, strategy: "greedy", timestamp: 0 });
-    const deck = s.useTasteStore.getState().deck.find((e) => e.id === "mono-0003");
+    expect(a).toEqual({ shirtId: W1, action: "like", source: "swipe", matchScore: 80, strategy: "greedy", timestamp: 5 });
+    expect(b).toEqual({ shirtId: B4, action: "dislike", source: "swipe", matchScore: 0, strategy: "greedy", timestamp: 0 });
+    const deck = s.useTasteStore.getState().deck.find((e) => e.id === B1);
     expect(deck === undefined || deck.strategy === "greedy").toBe(true);
     expect(Object.keys(deck ?? { id: 1, strategy: 1 }).sort()).toEqual(["id", "strategy"]);
   });
@@ -256,8 +257,8 @@ describe("I16: stored state is whitelisted field by field", () => {
   it("another tab clearing storage (key null) resets both stores here", async () => {
     const s = await fresh();
     const { syncFromStorage } = await import("@/store/sync");
-    s.useTasteStore.getState().toggleSaved("mono-0001");
-    s.useCartStore.getState().addToCart("mono-0001", "M");
+    s.useTasteStore.getState().toggleSaved(W1);
+    s.useCartStore.getState().addToCart(W1, "M");
     storage.clear();
     await syncFromStorage(null);
     expect(s.useTasteStore.getState().likedIds).toEqual([]);

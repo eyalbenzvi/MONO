@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed } from "./helpers";
+import { W1 } from "../tests/fixtures";
 
 type Ev = Record<string, any> & { event: string };
 const layer = (page: Page) => page.evaluate(() => (window.dataLayer ?? []) as Ev[]);
@@ -45,9 +46,9 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
 });
 
 test("R02: tags are recorded before they leave the address bar (shared product link)", async ({ page }) => {
-  await page.goto("shop/mono-0001/?c=black&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share");
+  await page.goto(`shop/${W1}/?c=black&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
   await hydrated(page);
-  await expect(page).toHaveURL(/\/shop\/mono-0001\/$/);
+  await expect(page).toHaveURL(new RegExp(`/shop/${W1}/$`));
   const landing = (await layer(page)).find((e) => e.event === "landing");
   expect(landing).toMatchObject({ utm_source: "whatsapp", ref: "whatsapp", utm_campaign: "tee_share" });
 });
@@ -58,7 +59,7 @@ test("R06: a dismissed share sheet sends nothing; a copied link counts once", as
   });
   await seed(page);
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("shop/mono-0001/");
+  await page.goto(`shop/${W1}/`);
   await hydrated(page);
   await page.getByRole("button", { name: /^More for / }).tap();
   await page.getByRole("button", { name: "Share", exact: true }).tap();

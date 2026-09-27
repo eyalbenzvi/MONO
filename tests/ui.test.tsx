@@ -19,6 +19,7 @@ describe("SizeSelector", () => {
 import { ColorSelector } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { track } from "@/lib/analytics";
+import { W1 } from "./fixtures";
 
 describe("ColorSelector", () => {
   it("is one radiogroup in every variant, with arrow-key navigation and roving tabindex", () => {
@@ -48,7 +49,7 @@ describe("formatPrice", () => {
 describe("track", () => {
   it("pushes events onto window.dataLayer", () => {
     window.dataLayer = [];
-    track("add_to_cart", { id: "mono-0001", size: "M" });
-    expect(window.dataLayer[0]).toMatchObject({ event: "add_to_cart", id: "mono-0001", size: "M" });
+    track("add_to_cart", { id: W1, size: "M" });
+    expect(window.dataLayer[0]).toMatchObject({ event: "add_to_cart", id: W1, size: "M" });
   });
 });

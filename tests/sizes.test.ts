@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ADULT_SIZES, KID_SIZES, SIZES, SIZE_GUIDE, SIZE_LABELS, isKidSize } from "@/types/shirt";
+import { B1, B4, W1 } from "./fixtures";
 
 class MemoryStorage {
   private m = new Map<string, string>();
@@ -28,13 +29,13 @@ describe("sizes: XS–3XL and kids' sizes", () => {
   });
 
   it("a bag from before keeps its sizes; kids' and XXL sizes are stored and remembered", async () => {
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0001", size: "M", color: "black", qty: 1 }], preferredSize: "L" }, version: 3 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "M", color: "black", qty: 1 }], preferredSize: "L" }, version: 3 }));
     vi.resetModules();
     const { useCartStore } = await import("@/store/cartStore");
     await useCartStore.persist.rehydrate();
-    expect(useCartStore.getState().cart).toEqual([{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
-    useCartStore.getState().addToCart("mono-0006", "K6", "white");
-    useCartStore.getState().addToCart("mono-0003", "2XL", "black");
+    expect(useCartStore.getState().cart).toEqual([{ id: W1, size: "M", color: "black", qty: 1 }]);
+    useCartStore.getState().addToCart(B4, "K6", "white");
+    useCartStore.getState().addToCart(B1, "2XL", "black");
     const saved = JSON.parse(storage.getItem("mono-cart")!).state;
     expect(saved.cart.map((l: { size: string }) => l.size)).toEqual(["M", "K6", "2XL"]);
     vi.resetModules();
@@ -46,9 +47,9 @@ describe("sizes: XS–3XL and kids' sizes", () => {
 
 describe("T7: designs retired by the content review", () => {
   it("a stored profile or bag that points at a retired design drops it and keeps the rest", async () => {
-    // mono-0002 (a novelty variant) was retired; mono-0001 stays.
-    storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ["mono-0002", "mono-0001"], seen: ["mono-0002"], onboardingSeen: true }, version: 4 }));
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0002", size: "M", color: "black", qty: 1 }, { id: "mono-0001", size: "M", color: "black", qty: 1 }] }, version: 3 }));
+    // mono-0002 (a novelty variant) was retired; a live design stays.
+    storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ["mono-0002", W1], seen: ["mono-0002"], onboardingSeen: true }, version: 4 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "mono-0002", size: "M", color: "black", qty: 1 }, { id: W1, size: "M", color: "black", qty: 1 }] }, version: 3 }));
     vi.resetModules();
     const { useTasteStore } = await import("@/store/tasteStore");
     const { useCartStore } = await import("@/store/cartStore");
@@ -56,7 +57,7 @@ describe("T7: designs retired by the content review", () => {
     expect(getShirtById("mono-0002")).toBeUndefined();
     await useTasteStore.persist.rehydrate();
     await useCartStore.persist.rehydrate();
-    expect(useTasteStore.getState().likedIds).toEqual(["mono-0001"]);
-    expect(useCartStore.getState().cart.map((l) => l.id)).toEqual(["mono-0001"]);
+    expect(useTasteStore.getState().likedIds).toEqual([W1]);
+    expect(useCartStore.getState().cart.map((l) => l.id)).toEqual([W1]);
   });
 });

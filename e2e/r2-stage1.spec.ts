@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { hydrated, seed, openSaved } from "./helpers";
+import { B9, W1 } from "../tests/fixtures";
 
-const B = "mono-0501";
+const B = B9;
 const shopBack = (page: import("@playwright/test").Page) => page.getByRole("button", { name: "Shop", exact: true });
 
 /** Open the first product in the grid (not B) and return its id. */
@@ -55,7 +56,7 @@ test.describe("R17: ← Shop after moving between products", () => {
 });
 
 test.describe("R25–R27, R29: bag, checkout and Saved", () => {
-  const LINE = { id: "mono-0001", size: "M", color: "black", qty: 1 };
+  const LINE = { id: W1, size: "M", color: "black", qty: 1 };
 
   test("R26: moving between checkout steps puts focus on the new step's heading", async ({ page }) => {
     await seed(page, {}, [LINE]);

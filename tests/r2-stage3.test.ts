@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PRICE } from "../scripts/gen/constants";
 import { PAIR_PRICE } from "@/lib/cart";
+import { B4, W1 } from "./fixtures";
 
 vi.mock("@/lib/shareImage", () => ({ renderTasteImage: async () => new Blob(["png"], { type: "image/png" }) }));
 
@@ -25,15 +26,15 @@ beforeEach(() => {
 describe("R06: commerce events in GA4's shape", () => {
   it("add_to_cart: currency, value and items with id, name, category, colour, size, price, quantity — and its source", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addToCart("mono-0001", "M", "white", 1, { source: "grid" });
+    s.useCartStore.getState().addToCart(W1, "M", "white", 1, { source: "grid" });
     const [e] = events("add_to_cart");
     expect(e).toMatchObject({ currency: "USD", value: PRICE, source: "grid" });
-    expect(e.items).toEqual([{ item_id: "mono-0001", item_name: expect.any(String), item_category: expect.any(String), item_variant: "white", size: "M", price: PRICE, quantity: 1 }]);
+    expect(e.items).toEqual([{ item_id: W1, item_name: expect.any(String), item_category: expect.any(String), item_variant: "white", size: "M", price: PRICE, quantity: 1 }]);
   });
 
   it("the pair counts as $90 (not $96), its saving as the items' discount; completing it counts +$42", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addPair("mono-0001", "M", { source: "product" });
+    s.useCartStore.getState().addPair(W1, "M", { source: "product" });
     const [pair] = events("add_to_cart");
     expect(pair.value).toBe(90);
     expect(pair.items.map((i: any) => [i.item_variant, i.price, i.discount])).toEqual([
@@ -41,25 +42,25 @@ describe("R06: commerce events in GA4's shape", () => {
       ["white", PRICE, PRICE - PAIR_PRICE / 2],
     ]);
     const t = await fresh();
-    t.useCartStore.getState().addToCart("mono-0006", "M", "black");
-    t.useCartStore.getState().addPair("mono-0006", "M");
+    t.useCartStore.getState().addToCart(B4, "M", "black");
+    t.useCartStore.getState().addPair(B4, "M");
     expect(events("add_to_cart")[1]).toMatchObject({ value: 42, items: [{ item_variant: "white", discount: 6 }] });
   });
 
   it("remove_from_cart when a line goes down or out (and for the mini bag's Undo)", async () => {
     const s = await fresh();
-    s.useCartStore.getState().addToCart("mono-0001", "M", "black", 3);
-    s.useCartStore.getState().setCartQty({ id: "mono-0001", size: "M", color: "black" }, 1);
+    s.useCartStore.getState().addToCart(W1, "M", "black", 3);
+    s.useCartStore.getState().setCartQty({ id: W1, size: "M", color: "black" }, 1);
     expect(events("remove_from_cart")[0]).toMatchObject({ value: 96, items: [{ quantity: 2 }] });
-    s.useCartStore.getState().undoAdd({ id: "mono-0001", size: "M", added: ["black"] });
+    s.useCartStore.getState().undoAdd({ id: W1, size: "M", added: ["black"] });
     expect(events("remove_from_cart")[1]).toMatchObject({ source: "minibag", items: [{ quantity: 1 }] });
   });
 
   it("purchase: transaction id, total, shipping, discount; items add up to what was paid for goods; the first touch attached", async () => {
     const s = await fresh();
     s.captureLanding({ search: "?utm_source=news&utm_medium=email&utm_campaign=drop&ref=friend", pathname: "/shop/" } as Location, "https://mail.example");
-    s.useCartStore.getState().addPair("mono-0001", "M");
-    s.useCartStore.getState().addToCart("mono-0001", "L", "black");
+    s.useCartStore.getState().addPair(W1, "M");
+    s.useCartStore.getState().addToCart(W1, "L", "black");
     s.useCartStore.getState().placeOrder({ name: "A", email: "a@b.co", address: "1 St", city: "X", zip: "1234", country: "US" });
     const [p] = events("purchase");
     expect(p).toMatchObject({ currency: "USD", value: 138, shipping: 0, discount: 6 });

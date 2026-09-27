@@ -18,6 +18,7 @@ import { TasteSheet } from "@/components/TasteSheet";
 import { getShirtById } from "@/lib/catalog";
 import { useCartStore } from "@/store/cartStore";
 import { useUiStore } from "@/store/useUiStore";
+import { W1 } from "./fixtures";
 
 beforeAll(() => {
   MotionGlobalConfig.skipAnimations = true;
@@ -35,7 +36,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const shirt = getShirtById("mono-0001")!;
+const shirt = getShirtById(W1)!;
 
 describe("ProductCard", () => {
   it("one link with the name (no price: every tee costs the same) and a heart — no quick add, share or match badge", () => {

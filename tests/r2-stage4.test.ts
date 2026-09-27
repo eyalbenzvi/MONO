@@ -13,6 +13,7 @@ import { FEATURE_KEYS, createInitialVector, type CatalogEntry } from "@/types/sh
 import { WEAK_QUALITY, measurePrint } from "../scripts/gen/quality";
 import { SUBJECT_NOUN_CATEGORIES } from "../scripts/gen/subject";
 import { TOTAL } from "../scripts/gen/constants";
+import { W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
 const byId = new Map(FULL.map((s) => [s.id, s]));
@@ -126,7 +127,7 @@ describe("R21: the index head describes the data", () => {
   });
 
   it("ids are unchanged after retiring designs: mono-0001 first, the first sets never above mono-<TOTAL>, the index carries each n", () => {
-    expect(FULL[0].id).toBe("mono-0001");
+    expect(FULL[0].id).toBe(W1);
     // The first four sets keep their numbers; the fifth and sixth run on after them.
     expect(FULL.filter((s) => s.variant.startsWith("photo-")).every((s) => s.n > 2800 && s.n <= TOTAL)).toBe(true);
     expect(FULL.filter((s) => s.medium === "ink").every((s) => s.n > TOTAL)).toBe(true);

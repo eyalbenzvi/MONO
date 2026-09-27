@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed, openSaved } from "./helpers";
+import { B9, W1 } from "../tests/fixtures";
 
 const overlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -140,7 +141,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("R13: every add confirms in one row (Added · M, View bag) — nothing else to press", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
@@ -153,7 +154,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("R13: the mini bag stays while hovered and leaves by itself after; the next add shows again", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     const buy = page.locator(".sticky.bottom-0").getByRole("button").last();
@@ -172,7 +173,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("R13: the mini bag never covers the sizes", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
@@ -186,7 +187,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
   test("R20: at 375 px the buy button's label (with the price) fits in every state", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     const bar = page.locator(".sticky.bottom-0");
@@ -203,7 +204,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("R15: the buy bar stays above the similar prints scrolling under it", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     const similar = page.getByRole("heading", { name: "Similar prints" });
     await similar.scrollIntoViewIfNeeded();
@@ -218,7 +219,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("I07 / T4: one tee picker (black, white, both); the price only on the buy button; details closed with the print size", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await expect(page.getByRole("radiogroup", { name: "Tee colour" })).toHaveCount(1);
     const both = page.getByRole("radio", { name: /Both tees/ });
@@ -238,7 +239,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
 
   test("I15 / T1: the print-only view is in ⋯; tapping the picture zooms, in the view on screen", async ({ page }) => {
     await seed(page);
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("button", { name: /^More for / }).tap();
     await page.getByRole("button", { name: "Show the print only" }).tap();
@@ -252,7 +253,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
   });
 
   test("I08 / T1 / T4: Saved — one button 'Add your top 3 · M' (no prices); Add all and Share behind ⋯; rows without +", async ({ page }) => {
-    await seed(page, { likedIds: ["mono-0501", "mono-0601", "mono-0701", "mono-0801"] });
+    await seed(page, { likedIds: [B9, "mono-0601", "mono-0701", "mono-0801"] });
     await page.addInitScript(() => {
       const c = JSON.parse(localStorage.getItem("mono-cart")!);
       c.state.preferredSize = "M";
@@ -273,7 +274,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
   });
 
   test("I13, R04, R09: the bag has no repeated meta line, checkout no promo code, confirmation no email capture", async ({ page }) => {
-    await seed(page, {}, [{ id: "mono-0001", size: "M", color: "black", qty: 1 }]);
+    await seed(page, {}, [{ id: W1, size: "M", color: "black", qty: 1 }]);
     await page.addInitScript(() => localStorage.setItem("mono-email", JSON.stringify({ email: "ada@example.com" })));
     await page.goto("cart/");
     await hydrated(page);

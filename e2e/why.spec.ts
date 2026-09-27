@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { hydrated, LEANING, seed } from "./helpers";
+import { W1 } from "../tests/fixtures";
 
 test.describe("V4: a personal line opens why", () => {
   test("product page: the Top pick line opens real reasons; Esc closes it and focus returns to the line", async ({ page }) => {
@@ -44,7 +45,7 @@ test.describe("V4: a personal line opens why", () => {
   });
 
   test("before any taste, no personal line at all", async ({ page }) => {
-    await page.goto("shop/mono-0001/");
+    await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await expect(page.getByRole("button", { name: /for you$/ })).toHaveCount(0);
   });

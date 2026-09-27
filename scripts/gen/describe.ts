@@ -14,6 +14,16 @@ export const sentence = (text: string) => (/[.!?…”)]$/.test(text.trim()) ? t
 
 /** How a print wears, per category — honest feel, no claims or counts. */
 const TAILS: Record<SourceCategory, string[]> = {
+  data: [
+    "Every mark stands for something real.",
+    "Computed, not invented.",
+    "A reference sheet you can wear.",
+    "Plotted from the numbers.",
+    "Drawn from published values.",
+    "Measured before it was drawn.",
+    "Exact to the last figure shown.",
+    "The data is the drawing.",
+  ],
   architectural: [
     "Reads like a blueprint from across the room.",
     "Strict lines, softened by cotton.",

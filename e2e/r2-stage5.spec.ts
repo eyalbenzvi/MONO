@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { CALIBRATION_IDS, hydrated, seed } from "./helpers";
+import { B9, W1 } from "../tests/fixtures";
 
 const OUT = path.resolve(__dirname, "..", "out");
 const html = (route: string) => readFileSync(path.join(OUT, route, route.endsWith(".html") ? "" : "index.html"), "utf8");
@@ -26,7 +27,7 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
   });
 
   test("product: links onward, ProductGroup with offers and policies, breadcrumb, og:type product", () => {
-    const page = html("shop/mono-0001");
+    const page = html(`shop/${W1}`);
     const nav = page.match(/aria-label="More like this"[\s\S]*?<\/nav>/)?.[0] ?? "";
     const links = [...nav.matchAll(/href="(\/shop\/mono-\d{4}\/)"/g)];
     expect(links.length).toBeGreaterThanOrEqual(6);
@@ -38,7 +39,7 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
     expect(page).toContain('"itemCondition":"https://schema.org/NewCondition"');
     expect(page).toMatch(/"priceValidUntil":"\d{4}-12-31"/);
     expect(page).toContain('<meta property="og:type" content="product"/><meta property="product:price:amount" content="48.00"/>');
-    expect(page).toMatch(/<link rel="canonical" href="[^"]+\/shop\/mono-0001\/"\/>/);
+    expect(page).toMatch(new RegExp(`<link rel="canonical" href="[^"]+/shop/${W1}/"/>`));
   });
 
   test("404: canonical and noindex", () => {
@@ -57,17 +58,17 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
 
 test.describe("shared links (F04) and the empty bag (F05)", () => {
   test("a shared tee: the page stays until asked; 'Save & find more like it' saves and starts the test", async ({ page }) => {
-    await page.goto("shop/mono-0501/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share");
+    await page.goto(`shop/${B9}/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
     await hydrated(page);
     const banner = page.getByRole("status").filter({ hasText: "A friend shared this tee" });
     await expect(banner).toBeVisible();
     await page.waitForTimeout(800);
-    await expect(page).toHaveURL(/\/shop\/mono-0501\/$/);
+    await expect(page).toHaveURL(new RegExp(`/shop/${B9}/$`));
     await expect(banner.getByRole("link")).toHaveCount(0);
     await banner.getByRole("button", { name: "Save & find more like it" }).tap();
     await page.waitForURL((u) => u.pathname === "/" || u.pathname.endsWith("/MONO/"));
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).state.likedIds);
-    expect(saved).toContain("mono-0501");
+    expect(saved).toContain(B9);
   });
 
   test("a friend's taste link greets with their archetype", async ({ page }) => {
@@ -77,7 +78,7 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
   });
 
   test("an empty bag starts from Saved: three with quick add", async ({ page }) => {
-    await seed(page, { likedIds: ["mono-0501", "mono-0601", "mono-0701", "mono-0801"], calibrated: false });
+    await seed(page, { likedIds: [B9, "mono-0601", "mono-0701", "mono-0801"], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
     const section = page.locator("section", { has: page.getByRole("heading", { name: "From your Saved" }) });
