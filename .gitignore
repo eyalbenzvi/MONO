@@ -10,3 +10,4 @@ public/og
 test-results
 playwright-report
 public/img
+__pycache__
