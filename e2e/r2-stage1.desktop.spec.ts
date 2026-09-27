@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed, storedTaste } from "./helpers";
-import { B9, W1 } from "../tests/fixtures";
+import { B1, B2, B3, B9, W1 } from "../tests/fixtures";
 
 /** The ten taste-test swipes, by keyboard. */
 async function swipeTen(page: Page) {
@@ -68,7 +68,7 @@ test.describe("R26: focus never falls back to the page", () => {
 
   test("quick add from an empty bag: focus lands on the bag's heading, not the page", async ({ page }) => {
     // Quick add now lives only on "From your Saved" in an empty bag.
-    await seed(page, { likedIds: [B9, "mono-0601", "mono-0701"], calibrated: false });
+    await seed(page, { likedIds: [B9, B1, B2], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
     const add = page.getByRole("button", { name: /^Quick add / }).first();

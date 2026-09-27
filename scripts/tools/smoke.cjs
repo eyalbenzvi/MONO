@@ -113,7 +113,9 @@ const ok = (cond, msg) => {
     const dctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const d = await dctx.newPage();
     watch(d, "desktop");
-    for (const route of ["", "shop/", "shop/mono-0001/", "cart/"]) {
+    // A product page: the first design the catalogue has (reviews retire designs; ids never move).
+    const firstId = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "data", "shirts.json"), "utf8"))[0].id;
+    for (const route of ["", "shop/", `shop/${firstId}/`, "cart/"]) {
       const r = await d.goto(BASE + route, { waitUntil: "networkidle" });
       ok(r && r.status() === 200, `desktop ${route || "/"} loads`);
     }

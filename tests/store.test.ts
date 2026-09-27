@@ -168,7 +168,7 @@ describe("taste store v2 (F10)", () => {
     useTasteStore.getState().fillDeck(); // as AppShell does after hydration
     useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "like");
     expect(useTasteStore.getState().daily.count).toBe(1);
-    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(4);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(5);
   });
 });
 
@@ -199,12 +199,12 @@ describe("cart store", () => {
   });
 
   it("migrates cart v1 → v2, seeding the remembered size", async () => {
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "S", color: "black", qty: 1 }, { id: B4, size: "XL", color: "white", qty: 1 }], selectedSizes: { B1: "M" } }, version: 1 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "S", color: "black", qty: 1 }, { id: B4, size: "XL", color: "white", qty: 1 }], selectedSizes: { [B1]: "M" } }, version: 1 }));
     const { useCartStore } = await fresh();
     await useCartStore.persist.rehydrate();
     expect(useCartStore.getState().preferredSize).toBe("XL");
     expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(4);
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { B1: "M" } }, version: 1 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { [B1]: "M" } }, version: 1 }));
     const again = await fresh();
     await again.useCartStore.persist.rehydrate();
     expect(again.useCartStore.getState().preferredSize).toBe("M");
@@ -357,7 +357,7 @@ describe("stored state guard", () => {
       "mono-taste",
       JSON.stringify({ state: { likedIds: [B3, 42, "mono-9999", B3], preferenceVector: { geometric: "x", wit: 2, nature: 0.3 }, swipeHistory: "nope", deck: [{ id: "bogus" }], onboardingSeen: "yes" }, version: 1 }),
     );
-    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "M", color: "black", qty: 3 }, { id: W1, size: "XXXL", color: "red", qty: -1 }], selectedSizes: { W1: "L", B4: 7 } }, version: 1 }));
+    storage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "M", color: "black", qty: 3 }, { id: W1, size: "XXXL", color: "red", qty: -1 }], selectedSizes: { [W1]: "L", [B4]: 7 } }, version: 1 }));
     const { useTasteStore, useCartStore } = await fresh();
     await useTasteStore.persist.rehydrate();
     await useCartStore.persist.rehydrate();
@@ -370,7 +370,7 @@ describe("stored state guard", () => {
     expect(t.onboardingSeen).toBe(false);
     const c = useCartStore.getState();
     expect(c.cart).toEqual([{ id: W1, size: "M", color: "black", qty: 3 }]);
-    expect(c.selectedSizes).toEqual({ W1: "L" });
+    expect(c.selectedSizes).toEqual({ [W1]: "L" });
   });
 });
 
@@ -387,7 +387,7 @@ const base = (vector: Record<string, number>, extra: Record<string, unknown> = {
     { shirtId: B5, action: "dislike", source: "swipe", matchScore: 40, strategy: "calibration", timestamp: 2 },
   ],
   deck: [],
-  selectedSizes: { W2: "M" },
+  selectedSizes: { [W2]: "M" },
   lastUpdate: null,
   calibrationAcknowledged: true,
   onboardingSeen: true,
@@ -429,7 +429,7 @@ describe("migration from the old single store (mono-session-v1)", () => {
   });
 
   it("v4 keeps chosen colours and extends the vector", async () => {
-    const { taste, cart } = await migrateFrom(4, base(TEN, { cart: [{ id: B4, size: "L", qty: 1, color: "white" }], selectedColors: { B4: "white" }, lastOrder: null }));
+    const { taste, cart } = await migrateFrom(4, base(TEN, { cart: [{ id: B4, size: "L", qty: 1, color: "white" }], selectedColors: { [B4]: "white" }, lastOrder: null }));
     expect(cart.cart[0].color).toBe("white");
     expect(cart.selectedColors[B4]).toBe("white");
     expect(taste.preferenceVector.nature).toBe(0.5);

@@ -23,8 +23,10 @@ describe("V4: why a design is 'for you' — every reason is real", () => {
   it("for many tastes and designs: shared traits are ones the taste leans to and the design has; rank and tier agree; the liked design is saved and alike", () => {
     let checked = 0;
     for (let t = 0; t < 12; t++) {
-      const likes = [t * 7, t * 7 + 300, t * 7 + 900, t * 7 + 1500];
-      const v = tasteFrom(likes, [t * 7 + 50, t * 7 + 2000]);
+      // Spread over the whole catalogue, whatever its size.
+      const at = (k: number) => k % SHIRTS.length;
+      const likes = [t * 7, t * 7 + 300, t * 7 + 900, t * 7 + 1500].map(at);
+      const v = tasteFrom(likes, [t * 7 + 50, t * 7 + 2000].map(at));
       const liked = likes.map((i) => SHIRTS[i].id);
       for (const s of SHIRTS.filter((_, i) => i % 23 === t)) {
         const why = whyMatch(v, s, liked);

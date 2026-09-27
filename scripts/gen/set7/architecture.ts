@@ -106,6 +106,30 @@ function archDesigns(): Set7Design[] {
   });
 }
 
+/** A convex polygon cut to an axis-aligned box (Sutherland–Hodgman). */
+function clipToBox(poly: [number, number][], x0: number, y0: number, x1: number, y1: number): [number, number][] {
+  const edges: [(p: [number, number]) => boolean, (a: [number, number], b: [number, number]) => [number, number]][] = [
+    [(p) => p[0] >= x0, (a, b) => [x0, a[1] + ((b[1] - a[1]) * (x0 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[0] <= x1, (a, b) => [x1, a[1] + ((b[1] - a[1]) * (x1 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[1] >= y0, (a, b) => [a[0] + ((b[0] - a[0]) * (y0 - a[1])) / (b[1] - a[1]), y0]],
+    [(p) => p[1] <= y1, (a, b) => [a[0] + ((b[0] - a[0]) * (y1 - a[1])) / (b[1] - a[1]), y1]],
+  ];
+  let out = poly;
+  for (const [inside, cross] of edges) {
+    const input = out;
+    out = [];
+    input.forEach((p, i) => {
+      const prev = input[(i + input.length - 1) % input.length];
+      if (inside(p)) {
+        if (!inside(prev)) out.push(cross(prev, p));
+        out.push(p);
+      } else if (inside(prev)) out.push(cross(prev, p));
+    });
+    if (!out.length) break;
+  }
+  return out;
+}
+
 /* ------------------------------------------------------------------ */
 /* Brick bonds                                                          */
 /* ------------------------------------------------------------------ */
@@ -137,16 +161,26 @@ function bondDesigns(): Set7Design[] {
     ["Flemish Bond", "Header and stretcher in every course, headers centred over stretchers", "flemish", courses((r, y) => course(y, [Hd, L], r % 2 ? Hd / 2 + L / 2 : 0))],
     ["Header Bond", "Every course headers, each over the joint below", "header", courses((r, y) => course(y, [Hd], r % 2 ? Hd / 2 : 0))],
     (() => {
-      // Herringbone (2:1 bricks): along each diagonal a flat brick, then an upright one beside it; the strips repeat every four units.
-      let s = "";
+      // Herringbone (2:1 bricks): along each diagonal a flat brick, then an upright one beside it; the strips repeat
+      // every four units. Turned 45° and cut to the panel exactly (each brick's outline clipped), so no line leaves it.
       const u = Hd;
-      const g = `<g transform="rotate(45 150 156)">`;
+      const turn = ([x, y]: [number, number]): [number, number] => {
+        const [dx, dy] = [x - 150, y - 156];
+        return [150 + (dx - dy) * Math.SQRT1_2, 156 + (dx + dy) * Math.SQRT1_2];
+      };
+      const brickAt = (x: number, y: number, w: number, h: number) => {
+        const poly = clipToBox([turn([x, y]), turn([x + w, y]), turn([x + w, y + h]), turn([x, y + h])], X0, Y0, X0 + WW, Y0 + HH);
+        return poly.length >= 3 ? path(polyline(poly, true), 0.9) : "";
+      };
+      let s = "";
       for (let m = -8; m <= 8; m++)
         for (let k = -14; k <= 14; k++) {
           const ox = 150 + (k + 4 * m) * u, oy = 156 + k * u;
-          s += rect(ox, oy, 2 * u - J, u - J, 0.9) + rect(ox + 2 * u, oy - u, u - J, 2 * u - J, 0.9);
+          // Only bricks that can reach the panel (turning keeps the distance to the centre).
+          if (Math.hypot(ox + u - 150, oy + u / 2 - 156) > 190) continue;
+          s += brickAt(ox, oy, 2 * u - J, u - J) + brickAt(ox + 2 * u, oy - u, u - J, 2 * u - J);
         }
-      return ["Herringbone Bond", "Stretchers laid at right angles, zigzagging", "herringbone", `${g}${s}</g>`] as [string, string, string, string];
+      return ["Herringbone Bond", "Stretchers laid at right angles, zigzagging", "herringbone", s] as [string, string, string, string];
     })(),
   ];
   return bonds.map(([title, how, key, bricks]) => {

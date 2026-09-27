@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "generate": "tsx scripts/generateCatalog.ts",
+    "generate": "tsx scripts/generateCatalog.ts && tsx scripts/tools/publishIndex.ts",
     "og": "tsx scripts/generateOgImages.ts",
     "audit:prints": "node scripts/tools/auditPrints.cjs && tsx --tsconfig tsconfig.scripts.json scripts/tools/blockCheck.ts",
     "measure:fonts": "node scripts/tools/measureFonts.cjs",

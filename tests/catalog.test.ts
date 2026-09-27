@@ -32,7 +32,7 @@ describe("generated catalog (data/shirts.json)", () => {
   });
 
   it("T7: none of the retired kinds is left (caricatures, pun icons, joke receipts / signs / quotes, 8-bit jokes, meme icons, novelty badges)", () => {
-    const gone = /^(caricature-|objecticon|oddoneout|diagram|receipt|warning|quote|sprite|gamescreen|terminal|ascii$|ascii-banner|ascii-art|badge|label|ticket|iconic-(anchor|astronaut|atom|dna|dove|earthrise|footprint|launch|palms|plane|ufo))/;
+    const gone = /^(caricature-|objecticon|oddoneout|diagram|receipt|warning|quote|sprite|gamescreen|terminal$|ascii$|ascii-banner|ascii-art|badge|label|ticket|iconic-(anchor|astronaut|atom|dna|dove|earthrise|footprint|launch|palms|plane|ufo))/;
     expect(SHIRTS.filter((s) => gone.test(s.variant))).toEqual([]);
     // One photograph per subject (the fourth set's photographs).
     const full = FULL.filter((s) => s.variant.startsWith("photo-"));
@@ -42,6 +42,8 @@ describe("generated catalog (data/shirts.json)", () => {
   it("is 70% black / 30% white tees in each drawn set; photographs take the tee that carries more of the picture", () => {
     // Generated 70/30 in each drawn set; after retiring designs, still close to it.
     for (const set of [SHIRTS.filter((s) => s.n <= 1000), SHIRTS.filter((s) => s.n > 1000 && s.n <= 2000), SHIRTS.filter((s) => s.n > 2000 && s.n <= 2800)]) {
+      // A set the content overhaul cut to a handful says nothing about the split.
+      if (set.length < 30) continue;
       const black = set.filter((s) => s.baseColor === "black").length / set.length;
       expect(black).toBeGreaterThan(0.5);
       expect(black).toBeLessThan(0.8);
@@ -56,12 +58,14 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(black).toBeLessThan(0.8);
   });
 
-  it("T8: thirteen shop categories, each with real depth and none swamping the shop", () => {
-    expect(SHIRT_CATEGORIES).toHaveLength(13);
+  it("Part 4: the brand book's ten categories, in its order, each with depth and none swamping the shop", () => {
+    expect([...SHIRT_CATEGORIES]).toEqual(["photographs", "specimens", "sky", "architecture", "etched", "brush", "pattern", "systems", "type", "terminal"]);
+    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Photographs", "Plates & Specimens", "Maps & Sky", "Architecture", "Etched & Cut", "Brush & Woodblock", "Pattern", "Systems & Op Art", "Type", "Terminal"]);
+    expect(SHIRT_CATEGORIES.map((c) => SKU_CODES[c])).toEqual(["PHO", "SPC", "MAP", "ARC", "ETC", "BRU", "PAT", "SYS", "TYP", "TRM"]);
     for (const c of SHIRT_CATEGORIES) {
       const count = SHIRTS.filter((s) => s.category === c).length;
-      expect(count, c).toBeGreaterThanOrEqual(60);
-      expect(count, c).toBeLessThan(SHIRTS.length * 0.2);
+      expect(count, c).toBeGreaterThanOrEqual(20);
+      expect(count, c).toBeLessThan(SHIRTS.length * 0.3);
       expect(CATEGORY_LABELS[c].length).toBeGreaterThan(2);
       expect(SKU_CODES[c]).toMatch(/^[A-Z]{3}$/);
       expect(SHIRTS.filter((s) => s.category === c).every((s) => s.sku.startsWith(`MN-${SKU_CODES[c]}-`))).toBe(true);
@@ -70,20 +74,25 @@ describe("generated catalog (data/shirts.json)", () => {
   });
 
   it("T8: designs are filed by what they show, whichever generator made them", () => {
-    expect(displayCategory("famousart", "art-wave")).toBe("masterworks");
     expect(displayCategory("iconic", "iconic-landmark")).toBe("architecture");
-    expect(displayCategory("geometric", "tiling")).toBe("ornament");
-    expect(displayCategory("geometric", "concentric")).toBe("abstract");
-    expect(displayCategory("scenes", "mountains")).toBe("landscapes");
-    expect(displayCategory("sky", "sky-figure")).toBe("landscapes");
-    expect(displayCategory("flight", "")).toBe("machines");
-    expect(displayCategory("objects", "woodcut")).toBe("engraved");
-    expect(displayCategory("archive", "archive-botanical")).toBe("botanical");
-    expect(displayCategory("archive", "archive-ink-painting")).toBe("ink");
-    expect(displayCategory("archive", "archive-etching")).toBe("engraved");
-    // In the data: every variant sits in one category.
+    expect(displayCategory("geometric", "tiling")).toBe("pattern");
+    expect(displayCategory("geometric", "concentric")).toBe("systems");
+    expect(displayCategory("scenes", "mountains")).toBe("sky");
+    expect(displayCategory("sky", "sky-figure")).toBe("sky");
+    expect(displayCategory("flight", "")).toBe("photographs");
+    expect(displayCategory("ascii", "ascii-shade")).toBe("terminal");
+    expect(displayCategory("archive", "archive-botanical")).toBe("specimens");
+    expect(displayCategory("archive", "archive-natural-history")).toBe("specimens");
+    expect(displayCategory("archive", "archive-ink-painting")).toBe("brush");
+    expect(displayCategory("archive", "archive-ukiyo-e")).toBe("brush");
+    expect(displayCategory("archive", "archive-patent")).toBe("photographs");
+    expect(displayCategory("archive", "archive-stencil")).toBe("pattern");
+    // An etching is Etched & Cut, unless it shows a building or a city.
+    expect(displayCategory("archive", "archive-etching", "Evening on the River")).toBe("etched");
+    expect(displayCategory("archive", "archive-etching", "The Arch of Marcus Aurelius")).toBe("architecture");
+    // In the data: every drawn template sits in one category (archive groups split off their buildings).
     const byVariant = new Map<string, Set<string>>();
-    for (const s of SHIRTS) byVariant.set(s.variant, (byVariant.get(s.variant) ?? new Set()).add(s.category));
+    for (const s of SHIRTS.filter((x) => !x.variant.startsWith("archive-"))) byVariant.set(s.variant, (byVariant.get(s.variant) ?? new Set()).add(s.category));
     for (const [v, cats] of byVariant) expect(cats.size, v).toBe(1);
   });
 
@@ -104,14 +113,13 @@ describe("generated catalog (data/shirts.json)", () => {
       return list.reduce((sum, s) => sum + s.features[key], 0) / list.length;
     };
     expect(mean(/^(facade|perspective|skyline|slabs)$/, "architectural")).toBeGreaterThan(0.75);
-    expect(mean(/^(scatter|concentric|tiling|monoform)$/, "geometric")).toBeGreaterThan(0.75);
-    expect(mean(/^(word|coordinates|repeat|manifesto)$/, "typography")).toBeGreaterThan(0.85);
+    expect(mean(/^(concentric|tiling|monoform)$/, "geometric")).toBeGreaterThan(0.75);
+    expect(mean(/^type-data$/, "typography")).toBeGreaterThan(0.85);
     expect(mean(/^(radial|gradient|matrix|stipple)$/, "halftone_raster")).toBeGreaterThan(0.8);
-    expect(mean(/^(ridges|interference|contours|gesture)$/, "line_art")).toBeGreaterThan(0.8);
-    expect(mean(/^(mountains|celestial|seascape|dunes|forest)$/, "nature")).toBeGreaterThan(0.75);
-    expect(mean(/^pixelscape$/, "retro")).toBeGreaterThan(0.85);
-    expect(mean(/^art-/, "classic")).toBeGreaterThan(0.85);
-    expect(mean(/^iconic-/, "pictorial")).toBeGreaterThan(0.75);
+    expect(mean(/^(interference|contours)$/, "line_art")).toBeGreaterThan(0.8);
+    expect(mean(/^(celestial|seascape)$/, "nature")).toBeGreaterThan(0.65);
+    expect(mean(/^(ascii-scene|ascii-shade|terminal-data)$/, "retro")).toBeGreaterThan(0.8);
+    expect(mean(/^(arch|brick-bond|truss|orders|modulor)$/, "architectural")).toBeGreaterThan(0.85);
     // the fifth and sixth sets
     expect(mean(/^(harmonograph|lissajous|lorenz|rossler)$/, "line_art")).toBeGreaterThan(0.8);
     expect(mean(/^(phyllotaxis|lsystem-)/, "nature")).toBeGreaterThan(0.65);
@@ -120,9 +128,9 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(mean(/^archive-botanical$/, "nature")).toBeGreaterThan(0.9);
     expect(mean(/^archive-(etching|woodcut|gallery-print)$/, "classic")).toBeGreaterThan(0.55);
     // the new dimensions stay low on the original abstract families
-    expect(mean(/^(scatter|concentric|tiling|monoform)$/, "wit")).toBeLessThan(0.1);
+    expect(mean(/^(concentric|tiling|monoform)$/, "wit")).toBeLessThan(0.1);
     expect(mean(/^(facade|perspective|skyline|slabs)$/, "nature")).toBeLessThan(0.1);
-    expect(mean(/^(ridges|interference|contours|gesture)$/, "typography")).toBeLessThan(0.1);
+    expect(mean(/^(interference|contours)$/, "typography")).toBeLessThan(0.1);
     // only photographs are photographic
     expect(mean(/^archive-(ink-painting|etching|botanical|ornament)$/, "photographic")).toBe(0);
   });
@@ -171,8 +179,10 @@ describe("generated catalog (data/shirts.json)", () => {
 describe("catalog copy (R13)", () => {
   it("titles carry no catalog number (that's `no`, 1–N per category)", () => {
     for (const s of SHIRTS) {
-      // Photographs and archive works keep their real names ("Curtiss R3C-2", "Boston, 1880"); no catalog number either way.
-      expect(s.title).not.toMatch(s.medium !== "drawn" ? /No\.|#/ : /No\.|#|\d{2,}/);
+      // No catalogue number, and no numeral added to tell repeats apart (Part 5); a date or a figure in what it names stays
+      // ("Moon Phases of 1969", "Pi to 500 Places"; an archive work's own "Plate IX").
+      expect(s.title, s.id).not.toMatch(/No\.|#/);
+      if (s.medium === "drawn") expect(s.title, s.id).not.toMatch(/\s(II|III|IV|V|VI|VII|VIII|IX|X)$/);
       expect(s.no).toBeGreaterThanOrEqual(1);
     }
     for (const c of SHIRT_CATEGORIES) {
@@ -203,7 +213,8 @@ describe("catalog copy (R13)", () => {
       // A photograph's subject is a proper name ("A-7-A In-line 4 Engine"): only the prose around it counts.
       const text = narrative(s.photo ? s.description.replace(s.subject, "") : s.description);
       expect(text, s.id).not.toMatch(count);
-      expect(text, s.id).not.toMatch(/\b[Aa] [aeioAEIO][a-z]/);
+      // ("a one-ink halftone": one is said with a w.)
+      expect(text, s.id).not.toMatch(/\b[Aa] (?!one\b|one-)[aeioAEIO][a-z]/);
       // Lowercase only: "an LED grid" is right.
       expect(text, s.id).not.toMatch(/\b[Aa]n [bcdfgjklmnpqrstvwxz][a-z]/);
       expect(text, s.id).not.toMatch(/\ba (coffee|tea)(?! cup| mug| pot)\b/i);

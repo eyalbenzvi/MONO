@@ -47,14 +47,20 @@ function punchCard(line1: string): string {
   let s = path(polyline([[X0, Y0 + 14], [X0 + 14, Y0], [X0 + W, Y0], [X0 + W, Y0 + H], [X0, Y0 + H]], true), 1.3);
   const labels = ["12", "11", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
   labels.forEach((l, r) => (s += text(X0 + 8 + r * rowW + rowW / 2, Y0 + H + 9, l, 5)));
+  // The printed digits 0–9 in every column, as one repeating tile (a card has 800 of them).
+  const id = `card${line1.length}${line1.charCodeAt(line1.length - 1)}`;
+  let tile = "";
+  for (let r = 2; r < 12; r++) tile += text(8 + r * rowW + rowW / 2, 2.6, labels[r], 2.6);
+  s += `<defs><pattern id="${id}" x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${colH}" patternUnits="userSpaceOnUse">${tile}</pattern></defs>`;
+  s += `<rect x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${f1(80 * colH)}" fill="url(#${id})"/>`;
   const txt = line1.toUpperCase().padEnd(80, " ");
   for (let c = 0; c < 80; c++) {
     const y = Y0 + 5 + c * colH;
     const punched = new Set(hollerith(txt[c]));
-    for (let r = 0; r < 12; r++) {
+    for (const r of punched) {
       const x = X0 + 8 + r * rowW + rowW / 2;
-      if (punched.has(r)) s += `<rect x="${f1(x - 2.6)}" y="${f1(y + 0.4)}" width="5.2" height="2.4" fill="${INK}"/>`;
-      else if (r >= 2) s += text(x, y + 2.6, labels[r], 2.6);
+      // A hole: a clean slot in the card (the digit under it is punched away).
+      s += `<rect x="${f1(x - 2.6)}" y="${f1(y + 0.2)}" width="5.2" height="2.8" fill="${INK}"/>`;
     }
     if (txt[c] !== " ") s += text(X0 + 3.5, y + 2.6, txt[c], 3, { anchor: "middle" });
   }

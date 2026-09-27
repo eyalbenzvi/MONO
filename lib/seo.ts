@@ -45,7 +45,9 @@ export function productDescription(s: SeoFields) {
   const other = s.baseColor === "black" ? "white" : "black";
   const price = Number.isInteger(s.price) ? `$${s.price}` : `$${s.price.toFixed(2)}`;
   const tee = s.baseColor === "black" ? "Black" : "White";
-  return `${s.title}: ${s.subject}. ${s.summary} ${s.colors.length > 1 ? `${tee} tee, also in ${other}` : `${tee} tee only`} · ${price}.`;
+  // A title that is its subject ("Solar Eclipse") isn't said twice.
+  const named = s.title.toLowerCase() === s.subject.toLowerCase() ? s.title : `${s.title}: ${s.subject}`;
+  return `${named}. ${s.summary} ${s.colors.length > 1 ? `${tee} tee, also in ${other}` : `${tee} tee only`} · ${price}.`;
 }
 
 /* ------------------------------------------------------------------ */

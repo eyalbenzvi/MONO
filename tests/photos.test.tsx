@@ -44,7 +44,7 @@ describe("photographs: where they come from", () => {
   });
 
   it("every photo design names its photographer or museum and links its museum record", () => {
-    expect(PHOTO_DESIGNS.length).toBeGreaterThan(150); // 600 fetched; one per subject, cut-outs only (T7, Part 0)
+    expect(PHOTO_DESIGNS.length).toBeGreaterThan(120); // 600 fetched; one per subject, cut-outs only, no lettering or people (T7, Parts 0–2)
     const byKey = new Map(photos.map((p) => [p.key, p]));
     expect(new Set(PHOTO_DESIGNS.map((s) => s.photo!.image)).size).toBe(PHOTO_DESIGNS.length);
     for (const s of PHOTO_DESIGNS) {
@@ -71,13 +71,13 @@ describe("photographs: where they come from", () => {
 });
 
 describe("photographs: whole, sharp, greyscale — and never inverted", () => {
-  it("each print is the whole photograph: 750 × 1000, greyscale, transparent around the picture, not screened into dots", async () => {
+  it("each print is the whole photograph as a one-ink halftone: 1500 × 2000, pure ink dots, transparent around the picture", async () => {
     // Every 20th (30 prints): decoding all 600 is slow.
     for (const s of PHOTO_DESIGNS.filter((_, i) => i % 20 === 0)) {
       const file = path.join(PUBLIC, s.backPrintUrl);
       const img = sharp(file);
       const meta = await img.metadata();
-      expect([meta.width, meta.height, meta.hasAlpha], s.id).toEqual([PRINT_W, PRINT_H, true]);
+      expect([meta.width, meta.height, meta.hasAlpha], s.id).toEqual([PRINT_W * 2, PRINT_H * 2, true]);
       const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
       let colour = 0, mid = 0, solid = 0;
       for (let i = 0; i < info.width * info.height; i++) {
@@ -88,8 +88,9 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
         if (r > 40 && r < 215) mid++;
       }
       expect(colour / solid, s.id).toBeLessThan(0.01);
-      // Continuous tone: plenty of mid-greys (a halftone or line screen is only black and white).
-      expect(mid / solid, s.id).toBeGreaterThan(0.2);
+      // Screened (Part 2): the ink is pure black or pure white, never a grey.
+      expect(mid, s.id).toBe(0);
+      expect(solid / (info.width * info.height), s.id).toBeGreaterThan(0.01);
     }
   });
 
@@ -147,7 +148,7 @@ describe("photographs: tagging and measuring taste", () => {
     }
     // Subject features follow the category: animals are nature, engines industrial.
     const mean = (c: string, k: keyof (typeof SHIRTS)[number]["features"]) => {
-      const l = SHIRTS.filter((s) => s.category === c);
+      const l = SHIRTS.filter((s) => s.variant === `photo-${c}-object`);
       return l.reduce((a, s) => a + s.features[k], 0) / l.length;
     };
     expect(mean("wildlife", "nature")).toBeGreaterThan(0.7); // measured on solid alpha: a cut-out's soft edges and thin wires sit inside its 90% box
@@ -189,7 +190,8 @@ describe("taste store v4: the new dimension, for people who already have a profi
     expect(s.preferenceVector).toEqual({ ...v3, photographic: 0.5 });
     expect(s.likedIds).toEqual([W1]);
     s.toggleSaved(B4);
-    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(4);
+    // Stored at the current version (v5: see the content overhaul's migration in tests/overhaul).
+    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(5);
   });
 
   it("someone who finished the taste test before the photographs isn't sent back into it; the photos are dealt next", async () => {

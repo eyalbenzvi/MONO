@@ -256,7 +256,7 @@ export function typeSet(): Set7Design[] {
       body += text(28, y, `${size}`, 5, { anchor: "start" }) + text(44, y, lineStr, size, { anchor: "start" });
       y += size * 1.35 + 5;
     }
-    add("Pangram, Ten Sizes", "pangram", body, "The pangram “The quick brown fox jumps over the lazy dog” set in one monospace face at ten sizes from 5 to 24 points, as far as each line allows.", ["Pangram", "One face, ten sizes"]);
+    add("Pangram, Ten Sizes", "pangram", body, "The pangram “The quick brown fox jumps over the lazy dog” set in one monospace face at ten sizes, smallest to largest, each line as long as its size allows.", ["Pangram", "One face, ten sizes"]);
   }
 
   add("Pi to 500 Places", "pi", digitBlock("3.", piDigits(498), 25, 20), "The first 500 digits of π, computed from Machin's formula and set 25 to a line.", ["π", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Pi");
@@ -318,7 +318,7 @@ export function typeSet(): Set7Design[] {
     add("Primes below 1000", "primes", body, `All ${primes.length} prime numbers below one thousand, computed and set in rows of twelve.`, ["Primes", `The ${primes.length} below 1000`], { geometric: 0.45, density: 0.5 });
   }
 
-  add("Points of the Compass", "compass", compassRose(), "The 32 points of the mariner's compass, north by east to north by west, each named on its ray.", ["Points of the Compass", "All 32, by quarter point"], { geometric: 0.75, classic: 0.5 });
+  add("Points of the Compass", "compass", compassRose(), "All thirty-two points of the mariner's compass, north by east to north by west, each named on its ray.", ["Points of the Compass", "All 32, by quarter point"], { geometric: 0.75, classic: 0.5 });
 
   add("Defining Constants of the SI", "si-constants", table(
     [["ΔνCs", "9 192 631 770 Hz"], ["c", "299 792 458 m/s"], ["h", "6.626 070 15 × 10^−34 J s"], ["e", "1.602 176 634 × 10^−19 C"], ["k", "1.380 649 × 10^−23 J/K"], ["NA", "6.022 140 76 × 10^23 /mol"], ["Kcd", "683 lm/W"]],

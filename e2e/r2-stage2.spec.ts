@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed, openSaved } from "./helpers";
-import { B9, W1 } from "../tests/fixtures";
+import { B1, B2, B3, B9, W1 } from "../tests/fixtures";
 
 const overlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -253,7 +253,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
   });
 
   test("I08 / T1 / T4: Saved — one button 'Add your top 3 · M' (no prices); Add all and Share behind ⋯; rows without +", async ({ page }) => {
-    await seed(page, { likedIds: [B9, "mono-0601", "mono-0701", "mono-0801"] });
+    await seed(page, { likedIds: [B9, B1, B2, B3] });
     await page.addInitScript(() => {
       const c = JSON.parse(localStorage.getItem("mono-cart")!);
       c.state.preferredSize = "M";

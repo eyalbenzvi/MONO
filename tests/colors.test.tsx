@@ -16,17 +16,18 @@ const both = SHIRTS.find((s) => s.colors.length === 2)!;
 afterEach(cleanup);
 
 describe("T3: designs that suit one tee colour are sold in that colour only", () => {
-  it("every design lists its colours, the original first; photographs and tonal ink come in one", () => {
+  it("every design lists its colours, the original first; photographs come in one, brush work and plates in both", () => {
     for (const s of SHIRTS) {
       expect(s.colors[0], s.id).toBe(s.baseColor);
       expect(new Set(s.colors).size).toBe(s.colors.length);
     }
     // A photograph on the other tee loses most of its picture: never offered there.
     expect(SHIRTS.filter((s) => s.medium === "photo").every((s) => s.colors.length === 1)).toBe(true);
-    // Brush paintings and botanical watercolours: never a white-on-black negative.
-    const tonal = SHIRTS.filter((s) => /^archive-(ink-painting|ukiyo-e|botanical)$/.test(s.variant));
+    // Brush work and plates are one-ink halftones now (Part 2): white ink on black works, and some start there (Part 3).
+    const tonal = SHIRTS.filter((s) => /^archive-(ink-painting|ukiyo-e|botanical|natural-history)$/.test(s.variant));
     expect(tonal.length).toBeGreaterThan(100);
-    expect(tonal.every((s) => s.colors.length === 1 && s.baseColor === "white")).toBe(true);
+    expect(tonal.filter((s) => s.colors.length === 2).length).toBeGreaterThan(tonal.length * 0.8);
+    expect(tonal.filter((s) => s.baseColor === "black").length).toBeGreaterThan(tonal.length * 0.25);
     // Most line work and drawn prints still come in both.
     expect(SHIRTS.filter((s) => s.medium === "drawn" && s.colors.length === 2).length).toBeGreaterThan(SHIRTS.filter((s) => s.medium === "drawn").length * 0.8);
     expect(offeredColors("black", true)).toEqual(["black"]);

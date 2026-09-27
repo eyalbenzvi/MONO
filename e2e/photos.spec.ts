@@ -30,10 +30,10 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   expect(await print.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 });
 
-test("the shop filters the photo categories", async ({ page }) => {
+test("the shop filters the Photographs category", async ({ page }) => {
   await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("group", { name: "Category" }).getByRole("button", { name: "Wildlife" }).tap();
+  await page.getByRole("group", { name: "Category" }).getByRole("button", { name: "Photographs" }).tap();
   const cards = page.locator('main a[href*="/shop/mono-"]');
   await expect(cards.first()).toBeVisible();
   const ids = await cards.evaluateAll((as) => as.slice(0, 12).map((a) => Number(a.getAttribute("href")!.match(/mono-(\d+)/)![1])));
@@ -61,7 +61,7 @@ test("someone who took the taste test before the photographs: not sent back into
   expect(ALL_PHOTOS.map((s) => s.title)).toContain(title);
   const state = await storedTaste(page);
   expect(state.preferenceVector).toMatchObject({ wit: 0.8, photographic: 0.5 });
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(4);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(5);
 });
 
 test("sizes: XXL and kids' sizes on the product page, labelled in the bag", async ({ page }) => {
@@ -89,7 +89,7 @@ test("T5 / U6: the logo opens About — three words, one line, an honest note; t
   await expect(page.locator("#this-site")).toHaveText("About this site");
   await expect(page.getByText(/nothing is charged/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
-  await page.evaluate(() => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: W1, size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })));
+  await page.evaluate((id) => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id, size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })), W1);
   await page.goto("cart/");
   await hydrated(page);
   await page.getByRole("button", { name: /^Checkout/ }).first().tap();

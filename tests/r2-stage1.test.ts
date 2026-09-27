@@ -132,7 +132,7 @@ describe("R01: Daily 5, streak and milestones count honestly", () => {
     expect(s.useTasteStore.getState().milestones).toEqual([]);
     expect(s.useTasteStore.getState().likedIds).toEqual([W1]);
     s.useTasteStore.getState().toggleSaved(B4);
-    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(4);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(5);
   });
 });
 

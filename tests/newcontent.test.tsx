@@ -43,12 +43,12 @@ describe("T8: the fifth set — generated from real data and maths", () => {
 
   it("every fifth-set design is a strong, drawn, two-tone print (the faint ones were left out)", () => {
     const fifth = FULL.filter((s) => s.n > TOTAL && s.n < ARCHIVE_FIRST_N);
-    expect(fifth.length).toBeGreaterThan(300);
+    expect(fifth.length).toBeGreaterThan(100);
     for (const s of fifth) {
       expect(s.medium).toBe("drawn");
       expect(existsSync(path.join(PUBLIC, s.backPrintUrl)), s.id).toBe(true);
     }
-    expect(new Set(fifth.map((s) => s.category))).toEqual(new Set(["landscapes", "abstract", "botanical", "ornament"]));
+    expect(new Set(fifth.map((s) => s.category))).toEqual(new Set(["sky", "systems", "specimens", "pattern"]));
   });
 });
 
@@ -79,7 +79,8 @@ describe("T8: the archive — public-domain works from Smithsonian Open Access",
     for (const s of ARCHIVE_DESIGNS.filter((_, i) => i % 40 === 0)) {
       const img = sharp(path.join(PUBLIC, s.backPrintUrl));
       const meta = await img.metadata();
-      expect([meta.width, meta.height, meta.hasAlpha], s.id).toEqual([ARCHIVE_W, ARCHIVE_H, true]);
+      // Screened at twice the fetch size (scripts/photos/halftone.py).
+      expect([meta.width, meta.height, meta.hasAlpha], s.id).toEqual([ARCHIVE_W * 2, ARCHIVE_H * 2, true]);
       if (s.medium === "ink") {
         // Black ink: every visible pixel is black; the ink's strength is its alpha.
         const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });

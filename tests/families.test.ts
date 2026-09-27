@@ -10,7 +10,10 @@ import { CALIBRATION_IDS, DECK_SIZE, VARIANT_SPACING, buildDeck, calibrationDone
 import { getCalibrationQueue, rankShirts, updateUserVector } from "@/lib/recommendation";
 import { createInitialVector, isPhoto, type CatalogEntry } from "@/types/shirt";
 import FULL_CATALOG from "@/data/shirts.json";
+import { isWeak } from "../scripts/gen/quality";
 import { PER_CATEGORY } from "../scripts/gen/constants";
+
+const FULL = FULL_CATALOG as unknown as CatalogEntry[];
 
 /** The other designs in a shirt's family (was lib/catalog's variationsOf; only tests need it). */
 const variationsOf = (shirt: (typeof SHIRTS)[number]) => familyMembers(shirt).filter((s) => s.id !== shirt.id);
@@ -55,19 +58,19 @@ describe("design families", () => {
     }
   });
 
-  it("groups the catalog into a few hundred designs with real variations", () => {
+  it("groups the catalog into families, and the content overhaul left at most two of any (Part 1.7)", () => {
     // Generated designs (an archive work is its own family: one print per record).
     const families = new Set(SHIRTS.filter((s) => !isPhoto(s) && !s.variant.startsWith("archive-")).map((s) => s.family));
-    expect(families.size).toBeGreaterThan(400);
-    expect(families.size).toBeLessThan(1200);
-    // Photographs: one family per subject, at most two takes each.
+    expect(families.size).toBeGreaterThan(200);
+    // Photographs: one per subject.
     const photoFamilies = new Set(SHIRTS.filter(isPhoto).map((s) => s.family));
-    expect(photoFamilies.size).toBeGreaterThanOrEqual(PER_CATEGORY * 3 / 2);
-    expect(SHIRTS.filter((s) => variationsOf(s).length > 0).length).toBeGreaterThan(400);
+    expect(photoFamilies.size).toBeGreaterThanOrEqual(PER_CATEGORY / 2);
+    for (const s of SHIRTS) expect(familyMembers(s).length, s.family).toBeLessThanOrEqual(2);
+    expect(SHIRTS.some((s) => variationsOf(s).length > 0)).toBe(true);
   });
 
   it("a family's variations exclude the shirt itself", () => {
-    const withSiblings = SHIRTS.find((s) => familyMembers(s).length > 3)!;
+    const withSiblings = SHIRTS.find((s) => familyMembers(s).length > 1)!;
     const v = variationsOf(withSiblings);
     expect(v).toHaveLength(familyMembers(withSiblings).length - 1);
     expect(v.map((s) => s.id)).not.toContain(withSiblings.id);
@@ -143,12 +146,27 @@ describe("display pacing", () => {
 });
 
 describe("precomputed calibration (I8)", () => {
-  it("matches the runtime algorithm: farthest-point over family leaders, a photograph among them, boldest first", () => {
-    // Each family's first strong design (weak prints never rate taste).
-    const leaders = [...new Map([...SHIRTS].reverse().filter((s) => !s.weak).map((s) => [s.family, s])).values()].sort((a, b) => a.n - b.n);
+  it("matches the runtime algorithm: farthest-point over family leaders in the top quarter for quality, a graphic first", () => {
+    // Each family's first design in the top quarter for quality (never a weak one).
+    const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
+    const floor = q[Math.floor(q.length * 0.75)];
+    const leaders = [...new Map([...FULL].reverse().filter((s) => s.quality >= floor && !isWeak(s)).map((s) => [s.family, s])).values()].sort((a, b) => a.n - b.n);
     const queue = getCalibrationQueue(leaders, 10, (s) => s.category, isPhoto);
-    const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density;
+    const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density + (s.medium === "drawn" ? 10 : 0);
     const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
     expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));
+  });
+
+  it("Part 7: the taste test is ten categories (specimens and brush among them), one or two photographs, a graphic first, all strong prints", () => {
+    const test = CALIBRATION_IDS.map((id) => FULL.find((s) => s.id === id)!);
+    expect(test).toHaveLength(10);
+    expect(new Set(test.map((s) => s.category)).size).toBe(10);
+    expect(test.some((s) => s.category === "specimens") && test.some((s) => s.category === "brush")).toBe(true);
+    const photos = test.filter((s) => s.medium === "photo").length;
+    expect(photos).toBeGreaterThanOrEqual(1);
+    expect(photos).toBeLessThanOrEqual(2);
+    expect(test[0].medium).toBe("drawn");
+    const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
+    for (const s of test) expect(s.quality, s.id).toBeGreaterThanOrEqual(q[Math.floor(q.length * 0.75)]);
   });
 });
