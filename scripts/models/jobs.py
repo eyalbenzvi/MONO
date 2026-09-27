@@ -76,7 +76,7 @@ for k, (man, trousers, pose, scene) in enumerate(THIRD):
 # varied settings instead of the same grey passage.
 LOOKBOOK = "fashion lookbook photo, 85mm, soft overcast light"
 # A thick cotton hangs smooth over the back (a thin one shows every shoulder blade).
-TEES4 = ["thick heavyweight plain white cotton t-shirt, regular fit, smooth drape", "thick heavyweight plain white cotton t-shirt, boxy relaxed fit, smooth drape"]
+TEES4 = ["thick heavyweight plain white short-sleeved cotton t-shirt, regular fit, smooth drape", "thick heavyweight plain white short-sleeved cotton t-shirt, boxy relaxed fit, smooth drape"]
 FOURTH = [
   # (man, trousers, pose, setting) — real places, each different; never a bare wall.
   ("a well-built man with neat short brown hair, tattooed forearms", "black jeans", 1, "busy shopping street, blurred shopfronts"),
@@ -88,11 +88,12 @@ FOURTH = [
   ("a stocky man with a tidy textured crop, small forearm tattoos", "dark jeans", 1, "farmers market, blurred stalls"),
   ("a solid East Asian man with neat medium-length black hair", "stone-coloured chinos", 4, "mountain lookout, hazy valley"),
 ]
-NEG_FOURTH = ("shoulder blades, bony back, thin fabric, see-through shirt, harsh shadows, wrinkled shirt, slouching, hands in pockets, holding bag, skinny, "
+NEG_FOURTH = ("tank top, sleeveless, shoulder blades, bony back, thin fabric, harsh shadows, wrinkled shirt, slouching, hands in pockets, holding bag, skinny, "
   "plastic skin, doll, cgi, face, profile, side view, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, grey shirt, deformed")
 for k, (man, trousers, pose, setting) in enumerate(FOURTH):
     i = len(MEN) + len(MORE) + len(THIRD) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 5100 + i * 41, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
       "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
+    if k == 6: jobs[-1]["seed"] += 1000  # the first seed gave a tank top (the shop sells tees only)
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
