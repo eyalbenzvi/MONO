@@ -69,5 +69,29 @@ for k, (man, trousers, pose, scene) in enumerate(THIRD):
     i = len(MEN) + len(MORE) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD, "min_tone": 0.52,
       "prompt": f"{TEES[k % 2]}, back view, {man}, {trousers}, from behind, {scene}, {NATURAL}"})
+# The fourth set: pictures that sell — a fashion lookbook, not a snapshot.
+# Upright and at ease (shoulders back, arms loose at the sides, at most a
+# slight shift of weight; no hands in pockets, nothing held), a good heavy
+# cotton tee lying smooth, groomed hair, soft directional light, and clean,
+# varied settings instead of the same grey passage.
+LOOKBOOK = "professional fashion lookbook photo, 85mm, soft directional light"
+TEES4 = ["heavyweight plain white cotton t-shirt, regular fit, smooth", "heavyweight plain white cotton t-shirt, boxy relaxed fit, smooth"]
+FOURTH = [
+  # (man, trousers, pose, setting)
+  ("an athletic man with neat short brown hair, tattoos on his forearms", "black jeans", 1, "plain light grey studio backdrop"),
+  ("a well-built man with a clean buzz cut and short beard", "olive chinos", 4, "smooth concrete wall"),
+  ("a broad-shouldered Black man with a neat high-top fade", "charcoal trousers", 1, "white modernist building facade"),
+  ("a tall solid man with his hair in a neat man bun, a tattoo on one forearm", "mid-blue jeans", 4, "calm sea and sky"),
+  ("a fit silver-haired man in his fifties, neatly combed", "dark grey trousers", 1, "stone terrace with olive trees"),
+  ("a well-built young man with neat shoulder-length locs", "black trousers", 4, "warm plaster wall in late sun"),
+  ("a solid man with a tidy textured crop, small forearm tattoos", "dark jeans", 1, "green park, soft bokeh"),
+  ("an athletic East Asian man with neat medium-length black hair", "stone-coloured chinos", 4, "minimal white gallery wall"),
+]
+NEG_FOURTH = ("wrinkled shirt, creased, slouching, hunched, hands in pockets, holding bag, skinny, overweight, plastic skin, doll, cgi, "
+  "face, profile, side view, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, pattern, grey shirt, deformed")
+for k, (man, trousers, pose, setting) in enumerate(FOURTH):
+    i = len(MEN) + len(MORE) + len(THIRD) + k
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 5100 + i * 41, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
+      "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
