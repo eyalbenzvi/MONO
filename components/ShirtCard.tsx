@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
 import { STAGE_BG, useShowMatch } from "@/components/ui";
@@ -46,6 +46,12 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
+  // The face turned away is also hidden outright past 90°: a phone draws a face's own
+  // layers (the print's canvas, the photo) through backface-visibility, so while
+  // the page was pinch-zoomed the tee showed through the details.
+  const turn = useMotionValue(showDetails && !reduceMotion ? 180 : 0);
+  const frontVisibility = useTransform(turn, (r) => (r < 90 ? "visible" : "hidden"));
+  const backVisibility = useTransform(turn, (r) => (r < 90 ? "hidden" : "visible"));
   const face = "absolute inset-0 overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10";
 
   return (
@@ -54,12 +60,14 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
         className="preserve-3d relative h-full w-full"
         initial={false}
         // Reduced motion: crossfade the faces instead of a 3D flip.
+        style={{ rotateY: turn }}
         animate={{ rotateY: showDetails && !reduceMotion ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
       >
         {/* Face 1: the tee, print mocked up on the fabric */}
         <motion.div
           className={`backface-hidden ${face} flex flex-col ${showDetails ? hiddenFace : ""}`}
+          style={reduceMotion ? undefined : { visibility: frontVisibility }}
           animate={reduceMotion ? { opacity: showDetails ? 0 : 1 } : undefined}
           aria-hidden={showDetails}
           {...inert(showDetails)}
@@ -91,6 +99,7 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
         <motion.div
           className={`backface-hidden ${reduceMotion ? "" : "rotate-y-180"} ${face} ${showDetails ? "" : hiddenFace}`}
           initial={false}
+          style={reduceMotion ? undefined : { visibility: backVisibility }}
           animate={reduceMotion ? { opacity: showDetails ? 1 : 0 } : undefined}
           aria-hidden={!showDetails}
           {...inert(!showDetails)}

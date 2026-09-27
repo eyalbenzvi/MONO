@@ -143,3 +143,20 @@ test("recordings: zooming out never shows the frame behind the picture; a halfto
   expect(Math.max(...gaps)).toBeLessThanOrEqual(0.5);
   expect(await scaleOf(page)).toBe(1);
 });
+
+test("recording: the flipped card's picture never shows through its details (hidden outright, not only by backface-visibility)", async ({ page }) => {
+  await seed(page);
+  await page.goto("");
+  await hydrated(page);
+  const card = page.locator('[aria-roledescription="card"]').first();
+  const faces = () =>
+    card.evaluate((el) => {
+      const [front, back] = [...el.querySelectorAll<HTMLElement>(".backface-hidden")];
+      return [getComputedStyle(front).visibility, getComputedStyle(back).visibility];
+    });
+  expect(await faces()).toEqual(["visible", "hidden"]);
+  await card.tap({ position: { x: 180, y: 250 } });
+  await expect.poll(faces).toEqual(["hidden", "visible"]);
+  await page.getByRole("button", { name: /close|back/i }).first().tap();
+  await expect.poll(faces).toEqual(["visible", "hidden"]);
+});
