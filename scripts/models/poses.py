@@ -32,6 +32,8 @@ POSES = {
     "pose-d": base({3: (522, 510), 4: (430, 680), 6: (128, 530), 7: (142, 738)}),
     # Weight on one leg: shoulders and hips tilted opposite ways, head a touch to the side.
     "pose-e": base({2: (470, 314), 5: (170, 298), 8: (420, 700), 11: (220, 722), 16: (392, 138), 17: (260, 134), 3: (514, 540), 4: (498, 742), 6: (126, 520), 7: (150, 728)}),
+    # Upright, arms loose with a slight bend at the elbows, hands by the thighs (a third stance for the lookbook sets).
+    "pose-f": base({3: (506, 525), 4: (478, 728), 6: (134, 525), 7: (162, 728)}),
 }
 
 def draw(k):

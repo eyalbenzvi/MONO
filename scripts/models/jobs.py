@@ -95,5 +95,30 @@ for k, (man, trousers, pose, setting) in enumerate(FOURTH):
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 5100 + i * 41, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
       "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
     if k == 6: jobs[-1]["seed"] += 1000  # the first seed gave a tank top (the shop sells tees only)
+# The fifth set: the lookbook recipe, with more variety — ages, origins,
+# builds, hair, trousers, three upright stances, sixteen different places.
+FIFTH = [
+  # (man, trousers, pose, setting)
+  ("a broad Latino man in his thirties with a curly top and faded sides, a forearm sleeve tattoo", "black jeans", 1, "neon-lit city street at night, blurred"),
+  ("a tall athletic Nordic man with a blond undercut", "navy chinos", 4, "lakeside wooden pier, calm water"),
+  ("a solid Middle Eastern man with slicked-back dark hair and a trimmed beard", "charcoal trousers", 5, "sunny Mediterranean harbour, blurred"),
+  ("a big tall Pacific Islander man with long wavy hair tied low", "olive cargo pants", 1, "beach boardwalk at sunset"),
+  ("a well-built Black man with neat cornrows, tattoos on both forearms", "raw denim jeans", 4, "old stone bridge over a river"),
+  ("a stocky red-haired man with a short neat beard", "brown corduroy trousers", 5, "autumn forest path, golden leaves"),
+  ("a fit South Asian man in his forties with a neat side part", "stone chinos", 1, "vineyard rows in soft evening light"),
+  ("a broad bald man in his fifties with a grey beard", "dark jeans", 4, "industrial loft with big windows"),
+  ("a well-built young East Asian man with curtain hair", "black cargo pants", 5, "skate park at golden hour"),
+  ("a solid mixed-race man with a short afro, a small tattoo on one forearm", "navy trousers", 1, "canal with bikes and old houses"),
+  ("an athletic man in his twenties with long straight brown hair", "charcoal jeans", 4, "desert road, wide sky"),
+  ("a broad grey-haired man in his sixties with a neat buzz cut", "olive chinos", 5, "botanical glasshouse, lush plants"),
+  ("a well-built man with short twisted locs, tattooed forearms", "black trousers", 1, "sports field at dusk, stadium lights"),
+  ("a sturdy man with a neat quiff and full beard", "mid-blue jeans", 4, "snowy mountain village, soft light"),
+  ("a fit Latino man with wavy shoulder-length hair", "dark grey chinos", 5, "flower market, blurred stalls"),
+  ("a broad-shouldered young man with a clean crew cut, a tattoo on his upper arm", "black jeans", 1, "rooftop garden, city behind"),
+]
+for k, (man, trousers, pose, setting) in enumerate(FIFTH):
+    i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + k
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 4100 + i * 43, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
+      "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
