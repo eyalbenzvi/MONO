@@ -497,7 +497,13 @@ export function ProductView({
 
         {hydrated && similar.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-base font-semibold">Similar prints</h2>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <h2 className="text-base font-semibold">Similar prints</h2>
+              {/* The whole shop, ordered by closeness to this one (a "Like this" search). */}
+              <Link href={`/shop/?like=${shirt.id}`} className="text-xs font-semibold text-neutral-400 underline-offset-2 hover:text-white hover:underline">
+                More like this
+              </Link>
+            </div>
             <div className="grid grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-4">
               {similar.map((s) => (
                 <ProductCard key={s.id} shirt={s} onOpen={clearOrigin} />
