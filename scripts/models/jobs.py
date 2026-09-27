@@ -67,7 +67,7 @@ NEG_THIRD = ("wrinkled shirt, creased, crumpled, skinny, thin, narrow shoulders,
   "logo, print, text, pattern, grey shirt, deformed, extra arms")
 for k, (man, trousers, pose, scene) in enumerate(THIRD):
     i = len(MEN) + len(MORE) + k
-    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD,
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD, "min_tone": 0.52,
       "prompt": f"{TEES[k % 2]}, back view, {man}, {trousers}, from behind, {scene}, {NATURAL}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))

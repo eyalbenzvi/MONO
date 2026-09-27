@@ -23,8 +23,11 @@ cloth_session = new_session("u2net_cloth_seg")
 OUT_W, OUT_H = 512, 704
 SHOULDERS, COLLAR = 0.56, 0.24
 # The print: 46% of the shoulders wide (3:4), its top 0.34 shoulder-widths below the collar.
-_pw = SHOULDERS * 0.46; _ph = _pw * OUT_W / OUT_H * 4 / 3
-PRINT_BOX = [round(0.5 - _pw / 2, 4), round(COLLAR + SHOULDERS * 0.34 * OUT_W / OUT_H, 4), round(_pw, 4), round(_ph, 4)]
+def print_box(sh, collar=COLLAR):
+    """The print for shoulders spanning `sh` of the width, the collar at `collar` of the height: 46% of them wide (3:4), its top 0.34 shoulder-widths below the collar."""
+    pw = sh * 0.46; ph = pw * OUT_W / OUT_H * 4 / 3
+    return [round(0.5 - pw / 2, 4), round(collar + sh * 0.34 * OUT_W / OUT_H, 4), round(pw, 4), round(ph, 4)]
+PRINT_BOX = print_box(SHOULDERS)
 out = []
 for j in JOBS:
     f = os.path.join(SRC, j["id"] + ".png")
@@ -55,7 +58,8 @@ for j in JOBS:
     # Is the tee the colour asked for? Sample the middle of the back.
     patch = lum[int(neck + shoulders * 0.3):int(neck + shoulders * 0.7), int(cx - shoulders * 0.12):int(cx + shoulders * 0.12)]
     tone = float(patch.mean()) if patch.size else 0.5
-    if (j["color"] == "white" and tone < 0.6) or (j["color"] == "black" and tone > 0.22):
+    # (A looser tee sits in more shade: its jobs may set a lower bar.)
+    if (j["color"] == "white" and tone < j.get("min_tone", 0.6)) or (j["color"] == "black" and tone > 0.22):
         print("reject", j["id"], "tee tone", round(tone, 2)); continue
     # The centre from the tee itself, at chest height below the armpits (where
     # the arms hang apart from it): each row's run of tee colour through the
@@ -83,6 +87,16 @@ for j in JOBS:
     hem = max((r for r in range(h) if rows_w[r] >= shoulders * 0.6), default=h - 1)
     tee[: max(0, neck - 2)] = False
     tee[hem + 1 :] = False
+    # The clothing model stops short of a loose tee's hem: the white cloth just
+    # below it, within the tee's width, is tee too (left out, the black twin
+    # showed a white band at the waist).
+    span = np.nonzero(tee[hem])[0]
+    if len(span) and j["color"] == "white":
+        lo_c, hi_c = span.min(), span.max()
+        for r in range(hem + 1, min(h, hem + int(shoulders * 0.4))):
+            row = (lum[r, lo_c : hi_c + 1] > 0.5) & person[r, lo_c : hi_c + 1]
+            if row.sum() < (hi_c - lo_c) * 0.15: break
+            tee[r, lo_c : hi_c + 1] |= row
     # The centre of the back from the tee itself (clean mask): the midpoint of
     # its edges over the chest, below the sleeves.
     mids = []
@@ -94,9 +108,17 @@ for j in JOBS:
     # SHOULDERS of the width, the spine is the centre line and the collar
     # sits at COLLAR of the height. The print box is then the same on every
     # photo (PRINT_BOX): centred, its top ~10 cm below the collar.
-    f = OUT_W * SHOULDERS / shoulders
+    # A broad man (or a loose tee) would need more than the generated picture
+    # at that scale — the rest filled with a mirror image (a second head, a
+    # kaleidoscope street) — so his shoulders take more of the width instead,
+    # and his print box follows (print_box).
+    sh = max(SHOULDERS, shoulders / (w * 0.98), OUT_H * shoulders / (OUT_W * h * 0.98))
+    f = OUT_W * sh / shoulders
     cw, ch = OUT_W / f, OUT_H / f
     left, top_ = cx - cw / 2, neck - OUT_H * COLLAR / f
+    # Never above the picture: the frame comes down to its top edge, and the collar (and print) sit that much lower.
+    top_ = max(0.0, min(top_, h - ch)) if ch <= h else top_
+    box = print_box(sh, (neck - top_) / ch)
     arr = np.asarray(img.convert("L"))
     pad = int(max(cw, ch))
     padded = np.pad(arr, pad, mode="symmetric")  # mirrored, never streaked edges (see unsmear.py)
@@ -115,17 +137,18 @@ for j in JOBS:
     # How much of the tee's folds stay (a relaxed tee keeps more of them: a flattened one looks painted on).
     white = 1 - j.get("folds", 0.3) * np.clip((1 - g) / max(1e-3, 1 - lo), 0, 1) ** 1.4
     framed(g * (1 - soft) + white * soft, j["id"] + "-white")
-    out.append({"id": j["id"] + "-white", "color": "white", "box": PRINT_BOX})
+    out.append({"id": j["id"] + "-white", "color": "white", "box": box})
     # Full black twin: the tee darkened, its folds keeping a faint sheen.
     if True:
         dark = 0.012 + 0.09 * np.clip((g - lo) / max(1e-3, 1 - lo), 0, 1) ** 2
         twin = g * (1 - soft) + dark * soft
         framed(twin, j["id"] + "-black")
-        out.append({"id": j["id"] + "-black", "color": "black", "box": PRINT_BOX})
-    print(j["id"], "framed", round(f, 2), flush=True)
+        out.append({"id": j["id"] + "-black", "color": "black", "box": box})
+    print(j["id"], "framed", round(f, 2), "shoulders", round(sh, 3), "pad", {"left": round(-min(0, left)), "top": round(-min(0, top_)), "right": round(max(0, left + cw - w)), "bottom": round(max(0, top_ + ch - h))}, flush=True)
 # Added to the photos already there (a photo analysed again replaces its entry).
 known = json.load(open(os.path.join(DATA, "models.json"))) if os.path.exists(os.path.join(DATA, "models.json")) else []
-ids = {m["id"] for m in out}
-merged = sorted([m for m in known if m["id"] not in ids] + out, key=lambda m: m["id"])
+# The order stays (designs are dealt to photos by position): an entry keeps its place, new ones go last.
+fresh = {m["id"]: m for m in out}
+merged = [fresh.pop(m["id"], m) for m in known] + list(fresh.values())
 json.dump(merged, open(os.path.join(DATA, "models.json"), "w"), indent=1)
 print(len(out), "photos analysed,", len(merged), "in all")
