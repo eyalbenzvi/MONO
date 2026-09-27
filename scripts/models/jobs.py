@@ -171,7 +171,10 @@ SEVENTH = [
   ("a fit man in his forties with a short textured crop", "dark brown chinos", "pose-k", "vineyard hills path, blurred", 0),
   ("a stocky East Asian man with short spiky hair", "black jeans", "pose-g", "neon-lit alley at night, blurred", 0),
 ]
-for k, (man, trousers, pose, setting, lower) in enumerate(SEVENTH):
+# Thrown away, all sixteen: the hand-on-hip pose came out as a hand pushed behind the back, and hands were
+# deformed in nearly every photo (drawn without hand keypoints, SD 1.5 at this size can't be trusted with visible hands).
+SEVENTH_REJECTED = True
+for k, (man, trousers, pose, setting, lower) in enumerate([] if SEVENTH_REJECTED else SEVENTH):
     i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH) + len(SIXTH) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 2100 + i * 53, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
       "prompt": f"{TEES6[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, lookbook photo, soft overcast light", **({"lower": lower} if lower else {})})
