@@ -31,6 +31,7 @@ import path from "node:path";
 import { FEATURE_KEYS, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
+import { firstSentence, isWordTitled, plainTitles } from "./gen/titles";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
 import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, solidBlock, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
 import sharp from "sharp";
@@ -601,6 +602,16 @@ function seventhSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   return bytes;
 }
 
+/** Colour words in a title (black and white are the inks themselves). */
+const COLOUR_WORD = /\b(red|scarlet|crimson|vermilion|blue|azure|green|emerald|yellow|golden|gold|silver|purple|violet|lilac|pink|rose-coloured|orange|amber|grey|gray|brown|russet|copper)\b/i;
+
+/** A second fact about a print, for when every closing line of its kind is used up (Part 5). */
+function printFact(s: Pick<Draft, "printCm" | "medium" | "title">): string {
+  const size = `The print measures ${s.printCm.width} × ${s.printCm.height} cm`;
+  const how = s.medium === "drawn" ? "drawn as vector line work" : "screened as a one-ink halftone";
+  return `${size}, ${how}.`;
+}
+
 /** A print's ink as it lands on its tee, at the check's size (drawn: rendered; WebP: resized). */
 async function inkOfPrint(s: Pick<Draft, "backPrintUrl" | "baseColor" | "medium">) {
   const file = path.join(ROOT, "public", s.backPrintUrl);
@@ -810,7 +821,8 @@ async function main() {
     if (!m) continue;
     s.quality = m.assessment.quality;
     s.printCm = m.assessment.printCm;
-    s.flags = m.assessment.flags;
+    // A narrow drawn print is its composition; a narrow scan or photograph is a bad crop (a sliver).
+    s.flags = s.medium === "drawn" ? m.assessment.flags.filter((f) => f !== "sliver") : m.assessment.flags;
     // A print that is mostly ink turns into a slab on the other colour: its own colour only.
     if (s.medium === "drawn") s.colors = offeredColors(s.baseColor, m.assessment.ink > INK_HEAVY);
   }
@@ -841,6 +853,21 @@ async function main() {
     })),
   );
   for (const [id, why] of overhaul) retired.set(id, why);
+  // Part 5: titles name what the print shows; a second design showing the same thing goes.
+  const remaining = shirts.filter((s) => !retired.has(s.id));
+  const plain = plainTitles(remaining, new Set(remaining.filter((s) => s.medium !== "drawn").map((s) => s.title)));
+  for (const s of remaining) {
+    const t = plain.titles.get(s.id);
+    if (t && t !== s.title) {
+      s.title = t;
+      if (s.variant === "poster" || s.variant === "harmonograph" || s.variant.startsWith("lsystem-")) s.subject = t;
+    }
+    // The first sets followed each sentence with a quip: only the sentence stays.
+    if (isWordTitled(s.source)) s.base = firstSentence(s.base);
+  }
+  for (const [id, why] of plain.retire) retired.set(id, why);
+  // A colour in the title ("Scarlet Globe Mallow"): the description says the print is one ink.
+  for (const s of remaining) if (COLOUR_WORD.test(s.title) && !/one[- ]ink/i.test(s.base)) s.base = `${sentence(s.base)} Printed in one ink; the colour is only in the name.`;
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
     if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
@@ -852,7 +879,7 @@ async function main() {
 
   const familyIndex = assignFamilies(sigs);
   const descriptions = finishDescriptions(
-    shirts.map((s) => ({ base: s.base, category: s.source, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)) })),
+    shirts.map((s) => ({ base: s.base, category: s.source, rng: mulberry32((SEED ^ 0x5eed) + Math.imul(s.n, 2654435761)), fact: printFact(s) })),
   );
   const ranks = editorialRanks(shirts.map((s) => s.features), shirts.map((s) => s.quality));
   const withFamily = shirts.map(({ base, source: _source, ...s }, i) => ({

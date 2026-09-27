@@ -4,7 +4,7 @@ import { SITE_URL, ogImage } from "@/lib/seo";
 import { INDEX_URL } from "@/lib/catalogIndex";
 import "./globals.css";
 
-const DESCRIPTION = "Swipe black & white monochrome tees. A vector engine learns your taste, then opens a shop built for you.";
+const DESCRIPTION = "Swipe ten black-and-white tees. MONO ranks over a thousand more to your taste.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${SITE_URL}/`),

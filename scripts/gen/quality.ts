@@ -14,7 +14,7 @@ export const FAINT = 35;
  * the taste test, the shop window, "picked for you" rows or the default
  * link preview. Calibrated so about the bottom tenth of the catalogue is weak.
  */
-export const WEAK_QUALITY = 55;
+export const WEAK_QUALITY = 53;
 /** Weak: a low score, or a flag (a sliver, a paper edge or vignette, a flat picture). */
 export const isWeak = (s: { quality: number; flags: readonly string[] }) => s.quality < WEAK_QUALITY || s.flags.length > 0;
 /** The printed area on the tee, cm (the 300×400 print; matches PRINT_SIZE_CM). */
@@ -230,7 +230,8 @@ export interface Assessment {
 }
 
 /** Below this share of the print area, the picture is a sliver on the tee. */
-export const SLIVER = 0.35;
+/** A sliver: the ink's box under this share of the print's width or height (a strip across the chest). */
+export const SLIVER = 0.3;
 
 /**
  * Quality 0–100 for any print — drawn, ink or halftone photograph — from
@@ -240,7 +241,7 @@ export const SLIVER = 0.35;
  * - detail (40%): how much the ink density changes from place to place,
  *   measured on a coarse density map (so a dot screen reads by the picture
  *   it makes, not by its dots).
- * Flags: a sliver (box under SLIVER of the area), a vignette or paper edge
+ * Flags: a sliver (box under SLIVER of the width or height), a vignette or paper edge
  * (ink crowding the box's outline around an empty middle), a flat picture
  * (almost no change in density: a dim interior snapshot).
  */
@@ -272,13 +273,14 @@ export function assessPrint({ w, h, ink }: InkRaster): Assessment {
   // Change per cell of the ink's own box (not the print): a small dense print isn't penalised twice.
   const boxCells = Math.max(1, extent * cw * ch);
   const detail = grad / boxCells;
-  const coverScore = cover < 0.08 ? cover / 0.08 : cover <= 0.32 ? 1 : Math.max(0.2, 1 - (cover - 0.32) / 0.4);
+  // Sparse line work (a star chart, a diagram) is full marks from 4% ink; a print mostly ink loses them.
+  const coverScore = cover < 0.04 ? cover / 0.04 : cover <= 0.32 ? 1 : Math.max(0.2, 1 - (cover - 0.32) / 0.4);
   const extentScore = Math.min(1, Math.sqrt(extent) / 0.72);
   const detailScore = Math.min(1, detail / 0.35);
   const quality = Math.round(100 * (0.35 * coverScore + 0.25 * extentScore + 0.4 * detailScore));
   // Vignette / paper edge: the outer ring of the box carries far more ink than its middle.
   const flags: Assessment["flags"] = [];
-  if (extent > 0 && extent < SLIVER) flags.push("sliver");
+  if (x1 >= 0 && Math.min(bw, bh) < SLIVER) flags.push("sliver");
   if (x1 >= 0) {
     const ring = Math.max(2, Math.round(Math.min(x1 - x0, y1 - y0) * 0.06));
     let [rin, rn, min, mn] = [0, 0, 0, 0];

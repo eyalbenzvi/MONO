@@ -8,6 +8,8 @@ import type { SourceCategory } from "../../types/shirt";
 import type { Rng } from "./core";
 
 export const MAX_REPEATS = 3;
+/** A closing line (a wink) is used at most this many times across the catalogue; past that, a fact about the print closes instead (Part 5). */
+export const WINK_CAP = 20;
 
 /** Ends the text with punctuation, so the next sentence doesn't run on. */
 export const sentence = (text: string) => (/[.!?…”)]$/.test(text.trim()) ? text.trim() : `${text.trim()}.`);
@@ -316,9 +318,8 @@ const TAILS: Record<SourceCategory, string[]> = {
     "For people who linger in print rooms.",
     "History, worn lightly.",
     "The original's marks, nothing added.",
-    "A public-domain treasure, now on cotton.",
+    "In the public domain, now on cotton.",
     "Looks like it came out of a portfolio.",
-    "Quietly special.",
     "Made to be looked at twice.",
     "An archive piece, off the wall and onto a tee.",
   ],
@@ -329,20 +330,24 @@ const TAILS: Record<SourceCategory, string[]> = {
  * deterministic pick and moving on while the result is already used
  * MAX_REPEATS times. Input order decides ties, so output is stable.
  */
-export function finishDescriptions(items: { base: string; category: SourceCategory; rng: Rng }[]): string[] {
+export function finishDescriptions(items: { base: string; category: SourceCategory; rng: Rng; fact: string }[]): string[] {
   const counts = new Map<string, number>();
-  return items.map(({ base: raw, category, rng }) => {
+  const winks = new Map<string, number>();
+  return items.map(({ base: raw, category, rng, fact }) => {
     const base = sentence(raw);
     const tails = TAILS[category];
     const start = Math.floor(rng() * tails.length);
-    let out = `${base} ${tails[start]}`;
-    for (let k = 0; k < tails.length; k++) {
-      const candidate = `${base} ${tails[(start + k) % tails.length]}`;
-      if ((counts.get(candidate) ?? 0) < MAX_REPEATS) {
+    let out = "";
+    for (let k = 0; k < tails.length && !out; k++) {
+      const tail = tails[(start + k) % tails.length];
+      const candidate = `${base} ${tail}`;
+      if ((counts.get(candidate) ?? 0) < MAX_REPEATS && (winks.get(tail) ?? 0) < WINK_CAP) {
         out = candidate;
-        break;
+        winks.set(tail, (winks.get(tail) ?? 0) + 1);
       }
     }
+    // Every wink used up: a second fact about the print instead.
+    if (!out) out = `${base} ${sentence(fact)}`;
     counts.set(out, (counts.get(out) ?? 0) + 1);
     return out;
   });

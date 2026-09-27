@@ -3,7 +3,7 @@ import { DiscoverPage } from "@/components/DiscoverPage";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { pageMeta } from "@/lib/seo";
 
-const DESCRIPTION = "Swipe black & white monochrome tees. A vector engine learns your taste, then opens a shop built for you.";
+const DESCRIPTION = "Swipe ten black-and-white tees. MONO ranks over a thousand more to your taste.";
 
 export const metadata: Metadata = pageMeta({ path: "/", title: "MONO — Monochrome Tee Discovery", description: DESCRIPTION });
 
