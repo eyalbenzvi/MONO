@@ -91,15 +91,15 @@ export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   photographs: "Photographs",
-  specimens: "Plates & Specimens",
+  specimens: "Botanical & Nature",
   sky: "Maps & Sky",
   architecture: "Architecture",
-  etched: "Etched & Cut",
+  etched: "Engravings",
   brush: "Brush & Woodblock",
   pattern: "Pattern",
-  systems: "Systems & Op Art",
+  systems: "Geometric",
   type: "Type",
-  terminal: "Terminal",
+  terminal: "ASCII & Code",
 };
 
 /** SKU code per category: MN-<code>-<B|W>-<n>. */

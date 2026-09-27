@@ -20,7 +20,8 @@ Enforced in code, so a run never wastes time on them:
 | Sunset, dusk, golden or back light tints a white tee beige or darkens it | `jobs.py` rule: no such light; `checks.py` tone and tint |
 | Without "short-sleeved" some come out in tank tops (the shop sells tees) | `jobs.py` rule; `checks.py` sleeves |
 | Arms down on every photo (the lookbook stances) looks like standing at attention | `poses.py`: relaxed poses g–l, each arm doing something; `jobs.py`: the sixth set on takes only those, its arms in the prompt, no pose twice before all are used |
-| Light trousers merge with a white tee | `checks.py` trousers |
+| Hands behind the back came out twisted; folded arms read as reaching forward; a phone and a hand raised to the neck looked put on | `poses.py`: those poses removed (hand on the hip instead of at the neck) |
+| Light trousers merge with a white tee (a white band or dark patches at the black twin's hem; light grey and stone ones too) | `checks.py` trousers, at most 0.4 |
 | A broad man framed like a slim one needs more than the picture (mirror-filled: a second head) | `analyze.py`: the shoulders take more of the width, the print box follows |
 | The clothing model stops short of a loose tee's hem (a white band on the black twin) | `analyze.py`: the white cloth below it counts as tee |
 

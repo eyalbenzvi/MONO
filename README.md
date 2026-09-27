@@ -24,15 +24,15 @@ Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `l
 | Category (SKU) | What's in it |
 | --- | --- |
 | **Photographs** (PHO) | animals, aircraft, engines and instruments (Smithsonian National Zoo, Air and Space Museum) and patent models, cut out and screened as one-ink halftones |
-| **Plates & Specimens** (SPC) | botanical studies and Audubon plates from the archive; seed heads and plants grown by rule |
+| **Botanical & Nature** (SPC) | botanical studies and Audubon plates from the archive; seed heads and plants grown by rule |
 | **Maps & Sky** (MAP) | constellations on their real stars; the night sky over real places on real dates; moon phases, planets on a date, the analemma, daylight, Halley's orbit, Jupiter's moons |
 | **Architecture** (ARC) | etched views of buildings and cities; arch constructions, brick bonds, trusses, Vignola's orders, the Modulor; façade and skyline drawings |
-| **Etched & Cut** (ETC) | etchings, engravings and woodcuts from the archive (Dürer, Piranesi, Whistler, Hollar, Haden, Meryon, Rembrandt among them) |
+| **Engravings** (ETC) | etchings, engravings and woodcuts from the archive (Dürer, Piranesi, Whistler, Hollar, Haden, Meryon, Rembrandt among them) |
 | **Brush & Woodblock** (BRU) | East Asian ink painting; Hokusai and Hiroshige woodblock prints |
 | **Pattern** (PAT) | lace, ornament prints and katagami stencils; guilloche, star rosettes, khatam tiles, Truchet tiles |
-| **Systems & Op Art** (SYS) | halftone and moiré studies, Lissajous and harmonograph curves, attractors; standard circuits, logic gates, instrument dials, slide-rule scales, the Smith chart, Platonic solids, the golden spiral |
+| **Geometric** (SYS) | halftone and moiré studies, Lissajous and harmonograph curves, attractors; standard circuits, logic gates, instrument dials, slide-rule scales, the Smith chart, Platonic solids, the golden spiral |
 | **Type** (TYP) | real data set in type: the Beaufort scale, the shipping forecast, spelling and Greek alphabets, Morse, the periodic table, computed digits of π, e, √2 and φ, SI units, and more |
-| **Terminal** (TRM) | ASCII art and the ASCII table, punched cards in IBM 029 code, ITA2 paper tape, seven segments, a dot-matrix alphabet, escape codes, signals, HTTP status codes |
+| **ASCII & Code** (TRM) | ASCII art and the ASCII table, punched cards in IBM 029 code, ITA2 paper tape, seven segments, a dot-matrix alphabet, escape codes, signals, HTTP status codes |
 
 ### Photographs
 

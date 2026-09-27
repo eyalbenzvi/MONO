@@ -133,17 +133,18 @@ for k, (man, trousers, pose, setting) in enumerate(FIFTH):
 TEES6 = ["heavyweight plain white short-sleeved cotton t-shirt, smooth", "heavyweight plain white short-sleeved cotton t-shirt, boxy fit, smooth"]
 SIXTH = [
   ("a well-built man with a taper fade and short beard", "dark jeans", "pose-g", "city sidewalk with cafes, blurred"),
-  ("a broad young Black man with short neat twists, tattooed forearms", "black chinos", "pose-h", "art gallery with paintings, blurred"),
+  ("a broad young Black man with short neat twists, tattooed forearms", "black chinos", None, "art gallery with paintings, blurred"),
   ("a solid man with short salt-and-pepper hair", "navy trousers", "pose-i", "seaside cliff path, blue sea, overcast"),
-  ("a stocky East Asian man with a short textured fringe", "olive chinos", "pose-j", "train station platform, blurred"),
+  ("a stocky East Asian man with a short textured fringe", "olive chinos", None, "train station platform, blurred"),
   ("a tall athletic Latino man with a neat buzz cut, a forearm tattoo", "mid-blue jeans", "pose-k", "tree-lined city park path"),
-  ("a well-built red-haired man with a tidy crop and short beard", "charcoal jeans", "pose-l", "bookshop street, blurred"),
+  ("a well-built red-haired man with a tidy crop and short beard", "charcoal jeans", None, "bookshop street, blurred"),
 ]
 NEG_SIXTH = ("tank top, sleeveless, shoulder blades, bony back, thin fabric, harsh shadows, wrinkled shirt, slouching, stiff pose, standing at attention, "
   "military posture, arms straight down, skinny, plastic skin, cgi, face, profile, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, grey shirt, deformed")
 POSE_NAMES = sorted(f[:-4] for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses")))  # generate.py's order
 for k, (man, trousers, pose, setting) in enumerate(SIXTH):
     i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH) + k
+    if pose is None: continue  # thrown away with its pose (poses.py); the id is not reused
     assert pose in ARMS, f"m{i:02d}: {pose} is an arms-down stance (looks like standing at attention); take a relaxed one: {', '.join(ARMS)}"
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 3100 + i * 47, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
       "prompt": f"{TEES6[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, lookbook photo, soft overcast light"})

@@ -60,7 +60,7 @@ describe("generated catalog (data/shirts.json)", () => {
 
   it("Part 4: the brand book's ten categories, in its order, each with depth and none swamping the shop", () => {
     expect([...SHIRT_CATEGORIES]).toEqual(["photographs", "specimens", "sky", "architecture", "etched", "brush", "pattern", "systems", "type", "terminal"]);
-    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Photographs", "Plates & Specimens", "Maps & Sky", "Architecture", "Etched & Cut", "Brush & Woodblock", "Pattern", "Systems & Op Art", "Type", "Terminal"]);
+    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Photographs", "Botanical & Nature", "Maps & Sky", "Architecture", "Engravings", "Brush & Woodblock", "Pattern", "Geometric", "Type", "ASCII & Code"]);
     expect(SHIRT_CATEGORIES.map((c) => SKU_CODES[c])).toEqual(["PHO", "SPC", "MAP", "ARC", "ETC", "BRU", "PAT", "SYS", "TYP", "TRM"]);
     for (const c of SHIRT_CATEGORIES) {
       const count = SHIRTS.filter((s) => s.category === c).length;
@@ -87,7 +87,7 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(displayCategory("archive", "archive-ukiyo-e")).toBe("brush");
     expect(displayCategory("archive", "archive-patent")).toBe("photographs");
     expect(displayCategory("archive", "archive-stencil")).toBe("pattern");
-    // An etching is Etched & Cut, unless it shows a building or a city.
+    // An etching is Engravings, unless it shows a building or a city.
     expect(displayCategory("archive", "archive-etching", "Evening on the River")).toBe("etched");
     expect(displayCategory("archive", "archive-etching", "The Arch of Marcus Aurelius")).toBe("architecture");
     // In the data: every drawn template sits in one category (archive groups split off their buildings).

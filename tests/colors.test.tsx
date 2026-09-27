@@ -163,6 +163,19 @@ describe("T2: the tee worn — model photos", () => {
     }
   });
 
+  it("no model wears light trousers (they merge with a white tee: the black twin's hem got a white band or dark patches)", async () => {
+    const { MODEL_PHOTOS } = await import("@/lib/models");
+    const sharp = (await import("sharp")).default;
+    for (const m of MODEL_PHOTOS.filter((p) => p.color === "white")) {
+      // The seat of the trousers: the bottom centre of the photo.
+      const { data, info } = await sharp(`public/models/${m.id}.webp`).greyscale().raw().toBuffer({ resolveWithObject: true });
+      let sum = 0, n = 0;
+      for (let y = Math.floor(info.height * 0.92); y < info.height; y++)
+        for (let x = Math.floor(info.width * 0.4); x < Math.floor(info.width * 0.6); x++) (sum += data[y * info.width + x]), n++;
+      expect(sum / n / 255, m.id).toBeLessThan(0.36);
+    }
+  });
+
   it("the mockup is one picture of the print on that colour's photo (baked at build time, never blended on the page)", () => {
     const { container } = render(<TeeMockup shirt={both} color="black" sizes="300px" />);
     const imgs = [...container.querySelectorAll("img")];
