@@ -45,9 +45,10 @@ for k, (man, scene) in enumerate(MORE):
 # stiff mirror-symmetric pose with drawn hands (dark blobs at the hips), slim
 # and narrow-hipped, in a taut, flattened tee. These stand in natural stances
 # (poses.py: wider shoulders and hips, no hand keypoints), fuller builds, a
-# relaxed slightly oversized tee with its folds, and each his own hair,
+# smooth tee — half oversized, half a regular fit — and each his own hair,
 # trousers and — some — tattooed forearms.
-LOOSE_TEE = "oversized plain white t-shirt, relaxed fit, soft folds"
+# Half wear it oversized, half closer (a regular fit, not tight): both smooth, so the print reads.
+TEES = ["regular fit plain white t-shirt, smooth ironed fabric", "oversized plain white t-shirt, smooth ironed fabric"]
 NATURAL = "candid 35mm photo, natural skin, soft daylight"
 THIRD = [
   # (man, trousers, pose, scene)
@@ -61,12 +62,12 @@ THIRD = [
   ("a sturdy East Asian man with medium-length straight black hair", "dark cargo pants", 4, "blurred quiet alley at dusk"),
 ]
 # Under CLIP's 77 tokens, most important first.
-NEG_THIRD = ("skinny, thin, narrow shoulders, tight shirt, fitted shirt, plastic skin, waxy, doll, mannequin, cgi, 3d render, "
+NEG_THIRD = ("wrinkled shirt, creased, crumpled, skinny, thin, narrow shoulders, plastic skin, waxy, doll, mannequin, cgi, 3d render, "
   "face, profile, side view, looking at camera, long sleeves, jacket, hoodie, white pants, shorts, "
-  "logo, print, text, pattern, grey shirt, deformed, extra arms, extra fingers, watermark")
+  "logo, print, text, pattern, grey shirt, deformed, extra arms")
 for k, (man, trousers, pose, scene) in enumerate(THIRD):
     i = len(MEN) + len(MORE) + k
-    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD, "folds": 0.45,
-      "prompt": f"{LOOSE_TEE}, back view, {man}, {trousers}, from behind, {scene}, {NATURAL}"})
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD,
+      "prompt": f"{TEES[k % 2]}, back view, {man}, {trousers}, from behind, {scene}, {NATURAL}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
