@@ -13,8 +13,11 @@ fetch tools have written their prints (pip install pillow numpy):
 - Line work (etchings, woodcuts, prints, ornament, stencils) is screened
   too, its range stretched first so strokes reach full ink and print solid
   (a plain threshold turns a lithograph's tone into blots).
-- Dot coverage stops at MAX_TONE (80%): the darkest part of a picture
-  prints as a fine mesh of ink, never a solid slab (content overhaul, Part 0).
+- A dark mass wider than about 3.5 mm (SLAB_PX) stops at MAX_TONE (80%)
+  dot coverage: it prints as a mesh of ink, never a solid slab (content
+  overhaul, Part 0). A stroke narrower than that stays solid ink: capped,
+  every thin line turned into a pixel-fine mesh that a phone shows as coarse
+  blocks.
 - The paper's residual tone is measured at the picture's edges and taken
   off first, so no paper rectangle turns into a field of dots.
 - A photograph goes on the tee where its subject carries more ink (a dark
@@ -27,6 +30,7 @@ records per print its mode, the photograph's tee and the output's hash, so
 a print already screened is left alone (re-run after a fetch tool rewrites one).
 """
 import hashlib, json, os, sys
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -36,6 +40,9 @@ OUT_W, OUT_H = 1500, 2000
 LPI, ANGLE, PRINT_CM = 30, 45, 28.0
 # Maximum ink: the darkest tone prints as 80% dots, an open mesh, never a solid slab of ink (Part 0).
 MAX_TONE = 0.8
+# A square this wide (px, ~3.5 mm at 1500 px for 28 cm) fitting inside the dark is a mass, not a stroke. The
+# solid-ink check (scripts/gen/quality.ts) looks for 21 px squares of ink, so none survives the cap.
+SLAB_PX = 19
 
 
 def sha(path):
@@ -58,6 +65,14 @@ def screen():
         v = (-x * np.sin(t) + y * np.cos(t)) / cell
         _screen = 0.5 - (np.cos(2 * np.pi * u) + np.cos(2 * np.pi * v)) / 4
     return _screen
+
+
+def cap_masses(D):
+    """MAX_TONE where the dark forms a mass (a SLAB_PX square fits inside it); strokes keep full ink."""
+    dark = (D > MAX_TONE).astype(np.uint8)
+    k = np.ones((SLAB_PX, SLAB_PX), np.uint8)
+    mass = cv2.dilate(cv2.erode(dark, k), k).astype(bool)
+    return np.where(mass, np.minimum(D, MAX_TONE), D)
 
 
 def paper_level(d):
@@ -103,7 +118,8 @@ def process(n, medium):
         entry["paper"] = round(p, 3)
         ink = 0
     D = upsample(d)
-    D = np.clip((D - 0.04) / 0.92, 0, 1) * MAX_TONE  # clean highlights; the darkest stays a mesh
+    D = np.clip((D - 0.04) / 0.92, 0, 1)  # clean highlights
+    D = cap_masses(D)
     mask = D > screen()
     rgba = np.zeros((OUT_H, OUT_W, 4), np.uint8)
     rgba[..., :3] = ink

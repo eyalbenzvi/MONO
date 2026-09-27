@@ -37,8 +37,8 @@ describe("Part 0: no print lands on the tee as a solid block of ink", () => {
     expect(c.slab).toBeGreaterThanOrEqual(0.03);
   });
 
-  it("a halftone's darkest tone is an open mesh of dots at print resolution, never solid ink", async () => {
-    // The 80% cap (scripts/photos/halftone.py MAX_TONE): the darkest photographs and plates check clean at their own size.
+  it("a halftone's dark masses are an open mesh of dots at print resolution, never solid ink", async () => {
+    // The 80% cap on masses (scripts/photos/halftone.py cap_masses): the darkest photographs and plates check clean at their own size.
     const dark = FULL.filter((s) => s.backPrintUrl.endsWith(".webp")).sort((a, b) => b.quality - a.quality).slice(0, 12);
     for (const s of dark) expect((await checkPrint(s)).solid, s.id).toBe(0);
   }, 120_000);
