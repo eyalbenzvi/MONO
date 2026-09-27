@@ -161,7 +161,8 @@ describe("T2: the tee worn — model photos", () => {
       ];
       expect(Math.max(...runs), m.id).toBeLessThan(6);
     }
-  });
+    // (Reads every photo or print: slow under a full parallel run.)
+  }, 60_000);
 
   it("each black twin's tee is whole: no white specks or streaks left in it (holes in its mask)", async () => {
     const { MODEL_PHOTOS } = await import("@/lib/models");

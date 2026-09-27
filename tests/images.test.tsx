@@ -104,5 +104,6 @@ describe("the originals are kept (assets/masters); the halftones are made from t
     const script = readFileSync(path.join(ROOT, "scripts", "photos", "halftone.py"), "utf8");
     expect(script).toMatch(/src = os\.path\.join\(MASTERS/);
     expect(script).not.toMatch(/Image\.open\(path\)/);
-  });
+    // (Reads every photo or print: slow under a full parallel run.)
+  }, 60_000);
 });

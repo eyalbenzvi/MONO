@@ -171,11 +171,12 @@ SEVENTH = [
   ("a fit man in his forties with a short textured crop", "dark brown chinos", "pose-k", "vineyard hills path, blurred", 0),
   ("a stocky East Asian man with short spiky hair", "black jeans", "pose-g", "neon-lit alley at night, blurred", 0),
 ]
-# Thrown away, all sixteen: the hand-on-hip pose came out as a hand pushed behind the back, and hands were
-# deformed in nearly every photo (drawn without hand keypoints, SD 1.5 at this size can't be trusted with visible hands).
-SEVENTH_REJECTED = True
-for k, (man, trousers, pose, setting, lower) in enumerate([] if SEVENTH_REJECTED else SEVENTH):
+# Kept: four. The rest were thrown away — the hand-on-hip pose came out as a hand pushed behind the back, and
+# hands were deformed in most (drawn without hand keypoints, SD 1.5 at this size can't be trusted with visible hands).
+SEVENTH_KEPT = {"m57", "m60", "m62", "m63"}
+for k, (man, trousers, pose, setting, lower) in enumerate(SEVENTH):
     i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH) + len(SIXTH) + k
+    if f"m{i:02d}" not in SEVENTH_KEPT: continue
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 2100 + i * 53, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
       "prompt": f"{TEES6[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, lookbook photo, soft overcast light", **({"lower": lower} if lower else {})})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
@@ -190,8 +191,9 @@ for j in jobs:
     assert not ("long" in p and "hair" in p and not any(t in p for t in ("tied", "bun", "ponytail"))), f"{j['id']}: long hair must be tied back (it falls over the print)"
     assert "short-sleeved" in p, f"{j['id']}: say short-sleeved (else tank tops)"
     assert j.get("pose_name") in ARMS and ARMS[j["pose_name"]].lower() in p, f"{j['id']}: a relaxed pose with its arms in the prompt (arms-down stances look like standing at attention)"
-# Varied: a set spreads over the relaxed poses (no pose twice before all have been used).
-new = [j["pose_name"] for j in jobs if int(j["id"][1:]) >= RULES_FROM]
-for a in range(0, len(new), len(ARMS)):
-    assert len(set(new[a : a + len(ARMS)])) == len(new[a : a + len(ARMS)]), f"poses repeat before all are used: {new}"
+# Varied: each planned set spreads over the relaxed poses (no pose twice before all have been used); what's kept of it after review may not.
+for plan in (SIXTH, SEVENTH):
+    new = [x[2] for x in plan if x[2]]
+    for a in range(0, len(new), len(ARMS)):
+        assert len(set(new[a : a + len(ARMS)])) == len(new[a : a + len(ARMS)]), f"poses repeat before all are used: {new}"
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
