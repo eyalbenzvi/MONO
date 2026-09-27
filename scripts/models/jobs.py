@@ -125,4 +125,14 @@ for k, (man, trousers, pose, setting) in enumerate(FIFTH):
         jobs[-1]["seed"] += 1000
         jobs[-1]["prompt"] = jobs[-1]["prompt"].replace("plain white", "bright pure white")
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
+# Prompt rules learnt from thrown-away photos (the lookbook sets and on):
+# light that tints or darkens the tee, loose hair over the back, sleeveless tops.
+BAD_LIGHT = ("sunset", "dusk", "golden", "backlit", "sunrise")
+RULES_FROM = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH)  # new sets from here on (the photos before are kept as they are)
+for j in jobs:
+    if int(j["id"][1:]) < RULES_FROM: continue
+    p = j["prompt"].lower()
+    assert not any(b in p for b in BAD_LIGHT), f"{j['id']}: light that tints or darkens a white tee ({p})"
+    assert not ("long" in p and "hair" in p and not any(t in p for t in ("tied", "bun", "ponytail"))), f"{j['id']}: long hair must be tied back (it falls over the print)"
+    assert "short-sleeved" in p, f"{j['id']}: say short-sleeved (else tank tops)"
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))

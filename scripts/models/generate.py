@@ -26,15 +26,25 @@ pipe.load_lora_weights("latent-consistency/lcm-lora-sdv1-5"); pipe.fuse_lora()
 pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
 jobs = json.load(open(sys.argv[1])); out = sys.argv[2]; os.makedirs(out, exist_ok=True)
 NEG = "white pants, white shorts, light trousers, arms pressed to body, long sleeves, sweater, jacket, hoodie, angle, perspective, three-quarter view, side view, head turned, turned body, leaning, arms hanging at sides, hands at sides, face, profile, head turned, dark grey shirt, charcoal shirt, wrinkled shirt, creases, folds, baggy shirt, loose shirt, twisted torso, turning around, face, looking at camera, front view, stiff pose, arms pressed to sides, standing against a wall, mugshot, symmetrical pose, grey shirt, logo, print, graphic, text, letters, pattern, stripes, drawing on shirt, deformed, extra arms, extra fingers, cartoon, 3d render, painting, blurry shirt, watermark, crowd, cars, signs, graffiti"
+# Every lesson from a thrown-away photo is checked on each try (checks.py), so
+# a bad one is retried with the next seed at once, never found later.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checks import measure, reason
+from rembg import new_session
+person_session = new_session("isnet-general-use")
+# CLIP reads 77 tokens; anything past that is silently dropped — refuse instead.
+for j in jobs:
+    for text in (j["prompt"], j.get("neg", NEG)):
+        n = len(pipe.tokenizer(text)["input_ids"])
+        if n > pipe.tokenizer.model_max_length: raise SystemExit(f"{j['id']}: {n} tokens, over {pipe.tokenizer.model_max_length}: {text[:60]}…")
 for j in jobs:
     f = os.path.join(out, j["id"] + ".png")
     if os.path.exists(f): continue
     t = time.time()
-    # The tee must come out in the colour asked for: check the middle of the back, retry with other seeds.
     for attempt in range(8):
         img = pipe(j["prompt"], image=POSES[j.get("pose", 0) % len(POSES)], controlnet_conditioning_scale=0.9, negative_prompt=j.get("neg", NEG) + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=j.get("guidance", 2.0), width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
-        g = img.convert("L").crop((250, 290, 390, 470)); px = list(g.getdata()); m = sum(px) / len(px)
-        ok = (m > 150) if j.get("color") == "white" else (m < 22) if j.get("color") == "black" else True
-        print(j["id"], attempt, round(m), "ok" if ok else "retry", round(time.time() - t, 1), flush=True)
-        if ok: break
-    img.save(f)
+        why = reason(measure(img, j, person_session), j)
+        print(j["id"], attempt, "ok" if not why else f"retry ({why})", round(time.time() - t, 1), flush=True)
+        if not why: break
+    # Never a failed try under the photo's name (analyze would pick it up): kept aside to look at.
+    img.save(f if not why else os.path.join(out, j["id"] + ".failed.png"))

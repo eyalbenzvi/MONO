@@ -12,6 +12,8 @@ import json, os, sys
 import numpy as np
 from PIL import Image, ImageFilter
 from rembg import new_session, remove
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checks import measure, reason
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 SRC, JOBS = sys.argv[1], json.load(open(sys.argv[2]))
@@ -55,12 +57,10 @@ for j in JOBS:
     shoulder_row = max(sh_rows, key=width); shoulders = width(shoulder_row)
     waist = min(h - 1, neck + int(shoulders * 1.25))
     cx = (cen(neck) + cen(waist)) / 2 if cen(waist) is not None else cen(neck)
-    # Is the tee the colour asked for? Sample the middle of the back.
-    patch = lum[int(neck + shoulders * 0.3):int(neck + shoulders * 0.7), int(cx - shoulders * 0.12):int(cx + shoulders * 0.12)]
-    tone = float(patch.mean()) if patch.size else 0.5
-    # (A looser tee sits in more shade: its jobs may set a lower bar.)
-    if (j["color"] == "white" and tone < j.get("min_tone", 0.6)) or (j["color"] == "black" and tone > 0.22):
-        print("reject", j["id"], "tee tone", round(tone, 2)); continue
+    # The same rules generate.py retries on (checks.py): the tee's colour, tint, sleeves, trousers.
+    why = reason(measure(img, j, session), j)
+    if why:
+        print("reject", j["id"], why); continue
     # The centre from the tee itself, at chest height below the armpits (where
     # the arms hang apart from it): each row's run of tee colour through the
     # silhouette's centre, left and right edges — its median midpoint is the
