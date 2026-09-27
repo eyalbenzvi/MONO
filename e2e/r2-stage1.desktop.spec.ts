@@ -36,21 +36,23 @@ test.describe("R24: keys right after the taste-test screen closes", () => {
   });
 });
 
-test("R19: Tab stays inside the sort sheet (radios with tabindex -1 don't count as its ends)", async ({ page }) => {
+test("R19: Tab stays inside a sheet (radios with tabindex -1 don't count as its ends)", async ({ page }) => {
   await seed(page);
-  await page.goto("shop/");
+  await page.goto(`shop/${W1}/`);
   await hydrated(page);
-  await page.getByRole("button", { name: /^Sort:/ }).click();
-  const dialog = page.getByRole("dialog");
+  await page.getByRole("button", { name: /^More for / }).click();
+  await page.getByRole("button", { name: "Share" }).click();
+  const dialog = page.getByRole("dialog", { name: /^Share / });
   await expect(dialog).toBeVisible();
   await page.waitForTimeout(300);
+  const inside = () => page.evaluate(() => !!document.activeElement?.closest('[role="dialog"][aria-label^="Share "]'));
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Tab");
-    expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
+    expect(await inside()).toBe(true);
   }
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Shift+Tab");
-    expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
+    expect(await inside()).toBe(true);
   }
 });
 

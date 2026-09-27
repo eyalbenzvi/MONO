@@ -6,15 +6,16 @@
  * is skipped on Save-Data.
  */
 import { SIZES, mockupImage } from "@/lib/images";
-import type { ShirtProduct } from "@/types/shirt";
+import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 const requested = new Set<string>();
 const held: HTMLImageElement[] = [];
 
-export function preloadMockups(shirts: ShirtProduct[], priority: "high" | "low" = "low") {
+/** Each on `color` when it's sold on it (the shop's tee filter), else on its original tee. */
+export function preloadMockups(shirts: ShirtProduct[], priority: "high" | "low" = "low", color: BaseColor | null = null) {
   if (typeof window === "undefined") return;
   for (const s of shirts) {
-    const { src, srcSet } = mockupImage(s, s.baseColor);
+    const { src, srcSet } = mockupImage(s, teeColor(s, color));
     if (requested.has(src)) continue;
     requested.add(src);
     const img = new Image();

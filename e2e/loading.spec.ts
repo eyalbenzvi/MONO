@@ -11,8 +11,7 @@ test("V3: switching categories never shows a tee without its print — one baked
   });
   await page.goto("shop/");
   await hydrated(page);
-  const chips = page.getByRole("group", { name: "Category" }).getByRole("button");
-  await chips.nth(2).tap();
+  await page.getByRole("group", { name: "Style" }).getByRole("button", { name: "Archive" }).tap();
   // Sample the grid while it loads: a mockup is one picture — the print can't arrive apart from the tee.
   for (let i = 0; i < 12; i++) {
     const counts = await page.locator('main [role="img"]').evaluateAll((els) => els.map((el) => el.querySelectorAll("img").length));

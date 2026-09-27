@@ -32,6 +32,7 @@ export type AnalyticsEvent =
   | "calibration_complete"
   | "taste_sheet_open"
   | "shop_view"
+  | "shop_filter"
   | "select_size"
   | "save"
   | "share"

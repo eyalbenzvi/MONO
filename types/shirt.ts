@@ -142,6 +142,9 @@ export const isPhoto = (s: { medium: Medium }) => s.medium === "photo";
  * - photo: a greyscale photograph (WebP), never inverted (that would be a negative).
  */
 export type Medium = "drawn" | "ink" | "photo";
+/** The shop's style filter: how a print was made, which a shopper sees at a glance. */
+export const MEDIA: Medium[] = ["drawn", "ink", "photo"];
+export const MEDIUM_LABELS: Record<Medium, string> = { drawn: "Drawn", ink: "Archive", photo: "Photo" };
 
 /** Adult sizes, then kids' sizes (by age). Stored as these codes; shown with SIZE_LABELS. */
 export const ADULT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const;

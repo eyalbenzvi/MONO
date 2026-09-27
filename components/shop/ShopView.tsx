@@ -1,21 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Icon } from "@/components/Icon";
 import Link from "next/link";
-import { radioKeys } from "@/components/ui";
+import { TeeDot } from "@/components/ui";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { SortSheet } from "@/components/shop/SortSheet";
 import { SharedList } from "@/components/shop/ShopExtras";
-import { SHIRTS, dedupeByFamily, diversify } from "@/lib/catalog";
+import { SHIRTS, dedupeByFamily, diversify, filterShop } from "@/lib/catalog";
 import { SHOP_WINDOW, rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { COLORS, COLOR_LABELS, MEDIA, MEDIUM_LABELS, type BaseColor, type Medium, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
-export const SORT_LABELS: Record<ShopSort, string> = { match: "For you", popular: "Our pick", new: "Newest" };
+type Filters = { tee: BaseColor | null; medium: Medium | null };
+/** The filters in the address (/shop/?c=black&m=photo): shareable, and back from a product restores them. */
+const fromQuery = (q: URLSearchParams): Filters => ({
+  tee: COLORS.find((c) => c === q.get("c")) ?? null,
+  medium: MEDIA.find((m) => m === q.get("m")) ?? null,
+});
 
 
 export function ShopView() {
@@ -23,14 +26,13 @@ export function ShopView() {
   const vector = useTasteStore((s) => s.preferenceVector);
   const { done, total, complete } = useCalibrationProgress();
   // One primitive per selector: the grid re-renders only when these change.
-  const category = useUiStore((s) => s.shop.category);
-  const chosenSort = useUiStore((s) => s.shop.sort);
+  const tee = useUiStore((s) => s.shop.tee);
+  const medium = useUiStore((s) => s.shop.medium);
   const limit = useUiStore((s) => s.shop.limit);
-  // Before the taste test there's no taste to rank by: "Popular" (the
-  // generator's fixed editorial order — not usage data) is the default.
-  // "For you" needs a known taste (it can be lost again by unsaving): else Popular.
-  const sort: ShopSort = chosenSort === "match" && !complete ? "popular" : (chosenSort ?? (complete ? "match" : "popular"));
-  const [sheetOpen, setSheetOpen] = useState(false);
+  // The order is not a choice: "For you" once the taste is known (it can be
+  // lost again by unsaving), before that "Our pick" (the generator's fixed
+  // editorial order — not usage data).
+  const sort: ShopSort = complete ? "match" : "popular";
   const setShop = useUiStore((s) => s.setShop);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const openFromGrid = useCallback(
@@ -38,7 +40,7 @@ export function ShopView() {
       setProductOrigin({ from: "/shop/", id });
       const index = visibleRef.current.findIndex((x) => x.shirt.id === id);
       const shirt = visibleRef.current[index]?.shirt;
-      if (shirt) trackEcommerce("select_item", { item_list_id: listIdRef.current, items: [itemOf(shirt, { index })] });
+      if (shirt) trackEcommerce("select_item", { item_list_id: listIdRef.current, items: [itemOf(shirt, { index, color: useUiStore.getState().shop.tee ?? undefined })] });
     },
     [setProductOrigin],
   );
@@ -46,63 +48,82 @@ export function ShopView() {
   const listIdRef = useRef("");
 
 
-  // Rank with a snapshot of the taste vector taken on entry (and when sort or
-  // category change): a heart tap trains the vector, and re-ranking live
+  // Rank with a snapshot of the taste vector taken on entry (and when the
+  // order or a filter changes): a heart tap trains the vector, and re-ranking live
   // would reshuffle the grid under the user's finger.
   // The snapshot is taken during render, so the grid ranks once when the
   // stored taste arrives (not once with the neutral profile, then again).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, category]);
+  const rankVector = useMemo(() => useTasteStore.getState().preferenceVector, [hydrated, sort, tee, medium]);
   // Refreshed daily (rotation), with what Discover already showed stepping back.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, category]);
+  const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, tee, medium]);
   // (Only once hydrated: the pre-rendered page has no browser to seed from, and must match.)
   const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort, hydrated ? { rotate: daySeed(), demote: shown } : {}), [rankVector, sort, shown, hydrated]);
   // One design per family (the best-ranked one) — its siblings are offered as
   // variations on the product page. The top of the grid is diversified
   // (display only; scores are untouched): no three in a row of one
-  // category or tee colour, no algorithm repeats, and a wildcard every 8th
-  // card when ranking for you.
+  // category or tee colour (not colour once one is chosen: every card is on
+  // it), no algorithm repeats, and a wildcard every 8th card when ranking for you.
   const visible = useMemo(() => {
-    const filtered = dedupeByFamily(ranked.filter(({ shirt }) => !category || shirt.category === category));
-    // "Our pick" opens on the shop window as the generator built it (its own rules: every category, one per subject).
-    const kept = sort === "popular" && !category ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
-    return [...kept, ...diversify(filtered.slice(kept.length), { category: !category, color: true, wildcardEvery: sort === "match" ? 8 : 0 })];
-  }, [ranked, category, sort]);
+    const filtered = dedupeByFamily(filterShop(ranked, { tee, medium }));
+    // "Our pick" opens on the shop window as the generator built it (its own rules: every category, one per subject) —
+    // with a colour chosen, the window's designs on that colour.
+    const kept = sort === "popular" && !medium ? filtered.filter(({ shirt }) => shirt.rank < SHOP_WINDOW) : [];
+    return [...kept, ...diversify(filtered.slice(kept.length), { category: true, color: !tee, wildcardEvery: sort === "match" ? 8 : 0 })];
+  }, [ranked, tee, medium, sort]);
   visibleRef.current = visible;
 
-  // The first cards of every category, in this order: warmed while idle, and
-  // at once when a finger lands on a chip, so a switch shows whole tees.
-  const firstByCategory = useMemo(() => {
-    const out = new Map<ShirtCategory, ShirtProduct[]>();
-    if (!hydrated) return out;
-    const n = typeof window !== "undefined" && window.innerWidth >= 1024 ? 10 : 6;
-    for (const c of SHIRT_CATEGORIES) out.set(c, dedupeByFamily(ranked.filter(({ shirt }) => shirt.category === c)).slice(0, n).map((x) => x.shirt));
-    return out;
-  }, [ranked, hydrated]);
+  // The first cards a filter would show (the current one with each change):
+  // warmed while idle, and at once when a finger lands on it, so a switch
+  // shows whole tees.
+  const firstFor = useCallback(
+    (f: Filters) => {
+      const n = typeof window !== "undefined" && window.innerWidth >= 1024 ? 10 : 6;
+      return dedupeByFamily(filterShop(ranked, f)).slice(0, n).map((x) => x.shirt);
+    },
+    [ranked],
+  );
+  const warm = (f: Filters) => hydrated && preloadMockups(firstFor(f), "high", f.tee);
   useEffect(() => {
     if (!hydrated || saveData()) return;
     return whenIdle(() => {
-      for (const list of firstByCategory.values()) preloadMockups(list);
+      for (const c of COLORS) preloadMockups(firstFor({ tee: c, medium }), "low", c);
+      for (const m of MEDIA) preloadMockups(firstFor({ tee, medium: m }), "low", tee);
     });
-  }, [firstByCategory, hydrated]);
-  const warm = (c: ShirtCategory) => preloadMockups(firstByCategory.get(c) ?? [], "high");
-  listIdRef.current = `shop_${sort}${category ? `_${category}` : ""}`;
+  }, [firstFor, hydrated, tee, medium]);
+  const listId = `shop_${sort}${tee ? `_${tee}` : ""}${medium ? `_${medium}` : ""}`;
+  listIdRef.current = listId;
 
   // shop_view once per visit, with the order actually shown; the list
-  // itself (first page) each time the order or category changes.
+  // itself (first page) each time the order or a filter changes.
   const viewed = useRef(false);
   useEffect(() => {
     if (!hydrated) return;
-    if (!viewed.current) track("shop_view", { category, sort, default_sort: chosenSort === null });
+    if (!viewed.current) track("shop_view", { tee, medium, sort });
     viewed.current = true;
     trackEcommerce("view_item_list", {
-      item_list_id: `shop_${sort}${category ? `_${category}` : ""}`,
-      items: visible.slice(0, SHOP_PAGE_SIZE).map(({ shirt }, index) => itemOf(shirt, { index })),
+      item_list_id: listId,
+      items: visible.slice(0, SHOP_PAGE_SIZE).map(({ shirt }, index) => itemOf(shirt, { index, color: tee ?? undefined })),
     });
     // The list is keyed by what the shopper chose, not by every re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, sort, category]);
+  }, [hydrated, sort, tee, medium]);
+
+  // Opened at /shop/?c=…&m=… (a shared or restored link): those filters, once.
+  useEffect(() => {
+    if (!hydrated) return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.has("c") || q.has("m")) setShop(fromQuery(q));
+  }, [hydrated, setShop]);
+  // …and the address follows the filters (replaced, not pushed: back leaves the shop).
+  useEffect(() => {
+    if (!hydrated) return;
+    const q = new URLSearchParams(window.location.search);
+    for (const [k, v] of [["c", tee], ["m", medium]] as const) (v ? q.set(k, v) : q.delete(k));
+    const next = window.location.pathname + (q.toString() ? `?${q}` : "");
+    if (next !== window.location.pathname + window.location.search) window.history.replaceState(window.history.state, "", next);
+  }, [hydrated, tee, medium]);
 
   // Opened at /shop/?page=N (the "Show more" link): that many pages, once.
   useEffect(() => {
@@ -151,7 +172,8 @@ export function ShopView() {
     return () => io.disconnect();
   }, [hydrated, visible.length, setShop]);
 
-  const setFilter = (patch: Partial<{ category: ShirtCategory | null; sort: ShopSort | null; teeView: BaseColor | "original" }>) => {
+  const setFilter = (patch: Partial<Filters>) => {
+    for (const [filter, value] of Object.entries(patch)) track("shop_filter", { filter, value });
     shopScroll.top = 0;
     setShop({ ...patch, limit: SHOP_PAGE_SIZE });
     scroller.current?.scrollTo({ top: 0 });
@@ -168,9 +190,9 @@ export function ShopView() {
         {/* No text above the grid: the filter row comes first. */}
         <div className="h-3" />
 
-        {/* One sticky row: categories scroll sideways; the tee-colour preview
-            stays in view (black / white switch without scrolling); the order
-            lives behind the sort button. */}
+        {/* One sticky row: the tee colour first (it never scrolls away), then the
+            style. Each is a toggle: tap again to clear. No sort — the order is
+            "For you" once the taste is known, else "Our pick". */}
         {/* Solid, above every card control (cards isolate their own z-index),
             right under the header while it shows and at the very top once it
             has slid away — moving with it (same 200 ms). */}
@@ -180,35 +202,29 @@ export function ShopView() {
           }`}
           style={{ top: headerHidden ? 0 : "var(--header-h)" }}
         >
-          {/* One scrolling row of categories at every width, fading out at the edge. */}
-          <div
-            className="no-scrollbar -ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pl-4 pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
-            role="group"
-            aria-label="Category"
-          >
-            <Chip active={category === null} onClick={() => setFilter({ category: null })}>
-              All
-            </Chip>
-            {/* Categories that have designs (the content review can empty one); the catalog is loaded by the time this renders. */}
-            {SHIRT_CATEGORIES.filter((c) => SHIRTS.some((s) => s.category === c)).map((c) => (
-              <Chip key={c} active={category === c} onWarm={() => warm(c)} onClick={() => setFilter({ category: category === c ? null : c })}>
-                {CATEGORY_LABELS[c]}
+          <div className="flex shrink-0 gap-1.5" role="group" aria-label="Tee colour">
+            {COLORS.map((c) => (
+              <Chip key={c} active={tee === c} onWarm={() => warm({ tee: c, medium })} onClick={() => setFilter({ tee: tee === c ? null : c })}>
+                <span className="flex items-center gap-2">
+                  <TeeDot color={c} />
+                  {COLOR_LABELS[c]}
+                </span>
               </Chip>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => setSheetOpen(true)}
-            aria-haspopup="dialog"
-            aria-label={`Sort: ${SORT_LABELS[sort]}`}
-            className={`relative flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium ring-1 ${
-              chosenSort ? "bg-white text-black ring-white" : "bg-white/[0.04] text-neutral-200 ring-white/10 hover:bg-white/10"
-            }`}
+          <span aria-hidden className="mx-1 hidden h-6 w-px shrink-0 bg-white/10 sm:block" />
+          <div
+            className="no-scrollbar -mr-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pr-6 [mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] sm:[mask-image:none]"
+            role="group"
+            aria-label="Style"
           >
-            <Icon name="arrow-up-down" className="h-4 w-4" /> <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
-          </button>
+            {MEDIA.map((m) => (
+              <Chip key={m} active={medium === m} onWarm={() => warm({ tee, medium: m })} onClick={() => setFilter({ medium: medium === m ? null : m })}>
+                {MEDIUM_LABELS[m]}
+              </Chip>
+            ))}
+          </div>
         </div>
-        <SortSheet open={sheetOpen} onClose={() => setSheetOpen(false)} sort={sort} canMatch={complete} onSort={(v) => setFilter({ sort: v })} />
         <div className="h-2" />
         <SharedList />
 
@@ -224,6 +240,7 @@ export function ShopView() {
                     key={shirt.id}
                     shirt={shirt}
                     variations={variations}
+                    color={tee ?? undefined}
                     topPick={complete && sort === "match" && i === 0}
                     onOpen={openFromGrid}
                   />
@@ -249,9 +266,9 @@ export function ShopView() {
             </>
           ) : (
             <div className="py-16 text-center text-sm text-neutral-400">
-              No tees in this category.
-              <button type="button" onClick={() => setFilter({ category: null })} className="ml-1 font-semibold text-white underline">
-                Show all
+              Nothing here.
+              <button type="button" onClick={() => setFilter({ tee: null, medium: null })} className="ml-1 font-semibold text-white underline">
+                Clear
               </button>
             </div>
           )}

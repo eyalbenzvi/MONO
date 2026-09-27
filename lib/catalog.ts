@@ -316,3 +316,12 @@ export function diversify<T extends { shirt: ShirtProduct }>(
   return [...out, ...paceByVariant(rest, variantWindow)];
 }
 
+
+/**
+ * The shop's filters: a tee colour keeps only designs sold on it (a photo is
+ * sold on its own tee only, so none shows on the other as a negative); a
+ * style keeps one medium.
+ */
+export function filterShop<T extends { shirt: Pick<ShirtProduct, "colors" | "medium"> }>(list: T[], { tee, medium }: { tee: BaseColor | null; medium: Medium | null }): T[] {
+  return list.filter(({ shirt }) => (!tee || shirt.colors.includes(tee)) && (!medium || shirt.medium === medium));
+}

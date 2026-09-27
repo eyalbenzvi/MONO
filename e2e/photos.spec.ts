@@ -37,10 +37,10 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   expect(await print.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(`/img/p/${photo.n}-${photo.baseColor}-`);
 });
 
-test("the shop filters the Photographs category", async ({ page }) => {
+test("the shop's Photo style shows the photographs", async ({ page }) => {
   await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("group", { name: "Category" }).getByRole("button", { name: "Photographs" }).tap();
+  await page.getByRole("group", { name: "Style" }).getByRole("button", { name: "Photo" }).tap();
   const cards = page.locator('main a[href*="/shop/mono-"]');
   await expect(cards.first()).toBeVisible();
   const ids = await cards.evaluateAll((as) => as.slice(0, 12).map((a) => Number(a.getAttribute("href")!.match(/mono-(\d+)/)![1])));

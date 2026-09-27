@@ -2,8 +2,7 @@
 
 import type { UIEvent } from "react";
 import { create } from "zustand";
-import type { ShopSort } from "@/lib/recommendation";
-import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
+import type { BaseColor, Medium, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
 
 export interface ToastState {
   message: string;
@@ -43,10 +42,10 @@ interface UiState {
   debug: boolean;
   headerHidden: boolean;
   shop: {
-    category: ShirtCategory | null;
-    /** Chosen order; null = the default ("For you" after the taste test, else "Popular"). */
-    sort: ShopSort | null;
-    teeView: BaseColor | "original";
+    /** Tee colour: only designs sold on it, all shown on it; null = each on its original tee. */
+    tee: BaseColor | null;
+    /** Style: drawn, archive (ink) or photo; null = all. */
+    medium: Medium | null;
     limit: number;
   };
   /**
@@ -125,7 +124,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
-  shop: { category: null, sort: null, teeView: "original", limit: SHOP_PAGE_SIZE },
+  shop: { tee: null, medium: null, limit: SHOP_PAGE_SIZE },
   productOrigin: null,
   share: null,
   added: null,

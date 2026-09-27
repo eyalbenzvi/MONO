@@ -1,21 +1,18 @@
 import { expect, test } from "@playwright/test";
-import index from "../data/shirts.index.json";
 import { hydrated, seed } from "./helpers";
 
-test("I14 / T1: on desktop the categories are one row; every chip can be scrolled fully into view", async ({ page }) => {
+test("I14 / T1: on desktop the filter row is one line, all five controls in view, no sort", async ({ page }) => {
   await seed(page);
   await page.goto("shop/");
   await hydrated(page);
-  const group = page.getByRole("group", { name: "Category" });
-  const box = (await group.boundingBox())!;
-  expect(box.height).toBeLessThan(56); // one row
-  const chips = await group.getByRole("button").all();
-  expect(chips.length).toBe(index.categories.length + 1); // "All" + every category
-  const last = chips[chips.length - 1];
-  await last.scrollIntoViewIfNeeded();
-  const b = (await last.boundingBox())!;
-  expect(b.x).toBeGreaterThanOrEqual(box.x - 0.5);
-  expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width + 0.5);
+  const colour = page.getByRole("group", { name: "Tee colour" });
+  const style = page.getByRole("group", { name: "Style" });
+  await expect(colour.getByRole("button")).toHaveText(["Black", "White"]);
+  await expect(style.getByRole("button")).toHaveText(["Drawn", "Archive", "Photo"]);
+  const row = [(await colour.boundingBox())!, (await style.boundingBox())!];
+  expect(Math.abs(row[0].y - row[1].y)).toBeLessThan(4); // one line
+  for (const b of await page.locator('[role="group"][aria-label="Tee colour"] button, [role="group"][aria-label="Style"] button').all()) await expect(b).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
 });
 
 test("R12 / T1: with a mouse, a card's heart shows on hover only; no quick add", async ({ page }) => {

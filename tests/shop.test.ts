@@ -74,3 +74,29 @@ describe("match tiers (I11)", () => {
     }
   });
 });
+
+describe("the shop's filters: tee colour and style (no sort, no category chips)", () => {
+  const all = SHIRTS.map((shirt) => ({ shirt }));
+  it("a tee colour keeps only designs sold on it: photographs only on their own tee, never as a negative", async () => {
+    const { filterShop } = await import("@/lib/catalog");
+    for (const tee of ["black", "white"] as const) {
+      const kept = filterShop(all, { tee, medium: null });
+      expect(kept.length).toBe(SHIRTS.filter((s) => s.colors.includes(tee)).length);
+      expect(kept.every(({ shirt }) => shirt.colors.includes(tee))).toBe(true);
+      // Everything but the photographs of the other tee.
+      expect(all.length - kept.length).toBe(SHIRTS.filter((s) => s.medium === "photo" && !s.colors.includes(tee)).length);
+    }
+  });
+
+  it("a style keeps one medium; the two combine", async () => {
+    const { filterShop } = await import("@/lib/catalog");
+    const photos = filterShop(all, { tee: null, medium: "photo" });
+    expect(photos.length).toBeGreaterThan(100);
+    expect(photos.every(({ shirt }) => shirt.medium === "photo")).toBe(true);
+    const whitePhotos = filterShop(all, { tee: "white", medium: "photo" });
+    expect(whitePhotos.every(({ shirt }) => shirt.medium === "photo" && shirt.colors.includes("white"))).toBe(true);
+    expect(filterShop(all, { tee: null, medium: null })).toHaveLength(all.length);
+    // Every combination has designs (no empty grid to explain).
+    for (const tee of [null, "black", "white"] as const) for (const medium of [null, "drawn", "ink", "photo"] as const) expect(filterShop(all, { tee, medium }).length, `${tee} ${medium}`).toBeGreaterThan(20);
+  });
+});

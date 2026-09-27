@@ -101,9 +101,9 @@ describe("Part 7: Our pick opens on the shop window", () => {
       expect(top).toEqual(win.map((s) => s.id));
     }
     const view = readFileSync(path.join(ROOT, "components/shop/ShopView.tsx"), "utf8");
-    expect(view).toMatch(/sort === "popular" && !category \? filtered\.filter\(\(\{ shirt \}\) => shirt\.rank < SHOP_WINDOW\)/);
-    const sheet = readFileSync(path.join(ROOT, "components/shop/SortSheet.tsx"), "utf8");
-    expect(sheet).toContain('label: "Our pick", hint: "A fixed order, before your taste test"');
+    // Before the taste test the order is "Our pick" (no sort to choose); a style filter leaves the window, a colour keeps it.
+    expect(view).toMatch(/sort === "popular" && !medium \? filtered\.filter\(\(\{ shirt \}\) => shirt\.rank < SHOP_WINDOW\)/);
+    expect(view).toContain('const sort: ShopSort = complete ? "match" : "popular";');
   });
 
   it("no subject appears twice anywhere in the catalogue (so never twice in any 24)", () => {
