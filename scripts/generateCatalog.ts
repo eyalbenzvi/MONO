@@ -31,6 +31,7 @@ import path from "node:path";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
+import { checkPrint } from "./tools/blockCheck";
 import { firstSentence, isWordTitled, plainTitles } from "./gen/titles";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
 import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, solidBlock, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
@@ -632,7 +633,7 @@ async function measureAll(list: Draft[]): Promise<Map<string, { check: BlockChec
   const out = new Map<string, { check: BlockCheck; assessment: Assessment }>();
   for (const s of list) {
     const ink = await inkOfPrint(s);
-    out.set(s.id, { check: solidBlock(ink), assessment: assessPrint(ink) });
+    out.set(s.id, { check: await checkPrint(s), assessment: assessPrint(ink) });
   }
   return out;
 }

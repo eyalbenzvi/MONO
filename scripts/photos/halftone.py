@@ -13,6 +13,8 @@ fetch tools have written their prints (pip install pillow numpy):
 - Line work (etchings, woodcuts, prints, ornament, stencils) is screened
   too, its range stretched first so strokes reach full ink and print solid
   (a plain threshold turns a lithograph's tone into blots).
+- Dot coverage stops at MAX_TONE (80%): the darkest part of a picture
+  prints as a fine mesh of ink, never a solid slab (content overhaul, Part 0).
 - The paper's residual tone is measured at the picture's edges and taken
   off first, so no paper rectangle turns into a field of dots.
 - A photograph goes on the tee where its subject carries more ink (a dark
@@ -32,6 +34,8 @@ ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 MANIFEST = os.path.join(ROOT, "data", "curation", "halftone.json")
 OUT_W, OUT_H = 1500, 2000
 LPI, ANGLE, PRINT_CM = 30, 45, 28.0
+# Maximum ink: the darkest tone prints as 80% dots, an open mesh, never a solid slab of ink (Part 0).
+MAX_TONE = 0.8
 
 
 def sha(path):
@@ -99,7 +103,7 @@ def process(n, medium):
         entry["paper"] = round(p, 3)
         ink = 0
     D = upsample(d)
-    D = np.clip((D - 0.04) / 0.92, 0, 1)  # clean highlights, full solids
+    D = np.clip((D - 0.04) / 0.92, 0, 1) * MAX_TONE  # clean highlights; the darkest stays a mesh
     mask = D > screen()
     rgba = np.zeros((OUT_H, OUT_W, 4), np.uint8)
     rgba[..., :3] = ink

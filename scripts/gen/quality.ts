@@ -103,7 +103,7 @@ export function rasterInk(rgba: Uint8Array | Buffer, w: number, h: number, mediu
 
 export interface BlockCheck {
   /** Why the print is refused (it prints as a slab of ink), or null. */
-  reject: null | "block" | "panel" | "edges";
+  reject: null | "block" | "panel" | "edges" | "slab";
   /** Ink inside the ink's bounding box (0–1) and how much of that box's outline is ink. */
   boxFill: number;
   perimeter: number;
@@ -111,6 +111,8 @@ export interface BlockCheck {
   panel: { area: number; perimeter: number; solid: number };
   /** Share of each print edge (top, right, bottom, left) that is ink. */
   edges: [number, number, number, number];
+  /** Solid ink (a pixel whose whole neighbourhood, ~4 mm across, is ink) as a share of the print. */
+  solid: number;
 }
 
 /** Rule (a): ink fills over this share of its own bounding box… */
@@ -125,6 +127,8 @@ export const PANEL_PERIMETER = 0.9;
 export const PANEL_SOLID = 0.05;
 /** Rule (c): all four print edges carry this much ink. */
 export const EDGE_SOLID = 0.9;
+/** Rule (d): solid ink covers this share of the print, whatever its outline (towers with windows, a dark mass). */
+export const SLAB_SOLID = 0.1;
 /** A pixel counts as ink from this much (0–1). */
 const ON = 0.35;
 
@@ -144,18 +148,24 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
         on[y * w + x] = 1;
         [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
       }
-  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0] };
+  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0 };
   if (x1 < 0) return none;
-  // Solid ink: the pixel and its whole 5×5 neighbourhood (scaled with size) are ink.
+  // Solid ink: the pixel and its whole 5×5 neighbourhood at the check's size (scaled with size: at a raster print's own
+  // size the window is wider than a halftone cell, so a mesh of dots is never solid) are ink. Summed-area table: O(1) a pixel.
   const r = Math.max(1, Math.round((2 * w) / CHECK_W));
-  const rows = new Uint16Array(w * h); // horizontal run of ink ending at each pixel
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) rows[y * w + x] = on[y * w + x] ? (x > 0 ? rows[y * w + x - 1] : 0) + 1 : 0;
+  const W1 = w + 1;
+  const sat = new Uint32Array(W1 * (h + 1));
+  for (let y = 0; y < h; y++) {
+    let row = 0;
+    for (let x = 0; x < w; x++) (row += on[y * w + x]), (sat[(y + 1) * W1 + x + 1] = sat[y * W1 + x + 1] + row);
+  }
+  const full = (2 * r + 1) ** 2;
   const solid = new Uint8Array(w * h);
+  let solidCount = 0;
   for (let y = r; y < h - r; y++)
     for (let x = r; x < w - r; x++) {
-      let ok = 1;
-      for (let dy = -r; dy <= r && ok; dy++) if (rows[(y + dy) * w + x + r] < 2 * r + 1) ok = 0;
-      solid[y * w + x] = ok;
+      const [a, b] = [(y - r) * W1 + x - r, (y + r + 1) * W1 + x - r];
+      if (sat[b + 2 * r + 1] - sat[b] - sat[a + 2 * r + 1] + sat[a] === full) (solid[y * w + x] = 1), solidCount++;
     }
   const bw = x1 - x0 + 1;
   const bh = y1 - y0 + 1;
@@ -201,6 +211,7 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
   };
   const edges: BlockCheck["edges"] = [share(w, (x) => on[x]), share(h, (y) => on[y * w + w - 1]), share(w, (x) => on[(h - 1) * w + x]), share(h, (y) => on[y * w])];
   const boxFill = inBox / (bw * bh);
+  const solidShare = solidCount / (w * h);
   const reject =
     boxFill > BLOCK_FILL && perimeter >= BLOCK_PERIMETER
       ? "block"
@@ -208,8 +219,10 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
         ? "panel"
         : edges.every((e) => e >= EDGE_SOLID)
           ? "edges"
-          : null;
-  return { reject, boxFill, perimeter, panel, edges };
+          : solidShare >= SLAB_SOLID
+            ? "slab"
+            : null;
+  return { reject, boxFill, perimeter, panel, edges, solid: solidShare };
 }
 
 /* ------------------------------------------------------------------ */

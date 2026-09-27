@@ -8,15 +8,19 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import type { CatalogEntry } from "../../types/shirt";
-import { CHECK_H, CHECK_W, rasterInk, solidBlock, svgInk, type BlockCheck } from "../gen/quality";
+import { rasterInk, solidBlock, svgInk, type BlockCheck } from "../gen/quality";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 
+/**
+ * A drawn print is checked as rendered at the check's size; a raster print at its own size (a halftone's
+ * dots stay dots — shrunk, a mesh of them would average into a false solid grey).
+ */
 export async function checkPrint(s: Pick<CatalogEntry, "backPrintUrl" | "baseColor" | "medium">): Promise<BlockCheck> {
   const file = path.join(ROOT, "public", s.backPrintUrl);
   if (file.endsWith(".svg")) return solidBlock(svgInk(readFileSync(file, "utf8"), s.baseColor));
-  const { data } = await sharp(file).resize(CHECK_W, CHECK_H, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  return solidBlock(rasterInk(data, CHECK_W, CHECK_H, s.medium, s.baseColor));
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return solidBlock(rasterInk(data, info.width, info.height, s.medium, s.baseColor));
 }
 
 async function main() {

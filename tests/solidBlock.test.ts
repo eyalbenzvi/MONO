@@ -18,6 +18,22 @@ describe("Part 0: no print lands on the tee as a solid block of ink", () => {
     expect(solidBlock(svgInk(svg("#FFFFFF", `<rect width="300" height="400" fill="#000000"/><circle cx="150" cy="200" r="60" fill="#FFFFFF"/>`), "white")).reject).not.toBeNull();
   });
 
+  it("the check refuses solid towers with windows cut out, whatever their outline (rule d, slab)", () => {
+    // A skyline: filled towers of uneven height, rows of small windows — no rectangle outline for rules (a) and (b).
+    const towers = [[20, 160, 50], [75, 120, 40], [120, 200, 60], [185, 90, 45], [235, 150, 45]]
+      .map(([x, top, w]) => `<rect x="${x}" y="${top}" width="${w}" height="${360 - top}" fill="#FFFFFF"/>` + Array.from({ length: Math.floor((340 - top) / 18) }, (_, k) => `<rect x="${x + 6}" y="${top + 8 + k * 18}" width="${w - 12}" height="6" fill="#000000"/>`).join(""))
+      .join("");
+    const c = solidBlock(svgInk(svg("#000000", towers), "black"));
+    expect(c.reject).toBe("slab");
+    expect(c.solid).toBeGreaterThan(0.1);
+  });
+
+  it("a halftone's darkest tone is an open mesh of dots at print resolution, never solid ink", async () => {
+    // The 80% cap (scripts/photos/halftone.py MAX_TONE): the darkest photographs and plates check clean at their own size.
+    const dark = FULL.filter((s) => s.backPrintUrl.endsWith(".webp")).sort((a, b) => b.quality - a.quality).slice(0, 12);
+    for (const s of dark) expect((await checkPrint(s)).solid, s.id).toBe(0);
+  }, 120_000);
+
   it("open line art, a line grid in a thin frame and a dotted halftone pass", () => {
     const lines = Array.from({ length: 12 }, (_, i) => `<line x1="20" y1="${20 + i * 30}" x2="280" y2="${20 + i * 30}" stroke="#FFFFFF" stroke-width="1.5"/><line x1="${20 + i * 23}" y1="20" x2="${20 + i * 23}" y2="380" stroke="#FFFFFF" stroke-width="1.5"/>`).join("");
     expect(solidBlock(svgInk(svg("#000000", `<rect x="10" y="10" width="280" height="380" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>${lines}`), "black")).reject).toBeNull();
