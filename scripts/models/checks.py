@@ -10,11 +10,16 @@ photo that was thrown away:
 - tint: a white tee must be white, not beige (golden autumn light).
 - sleeves: the tee covers the shoulders out to the upper arms — a tank top
   shows skin there (the shop sells tees only).
+- head: the whole head is in the picture (a tall afro came out cut off at
+  the top edge; no framing brings it back).
 - trousers: light trousers merge with a white tee (its hem can't be found,
   and the black twin gets a white band). Light grey, stone and khaki are
   fine: analyze.py finds the hem as a line (and see the README).
 """
 import numpy as np
+
+# The top of the head (hair included) touching the picture's top edge (within this many pixels) is cut off: no framing brings it back.
+HEADROOM = 3
 
 def measure(img, j, session):
     """The silhouette's landmarks and the numbers the rules look at."""
@@ -55,7 +60,7 @@ def measure(img, j, session):
     tx = slice(int(cx - shoulders * 0.3), int(cx + shoulders * 0.3))
     body = person[t0:t1, tx]
     trousers = float(lum[t0:t1, tx][body].mean()) if body.any() else 0.0
-    return dict(person=person, lum=lum, span=span, neck=neck, shoulders=shoulders, cx=cx,
+    return dict(person=person, lum=lum, span=span, head=head, neck=neck, shoulders=shoulders, cx=cx,
                 tone=tone, tint=tint, sleeves=sleeves, trousers=trousers)
 
 def reason(m, j):
@@ -65,5 +70,6 @@ def reason(m, j):
     if (white and m["tone"] < j.get("min_tone", 0.6)) or (not white and m["tone"] > 0.22): return f"tee tone {m['tone']:.2f}"
     if white and m["tint"] > 0.08: return f"tee tinted {m['tint']:.2f}"
     if m["sleeves"] < 0.5: return f"no sleeves {m['sleeves']:.2f}"
+    if m["head"] < HEADROOM: return "head cut at the top"
     if white and m["trousers"] > 0.62: return f"light trousers {m['trousers']:.2f}"
     return None

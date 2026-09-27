@@ -190,6 +190,8 @@ for j in JOBS:
     cw, ch = OUT_W / f, OUT_H / f
     left, top_ = cx - cw / 2, neck - OUT_H * COLLAR / f
     # Never above the picture: the frame comes down to its top edge, and the collar (and print) sit that much lower.
+    # Air above the head (hair included): the frame starts a little above it when the picture has room.
+    top_ = min(top_, head - ch * 0.03)
     top_ = max(0.0, min(top_, h - ch)) if ch <= h else top_
     box = print_box(sh, (neck - top_) / ch)
     arr = np.asarray(img.convert("L"))

@@ -97,6 +97,7 @@ for k, (man, trousers, pose, setting) in enumerate(FOURTH):
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 5100 + i * 41, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
       "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
     if k == 6: jobs[-1]["seed"] += 1000  # the first seed gave a tank top (the shop sells tees only)
+    if k == 3: jobs[-1]["lower"] = 60  # the bun was cut off at the top edge: the man stands lower in the picture
 # The fifth set: the lookbook recipe, with more variety — ages, origins,
 # builds, hair, trousers, three upright stances, sixteen different places.
 FIFTH = [
@@ -123,6 +124,7 @@ for k, (man, trousers, pose, setting) in enumerate(FIFTH):
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 4100 + i * 43, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
       "prompt": f"{TEES4[k % 2]}, back view, {man}, standing upright, shoulders back, {trousers}, {setting}, {LOOKBOOK}"})
     if k in (3, 12): jobs[-1]["seed"] += 500  # retried: loose hair over the back; a backlit, dark tee
+    if k == 9: jobs[-1]["lower"] = 60  # the afro was cut off at the top edge: the man stands lower in the picture
     if k == 5:  # golden autumn light turned every try beige: another seed, the white said twice
         jobs[-1]["seed"] += 1000
         jobs[-1]["prompt"] = jobs[-1]["prompt"].replace("plain white", "bright pure white")

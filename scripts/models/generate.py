@@ -22,6 +22,14 @@ vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=tor
 controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-openpose", torch_dtype=torch.float32)
 pipe = StableDiffusionControlNetPipeline.from_pretrained("SG161222/Realistic_Vision_V5.1_noVAE", vae=vae, controlnet=controlnet, torch_dtype=torch.float32, safety_checker=None)
 POSES = [Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses", f)).convert("RGB") for f in sorted(os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses")))]
+
+def pose_for(j):
+    """The job's pose skeleton; "lower": moved down that many pixels, for tall hair (a bun or an afro came out cut off at the top)."""
+    pose = POSES[j.get("pose", 0) % len(POSES)]
+    if not j.get("lower"): return pose
+    moved = Image.new("RGB", pose.size)
+    moved.paste(pose, (0, j["lower"]))
+    return moved
 pipe.load_lora_weights("latent-consistency/lcm-lora-sdv1-5"); pipe.fuse_lora()
 pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
 jobs = json.load(open(sys.argv[1])); out = sys.argv[2]; os.makedirs(out, exist_ok=True)
@@ -42,7 +50,7 @@ for j in jobs:
     if os.path.exists(f): continue
     t = time.time()
     for attempt in range(8):
-        img = pipe(j["prompt"], image=POSES[j.get("pose", 0) % len(POSES)], controlnet_conditioning_scale=0.9, negative_prompt=j.get("neg", NEG) + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=j.get("guidance", 2.0), width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
+        img = pipe(j["prompt"], image=pose_for(j), controlnet_conditioning_scale=0.9, negative_prompt=j.get("neg", NEG) + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=j.get("guidance", 2.0), width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
         why = reason(measure(img, j, person_session), j)
         print(j["id"], attempt, "ok" if not why else f"retry ({why})", round(time.time() - t, 1), flush=True)
         if not why: break
