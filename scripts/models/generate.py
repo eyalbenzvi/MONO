@@ -32,7 +32,7 @@ for j in jobs:
     t = time.time()
     # The tee must come out in the colour asked for: check the middle of the back, retry with other seeds.
     for attempt in range(8):
-        img = pipe(j["prompt"], image=POSES[j.get("pose", 0) % len(POSES)], controlnet_conditioning_scale=0.9, negative_prompt=NEG + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=2.0, width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
+        img = pipe(j["prompt"], image=POSES[j.get("pose", 0) % len(POSES)], controlnet_conditioning_scale=0.9, negative_prompt=j.get("neg", NEG) + (", black shirt" if j.get("color") == "white" else ", white shirt"), num_inference_steps=j.get("steps", 6), guidance_scale=j.get("guidance", 2.0), width=640, height=880, generator=torch.Generator().manual_seed(j["seed"] + attempt * 101)).images[0]
         g = img.convert("L").crop((250, 290, 390, 470)); px = list(g.getdata()); m = sum(px) / len(px)
         ok = (m > 150) if j.get("color") == "white" else (m < 22) if j.get("color") == "black" else True
         print(j["id"], attempt, round(m), "ok" if ok else "retry", round(time.time() - t, 1), flush=True)

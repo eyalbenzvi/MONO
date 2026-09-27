@@ -112,7 +112,8 @@ for j in JOBS:
         Image.fromarray(a8).crop((int(left + pad), int(top_ + pad), int(left + pad + cw), int(top_ + pad + ch))).resize((OUT_W, OUT_H), Image.LANCZOS).save(os.path.join(OUT, name + ".webp"), quality=82, method=6)
     # Full white: the tee's greys lifted towards white, its folds kept faint.
     lo = float(np.percentile(g[tee], 5))
-    white = 1 - 0.3 * np.clip((1 - g) / max(1e-3, 1 - lo), 0, 1) ** 1.4
+    # How much of the tee's folds stay (a relaxed tee keeps more of them: a flattened one looks painted on).
+    white = 1 - j.get("folds", 0.3) * np.clip((1 - g) / max(1e-3, 1 - lo), 0, 1) ** 1.4
     framed(g * (1 - soft) + white * soft, j["id"] + "-white")
     out.append({"id": j["id"] + "-white", "color": "white", "box": PRINT_BOX})
     # Full black twin: the tee darkened, its folds keeping a faint sheen.
@@ -122,5 +123,9 @@ for j in JOBS:
         framed(twin, j["id"] + "-black")
         out.append({"id": j["id"] + "-black", "color": "black", "box": PRINT_BOX})
     print(j["id"], "framed", round(f, 2), flush=True)
-json.dump(out, open(os.path.join(DATA, "models.json"), "w"), indent=1)
-print(len(out), "photos")
+# Added to the photos already there (a photo analysed again replaces its entry).
+known = json.load(open(os.path.join(DATA, "models.json"))) if os.path.exists(os.path.join(DATA, "models.json")) else []
+ids = {m["id"] for m in out}
+merged = sorted([m for m in known if m["id"] not in ids] + out, key=lambda m: m["id"])
+json.dump(merged, open(os.path.join(DATA, "models.json"), "w"), indent=1)
+print(len(out), "photos analysed,", len(merged), "in all")

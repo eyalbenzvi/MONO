@@ -41,5 +41,32 @@ for k, (man, scene) in enumerate(MORE):
     i = len(MEN) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 9100 + i * 31, "steps": 8, "pose": 0,
       "prompt": f"plain white short-sleeved t-shirt, smooth taut fabric, back view, {man} standing still, dark jeans, relaxed arms, straight-on from directly behind, symmetrical, shoulders level, head straight, {scene}, soft light, photo"})
+# The third set: what looked off in the first two, fixed. They all stood in one
+# stiff mirror-symmetric pose with drawn hands (dark blobs at the hips), slim
+# and narrow-hipped, in a taut, flattened tee. These stand in natural stances
+# (poses.py: wider shoulders and hips, no hand keypoints), fuller builds, a
+# relaxed slightly oversized tee with its folds, and each his own hair,
+# trousers and — some — tattooed forearms.
+LOOSE_TEE = "oversized plain white t-shirt, relaxed fit, soft folds"
+NATURAL = "candid 35mm photo, natural skin, soft daylight"
+THIRD = [
+  # (man, trousers, pose, scene)
+  ("a man in his thirties with a soft belly and messy brown hair, full sleeve tattoos on both forearms", "black jeans", 1, "blurred quiet brick street"),
+  ("a stocky broad man with a buzz cut and a short beard", "olive cargo pants", 2, "blurred concrete plaza"),
+  ("a heavyset young Black man with a round afro", "charcoal chinos", 1, "blurred tiled underpass"),
+  ("a big tall man with a man bun, a dragon tattoo on his right forearm", "mid-blue jeans", 4, "blurred glass shopfronts"),
+  ("a sturdy middle-aged man with grey hair in a low ponytail", "dark grey trousers", 2, "blurred stone arcade"),
+  ("a young man of average build with shoulder-length dreadlocks", "black trousers", 3, "blurred metro platform"),
+  ("a chubby man with a mullet, small tattoos on both forearms", "faded dark jeans", 3, "blurred parking garage"),
+  ("a sturdy East Asian man with medium-length straight black hair", "dark cargo pants", 4, "blurred quiet alley at dusk"),
+]
+# Under CLIP's 77 tokens, most important first.
+NEG_THIRD = ("skinny, thin, narrow shoulders, tight shirt, fitted shirt, plastic skin, waxy, doll, mannequin, cgi, 3d render, "
+  "face, profile, side view, looking at camera, long sleeves, jacket, hoodie, white pants, shorts, "
+  "logo, print, text, pattern, grey shirt, deformed, extra arms, extra fingers, watermark")
+for k, (man, trousers, pose, scene) in enumerate(THIRD):
+    i = len(MEN) + len(MORE) + k
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 7300 + i * 37, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_THIRD, "folds": 0.45,
+      "prompt": f"{LOOSE_TEE}, back view, {man}, {trousers}, from behind, {scene}, {NATURAL}"})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 json.dump(jobs, open("jobs.json", "w"), indent=1); print(len(jobs))
