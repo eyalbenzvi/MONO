@@ -113,6 +113,8 @@ export interface BlockCheck {
   edges: [number, number, number, number];
   /** Solid ink (a pixel whose whole neighbourhood, ~4 mm across, is ink) as a share of the print. */
   solid: number;
+  /** The largest connected patch of solid ink, as a share of the print. */
+  slab: number;
 }
 
 /** Rule (a): ink fills over this share of its own bounding box… */
@@ -127,8 +129,10 @@ export const PANEL_PERIMETER = 0.9;
 export const PANEL_SOLID = 0.05;
 /** Rule (c): all four print edges carry this much ink. */
 export const EDGE_SOLID = 0.9;
-/** Rule (d): solid ink covers this share of the print, whatever its outline (towers with windows, a dark mass). */
+/** Rule (d): solid ink covers this share of the print, whatever its outline (towers with windows, a dark mass)… */
 export const SLAB_SOLID = 0.1;
+/** …or one connected patch of it does (a filled bar among outlines); bold letters and small filled cells stay far below. */
+export const SLAB_REGION = 0.03;
 /** A pixel counts as ink from this much (0–1). */
 const ON = 0.35;
 
@@ -148,7 +152,7 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
         on[y * w + x] = 1;
         [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
       }
-  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0 };
+  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0, slab: 0 };
   if (x1 < 0) return none;
   // Solid ink: the pixel and its whole 5×5 neighbourhood at the check's size (scaled with size: at a raster print's own
   // size the window is wider than a halftone cell, so a mesh of dots is never solid) are ink. Summed-area table: O(1) a pixel.
@@ -212,6 +216,28 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
   const edges: BlockCheck["edges"] = [share(w, (x) => on[x]), share(h, (y) => on[y * w + w - 1]), share(w, (x) => on[(h - 1) * w + x]), share(h, (y) => on[y * w])];
   const boxFill = inBox / (bw * bh);
   const solidShare = solidCount / (w * h);
+  // The largest connected patch of solid ink (4-neighbour).
+  let slab = 0;
+  if (solidCount) {
+    const seen = new Uint8Array(w * h);
+    const q: number[] = [];
+    for (let s0 = 0; s0 < w * h; s0++) {
+      if (!solid[s0] || seen[s0]) continue;
+      let n = 0;
+      seen[s0] = 1;
+      q.push(s0);
+      while (q.length) {
+        const p = q.pop()!;
+        n++;
+        const x = p % w;
+        if (x > 0 && solid[p - 1] && !seen[p - 1]) (seen[p - 1] = 1), q.push(p - 1);
+        if (x < w - 1 && solid[p + 1] && !seen[p + 1]) (seen[p + 1] = 1), q.push(p + 1);
+        if (p >= w && solid[p - w] && !seen[p - w]) (seen[p - w] = 1), q.push(p - w);
+        if (p < w * (h - 1) && solid[p + w] && !seen[p + w]) (seen[p + w] = 1), q.push(p + w);
+      }
+      slab = Math.max(slab, n / (w * h));
+    }
+  }
   const reject =
     boxFill > BLOCK_FILL && perimeter >= BLOCK_PERIMETER
       ? "block"
@@ -219,10 +245,10 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
         ? "panel"
         : edges.every((e) => e >= EDGE_SOLID)
           ? "edges"
-          : solidShare >= SLAB_SOLID
+          : solidShare >= SLAB_SOLID || slab >= SLAB_REGION
             ? "slab"
             : null;
-  return { reject, boxFill, perimeter, panel, edges, solid: solidShare };
+  return { reject, boxFill, perimeter, panel, edges, solid: solidShare, slab };
 }
 
 /* ------------------------------------------------------------------ */

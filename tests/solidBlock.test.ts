@@ -28,6 +28,15 @@ describe("Part 0: no print lands on the tee as a solid block of ink", () => {
     expect(c.solid).toBeGreaterThan(0.1);
   });
 
+  it("the check refuses one filled bar among outlines (rule d: a connected patch of solid ink over 3% of the print)", () => {
+    const bars = Array.from({ length: 6 }, (_, k) => `<rect x="40" y="${30 + k * 55}" width="220" height="40" fill="none" stroke="#FFFFFF" stroke-width="3"/>`).join("");
+    const open = solidBlock(svgInk(svg("#000000", bars), "black"));
+    expect(open.reject).toBeNull();
+    const c = solidBlock(svgInk(svg("#000000", `${bars}<rect x="40" y="345" width="220" height="45" fill="#FFFFFF"/>`), "black"));
+    expect(c.reject).toBe("slab");
+    expect(c.slab).toBeGreaterThanOrEqual(0.03);
+  });
+
   it("a halftone's darkest tone is an open mesh of dots at print resolution, never solid ink", async () => {
     // The 80% cap (scripts/photos/halftone.py MAX_TONE): the darkest photographs and plates check clean at their own size.
     const dark = FULL.filter((s) => s.backPrintUrl.endsWith(".webp")).sort((a, b) => b.quality - a.quality).slice(0, 12);

@@ -26,7 +26,7 @@ export const ARCHIVE_DISPLAY: Record<ArchiveGroup, ShirtCategory> = {
 };
 
 /** A title naming a building, a street or a city view: an etching of it is filed under Architecture. */
-export const BUILDING = /\b(?:cathedral|church|chapel|abbey|basilica|temple|tempio|mosque|pagoda|shrine|palace|palazzo|castle|chateau|château|tower|tour|bridge|pont|ponte|arch|arco|gate|porta|facade|façade|colonnade|portico|cloister|piazza|square|street|rue|via|quay|quai|lighthouse|mill|ruins?|dome|capitol|courtyard|house|houses|building|buildings|skyline|fountain|fontana|veduta|view of|carceri)\b/i;
+export const BUILDING = /\b(?:cathedral|church|chapel|abbey|basilica|temple|tempio|mosque|pagoda|shrine|palace|palazzo|castle|chateau|château|tower|tour|bridge|pont|ponte|arch|arco|gate|porta|facade|façade|colonnade|portico|cloister|piazza|street|rue|via|quay|quai|lighthouse|mill|ruins?|dome|capitol|courtyard|house|houses|building|buildings|skyline|fountain|fontana|veduta|view of|carceri)\b/i;
 
 /**
  * The shop category of a design: what it shows and how it was made,
