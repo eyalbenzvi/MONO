@@ -74,21 +74,22 @@ for k, (man, trousers, pose, scene) in enumerate(THIRD):
 # slight shift of weight; no hands in pockets, nothing held), a good heavy
 # cotton tee lying smooth, groomed hair, soft directional light, and clean,
 # varied settings instead of the same grey passage.
-LOOKBOOK = "professional fashion lookbook photo, 85mm, soft directional light"
-TEES4 = ["heavyweight plain white cotton t-shirt, regular fit, smooth", "heavyweight plain white cotton t-shirt, boxy relaxed fit, smooth"]
+LOOKBOOK = "fashion lookbook photo, 85mm, soft overcast light"
+# A thick cotton hangs smooth over the back (a thin one shows every shoulder blade).
+TEES4 = ["thick heavyweight plain white cotton t-shirt, regular fit, smooth drape", "thick heavyweight plain white cotton t-shirt, boxy relaxed fit, smooth drape"]
 FOURTH = [
-  # (man, trousers, pose, setting)
-  ("an athletic man with neat short brown hair, tattoos on his forearms", "black jeans", 1, "plain light grey studio backdrop"),
-  ("a well-built man with a clean buzz cut and short beard", "olive chinos", 4, "smooth concrete wall"),
-  ("a broad-shouldered Black man with a neat high-top fade", "charcoal trousers", 1, "white modernist building facade"),
-  ("a tall solid man with his hair in a neat man bun, a tattoo on one forearm", "mid-blue jeans", 4, "calm sea and sky"),
-  ("a fit silver-haired man in his fifties, neatly combed", "dark grey trousers", 1, "stone terrace with olive trees"),
-  ("a well-built young man with neat shoulder-length locs", "black trousers", 4, "warm plaster wall in late sun"),
-  ("a solid man with a tidy textured crop, small forearm tattoos", "dark jeans", 1, "green park, soft bokeh"),
-  ("an athletic East Asian man with neat medium-length black hair", "stone-coloured chinos", 4, "minimal white gallery wall"),
+  # (man, trousers, pose, setting) — real places, each different; never a bare wall.
+  ("a well-built man with neat short brown hair, tattooed forearms", "black jeans", 1, "busy shopping street, blurred shopfronts"),
+  ("a broad solid man with a clean buzz cut and short beard", "olive chinos", 4, "seaside promenade, blurred sea"),
+  ("a broad-shouldered Black man with a neat high-top fade", "charcoal trousers", 1, "city park with trees, soft bokeh"),
+  ("a tall solid man with his hair in a neat man bun, a tattoo on one forearm", "mid-blue jeans", 4, "rooftop terrace, city skyline at dusk"),
+  ("a sturdy silver-haired man in his fifties, neatly combed", "dark grey trousers", 1, "old town cobbled square, cafes"),
+  ("a well-built young man with neat shoulder-length locs", "black trousers", 4, "harbour with boats, blurred"),
+  ("a stocky man with a tidy textured crop, small forearm tattoos", "dark jeans", 1, "farmers market, blurred stalls"),
+  ("a solid East Asian man with neat medium-length black hair", "stone-coloured chinos", 4, "mountain lookout, hazy valley"),
 ]
-NEG_FOURTH = ("wrinkled shirt, creased, slouching, hunched, hands in pockets, holding bag, skinny, overweight, plastic skin, doll, cgi, "
-  "face, profile, side view, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, pattern, grey shirt, deformed")
+NEG_FOURTH = ("shoulder blades, bony back, thin fabric, see-through shirt, harsh shadows, wrinkled shirt, slouching, hands in pockets, holding bag, skinny, "
+  "plastic skin, doll, cgi, face, profile, side view, looking at camera, jacket, hoodie, white pants, shorts, logo, print, text, grey shirt, deformed")
 for k, (man, trousers, pose, setting) in enumerate(FOURTH):
     i = len(MEN) + len(MORE) + len(THIRD) + k
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 5100 + i * 41, "steps": 8, "pose": pose, "guidance": 1.8, "neg": NEG_FOURTH, "min_tone": 0.52,
