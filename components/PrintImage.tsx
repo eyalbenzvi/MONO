@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { assetUrl, needsInvert, printUrl, thumbUrl } from "@/lib/catalog";
 import { checkView, scheduleSharpness, wantsFull, watchSharpness } from "@/lib/sharpness";
+import { useSmoothPrint } from "@/hooks/useSmoothPrint";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 /**
@@ -59,6 +60,11 @@ export function PrintImage({
   const small = assetUrl(thumbUrl(shirt, color));
   const full = assetUrl(printUrl(shirt, color));
   const upgrade = thumb && progressive && small !== full;
+  const fullImg = useRef<HTMLImageElement>(null);
+  const src = upgrade ? (phase === "full" ? full : small) : thumb ? small : full;
+  // A raster print shown smaller than its file is shrunk here, not by the
+  // browser (lib/downscale): a phone turns the halftone dots into blocks.
+  const { canvas, smooth } = useSmoothPrint(upgrade && phase === "full" ? fullImg : img, src.endsWith(".webp") && !failed && (phase === "thumb" || phase === "full"));
   useEffect(() => {
     if (!upgrade || phase !== "thumb") return;
     // Each frame that could matter, this print measures itself.
@@ -79,6 +85,7 @@ export function PrintImage({
   // Blank ground in the tee colour if a file is ever missing, so nothing looks broken.
   if (failed) return <div className={`h-full w-full ${color === "black" ? "bg-black" : "bg-white"} ${className}`} />;
   const cls = `h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${ground}`;
+  const shrunk = <canvas ref={canvas} aria-hidden className={`pointer-events-none absolute inset-0 ${cls} ${smooth ? "" : "hidden"}`} />;
   if (upgrade)
     return (
       <span ref={box} className={`relative block h-full w-full ${className}`}>
@@ -98,11 +105,12 @@ export function PrintImage({
               setFailed(true);
               onReady?.();
             }}
-            className={cls}
+            className={`${cls} ${smooth ? "opacity-0" : ""}`}
           />
         )}
         {phase !== "thumb" && (
           <img
+            ref={fullImg}
             src={full}
             alt={phase === "full" ? `${shirt.title} print` : ""}
             aria-hidden={phase !== "full" || undefined}
@@ -116,15 +124,16 @@ export function PrintImage({
               (el.decode ? el.decode() : Promise.resolve()).catch(() => {}).then(() => setPhase((p) => (p === "loading" ? "shown" : p)));
             }}
             onTransitionEnd={() => setPhase((p) => (p === "shown" ? "full" : p))}
-            className={`absolute inset-0 ${cls} transition-opacity duration-200 motion-reduce:transition-none ${phase === "loading" ? "opacity-0" : ""}`}
+            className={`absolute inset-0 ${cls} transition-opacity duration-200 motion-reduce:transition-none ${phase === "loading" || (phase === "full" && smooth) ? "opacity-0" : ""}`}
           />
         )}
+        {shrunk}
       </span>
     );
-  return (
+  const plain = (
     <img
       ref={img}
-      src={assetUrl(thumb ? thumbUrl(shirt, color) : printUrl(shirt, color))}
+      src={src}
       alt={`${shirt.title} print`}
       draggable={false}
       loading={priority ? "eager" : "lazy"}
@@ -136,7 +145,14 @@ export function PrintImage({
         setFailed(true);
         onReady?.();
       }}
-      className={`h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${ground} ${className}`}
+      className={src.endsWith(".webp") ? `${cls} ${smooth ? "opacity-0" : ""}` : `${cls} ${className}`}
     />
+  );
+  if (!src.endsWith(".webp")) return plain;
+  return (
+    <span className={`relative block h-full w-full ${className}`}>
+      {plain}
+      {shrunk}
+    </span>
   );
 }

@@ -55,7 +55,10 @@ test("W1: at normal zoom the grid loads no full prints; pinch-zoomed, the prints
     const w = window as unknown as { __blank: number };
     w.__blank = 0;
     const tick = () => {
-      const shown = [...el.querySelectorAll("img")].some((i) => i.complete && i.naturalWidth > 0 && getComputedStyle(i).opacity === "1");
+      // A picture file, or the print shrunk into a canvas (lib/downscale).
+      const shown =
+        [...el.querySelectorAll("img")].some((i) => i.complete && i.naturalWidth > 0 && getComputedStyle(i).opacity === "1") ||
+        [...el.querySelectorAll("canvas")].some((c) => c.width > 0 && getComputedStyle(c).display !== "none");
       if (!shown) w.__blank++;
       requestAnimationFrame(tick);
     };

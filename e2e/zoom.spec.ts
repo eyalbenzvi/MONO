@@ -92,3 +92,54 @@ test.describe("U5: zoom in place on the Discover card", () => {
     expect(await scaleOf(page)).toBe(1);
   });
 });
+
+test("recordings: zooming out never shows the frame behind the picture; a halftone print is shrunk properly at every zoom", async ({ page }) => {
+  await seed(page);
+  await page.goto("");
+  await hydrated(page);
+  // A raster print (a halftone or ink one) on the top card.
+  const card = () => page.locator('[aria-roledescription="card"]').first();
+  const print = () => card().locator("[data-zoom-stage] img[src$='.webp']:not([src*='/models/'])").first();
+  for (let i = 0; i < 12 && !(await print().count()); i++) {
+    await page.getByRole("button", { name: "Pass", exact: true }).tap();
+    await page.waitForTimeout(600);
+  }
+  const shrunk = () => card().locator("[data-zoom-stage] canvas").first();
+  // Shown at its size in device pixels, over the file.
+  const measure = () =>
+    shrunk().evaluate((c: HTMLCanvasElement) => ({ visible: getComputedStyle(c).display !== "none", w: c.width, shown: c.getBoundingClientRect().width * devicePixelRatio }));
+  await expect.poll(async () => (await measure()).visible).toBe(true);
+  const at1 = await measure();
+  expect(at1.w).toBeGreaterThanOrEqual(at1.shown - 1);
+  expect(at1.w).toBeLessThan(at1.shown * 1.3);
+  expect(await print().evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+
+  // Zoom in: the canvas follows the size (or gives way to the file itself).
+  const box = (await card().locator("[data-zoom-stage]").boundingBox())!;
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  await pinch(page, cx, cy, 60, 200);
+  await page.waitForTimeout(600);
+  const zoomed = await measure();
+  if (zoomed.visible) expect(zoomed.w).toBeGreaterThanOrEqual(zoomed.shown - 1);
+  else expect(await print().evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+
+  // Pan, then pinch back out: at no frame is the picture under 1× or off its frame.
+  await page.evaluate(() => {
+    const layer = document.querySelector('[aria-roledescription="card"] [data-zoom-stage] > div') as HTMLElement;
+    const stage = layer.parentElement!.getBoundingClientRect();
+    (window as unknown as { gaps: number[] }).gaps = [];
+    const tick = () => {
+      const r = layer.getBoundingClientRect();
+      (window as unknown as { gaps: number[] }).gaps.push(Math.max(r.left - stage.left, r.top - stage.top, stage.right - r.right, stage.bottom - r.bottom));
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await pinch(page, cx, cy, 200, 40);
+  await page.waitForTimeout(700);
+  const gaps = await page.evaluate(() => (window as unknown as { gaps: number[] }).gaps);
+  expect(gaps.length).toBeGreaterThan(10);
+  expect(Math.max(...gaps)).toBeLessThanOrEqual(0.5);
+  expect(await scaleOf(page)).toBe(1);
+});
