@@ -150,6 +150,31 @@ for k, (man, trousers, pose, setting) in enumerate(SIXTH):
     assert pose in ARMS, f"m{i:02d}: {pose} is an arms-down stance (looks like standing at attention); take a relaxed one: {', '.join(ARMS)}"
     jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 3100 + i * 47, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
       "prompt": f"{TEES6[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, lookbook photo, soft overcast light"})
+# The seventh set: the approved relaxed poses in turn, dark or mid trousers (light ones break the black twin's hem),
+# tall hair standing lower in the picture (`lower`), sixteen different people and places.
+SEVENTH = [
+  # (man, trousers, pose name, setting, lower)
+  ("a broad man in his thirties with a neat side part", "charcoal chinos", "pose-g", "cobbled old town lane with cafes, blurred", 0),
+  ("a tall Black man with a short high-top fade, tattooed forearms", "black jeans", "pose-i", "modern glass atrium, blurred", 60),
+  ("a solid East Asian man with a clean undercut", "navy trousers", "pose-k", "autumn park avenue, blurred", 0),
+  ("a stocky bearded man with a shaved head", "dark jeans", "pose-g", "fish market pier, blurred", 0),
+  ("a well-built Latino man with short curly hair", "olive chinos", "pose-i", "whitewashed hillside village, blurred", 0),
+  ("a broad young man with a blond crew cut, a forearm tattoo", "black chinos", "pose-k", "university courtyard with arches", 0),
+  ("a solid South Asian man with neat wavy hair", "dark grey jeans", "pose-g", "botanical garden path, blurred", 0),
+  ("a tall man with a high curly afro", "navy chinos", "pose-i", "tram stop on a city street, blurred", 60),
+  ("a well-built man in his fifties with short grey hair and beard", "charcoal jeans", "pose-k", "harbour promenade with boats", 0),
+  ("a broad Middle Eastern man with a neat quiff", "black trousers", "pose-g", "covered market arcade, blurred", 0),
+  ("a stocky red-haired man with a buzz cut, tattooed forearms", "mid-blue jeans", "pose-i", "pine forest trail, soft light", 0),
+  ("a solid Pacific Islander man with a tied-back bun", "dark olive cargo pants", "pose-k", "palm-lined beach road, blurred", 60),
+  ("a well-built young Black man with neat short twists", "charcoal trousers", "pose-g", "brick warehouse district, blurred", 0),
+  ("a broad Nordic man with a short beard and swept-back hair", "navy jeans", "pose-i", "snowy mountain town square", 0),
+  ("a fit man in his forties with a short textured crop", "dark brown chinos", "pose-k", "vineyard hills path, blurred", 0),
+  ("a stocky East Asian man with short spiky hair", "black jeans", "pose-g", "neon-lit alley at night, blurred", 0),
+]
+for k, (man, trousers, pose, setting, lower) in enumerate(SEVENTH):
+    i = len(MEN) + len(MORE) + len(THIRD) + len(FOURTH) + len(FIFTH) + len(SIXTH) + k
+    jobs.append({"id": f"m{i:02d}", "color": "white", "seed": 2100 + i * 53, "steps": 8, "pose": POSE_NAMES.index(pose), "pose_name": pose, "guidance": 1.8, "neg": NEG_SIXTH, "min_tone": 0.52,
+      "prompt": f"{TEES6[k % 2]}, back view, {man}, {ARMS[pose]}, {trousers}, {setting}, lookbook photo, soft overcast light", **({"lower": lower} if lower else {})})
 if only: jobs = [j for j in jobs if j["id"] in sys.argv[2:]] if len(sys.argv) > 2 else jobs[:only]
 # Prompt rules learnt from thrown-away photos (the lookbook sets and on):
 # light that tints or darkens the tee, loose hair over the back, sleeveless tops.
