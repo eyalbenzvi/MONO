@@ -51,12 +51,12 @@ POSES = {
 }
 # What each relaxed pose's arms are doing, said in the prompt (no hand keypoints: the words place the hands).
 ARMS = {
-    "pose-g": "right hand in front pocket, holding a coffee cup in his left hand in front of him",
-    "pose-h": "thumbs hooked in his back pockets, elbows out, relaxed",
-    "pose-i": "right hand resting on the back of his neck, left arm loose",
-    "pose-j": "arms casually folded in front of his chest, elbows showing",
-    "pose-k": "walking away mid-stride, arms swinging naturally",
-    "pose-l": "looking down at a phone in his right hand, left thumb in front pocket",
+    "pose-g": "right hand in pocket, holding a coffee cup in his left hand",
+    "pose-h": "thumbs hooked in his back pockets",
+    "pose-i": "right hand on the back of his neck",
+    "pose-j": "arms casually folded",
+    "pose-k": "walking away mid-stride, arms swinging",
+    "pose-l": "looking at a phone in his right hand, left thumb in pocket",
 }
 
 def draw(k):
