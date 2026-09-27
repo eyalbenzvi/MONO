@@ -163,16 +163,33 @@ describe("T2: the tee worn — model photos", () => {
     }
   });
 
-  it("no model wears light trousers (they merge with a white tee: the black twin's hem got a white band or dark patches)", async () => {
+  it("each black twin's tee is whole: no white specks or streaks left in it (holes in its mask)", async () => {
     const { MODEL_PHOTOS } = await import("@/lib/models");
     const sharp = (await import("sharp")).default;
+    const grey = async (id: string) => (await sharp(`public/models/${id}.webp`).greyscale().raw().toBuffer({ resolveWithObject: true }));
     for (const m of MODEL_PHOTOS.filter((p) => p.color === "white")) {
-      // The seat of the trousers: the bottom centre of the photo.
-      const { data, info } = await sharp(`public/models/${m.id}.webp`).greyscale().raw().toBuffer({ resolveWithObject: true });
-      let sum = 0, n = 0;
-      for (let y = Math.floor(info.height * 0.92); y < info.height; y++)
-        for (let x = Math.floor(info.width * 0.4); x < Math.floor(info.width * 0.6); x++) (sum += data[y * info.width + x]), n++;
-      expect(sum / n / 255, m.id).toBeLessThan(0.36);
+      const white = await grey(m.id);
+      const black = await grey(m.id.replace(/-white$/, "-black"));
+      const { width: w, height: h } = white.info;
+      // The tee: what the black twin darkened. A hole is untouched ground the outside can't reach.
+      const tee = new Uint8Array(w * h).map((_, i) => (white.data[i] - black.data[i] > 64 ? 1 : 0));
+      const outside = new Uint8Array(w * h);
+      const stack: number[] = [];
+      for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
+      for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
+      while (stack.length) {
+        const i = stack.pop()!;
+        if (outside[i] || tee[i]) continue;
+        outside[i] = 1;
+        const x = i % w;
+        if (x > 0) stack.push(i - 1);
+        if (x < w - 1) stack.push(i + 1);
+        if (i >= w) stack.push(i - w);
+        if (i < w * (h - 1)) stack.push(i + w);
+      }
+      let holes = 0;
+      for (let i = 0; i < w * h; i++) if (!tee[i] && !outside[i]) holes++;
+      expect(holes, m.id).toBeLessThan(6);
     }
   });
 

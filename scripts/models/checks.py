@@ -11,8 +11,8 @@ photo that was thrown away:
 - sleeves: the tee covers the shoulders out to the upper arms — a tank top
   shows skin there (the shop sells tees only).
 - trousers: light trousers merge with a white tee (its hem can't be found,
-  and the black twin gets a white band or dark patches on the trousers); dark
-  or mid tones only (0.62 let through light grey and stone ones that did).
+  and the black twin gets a white band). Light grey, stone and khaki are
+  fine: analyze.py finds the hem as a line (and see the README).
 """
 import numpy as np
 
@@ -65,5 +65,5 @@ def reason(m, j):
     if (white and m["tone"] < j.get("min_tone", 0.6)) or (not white and m["tone"] > 0.22): return f"tee tone {m['tone']:.2f}"
     if white and m["tint"] > 0.08: return f"tee tinted {m['tint']:.2f}"
     if m["sleeves"] < 0.5: return f"no sleeves {m['sleeves']:.2f}"
-    if white and m["trousers"] > 0.4: return f"light trousers {m['trousers']:.2f}"
+    if white and m["trousers"] > 0.62: return f"light trousers {m['trousers']:.2f}"
     return None
