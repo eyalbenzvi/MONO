@@ -1,7 +1,8 @@
 /**
  * Builds the archive designs from Smithsonian Open Access (CC0). Needs the
  * network; run by hand, then commit data/archive/archive.json and the
- * prints public/prints/print_<n>.webp. The generator never fetches.
+ * originals assets/masters/print_<n>.webp (scripts/photos/halftone.py screens
+ * them into public/prints). The generator never fetches.
  *
  *   npx tsx scripts/archive/fetchArchive.ts candidates  # metadata → candidates per group
  *   npx tsx scripts/archive/fetchArchive.ts prep        # download, print, delete the download
@@ -626,7 +627,7 @@ function select() {
   const firstAdded = Math.min(Infinity, ...additions.map((a) => a.n));
   if (ARCHIVE_FIRST_N + chosen.length > firstAdded) throw new Error(`select: ${chosen.length} archive prints would run into the additions at ${firstAdded}`);
   writeFileSync(path.join(OUT, "archive.json"), `[\n${chosen.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
-  const prints = path.join(ROOT, "public", "prints");
+  const prints = path.join(ROOT, "assets", "masters");
   for (const f of readdirSync(prints)) {
     const n = Number(f.match(/\d+/)?.[0]);
     if (f.endsWith(".webp") && n >= ARCHIVE_FIRST_N && n < firstAdded) rmSync(path.join(prints, f));
@@ -711,7 +712,7 @@ function additionSelect() {
     }
   const all = [...existing, ...added];
   writeFileSync(file, `[\n${all.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
-  const prints = path.join(ROOT, "public", "prints");
+  const prints = path.join(ROOT, "assets", "masters");
   for (const a of added) writeFileSync(path.join(prints, `print_${a.n}.webp`), readFileSync(prepFile(a.key)));
   console.log(`data/archive/additions.json: ${all.length} (${added.length} new${added.length ? `, ${added[0].n}…${added[added.length - 1].n}` : ""}); run scripts/photos/halftone.py next`);
 }

@@ -9,7 +9,7 @@ Run by hand (pip install rembg onnxruntime pillow numpy):
 
 Writes the cut prints to node_modules/.cache/mono-photos/recut/print_<n>.webp
 and recut.json (per design: accepted or why not, and the new measures) for
-review; `--apply` copies the accepted ones into public/prints and marks
+review; `--apply` copies the accepted ones into assets/masters and marks
 them cut out (mode "object") in data/photos/photos.json.
 """
 import json, os, sys
@@ -61,7 +61,7 @@ def main():
             if not r.get("ok"):
                 continue
             src = os.path.join(CACHE, f"print_{n}.webp")
-            dst = os.path.join(ROOT, "public", "prints", f"print_{n}.webp")
+            dst = os.path.join(ROOT, "assets", "masters", f"print_{n}.webp")
             Image.open(src).save(dst, "WEBP", lossless=True, quality=100, method=6)
             p = by_key[r["key"]]
             p.update(mode="object", tone=r["tone"], contrast=r["contrast"], coverage=r["coverage"], box=r["box"])
@@ -76,7 +76,7 @@ def main():
         n = str(item["n"])
         if n in report:
             continue
-        src = os.path.join(ROOT, "public", "prints", f"print_{n}.webp")
+        src = os.path.join(ROOT, "assets", "masters", f"print_{n}.webp")
         im = Image.open(src).convert("RGBA")
         x0, y0, x1, y1 = p["box"]
         crop = im.crop((int(x0 * W), int(y0 * H), int(x1 * W), int(y1 * H))).convert("RGB")

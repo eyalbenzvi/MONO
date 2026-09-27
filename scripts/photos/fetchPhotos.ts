@@ -1,7 +1,8 @@
 /**
  * Builds the photo designs' sources from Smithsonian Open Access (CC0).
  * Needs the network; run by hand, then commit data/photos/photos.json and
- * public/prints/print_<n>.webp. The generator never fetches.
+ * assets/masters/print_<n>.webp (scripts/photos/halftone.py screens them into
+ * public/prints). The generator never fetches.
  *
  *   npx tsx scripts/photos/fetchPhotos.ts candidates   # metadata → candidate list
  *   npx tsx scripts/photos/fetchPhotos.ts prep         # download, grey, fit whole
@@ -15,6 +16,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
+import { ARCHIVE_FIRST_N } from "../archive/source";
 import { BUCKET, PHOTO_FIRST_N, PHOTO_UNITS, PRINT_H, PRINT_W, photoOrder, type PhotoSource, type PhotoUnit } from "./source";
 import { EXCLUDE, SUBJECTS, PER_CATEGORY_PHOTOS, fixSubject } from "./curation";
 
@@ -367,7 +369,7 @@ async function sheet() {
 
 /* ------------------------------------------------------------------ */
 /* select: the best PER_CATEGORY_PHOTOS per category → data/photos and  */
-/* the prints public/prints/print_<n>.webp                              */
+/* the originals assets/masters/print_<n>.webp                          */
 /* ------------------------------------------------------------------ */
 
 function select() {
@@ -398,10 +400,12 @@ function select() {
   mkdir(OUT);
   writeFileSync(path.join(OUT, "photos.json"), `[\n${chosen.map((c) => JSON.stringify(c)).join(",\n")}\n]\n`);
   // The prints, named by the design id they become.
-  const prints = path.join(ROOT, "public", "prints");
-  for (const f of readdirSync(prints)) if (f.endsWith(".webp")) rmSync(path.join(prints, f));
+  const prints = path.join(ROOT, "assets", "masters");
+  // Only the photographs' numbers (the archive's originals share the folder).
+  const photoN = (f: string) => Number(f.match(/^print_(\d+)\.webp$/)?.[1]);
+  for (const f of readdirSync(prints)) if (photoN(f) >= PHOTO_FIRST_N && photoN(f) < ARCHIVE_FIRST_N) rmSync(path.join(prints, f));
   for (const { n, photo } of photoOrder(chosen, PER_CATEGORY_PHOTOS)) writeFileSync(path.join(prints, `print_${n}.webp`), readFileSync(path.join(CACHE, "prep2", `${photo.key}.webp`)));
-  console.log(`data/photos/photos.json: ${chosen.length} photographs · public/prints/print_${PHOTO_FIRST_N}…${PHOTO_FIRST_N + chosen.length - 1}.webp`);
+  console.log(`data/photos/photos.json: ${chosen.length} photographs · assets/masters/print_${PHOTO_FIRST_N}…${PHOTO_FIRST_N + chosen.length - 1}.webp`);
 }
 
 const cmd = process.argv[2];

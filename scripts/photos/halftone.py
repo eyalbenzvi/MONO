@@ -1,9 +1,11 @@
 """
 One ink (content overhaul, Part 2): every WebP print — photographs, patent
-models, archive scans — becomes strictly two-tone. Run by hand after the
-fetch tools have written their prints (pip install pillow numpy):
+models, archive scans — becomes strictly two-tone. The fetch tools write
+the originals to assets/masters (kept in git: the tone the screen is made
+from); this screens each into public/prints, never touching the original.
+Run by hand after a fetch (pip install pillow numpy opencv-python-headless):
 
-  python scripts/photos/halftone.py            # every WebP print in public/prints
+  python scripts/photos/halftone.py            # every original in assets/masters
   python scripts/photos/halftone.py 2803 3845  # just these
 
 - Tonal work (photographs, patent models; brush paintings, woodblock
@@ -26,8 +28,9 @@ fetch tools have written their prints (pip install pillow numpy):
   Ink prints stay black ink (the app inverts line work for a black tee).
 
 The output's alpha is 0 or 255, nothing between. data/curation/halftone.json
-records per print its mode, the photograph's tee and the output's hash, so
-a print already screened is left alone (re-run after a fetch tool rewrites one).
+records per print its mode, the photograph's tee, the original's and the
+output's hashes and the recipe, so a print whose original and recipe haven't
+changed is left alone.
 """
 import hashlib, json, os, sys
 import cv2
@@ -36,6 +39,10 @@ from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 MANIFEST = os.path.join(ROOT, "data", "curation", "halftone.json")
+MASTERS = os.path.join(ROOT, "assets", "masters")
+PRINTS = os.path.join(ROOT, "public", "prints")
+# Bumped when the screen changes: every print is screened again from its original.
+RECIPE = 2
 OUT_W, OUT_H = 1500, 2000
 LPI, ANGLE, PRINT_CM = 30, 45, 28.0
 # Maximum ink: the darkest tone prints as 80% dots, an open mesh, never a solid slab of ink (Part 0).
@@ -88,8 +95,9 @@ def paper_level(d):
 
 
 def process(n, medium):
-    path = os.path.join(ROOT, "public", "prints", f"print_{n}.webp")
-    im = np.asarray(Image.open(path).convert("RGBA")).astype(np.float32) / 255
+    src = os.path.join(MASTERS, f"print_{n}.webp")
+    path = os.path.join(PRINTS, f"print_{n}.webp")
+    im = np.asarray(Image.open(src).convert("RGBA")).astype(np.float32) / 255
     lum = im[..., 0] * 0.2126 + im[..., 1] * 0.7152 + im[..., 2] * 0.0722
     a = im[..., 3]
     entry = {}
@@ -125,7 +133,7 @@ def process(n, medium):
     rgba[..., :3] = ink
     rgba[..., 3] = mask.astype(np.uint8) * 255
     Image.fromarray(rgba, "RGBA").save(path, "WEBP", lossless=True, quality=100, method=4)
-    entry.update(mode=mode, sha=sha(path))
+    entry.update(mode=mode, sha=sha(path), src=sha(src), recipe=RECIPE)
     return entry
 
 
@@ -153,12 +161,13 @@ def main():
     media = json.loads(check_output(["npx", "tsx", "-e", MEDIA], cwd=ROOT))
     want = set(sys.argv[1:])
     manifest = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else {}
-    todo = sorted((int(n), m) for n, m in media.items() if os.path.exists(os.path.join(ROOT, "public", "prints", f"print_{n}.webp")) and (not want or n in want))
+    todo = sorted((int(n), m) for n, m in media.items() if os.path.exists(os.path.join(MASTERS, f"print_{n}.webp")) and (not want or n in want))
     done = 0
     for n, medium in todo:
-        path = os.path.join(ROOT, "public", "prints", f"print_{n}.webp")
+        path = os.path.join(PRINTS, f"print_{n}.webp")
         key = str(n)
-        if key in manifest and manifest[key]["sha"] == sha(path):
+        old = manifest.get(key, {})
+        if not want and os.path.exists(path) and old.get("sha") == sha(path) and old.get("src") == sha(os.path.join(MASTERS, f"print_{n}.webp")) and old.get("recipe") == RECIPE:
             continue
         manifest[key] = process(n, medium)
         done += 1
