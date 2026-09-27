@@ -64,7 +64,7 @@ export function PrintImage({
   const src = upgrade ? (phase === "full" ? full : small) : thumb ? small : full;
   // A raster print shown smaller than its file is shrunk here, not by the
   // browser (lib/downscale): a phone turns the halftone dots into blocks.
-  const { canvas, smooth } = useSmoothPrint(upgrade && phase === "full" ? fullImg : img, src.endsWith(".webp") && !failed && (phase === "thumb" || phase === "full"));
+  const shrunkSrc = useSmoothPrint(upgrade && phase === "full" ? fullImg : img, src.endsWith(".webp") && !failed && (phase === "thumb" || phase === "full"));
   useEffect(() => {
     if (!upgrade || phase !== "thumb") return;
     // Each frame that could matter, this print measures itself.
@@ -85,7 +85,8 @@ export function PrintImage({
   // Blank ground in the tee colour if a file is ever missing, so nothing looks broken.
   if (failed) return <div className={`h-full w-full ${color === "black" ? "bg-black" : "bg-white"} ${className}`} />;
   const cls = `h-full w-full select-none object-cover ${inverted ? "invert" : ""} ${ground}`;
-  const shrunk = <canvas ref={canvas} aria-hidden className={`pointer-events-none absolute inset-0 ${cls} ${smooth ? "" : "hidden"}`} />;
+  const smooth = shrunkSrc !== null;
+  const shrunk = smooth && <img src={shrunkSrc} alt="" aria-hidden draggable={false} data-shrunk className={`pointer-events-none absolute inset-0 ${cls}`} />;
   if (upgrade)
     return (
       <span ref={box} className={`relative block h-full w-full ${className}`}>

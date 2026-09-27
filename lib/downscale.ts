@@ -1,17 +1,17 @@
 /**
  * Halftone prints shrunk by the browser: a phone's GPU samples the fine dots
  * instead of averaging them, and the print turns into coarse blocks (a
- * checkerboard). Here the print is shrunk once, properly, into a canvas at
- * the size it's shown in device pixels (components/PrintImage).
+ * checkerboard). Here the print is shrunk once, properly, off-screen, to
+ * the size it's shown in device pixels, and shown as an image (hooks/useSmoothPrint).
  */
 
 /** Past this much shrinking the browser is not trusted with the print. */
 export const SMOOTH_FROM = 1.1;
-/** Canvas sizes go up in these steps, so a pinch redraws a few times, not every frame. */
+/** Sizes go up in these steps, so a pinch redraws a few times, not every frame. */
 const STEP = 1.25;
 
 /**
- * The canvas width for a print `natural` px wide shown at `need` device px,
+ * The shrunk width for a print `natural` px wide shown at `need` device px,
  * or 0 when the browser can show the file itself (little or no shrinking).
  */
 export function smoothWidth(natural: number, need: number): number {

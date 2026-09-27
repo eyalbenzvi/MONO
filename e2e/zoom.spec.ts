@@ -104,17 +104,21 @@ test("recordings: zooming out never shows the frame behind the picture; a halfto
     await page.getByRole("button", { name: "Pass", exact: true }).tap();
     await page.waitForTimeout(600);
   }
-  const shrunk = () => card().locator("[data-zoom-stage] canvas").first();
-  // Shown at its size in device pixels, over the file.
+  // Shown as an image (never a canvas: a phone draws that as its own layer) at its size in device pixels, over the file.
   const measure = () =>
-    shrunk().evaluate((c: HTMLCanvasElement) => ({ visible: getComputedStyle(c).display !== "none", w: c.width, shown: c.getBoundingClientRect().width * devicePixelRatio }));
+    card().evaluate((el) => {
+      const i = el.querySelector<HTMLImageElement>("[data-zoom-stage] img[data-shrunk]");
+      const file = el.querySelector<HTMLImageElement>("[data-zoom-stage] img[src$='.webp']:not([src*='/models/'])")!;
+      return { visible: !!i && i.complete && i.naturalWidth > 0, w: i?.naturalWidth ?? 0, shown: file.getBoundingClientRect().width * devicePixelRatio, canvases: el.querySelectorAll("canvas").length };
+    });
   await expect.poll(async () => (await measure()).visible).toBe(true);
+  expect((await measure()).canvases).toBe(0);
   const at1 = await measure();
   expect(at1.w).toBeGreaterThanOrEqual(at1.shown - 1);
   expect(at1.w).toBeLessThan(at1.shown * 1.3);
   expect(await print().evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
 
-  // Zoom in: the canvas follows the size (or gives way to the file itself).
+  // Zoom in: the shrunk print follows the size (or gives way to the file itself).
   const box = (await card().locator("[data-zoom-stage]").boundingBox())!;
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
