@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { animate, useMotionValue, useReducedMotion, type MotionValue } from "framer-motion";
+import { animate, useMotionValue, useReducedMotion, type AnimationPlaybackControls, type MotionValue } from "framer-motion";
 import { useUiStore } from "@/store/useUiStore";
-import { clampPan, rubberBand, zoomAt, type ZoomTransform } from "@/lib/zoom";
+import { clampPan, rubberBand, zoomAt, zoomBetween, type ZoomTransform } from "@/lib/zoom";
 
-/** Resting zoom range; a pinch may overshoot to the rubber-band limits. */
+/** Resting zoom range; a pinch may overshoot the top to the rubber-band limit. */
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 4;
 /** Double-tap / double-click zoom. */
@@ -16,7 +16,12 @@ export const ZOOM_SNAP = 1.1;
 export const DOUBLE_TAP_MS = 260;
 /** After a reset the card ignores swipes for a moment (the lifting finger). */
 const GRACE_MS = 250;
-const SPRING = { type: "spring", stiffness: 420, damping: 36 } as const;
+/**
+ * One eased step for scale and pan together (see zoomBetween): separate
+ * springs kept each value's own speed from the pinch, so on letting go the
+ * scale dipped under 1× while the pan lagged and the photo left its frame.
+ */
+const EASE = { duration: 0.28, ease: [0.22, 1, 0.36, 1] } as const;
 
 export interface InPlaceZoom {
   /** Motion values for the zoomed layer (scale, pan). */
@@ -81,17 +86,19 @@ export function useInPlaceZoom(cardRef: RefObject<HTMLElement | null>, enabled: 
   );
   const current = useCallback((): ZoomTransform => ({ s: scale.get(), x: x.get(), y: y.get() }), [scale, x, y]);
 
+  const running = useRef<AnimationPlaybackControls | null>(null);
   const apply = useCallback(
     (t: ZoomTransform, animated: boolean) => {
-      if (animated && !reduceMotion) {
-        animate(scale, t.s, SPRING);
-        animate(x, t.x, SPRING);
-        animate(y, t.y, SPRING);
-      } else {
-        scale.set(t.s);
-        x.set(t.x);
-        y.set(t.y);
-      }
+      running.current?.stop();
+      running.current = null;
+      const put = (v: ZoomTransform) => {
+        scale.set(v.s);
+        x.set(v.x);
+        y.set(v.y);
+      };
+      if (!animated || reduceMotion) return put(t);
+      const from = { s: scale.get(), x: x.get(), y: y.get() };
+      running.current = animate(0, 1, { ...EASE, onUpdate: (p) => put(zoomBetween(from, t, p)) });
     },
     [reduceMotion, scale, x, y],
   );
@@ -162,7 +169,8 @@ export function useInPlaceZoom(cardRef: RefObject<HTMLElement | null>, enabled: 
         const [a, b] = [...pointers.current.values()];
         const dist = Math.hypot(a.x - b.x, a.y - b.y);
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-        const s = rubberBand(g.start.s * (dist / g.dist), ZOOM_MIN, ZOOM_MAX);
+        // Never under 1×: the picture always fills its frame (resistance above only).
+        const s = Math.max(ZOOM_MIN, rubberBand(g.start.s * (dist / g.dist), ZOOM_MIN, ZOOM_MAX));
         const k = s / g.start.s;
         // Keep the point under the fingers under them, and follow their midpoint.
         const t = { s, x: mid.x - (g.mid.x - g.start.x) * k, y: mid.y - (g.mid.y - g.start.y) * k };
@@ -266,6 +274,7 @@ export function useInPlaceZoom(cardRef: RefObject<HTMLElement | null>, enabled: 
     () => () => {
       if (pendingTap.current) clearTimeout(pendingTap.current);
       if (grace.current) clearTimeout(grace.current);
+      running.current?.stop();
       if (zoomedRef.current) useUiStore.getState().setCardZoomed(false);
     },
     [],

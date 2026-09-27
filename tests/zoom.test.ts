@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { clampPan, rubberBand, zoomAt } from "@/lib/zoom";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { clampPan, rubberBand, zoomAt, zoomBetween } from "@/lib/zoom";
 
 const frame = { w: 300, h: 400 };
 
@@ -21,5 +23,25 @@ describe("U5: zoom maths", () => {
     expect(rubberBand(5, 1, 4)).toBeCloseTo(4 + 1 / 3);
     expect(rubberBand(10, 1, 4)).toBe(4.5);
     expect(rubberBand(0.1, 1, 4)).toBe(0.85);
+  });
+});
+
+describe("zooming back out never shows the frame behind the picture (recording bug)", () => {
+  const covers = (t: { s: number; x: number; y: number }) =>
+    t.s >= 1 && Math.abs(t.x) <= (frame.w * (t.s - 1)) / 2 + 1e-9 && Math.abs(t.y) <= (frame.h * (t.s - 1)) / 2 + 1e-9;
+
+  it("scale and pan move in one step: the picture covers the frame at every point, even past the ends", () => {
+    const from = clampPan({ s: 1.3, x: 40, y: -60 }, frame); // panned down to the waist, pinching out
+    const to = { s: 1, x: 0, y: 0 };
+    for (let p = -0.2; p <= 1.2; p += 0.01) expect(covers(zoomBetween(from, to, p)), `p=${p}`).toBe(true);
+    expect(zoomBetween(from, to, 1.1)).toEqual(to);
+    expect(zoomBetween(from, to, -0.1)).toEqual(from);
+  });
+
+  it("the card's pinch stops at 1× and settles with one shared animation, not a spring per value", () => {
+    const hook = readFileSync(path.resolve(__dirname, "../hooks/useInPlaceZoom.ts"), "utf8");
+    expect(hook).toContain("Math.max(ZOOM_MIN, rubberBand(");
+    expect(hook).toContain("zoomBetween(from, t, p)");
+    expect(hook).not.toMatch(/animate\((scale|x|y),/);
   });
 });

@@ -31,3 +31,14 @@ export function rubberBand(s: number, min: number, max: number): number {
   if (s < min) return Math.max(min - 0.15, min - (min - s) / 3);
   return s;
 }
+
+/**
+ * A step `p` (0 → 1) of the way from one resting transform to another. Scale
+ * and pan move together, so a picture that covers its frame at both ends
+ * covers it all the way (the pan limit is linear in the scale); `p` is held
+ * to 0–1, so an overshooting ease never takes it past either end.
+ */
+export function zoomBetween(from: ZoomTransform, to: ZoomTransform, p: number): ZoomTransform {
+  const k = Math.min(1, Math.max(0, p));
+  return { s: from.s + (to.s - from.s) * k, x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
+}
