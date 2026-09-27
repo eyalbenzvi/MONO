@@ -500,7 +500,7 @@ export function ProductView({
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <h2 className="text-base font-semibold">Similar prints</h2>
               {/* The whole shop, ordered by closeness to this one (a "Like this" search). */}
-              <Link href={`/shop/?like=${shirt.id}`} className="text-xs font-semibold text-neutral-400 underline-offset-2 hover:text-white hover:underline">
+              <Link href={`/shop/?like=${shirt.id}`} className="-my-3 inline-flex h-11 items-center text-xs font-semibold text-neutral-300 underline underline-offset-4 hover:text-white">
                 More like this
               </Link>
             </div>

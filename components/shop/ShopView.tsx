@@ -118,13 +118,18 @@ export function ShopView() {
   const visible = useMemo(() => shopList({ ranked, tee, cats, sort, result }), [result, ranked, tee, cats, sort]);
   // First open: the current grid stays, dimmed, until the index is in (never an empty flash).
   const pending = searching && runtime === undefined;
-  // How many designs each category holds on the chosen colour (the filter's rows; an empty one is disabled).
+  // How many designs each category holds on the chosen colour — within the search while one is on (the filter's rows; an empty one is disabled).
   const counts = useMemo(() => {
-    const on = dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
+    const within =
+      result && runtime
+        ? runtime.mod.search(runtime.index, SHIRTS, { query: deferredQuery, facets: [...facets, ...(tee ? [{ kind: "tee", value: tee } as Facet] : [])], vector: rankVector, tasteKnown: complete, seen: shown, order: ranked, literal })
+        : null;
+    const on = within ? (within.mode === "text" ? within.results : dedupeByFamily(within.results)) : dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
     const by = Object.fromEntries(SHIRT_CATEGORIES.map((c) => [c, 0])) as Record<ShirtCategory, number>;
     for (const { shirt } of on) by[shirt.category]++;
     return { by, total: on.length };
-  }, [ranked, tee]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ranked, tee, result]);
   visibleRef.current = visible;
 
   // The first cards a filter would show (the current one with each change):
@@ -353,7 +358,8 @@ export function ShopView() {
                 onOpen={warmCategories}
               />
             );
-            // Open (or a search in effect): the field takes the row, the filter icon stays at its end.
+            const dots = <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />;
+            // Open (or a search in effect): the field takes the middle of the row; the dots and the filter icon stay.
             if ((open || searching) && runtime !== null)
               return (
                 <SearchPanel
@@ -364,12 +370,11 @@ export function ShopView() {
                   count={visible.length}
                   literal={literal}
                   tasteKnown={complete}
-                  tee={tee}
                   focusNonce={focusNonce}
+                  leading={dots}
                   trailing={filter}
                   onQuery={setQuery}
                   onFacets={setFacets}
-                  onTee={(t) => setFilter({ tee: t })}
                   onLiteral={() => setLiteral(true)}
                   onCommit={() => {
                     searchToUrl(query, facets, true);
@@ -377,31 +382,47 @@ export function ShopView() {
                   }}
                   onClose={closeSearch}
                   onClear={() => {
+                    // The search only: the colour and categories chosen stay.
                     setShop({ query: "", facets: [], limit: SHOP_PAGE_SIZE });
                     searchToUrl("", [], true);
-                    setFilter({ tee: null, cats: [] });
+                    toTop();
                   }}
                 />
               );
+            const openSearch = () => {
+              setOpen(true);
+              setFocusNonce((n) => n + 1);
+            };
             return (
               <>
-                <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />
-                <div className="flex items-center gap-1">
+                {dots}
+                <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
                   {runtime !== null && (
-                    <button
-                      type="button"
-                      aria-label="Search"
-                      title="Search (/)"
-                      onPointerDown={warmSearch}
-                      onFocus={warmSearch}
-                      onClick={() => {
-                        setOpen(true);
-                        setFocusNonce((n) => n + 1);
-                      }}
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
-                    >
-                      <Icon name="search" className="h-5 w-5" />
-                    </button>
+                    <>
+                      {/* Desktop: a quiet field-shaped trigger that names "/"; phones: a ringed icon (not a twin of the filter icon). */}
+                      <button
+                        type="button"
+                        onPointerDown={warmSearch}
+                        onFocus={warmSearch}
+                        onClick={openSearch}
+                        aria-label="Search"
+                        className="hidden h-10 w-full max-w-xs items-center gap-2 rounded-full pl-3 pr-4 text-sm text-neutral-500 ring-1 ring-white/10 transition-colors duration-200 hover:text-neutral-300 hover:ring-white/20 sm:flex"
+                      >
+                        <Icon name="search" className="h-4 w-4" />
+                        <span className="flex-1 text-left">Search</span>
+                        <kbd className="font-sans text-[11px] uppercase tracking-[0.2em] text-neutral-600">/</kbd>
+                      </button>
+                      <button
+                        type="button"
+                        onPointerDown={warmSearch}
+                        onFocus={warmSearch}
+                        onClick={openSearch}
+                        aria-label="Search"
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white sm:hidden"
+                      >
+                        <Icon name="search" className="h-[18px] w-[18px]" />
+                      </button>
+                    </>
                   )}
                   {filter}
                 </div>
@@ -418,7 +439,7 @@ export function ShopView() {
             card sizes, nothing moves). */}
         {visible.length > 0 ? (
             <>
-              <div key={sort} className={`grid animate-[fade-in_0.25s_ease-out] transition-opacity duration-200 ${pending ? "opacity-40" : ""} grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6`}>
+              <div key={sort} aria-busy={pending || undefined} className={`grid animate-[fade-in_0.25s_ease-out] transition-opacity duration-200 ${pending ? "opacity-40" : ""} grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6`}>
                 {visible.slice(0, limit).map(({ shirt, variations }, i) => (
                   <ProductCard
                     key={shirt.id}

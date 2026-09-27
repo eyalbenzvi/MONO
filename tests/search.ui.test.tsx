@@ -28,12 +28,11 @@ function setup(over: Partial<SearchBoxProps> = {}) {
     count: 12,
     literal: false,
     tasteKnown: false,
-    tee: null,
     focusNonce: 0,
+    leading: null,
     trailing: null,
     onQuery: vi.fn(),
     onFacets: vi.fn(),
-    onTee: vi.fn(),
     onLiteral: vi.fn(),
     onCommit: vi.fn(),
     onClose: vi.fn(),
@@ -50,7 +49,9 @@ describe("search: the open search box", () => {
     const { field } = setup();
     fireEvent.focus(field);
     const groups = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(groups).toEqual(expect.arrayContaining(["Look", "Subject", "Made", "Era", "Tee"]));
+    expect(groups).toEqual(expect.arrayContaining(["Look", "Subject", "Made", "Era"]));
+    // The tee colour stays on the row's dots, not repeated here.
+    expect(groups).not.toContain("Tee");
     expect(groups).not.toContain("For me");
     expect(groups).not.toContain("Recent");
     // Every chip comes from the index: a LOOK chip for each look tag with designs.
@@ -121,7 +122,7 @@ describe("search: the open search box", () => {
 
   it("the count line; a correction offers the words as typed; no exact match says so and offers Clear", () => {
     setup({ query: "wave ", count: 26 });
-    expect(screen.getByText("26 tees")).toBeTruthy();
+    expect(screen.getByText(/^26 tees$/)).toBeTruthy();
     cleanup();
     const word = SHIRTS.map((s) => s.title.split(" ")[0].toLowerCase()).find((w) => /^[a-z]{7,}$/.test(w))!;
     const typo = `${word.slice(0, 2)}${word[3]}${word[2]}${word.slice(4)}`;
@@ -131,8 +132,8 @@ describe("search: the open search box", () => {
     expect(t.props.onLiteral).toHaveBeenCalled();
     cleanup();
     const z = setup({ query: "zzqxv " });
-    screen.getByText(/No exact match for/);
-    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    screen.getByText(/No match for/);
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
     expect(z.props.onClear).toHaveBeenCalled();
   });
 });

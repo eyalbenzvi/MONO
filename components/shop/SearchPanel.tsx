@@ -6,7 +6,7 @@ import { SHIRTS, assetUrl, getShirtById } from "@/lib/catalog";
 import { printPath } from "@/lib/images";
 import type { SearchResult } from "@/lib/search/engine";
 import { sameFacet, type Facet } from "@/lib/search/facetCodec";
-import { COLORS, COLOR_LABELS, teeColor, type BaseColor } from "@/types/shirt";
+import { teeColor } from "@/types/shirt";
 import type { SearchRuntime } from "./useShopSearch";
 
 export interface SearchBoxProps {
@@ -18,14 +18,13 @@ export interface SearchBoxProps {
   count: number;
   literal: boolean;
   tasteKnown: boolean;
-  tee: BaseColor | null;
   /** Bumped to move focus into the input (the "/" key, the search button). */
   focusNonce: number;
-  /** The row's last control (the filter icon). */
+  /** The row's first and last controls (the colour dots, the filter icon): they stay while searching. */
+  leading: ReactNode;
   trailing: ReactNode;
   onQuery: (q: string) => void;
   onFacets: (facets: Facet[]) => void;
-  onTee: (tee: BaseColor | null) => void;
   onLiteral: () => void;
   onCommit: () => void;
   onClose: () => void;
@@ -36,9 +35,12 @@ type Item = { key: string; label: string; kind?: string; run: () => void };
 
 const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500";
 const chip = (on = false) =>
-  `flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 ${
+  `flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 sm:h-9 ${
     on ? "bg-white text-black" : "bg-white/[0.04] text-neutral-200 ring-1 ring-white/10 hover:bg-white/10"
   }`;
+/** A word completion reads as plain text; a facet is a ringed chip — two kinds, told apart without colour. */
+const word = (on = false) =>
+  `flex h-10 shrink-0 items-center rounded-full px-2.5 text-[13px] transition-colors duration-200 sm:h-9 ${on ? "bg-white text-black" : "text-neutral-300 underline-offset-4 hover:underline"}`;
 const WEEK = 7 * 86_400_000;
 
 /**
@@ -49,6 +51,8 @@ const WEEK = 7 * 86_400_000;
  */
 export default function SearchPanel(p: SearchBoxProps) {
   const input = useRef<HTMLInputElement>(null);
+  const suggest = useRef<HTMLDivElement>(null);
+  const pills = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
   const [more, setMore] = useState(false);
@@ -59,10 +63,23 @@ export default function SearchPanel(p: SearchBoxProps) {
   useEffect(() => {
     if (runtime) setRecent(runtime.mod.readRecent());
   }, [runtime]);
+  // Focus only when asked (the button, "/"): a search opened from a link ("More like this", a reload) doesn't raise the keyboard.
   useEffect(() => {
-    input.current?.focus();
+    if (p.focusNonce > 0) input.current?.focus();
   }, [p.focusNonce]);
   useEffect(() => setActive(-1), [query]);
+  // The selected suggestion in view (the row scrolls sideways; the page doesn't move).
+  useEffect(() => {
+    const row = suggest.current;
+    const el = row?.querySelector<HTMLElement>(`#suggest-${active}`);
+    if (row && el && (el.offsetLeft < row.scrollLeft || el.offsetLeft + el.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = el.offsetLeft - 16;
+  }, [active]);
+  // A pill added: the words stay in sight at the end of the field.
+  useEffect(() => {
+    if (pills.current) pills.current.scrollLeft = pills.current.scrollWidth;
+  }, [facets.length]);
+  // The screen reader hears the result once typing settles, not on every key.
+  const [spoken, setSpoken] = useState("");
 
   const label = (f: Facet) => (runtime ? runtime.mod.facetLabel(runtime.index, f) : f.value);
   const add = (f: Facet) => {
@@ -74,7 +91,7 @@ export default function SearchPanel(p: SearchBoxProps) {
   // While typing: completions of the last word, then the facets the words suggest (at most 8).
   const items: Item[] = useMemo(() => {
     if (!query.trim() || !result) return [];
-    const out: Item[] = result.completions.map((w) => ({ key: `w:${w}`, label: w, run: () => p.onQuery(query.replace(/\S*$/, `${w} `)) }));
+    const out: Item[] = result.completions.map((w) => ({ key: `w:${w}`, label: w, kind: undefined, run: () => p.onQuery(query.replace(/\S*$/, `${w} `)) }));
     for (const s of result.suggestions)
       if (!facets.some((f) => sameFacet(f, s.facet))) out.push({ key: `f:${s.facet.kind}:${s.facet.value}`, label: s.label, kind: s.kind, run: () => add(s.facet) });
     return out.slice(0, 8);
@@ -107,22 +124,55 @@ export default function SearchPanel(p: SearchBoxProps) {
       remove(facets[facets.length - 1]);
     }
   };
+  const clearAll = () => {
+    if (query) p.onQuery("");
+    if (facets.length) p.onFacets([]);
+    input.current?.focus();
+  };
+  const close = () => {
+    input.current?.blur();
+    p.onClose();
+  };
 
   const showSuggest = focused && items.length > 0;
   const showPanel = focused && panelOpen && !query.trim() && !!runtime;
   const corrected = !p.literal && result?.corrected.length ? result.corrected : null;
+  const like = facets.find((f) => f.kind === "like");
+  const likeTitle = like ? getShirtById(like.value)?.title : undefined;
+  const n = p.count;
+  const status = !result ? "" : result.relaxed ? `No match for “${query.trim() || facets.map(label).join(", ")}”, showing the closest` : corrected ? `Showing ${corrected.map((c) => c.to).join(" ")}` : likeTitle && !query.trim() ? `Closest to ${likeTitle}` : `${n} ${n === 1 ? "tee" : "tees"}`;
+  useEffect(() => {
+    const t = setTimeout(() => setSpoken(status), 500);
+    return () => clearTimeout(t);
+  }, [status]);
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col">
+    <div
+      className="flex min-w-0 flex-1 flex-col"
+      // Focus anywhere in the search (field, chips, the filter icon) keeps it open; leaving it empty folds it back to the icon.
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        setFocused(false);
+        if (!query.trim() && !facets.length) p.onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && e.target !== input.current) {
+          e.preventDefault();
+          input.current?.focus();
+        }
+      }}
+    >
       <div className="flex items-center gap-2">
+        {p.leading}
         <div className="flex h-10 min-w-0 flex-1 animate-[fade-in_0.2s_ease-out] items-center gap-1.5 rounded-full bg-white/[0.06] pl-3 pr-1 ring-1 ring-white/10 transition-shadow duration-200 focus-within:ring-white/40">
           <Icon name="search" className="h-4 w-4 shrink-0 text-neutral-400" />
-          <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+          <div ref={pills} className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
             {facets.map((f) => (
-              <span key={`${f.kind}:${f.value}`} className="flex h-7 shrink-0 items-center gap-1 rounded-full bg-white pl-2.5 pr-1 text-xs font-semibold text-black">
+              <span key={`${f.kind}:${f.value}`} title={label(f)} className="flex h-7 max-w-[10rem] shrink-0 items-center gap-1 rounded-full bg-white pl-2.5 pr-1 text-xs font-semibold text-black">
                 {f.kind === "like" && <LikeThumb id={f.value} />}
-                {label(f)}
-                <button type="button" onClick={() => remove(f)} aria-label={`Remove ${label(f)}`} className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-black/10">
+                <span className="truncate">{label(f)}</span>
+                <button type="button" onClick={() => remove(f)} aria-label={`Remove ${label(f)}`} className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full before:absolute before:-inset-2.5 before:content-[''] hover:bg-black/10">
                   <Icon name="x" className="h-3 w-3" strokeWidth={3} />
                 </button>
               </span>
@@ -132,7 +182,7 @@ export default function SearchPanel(p: SearchBoxProps) {
               type="search"
               role="combobox"
               aria-expanded={showSuggest || showPanel}
-              aria-controls="search-suggest"
+              aria-controls={showPanel ? "search-panel" : "search-suggest"}
               aria-autocomplete="list"
               aria-activedescendant={active >= 0 && items[active] ? `suggest-${active}` : undefined}
               aria-label="Search tees"
@@ -143,29 +193,32 @@ export default function SearchPanel(p: SearchBoxProps) {
               value={query}
               onChange={(e) => p.onQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              onFocus={() => {
-                setFocused(true);
-                setPanelOpen(true);
-              }}
-              onBlur={() => setFocused(false)}
-              className="h-9 min-w-[6rem] flex-1 bg-transparent text-base text-white sm:text-sm outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden"
+              onFocus={() => setPanelOpen(true)}
+              onClick={() => setPanelOpen(true)}
+              className="h-9 min-w-[7rem] flex-1 bg-transparent text-base text-white sm:text-sm outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden"
             />
           </div>
+          {/* × clears (words and pills); with nothing to clear it closes (desktop — phones have Cancel). */}
           <button
             type="button"
-            onClick={() => (query ? p.onQuery("") : p.onClose())}
-            aria-label={query ? "Clear search" : "Close search"}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => (query || facets.length ? clearAll() : close())}
+            aria-label={query || facets.length ? "Clear" : "Close search"}
+            title={query || facets.length ? "Clear" : "Close (Esc)"}
+            className="-mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
           >
             <Icon name="x" className="h-4 w-4" />
           </button>
         </div>
         {p.trailing}
+        <button type="button" onClick={close} className="h-10 shrink-0 px-1 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-300 hover:text-white sm:hidden">
+          Cancel
+        </button>
       </div>
 
       {/* One row of suggestions: pressing keeps focus in the field (onMouseDown), so the list doesn't close under the tap. */}
       {showSuggest && (
-        <div id="search-suggest" role="listbox" aria-label="Suggestions" className="no-scrollbar -mx-4 mt-2 flex gap-1.5 overflow-x-auto px-4">
+        <div ref={suggest} id="search-suggest" role="listbox" aria-label="Suggestions" className="no-scrollbar -mx-4 mt-2 flex items-center gap-1.5 overflow-x-auto px-4">
           {items.map((it, i) => (
             <button
               key={it.key}
@@ -175,7 +228,8 @@ export default function SearchPanel(p: SearchBoxProps) {
               aria-selected={i === active}
               onMouseDown={(e) => e.preventDefault()}
               onClick={it.run}
-              className={chip(i === active)}
+              aria-label={it.kind ? `${it.label}, ${it.kind} filter` : `${it.label}, word`}
+              className={it.kind ? chip(i === active) : word(i === active)}
             >
               {it.label}
               {it.kind && <span className={i === active ? "text-neutral-600" : "text-neutral-500"}>· {it.kind}</span>}
@@ -185,18 +239,18 @@ export default function SearchPanel(p: SearchBoxProps) {
       )}
 
       {showPanel && runtime && (
-        <Prepared runtime={runtime} facets={facets} tee={p.tee} tasteKnown={p.tasteKnown} recent={recent} more={more} setMore={setMore} add={add} onTee={(t) => { p.onTee(t); setPanelOpen(false); }}
+        <Prepared runtime={runtime} facets={facets} tasteKnown={p.tasteKnown} recent={recent} more={more} setMore={setMore} add={add}
           onQuery={(q) => { p.onQuery(`${q} `); setPanelOpen(false); }}
           onForget={(q) => setRecent(runtime.mod.removeRecent(q))} />
       )}
 
       {(query.trim() || facets.length > 0) && result && (
-        <p aria-live="polite" className="mt-2 text-xs text-neutral-400">
+        <p className="mt-2 text-xs text-neutral-400 transition-opacity duration-200">
           {result.relaxed ? (
             <>
-              No exact match for &ldquo;{query.trim() || facets.map(label).join(", ")}&rdquo;. Closest:
-              <button type="button" onClick={p.onClear} className="ml-1.5 font-semibold text-white underline underline-offset-2">
-                Clear
+              No match for &ldquo;{query.trim() || facets.map(label).join(", ")}&rdquo; · showing the closest
+              <button type="button" onClick={p.onClear} className="ml-3 font-semibold text-white underline underline-offset-2">
+                Clear search
               </button>
             </>
           ) : corrected ? (
@@ -206,26 +260,34 @@ export default function SearchPanel(p: SearchBoxProps) {
                 Search &ldquo;{corrected.map((c) => c.from).join(" ")}&rdquo; instead
               </button>
             </>
+          ) : likeTitle && !query.trim() ? (
+            <span className={LABEL}>
+              Closest to <span className="text-neutral-300">{likeTitle}</span>
+            </span>
           ) : (
-            <span className="font-mono tabular-nums">{p.count} tees</span>
+            <span className={`${LABEL} tabular-nums`}>
+              {n} {n === 1 ? "tee" : "tees"}
+            </span>
           )}
         </p>
       )}
+      {/* Always there, updated once typing settles. */}
+      <p aria-live="polite" aria-atomic="true" className="sr-only">
+        {spoken}
+      </p>
     </div>
   );
 }
 
 /** The prepared parameters (the field focused and empty): groups built from the index, only values with designs. */
-function Prepared({ runtime, facets, tee, tasteKnown, recent, more, setMore, add, onTee, onQuery, onForget }: {
+function Prepared({ runtime, facets, tasteKnown, recent, more, setMore, add, onQuery, onForget }: {
   runtime: SearchRuntime;
   facets: Facet[];
-  tee: BaseColor | null;
   tasteKnown: boolean;
   recent: string[];
   more: boolean;
   setMore: (v: boolean) => void;
   add: (f: Facet) => void;
-  onTee: (t: BaseColor | null) => void;
   onQuery: (q: string) => void;
   onForget: (q: string) => void;
 }) {
@@ -261,14 +323,6 @@ function Prepared({ runtime, facets, tee, tasteKnown, recent, more, setMore, add
   if (eras.length) groups.push({ name: "Era", body: row(eras) });
   const sources = facetChips("source", t.source);
   if (sources.length) groups.push({ name: "Source", body: row(sources) });
-  groups.push({
-    name: "Tee",
-    body: COLORS.map((c) => (
-      <button key={c} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onTee(tee === c ? null : c)} aria-pressed={tee === c} className={chip(tee === c)}>
-        {COLOR_LABELS[c]}
-      </button>
-    )),
-  });
   if (tasteKnown)
     groups.push({
       name: "For me",
@@ -285,7 +339,7 @@ function Prepared({ runtime, facets, tee, tasteKnown, recent, more, setMore, add
           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onQuery(q)}>
             {q}
           </button>
-          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onForget(q)} aria-label={`Forget ${q}`} className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-500 hover:text-white">
+          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onForget(q)} aria-label={`Forget ${q}`} className="relative flex h-6 w-6 items-center justify-center rounded-full text-neutral-500 before:absolute before:-inset-2 before:content-[''] hover:text-white">
             <Icon name="x" className="h-3 w-3" />
           </button>
         </span>
@@ -293,14 +347,17 @@ function Prepared({ runtime, facets, tee, tasteKnown, recent, more, setMore, add
     });
 
   return (
-    <div className="no-scrollbar mt-3 max-h-[60dvh] animate-[fade-in_0.25s_ease-out] overflow-y-auto pb-2">
+    // Short enough to leave the grid in sight (the phone's keyboard takes half the screen); it fades out where it scrolls, and a hairline ends it.
+    <div id="search-panel" className="mt-3 animate-[fade-in_0.25s_ease-out] border-b border-white/10 pb-3">
+      <div className="no-scrollbar max-h-[min(40svh,280px)] overflow-y-auto [mask-image:linear-gradient(to_bottom,black_85%,transparent)] sm:max-h-[min(50vh,420px)]">
       {groups.map((g, i) => (
-        // On phones LOOK and SUBJECT first; the rest behind "More filters".
-        <section key={g.name} className={`mb-4 ${i >= 2 && !more ? "hidden sm:block" : ""}`}>
+        // Phones: one sideways row per group, LOOK and SUBJECT first and the rest behind "More filters".
+        <section key={g.name} className={`mb-3 ${i >= 2 && !more ? "hidden sm:block" : ""}`}>
           <h3 className={`mb-2 ${LABEL}`}>{g.name}</h3>
-          <div className="flex flex-wrap gap-1.5">{g.body}</div>
+          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">{g.body}</div>
         </section>
       ))}
+      </div>
       {groups.length > 2 && !more && (
         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => setMore(true)} className="text-xs font-semibold text-neutral-300 underline underline-offset-2 hover:text-white sm:hidden">
           More filters
