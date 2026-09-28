@@ -9,6 +9,7 @@ const strip = (s: unknown) => String(s ?? "").replace(/<[^>]*>/g, " ").replace(/
 
 /** Category searches per wave (Commons category names vary; the search finds them). */
 export const CATEGORY_SEARCHES: Record<number, string[]> = {
+  2: ["Architectura Navalis Mercatoria", "Ship plans", "Sail plans", "Lines plans of ships", "Nautical charts 18th century", "Lighthouse drawings", "Ship models engravings", "Encyclopédie Marine plates"],
   1: ["Kunstformen der Natur", "Challenger Report plates", "Haeckel Radiolarien", "Haeckel Medusen", "Die Cephalopoden Chun", "Report on the Scientific Results of the Voyage of H.M.S. Challenger", "Fishes illustrations 19th century", "Marine invertebrates illustrations"],
 };
 

@@ -9,7 +9,7 @@ import type { Selected } from "./_types";
 import type { SourceId } from "./ranges";
 
 /** Each wave's drop (a Monday): at most 40 of its designs are new that week, the rest a week earlier. */
-export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28" };
+export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-28" };
 
 /** The institution a design is "from" in its description, and the credit's source line. */
 export const INSTITUTION: Record<SourceId, string> = {
@@ -47,15 +47,21 @@ const MAP = /\bmap\b|\bchart\b|atlas|bathymetr|coast survey/i;
 const BRUSH = /woodblock|ukiyo|surimono|hanging scroll|handscroll|album leaf|ink on (?:paper|silk)|japan|china|korea/i;
 const PLATE = /plate|specimen|natural history|zoolog|botan|illustration|kunstformen|challenger|haeckel|lithograph.*(?:fish|shell|coral)|chromolith/i;
 const TECH = /patent|technical drawing|mechanical|machine|engine|diagram/i;
+const SHIP_PLAN = /lines plan|sail plan|ship ?plan|architectura navalis|construction plan|shipbuilding|half model|profile of the|plan of a ship/i;
+const VESSEL = /\b(?:ship|vessel|schooner|lightship|steamer|steamboat|boat|barge|ferry|tug)\b/i;
+const MEASURED = /measured drawing|architectural drawing/i;
 
 /** The archive group whose character (features, screen, tee) a kept picture takes, and its shop category. */
-export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source">): { group: ArchiveGroup; category: ShirtCategory } {
+export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: ShirtCategory } {
   const text = [s.classification, s.title, ...s.tags].join(" · ");
   if (s.mode !== "ink" || PHOTO.test(s.classification)) return { group: "art-photo", category: "photographs" };
   if (MAP.test(text)) return { group: "etching", category: "sky" };
+  // Ship plans and a vessel's measured drawing are technical line work; a building's is architecture.
+  if (SHIP_PLAN.test(text) || (MEASURED.test(s.classification) && VESSEL.test(s.title))) return { group: "etching", category: "systems" };
+  if (MEASURED.test(s.classification)) return { group: "etching", category: "architecture" };
   if (TECH.test(text)) return { group: "etching", category: "systems" };
   if (BRUSH.test(text)) return { group: "ukiyo-e", category: "brush" };
-  if (PLATE.test(text) || s.source === "wikimedia") return { group: "natural-history", category: "specimens" };
+  if (PLATE.test(text) || (s.source === "wikimedia" && s.wave === 1)) return { group: "natural-history", category: "specimens" };
   return { group: "etching", category: "etched" };
 }
 
