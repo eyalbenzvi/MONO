@@ -1,0 +1,21 @@
+{
+  "_note": "Words MONO won't print (lib/custom/lexicon). Matched on whole words after normalisation (case, accents, leetspeak, look-alike letters, spacing, repeats, reversal). Brand names are chosen so they aren't also everyday words (no apple, puma, shell, dove).",
+  "brands": [
+    "nike", "adidas", "reebok", "gucci", "prada", "chanel", "louis vuitton", "vuitton", "balenciaga", "versace", "dior", "hermes", "burberry", "fendi", "givenchy",
+    "rolex", "cartier", "tiffany and co", "ray ban", "levis", "lacoste", "ralph lauren", "calvin klein", "tommy hilfiger", "hugo boss", "armani", "moncler", "stone island", "off white", "bape",
+    "coca cola", "cocacola", "pepsi", "starbucks", "mcdonalds", "burger king", "kfc", "red bull", "heineken", "budweiser", "marlboro",
+    "disney", "pixar", "marvel", "dc comics", "star wars", "harry potter", "pokemon", "pikachu", "mickey mouse", "hello kitty", "barbie", "lego", "sanrio", "minecraft", "fortnite",
+    "nintendo", "playstation", "xbox", "sega", "iphone", "ipad", "macbook", "google", "youtube", "instagram", "tiktok", "facebook", "whatsapp", "netflix", "spotify", "microsoft", "samsung", "huawei",
+    "ferrari", "lamborghini", "porsche", "bmw", "mercedes benz", "tesla", "harley davidson", "ducati",
+    "nasa", "nfl", "nba", "fifa", "uefa", "premier league", "manchester united", "real madrid", "barcelona fc", "juventus",
+    "supreme new york", "the north face", "patagonia", "carhartt", "vans", "converse", "new balance", "asics", "under armour", "champion athletic"
+  ],
+  "refused": [
+    "nigger", "nigga", "niggers", "faggot", "fag", "faggots", "kike", "kikes", "spic", "spics", "chink", "chinks", "gook", "gooks", "wetback", "wetbacks",
+    "tranny", "trannies", "retard", "retards", "paki", "pakis", "raghead", "towelhead", "sandnigger", "coon", "coons", "darkie", "jigaboo", "porch monkey", "beaner", "beaners",
+    "kyke", "yid", "yids", "dyke", "dykes", "gypo", "gyppo", "pikey", "golliwog", "zipperhead", "camel jockey", "shemale",
+    "heil hitler", "sieg heil", "white power", "white pride world wide", "1488", "14 88", "14 words", "88 heil", "blood and soil", "gas the jews", "kill all jews",
+    "kkk", "ku klux klan", "white genocide", "race war now", "rahowa", "zog", "hail victory", "jews will not replace us",
+    "daesh", "al qaeda", "allahu akbar kill", "death to america", "death to israel", "kill all muslims", "kill all gays"
+  ]
+}

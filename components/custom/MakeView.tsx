@@ -125,7 +125,13 @@ export function MakeView({ slug }: { slug: string }) {
   const southNow = south ?? (here ? here.lat < 0 : false);
 
   const lastYear = made.template === "planets" ? PLANETS_LAST_YEAR : LAST_YEAR;
-  const w = words.trim() ? cleanWords(words) : undefined;
+  // The words lexicon (lib/custom/lexicon) loads with the page's first words; until it's here, words wait.
+  const [lexicon, setLexicon] = useState<typeof import("@/lib/custom/lexicon") | null>(null);
+  useEffect(() => {
+    if (words.trim() && !lexicon) import("@/lib/custom/lexicon").then(setLexicon);
+  }, [words, lexicon]);
+  const refused = words.trim() && lexicon ? lexicon.wordsProblem(words) : null;
+  const w = words.trim() ? (refused || !lexicon ? null : cleanWords(words)) : undefined;
   const dateOk = !!parseDate(date) && Number(date.slice(0, 4)) <= lastYear;
   const spec: CustomSpec | null = useMemo(() => {
     if (w === null) return null;
@@ -200,7 +206,8 @@ export function MakeView({ slug }: { slug: string }) {
   const [zoom, setZoom] = useState(false);
   const [view, setView] = useState<"tee" | "print">("tee");
   const errors = {
-    words: touched.words && w === null ? `Up to ${WORDS_MAX} letters, numbers and simple punctuation` : "",
+    // A refusal shows at once (it's not a typo to finish); the character rule once the field is left.
+    words: refused ?? (touched.words && lexicon && w === null ? `Up to ${WORDS_MAX} letters, numbers and simple punctuation` : ""),
     date: touched.date && !dateOk ? `Pick a date between ${FIRST_YEAR} and ${lastYear}` : "",
     time: touched.time && time && !parseTime(time) ? "Pick a time, or leave it empty" : "",
     year: touched.year && made.template === "moon" && !spec ? `Pick a year between ${FIRST_YEAR} and ${LAST_YEAR}` : "",

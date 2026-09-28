@@ -150,3 +150,24 @@ test("privacy: the date, place and words stay on the device: never in analytics,
   const cart = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart")!).state.cart);
   expect(cart).toEqual([expect.objectContaining({ id: "make-sky", custom: { t: "sky", v: 1, p: { c: TEL_AVIV, d: "1991-03-14", w: "The night we met" } } })]);
 });
+
+test("Your words go through the lexicon: a brand or a slur is refused in one line, and nothing is drawn or added", async ({ page }) => {
+  await page.goto("make/moon/");
+  await hydrated(page);
+  await page.getByLabel("Night", { exact: true }).fill("2021-11-19");
+  // The address carries this very night before anything is typed.
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "night", v: 1, p: { d: "2021-11-19" } })}$`));
+  const url = page.url();
+  await page.getByLabel("Your words").fill("n1k3");
+  await expect(page.getByText("Those words name a brand.")).toBeVisible();
+  await page.getByLabel("Your words").fill("1 4 8 8");
+  await expect(page.getByText("We don't print that.")).toBeVisible();
+  // The address keeps the last printable print.
+  await page.waitForTimeout(400);
+  expect(page.url()).toBe(url);
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await page.getByRole("button", { name: /^Add to bag/ }).tap();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart") ?? '{"state":{"cart":[]}}').state.cart.length)).toBe(0);
+  await page.getByLabel("Your words").fill("Noa, welcome");
+  await expect(page.getByText(/name a brand|don't print/)).toHaveCount(0);
+});
