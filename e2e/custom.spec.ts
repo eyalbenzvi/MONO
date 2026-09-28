@@ -5,15 +5,20 @@ import { MOON, OTHERS, PLANETS, SKY, TEL_AVIV, TLV_1991, make } from "./fixtures
 // The visitor's zone decides the place a sky starts from.
 test.use({ timezoneId: "Asia/Jerusalem" });
 
-test("Made for you is in plain sight: a header tab, the shop's first card, and a way in from the designs it's drawn like", async ({ page }) => {
+test("Make is in plain sight: a header tab, the shop's first card, and a way in from the designs it's drawn like", async ({ page }) => {
   await page.goto("");
   await hydrated(page);
   await page.getByRole("link", { name: "Make", exact: true }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
-  await expect(page.locator("h1")).toHaveText("Made for you");
+  await expect(page.locator("h1")).toHaveText("Make");
+  await expect(page.getByRole("heading", { name: "From ours" })).toBeVisible();
+  // Each card says what it is made from.
+  const lines = await page.locator('[data-from="ours"] li p').allTextContents();
+  expect(lines.length).toBeGreaterThanOrEqual(4);
+  for (const l of lines) expect(l).toMatch(/^From /);
   for (const name of ["Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"]) await expect(page.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
   // Each card is a real print, drawn in the browser.
-  await expect(page.locator("canvas[data-custom]")).toHaveCount(4);
+  await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length);
 
   await page.goto("shop/");
   await hydrated(page);

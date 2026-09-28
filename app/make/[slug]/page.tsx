@@ -12,7 +12,7 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const m = madeBySlug(params.slug);
   if (!m) return {};
-  return pageMeta({ path: `/make/${m.slug}/`, title: `${m.name}: made for you — MONO`, description: `${m.line} Your words and your day, printed in one ink on a black or white tee.` });
+  return pageMeta({ path: `/make/${m.slug}/`, title: `${m.name} — Make — MONO`, description: `${m.line} ${m.from}, printed in one ink on a black or white tee.` });
 }
 
 export default function MakePage({ params }: { params: { slug: string } }) {

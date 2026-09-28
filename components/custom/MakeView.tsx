@@ -214,7 +214,7 @@ export function MakeView({ slug }: { slug: string }) {
       <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
         <div className="mb-2 flex items-center justify-between">
           <Link href="/make/" className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-            <Icon name="arrow-left" className="h-4 w-4" /> Made for you
+            <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
           <button
             type="button"

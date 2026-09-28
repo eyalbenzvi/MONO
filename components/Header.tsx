@@ -12,7 +12,7 @@ import { useUiStore } from "@/store/useUiStore";
 const TABS = [
   { href: "/", label: "Discover", match: (p: string) => p === "/" },
   { href: "/shop/", label: "Shop", match: (p: string) => p.startsWith("/shop") },
-  // Made for you: the tees that are yours alone (lib/custom/products).
+  // Make: one ink, for one person (lib/custom/products).
   { href: "/make/", label: "Make", match: (p: string) => p.startsWith("/make") },
 ];
 
