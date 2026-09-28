@@ -1,3 +1,4 @@
+import { WAVE_DROP } from "../scripts/sources/waves";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -106,9 +107,15 @@ describe("I12: explicit drop dates", () => {
     // "New this week" (Part 7): the latest drop is at most forty designs; nothing is dated in the future
     // (the app shows every date it has), and the week's other arrivals count as the week before.
     const latest = FULL.map((x) => x.dropDate).sort().pop()!;
-    expect(latest).toBe("2026-09-21");
+    // The latest drop is the last content wave's (scripts/sources/waves.ts), or the seventh set's before any wave.
+    expect(latest).toBe(Object.values(WAVE_DROP).concat("2026-09-21").sort().pop());
     expect(FULL.filter((x) => x.dropDate === latest).length).toBeLessThanOrEqual(40);
-    expect(new Set(FULL.filter((x) => x.photo || x.n > TOTAL).map((x) => x.dropDate))).toEqual(new Set(["2026-09-14", "2026-09-21"]));
+    expect(new Set(FULL.filter((x) => (x.photo || x.n > TOTAL) && !x.wave).map((x) => x.dropDate))).toEqual(new Set(["2026-09-14", "2026-09-21"]));
+    // A wave's designs: its drop, or the week before for what the forty (four per category) left out.
+    for (const s of FULL.filter((x) => x.wave)) {
+      const drop = WAVE_DROP[s.wave!];
+      expect([drop, new Date(Date.parse(`${drop}T00:00:00Z`) - 7 * 86400000).toISOString().slice(0, 10)], s.id).toContain(s.dropDate);
+    }
     expect(SHIRTS[0].dropDate).toBe(Date.parse(`${FULL[0].dropDate}T00:00:00Z`));
   });
 });

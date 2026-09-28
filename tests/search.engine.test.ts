@@ -199,8 +199,8 @@ describe("search: expert review (algorithm and content)", () => {
     expect(ids("engravings ")).toEqual(ids("engraving "));
   });
 
-  it("a short real word is never read as another (neon ≠ noon, bats ≠ cats): no correction, an honest no-match", () => {
-    for (const q of ["neon ", "bats "]) {
+  it("a short real word is never read as another (neon ≠ noon, yeti ≠ yet): no correction, an honest no-match", () => {
+    for (const q of ["neon ", "yeti "]) {
       const r = run(q);
       expect(r.corrected, q).toEqual([]);
       expect(r.relaxed?.droppedTerms, q).toEqual([q.trim()]);
@@ -209,6 +209,11 @@ describe("search: expert review (algorithm and content)", () => {
 
   it("a typo is corrected even in a plural or a word ending in e (gatxs → gate, engnie → engine)", () => {
     for (const [q, to] of [["gatxs ", "gate"], ["engnie ", "engin"]]) expect(run(q).corrected.map((c) => stem(c.to)), q).toContain(to);
+  });
+
+  it("a catalogue word beats a lexicon word as the correction, and a typo in an -ing ending still finds the word (fountxin, lookxng)", () => {
+    expect(run("fountxin ").corrected.map((c) => c.to)).toContain("fountain");
+    expect(run("lookxng ").corrected.length).toBeGreaterThan(0);
   });
 
   it("colour words that name the tee are the tee filter, not text (bird on black)", () => {

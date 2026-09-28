@@ -223,6 +223,9 @@ export interface PhotoCredit {
   url: string;
   /** The Smithsonian image id (data/photos/img/<image>.png); full catalog only. */
   image?: string;
+  /** Where it comes from and its licence, for the content waves' sources (default: Smithsonian Open Access, CC0). */
+  source?: string;
+  license?: string;
 }
 
 /** Full catalog entry (generator output, server-side and tests). */

@@ -63,6 +63,9 @@ export interface Adapter {
 const TONAL = /watercolou?r|wash|gouache|aquatint|mezzotint|lithograph|chromolith|painting|pastel|charcoal|sepia/i;
 export const screenOf = (r: Pick<Raw, "mode" | "classification">): Candidate["screen"] => (r.mode !== "ink" ? "photo" : TONAL.test(r.classification) ? "tonal" : "line");
 
+/** General art museums: a world's word must be in the title (their tags name anything somewhere in a scene). */
+const TITLE_MATCH = new Set<SourceId>(["met", "artic", "cleveland", "rijksmuseum"]);
+
 export interface SourceCounts {
   found: number;
   licensed: number;
@@ -90,7 +93,7 @@ export async function candidates(adapter: Adapter, world: World, cap: number): P
     }
     licensed++;
     const input: MetaInput = { ...r, photo: r.mode !== "ink" };
-    const d = metaFilter(input, { keywords: world.keywords, signalFlags: world.signalFlags }, seen);
+    const d = metaFilter(input, { keywords: world.keywords, signalFlags: world.signalFlags, titleMatch: TITLE_MATCH.has(adapter.source) }, seen);
     decisions.push({ ...d, key: r.key });
     if (!d.keep) continue;
     const { licenseFields: _l, hasImage: _h, ...fields } = r;
@@ -135,20 +138,24 @@ export async function getJson<T = any>(source: SourceId, url: string, { tries = 
 }
 export const UA = "MONO-catalogue/1.0 (https://github.com/eyalbenzvi/mono; public-domain works for one-ink tees)";
 
-async function download(url: string, file: string, tries = 4): Promise<boolean> {
+async function download(url: string, file: string, tries = 6): Promise<boolean> {
   if (existsSync(file)) return true;
   for (let i = 0; ; i++) {
+    let wait = 1000 * 2 ** i;
     try {
-      const r = await fetch(url, { headers: { "User-Agent": UA } });
+      // AIC asks API users to name themselves in AIC-User-Agent (api.artic.edu docs); the others read User-Agent.
+      const r = await fetch(url, { headers: { "User-Agent": UA, "AIC-User-Agent": UA } });
       if (r.ok) {
         writeFileSync(file, Buffer.from(await r.arrayBuffer()));
         return true;
       }
       if (r.status === 404 || r.status === 403 || i >= tries) return false;
+      // Rate limited: wait as long as asked (Wikimedia's upload servers), at least 5 s growing.
+      if (r.status === 429) wait = Math.max(Number(r.headers.get("retry-after") ?? 0) * 1000, 5000 * 2 ** i);
     } catch {
       if (i >= tries) return false;
     }
-    await new Promise((res) => setTimeout(res, 1000 * 2 ** i));
+    await new Promise((res) => setTimeout(res, wait));
   }
 }
 
@@ -163,39 +170,45 @@ const python = () => process.env.PYTHON ?? "python3";
 const sha16 = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 16);
 
 /** Step 2: download, cut out (objects only), master, screen and check every candidate. Resumable. */
-export async function prep(source: SourceId, wave: number, { concurrency = 4 } = {}) {
+export async function prep(source: SourceId, wave: number, { concurrency = 4, limit = Infinity } = {}) {
   const log = logger(source);
   const dir = cacheDir(source);
   for (const d of ["jpg", "cut", "prep", "screen"]) mkdir(path.join(dir, d));
-  const list = readCandidates(source, wave);
+  // The best `limit` by the filter's order (candidates are stored in that order).
+  const list = readCandidates(source, wave).slice(0, limit);
+  // Wikimedia's upload servers rate-limit hard: one at a time.
+  if (source === "wikimedia") concurrency = 1;
   const jpg = (k: string) => path.join(dir, "jpg", `${k}.jpg`);
   const cut = (k: string) => path.join(dir, "cut", `${k}.png`);
   const master = (k: string) => path.join(dir, "prep", `print_${k}.webp`);
   const shas = readJson<Record<string, string>>(path.join(dir, "sha.json"), {});
   let failed = 0;
+  let none = 0;
+  async function makeMaster(c: Candidate) {
+    const out = await prepImage(c.mode, jpg(c.key), cut(c.key)).catch((e) => (log(`prep error ${c.key}: ${String(e).slice(0, 120)}`), null));
+    if (out === "needs-cut") return;
+    if (out) writeFileSync(master(c.key), out.webp), writeJson(path.join(dir, "prep", `${c.key}.json`), out.meta);
+    else none++, log(`no print from ${c.key}`);
+    // The download goes once its master exists (the master is the tone the screen is made from).
+    rmSync(jpg(c.key), { force: true });
+  }
   await pool(list, concurrency, async (c) => {
     if (existsSync(master(c.key))) return;
     if (!(await download(c.imageUrl, jpg(c.key)))) return void (failed++, log(`download failed ${c.key} ${c.imageUrl}`));
     shas[c.key] = sha16(jpg(c.key));
+    // Anything not cut out becomes its master now and the download goes (disk stays small).
+    if (c.mode !== "cut") await makeMaster(c);
   });
   writeJson(path.join(dir, "sha.json"), shas);
   // Cut-outs, only for objects the record says were photographed on a backdrop (mode "cut").
   const toCut = list.filter((c) => c.mode === "cut" && existsSync(jpg(c.key)) && !existsSync(cut(c.key))).map((c) => c.key);
   if (toCut.length) {
     writeFileSync(path.join(dir, "cut-keys.txt"), toCut.join("\n"));
-    execFileSync(python(), [path.join(ROOT, "scripts", "photos", "cutout.py"), path.join(dir, "cut-keys.txt"), dir], { stdio: ["ignore", "ignore", "inherit"] });
+    execFileSync(python(), [path.join(ROOT, "scripts", "photos", "cutout.py"), path.join(dir, "cut-keys.txt"), dir], { stdio: ["ignore", "ignore", "inherit"], env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
   }
-  let none = 0;
-  for (const c of list) {
-    if (existsSync(master(c.key)) || !existsSync(jpg(c.key))) continue;
-    const out = await prepImage(c.mode, jpg(c.key), cut(c.key));
-    if (out && out !== "needs-cut") writeFileSync(master(c.key), out.webp), writeJson(path.join(dir, "prep", `${c.key}.json`), out.meta);
-    else none++, log(`no print from ${c.key}: ${out ?? "empty"}`);
-    // The download goes once its master exists (the master is the tone the screen is made from).
-    if (out && out !== "needs-cut") rmSync(jpg(c.key), { force: true });
-  }
+  for (const c of list) if (!existsSync(master(c.key)) && existsSync(jpg(c.key))) await makeMaster(c);
   writeFileSync(path.join(dir, "screen-list.txt"), list.filter((c) => existsSync(master(c.key))).map((c) => `${c.key} ${c.screen}`).join("\n"));
-  execFileSync(python(), [path.join(ROOT, "scripts", "sources", "screen.py"), dir, path.join(dir, "screen-list.txt")], { stdio: ["ignore", "ignore", "inherit"] });
+  execFileSync(python(), [path.join(ROOT, "scripts", "sources", "screen.py"), dir, path.join(dir, "screen-list.txt")], { stdio: ["ignore", "ignore", "inherit"], env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
   const screened = readJson<Record<string, { tee?: "black" | "white" }>>(path.join(dir, "screen.json"), {});
   // Duplicates by the original's hash (a second record of the same scan).
   const firstBySha = new Map<string, string>();
@@ -242,7 +255,7 @@ export function commit(source: SourceId, wave: number, keep: Map<string, { name?
   writeJson(sourceFile(source), [...done, ...added].sort((a, b) => a.n - b.n));
   // Written by Python, as halftone.py writes it (json.dump, indent=0, sort_keys), so the file diffs cleanly.
   const merge = "import json,sys; f=sys.argv[1]; m=json.load(open(f)); m.update(json.load(sys.stdin)); json.dump(m, open(f, 'w'), indent=0, sort_keys=True)";
-  execFileSync(python(), ["-c", merge, halftoneFile], { input: JSON.stringify(manifest) });
+  execFileSync(python(), ["-c", merge, halftoneFile], { input: JSON.stringify(manifest), env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
   return { added: added.length, total: done.length + added.length };
 }
 

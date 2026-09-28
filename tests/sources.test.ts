@@ -126,3 +126,15 @@ describe("content waves: applying the owner's decisions", () => {
     expect(() => readDecisions([file])).toThrow(/unknown decision/);
   });
 });
+
+describe("content waves: stories are not subjects", () => {
+  const base: MetaInput = { record: "r", title: "", classification: "Print, Engraving", tags: [], description: "", photo: false, hasImage: true, width: 3000, height: 4000, date: "1600", maker: null, credit: "" };
+  const run = (title: string, classification = base.classification) => metaFilter({ ...base, title, classification }, { keywords: ["fish", "whale", "shell", "medusae"] }, { records: new Set(), shas: new Set() });
+  it("sacred and mythological scenes, fables, cigarette cards and long story titles are refused; a plate's long Latin title is not", () => {
+    for (const t of ["The Virgin with the Fish", "Jonah Cast Out by the Whale", "Galatea on a Shell", "The Wolf Accuses Renard of Eating the Fish"]) expect(run(t).keep, t).toBe(false);
+    expect(run("Blowfish, from Fish from American Waters series for Allen & Ginter Cigarettes").reasons).toContain("text");
+    expect(run("Sperm whale beached near Berkhey on 3 February, 1598").reasons).toContain("narrative");
+    expect(run("Shells in Seaweed").keep).toBe(true);
+    expect(run("Discomedusae plate of the medusae from the voyage of the Challenger", "Plate").keep).toBe(true);
+  });
+});

@@ -50,6 +50,8 @@ import type { Generator } from "./gen/core";
 import { PHOTO_CATEGORIES, photoOrder, recordUrl, type PhotoSource } from "./photos/source";
 import { set5Designs } from "./gen/set5";
 import { set7Designs } from "./gen/set7";
+import type { Selected } from "./sources/_types";
+import { INSTITUTION, SOURCE_LINE, WAVE_DROP, filing, licenseLine } from "./sources/waves";
 import { ADDITIONS_FIRST_N, ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
 import { displayCategory } from "./gen/categories";
@@ -497,55 +499,100 @@ function archiveSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   const addFile = path.resolve(__dirname, "..", "data", "archive", "additions.json");
   const additions: ArchiveAddition[] = existsSync(addFile) ? JSON.parse(readFileSync(addFile, "utf8")) : [];
   let bytes = 0;
-  for (const { n, source: a } of [...archiveOrder(all), ...additions.map((source) => ({ n: source.n, source }))]) {
-    const print = path.join(PRINTS_DIR, `print_${n}.webp`);
-    if (!existsSync(print)) throw new Error(`missing ${path.relative(ROOT, print)} (run scripts/archive/fetchArchive.ts select)`);
-    bytes += statSync(print).size;
-    const g = ARCHIVE_GROUPS[a.group];
-    const medium: Medium = g.mode === "ink" ? "ink" : "photo";
-    const tonal = medium === "ink" && TONAL_INK.includes(a.group);
-    // A photograph goes on the tee its halftone was baked for; line work either way (half and half); brush work and plates part on black (TONAL_ON_BLACK).
-    const coin = mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))();
-    const baseColor: BaseColor = medium === "photo" ? photoTee(n, a.tone) : coin < (tonal ? TONAL_ON_BLACK[a.group] ?? 0 : 0.5) ? "black" : "white";
-    const single = medium === "photo" || a.coverage > INK_HEAVY;
-    const f: Partial<Record<FeatureKey, number>> = {
-      ...ARCHIVE_FEATURES[a.group],
-      density: Math.min(1, a.coverage * (medium === "ink" ? 2.5 : 1.6)),
-      contrast: Math.min(1, 0.25 + a.contrast * 2.2),
-    };
-    if (baseColor === "black") (f.dark_industrial = (f.dark_industrial ?? 0) + 0.12), (f.clean_minimal = (f.clean_minimal ?? 0) - 0.05);
-    else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
-    const unit = ARCHIVE_UNITS[a.unit].name;
-    const quality = Math.round(100 * (0.3 * Math.min(1, a.coverage / (medium === "ink" ? 0.15 : 0.35)) + 0.35 * Math.min(1, a.contrast * 3.5) + 0.35 * Math.min(1, a.detail * 1.5)));
-    const [x0, y0, x1, y1] = a.box;
-    const category = displayCategory("archive", `archive-${a.group}`, a.name);
-    const made = [a.maker ? `by ${a.maker}` : "", a.date ? `(${a.date.replace(/\s*\?$/, "").replace(/\?/g, "")}${/\?/.test(a.date) ? ", probably" : ""})` : ""].filter(Boolean).join(" ");
-    sigs.push({ key: `archive|${a.key}`, vec: [] });
-    shirts.push({
-      id: `mono-${String(n).padStart(4, "0")}`,
-      n,
-      no: 0,
-      sku: skuOf(category, baseColor, n),
-      title: freeTitle(a.name, taken),
-      price: PRICE,
-      baseColor,
-      backPrintUrl: `/prints/print_${n}.webp`,
-      category,
-      medium,
-      colors: offeredColors(baseColor, single),
-      source: "archive",
-      variant: `archive-${a.group}`,
-      base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" && !tonal ? "its marks printed as one ink" : "printed as a one-ink halftone"}.`,
-      subject: a.name,
-      recordTitle: a.title,
-      style: STYLE.archive,
-      quality,
-      flags: [],
-      printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
-      features: vector(f),
-      photo: { credit: a.maker ? `${a.maker}, ${unit}` : unit, url: recordUrl(a.record), image: a.key },
-      dropDate: SET5_DROP,
-    });
+  for (const { n, source: a } of [...archiveOrder(all), ...additions.map((source) => ({ n: source.n, source }))])
+    bytes += archiveDraft(shirts, sigs, taken, n, a, { unit: ARCHIVE_UNITS[a.unit].name, url: recordUrl(a.record) });
+  return bytes;
+}
+
+/** One archive picture as a design (the sixth set, its additions and the content waves' sources). Returns the print's bytes. */
+function archiveDraft(
+  shirts: Draft[],
+  sigs: Signature[],
+  taken: Set<string>,
+  n: number,
+  a: Omit<ArchiveSource, "unit">,
+  from: { unit: string; url: string; credit?: string; source?: string; license?: string; wave?: number; dropDate?: string; category?: ShirtCategory },
+): number {
+  const print = path.join(PRINTS_DIR, `print_${n}.webp`);
+  if (!existsSync(print)) throw new Error(`missing ${path.relative(ROOT, print)} (run scripts/archive/fetchArchive.ts select)`);
+  const g = ARCHIVE_GROUPS[a.group];
+  const medium: Medium = g.mode === "ink" ? "ink" : "photo";
+  const tonal = medium === "ink" && TONAL_INK.includes(a.group);
+  // A photograph goes on the tee its halftone was baked for; line work either way (half and half); brush work and plates part on black (TONAL_ON_BLACK).
+  const coin = mulberry32(SEED ^ Math.imul(n, 0x85ebca6b))();
+  const baseColor: BaseColor = medium === "photo" ? photoTee(n, a.tone) : coin < (tonal ? TONAL_ON_BLACK[a.group] ?? 0 : 0.5) ? "black" : "white";
+  const single = medium === "photo" || a.coverage > INK_HEAVY;
+  const f: Partial<Record<FeatureKey, number>> = {
+    ...ARCHIVE_FEATURES[a.group],
+    density: Math.min(1, a.coverage * (medium === "ink" ? 2.5 : 1.6)),
+    contrast: Math.min(1, 0.25 + a.contrast * 2.2),
+  };
+  if (baseColor === "black") (f.dark_industrial = (f.dark_industrial ?? 0) + 0.12), (f.clean_minimal = (f.clean_minimal ?? 0) - 0.05);
+  else (f.clean_minimal = (f.clean_minimal ?? 0) + 0.12), (f.dark_industrial = (f.dark_industrial ?? 0) - 0.08);
+  const unit = from.unit;
+  const quality = Math.round(100 * (0.3 * Math.min(1, a.coverage / (medium === "ink" ? 0.15 : 0.35)) + 0.35 * Math.min(1, a.contrast * 3.5) + 0.35 * Math.min(1, a.detail * 1.5)));
+  const [x0, y0, x1, y1] = a.box;
+  const category = from.category ?? displayCategory("archive", `archive-${a.group}`, a.name);
+  const made = [a.maker ? `by ${a.maker}` : "", a.date ? `(${a.date.replace(/\s*\?$/, "").replace(/\?/g, "")}${/\?/.test(a.date) ? ", probably" : ""})` : ""].filter(Boolean).join(" ");
+  sigs.push({ key: `archive|${a.key}`, vec: [] });
+  shirts.push({
+    id: `mono-${String(n).padStart(4, "0")}`,
+    n,
+    no: 0,
+    sku: skuOf(category, baseColor, n),
+    title: freeTitle(a.name, taken),
+    price: PRICE,
+    baseColor,
+    backPrintUrl: `/prints/print_${n}.webp`,
+    category,
+    medium,
+    colors: offeredColors(baseColor, single),
+    source: "archive",
+    variant: `archive-${a.group}`,
+    base: `${a.name}, ${/^[aeiou]/i.test(g.kind) ? "an" : "a"} ${g.kind}${made ? ` ${made}` : ""} from the ${unit}, ${medium === "ink" && !tonal ? "its marks printed as one ink" : "printed as a one-ink halftone"}.`,
+    subject: a.name,
+    recordTitle: a.title,
+    style: STYLE.archive,
+    quality,
+    flags: [],
+    printCm: { width: Math.max(1, Math.round((x1 - x0) * 28)), height: Math.max(1, Math.round((y1 - y0) * 37)) },
+    features: vector(f),
+    photo: { credit: a.maker ? `${a.maker}, ${from.credit ?? unit}` : from.credit ?? unit, url: from.url, image: a.key, ...(from.source ? { source: from.source, license: from.license } : {}) },
+    dropDate: from.dropDate ?? SET5_DROP,
+    ...(from.wave ? { wave: from.wave } : {}),
+  });
+  return statSync(path.join(PRINTS_DIR, `print_${n}.webp`)).size;
+}
+
+/**
+ * The content waves (docs/content/waves.md): pictures from other public-domain sources, as
+ * data/sources/<source>.json committed them (numbered in their own blocks, scripts/sources/ranges.ts).
+ * They print like the archive's (the group filing() picks) and carry their source and licence.
+ */
+function sourcesSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): number {
+  const dir = path.join(ROOT, "data", "sources");
+  if (!existsSync(dir)) return 0;
+  let bytes = 0;
+  // In number order across sources (the index derives ids from increasing numbers).
+  const all = readdirSync(dir).filter((x) => x.endsWith(".json")).flatMap((f) => JSON.parse(readFileSync(path.join(dir, f), "utf8")) as Selected[]).sort((a, b) => a.n - b.n);
+  {
+    for (const sel of all) {
+      const { group, category } = filing(sel);
+      // A maker line from a wiki can be long: its first name-like part.
+      const first = sel.maker ? sel.maker.split(/[;\n]|\s{2,}/)[0].slice(0, 80).trim() : "";
+      // Not a maker: a scanner, an uploader, "unknown".
+      const maker = first && !/\b(?:scan|scanned|unknown|anonymous|upload|nypl|biodiversity heritage|library|wikimedia|see below|author)\b/i.test(first) ? first : null;
+      bytes += archiveDraft(shirts, sigs, taken, sel.n, { ...sel, group, name: sel.name, maker, date: sel.date?.slice(0, 40) ?? null, record: sel.record }, {
+        unit: INSTITUTION[sel.source],
+        credit: SOURCE_LINE[sel.source],
+        url: sel.recordUrl,
+        source: SOURCE_LINE[sel.source],
+        license: licenseLine(sel.license),
+        wave: sel.wave,
+        dropDate: WAVE_DROP[sel.wave],
+        category,
+      });
+    }
   }
   return bytes;
 }
@@ -814,6 +861,8 @@ async function main() {
   bytes += fifthSet(shirts, sigs, takenTitles);
   bytes += archiveSet(shirts, sigs, takenTitles);
   bytes += seventhSet(shirts, sigs, takenTitles);
+  // After every earlier set: their titles and numbers come first (the waves' blocks start at 8001).
+  bytes += sourcesSet(shirts, sigs, takenTitles);
 
   // Retire the designs the content review took out (scripts/gen/retire):
   // everything above was generated in full, so the rest keep their ids,
@@ -902,6 +951,18 @@ async function main() {
     newPerCat.set(s.category, (newPerCat.get(s.category) ?? 0) + 1);
   }
   for (const { s, i } of thisWeek) if (!keep.has(i)) s.dropDate = LAST_WEEK;
+  // A content wave's drop (scripts/sources/waves.ts): the same rule, its best NEW_CAP (four per category) that week, the rest a week earlier.
+  for (const drop of new Set(Object.values(WAVE_DROP))) {
+    const week = shirts.map((s, i) => ({ s, i })).filter(({ s }) => s.wave && s.dropDate === drop);
+    const best = [...week].sort((a, b) => Number(isWeak(a.s)) - Number(isWeak(b.s)) || ranks[a.i] - ranks[b.i]);
+    const perCat = new Map<string, number>();
+    let kept = 0;
+    const earlier = new Date(Date.parse(`${drop}T00:00:00Z`) - 7 * DAY).toISOString().slice(0, 10);
+    for (const { s } of best) {
+      if (kept < NEW_CAP && (perCat.get(s.category) ?? 0) < 4 && !isWeak(s)) (kept++, perCat.set(s.category, (perCat.get(s.category) ?? 0) + 1));
+      else s.dropDate = earlier;
+    }
+  }
   const withFamily = shirts.map(({ base, source: _source, recordTitle: _r, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,

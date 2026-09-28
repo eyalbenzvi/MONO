@@ -27,7 +27,7 @@ async function main() {
     if (cmd === "candidates") {
       const c = await candidates(ADAPTERS[name], world, CAP).catch((e) => (console.log(`${name}: failed (${String(e).slice(0, 120)})`), null));
       if (c) console.log(`${name}: found ${c.found} · licensed ${c.licensed} · passed ${c.filtered} · candidates ${c.final}`);
-    } else if (cmd === "prep") console.log(name, await prep(name as SourceId, world.wave));
+    } else if (cmd === "prep") console.log(name, await prep(name as SourceId, world.wave, { limit: Number(process.env[`LIMIT_${name.toUpperCase()}`] ?? process.env.LIMIT ?? Infinity) }));
   }
 }
 main().catch((e) => (console.error(e), process.exit(1)));
