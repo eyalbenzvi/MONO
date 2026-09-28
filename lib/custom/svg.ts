@@ -1,0 +1,15 @@
+/**
+ * The whole print from a computed body: the 300 × 400 canvas, its ground,
+ * and the inks for the tee (white ink on black; on a white tee the inks swap),
+ * minified. The seventh set's wrapper in scripts/generateCatalog.ts, shared
+ * so a personalised print is byte for byte what the catalogue would write.
+ */
+import { minifySvg } from "./minify";
+
+export const W = 300;
+export const H = 400;
+
+export function wrap(body: string, baseColor: "black" | "white"): string {
+  const [ink, ground] = baseColor === "black" ? ["#FFFFFF", "#000000"] : ["#000000", "#FFFFFF"];
+  return minifySvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${ground}"/>${body.replace(/#FFFFFF/g, ink)}</svg>`);
+}
