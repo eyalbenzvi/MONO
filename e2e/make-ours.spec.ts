@@ -61,6 +61,10 @@ test("the designs a product is drawn like lead to it (Make your own →)", async
   for (const [variant, slug] of [
     ["type-data", "code"],
     ["terminal-data", "code"],
+    ["dial", "number"],
+    ["slide-rule", "number"],
+    ["facade", "house"],
+    ["brick-bond", "house"],
   ] as const) {
     const s = shirts.find((x) => x.variant === variant)!;
     await page.goto(`shop/${s.id}/`);
@@ -129,4 +133,58 @@ test("Your Taste: a friend's taste that came with the visit can be grown instead
   await expect.poll(() => new URL(page.url()).searchParams.get("make")).not.toBe(mine);
   await page.getByRole("button", { name: "Grow yours instead" }).tap();
   await expect.poll(() => new URL(page.url()).searchParams.get("make")).toBe(mine);
+});
+
+test("Your Number: a time takes the stopwatch (the face control appears only then); a label; into the bag; the link reopens it", async ({ page, browser }) => {
+  await page.goto("make/number/");
+  await hydrated(page);
+  await drawn(page);
+  await expect(page.getByRole("radiogroup", { name: "Face" })).toHaveCount(0);
+  await page.locator("#make-number").fill("3:41:07");
+  await expect(page.getByRole("radio", { name: "Stopwatch" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("#make-unit")).toHaveCount(0);
+  await page.locator("#make-label").fill("First marathon");
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "number", v: 1, p: { v: "3:41:07", u: "", l: "First marathon", face: "stopwatch" } })}$`));
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText("Your Number · First marathon")).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await expect(p2.locator("#make-number")).toHaveValue("3:41:07");
+  await expect(p2.getByRole("radio", { name: "Stopwatch" })).toHaveAttribute("aria-checked", "true");
+  await other.close();
+});
+
+test("Your Number: a word in the label goes through the lexicon", async ({ page }) => {
+  await page.goto("make/number/");
+  await hydrated(page);
+  await page.locator("#make-label").fill("Nike run");
+  await expect(page.getByText("Those words name a brand.")).toBeVisible();
+});
+
+test("Your House: floors by keyboard, a dome, the door to the left, a number; into the bag; the link reopens it", async ({ page, browser }) => {
+  await page.goto("make/house/");
+  await hydrated(page);
+  await drawn(page);
+  const floors = page.getByRole("spinbutton", { name: "Floors" });
+  await floors.focus();
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("ArrowUp");
+  await expect(floors).toHaveAttribute("aria-valuenow", "5");
+  await page.getByRole("radio", { name: "Dome" }).tap();
+  await page.getByRole("radio", { name: "Left" }).tap();
+  await page.locator("#make-house-no").fill("221");
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "house", v: 1, p: { fl: 5, wn: 3, r: "dome", dr: "l", no: 221 } })}$`));
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText("Your House · No. 221")).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await expect(p2.getByRole("spinbutton", { name: "Floors" })).toHaveAttribute("aria-valuenow", "5");
+  await expect(p2.getByRole("radio", { name: "Dome" })).toHaveAttribute("aria-checked", "true");
+  await other.close();
 });

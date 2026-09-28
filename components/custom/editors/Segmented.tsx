@@ -39,3 +39,41 @@ export function Switch({ label, checked, onChange }: { label: string; checked: b
     </label>
   );
 }
+
+/** A whole number in a small range, as − value + (a spinbutton: arrow keys step, Home and End jump). */
+export function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
+  const set = (v: number) => onChange(Math.min(max, Math.max(min, v)));
+  const step = "grid h-10 w-10 place-items-center rounded-full text-lg text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
+  return (
+    <div>
+      <p className="mb-1 text-xs font-medium text-neutral-400" id={`step-${label}`}>
+        {label}
+      </p>
+      <div className="flex items-center gap-2">
+        <button type="button" tabIndex={-1} aria-hidden onClick={() => set(value - 1)} disabled={value <= min} className={step}>
+          −
+        </button>
+        <div
+          role="spinbutton"
+          tabIndex={0}
+          aria-labelledby={`step-${label}`}
+          aria-valuenow={value}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          onKeyDown={(e) => {
+            const to = { ArrowUp: value + 1, ArrowRight: value + 1, ArrowDown: value - 1, ArrowLeft: value - 1, Home: min, End: max }[e.key];
+            if (to === undefined) return;
+            e.preventDefault();
+            set(to);
+          }}
+          className="w-8 rounded text-center font-mono text-base tabular-nums text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          {value}
+        </div>
+        <button type="button" tabIndex={-1} aria-hidden onClick={() => set(value + 1)} disabled={value >= max} className={step}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -19,6 +19,8 @@ const OWN: Partial<Record<TemplateId, () => Promise<{ render: Renderer }>>> = {
   taste: () => import("./templates/taste"),
   code: () => import("./templates/code"),
   line: () => import("./templates/line"),
+  house: () => import("./templates/house"),
+  number: () => import("./templates/number"),
 };
 
 export async function loadRenderer(t: TemplateId): Promise<Renderer> {

@@ -42,6 +42,8 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   taste: lazy(() => import("@/components/custom/editors/TasteEditor")),
   code: lazy(() => import("@/components/custom/editors/CodeEditor")),
   line: lazy(() => import("@/components/custom/editors/LineEditor")),
+  house: lazy(() => import("@/components/custom/editors/HouseEditor")),
+  number: lazy(() => import("@/components/custom/editors/NumberEditor")),
 };
 
 interface Shown {
