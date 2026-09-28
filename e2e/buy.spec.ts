@@ -75,3 +75,19 @@ test("personal area: with a bag, Checkout comes first (to the delivery form); sa
   await page.waitForURL(/\/cart\/$/);
   await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
 });
+
+test("personal area: a long remembered size (Kids 3–4) keeps each add button inside its tile", async ({ page }) => {
+  await seed(page, {}, [{ id: "mono-0004", size: "K4", color: "black", qty: 1 }]);
+  await page.addInitScript(() => {
+    const c = JSON.parse(localStorage.getItem("mono-cart") ?? "{}");
+    if (c.state) (c.state.preferredSize = "K4"), localStorage.setItem("mono-cart", JSON.stringify(c));
+  });
+  await page.goto("me/");
+  await hydrated(page);
+  const tiles = page.getByRole("list", { name: "Saved" }).locator("li");
+  await expect(tiles.first().getByRole("button", { name: /size Kids 3–4$/ })).toBeVisible();
+  for (const li of await tiles.all()) {
+    const [tile, button] = await Promise.all([li.boundingBox(), li.getByRole("button").boundingBox()]);
+    expect(button!.x + button!.width).toBeLessThanOrEqual(tile!.x + tile!.width + 0.5);
+  }
+});

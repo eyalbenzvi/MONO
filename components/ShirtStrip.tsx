@@ -67,7 +67,8 @@ export function ShirtStrip({
               <TeeMockup shirt={s} color={color} sizes={SIZES.thumb} className="w-full" />
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
-            {quickAdd && <QuickAdd shirt={s} color={color} source={source} />}
+            {/* The tile is narrow: the add button keeps to its width (the size shortened: "+ 3–4"). */}
+            {quickAdd && <QuickAdd shirt={s} color={color} source={source} compact fill />}
           </li>
         );
       })}
