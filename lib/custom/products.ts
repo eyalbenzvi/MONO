@@ -10,7 +10,7 @@ import type { PrintHints } from "./printCheck";
 import type { CustomSpec, TemplateId } from "./spec";
 
 export interface MadeProduct {
-  slug: "taste" | "code" | "line" | "voice" | "house" | "number" | "sky" | "moon" | "year" | "planets";
+  slug: "taste" | "code" | "ascii" | "line" | "voice" | "house" | "number" | "place" | "sky" | "moon" | "year" | "planets";
   id: string;
   template: TemplateId;
   name: string;
@@ -64,6 +64,19 @@ export const MADE: MadeProduct[] = [
     hints: { dense: "Try another code.", faint: "Try a longer name, or another code." },
   },
   {
+    slug: "ascii",
+    id: "make-ascii",
+    template: "ascii",
+    name: "Your ASCII",
+    line: "Your words as big letters, typed out of characters.",
+    from: "From your words",
+    base: "ascii-shade",
+    bases: ["ascii-*"],
+    wordsHint: "For Maya",
+    example: { t: "ascii", v: 1, p: { x: ["NOA"], f: "self", s: 1 } },
+    hints: { dense: "Try fewer letters.", faint: "Try a longer word." },
+  },
+  {
     slug: "line",
     id: "make-line",
     template: "line",
@@ -115,6 +128,20 @@ export const MADE: MadeProduct[] = [
     bases: ["dial", "slide-rule"],
     example: { t: "number", v: 1, p: { v: 3.4, u: "kg", l: "Birth weight", face: "dial" } },
     hints: { dense: "Try a shorter label.", faint: "Try a shorter label." },
+  },
+  {
+    slug: "place",
+    id: "make-place",
+    template: "place",
+    name: "Your Place",
+    line: "Where you were when it happened, at the centre of the globe.",
+    from: "From where you were",
+    base: "daylight",
+    bases: ["daylight", "analemma"],
+    wordsHint: "Where I heard the news",
+    // Tel Aviv (GeoNames 293397), a spring day.
+    example: { t: "place", v: 1, p: { la: 32.08, lo: 34.78, c: 293397, d: "1991-03-14" } },
+    hints: { dense: "Try shorter words.", faint: "Try shorter words." },
   },
   {
     slug: "sky",

@@ -7,7 +7,7 @@
  */
 import type { ShirtProduct } from "@/types/shirt";
 
-export type TemplateId = "sky" | "moon" | "night" | "planets" | "taste" | "code" | "line" | "voice" | "house" | "number";
+export type TemplateId = "sky" | "moon" | "night" | "planets" | "taste" | "code" | "line" | "voice" | "house" | "number" | "place" | "ascii";
 /** The customer's own words, the print's first line (optional, WORDS_MAX characters of the print font's script). */
 interface Words {
   w?: string;
@@ -76,6 +76,36 @@ export interface NumberParams {
   l?: string;
   face: Face;
 }
+/**
+ * Your Place: where you were (latitude and longitude, two decimals: about a
+ * kilometre, never finer), when (a day, optional), the city it's named by
+ * (optional, data/cities) and the words.
+ */
+export interface PlaceParams extends Words {
+  la: number;
+  lo: number;
+  d?: string;
+  c?: number;
+}
+export const ASCII_FILLS = ["self", "#", "@", "%", "8", "$", "phrase"] as const;
+export type AsciiFill = (typeof ASCII_FILLS)[number];
+/** Your ASCII: one or two lines of big letters (the pixel font's characters), what they're typed in, a drop shadow. */
+export interface AsciiParams extends Words {
+  x: string[];
+  f: AsciiFill;
+  /** The phrase the letters are typed in (f: "phrase"). */
+  p?: string;
+  s?: 1;
+}
+/** Your ASCII: up to this many characters a line, two lines. */
+export const ASCII_MAX = 8;
+/** What the big letters can be: the pixel font's characters (lib/custom/draw/pixelFont). */
+export const ASCII_CHARS = /^[A-Z0-9?!.:\-+/ ]$/;
+/** What a fill phrase can be typed in: printable ASCII, the monospace grid's own characters. */
+export const ASCII_PHRASE = /^[\x21-\x7E ]{1,24}$/;
+/** The first character the pixel font can't draw, or null. */
+export const asciiProblem = (line: string) => [...line.toUpperCase()].find((ch) => !ASCII_CHARS.test(ch)) ?? null;
+
 export type CustomSpec =
   | { t: "sky"; v: 1; p: SkyParams }
   | { t: "moon"; v: 1; p: MoonParams }
@@ -86,7 +116,9 @@ export type CustomSpec =
   | { t: "line"; v: 1; p: LineParams }
   | { t: "voice"; v: 1; p: VoiceParams }
   | { t: "house"; v: 1; p: HouseParams }
-  | { t: "number"; v: 1; p: NumberParams };
+  | { t: "number"; v: 1; p: NumberParams }
+  | { t: "place"; v: 1; p: PlaceParams }
+  | { t: "ascii"; v: 1; p: AsciiParams };
 
 /** A city of the place list (data/cities). */
 export interface City {
@@ -116,6 +148,8 @@ const TEMPLATES: Record<string, TemplateId> = {
   "make-voice": "voice",
   "make-house": "house",
   "make-number": "number",
+  "make-place": "place",
+  "make-ascii": "ascii",
 };
 /** The template a product is made with (by its variant), or null. */
 export const templateFor = (shirt: Pick<ShirtProduct, "variant">): TemplateId | null => TEMPLATES[shirt.variant] ?? null;
@@ -232,6 +266,22 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
       l = { l: c };
     }
     return { t: "number", v: 1, p: { v: p.v as number | string, u: p.u, ...l, face: p.face } };
+  }
+  if (spec.t === "place") {
+    if (!num(p.la, -90, 90, 2) || !num(p.lo, -180, 180, 2)) return null;
+    if (p.d !== undefined && !parseDate(p.d)) return null;
+    if (p.c !== undefined && (!int(p.c, 1, 0xffffffff) || (cityById && !cityById(p.c)))) return null;
+    return { t: "place", v: 1, p: { la: p.la as number, lo: p.lo as number, ...(p.d !== undefined ? { d: p.d as string } : {}), ...(p.c !== undefined ? { c: p.c as number } : {}), ...words } };
+  }
+  if (spec.t === "ascii") {
+    if (!Array.isArray(p.x) || p.x.length < 1 || p.x.length > 2) return null;
+    const lines = p.x.map((l) => (typeof l === "string" ? l.toUpperCase().trim() : ""));
+    if (lines.some((l) => !l || l.length > ASCII_MAX || asciiProblem(l)) || !lines.some((l) => /[A-Z0-9]/.test(l))) return null;
+    if (!(ASCII_FILLS as readonly unknown[]).includes(p.f)) return null;
+    if ((p.f === "phrase") !== (p.p !== undefined)) return null;
+    if (p.p !== undefined && (typeof p.p !== "string" || !ASCII_PHRASE.test(p.p) || !p.p.trim())) return null;
+    if (p.s !== undefined && p.s !== 1) return null;
+    return { t: "ascii", v: 1, p: { x: lines, f: p.f as AsciiFill, ...(p.p !== undefined ? { p: p.p as string } : {}), ...(p.s === 1 ? { s: 1 as const } : {}), ...words } };
   }
   return null;
 }
@@ -385,6 +435,8 @@ export const PRODUCT_NAMES: Record<TemplateId, string> = {
   voice: "Your Voice",
   house: "Your House",
   number: "Your Number",
+  place: "Your Place",
+  ascii: "Your ASCII",
 };
 
 /** What a product that isn't dated puts after its name in the bag ("Your Name · NOA", "Your Voice · 196 Hz"). */
@@ -400,6 +452,10 @@ function customDetail(spec: CustomSpec): string {
       return spec.p.no !== undefined ? `No. ${spec.p.no}` : `${spec.p.fl} ${spec.p.fl === 1 ? "floor" : "floors"}`;
     case "number":
       return spec.p.l ?? [spec.p.v, spec.p.u].join(" ").trim();
+    case "place":
+      return spec.p.w ?? coords(spec.p.la, spec.p.lo);
+    case "ascii":
+      return spec.p.x.join(" ");
     default:
       return customDay(spec);
   }
@@ -407,3 +463,14 @@ function customDetail(spec: CustomSpec): string {
 
 /** A made-for-you tee's title, in the bag and the confirmation: the product and its day (or year). */
 export const customTitle = (spec: CustomSpec) => [PRODUCT_NAMES[spec.t], customDetail(spec)].filter(Boolean).join(" · ");
+
+/** Degrees and minutes, hemispheres named: "32°05′N 34°47′E". */
+export function coords(la: number, lo: number): string {
+  const dm = (v: number, pos: string, neg: string) => {
+    const a = Math.abs(v);
+    let d = Math.floor(a), m = Math.round((a - d) * 60);
+    if (m === 60) (d += 1), (m = 0);
+    return `${d}°${String(m).padStart(2, "0")}′${v >= 0 ? pos : neg}`;
+  };
+  return `${dm(la, "N", "S")} ${dm(lo, "E", "W")}`;
+}

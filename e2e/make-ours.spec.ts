@@ -66,6 +66,8 @@ test("the designs a product is drawn like lead to it (Make your own →)", async
     ["facade", "house"],
     ["brick-bond", "house"],
     ["harmonograph", "voice"],
+    ["ascii-shade", "ascii"],
+    ["daylight", "place"],
     ["lissajous", "voice"],
   ] as const) {
     const s = shirts.find((x) => x.variant === variant)!;
@@ -264,5 +266,63 @@ test("Your Voice: the microphone refused leaves the example and a way to Your Li
   await p2.waitForTimeout(1200);
   await p2.keyboard.up(" ");
   await expect(p2.getByText("Didn’t catch a note. Hum for three seconds.")).toBeVisible();
+  await ctx.close();
+});
+
+test("Your ASCII: big letters on two lines, typed in a phrase, no shadow; a letter the pixel font lacks is refused; bag; the link reopens it", async ({ page, browser }) => {
+  await page.goto("make/ascii/");
+  await hydrated(page);
+  await drawn(page);
+  await page.locator("#make-big").fill("Noé");
+  await expect(page.getByText('The pixel font has no "é". Try "E".')).toBeVisible();
+  await page.locator("#make-big").fill("happy birthday");
+  await page.getByRole("radio", { name: "A phrase" }).tap();
+  await page.locator("#make-phrase").fill("from tel aviv");
+  await page.getByText("Drop shadow", { exact: true }).tap();
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "ascii", v: 1, p: { x: ["HAPPY", "BIRTHDAY"], f: "phrase", p: "from tel aviv" } })}$`));
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText("Your ASCII · HAPPY BIRTHDAY")).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await expect(p2.locator("#make-phrase")).toHaveValue("from tel aviv");
+  await expect(p2.getByRole("switch", { name: "Drop shadow" })).not.toBeChecked();
+  await other.close();
+});
+
+test("Your Place: exact coordinates with their hemispheres, a day, words; bag; the link reopens it", async ({ page, browser }) => {
+  await page.goto("make/place/");
+  await hydrated(page);
+  await drawn(page);
+  await page.getByRole("radio", { name: "Exact place" }).tap();
+  await page.locator("#make-lat").fill("40.7128 N");
+  await page.locator("#make-lon").fill("74.0060 W");
+  await expect(page.getByText("40°43′N 74°01′W")).toBeVisible();
+  await page.locator("#make-date").fill("2001-09-11");
+  await page.locator("#make-words").fill("Where I was");
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "place", v: 1, p: { la: 40.71, lo: -74.01, d: "2001-09-11", w: "Where I was" } })}$`));
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText("Your Place · Where I was")).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await expect(p2.getByRole("radio", { name: "Exact place" })).toHaveAttribute("aria-checked", "true");
+  await expect(p2.locator("#make-lat")).toHaveValue("40.71");
+  await other.close();
+});
+
+test("Your Place: 'Where I am now' fills the place from this device, rounded to about a kilometre", async ({ browser }) => {
+  const ctx = await browser.newContext({ geolocation: { latitude: 51.507351, longitude: -0.127758 }, permissions: ["geolocation"] });
+  const page = await ctx.newPage();
+  await page.goto("make/place/");
+  await hydrated(page);
+  await page.getByRole("radio", { name: "Exact place" }).tap();
+  await page.locator("[data-locate]").tap();
+  await expect(page.locator("#make-lat")).toHaveValue("51.51");
+  await expect(page.locator("#make-lon")).toHaveValue("-0.13");
   await ctx.close();
 });

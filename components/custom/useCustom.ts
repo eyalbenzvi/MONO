@@ -23,12 +23,17 @@ export interface DrawnPrint {
 
 export async function drawPrint(spec: CustomSpec, color: BaseColor): Promise<DrawnPrint> {
   const m = await loadRender();
-  const data: { sky?: Awaited<ReturnType<Render["loadSky"]>>; city?: City } = {};
+  const data: { sky?: Awaited<ReturnType<Render["loadSky"]>>; city?: City; places?: City[] } = {};
   if (spec.t === "sky") {
     const [sky, places] = await Promise.all([m.loadSky(), m.loadCities()]);
     const city = places.byId(spec.p.c);
     if (!city) throw new Error("unknown city");
     Object.assign(data, { sky, city });
+  }
+  // Your Place draws the world's cities (and is named by one).
+  if (spec.t === "place") {
+    const places = await m.loadCities();
+    Object.assign(data, { places: places.list, city: spec.p.c !== undefined ? places.byId(spec.p.c) : undefined });
   }
   const render = await m.loadRenderer(spec.t);
   return { spec, color, svg: render(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };

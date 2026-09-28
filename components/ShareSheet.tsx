@@ -99,6 +99,8 @@ function makeNote(make: string) {
     voice: "the numbers from your voice (never the sound)",
     house: "your house's floors, windows and number",
     number: "your number and its label",
+    place: "the place (to about a kilometre) and the day",
+    ascii: "your letters",
   };
   const what = (spec && WHAT[spec.t]) ?? "the date";
   return `This link includes ${what}${spec && "w" in spec.p && spec.p.w ? " and your words" : ""}`;

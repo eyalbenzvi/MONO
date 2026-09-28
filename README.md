@@ -150,16 +150,18 @@ State read back from `localStorage` goes through a guard (`sanitizeTaste` / `san
 
 ## Make: from ours, from yours (`/make/`)
 
-One ink, for one person, in two tracks. **From ours**: ten of our designs, each adapted from one thing of yours and drawn in the browser with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). **From yours**: your own picture, drawing or words, converted to one ink on your device (`lib/upload`). A **Make** tab in the header, the shop's first card ("Make one yours →") and a "Make your own →" link on the designs they're drawn like lead to them.
+One ink, for one person, in two tracks. **From ours**: twelve of our designs, each adapted from one thing of yours and drawn in the browser with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). **From yours**: your own picture, drawing or words, converted to one ink on your device (`lib/upload`). A **Make** tab in the header, the shop's first card ("Make one yours →") and a "Make your own →" link on the designs they're drawn like lead to them.
 
 | Product | Page | From | Drawn like |
 | --- | --- | --- | --- |
 | Your Taste | `/make/taste/` | your swipes (17 axes, `q`) | Phyllotaxis, L-systems: a plant grown from your taste |
 | Your Name | `/make/code/` | your name, in a code (card, tape, Morse, braille, binary) | the type and terminal data designs |
+| Your ASCII | `/make/ascii/` | your words (two lines of 8), typed in their own letters, a character or a phrase | the ASCII designs: the pixel font, a glow of lighter characters, a terminal frame |
 | Your Line | `/make/line/` | a line you draw (RDP-simplified, delta-encoded) | Rosettes, guilloche |
 | Your Voice | `/make/voice/` | three seconds of your voice (pitch, harmonics, fade, onset; never the sound) | Harmonographs, Lissajous |
 | Your House | `/make/house/` | floors, windows, roof, door, number | Facades, brick bonds, the orders: an architect's elevation |
 | Your Number | `/make/number/` | a number or a time, its unit and label | Dials, slide rules |
+| Your Place | `/make/place/` | where you were (a city, or latitude and longitude to two decimals, about a kilometre; or this device's location) and the day | Daylight: the globe turned to the place, the world's cities as its only land, that year's daylight at that latitude with the day bold |
 | Your Night Sky | `/make/sky/` | a night, optional time, the place | the Night Sky designs |
 | Your Moon | `/make/moon/` | a night, north or south | that night's moon in a hexagonal dot screen |
 | Your Planets | `/make/planets/` | a day (to 2050) | the Planets designs |

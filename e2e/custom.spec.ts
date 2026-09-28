@@ -14,8 +14,8 @@ test("Make is in plain sight: a header tab, the shop's first card, and a way in 
   await expect(page.getByRole("heading", { name: "From ours" })).toBeVisible();
   // Each card says what it is made from.
   const lines = await page.locator('[data-from="ours"] li p').allTextContents();
-  expect(lines).toEqual(["From your swipes", "From your name", "From a line you draw", "From your voice", "From your house", "From a number", "From a night", "From a moon", "From a day", "From a year"]);
-  const names = ["Your Taste", "Your Name", "Your Line", "Your Voice", "Your House", "Your Number", "Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"];
+  expect(lines).toEqual(["From your swipes", "From your name", "From your words", "From a line you draw", "From your voice", "From your house", "From a number", "From where you were", "From a night", "From a moon", "From a day", "From a year"]);
+  const names = ["Your Taste", "Your Name", "Your ASCII", "Your Line", "Your Voice", "Your House", "Your Number", "Your Place", "Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"];
   expect((await page.locator('[data-from="ours"] li h3').allTextContents()).map((t) => t.trim())).toEqual(names);
   // From yours: one card, to the upload page.
   await expect(page.getByRole("heading", { name: "From yours" })).toBeVisible();
