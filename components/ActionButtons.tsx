@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { BuySheet } from "@/components/BuySheet";
 import { Icon } from "@/components/Icon";
-import { getShirtById, productHref } from "@/lib/catalog";
+import { getShirtById } from "@/lib/catalog";
+import type { ShirtProduct } from "@/types/shirt";
 import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated } from "@/store/useUiStore";
-
-const MotionLink = motion.create(Link);
 
 export function ActionButtons() {
   const requestSwipe = useTasteStore((s) => s.requestSwipe);
@@ -16,11 +16,13 @@ export function ActionButtons() {
   // The deck is known only after the stored taste loads: no link in the static HTML.
   const hydrated = useHydrated();
   const top = hydrated && topId ? getShirtById(topId) : undefined;
+  // The tee being bought (the card stays where it is underneath).
+  const [buying, setBuying] = useState<ShirtProduct | null>(null);
 
   return (
     <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
-      {/* Pass and like, and between them a small Buy: straight to the tee's page to order it
-          (undo: Z, or ⋯ on the card's details). Sideways phones: one column beside the card. */}
+      {/* Pass and like, and between them a small Buy: colour, size and "Buy now" in a sheet,
+          without leaving the deck (undo: Z, or ⋯ on the card's details). Sideways phones: one column beside the card. */}
       <div className="mx-auto flex max-w-[420px] items-center justify-center sideways:flex-col sideways:gap-3">
         <div className="flex items-center justify-center gap-6 max-[339px]:gap-2 sideways:flex-col sideways:gap-3">
           <RoundButton
@@ -32,9 +34,11 @@ export function ActionButtons() {
             <Icon name="x" className="h-7 w-7" strokeWidth={2.75} />
           </RoundButton>
           {top ? (
-            <MotionLink
-              href={productHref(top.id)}
+            <motion.button
+              type="button"
+              onClick={() => setBuying(top)}
               aria-label={`Buy ${top.title}`}
+              aria-haspopup="dialog"
               title="Buy"
               whileTap={{ scale: 0.86 }}
               whileHover={{ scale: 1.05 }}
@@ -42,7 +46,7 @@ export function ActionButtons() {
               className="flex h-12 w-12 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/15 transition-colors hover:bg-white/5 hover:text-white max-[339px]:h-10 max-[339px]:w-10"
             >
               <Icon name="shopping-bag" className="h-5 w-5" strokeWidth={2} />
-            </MotionLink>
+            </motion.button>
           ) : (
             <span aria-hidden className="h-12 w-12 max-[339px]:h-10 max-[339px]:w-10" />
           )}
@@ -56,6 +60,7 @@ export function ActionButtons() {
           </RoundButton>
         </div>
       </div>
+      <BuySheet shirt={buying} onClose={() => setBuying(null)} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { NeedDots } from "@/components/NeedDots";
 import { getShirtById } from "@/lib/catalog";
+import { cartTotals } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import { topPicks } from "@/lib/match";
 import { shareTaste } from "@/lib/shareTaste";
@@ -30,6 +31,7 @@ export function MeView() {
   const seen = useTasteStore((s) => s.seen.length);
   const cartCount = useCartCount();
   const lastOrder = useCartStore((s) => s.lastOrder);
+  const cart = useCartStore((s) => s.cart);
   const preferred = useCartStore((s) => s.preferredSize);
   const [sharing, setSharing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -73,6 +75,12 @@ export function MeView() {
           ))}
         </dl>
 
+        {/* A bag with something in it: checkout is the first thing here, one tap to the delivery form. */}
+        {cartCount > 0 && (
+          <Link href="/cart/" onClick={() => useUiStore.getState().requestCheckout()} className={CTA}>
+            Checkout · {cartCount} {cartCount === 1 ? "tee" : "tees"} · {formatPrice(cartTotals(cart).total)}
+          </Link>
+        )}
         {calibrated ? (
           <button
             type="button"
@@ -85,19 +93,19 @@ export function MeView() {
                 setSharing(false);
               }
             }}
-            className={CTA}
+            className={cartCount > 0 ? CTA_QUIET : CTA}
           >
             {sharing ? "Making card…" : "Share my taste"}
           </button>
         ) : (
-          <Link href="/" className={CTA}>
+          <Link href="/" className={cartCount > 0 ? CTA_QUIET : CTA}>
             {phase === "more" ? "Keep swiping" : "Start swiping"}
           </Link>
         )}
 
         {picks.length > 0 && (
           <Section title="Picked for you" action={<SectionLink href="/shop/" label="All" aria="All tees, ranked for you" />}>
-            <ShirtStrip shirts={picks} label="Picked for you" />
+            <ShirtStrip shirts={picks} label="Picked for you" quickAdd source="me" />
           </Section>
         )}
 
@@ -113,7 +121,7 @@ export function MeView() {
               ) : undefined
             }
           >
-            {saved.length ? <ShirtStrip shirts={saved.slice(0, 12)} label="Saved" /> : <p className="text-sm text-neutral-500">Nothing saved yet.</p>}
+            {saved.length ? <ShirtStrip shirts={saved.slice(0, 12)} label="Saved" quickAdd source="saved" /> : <p className="text-sm text-neutral-500">Nothing saved yet.</p>}
           </Section>
         )}
 
@@ -162,6 +170,9 @@ const ACTION = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-
 const QUIET = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500 underline-offset-4 hover:text-white hover:underline";
 const CTA =
   "mt-8 flex h-14 w-full items-center justify-center rounded-full bg-white text-sm font-black uppercase tracking-[0.2em] text-black disabled:opacity-60";
+/** The same action, second to Checkout when the bag holds something. */
+const CTA_QUIET =
+  "mt-3 flex h-12 w-full items-center justify-center rounded-full text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 ring-1 ring-white/20 hover:text-white disabled:opacity-60";
 
 function SectionLink({ href, label, aria }: { href: string; label: string; aria: string }) {
   return (

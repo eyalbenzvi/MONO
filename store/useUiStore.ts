@@ -71,6 +71,9 @@ interface UiState {
   share: { id: string; color: BaseColor; make?: string } | null;
   /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
+  /** "Buy now" / the confirmation's Checkout: the bag opens on the delivery form (once). */
+  checkoutRequested: boolean;
+  requestCheckout: (on?: boolean) => void;
   /** A friend's taste from a shared /?taste= link (this session), to compare with. */
   friendTaste: UserProfileVector | null;
 
@@ -150,6 +153,8 @@ export const useUiStore = create<UiState>()((set) => ({
   productOrigin: null,
   share: null,
   added: null,
+  checkoutRequested: false,
+  requestCheckout: (on = true) => set({ checkoutRequested: on }),
   friendTaste: null,
 
   setDebug: (on) => {

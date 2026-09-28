@@ -42,7 +42,7 @@ test.describe("R17: ← Shop after moving between products", () => {
     await page.locator(".sticky.bottom-0").getByRole("button", { name: /Add/ }).tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toBeVisible();
-    await sheet.getByRole("link", { name: "View bag" }).tap();
+    await sheet.getByRole("link", { name: "Checkout" }).tap();
     await page.waitForURL(/\/cart\/$/);
     await page.goBack();
     await page.waitForURL(new RegExp(`/shop/${a}/$`));
@@ -94,8 +94,6 @@ test.describe("R25–R27, R29: bag, checkout and Saved", () => {
       ["Postcode / ZIP", "6100001"],
     ])
       await page.getByLabel(label).fill(value);
-    await page.getByRole("button", { name: /^Continue to payment/ }).tap();
-    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
     await page.getByRole("button", { name: /Place demo order/ }).tap();
     await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
     const rows = page.locator("main ul li");

@@ -17,9 +17,10 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   await page.waitForURL(/\/shop\/mono-\d+\/$/);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
-  await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "View bag" }).tap();
+  // The confirmation's Checkout goes straight to the delivery form.
+  await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
   await page.waitForURL(/\/cart\/$/);
-  await page.getByRole("button", { name: /^Checkout/ }).tap();
+  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
   for (const [label, value] of [
     ["Full name", "Ada Lovelace"],
     ["Email", "ada@example.com"],
@@ -28,8 +29,6 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
     ["Postcode / ZIP", "6100001"],
   ])
     await page.getByLabel(label).fill(value);
-  await page.getByRole("button", { name: /^Continue to payment/ }).tap();
-  await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
   await page.getByRole("button", { name: /Place demo order/ }).tap();
   await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
 

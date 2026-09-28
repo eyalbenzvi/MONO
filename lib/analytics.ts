@@ -68,7 +68,7 @@ export function track(event: AnalyticsEvent, props: AnalyticsProps = {}) {
 /* ------------------------------------------------------------------ */
 
 /** Where an add to the bag happened. */
-export type AddSource = "product" | "grid" | "minibag" | "cart_xsell" | "empty_bag" | "saved" | "confirm" | "discover_card" | "shared_list" | "liked";
+export type AddSource = "product" | "grid" | "minibag" | "cart_xsell" | "empty_bag" | "saved" | "confirm" | "discover_card" | "shared_list" | "me";
 
 export interface EcomItem {
   item_id: string;

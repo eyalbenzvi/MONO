@@ -61,12 +61,16 @@ describe("ProductCard", () => {
 });
 
 describe("MiniBag", () => {
-  it("confirms an add in one row — 'Added · M' and View bag, no other buttons", () => {
+  it("confirms an add in one row — 'Added · M' and Checkout (to the delivery form), no other buttons", () => {
     render(<MiniBag />);
     act(() => void useCartStore.getState().addToCart(shirt.id, "M", "black", 1, { source: "grid" }));
     const region = screen.getByRole("region", { name: "Added to bag" });
     expect(region.textContent).toContain("Added · M");
-    expect(screen.getByRole("link", { name: "View bag" }).getAttribute("href")).toBe("/cart/");
+    const checkout = screen.getByRole("link", { name: "Checkout" });
+    expect(checkout.getAttribute("href")).toBe("/cart/");
+    act(() => checkout.click());
+    expect(useUiStore.getState().checkoutRequested).toBe(true);
+    useUiStore.getState().requestCheckout(false);
     expect(region.querySelectorAll("button")).toHaveLength(0);
   });
 

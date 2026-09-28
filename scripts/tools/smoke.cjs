@@ -104,9 +104,6 @@ const ok = (cond, msg) => {
       const f = p.getByLabel(new RegExp(`^${label}`, "i")).first();
       if ((await f.count()) && (await f.evaluate((el) => el.tagName !== "SELECT"))) await f.fill(value);
     }
-    await p.getByRole("button", { name: /continue to payment/i }).first().tap();
-    await p.waitForTimeout(400);
-    ok(await p.getByRole("heading", { name: /payment/i }).first().isVisible(), "payment step shows");
     await p.getByRole("button", { name: /place .*order/i }).first().tap();
     await p.waitForTimeout(800);
     ok(await p.getByRole("heading", { name: /order placed|thank/i }).first().isVisible(), "checkout completes");

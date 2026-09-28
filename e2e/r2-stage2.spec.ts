@@ -140,7 +140,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(card.getByText(/\$\d/)).toHaveCount(0);
   });
 
-  test("R13: every add confirms in one row (Added · M, View bag) — nothing else to press", async ({ page }) => {
+  test("R13: every add confirms in one row (Added · M, Checkout) — nothing else to press", async ({ page }) => {
     await seed(page);
     await page.goto(`shop/${W1}/`);
     await hydrated(page);
@@ -148,7 +148,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toContainText("Added · M");
-    await expect(sheet.getByRole("link", { name: "View bag" })).toBeVisible();
+    await expect(sheet.getByRole("link", { name: "Checkout" })).toBeVisible();
     await expect(sheet.getByRole("button")).toHaveCount(0);
     await expect(page.getByRole("link", { name: /^Bag \(1\)/ })).toBeVisible();
   });
@@ -293,8 +293,6 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
       ["Postcode / ZIP", "6100001"],
     ])
       await page.getByLabel(label).fill(value);
-    await page.getByRole("button", { name: /^Continue to payment/ }).tap();
-    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
     await page.getByRole("button", { name: /Place demo order/ }).tap();
     await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
     await expect(page.locator('input[type="email"]')).toHaveCount(0);

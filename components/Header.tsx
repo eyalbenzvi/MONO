@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { MonoLogo } from "@/components/MonoLogo";
 import { useCartCount } from "@/store/cartStore";
-import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 
 const TABS = [
@@ -22,7 +21,6 @@ export function Header() {
   const activeTab = TABS.findIndex((t) => t.match(pathname));
   const hydrated = useUiStore((s) => s.hydrated);
   const cartCount = useCartCount();
-  const likedCount = useTasteStore((s) => s.likedIds.length);
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
   const debug = useUiStore((s) => s.debug);
@@ -63,7 +61,7 @@ export function Header() {
     // showing never changes the layout, so nothing under the finger jumps.
     <motion.header
       ref={ref}
-      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)] max-[463px]:px-3"
+      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)] max-[339px]:px-3"
       initial={false}
       animate={{ y: hidden ? "-100%" : "0%" }}
       transition={{ duration: 0.2, ease: "easeOut" }}
@@ -71,11 +69,11 @@ export function Header() {
       onFocusCapture={() => hidden && setHeaderHidden(false)}
     >
       {/* Narrow phones: everything must stay on screen (the bag above all).
-          Below 464 px the tabs and icons tighten, below 380 the logo gives
+          Below 400 px the tabs and icons tighten, below 340 the logo gives
           way. The Daily 5 streak lives in "Your taste" only. */}
       <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
         {/* The logo tells the brand story (Discover is the home tab). */}
-        <Link href="/about/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[379px]:hidden" aria-label="About MONO">
+        <Link href="/about/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="About MONO">
           <MonoLogo size="sm" />
         </Link>
 
@@ -84,7 +82,7 @@ export function Header() {
             and hydration never patches class names — the active tab's text
             would stay grey on the white pill. */}
         <nav key={mounted ? "client" : "server"} aria-label="Sections" className="justify-self-center">
-          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[463px]:w-48 max-[339px]:w-44">
+          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-52 max-[339px]:w-44">
             {/* One pill, always rendered, moved under the active tab: the
                 markup never depends on the URL, so a page served at another
                 address (404.html) still hydrates cleanly. */}
@@ -102,7 +100,7 @@ export function Header() {
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={`relative z-10 flex h-9 items-center justify-center rounded-full text-sm font-semibold transition-colors max-[463px]:text-xs max-[339px]:text-[11px] ${
+                  className={`relative z-10 flex h-9 items-center justify-center rounded-full text-sm font-semibold transition-colors max-[399px]:text-[13px] max-[339px]:text-xs ${
                     active ? "text-black" : "text-neutral-400 hover:text-white"
                   }`}
                 >
@@ -113,7 +111,7 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 justify-self-end max-[463px]:gap-1">
+        <div className="flex shrink-0 items-center gap-2 justify-self-end max-[399px]:gap-2.5">
           {/* Minimal: the bag shows only once it holds something; Saved,
               taste and the rest live in the personal area (the heart flies here). */}
           <AnimatePresence initial={false}>
@@ -125,11 +123,7 @@ export function Header() {
               </motion.span>
             )}
           </AnimatePresence>
-          {/* Every tee liked, always one tap away (the heart flies here); the count once there's one. */}
-          <IconButton label={hydrated ? `Liked tees (${likedCount})` : "Liked tees"} count={hydrated ? likedCount : 0} href="/liked/" active={pathname.startsWith("/liked")} savedTarget>
-            <Icon name="heart" className="h-5 w-5" />
-          </IconButton>
-          <IconButton label="You: taste, saved, orders" count={0} href="/me/" active={pathname.startsWith("/me")}>
+          <IconButton label="You: taste, saved, orders" count={0} href="/me/" active={pathname.startsWith("/me")} savedTarget>
             <Icon name="user" className="h-5 w-5" />
           </IconButton>
         </div>
@@ -158,7 +152,7 @@ function IconButton({
   children: React.ReactNode;
 }) {
   // Quiet icons: no filled circles, just the glyph (white pill when its page is open).
-  const className = `relative flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 max-[463px]:h-9 max-[463px]:w-9 max-[339px]:w-8 ${
+  const className = `relative flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${
     active ? "bg-white text-black" : "text-neutral-200 hover:bg-white/10"
   }`;
   const badge = (

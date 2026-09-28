@@ -16,7 +16,8 @@ const SHOW_MS = 2500;
 /**
  * The one confirmation after any add to the bag (product page, quick add on
  * a card, Discover, Saved): a single row under the header — the tee,
- * "Added · M" and "View bag" (the bag is where to take it back). Leaves by itself after 2.5 s, not while
+ * "Added · M" and "Checkout" (straight to the delivery form; the bag, one
+ * step back from there, is where to take it back). Leaves by itself after 2.5 s, not while
  * the pointer or focus is on it. Not modal, and up top so it never covers
  * the sizes, the buy bar or the card being rated.
  */
@@ -71,8 +72,15 @@ export function MiniBag() {
             <Icon name="check" className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />
             {note.pair ? "Added the pair" : "Added"} · {SIZE_LABELS[note.size]}
           </p>
-          <Link href="/cart/" onClick={close} className="flex h-10 shrink-0 items-center rounded-full bg-white px-4 text-sm font-bold text-black">
-            View bag
+          <Link
+            href="/cart/"
+            onClick={() => {
+              useUiStore.getState().requestCheckout();
+              close();
+            }}
+            className="flex h-10 shrink-0 items-center rounded-full bg-white px-4 text-sm font-bold text-black"
+          >
+            Checkout
           </Link>
         </motion.div>
       )}
