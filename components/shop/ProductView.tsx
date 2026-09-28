@@ -31,7 +31,7 @@ import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
 import { madeFor } from "@/lib/custom/products";
 import { acceptedDesigns, creditLine } from "@/lib/upload/designs";
-import { isUploadDesign } from "@/lib/upload/openCall";
+import { isUploadDesign } from "@/lib/upload/keys";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };

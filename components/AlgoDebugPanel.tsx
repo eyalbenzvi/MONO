@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FORCE_KEY } from "@/store/makeStore";
-import { REFUSE_REASONS } from "@/lib/upload/review";
+import { FORCE_KEY, REFUSE_REASONS } from "@/lib/upload/keys";
 import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { getShirtById } from "@/lib/catalog";

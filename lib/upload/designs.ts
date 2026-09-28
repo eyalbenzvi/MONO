@@ -7,12 +7,12 @@
  *   It is read straight from the persisted `mono-make` state, so a bag line
  *   of it resolves before any store has loaded.
  */
-import { offerState, isUploadDesign, type Offer } from "./openCall";
+import { MAKE_KEY, YOURS_ID, isUploadDesign, offerState } from "./keys";
+import type { Offer } from "./openCall";
 import { STORE_POLICY } from "@/lib/store-policy";
 import type { FeatureVector, ShirtCategory, ShirtProduct } from "@/types/shirt";
 
-export const YOURS_ID = "make-yours";
-export const MAKE_KEY = "mono-make";
+export { MAKE_KEY, YOURS_ID };
 
 /** What an accepted design needs to stand in the shop (kept with its offer). */
 export interface AcceptedDesign extends Offer {

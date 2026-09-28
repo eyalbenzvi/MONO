@@ -10,7 +10,6 @@ import { MiniBag } from "@/components/shop/MiniBag";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useCartStore } from "@/store/cartStore";
-import { useMakeStore } from "@/store/makeStore";
 import { migrateLegacySession, removeRetiredKeys } from "@/store/legacySession";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -67,7 +66,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     void catalogReady().then(async () => {
       migrateLegacySession();
       removeRetiredKeys();
-      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), useMakeStore.persist.rehydrate()]);
+      // "From yours" (the mono-make store) loads apart, so its code isn't on every page.
+      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), import("@/store/makeStore").then((m) => m.useMakeStore.persist.rehydrate())]);
       useTasteStore.getState().fillDeck();
       useUiStore.getState().setHydrated();
       // Uploads: a bag line whose file is gone from this device leaves the bag; old rasters go.

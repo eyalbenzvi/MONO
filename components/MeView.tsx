@@ -11,7 +11,7 @@ import { formatPrice } from "@/lib/format";
 import { topPicks } from "@/lib/match";
 import { shareTaste } from "@/lib/shareTaste";
 import { archetypeOf } from "@/lib/taste";
-import { MAKE_KEY } from "@/lib/upload/designs";
+import { MAKE_KEY } from "@/lib/upload/keys";
 import { OFFER_STATE_LINE, SALES_LINE, offerState } from "@/lib/upload/openCall";
 import { useMakeStore } from "@/store/makeStore";
 import { ReviewStatus, useOrderTickets } from "@/components/upload/ReviewStatus";

@@ -2,7 +2,6 @@
 
 import { initialCart, useCartStore } from "@/store/cartStore";
 import { initialTaste, useTasteStore } from "@/store/tasteStore";
-import { initialMake, useMakeStore } from "@/store/makeStore";
 import { catalogReady } from "@/lib/catalog";
 
 /**
@@ -17,9 +16,10 @@ export async function syncFromStorage(key: string | null) {
   const stores = [
     { store: useTasteStore, initial: initialTaste },
     { store: useCartStore, initial: initialCart },
-    { store: useMakeStore, initial: initialMake },
   ] as const;
-  for (const { store, initial } of stores) {
+  // "From yours" loads apart (it isn't on every page); its entry is followed the same way.
+  const make = await import("@/store/makeStore");
+  for (const { store, initial } of [...stores, { store: make.useMakeStore, initial: make.initialMake }]) {
     const name = store.persist.getOptions().name!;
     if (key !== null && key !== name) continue;
     let stored: string | null = null;

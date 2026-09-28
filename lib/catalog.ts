@@ -1,7 +1,7 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
 import { madeById } from "@/lib/custom/products";
-import { YOURS_ID, uploadProduct } from "@/lib/upload/designs";
-import { isUploadDesign } from "@/lib/upload/openCall";
+import { uploadProduct } from "@/lib/upload/designs";
+import { YOURS_ID, isUploadDesign } from "@/lib/upload/keys";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */

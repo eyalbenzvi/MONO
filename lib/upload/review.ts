@@ -14,8 +14,8 @@
  */
 
 export type ReviewState = "queued" | "person" | "cleared" | "refused";
-export type RefuseReason = "logo" | "artwork" | "person" | "explicit" | "hate" | "words" | "quality";
-export const REFUSE_REASONS: readonly RefuseReason[] = ["logo", "artwork", "person", "explicit", "hate", "words", "quality"];
+import { REFUSE_REASONS, type RefuseReason } from "./keys";
+export { REFUSE_REASONS, type RefuseReason } from "./keys";
 
 /** How long each stage lasts (20 s of wall time). */
 export const REVIEW_MS = 20_000;

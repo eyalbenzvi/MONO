@@ -2,7 +2,8 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { MAKE_KEY, type AcceptedDesign } from "@/lib/upload/designs";
+import type { AcceptedDesign } from "@/lib/upload/designs";
+import { FORCE_KEY, MAKE_KEY } from "@/lib/upload/keys";
 import { REFUSE_REASONS, localReview, parseForce, type ReviewTicket } from "@/lib/upload/review";
 import type { UploadMode } from "@/types/shirt";
 
@@ -63,7 +64,7 @@ export function reviewForce() {
     return undefined;
   }
 }
-export const FORCE_KEY = "mono-review";
+export { FORCE_KEY };
 
 export const initialMake = (): MakeState => ({ uploads: {}, reviews: {}, offers: {} });
 

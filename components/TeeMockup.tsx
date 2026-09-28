@@ -2,7 +2,7 @@
 
 import { Suspense, lazy, useState } from "react";
 import { acceptedDesigns } from "@/lib/upload/designs";
-import { isUploadDesign } from "@/lib/upload/openCall";
+import { isUploadDesign } from "@/lib/upload/keys";
 import { Sharper } from "@/components/Sharper";
 import { usePageZoom } from "@/hooks/usePageZoom";
 import { MODEL_ASPECT, detailBox, detailPath, mockupImage } from "@/lib/images";

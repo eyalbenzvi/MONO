@@ -7,7 +7,6 @@ import { validate, type CustomSpec } from "@/lib/custom/spec";
 import { getShirtById } from "@/lib/catalog";
 import { firstTouch, itemOf, track, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
-import { useMakeStore } from "@/store/makeStore";
 import { SIZES, teeColor, type BaseColor, type CartItem, type Customer, type Order, type OrderItem, type OrderRecord, type ShirtSize, type UploadRef } from "@/types/shirt";
 import { arrivalRange } from "@/lib/delivery";
 
@@ -320,7 +319,7 @@ export const useCartStore = create<CartState & CartActions>()(
         // Uploaded prints go to the (simulated) review; their working copies leave the device.
         const uploads = [...new Set(cart.flatMap((l) => (l.upload ? [l.upload.id] : [])))];
         if (uploads.length) {
-          useMakeStore.getState().submitReviews(record.number, uploads);
+          void import("@/store/makeStore").then((m) => m.useMakeStore.getState().submitReviews(record.number, uploads));
           void import("@/lib/upload/store").then((m) => (m.available() ? Promise.all(uploads.map(m.dropSource)) : undefined)).catch(() => {});
         }
         // Per print: a design, and a personalised one's spec (its pairs are its own).
