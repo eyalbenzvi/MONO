@@ -118,7 +118,7 @@ function exactOf(q: string, catalog: readonly ShirtProduct[]): number[] {
 }
 
 /** The lexicon phrase starting at word i (stems compared; a long unknown word may carry a typo), if any. */
-function phraseAt(ws: string[], i: number, typing: boolean, known: (w: string) => boolean): { phrase: Phrase; len: number; typo?: boolean } | null {
+function phraseAt(ws: string[], i: number, typing: boolean, known: (w: string) => boolean, vocabDist: (w: string) => number = () => Infinity): { phrase: Phrase; len: number; typo?: boolean } | null {
   const st = ws.map(stem);
   for (const phrase of PHRASES.get(st[i]) ?? []) {
     const t = phrase.tokens;
@@ -135,8 +135,10 @@ function phraseAt(ws: string[], i: number, typing: boolean, known: (w: string) =
   // A typo for a lexicon word ("photgraph"): only a long word the catalog doesn't know ("bats" isn't "cats").
   const k = known(w) || w.length < 6 ? 0 : maxEdits(w.length);
   if (k) {
-    const near = closest(st[i], SINGLE_WORDS, SINGLE_WORDS.map(() => 0), 1)[0];
-    if (near) {
+    // (And the word without its "s": "frutis" is fruits with a swap, which the stemmer can't see.)
+    const near = [st[i], ...(w.endsWith("s") ? [w.slice(0, -1)] : [])].flatMap((x) => closest(x, SINGLE_WORDS, SINGLE_WORDS.map(() => 0), 1, w.length)).sort((a, b) => a.dist - b.dist)[0];
+    // Only when no word of the catalogue is closer ("fountxin" is the fountain it has, not the lexicon's mountains).
+    if (near && near.dist <= vocabDist(w)) {
       const phrase = PHRASES.get(SINGLE_WORDS[near.at])!.find((x) => x.tokens.length === 1);
       if (phrase) return { phrase, len: 1, typo: true };
     }
@@ -196,7 +198,11 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
   const typos = new Map<number, string>();
   // Lexicon phrases, longest first; a single subject word still searches as text.
   for (let i = 0; i < ws.length; ) {
-    const hit = phraseAt(ws, i, typing, (w) => index.termId.has(stem(w)));
+    const hit = phraseAt(ws, i, typing, (w) => index.termId.has(stem(w)), (w) => {
+      const { list, df } = fuzzyList(index);
+      const near = [stem(w), w, ...(w.endsWith("s") ? [w.slice(0, -1)] : [])].flatMap((x) => closest(x, list, df, 1, w.length));
+      return near.length ? Math.min(...near.map((x) => x.dist)) : Infinity;
+    });
     if (!hit) {
       i++;
       continue;
@@ -260,12 +266,17 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       // The closest few stand in (the most used is shown as the correction): "sveen" may be "seen" or "seven".
       // And the word without a final "e" ("engnie" is a swap from "engin", engine's stem).
       const bare = w.length > 4 && w.endsWith("e") ? [w.slice(0, -1)] : [];
-      const near = [t, w, ...bare]
+      // A typo inside an -ing ending ("lookxng"): the word before it, when the catalogue has it as it is.
+      const ing = /^[a-z]{3,}.ng$/.test(w) ? index.termId.get(stem(w.slice(0, -3))) : undefined;
+      if (ing !== undefined) add(ing, WEIGHT.fuzzy1);
+      const plural = w.length > 4 && w.endsWith("s") ? [w.slice(0, -1)] : [];
+      const near = [t, w, ...bare, ...plural]
         .flatMap((x) => closest(x, list, df, 3, w.length))
         .sort((a, b) => a.dist - b.dist || df[b.at] - df[a.at])
         .filter((x, k, all) => all.findIndex((y) => term[y.at] === term[x.at]) === k);
       for (const x of near.slice(0, 3)) add(term[x.at], x.dist === 1 ? WEIGHT.fuzzy1 : WEIGHT.fuzzy2);
       if (near.length) corrected.push({ from: w, to: shownOf(index, term[near[0].at]) });
+      else if (ing !== undefined) corrected.push({ from: w, to: shownOf(index, ing) });
     }
     const list = [...alts].map(([term, weight]) => ({ term, w: weight }));
     const anchor = exact ?? list.reduce((best, a) => (best === -1 || index.file.df[a.term] > index.file.df[best] ? a.term : best), -1);

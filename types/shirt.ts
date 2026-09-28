@@ -198,6 +198,8 @@ export interface ShirtProduct {
   dropDate: number;
   /** A weak print (a lone small shape): kept out of the taste test and the top of the shop. */
   weak: boolean;
+  /** The content wave that added it (docs/content/waves.md); none for earlier designs. */
+  wave?: number;
 }
 
 /** Longer copy and precomputed neighbours, loaded on demand (public/data shards). */
@@ -221,6 +223,9 @@ export interface PhotoCredit {
   url: string;
   /** The Smithsonian image id (data/photos/img/<image>.png); full catalog only. */
   image?: string;
+  /** Where it comes from and its licence, for the content waves' sources (default: Smithsonian Open Access, CC0). */
+  source?: string;
+  license?: string;
 }
 
 /** Full catalog entry (generator output, server-side and tests). */

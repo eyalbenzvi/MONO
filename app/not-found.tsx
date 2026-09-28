@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { pageMeta } from "@/lib/seo";
-import { SHIRTS } from "@/lib/catalog";
+import { SHIRTS, isPrerendered } from "@/lib/catalog";
 import { productRedirectScript } from "@/lib/notFound";
 
 // Not a page to index; its canonical is the home page.
@@ -13,7 +13,7 @@ export const metadata: Metadata = pageMeta({ path: "/", title: "Not in the drop 
  * content only — nothing here reads the stores, so it hydrates cleanly
  * whatever URL it's served at.
  */
-const REDIRECT = productRedirectScript(process.env.NEXT_PUBLIC_BASE_PATH ?? "", SHIRTS[SHIRTS.length - 1]?.n ?? 0);
+const REDIRECT = productRedirectScript(process.env.NEXT_PUBLIC_BASE_PATH ?? "", SHIRTS.filter((s) => !isPrerendered(s)).map((s) => s.n));
 
 export default function NotFound() {
   return (

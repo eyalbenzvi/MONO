@@ -1,0 +1,297 @@
+{
+ "met-393742": "keep",
+ "met-48599": "keep",
+ "met-39638": "keep",
+ "met-73524": "keep",
+ "met-48262": "keep",
+ "met-857626": "keep",
+ "met-287943": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-374006": "keep",
+ "met-373271": "keep",
+ "met-59609": {
+  "decision": "reject",
+  "reason": "quality 81 sliver"
+ },
+ "met-823695": "keep",
+ "met-42936": "keep",
+ "met-42940": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-42941": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-54612": "keep",
+ "met-394287": "keep",
+ "met-39848": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-40355": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-41102": "keep",
+ "met-811659": "keep",
+ "met-338694": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-410921": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-56029": "keep",
+ "met-394291": "keep",
+ "met-75235": "keep",
+ "met-78696": "keep",
+ "met-57317": "keep",
+ "met-399225": "keep",
+ "met-365879": "keep",
+ "met-53404": "keep",
+ "met-54345": "keep",
+ "met-53985": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-39937": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-57094": "keep",
+ "met-811618": "keep",
+ "met-55143": "keep",
+ "met-385115": "keep",
+ "met-37303": "keep",
+ "met-301891": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-43226": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-858249": {
+  "decision": "reject",
+  "reason": "quality 73 vignette"
+ },
+ "met-283064": {
+  "decision": "reject",
+  "reason": "quality 73 vignette"
+ },
+ "met-335894": "keep",
+ "met-42938": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-405591": "keep",
+ "met-42942": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-371662": "keep",
+ "met-356520": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-59370": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-59654": {
+  "decision": "reject",
+  "reason": "quality 72 sliver"
+ },
+ "met-398061": "keep",
+ "met-414108": "keep",
+ "met-54675": "keep",
+ "met-42946": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-39643": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-42939": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-49054": "keep",
+ "met-343776": "keep",
+ "met-334930": "keep",
+ "met-59181": {
+  "decision": "reject",
+  "reason": "quality 71 sliver"
+ },
+ "met-42935": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-55098": "keep",
+ "met-59708": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-41358": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-54916": "keep",
+ "met-56412": "keep",
+ "met-58902": "keep",
+ "met-42937": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-39837": {
+  "decision": "reject",
+  "reason": "quality 69 sliver"
+ },
+ "met-59896": {
+  "decision": "reject",
+  "reason": "quality 69 sliver"
+ },
+ "met-54970": "keep",
+ "met-55067": "keep",
+ "met-772693": {
+  "decision": "reject",
+  "reason": "quality 68 sliver"
+ },
+ "met-54617": "keep",
+ "met-360650": {
+  "decision": "reject",
+  "reason": "quality 65 sliver"
+ },
+ "met-54760": "keep",
+ "met-54986": "keep",
+ "met-41911": {
+  "decision": "reject",
+  "reason": "quality 63 sliver"
+ },
+ "met-37302": "keep",
+ "met-372910": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "met-915724": {
+  "decision": "reject",
+  "reason": "quality 59 sliver"
+ },
+ "met-372811": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "met-816216": {
+  "decision": "reject",
+  "reason": "quality 58 sliver"
+ },
+ "met-37300": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-54062": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "met-363331": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "met-372595": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "met-54766": {
+  "decision": "reject",
+  "reason": "quality 51 sliver"
+ },
+ "met-54430": {
+  "decision": "reject",
+  "reason": "quality 51 sliver"
+ },
+ "met-47766": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "met-54728": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "met-905998": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-54735": {
+  "decision": "reject",
+  "reason": "quality 49 flat"
+ },
+ "met-398604": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "met-54906": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "met-385559": {
+  "decision": "reject",
+  "reason": "quality 48 flat"
+ },
+ "met-54091": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "met-55099": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "met-51747": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "met-54741": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "met-54753": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "met-59880": {
+  "decision": "reject",
+  "reason": "quality 43 sliver"
+ },
+ "met-41491": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "met-54892": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "met-55108": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "met-54987": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "met-761340": {
+  "decision": "reject",
+  "reason": "quality 33"
+ },
+ "met-45670": {
+  "decision": "reject",
+  "reason": "quality 30"
+ },
+ "met-386511": {
+  "decision": "reject",
+  "reason": "quality 26"
+ }
+}

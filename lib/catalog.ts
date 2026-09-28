@@ -49,6 +49,9 @@ const FAMILIES = new Map<string, ShirtProduct[]>();
 const MEDIUM_CODES = { d: "drawn", i: "ink", p: "photo" } as const satisfies Record<string, Medium>;
 
 function decodeAll(index: CatalogIndex): ShirtProduct[] {
+  // The content waves' designs: wave → design numbers (sparse; absent in an index from before the waves).
+  const waveOf = new Map<number, number>();
+  for (const [w, ns] of Object.entries((index as { waves?: Record<string, number[]> }).waves ?? {})) for (const n of ns) waveOf.set(n, Number(w));
   const digit = new Map([...index.digits].map((c, v) => [c, v]));
   const dropEpoch = Date.parse(`${index.dropEpoch}T00:00:00Z`);
   // Design n sits at position n − 1 of every column; `no` is a running count per category.
@@ -83,6 +86,7 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
       rank: index.rank[i],
       dropDate: dropEpoch + index.drop[i] * DAY,
       weak: index.weak[i] === "1",
+      ...(waveOf.has(n) ? { wave: waveOf.get(n) } : {}),
     };
   });
 }

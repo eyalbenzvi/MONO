@@ -1,0 +1,229 @@
+{
+ "artic-255": "keep",
+ "artic-266991": "keep",
+ "artic-209882": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-80164": "keep",
+ "artic-158284": "keep",
+ "artic-109151": "keep",
+ "artic-160175": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-160172": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-160174": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-160173": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-268715": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-221864": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-182919": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-61429": "keep",
+ "artic-117225": "keep",
+ "artic-42281": "keep",
+ "artic-21181": "keep",
+ "artic-266995": "keep",
+ "artic-233437": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-264835": "keep",
+ "artic-60439": "keep",
+ "artic-215545": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-29253": "keep",
+ "artic-77288": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-14837": "keep",
+ "artic-131912": "keep",
+ "artic-27952": "keep",
+ "artic-80154": "keep",
+ "artic-112215": "keep",
+ "artic-34842": "keep",
+ "artic-86011": "keep",
+ "artic-55290": "keep",
+ "artic-44892": "keep",
+ "artic-21426": "keep",
+ "artic-115510": {
+  "decision": "reject",
+  "reason": "quality 74 sliver"
+ },
+ "artic-24001": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-42165": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-21117": "keep",
+ "artic-75471": {
+  "decision": "reject",
+  "reason": "quality 73 sliver"
+ },
+ "artic-36447": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-72729": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-130594": {
+  "decision": "keep",
+  "title_override": "Gathering Shells at Low Tide, from the illustrated book \"Gifts from the Ebb Tide (Shiohi n"
+ },
+ "artic-129847": "keep",
+ "artic-51876": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-4796": "keep",
+ "artic-83773": "keep",
+ "artic-61494": "keep",
+ "artic-81544": "keep",
+ "artic-221859": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-49325": "keep",
+ "artic-29494": "keep",
+ "artic-139416": {
+  "decision": "reject",
+  "reason": "quality 66 flat"
+ },
+ "artic-7691": "keep",
+ "artic-112211": "keep",
+ "artic-73478": "keep",
+ "artic-258367": "keep",
+ "artic-14450": {
+  "decision": "reject",
+  "reason": "quality 61 flat"
+ },
+ "artic-130591": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-32965": {
+  "decision": "reject",
+  "reason": "quality 59 flat"
+ },
+ "artic-139520": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "artic-84088": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "artic-50006": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-49767": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "artic-81173": {
+  "decision": "reject",
+  "reason": "quality 55 flat"
+ },
+ "artic-43070": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "artic-234161": {
+  "decision": "reject",
+  "reason": "quality 52 sliver"
+ },
+ "artic-57310": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-113043": {
+  "decision": "reject",
+  "reason": "quality 51 sliver"
+ },
+ "artic-42291": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "artic-43271": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-115505": {
+  "decision": "reject",
+  "reason": "quality 47 flat"
+ },
+ "artic-51007": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115508": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "artic-104082": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "artic-15181": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-45753": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "artic-84041": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "artic-117315": {
+  "decision": "reject",
+  "reason": "quality 38 sliver"
+ },
+ "artic-115501": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "artic-100621": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "artic-181022": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-180952": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-191599": {
+  "decision": "reject",
+  "reason": "quality 29"
+ }
+}

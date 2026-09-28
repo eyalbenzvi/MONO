@@ -17,13 +17,18 @@ function run(script: string, href: string) {
 
 describe("R23: the 404 sends designs without a static page to the client route", () => {
   it("under /MONO, with query and hash kept; other paths stay", () => {
-    const s = productRedirectScript("/MONO", 2800);
+    const s = productRedirectScript("/MONO", [1, 2400, 10001]);
     expect(run(s, "https://x.io/MONO/shop/mono-2400/")).toBe("/MONO/shop/p/?id=mono-2400");
     expect(run(s, "https://x.io/MONO/shop/mono-2400/?c=white&ref=x#variations")).toBe("/MONO/shop/p/?id=mono-2400&c=white&ref=x#variations");
     expect(run(s, "https://x.io/MONO/shop/mono-9999/")).toBeNull();
+    // A content wave's five-digit id; a design that has its own page (not listed) stays on the 404.
+    expect(run(s, "https://x.io/MONO/shop/mono-10001/")).toBe("/MONO/shop/p/?id=mono-10001");
+    expect(run(s, "https://x.io/MONO/shop/mono-2401/")).toBeNull();
     expect(run(s, "https://x.io/MONO/shop/nope/")).toBeNull();
     expect(run(s, "https://x.io/MONO/cart/x")).toBeNull();
-    expect(run(productRedirectScript("", 2800), "https://x.io/shop/mono-0001")).toBe("/shop/p/?id=mono-0001");
+    expect(run(productRedirectScript("", [1]), "https://x.io/shop/mono-0001")).toBe("/shop/p/?id=mono-0001");
+    // Every design pre-rendered (the default): the script sends nothing anywhere.
+    expect(run(productRedirectScript("", []), "https://x.io/shop/mono-0001")).toBeNull();
   });
 });
 

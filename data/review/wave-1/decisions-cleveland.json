@@ -1,0 +1,61 @@
+{
+ "cleveland-106588": "keep",
+ "cleveland-104352": "keep",
+ "cleveland-104268": "keep",
+ "cleveland-163423": "keep",
+ "cleveland-121409": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-167712": "keep",
+ "cleveland-160899": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-155931": {
+  "decision": "keep",
+  "title_override": "Shells: Hippopus maculatus Lam"
+ },
+ "cleveland-367979": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "cleveland-114513": "keep",
+ "cleveland-142350": "keep",
+ "cleveland-152460": "keep",
+ "cleveland-140193": {
+  "decision": "keep",
+  "title_override": "Dolphins Inn: Greenwich and Woolwich Coaches"
+ },
+ "cleveland-160105": "keep",
+ "cleveland-116914": "keep",
+ "cleveland-128845": "keep",
+ "cleveland-117743": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-160777": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-134105": {
+  "decision": "reject",
+  "reason": "quality 66 sliver"
+ },
+ "cleveland-155929": {
+  "decision": "keep",
+  "title_override": "Shells: Mitra papalis L"
+ },
+ "cleveland-120914": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-401145": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "cleveland-101878": {
+  "decision": "reject",
+  "reason": "quality 54"
+ }
+}

@@ -115,7 +115,13 @@ export function ShopView() {
       literal,
     });
   }, [searching, runtime, deferredQuery, facets, cats, tee, rankVector, complete, shown, ranked, literal]);
-  const visible = useMemo(() => shopList({ ranked, tee, cats, sort, result }), [result, ranked, tee, cats, sort]);
+  // A content wave's designs only (/shop/?wave=<n>, docs/content/waves.md): read after hydration, never linked.
+  const [wave, setWave] = useState<number | null>(null);
+  useEffect(() => {
+    const w = new URLSearchParams(window.location.search).get("wave");
+    if (w && /^\d+$/.test(w)) setWave(Number(w));
+  }, []);
+  const visible = useMemo(() => shopList({ ranked, tee, cats, sort, result, wave }), [result, ranked, tee, cats, sort, wave]);
   // First open: the current grid stays, dimmed, until the index is in (never an empty flash).
   const pending = searching && runtime === undefined;
   // How many designs each category holds on the chosen colour — within the search while one is on (the filter's rows; an empty one is disabled).

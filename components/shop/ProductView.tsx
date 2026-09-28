@@ -380,7 +380,7 @@ export function ProductView({
                   <Spec label="SKU" value={skuFor(shirt.sku, color)} />
                   {details?.photo && (
                     <p className="py-2 text-xs text-neutral-400">
-                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · Smithsonian Open Access, CC0 ·{" "}
+                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · {details.photo.source ?? "Smithsonian Open Access"}, {details.photo.license ?? "CC0"} ·{" "}
                       <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
                         Source record
                       </a>

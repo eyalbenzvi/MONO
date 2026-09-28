@@ -1,0 +1,729 @@
+[
+ {
+  "source": "cleveland",
+  "key": "cleveland-114513",
+  "record": "114513",
+  "recordUrl": "https://clevelandart.org/art/1934.142",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1934.142/1934.142_print.jpg",
+  "title": "Shells in Seaweed",
+  "maker": "Mary Altha Nims",
+  "date": "1800s",
+  "credit": "Mary Altha Nims, The Cleveland Museum of Art",
+  "classification": "Drawing, watercolor",
+  "tags": [
+   "Drawings",
+   "America"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2422,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.584,
+  "matched": [
+   "shell",
+   "seaweed"
+  ],
+  "screen": "tonal",
+  "tone": 0.487,
+  "contrast": 0.236,
+  "coverage": 0.097,
+  "detail": 1,
+  "box": [
+   0.087,
+   0.057,
+   0.932,
+   0.463
+  ],
+  "sha": "6fda1a144ce6a32b",
+  "assess": {
+   "quality": 75,
+   "ink": 0.048,
+   "extent": 0.313,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11001,
+  "wave": 1,
+  "name": "Shells in Seaweed"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-142350",
+  "record": "142350",
+  "recordUrl": "https://clevelandart.org/art/1966.173",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1966.173/1966.173_print.jpg",
+  "title": "Ewer Ornamented with Dolphins",
+  "maker": "Enea Vico",
+  "date": "1543",
+  "credit": "Enea Vico, The Cleveland Museum of Art",
+  "classification": "Print, engraving",
+  "tags": [
+   "Prints",
+   "Italy"
+  ],
+  "description": "",
+  "width": 2606,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.613,
+  "matched": [
+   "dolphin"
+  ],
+  "screen": "line",
+  "tone": 0.406,
+  "contrast": 0.219,
+  "coverage": 0.219,
+  "detail": 1,
+  "box": [
+   0.064,
+   0.038,
+   0.971,
+   0.936
+  ],
+  "sha": "a9b1210ed0eaea23",
+  "assess": {
+   "quality": 73,
+   "ink": 0.082,
+   "extent": 0.73,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11002,
+  "wave": 1,
+  "name": "Ewer Ornamented with Dolphins"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-140193",
+  "record": "140193",
+  "recordUrl": "https://clevelandart.org/art/1964.19",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1964.19/1964.19_print.jpg",
+  "title": "Dolphins Inn:  Greenwich and Woolwich Coaches",
+  "maker": "Thomas Rowlandson",
+  "date": "1816",
+  "credit": "Thomas Rowlandson, The Cleveland Museum of Art",
+  "classification": "Print, etching, hand colored",
+  "tags": [
+   "Prints",
+   "England, 19th century"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2181,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.546,
+  "matched": [
+   "dolphin"
+  ],
+  "screen": "line",
+  "tone": 0.432,
+  "contrast": 0.216,
+  "coverage": 0.115,
+  "detail": 1,
+  "box": [
+   0.031,
+   0.048,
+   0.968,
+   0.469
+  ],
+  "sha": "2ac789450e085aab",
+  "assess": {
+   "quality": 73,
+   "ink": 0.047,
+   "extent": 0.376,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11003,
+  "wave": 1,
+  "name": "Dolphins Inn: Greenwich and Woolwich Coaches"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-104268",
+  "record": "104268",
+  "recordUrl": "https://clevelandart.org/art/1922.410",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1922.410/1922.410_print.jpg",
+  "title": "Dinner Service (Rousseau service): Fish (no. 24)",
+  "maker": "Félix Bracquemond",
+  "date": "1866",
+  "credit": "Félix Bracquemond, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "France, 19th century",
+   {
+    "description": "cream (1) laid paper",
+    "watermarks": []
+   }
+  ],
+  "description": "",
+  "width": 2444,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.816,
+  "matched": [
+   "fish"
+  ],
+  "screen": "line",
+  "tone": 0.636,
+  "contrast": 0.26,
+  "coverage": 0.173,
+  "detail": 1,
+  "box": [
+   0.077,
+   0.063,
+   0.935,
+   0.933
+  ],
+  "sha": "ed94e67e58a8dbda",
+  "assess": {
+   "quality": 84,
+   "ink": 0.113,
+   "extent": 0.689,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11004,
+  "wave": 1,
+  "name": "Dinner Service (Rousseau service): Fish (no. 24)"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-160105",
+  "record": "160105",
+  "recordUrl": "https://clevelandart.org/art/1997.7",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1997.7/1997.7_print.jpg",
+  "title": "The Coral Necklace",
+  "maker": "Frederick Sandys",
+  "date": "1871",
+  "credit": "Frederick Sandys, The Cleveland Museum of Art",
+  "classification": "Drawing, black, brown, and red chalk",
+  "tags": [
+   "Drawings",
+   "England, 19th century",
+   {
+    "description": "Whatman thick, rough-textured cream wove paper, laid down on beige wove paper",
+    "watermarks": [
+     "[WHATM?]AN 1869 (partial)"
+    ]
+   }
+  ],
+  "description": "Closely associated with the Pre-Raphaelite Brotherhood, Frederick Sandys was a friend of Dante Gabriel Rossetti and played an active role in the bohemian artistic, literary, and theatrical circles of the day in London. This is a portrait of Mary Emma Jones, the artist’s favorite model, mistress, and mother of his nine children. An extraordinarily skilled draftsman, here he worked in tone rather than line, delicately drawing in chalk on a rough textured sheet and leaving the low points of the paper untouched to produce a stippled, hazy effect.",
+  "width": 2392,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.67,
+  "matched": [
+   "coral"
+  ],
+  "screen": "line",
+  "tone": 0.482,
+  "contrast": 0.224,
+  "coverage": 0.243,
+  "detail": 1,
+  "box": [
+   0.077,
+   0.041,
+   0.929,
+   0.945
+  ],
+  "sha": "3ed7bf881a5f096d",
+  "assess": {
+   "quality": 72,
+   "ink": 0.115,
+   "extent": 0.743,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11005,
+  "wave": 1,
+  "name": "The Coral Necklace"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-152460",
+  "record": "152460",
+  "recordUrl": "https://clevelandart.org/art/1985.286",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1985.286/1985.286_print.jpg",
+  "title": "The Shrimp Fisherman",
+  "maker": "Kono Bairei",
+  "date": "c. 1880–95",
+  "credit": "Kono Bairei, The Cleveland Museum of Art",
+  "classification": "Drawing, ink on paper",
+  "tags": [
+   "Japanese Art",
+   "Japan, Meiji period (1868–1912)"
+  ],
+  "description": "",
+  "width": 2283,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.6,
+  "matched": [
+   "shrimp"
+  ],
+  "screen": "line",
+  "tone": 0.542,
+  "contrast": 0.229,
+  "coverage": 0.093,
+  "detail": 1,
+  "box": [
+   0.095,
+   0.055,
+   0.916,
+   0.97
+  ],
+  "sha": "d3f0686afbe4e7ed",
+  "assess": {
+   "quality": 73,
+   "ink": 0.05,
+   "extent": 0.487,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11006,
+  "wave": 1,
+  "name": "The Shrimp Fisherman"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-167712",
+  "record": "167712",
+  "recordUrl": "https://clevelandart.org/art/2009.380",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/2009.380/2009.380_print.jpg",
+  "title": "Seaweed Gatherers, Yport",
+  "maker": "Claude-Emile Schuffenecker",
+  "date": "c. 1889",
+  "credit": "Claude-Emile Schuffenecker, The Cleveland Museum of Art",
+  "classification": "Drawing, black chalk",
+  "tags": [
+   "Drawings",
+   "France, 19th century",
+   {
+    "description": "brown wove paper",
+    "watermarks": []
+   }
+  ],
+  "description": "Claude-Emile Schuffenecker worked closely with Paul Gauguin to form Synthetism, a style of art that broke from Impressionism in favor of flat planes of bold color and invented subjects. This drawing, which exists in two versions, is one of Schuffenecker’s most important works from the period. The other interpretation (owned by the Art Institute of Chicago) was featured in an influential 1889 exhibition organized by Gauguin and Schuffenecker at the Café Volpini on the grounds of the Universal Exposition. Both artists saw imagery of seaweed gatherers—a task undertaken by working-class people in rural French coastal towns—as exemplifying the simplicity they sought in their art.",
+  "width": 2572,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.701,
+  "matched": [
+   "seaweed"
+  ],
+  "screen": "line",
+  "tone": 0.507,
+  "contrast": 0.234,
+  "coverage": 0.261,
+  "detail": 1,
+  "box": [
+   0.048,
+   0.041,
+   0.965,
+   0.959
+  ],
+  "sha": "9760d0aed53425ae",
+  "assess": {
+   "quality": 79,
+   "ink": 0.133,
+   "extent": 0.764,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11007,
+  "wave": 1,
+  "name": "Seaweed Gatherers, Yport"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-128845",
+  "record": "128845",
+  "recordUrl": "https://clevelandart.org/art/1951.457",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1951.457/1951.457_print.jpg",
+  "title": "Maunder's Fish Shop, Chelsea",
+  "maker": "James McNeill Whistler",
+  "date": "1890",
+  "credit": "James McNeill Whistler, The Cleveland Museum of Art",
+  "classification": "Print, lithograph",
+  "tags": [
+   "Prints",
+   "America"
+  ],
+  "description": "",
+  "width": 2781,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.545,
+  "matched": [
+   "fish"
+  ],
+  "screen": "tonal",
+  "tone": 0.436,
+  "contrast": 0.225,
+  "coverage": 0.108,
+  "detail": 1,
+  "box": [
+   0.084,
+   0.097,
+   0.932,
+   0.846
+  ],
+  "sha": "e09f50aea9bbc865",
+  "assess": {
+   "quality": 71,
+   "ink": 0.045,
+   "extent": 0.418,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11008,
+  "wave": 1,
+  "name": "Maunder's Fish Shop, Chelsea"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-106588",
+  "record": "106588",
+  "recordUrl": "https://clevelandart.org/art/1924.635",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1924.635/1924.635_print.jpg",
+  "title": "Shrimp Fishermen",
+  "maker": "Auguste Louis Lepère",
+  "date": "1895",
+  "credit": "Auguste Louis Lepère, The Cleveland Museum of Art",
+  "classification": "Print, woodcut",
+  "tags": [
+   "Prints",
+   "France, 19th-20th century"
+  ],
+  "description": "",
+  "width": 2523,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.854,
+  "matched": [
+   "shrimp"
+  ],
+  "screen": "line",
+  "tone": 0.819,
+  "contrast": 0.21,
+  "coverage": 0.366,
+  "detail": 1,
+  "box": [
+   0.047,
+   0.034,
+   0.955,
+   0.964
+  ],
+  "sha": "6560524bc8d63e4b",
+  "assess": {
+   "quality": 91,
+   "ink": 0.233,
+   "extent": 0.839,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11009,
+  "wave": 1,
+  "name": "Shrimp Fishermen"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-163423",
+  "record": "163423",
+  "recordUrl": "https://clevelandart.org/art/2004.213",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/2004.213/2004.213_print.jpg",
+  "title": "Sorting Fish",
+  "maker": "Arthur John Trevor Briscoe",
+  "date": "1926",
+  "credit": "Arthur John Trevor Briscoe, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "England, 20th century",
+   {
+    "description": "laid green paper with watermark",
+    "watermarks": []
+   }
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2267,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.423,
+  "matched": [
+   "fish"
+  ],
+  "screen": "line",
+  "tone": 0.366,
+  "contrast": 0.117,
+  "coverage": 0.153,
+  "detail": 1,
+  "box": [
+   0.049,
+   0.045,
+   0.951,
+   0.486
+  ],
+  "sha": "471bd80ea47b7de9",
+  "assess": {
+   "quality": 81,
+   "ink": 0.095,
+   "extent": 0.385,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11010,
+  "wave": 1,
+  "name": "Sorting Fish"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-104352",
+  "record": "104352",
+  "recordUrl": "https://clevelandart.org/art/1922.487",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1922.487/1922.487_print.jpg",
+  "title": "The Haul of Monstrous Fish",
+  "maker": "Adamo Scultori",
+  "date": "mid-1500s",
+  "credit": "Adamo Scultori, The Cleveland Museum of Art",
+  "classification": "Print, engraving",
+  "tags": [
+   "Prints",
+   "Italy",
+   {
+    "description": "cream(1) laid paper",
+    "watermarks": []
+   }
+  ],
+  "description": "Adamo belonged to a prominent family of printmakers in Mantua. This engraving is based on a preparatory drawing by Giulio Romano that relates to a fresco he painted in 1527 in the Sala dei Venti (Room of the Winds) in the Palazzo del Tè in Mantua.",
+  "width": 3400,
+  "height": 2260,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.738,
+  "matched": [
+   "fish"
+  ],
+  "screen": "line",
+  "tone": 0.564,
+  "contrast": 0.225,
+  "coverage": 0.166,
+  "detail": 1,
+  "box": [
+   0.045,
+   0.04,
+   0.953,
+   0.492
+  ],
+  "sha": "55784eef15b7f43e",
+  "assess": {
+   "quality": 88,
+   "ink": 0.096,
+   "extent": 0.372,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11011,
+  "wave": 1,
+  "name": "The Haul of Monstrous Fish"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-116914",
+  "record": "116914",
+  "recordUrl": "https://clevelandart.org/art/1937.468",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1937.468/1937.468_print.jpg",
+  "title": "The Fish Monger",
+  "maker": "Hendrik Meijer",
+  "date": "second half 18th century",
+  "credit": "Hendrik Meijer, The Cleveland Museum of Art",
+  "classification": "Drawing, pen and brown ink and brush and brown wash over black chalk; framing lines in black ink",
+  "tags": [
+   "Drawings",
+   "Netherlands",
+   {
+    "description": "beige(1) laid paper",
+    "watermarks": []
+   }
+  ],
+  "description": "",
+  "width": 2831,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.606,
+  "matched": [
+   "fish"
+  ],
+  "screen": "tonal",
+  "tone": 0.437,
+  "contrast": 0.242,
+  "coverage": 0.124,
+  "detail": 1,
+  "box": [
+   0.041,
+   0.041,
+   0.959,
+   0.868
+  ],
+  "sha": "80a3112c6c189b80",
+  "assess": {
+   "quality": 72,
+   "ink": 0.053,
+   "extent": 0.759,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11012,
+  "wave": 1,
+  "name": "The Fish Monger"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-155929",
+  "record": "155929",
+  "recordUrl": "https://clevelandart.org/art/1991.219",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1991.219/1991.219_print.jpg",
+  "title": "Shells:  Mitra papalis L",
+  "maker": "Wenceslaus Hollar",
+  "date": "c. 1640s",
+  "credit": "Wenceslaus Hollar, The Cleveland Museum of Art",
+  "classification": "Print, etching and engraving",
+  "tags": [
+   "Prints",
+   "Bohemia"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2481,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.601,
+  "matched": [
+   "shell"
+  ],
+  "screen": "line",
+  "tone": 0.632,
+  "contrast": 0.234,
+  "coverage": 0.053,
+  "detail": 1,
+  "box": [
+   0.045,
+   0.046,
+   0.957,
+   0.535
+  ],
+  "sha": "607d23e85da179dc",
+  "assess": {
+   "quality": 61,
+   "ink": 0.035,
+   "extent": 0.415,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11013,
+  "wave": 1,
+  "name": "Shells: Mitra papalis L"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-155931",
+  "record": "155931",
+  "recordUrl": "https://clevelandart.org/art/1991.220",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1991.220/1991.220_print.jpg",
+  "title": "Shells:  Hippopus maculatus Lam",
+  "maker": "Wenceslaus Hollar",
+  "date": "c. 1640s",
+  "credit": "Wenceslaus Hollar, The Cleveland Museum of Art",
+  "classification": "Print, etching and engraving",
+  "tags": [
+   "Prints",
+   "Bohemia"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2327,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.775,
+  "matched": [
+   "shell"
+  ],
+  "screen": "line",
+  "tone": 0.596,
+  "contrast": 0.243,
+  "coverage": 0.152,
+  "detail": 1,
+  "box": [
+   0.045,
+   0.045,
+   0.953,
+   0.503
+  ],
+  "sha": "124a9fcbb88c8a29",
+  "assess": {
+   "quality": 77,
+   "ink": 0.093,
+   "extent": 0.391,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11014,
+  "wave": 1,
+  "name": "Shells: Hippopus maculatus Lam"
+ }
+]
