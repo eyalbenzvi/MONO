@@ -1,5 +1,6 @@
 "use client";
 
+import type { CustomSpec } from "@/lib/custom/spec";
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { Facet } from "@/lib/search/facetCodec";
@@ -35,6 +36,10 @@ interface UiState {
   dialogs: number;
   /** The design shown in the full-screen zoom, if open. */
   zoomId: string | null;
+  /** Personalised prints being looked at, per design (memory only; the address carries the rest). */
+  custom: Record<string, CustomSpec>;
+  /** The last city chosen in the editor, pre-filled next time (memory only). */
+  lastCity: number | null;
   /** The Discover card's picture is zoomed in place (swipe keys wait). */
   cardZoomed: boolean;
   /** The Saved drawer is open (opened from the personal area). */
@@ -72,6 +77,8 @@ interface UiState {
   toggleFlip: (value?: boolean) => void;
   showToast: (message: string, action?: ToastState["action"]) => void;
   setZoom: (id: string | null) => void;
+  setCustom: (id: string, spec: CustomSpec | null) => void;
+  setLastCity: (id: number) => void;
   setCardZoomed: (on: boolean) => void;
   setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
@@ -98,6 +105,8 @@ export interface AddedNote {
   added: BaseColor[];
   /** Added as (or completing) the black + white pair. */
   pair?: boolean;
+  /** A personalised print: Undo takes back its lines, not the original's. */
+  custom?: CustomSpec;
   nonce: number;
 }
 
@@ -124,6 +133,14 @@ export const useUiStore = create<UiState>()((set) => ({
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
   showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
   setZoom: (zoomId) => set({ zoomId }),
+  custom: {},
+  lastCity: null,
+  setCustom: (id, spec) =>
+    set((s) => {
+      const { [id]: _gone, ...rest } = s.custom;
+      return { custom: spec ? { ...rest, [id]: spec } : rest };
+    }),
+  setLastCity: (lastCity) => set({ lastCity }),
   setCardZoomed: (cardZoomed) => set({ cardZoomed }),
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,

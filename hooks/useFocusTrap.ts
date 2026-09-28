@@ -38,6 +38,8 @@ export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, onClo
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        // A control with its own popup open (a combobox's list) closes that first (WAI-ARIA): the dialog stays.
+        if ((e.target as HTMLElement | null)?.getAttribute?.("aria-expanded") === "true" && el?.contains(e.target as Node)) return;
         e.stopPropagation();
         close.current();
         return;

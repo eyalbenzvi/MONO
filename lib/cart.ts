@@ -1,5 +1,7 @@
 import { getShirtById } from "@/lib/catalog";
+import { specHash, type CustomSpec } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
+import { STORE_POLICY } from "@/lib/store-policy";
 import { COLORS, type BaseColor, type CartItem, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 
 export const FREE_SHIPPING_THRESHOLD = 80;
@@ -11,10 +13,16 @@ export interface CartLine extends CartItem {
   lineTotal: number;
 }
 
+/** A tee's price: the design's, plus the premium when it's personalised (STORE_POLICY.customPremium). Every price of a line comes from here. */
+export const unitPrice = (line: { custom?: unknown }, shirt: Pick<ShirtProduct, "price">) => shirt.price + (line.custom ? STORE_POLICY.customPremium : 0);
+
+/** A personalised print's key part ("" for the original): same design, size, colour and spec = one line. */
+export const customKey = (custom?: CustomSpec) => (custom ? specHash(custom) : "");
+
 export function cartLines(items: CartItem[]): CartLine[] {
   return items.flatMap((item) => {
     const shirt = getShirtById(item.id);
-    return shirt ? [{ ...item, shirt, lineTotal: shirt.price * item.qty }] : [];
+    return shirt ? [{ ...item, shirt, lineTotal: unitPrice(item, shirt) * item.qty }] : [];
   });
 }
 
@@ -24,6 +32,8 @@ export function cartLines(items: CartItem[]): CartLine[] {
  * (the one-tap button or two separate adds), in any sizes.
  */
 export const PAIR_PRICE = 90;
+/** The pair of one print: PAIR_PRICE, plus the premium on each tee when it's personalised. */
+export const pairPrice = (custom?: CustomSpec) => PAIR_PRICE + (custom ? 2 * STORE_POLICY.customPremium : 0);
 
 /** What the bag already holds of "the pair" for one design in one size. */
 export interface PairStatus {
@@ -35,32 +45,40 @@ export interface PairStatus {
   capped: boolean;
 }
 
-export function pairStatus(items: CartItem[], id: string, size: ShirtSize): PairStatus {
-  const line = (c: BaseColor) => items.find((i) => i.id === id && i.size === size && i.color === c);
+/** The pair is one print in both colours: the same design and, personalised, the same spec. */
+export function pairStatus(items: CartItem[], id: string, size: ShirtSize, custom?: CustomSpec): PairStatus {
+  const key = customKey(custom);
+  const line = (c: BaseColor) => items.find((i) => i.id === id && i.size === size && i.color === c && customKey(i.custom) === key);
   const have = COLORS.filter((c) => line(c));
   return { have, missing: COLORS.filter((c) => !line(c)), capped: COLORS.some((c) => (line(c)?.qty ?? 0) >= MAX_QTY) };
 }
 
-/** The pair button's label: what one tap on it would do now. */
-export function pairLabel(status: PairStatus, price: number): string {
+/** The pair button's label: what one tap on it would do now (`price` a tee's, `pair` the pair's). */
+export function pairLabel(status: PairStatus, price: number, pair = PAIR_PRICE): string {
   if (status.missing.length === 0) return "In your bag ✓";
-  if (status.have.length > 0) return `Complete the pair · +${formatPrice(PAIR_PRICE - price * status.have.length)}`;
+  if (status.have.length > 0) return `Complete the pair · +${formatPrice(pair - price * status.have.length)}`;
   return "Get it in both";
 }
 
-/** Complete pairs in the bag: per design, the smaller of its black and white quantities. */
-export function countPairs(lines: CartLine[]): { id: string; pairs: number; saving: number }[] {
-  const byId = new Map<string, { black: number; white: number; price: number }>();
+/**
+ * Complete pairs in the bag: per print (a design, and a personalised one's
+ * spec), the smaller of its black and white quantities.
+ */
+export function countPairs(lines: CartLine[]): { id: string; key?: string; pairs: number; saving: number }[] {
+  const byPrint = new Map<string, { id: string; key: string; black: number; white: number; price: number; pair: number }>();
   for (const l of lines) {
-    const e = byId.get(l.id) ?? { black: 0, white: 0, price: l.shirt.price };
+    const key = customKey(l.custom);
+    const k = `${l.id}|${key}`;
+    const e = byPrint.get(k) ?? { id: l.id, key, black: 0, white: 0, price: unitPrice(l, l.shirt), pair: pairPrice(l.custom) };
     e[l.color] += l.qty;
-    byId.set(l.id, e);
+    byPrint.set(k, e);
   }
-  const out: { id: string; pairs: number; saving: number }[] = [];
-  for (const [id, e] of byId) {
+  const out: { id: string; key?: string; pairs: number; saving: number }[] = [];
+  for (const e of byPrint.values()) {
     const pairs = Math.min(e.black, e.white);
-    const saving = Math.max(0, 2 * e.price - PAIR_PRICE) * pairs;
-    if (pairs > 0 && saving > 0) out.push({ id, pairs, saving });
+    const saving = Math.max(0, 2 * e.price - e.pair) * pairs;
+    // `key` names a personalised print's pair (the original's has none).
+    if (pairs > 0 && saving > 0) out.push({ id: e.id, ...(e.key ? { key: e.key } : {}), pairs, saving });
   }
   return out;
 }
@@ -76,8 +94,10 @@ export function cartTotals(items: CartItem[]) {
   return { lines, count, subtotal, pairs, discount, shipping, total: goods + shipping, toFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - goods) };
 }
 
-type LineKey = Pick<CartItem, "id" | "size" | "color">;
-const same = (a: LineKey, b: LineKey) => a.id === b.id && a.size === b.size && a.color === b.color;
+/** What names a bag line: the design, size and colour, and a personalised print's spec. */
+export type LineKey = Pick<CartItem, "id" | "size" | "color" | "custom">;
+export const sameLine = (a: LineKey, b: LineKey) => a.id === b.id && a.size === b.size && a.color === b.color && customKey(a.custom) === customKey(b.custom);
+const same = sameLine;
 
 /** Result of a bag edit; `capped` = the MAX_QTY limit stopped (part of) it. */
 export interface CartResult {

@@ -18,6 +18,7 @@ export const ICONS = {
   heart: "Heart",
   info: "Info",
   layers: "Layers",
+  pencil: "Pencil",
   leaf: "Leaf",
   "link-2": "Link2",
   loader: "Loader2",

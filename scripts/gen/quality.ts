@@ -9,14 +9,6 @@ import type { BaseColor, Medium } from "../../types/shirt";
 
 /** measurePrint's old score under which a generated print is too faint to make at all (the fifth set's sparse constellations). */
 export const FAINT = 35;
-/**
- * Below this quality score (assessPrint, 0–100) a print is weak: never in
- * the taste test, the shop window, "picked for you" rows or the default
- * link preview. Calibrated so about the bottom tenth of the catalogue is weak.
- */
-export const WEAK_QUALITY = 53;
-/** Weak: a low score, or a flag (a sliver, a paper edge or vignette, a flat picture). */
-export const isWeak = (s: { quality: number; flags: readonly string[] }) => s.quality < WEAK_QUALITY || s.flags.length > 0;
 /** The printed area on the tee, cm (the 300×400 print; matches PRINT_SIZE_CM). */
 const PRINT_CM = { width: 28, height: 37 };
 

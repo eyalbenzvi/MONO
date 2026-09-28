@@ -6,7 +6,7 @@
 import manifest from "@/data/custom.manifest.json";
 import { assetUrl } from "@/lib/catalog";
 import { clean } from "@/lib/search/normalize";
-import type { City } from "./index";
+import type { City } from "./spec";
 import type { SkyData } from "./templates/sky";
 
 /** data/cities/cities.json: one column per field, zones as indexes. */

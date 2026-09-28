@@ -1,3 +1,4 @@
+import type { CustomSpec, TemplateId } from "@/lib/custom/spec";
 /**
  * Ordered list of feature dimensions. Every vector in the system (product
  * features, user preference) is keyed by exactly these names, in this order.
@@ -291,7 +292,12 @@ export interface CartItem {
   /** Tee colour chosen at purchase — every design comes in black and white. */
   color: BaseColor;
   qty: number;
+  /** A personalised print's inputs ("Make it yours", lib/custom): the only place they're kept. */
+  custom?: CustomSpec;
 }
+
+/** A line of a stored order: a personalised one keeps only which template it was, never its inputs. */
+export type OrderItem = Omit<CartItem, "custom"> & { custom?: { t: TemplateId } };
 
 export const COLOR_LABELS: Record<BaseColor, string> = { black: "Black", white: "White" };
 export const COLORS: readonly BaseColor[] = ["black", "white"];
@@ -316,7 +322,7 @@ export const skuFor = (sku: string, color: BaseColor) =>
  */
 export interface OrderRecord {
   number: string;
-  items: CartItem[];
+  items: OrderItem[];
   subtotal: number;
   /** Pair discount (black + white of one print), if any. */
   discount?: number;
@@ -336,7 +342,9 @@ export interface Customer {
 }
 
 /** A just-placed order, as the confirmation screen sees it (not persisted). */
-export interface Order extends OrderRecord {
+/** The order as the confirmation shows it (memory only): its lines in full, a personalised one's title included. */
+export interface Order extends Omit<OrderRecord, "items"> {
+  items: CartItem[];
   customer: Customer;
   /** Estimated arrival window (timestamps, start of day). */
   arrives: { from: number; to: number };

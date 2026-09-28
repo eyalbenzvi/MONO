@@ -16,6 +16,10 @@ export const STORE_POLICY = {
   fit: "Fits true to size. Between sizes? Go up.",
   /** Near the checkout button in the bag. */
   returns: "Free 30-day returns",
+  /** A personalised print ("Make it yours"): its premium over the design's price, per tee. */
+  customPremium: 10,
+  /** Under the returns line in the bag, when it holds a personalised tee. */
+  customReturns: "Made for you: size exchanges only",
   /**
    * Delivery estimate for "Arrives …": business days to print and ship,
    * plus business days in transit (ranges, low–high).

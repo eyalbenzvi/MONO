@@ -10,6 +10,7 @@
  * Commerce events follow GA4's shape (currency, value, items[]); the rest
  * are product events. Nothing personal is sent (no name, email or address).
  */
+import { STORE_POLICY } from "@/lib/store-policy";
 import type { BaseColor, ShirtProduct, ShirtSize } from "@/types/shirt";
 import { CATEGORY_LABELS } from "@/types/shirt";
 
@@ -39,7 +40,10 @@ export type AnalyticsEvent =
   | "select_size"
   | "save"
   | "share"
-  | "share_taste";
+  | "share_taste"
+  // "Make it yours": the template only, never what was chosen.
+  | "customize_open"
+  | "customize_apply";
 
 export type AnalyticsProps = Record<string, unknown>;
 
@@ -71,7 +75,7 @@ export interface EcomItem {
   item_name: string;
   item_category: string;
   /** The tee colour. */
-  item_variant: BaseColor;
+  item_variant: BaseColor | `${BaseColor}-custom`;
   size?: ShirtSize;
   price: number;
   quantity: number;
@@ -80,14 +84,19 @@ export interface EcomItem {
   index?: number;
 }
 
-export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number } = {}): EcomItem {
+/**
+ * A design as a commerce item. A personalised one is `<colour>-custom` at its
+ * price with the premium; its name stays the design's own (the place, date or
+ * year a customer chose never reaches analytics).
+ */
+export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown } = {}): EcomItem {
   return {
     item_id: shirt.id,
     item_name: shirt.title,
     item_category: CATEGORY_LABELS[shirt.category],
-    item_variant: color,
+    item_variant: custom ? `${color}-custom` : color,
     ...(size ? { size } : {}),
-    price: shirt.price,
+    price: shirt.price + (custom ? STORE_POLICY.customPremium : 0),
     quantity,
     ...(discount ? { discount } : {}),
     ...(index !== undefined ? { index } : {}),
@@ -117,6 +126,8 @@ export interface Landing {
   ref: string | null;
   has_taste: boolean;
   has_list: boolean;
+  /** Arrived on a personalised print's link (whether, never what). */
+  has_make: boolean;
   landing_path: string;
   referrer: string | null;
 }
@@ -139,6 +150,7 @@ export function captureLanding(loc: Pick<Location, "search" | "pathname"> = wind
     ref: q.get("ref"),
     has_taste: q.has("taste"),
     has_list: q.has("list"),
+    has_make: q.has("make"),
     landing_path: loc.pathname,
     referrer: referrer || null,
   };
