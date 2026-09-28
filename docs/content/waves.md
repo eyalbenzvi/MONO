@@ -23,4 +23,20 @@ No picture is looked at by Claude: the owner judges on the pages; scripts only p
 
 ## Wave 0: infrastructure and catalogue review
 
-- Date: 2026-09-27. Status: at stop 2 (catalogue review pages out).
+- Date: 2026-09-27. The catalogue review pages were published; the owner chose not to review now, so nothing was retired.
+- Built: `scripts/sources` (id blocks, licences, metadata filter, pipeline, adapters), `scripts/review` (selection page, hub, before/after page, decisions, automatic decisions), the `wave` field and `/shop/?wave=<n>`.
+- Found on the way: the 404 page's redirect assumed four-digit ids and that every number up to the last was live; it now lists exactly the designs without a page (five-digit ids included).
+
+## Selection without an eye (from wave 1)
+
+The owner delegated the selection ("do what you think; don't ask"). No picture is looked at, so `scripts/review/autoDecide.ts` keeps only what every number clears: quality at least 60 (the catalogue's weak line is 53), no sliver, vignette or flat flag, no solid block, no duplicate scan, no repeated title. Titles are the record's, tidied (file-name debris and plate running numbers out, 60 characters at most). General art museums must name the world in the title itself; scenes (sacred, mythological, fables, cigarette cards, long story titles) are refused by the metadata filter.
+
+## Wave 1: Ocean
+
+- Date: 2026-09-28. Drop: 2026-09-28 (12 new this week, four per category; the rest dated a week earlier).
+- Sources: Wikimedia Commons (Haeckel's Kunstformen der Natur, the Challenger reports, fish plates), the Met, the Art Institute of Chicago, the Cleveland Museum of Art. Skipped: Smithsonian (a sample showed specimen-drawer photographs, not plates), Internet Archive (no single images; books only), NOAA Photo Library (moved; the new address refuses the request), BHL (blocked here, 403).
+- Candidates → downloaded → kept → in the catalogue: 665 (Wikimedia capped at 400) → 405 → 197 → 184 (the catalogue's own rules retired the rest).
+- In: Botanical & Nature (SPC) 117 → 215, Engravings (ETC) 337 → 389, Brush & Woodblock (BRU) 118 → 152. Median quality of the wave 76, the catalogue's unchanged at 76. Two in Our pick's first 24, one in the taste test. public/prints 132 MB, .git 304 MB.
+- What worked: scientific plates (Haeckel, the Challenger) print clean as line work and pass the checks at a high rate. What didn't: general museum searches bring scenes whose tags mention a fish; the title rule and the scene filter were needed. AIC images need the `AIC-User-Agent` header its API asks for; Wikimedia rate-limits hard (one download at a time).
+- Next: wave 2, seafaring and navigation (LoC HABS/HAER measured drawings of lighthouses and ships, af Chapman's ship plans on Commons, nautical charts).
+

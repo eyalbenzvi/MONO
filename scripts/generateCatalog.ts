@@ -51,7 +51,7 @@ import { PHOTO_CATEGORIES, photoOrder, recordUrl, type PhotoSource } from "./pho
 import { set5Designs } from "./gen/set5";
 import { set7Designs } from "./gen/set7";
 import type { Selected } from "./sources/_types";
-import { INSTITUTION, SOURCE_LINE, WAVE_DROP, filing, licenseLine } from "./sources/waves";
+import { INSTITUTION, SOURCE_LINE, WAVE_DROP, filing, licenseLine, shortName } from "./sources/waves";
 import { ADDITIONS_FIRST_N, ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
 import { displayCategory } from "./gen/categories";
@@ -582,7 +582,7 @@ function sourcesSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       const first = sel.maker ? sel.maker.split(/[;\n]|\s{2,}/)[0].slice(0, 80).trim() : "";
       // Not a maker: a scanner, an uploader, "unknown".
       const maker = first && !/\b(?:scan|scanned|unknown|anonymous|upload|nypl|biodiversity heritage|library|wikimedia|see below|author)\b/i.test(first) ? first : null;
-      bytes += archiveDraft(shirts, sigs, taken, sel.n, { ...sel, group, name: sel.name, maker, date: sel.date?.slice(0, 40) ?? null, record: sel.record }, {
+      bytes += archiveDraft(shirts, sigs, taken, sel.n, { ...sel, group, name: shortName(sel.name), maker, date: sel.date?.slice(0, 40) ?? null, record: sel.record }, {
         unit: INSTITUTION[sel.source],
         credit: SOURCE_LINE[sel.source],
         url: sel.recordUrl,

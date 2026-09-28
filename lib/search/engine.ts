@@ -148,6 +148,9 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
   const personal = opts.tasteKnown && opts.vector ? makeScorer(opts.vector) : null;
   const exact = new Set(parsed.exact);
   const said = slots.map((x) => stem(x.word)).join(" ");
+  // The same words as corrected ("bidrs" → birds): a whole title still leads through a typo.
+  const fix = new Map(parsed.corrected.map((c) => [c.from, c.to]));
+  const saidFixed = slots.map((x) => stem(fix.get(x.word) ?? x.word)).join(" ");
   const titles = titleKey(catalog);
   const named: { shirt: ShirtProduct; score: number }[] = parsed.exact.map((i) => ({ shirt: catalog[i], score: 100 - catalog[i].rank / n }));
   const titled = new Set<ShirtProduct>();
@@ -159,7 +162,7 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
     // With words, a design must match one; "like this" alone orders everything but the design's own family.
     if (words.length && text[i] === 0) continue;
     if (sim && !words.length && s.family === catalog[from].family) continue;
-    const isTitle = !!said && titles[i] === said;
+    const isTitle = !!said && (titles[i] === said || titles[i] === saidFixed);
     if (isTitle) titled.add(s);
     // Relevance scaled by the share of words matched: a design with every word beats one rare word alone.
     let rel = words.length ? (text[i] / max) * (matched[i] / words.length) + (isTitle ? W_TITLE : 0) : 0;

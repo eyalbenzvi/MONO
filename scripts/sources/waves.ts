@@ -58,3 +58,13 @@ export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "
   if (PLATE.test(text) || s.source === "wikimedia") return { group: "natural-history", category: "specimens" };
   return { group: "etching", category: "etched" };
 }
+
+/** A record title as a design name of at most 60 characters: its first clause if that fits, else cut at a word. */
+export function shortName(t: string, max = 60): string {
+  // A plate's running number ("43. The Sea Wolf") is the book's, not what the picture shows.
+  const s = t.replace(/\s+/g, " ").replace(/^\d+\.\s+/, "").trim();
+  if (s.length <= max) return s;
+  const clause = /^(.{12,}?)\s*(?:[:;,(]| - | — )/.exec(s)?.[1];
+  if (clause && clause.length <= max) return clause.trim();
+  return s.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,.;:-]+$/, "");
+}
