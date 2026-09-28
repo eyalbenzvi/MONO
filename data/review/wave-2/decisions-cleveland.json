@@ -1,0 +1,187 @@
+{
+ "cleveland-522661": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-107987": "keep",
+ "cleveland-171501": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-121461": "keep",
+ "cleveland-121119": "keep",
+ "cleveland-101521": "keep",
+ "cleveland-536458": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-79063": "keep",
+ "cleveland-141694": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-120019": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-121499": "keep",
+ "cleveland-130970": "keep",
+ "cleveland-159469": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-165414": {
+  "decision": "keep",
+  "title_override": "Fishermen on a Pier, Paris"
+ },
+ "cleveland-129217": "keep",
+ "cleveland-114919": "keep",
+ "cleveland-159639": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-536592": "keep",
+ "cleveland-118613": "keep",
+ "cleveland-156630": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-103144": "keep",
+ "cleveland-103104": "keep",
+ "cleveland-99495": {
+  "decision": "keep",
+  "title_override": "Liber Studiorum: Ships in a Breeze"
+ },
+ "cleveland-107991": "keep",
+ "cleveland-123316": "keep",
+ "cleveland-100582": "keep",
+ "cleveland-121459": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-160564": "keep",
+ "cleveland-104304": "keep",
+ "cleveland-94873": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-103100": "keep",
+ "cleveland-97722": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-94875": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-132506": "keep",
+ "cleveland-367979": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "cleveland-163417": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-102044": "keep",
+ "cleveland-120356": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-94874": "keep",
+ "cleveland-154643": "keep",
+ "cleveland-130973": "keep",
+ "cleveland-107716": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-173965": "keep",
+ "cleveland-99515": {
+  "decision": "keep",
+  "title_override": "Liber Studiorum: Inverary Pier, Lock Fyne, Morning"
+ },
+ "cleveland-121460": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-121161": "keep",
+ "cleveland-149555": "keep",
+ "cleveland-150152": "keep",
+ "cleveland-121332": "keep",
+ "cleveland-107276": {
+  "decision": "keep",
+  "title_override": "Views: The Harbor at Dolo"
+ },
+ "cleveland-103101": "keep",
+ "cleveland-132214": "keep",
+ "cleveland-131337": "keep",
+ "cleveland-126707": "keep",
+ "cleveland-165416": {
+  "decision": "reject",
+  "reason": "quality 72"
+ },
+ "cleveland-98370": "keep",
+ "cleveland-145162": "keep",
+ "cleveland-121957": "keep",
+ "cleveland-100187": {
+  "decision": "reject",
+  "reason": "quality 71 sliver"
+ },
+ "cleveland-163750": "keep",
+ "cleveland-102790": {
+  "decision": "keep",
+  "title_override": "Little Calais Pier, 1865, 3 A.M"
+ },
+ "cleveland-156747": "keep",
+ "cleveland-121168": "keep",
+ "cleveland-114500": "keep",
+ "cleveland-124031": "keep",
+ "cleveland-106867": "keep",
+ "cleveland-136898": "keep",
+ "cleveland-110319": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-133284": "keep",
+ "cleveland-121193": "keep",
+ "cleveland-99424": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-103307": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "cleveland-136900": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "cleveland-125837": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "cleveland-100962": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "cleveland-114494": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "cleveland-74601": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "cleveland-132215": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "cleveland-114496": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "cleveland-136876": {
+  "decision": "reject",
+  "reason": "quality 36"
+ }
+}

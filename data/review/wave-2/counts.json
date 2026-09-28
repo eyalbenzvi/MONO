@@ -1,0 +1,53 @@
+{
+ "met": {
+  "found": 858,
+  "licensed": 609,
+  "filtered": 64,
+  "refusedLicense": {
+   "not public domain": 249
+  },
+  "removed": {
+   "off-world": 352,
+   "people": 61,
+   "unsuitable": 58,
+   "narrative": 309,
+   "text": 116,
+   "brand": 30,
+   "classification": 14
+  },
+  "final": 64
+ },
+ "artic": {
+  "found": 2886,
+  "licensed": 2886,
+  "filtered": 252,
+  "refusedLicense": {},
+  "removed": {
+   "off-world": 2338,
+   "classification": 548,
+   "people": 479,
+   "text": 107,
+   "narrative": 1133,
+   "low-res": 285,
+   "unsuitable": 188,
+   "brand": 11,
+   "no-image": 74,
+   "strip": 44
+  },
+  "final": 252
+ },
+ "cleveland": {
+  "found": 180,
+  "licensed": 180,
+  "filtered": 81,
+  "refusedLicense": {},
+  "removed": {
+   "narrative": 50,
+   "off-world": 71,
+   "low-res": 4,
+   "unsuitable": 3,
+   "people": 5
+  },
+  "final": 81
+ }
+}
