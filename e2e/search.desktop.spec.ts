@@ -37,7 +37,8 @@ test("search: \"/\" opens it; a typo still finds the design and says what it rea
   const pill = page.getByRole("button", { name: `Remove ${look.label}` });
   await expect(pill).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`[?&]f=look%3A${look.id}`));
-  await expect(page.getByText(/^\d+ tees$/)).toBeVisible();
+  // The visible count, not the screen-reader line that repeats it half a second later.
+  await expect(page.locator("p:not(.sr-only)").getByText(/^\d+ tees$/)).toBeVisible();
 
   // A reload opens the same search.
   await page.reload();

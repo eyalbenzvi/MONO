@@ -38,6 +38,19 @@ export const FALLBACK_CITY = 2643743;
 
 export const MADE: MadeProduct[] = [
   {
+    slug: "taste",
+    id: "make-taste",
+    template: "taste",
+    name: "Your Taste",
+    line: "A plant grown from everything you swiped.",
+    from: "From your swipes",
+    base: "phyllotaxis",
+    bases: ["phyllotaxis", "lsystem-*"],
+    // A taste that leans to nature, line and geometry (lib/custom/tasteCode, written out).
+    example: { t: "taste", v: 1, p: { q: "83227357236269461" } },
+    hints: { dense: "Swipe a few more; the plant changes with your taste.", faint: "Swipe a few more; the plant changes with your taste." },
+  },
+  {
     slug: "code",
     id: "make-code",
     template: "code",

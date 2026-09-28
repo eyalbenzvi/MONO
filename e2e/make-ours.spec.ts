@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { hydrated, seed } from "./helpers";
 import { make } from "./fixtures/custom";
 import catalogue from "../data/shirts.json";
 
@@ -97,4 +97,36 @@ test("Your Line: draw a line on the pad, turn it 8 times, mirror it; into the ba
   await expect(p2.getByRole("radio", { name: "8", exact: true })).toHaveAttribute("aria-checked", "true");
   await expect(p2.getByRole("switch", { name: "Mirror" })).toBeChecked();
   await other.close();
+});
+
+test("Your Taste: before the taste test, the example and a way to Discover (no bag); after it, your plant, into the bag", async ({ page, browser }) => {
+  await page.goto("make/taste/");
+  await hydrated(page);
+  await expect(page.getByRole("link", { name: "Ten swipes first →" })).toBeVisible();
+  await expect(page.locator("canvas[data-custom]").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Add to bag|Choose size/ })).toHaveCount(0);
+
+  const ctx = await browser.newContext();
+  const p2 = await ctx.newPage();
+  await seed(p2);
+  await p2.goto("make/taste/");
+  await hydrated(p2);
+  await expect(p2.getByText("Grown from your swipes.", { exact: false })).toBeVisible();
+  await drawn(p2);
+  await addAndOpenBag(p2);
+  await expect(p2.getByText("Your Taste", { exact: true })).toBeVisible();
+  await ctx.close();
+});
+
+test("Your Taste: a friend's taste that came with the visit can be grown instead (the gift)", async ({ page }) => {
+  await seed(page);
+  await page.goto("make/taste/?taste=2i1e1e2n1e1e1e1e1e1e1e281e1e1e1e1e");
+  await hydrated(page);
+  await drawn(page);
+  const mine = new URL(page.url()).searchParams.get("make");
+  await page.getByRole("button", { name: "Grow your friend's instead" }).tap();
+  await expect(page.getByText("Grown from your friend's taste.")).toBeVisible();
+  await expect.poll(() => new URL(page.url()).searchParams.get("make")).not.toBe(mine);
+  await page.getByRole("button", { name: "Grow yours instead" }).tap();
+  await expect.poll(() => new URL(page.url()).searchParams.get("make")).toBe(mine);
 });

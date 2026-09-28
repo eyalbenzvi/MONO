@@ -39,6 +39,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   moon: DateEditor,
   night: DateEditor,
   planets: DateEditor,
+  taste: lazy(() => import("@/components/custom/editors/TasteEditor")),
   code: lazy(() => import("@/components/custom/editors/CodeEditor")),
   line: lazy(() => import("@/components/custom/editors/LineEditor")),
 };
