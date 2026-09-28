@@ -11,3 +11,4 @@ test-results
 playwright-report
 public/img
 __pycache__
+.claude/worktrees/
