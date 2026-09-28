@@ -40,6 +40,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   night: DateEditor,
   planets: DateEditor,
   code: lazy(() => import("@/components/custom/editors/CodeEditor")),
+  line: lazy(() => import("@/components/custom/editors/LineEditor")),
 };
 
 interface Shown {

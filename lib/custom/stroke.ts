@@ -1,6 +1,7 @@
 /**
- * Your Line's stroke, from the pad to the spec: simplified (Ramer–Douglas–
- * Peucker, ε = 0.004 of the pad), fitted to the unit square, put on the
+ * Your Line's stroke, from the pad to the spec: fitted to the unit square
+ * (its shape, not its place on the pad), simplified (Ramer–Douglas–Peucker,
+ * ε = 0.004 of the pad), put on the
  * 256-step grid and encoded (lib/custom/spec encodeStroke). At most 256
  * points; a longer line is simplified harder until it fits.
  */
@@ -24,14 +25,15 @@ export function simplify(points: readonly Pt[], eps: number): Pt[] {
   return [...simplify(points.slice(0, at + 1), eps).slice(0, -1), ...simplify(points.slice(at), eps)];
 }
 
-/**
- * A drawn stroke (pad pixels, pad side `size`) as the spec's `s`, or null
- * when there's nothing to go round (a dot). The line keeps its place on the
- * pad: the pad is the unit square, so where it was drawn is where it sits in
- * each sector.
- */
+/** A drawn stroke (pad pixels, pad side `size`) as the spec's `s`, or null when there's nothing to go round (a dot). */
 export function strokeSpec(points: readonly Pt[], size: number): string | null {
-  const unit = points.map(([x, y]) => [Math.min(1, Math.max(0, x / size)), Math.min(1, Math.max(0, y / size))] as const);
+  // Normalised to the unit square: its longer side spans it, the shorter centred (the shape kept, not the place).
+  const xs = points.map((q) => q[0]), ys = points.map((q) => q[1]);
+  const [x0, y0] = [Math.min(...xs), Math.min(...ys)];
+  const span = Math.max(Math.max(...xs) - x0, Math.max(...ys) - y0);
+  if (!points.length || span < size * 0.01) return null;
+  const [ox, oy] = [(span - (Math.max(...xs) - x0)) / 2, (span - (Math.max(...ys) - y0)) / 2];
+  const unit = points.map(([x, y]) => [(x - x0 + ox) / span, (y - y0 + oy) / span] as const);
   // Harder and harder until it fits (at worst the line from end to end).
   for (let eps = 0.004; eps < 2; eps *= 1.5) {
     const grid: [number, number][] = [];

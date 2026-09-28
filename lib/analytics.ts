@@ -43,7 +43,8 @@ export type AnalyticsEvent =
   | "share_taste"
   // Make: the product or template only, never what was typed, drawn or said.
   | "make_open"
-  | "customize_apply";
+  | "customize_apply"
+  | "line_draw";
 
 export type AnalyticsProps = Record<string, unknown>;
 

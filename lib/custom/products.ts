@@ -51,6 +51,20 @@ export const MADE: MadeProduct[] = [
     hints: { dense: "Try another code.", faint: "Try a longer name, or another code." },
   },
   {
+    slug: "line",
+    id: "make-line",
+    template: "line",
+    name: "Your Line",
+    line: "One line you draw, turned into an ornament.",
+    from: "From a line you draw",
+    base: "rosette",
+    bases: ["rosette", "guilloche"],
+    wordsHint: "For Maya",
+    // The second of the example lines (lib/custom/stroke exampleStroke(1), a leaf), written out: this list is in every page.
+    example: { t: "line", v: 1, p: { s: "AKZYTzQlNhc0CzQGJAwkEjQmWFA", n: 12, w: "For Maya" } },
+    hints: { dense: "Too many repeats for this line. Try fewer repeats.", faint: "Try a longer line." },
+  },
+  {
     slug: "sky",
     id: "make-sky",
     template: "sky",

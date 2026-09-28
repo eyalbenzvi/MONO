@@ -69,3 +69,32 @@ test("the designs a product is drawn like lead to it (Make your own →)", async
     await expect(page).toHaveURL(new RegExp(`/make/${slug}/`));
   }
 });
+
+test("Your Line: draw a line on the pad, turn it 8 times, mirror it; into the bag; the link reopens it", async ({ page, browser }) => {
+  await page.goto("make/line/");
+  await hydrated(page);
+  await drawn(page);
+  const before = page.url();
+  await page.locator("[data-pad]").scrollIntoViewIfNeeded();
+  const box = (await page.locator("[data-pad]").boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5);
+  await page.mouse.down();
+  for (let i = 1; i <= 20; i++) await page.mouse.move(box.x + box.width * (0.2 + i * 0.03), box.y + box.height * (0.5 + Math.sin(i / 3) * 0.2));
+  await page.mouse.up();
+  await expect.poll(() => page.url()).not.toBe(before);
+  await page.getByRole("radio", { name: "8", exact: true }).tap();
+  await page.getByText("Mirror", { exact: true }).tap();
+  await expect(page.getByRole("switch", { name: "Mirror" })).toBeChecked();
+  await expect.poll(() => new URL(page.url()).searchParams.get("make") ?? "").toMatch(/./);
+  await page.waitForTimeout(400);
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText("Your Line · 8-fold")).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await expect(p2.getByRole("radio", { name: "8", exact: true })).toHaveAttribute("aria-checked", "true");
+  await expect(p2.getByRole("switch", { name: "Mirror" })).toBeChecked();
+  await other.close();
+});

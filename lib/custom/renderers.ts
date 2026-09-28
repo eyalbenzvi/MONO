@@ -17,6 +17,7 @@ export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) =>
 /** Templates with a chunk of their own (each module exports `render`). */
 const OWN: Partial<Record<TemplateId, () => Promise<{ render: Renderer }>>> = {
   code: () => import("./templates/code"),
+  line: () => import("./templates/line"),
 };
 
 export async function loadRenderer(t: TemplateId): Promise<Renderer> {
