@@ -116,7 +116,7 @@ describe("personalised prints: a spec", () => {
 
   it("the words: tidied, at most WORDS_MAX characters the print's font can set; anything else and the spec is null", () => {
     expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w: "  Noa,   welcome " } })).toEqual({ t: "night", v: 1, p: { d: "2021-11-19", w: "Noa, welcome" } });
-    expect(validate({ t: "moon", v: 1, p: { y: 2020, w: "Ça va · 2020!" } })?.p.w).toBe("Ça va · 2020!");
+    expect((validate({ t: "moon", v: 1, p: { y: 2020, w: "Ça va · 2020!" } })?.p as { w?: string } | undefined)?.w).toBe("Ça va · 2020!");
     expect(cleanWords("x".repeat(WORDS_MAX))).toBe("x".repeat(WORDS_MAX));
     for (const w of ["x".repeat(WORDS_MAX + 1), "", "   ", "נועה", "<b>hi</b>", "a\u0000b", 42]) expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w } }), String(w)).toBeNull();
     expect(sky({ c: TLV.id, d: "1991-03-14", w: "The night we met" })).toEqual({ t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14", w: "The night we met" } });

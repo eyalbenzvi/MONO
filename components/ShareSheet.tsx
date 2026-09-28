@@ -87,8 +87,18 @@ const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, ma
 /** What a made-for-you link gives away, said before it's sent. */
 function makeNote(make: string) {
   const spec = decodeMake(make);
-  const what = spec?.t === "moon" ? "the year" : spec?.t === "sky" ? "the date and place" : "the date";
-  return `This link includes ${what}${spec?.p.w ? " and your words" : ""}`;
+  const WHAT: Record<string, string> = {
+    moon: "the year",
+    sky: "the date and place",
+    taste: "your taste",
+    code: "your name",
+    line: "your line",
+    voice: "the numbers from your voice (never the sound)",
+    house: "your house's floors, windows and number",
+    number: "your number and its label",
+  };
+  const what = (spec && WHAT[spec.t]) ?? "the date";
+  return `This link includes ${what}${spec && "w" in spec.p && spec.p.w ? " and your words" : ""}`;
 }
 
 export function ShareSheet() {

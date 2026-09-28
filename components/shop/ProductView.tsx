@@ -42,8 +42,9 @@ const CHOICES: readonly Choice[] = ["black", "white", "both"];
  * its price anchor); the original is marked in the label. A design sold in
  * one colour only (T3) shows that colour, and no choice.
  */
-export function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
-  const keys = radioKeys(CHOICES, value, onChange);
+export function TeeChoice({ value, original, colors, onChange, noBoth = false }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void; noBoth?: boolean }) {
+  // A Make print that one tee can't carry: no pair to offer (the Both option is disabled).
+  const keys = radioKeys(noBoth ? CHOICES.filter((c) => c !== "both") : CHOICES, value, onChange);
   // Sold in one colour (T3): no choice to make — say so, plainly.
   if (colors.length < 2)
     return (
@@ -56,14 +57,16 @@ export function TeeChoice({ value, original, colors, onChange }: { value: Choice
     <div className="flex items-center gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
       {CHOICES.map((c, i) => {
         const active = value === c;
-        const common = { type: "button" as const, role: "radio", "aria-checked": active, onClick: () => onChange(c), ...keys(i) };
+        const off = c === "both" && noBoth;
+        const common = { type: "button" as const, role: "radio", "aria-checked": active, onClick: () => onChange(c), ...(off ? { tabIndex: -1 } : keys(i)) };
         if (c === "both")
           return (
             <button
               key={c}
               {...common}
-              aria-label="Both tees, black and white"
-              className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full pl-1 pr-2.5 text-xs font-semibold transition ${active ? "bg-white text-black" : "text-white hover:bg-white/10"}`}
+              disabled={off}
+              aria-label={off ? "Both tees (this print suits one tee only)" : "Both tees, black and white"}
+              className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full pl-1 pr-2.5 text-xs font-semibold transition disabled:opacity-40 ${active ? "bg-white text-black" : "text-white hover:bg-white/10"}`}
             >
               <span aria-hidden className="h-6 w-6 shrink-0 rounded-full bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-1 ring-white/40" />
               Both

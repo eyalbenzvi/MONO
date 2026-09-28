@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
@@ -8,63 +8,49 @@ import { Icon } from "@/components/Icon";
 import { SizeSelector, STAGE_BG } from "@/components/ui";
 import { TeeChoice } from "@/components/shop/ProductView";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { CityField, cityLabel } from "@/components/custom/CityField";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { CustomPrint } from "@/components/custom/CustomPrint";
+import type { EditorProps, EditorState } from "@/components/custom/editors/types";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { pairPrice, pairStatus, unitPrice } from "@/lib/cart";
-import { renderCustomSvg } from "@/lib/custom";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
-import { loadCities, loadSky, type Places } from "@/lib/custom/data";
-import { FALLBACK_CITY, madeBySlug, type MadeProduct } from "@/lib/custom/products";
-import { WEAK_QUALITY, assessPrint, solidBlock } from "@/lib/custom/quality";
+import { checkPrint, type PrintCheck } from "@/lib/custom/printCheck";
+import { madeBySlug, type MadeProduct } from "@/lib/custom/products";
 import { inkFromCanvas } from "@/lib/custom/raster";
-import { FIRST_YEAR, LAST_YEAR, PLANETS_LAST_YEAR, WORDS_MAX, cleanWords, decodeMake, encodeMake, parseDate, parseTime, type City, type CustomSpec } from "@/lib/custom/spec";
-import type { SkyData } from "@/lib/custom/templates/sky";
+import { loadRenderer, type Renderer } from "@/lib/custom/renderers";
+import { decodeMake, encodeMake, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
 import { SIZES } from "@/lib/images";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
-import { SIZE_LABELS, teeColor, type BaseColor } from "@/types/shirt";
+import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt";
 
 /** The preview waits this long after a change (longer on a device where a render is slow). */
 const DEBOUNCE = 150;
 const SLOW_DEBOUNCE = 300;
-const pad = (n: number) => String(n).padStart(2, "0");
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-};
 
-/** The visitor's place, from their time zone: its biggest city (London when the zone has none in the list). */
-export function autoCity(places: Places): City | undefined {
-  let zone = "";
-  try {
-    zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  } catch {
-    /* no zone: the fallback */
-  }
-  const inZone = places.list.filter((c) => c.tz === zone).sort((a, b) => b.pop - a.pop)[0];
-  return inZone ?? places.byId(FALLBACK_CITY);
+/** Each product's fields, a chunk of its own (a product's page loads only its editor). */
+const DateEditor = lazy(() => import("@/components/custom/editors/DateEditor"));
+const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = { sky: DateEditor, moon: DateEditor, night: DateEditor, planets: DateEditor };
+
+interface Shown {
+  spec: CustomSpec;
+  svg: string;
+  color: BaseColor;
+  check: PrintCheck;
+  /** Whether the other tee prints this spec too (the pair is offered only then); null until checked. */
+  other: boolean | null;
 }
-
-/** Whether a print will print: not a solid block, and not weak by the catalogue's own line (lib/custom/quality). */
-function printable(svg: string, color: BaseColor) {
-  const ink = inkFromCanvas(svg, color);
-  const a = assessPrint(ink);
-  return !solidBlock(ink).reject && a.quality >= WEAK_QUALITY && a.flags.length === 0;
-}
-
-const input = "h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white [color-scheme:dark]";
 
 /**
- * A made-for-you tee's page: the editor is the page. Your words, your day
- * (and your place, from your time zone, for a sky), the picture redrawn as
- * you go, then size and bag. The address carries the print (`?make=`), so a
- * reload or a shared link opens it as it was.
+ * A Make product's page: the editor is the page. Its own fields (a name, a
+ * line, a night), the picture redrawn as you go, then size and bag. The
+ * address carries the print (`?make=`), so a reload or a shared link opens
+ * it as it was. Every print passes the catalogue's gate before it can be
+ * bought; a pair only when both tees pass.
  */
 export function MakeView({ slug }: { slug: string }) {
   const made = madeBySlug(slug) as MadeProduct;
@@ -79,123 +65,94 @@ export function MakeView({ slug }: { slug: string }) {
   const [both, setBoth] = useState(false);
   const color: BaseColor = shirt ? teeColor(shirt, hydrated ? pickedColor : null) : "black";
 
-  // Data: the place list (a sky's place; the hemisphere's default elsewhere) and the sky.
-  const [places, setPlaces] = useState<Places | null>(null);
-  const [sky, setSky] = useState<SkyData | null>(null);
+  // The print the address arrived with, if it's this product's (read once, after hydration).
+  const [arrival, setArrival] = useState<CustomSpec | null | undefined>(undefined);
+  useEffect(() => {
+    if (!hydrated || arrival !== undefined) return;
+    const spec = decodeMake(new URLSearchParams(window.location.search).get("make"));
+    setArrival(spec && spec.t === made.template ? spec : null);
+    track("make_open", { product: made.slug });
+  }, [hydrated, arrival, made]);
+
+  // What the editor makes of its fields.
+  const [state, setState] = useState<EditorState>({ spec: null });
+  const onEditor = useCallback((s: EditorState) => setState(s), []);
+  const spec = state.blocked ? made.example : state.spec;
+
+  // The picture: debounced, checked (a print that won't print well isn't offered), and the address kept in step.
+  const [shown, setShown] = useState<Shown | null>(null);
+  const [renderer, setRenderer] = useState<Renderer | null>(null);
   useEffect(() => {
     let live = true;
     loadCanvasFonts();
-    loadCities()
-      .then((p) => live && setPlaces(p))
-      .catch(() => {});
-    if (made.template === "sky")
-      loadSky()
-        .then((s) => live && setSky(s))
-        .catch(() => {});
+    loadRenderer(made.template).then((r) => live && setRenderer(() => r));
     return () => {
       live = false;
     };
   }, [made.template]);
-
-  // Fields. From the address when it carries a print for this product, else today and your place.
-  const [words, setWords] = useState("");
-  const [date, setDate] = useState(today);
-  const [time, setTime] = useState("");
-  const [year, setYear] = useState(String(new Date().getFullYear()));
-  const [cityId, setCityId] = useState<number | null>(null);
-  const [south, setSouth] = useState<boolean | null>(null);
-  const [changingPlace, setChangingPlace] = useState(false);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const arrived = useRef(false);
-  useEffect(() => {
-    if (!places || arrived.current) return;
-    arrived.current = true;
-    const spec = decodeMake(new URLSearchParams(window.location.search).get("make"), places.byId);
-    if (spec && spec.t === made.template) {
-      setWords(spec.p.w ?? "");
-      if (spec.t === "moon") setYear(String(spec.p.y));
-      else setDate(spec.p.d);
-      if (spec.t === "sky") (setCityId(spec.p.c), setTime(spec.p.t ?? ""));
-      if (spec.t === "moon" || spec.t === "night") setSouth(spec.p.s === 1);
-    }
-    track("customize_open", { template: made.template });
-  }, [places, made.template]);
-  const here = useMemo(() => (places ? autoCity(places) : undefined), [places]);
-  const city = cityId && places ? places.byId(cityId) : here;
-  const southNow = south ?? (here ? here.lat < 0 : false);
-
-  const lastYear = made.template === "planets" ? PLANETS_LAST_YEAR : LAST_YEAR;
-  // The words lexicon (lib/custom/lexicon) loads with the page's first words; until it's here, words wait.
-  const [lexicon, setLexicon] = useState<typeof import("@/lib/custom/lexicon") | null>(null);
-  useEffect(() => {
-    if (words.trim() && !lexicon) import("@/lib/custom/lexicon").then(setLexicon);
-  }, [words, lexicon]);
-  const refused = words.trim() && lexicon ? lexicon.wordsProblem(words) : null;
-  const w = words.trim() ? (refused || !lexicon ? null : cleanWords(words)) : undefined;
-  const dateOk = !!parseDate(date) && Number(date.slice(0, 4)) <= lastYear;
-  const spec: CustomSpec | null = useMemo(() => {
-    if (w === null) return null;
-    const words = w ? { w } : {};
-    const s = southNow ? { s: 1 as const } : {};
-    if (made.template === "moon") {
-      const y = Number(year);
-      return /^\d{4}$/.test(year) && y >= FIRST_YEAR && y <= LAST_YEAR ? { t: "moon", v: 1, p: { y, ...s, ...words } } : null;
-    }
-    if (!dateOk) return null;
-    if (made.template === "night") return { t: "night", v: 1, p: { d: date, ...s, ...words } };
-    if (made.template === "planets") return { t: "planets", v: 1, p: { d: date, ...words } };
-    if (!city || (time && !parseTime(time))) return null;
-    return { t: "sky", v: 1, p: { c: city.id, d: date, ...(time ? { t: time } : {}), ...words } };
-  }, [w, southNow, made.template, year, dateOk, date, city, time]);
-
-  // The picture: debounced, checked (a print that won't print well isn't offered), and the address kept in step.
-  const [shown, setShown] = useState<{ spec: CustomSpec; svg: string; color: BaseColor } | null>(null);
-  const [bad, setBad] = useState(false);
   const slow = useRef(false);
-  /** Draws and checks the print now (fonts loaded); whether it may be sold. */
-  const draw = (spec: CustomSpec) => {
-    const start = performance.now();
-    const svg = renderCustomSvg(spec, color, { sky: sky ?? undefined, city });
-    const ok = printable(svg, color);
-    if (performance.now() - start > 100) slow.current = true;
-    setBad(!ok);
-    if (ok) {
-      setShown({ spec, svg, color });
-      const q = new URLSearchParams(window.location.search);
-      q.set("make", encodeMake(spec));
-      window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
-    }
-    return ok;
-  };
-  const drawRef = useRef(draw);
-  drawRef.current = draw;
-  const canDraw = !!spec && (spec.t !== "sky" || !!sky);
+  /** Draws and checks the print now (fonts loaded). */
+  const draw = useCallback(
+    (spec: CustomSpec, color: BaseColor): Shown | null => {
+      if (!renderer) return null;
+      const start = performance.now();
+      const svg = renderer(spec, color, state.data ?? {});
+      const check = checkPrint(inkFromCanvas(svg, color), made.hints);
+      if (performance.now() - start > 100) slow.current = true;
+      const next = { spec, svg, color, check, other: null };
+      setShown(next);
+      if (check.ok && !state.blocked) {
+        const q = new URLSearchParams(window.location.search);
+        q.set("make", encodeMake(spec));
+        window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
+      }
+      return next;
+    },
+    [renderer, state.data, state.blocked, made.hints],
+  );
   useEffect(() => {
-    if (!spec || !canDraw) return;
-    const t = setTimeout(() => loadCanvasFonts().then(() => drawRef.current(spec)), slow.current ? SLOW_DEBOUNCE : DEBOUNCE);
+    if (!spec || !renderer) return;
+    const t = setTimeout(() => loadCanvasFonts().then(() => draw(spec, color)), slow.current ? SLOW_DEBOUNCE : DEBOUNCE);
     return () => clearTimeout(t);
-  }, [spec, canDraw, city, color]);
-  const ready = !!spec && !bad && shown?.spec === spec;
+  }, [spec, renderer, color, draw]);
+  // Then, quietly, the other tee: the pair is offered only when both print.
+  useEffect(() => {
+    if (!shown || shown.other !== null || !shown.check.ok || !renderer || !shirt || shirt.colors.length < 2) return;
+    const t = setTimeout(() => {
+      const c = otherColor(shown.color);
+      const ok = checkPrint(inkFromCanvas(renderer(shown.spec, c, state.data ?? {}), c), made.hints).ok;
+      setShown((s) => (s === shown ? { ...s, other: ok } : s));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [shown, renderer, shirt, state.data, made.hints]);
+  const current = shown && shown.spec === spec && shown.color === color ? shown : null;
+  const ready = !!current?.check.ok && !state.blocked;
+  const pairOk = current?.other === true;
+  useEffect(() => {
+    if (both && current && current.other === false) setBoth(false);
+  }, [both, current]);
 
   // The bag.
   const addToCart = useCartStore((s) => s.addToCart);
   const addPair = useCartStore((s) => s.addPair);
   const [added, setAdded] = useState(false);
   const [nudge, setNudge] = useState(0);
+  const [tried, setTried] = useState(false);
   const unit = shirt ? unitPrice({ custom: true }, shirt) : 0;
   const pairTotal = pairPrice(spec ?? undefined);
   const pair = both && size && spec ? pairStatus(cart, made.id, size, spec) : null;
   const onBuy = () => {
-    if (!spec) return setTouched({ words: true, date: true, time: true, year: true, place: true });
+    if (!state.spec) return setTried(true);
     // A tap right after a change doesn't wait for the preview: the print is drawn and checked now.
-    if (!ready && !(canDraw && draw(spec))) return;
+    const now = ready ? current : draw(state.spec, color);
+    if (!now?.check.ok) return;
     if (!size) return setNudge((n) => n + 1);
     if (added) return router.push("/cart/");
-    const ok = both ? addPair(made.id, size, { source: "product", custom: spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: spec });
+    const ok = both && pairOk ? addPair(made.id, size, { source: "product", custom: state.spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
-    // A third of a like of the design it's drawn like (its taste, never the inputs).
+    // A small like of the design it's drawn like (its taste, never the inputs; once per design).
     const base = SHIRTS.find((s) => s.variant === made.base);
     if (base) useTasteStore.getState().likeCustom(base.id);
     track("customize_apply", { template: made.template });
@@ -205,16 +162,11 @@ export function MakeView({ slug }: { slug: string }) {
 
   const [zoom, setZoom] = useState(false);
   const [view, setView] = useState<"tee" | "print">("tee");
-  const errors = {
-    // A refusal shows at once (it's not a typo to finish); the character rule once the field is left.
-    words: refused ?? (touched.words && lexicon && w === null ? `Up to ${WORDS_MAX} letters, numbers and simple punctuation` : ""),
-    date: touched.date && !dateOk ? `Pick a date between ${FIRST_YEAR} and ${lastYear}` : "",
-    time: touched.time && time && !parseTime(time) ? "Pick a time, or leave it empty" : "",
-    year: touched.year && made.template === "moon" && !spec ? `Pick a year between ${FIRST_YEAR} and ${LAST_YEAR}` : "",
-  };
 
   if (!shirt) return null;
+  const Editor = EDITORS[made.template];
   const svg = shown && shown.color === color ? shown.svg : null;
+  const problem = current && !current.check.ok && !state.blocked ? current.check.reason : null;
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
@@ -223,14 +175,16 @@ export function MakeView({ slug }: { slug: string }) {
           <Link href="/make/" className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
-          <button
-            type="button"
-            onClick={() => shown && useUiStore.getState().openShare(made.id, color, encodeMake(shown.spec))}
-            aria-label="Share"
-            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
-          >
-            <Icon name="share-2" className="h-5 w-5" />
-          </button>
+          {!state.blocked && (
+            <button
+              type="button"
+              onClick={() => ready && current && useUiStore.getState().openShare(made.id, color, encodeMake(current.spec))}
+              aria-label="Share"
+              className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
+            >
+              <Icon name="share-2" className="h-5 w-5" />
+            </button>
+          )}
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <div className={`relative flex aspect-square max-h-[56dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:sticky md:top-4 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
@@ -245,17 +199,20 @@ export function MakeView({ slug }: { slug: string }) {
                 <div className="aspect-[512/704] h-full animate-pulse rounded-2xl bg-white/[0.03]" aria-hidden />
               )}
             </button>
-            <div className="absolute bottom-3 left-3">
-              <TeeChoice
-                value={both ? "both" : color}
-                original={shirt.baseColor}
-                colors={shirt.colors}
-                onChange={(c) => {
-                  setBoth(c === "both");
-                  if (c !== "both") setColor(made.id, c);
-                }}
-              />
-            </div>
+            {!state.blocked && (
+              <div className="absolute bottom-3 left-3">
+                <TeeChoice
+                  value={both ? "both" : color}
+                  original={shirt.baseColor}
+                  colors={shirt.colors}
+                  noBoth={!pairOk}
+                  onChange={(c) => {
+                    setBoth(c === "both");
+                    if (c !== "both") setColor(made.id, c);
+                  }}
+                />
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setView((v) => (v === "tee" ? "print" : "tee"))}
@@ -277,118 +234,40 @@ export function MakeView({ slug }: { slug: string }) {
               }}
               noValidate
             >
-              <Field label="Your words" hint="optional" error={errors.words} htmlFor="make-words">
-                <input
-                  id="make-words"
-                  value={words}
-                  maxLength={WORDS_MAX}
-                  placeholder={made.wordsHint}
-                  autoComplete="off"
-                  onChange={(e) => setWords(e.target.value)}
-                  onBlur={() => setTouched((t) => ({ ...t, words: true }))}
-                  aria-invalid={!!errors.words}
-                  className={input}
-                />
-              </Field>
-              {made.template === "moon" ? (
-                <Field label="Year" error={errors.year} htmlFor="make-year">
-                  <input
-                    id="make-year"
-                    inputMode="numeric"
-                    maxLength={4}
-                    autoComplete="off"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    onBlur={() => setTouched((t) => ({ ...t, year: true }))}
-                    aria-invalid={!!errors.year}
-                    className={`${input} font-mono`}
-                  />
-                </Field>
-              ) : (
-                <div className={made.template === "sky" ? "grid grid-cols-[1fr_8rem] gap-3" : ""}>
-                  <Field label={made.template === "planets" ? "Day" : "Night"} error={errors.date} htmlFor="make-date">
-                    <input
-                      id="make-date"
-                      type="date"
-                      min={`${FIRST_YEAR}-01-01`}
-                      max={`${lastYear}-12-31`}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      onBlur={() => setTouched((t) => ({ ...t, date: true }))}
-                      aria-invalid={!!errors.date}
-                      className={input}
-                    />
-                  </Field>
-                  {made.template === "sky" && (
-                    <Field label="Time" hint="optional" error={errors.time} htmlFor="make-time">
-                      <input id="make-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, time: true }))} aria-invalid={!!errors.time} className={input} />
-                    </Field>
-                  )}
-                </div>
+              {Editor && arrival !== undefined && (
+                <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />}>
+                  <Editor made={made} arrival={arrival} touched={tried} onChange={onEditor} />
+                </Suspense>
               )}
-              {made.template === "sky" &&
-                (changingPlace ? (
-                  <CityField
-                    places={places}
-                    value={cityId ? city : undefined}
-                    onChange={(c) => {
-                      setCityId(c?.id ?? null);
-                      if (c) setChangingPlace(false);
-                    }}
-                    error=""
-                    onBlur={() => setTouched((t) => ({ ...t, place: true }))}
-                  />
-                ) : (
-                  <p className="flex min-h-10 flex-wrap items-center gap-x-2 text-sm text-neutral-400" data-place>
-                    <span>
-                      Seen from <span className="text-neutral-200">{city ? cityLabel(city) : "…"}</span>
-                      {!cityId && city ? " (your time zone)" : ""}
-                    </span>
-                    <button type="button" onClick={() => setChangingPlace(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
-                      Change
-                    </button>
-                  </p>
-                ))}
-              {(made.template === "moon" || made.template === "night") && (
-                <label className="flex h-11 cursor-pointer items-center justify-between text-sm text-neutral-300">
-                  Seen from the south
-                  <input type="checkbox" role="switch" checked={southNow} onChange={(e) => setSouth(e.target.checked)} className="peer sr-only" />
-                  <span aria-hidden className="relative h-6 w-10 rounded-full bg-white/15 transition peer-checked:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-white peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4 peer-checked:after:bg-black" />
-                </label>
+              {problem && (
+                <p className="text-xs text-neutral-300" role="status" data-print-problem>
+                  {problem}
+                </p>
               )}
-              {bad && spec && <p className="text-xs text-neutral-300">This one won&apos;t print well. Try another date</p>}
-
-              <div className="mt-1">
-                <SizeSelector key={nudge} value={size} onChange={(s) => setSize(made.id, s)} highlight={nudge > 0 && !size} />
-              </div>
-              <button type="submit" disabled={!hydrated} className="hidden h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40 md:flex" aria-live="polite">
-                <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
-                {buyLabel}
-              </button>
-              <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.</p>
+              {!state.blocked && (
+                <>
+                  <div className="mt-1">
+                    <SizeSelector key={nudge} value={size} onChange={(s) => setSize(made.id, s)} highlight={nudge > 0 && !size} />
+                  </div>
+                  <button type="submit" disabled={!hydrated} className="hidden h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40 md:flex" aria-live="polite">
+                    <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
+                    {buyLabel}
+                  </button>
+                  <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.</p>
+                </>
+              )}
             </form>
           </div>
         </div>
       </div>
-      <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
-        <button type="button" onClick={onBuy} disabled={!hydrated} className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40">
-          <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4 shrink-0" />
-          <span className="truncate">{buyLabel}</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, hint, error, htmlFor, children }: { label: string; hint?: string; error?: string; htmlFor: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label htmlFor={htmlFor} className="mb-1 flex items-baseline gap-2 text-xs font-medium text-neutral-400">
-        {label}
-        {hint && <span className="text-neutral-500">{hint}</span>}
-      </label>
-      {children}
-      {error && <p className="mt-1 text-xs text-neutral-300">{error}</p>}
+      {!state.blocked && (
+        <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
+          <button type="button" onClick={onBuy} disabled={!hydrated} className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40">
+            <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4 shrink-0" />
+            <span className="truncate">{buyLabel}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

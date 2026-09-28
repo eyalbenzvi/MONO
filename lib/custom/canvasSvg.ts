@@ -1,7 +1,7 @@
 /**
  * A computed print drawn straight onto a canvas: the handful of SVG elements
- * the templates write (rect, circle, line, path, text; flat fills and strokes)
- * drawn with the canvas's own primitives, path data through Path2D (which
+ * the templates write (rect, circle, line, path, text; flat fills and strokes;
+ * groups that translate and scale) drawn with the canvas's own primitives, path data through Path2D (which
  * reads SVG path data as it is). Several times faster than decoding the SVG
  * as an image, which is what lets the editor's preview follow the typing.
  * Text is set in DejaVu Sans Mono, registered once through the FontFace API
@@ -31,7 +31,9 @@ export function loadCanvasFonts(): Promise<void> {
   return fonts;
 }
 
-const ELEMENT = /<(rect|circle|line|path|text)\b([^>]*?)(?:\/>|>([^<]*)<\/text>)/g;
+const ELEMENT = /<(rect|circle|line|path|text)\b([^>]*?)(?:\/>|>([^<]*)<\/text>)|<g\b([^>]*)>|<\/g>/g;
+/** A group's transform: translate(x y) and scale(k [k]), in that order or alone (all the templates write). */
+const TRANSFORM = /(translate|scale)\(\s*([-\d.e]+)(?:[\s,]+([-\d.e]+))?\s*\)/g;
 const ATTR = /([\w:-]+)="([^"]*)"/g;
 const entities = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
 
@@ -42,7 +44,19 @@ const entities = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").re
 export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h: number) {
   ctx.save();
   ctx.scale(w / 300, h / 400);
-  for (const [, tag, attrText, content] of svg.matchAll(ELEMENT)) {
+  for (const [whole, tag, attrText, content, groupAttrs] of svg.matchAll(ELEMENT)) {
+    if (!tag) {
+      if (whole === "</g>") ctx.restore();
+      else {
+        ctx.save();
+        const t = /transform="([^"]*)"/.exec(groupAttrs ?? "")?.[1] ?? "";
+        for (const [, op, x, y] of t.matchAll(TRANSFORM)) {
+          if (op === "translate") ctx.translate(Number(x), Number(y ?? 0));
+          else ctx.scale(Number(x), Number(y ?? x));
+        }
+      }
+      continue;
+    }
     const a: Record<string, string> = {};
     for (const [, k, v] of attrText.matchAll(ATTR)) a[k] = v;
     const n = (k: string, d = 0) => (a[k] !== undefined ? Number(a[k]) : d);
@@ -74,7 +88,11 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
       continue;
     }
     const p = new Path2D();
-    if (tag === "rect") p.rect(n("x"), n("y"), n("width"), n("height"));
+    if (tag === "rect") {
+      const r = n("rx");
+      if (r && typeof p.roundRect === "function") p.roundRect(n("x"), n("y"), n("width"), n("height"), r);
+      else p.rect(n("x"), n("y"), n("width"), n("height"));
+    }
     else if (tag === "circle") p.arc(n("cx"), n("cy"), n("r"), 0, Math.PI * 2);
     else if (tag === "line") (p.moveTo(n("x1"), n("y1")), p.lineTo(n("x2"), n("y2")));
     else p.addPath(new Path2D(a.d ?? ""));

@@ -22,8 +22,14 @@ export function hollerith(ch: string): number[] {
   return special[ch] ?? [];
 }
 
-/** An 80-column card punched with a line of text (upper-cased, cut at 80), set on its side: columns run down the print, rows across. */
-export function punchCard(line1: string): string {
+/**
+ * An 80-column card punched with a line of text (upper-cased, cut at 80), set
+ * on its side: columns run down the print, rows across. `printed: false`
+ * leaves the typed letters off the card's edge (the holes alone); `flat`
+ * writes the card's printed digits one by one instead of as an SVG pattern
+ * (the browser's canvas renderer draws no patterns).
+ */
+export function punchCard(line1: string, { printed = true, flat = false }: { printed?: boolean; flat?: boolean } = {}): string {
   const X0 = 44, Y0 = 26, colH = 3.4, rowW = 17.4;
   const W = 12 * rowW + 16, H = 80 * colH + 10;
   let s = path(polyline([[X0, Y0 + 14], [X0 + 14, Y0], [X0 + W, Y0], [X0 + W, Y0 + H], [X0, Y0 + H]], true), 1.3);
@@ -33,8 +39,11 @@ export function punchCard(line1: string): string {
   const id = `card${line1.length}${line1.charCodeAt(line1.length - 1)}`;
   let tile = "";
   for (let r = 2; r < 12; r++) tile += text(8 + r * rowW + rowW / 2, 2.6, labels[r], 2.6);
-  s += `<defs><pattern id="${id}" x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${colH}" patternUnits="userSpaceOnUse">${tile}</pattern></defs>`;
-  s += `<rect x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${f1(80 * colH)}" fill="url(#${id})"/>`;
+  if (flat) for (let c = 0; c < 80; c++) for (let r = 2; r < 12; r++) s += text(X0 + 8 + r * rowW + rowW / 2, Y0 + 5 + c * colH + 2.6, labels[r], 2.6);
+  else {
+    s += `<defs><pattern id="${id}" x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${colH}" patternUnits="userSpaceOnUse">${tile}</pattern></defs>`;
+    s += `<rect x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${f1(80 * colH)}" fill="url(#${id})"/>`;
+  }
   const txt = line1.toUpperCase().padEnd(80, " ");
   for (let c = 0; c < 80; c++) {
     const y = Y0 + 5 + c * colH;
@@ -44,7 +53,7 @@ export function punchCard(line1: string): string {
       // A hole: a clean slot in the card (the digit under it is punched away).
       s += `<rect x="${f1(x - 2.6)}" y="${f1(y + 0.2)}" width="5.2" height="2.8" fill="${INK}"/>`;
     }
-    if (txt[c] !== " ") s += text(X0 + 3.5, y + 2.6, txt[c], 3, { anchor: "middle" });
+    if (printed && txt[c] !== " ") s += text(X0 + 3.5, y + 2.6, txt[c], 3, { anchor: "middle" });
   }
   return s;
 }
@@ -73,13 +82,13 @@ export function paperTape(msg: string): string {
   return s;
 }
 
-/** Each character's eight-bit code as a row of discs (ones filled, zeros open), its hexadecimal value beside it; rows 19 apart from the top. */
-export function binaryText(msg: string): string {
+/** Each character's eight-bit code as a row of discs (ones filled, zeros open), its hexadecimal value beside it; rows 19 apart from the top. `printed: false` leaves the letters out. */
+export function binaryText(msg: string, { printed = true }: { printed?: boolean } = {}): string {
   let s = "";
   [...msg].forEach((ch, i) => {
     const y = 44 + i * 19;
     const bits = ch.charCodeAt(0).toString(2).padStart(8, "0");
-    s += text(48, y + 4, ch === " " ? "SP" : ch, 9, { bold: true });
+    if (printed) s += text(48, y + 4, ch === " " ? "SP" : ch, 9, { bold: true });
     [...bits].forEach((b, k) => (s += b === "1" ? dot(80 + k * 22, y, 6) : `<circle cx="${f1(80 + k * 22)}" cy="${f1(y)}" r="6" fill="none" stroke="${INK}" stroke-width="1"/>`));
     s += text(262, y + 3, ch.charCodeAt(0).toString(16).toUpperCase(), 7, { anchor: "start" });
   });

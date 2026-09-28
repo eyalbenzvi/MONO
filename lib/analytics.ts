@@ -41,8 +41,8 @@ export type AnalyticsEvent =
   | "save"
   | "share"
   | "share_taste"
-  // "Make it yours": the template only, never what was chosen.
-  | "customize_open"
+  // Make: the product or template only, never what was typed, drawn or said.
+  | "make_open"
   | "customize_apply";
 
 export type AnalyticsProps = Record<string, unknown>;

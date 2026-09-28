@@ -30,7 +30,8 @@ export async function drawPrint(spec: CustomSpec, color: BaseColor): Promise<Dra
     if (!city) throw new Error("unknown city");
     Object.assign(data, { sky, city });
   }
-  return { spec, color, svg: m.renderCustomSvg(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };
+  const render = await m.loadRenderer(spec.t);
+  return { spec, color, svg: render(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };
 }
 
 /**

@@ -32,10 +32,14 @@ const dateOf = (d: string) => {
   return longDate(y, mo, day);
 };
 
-/** The print's own line of detail, under its title in the bag: the words, else the place (a sky) or the day. */
+/** The words on a print, if it carries any. */
+const wordsOf = (spec: CustomSpec) => ("w" in spec.p ? spec.p.w : undefined);
+
+/** The print's own line of detail, under its title in the bag: the words, else the place (a sky) or the day ("" when the title says it all). */
 export function customSummary(spec: CustomSpec, city?: City): string {
   const where = spec.t === "sky" && city ? city.name : "";
-  return [spec.p.w ? `“${spec.p.w}”` : "", where].filter(Boolean).join(" · ") || customDay(spec);
+  const w = wordsOf(spec);
+  return [w ? `“${w}”` : "", where].filter(Boolean).join(" · ") || customDay(spec);
 }
 
 /**
@@ -60,7 +64,7 @@ const jdOf = (d: string, h: number) => {
  * theirs (the place, the phase), smaller.
  */
 export function customBody(spec: CustomSpec, data: { sky?: SkyData; city?: City }): string {
-  const w = spec.p.w;
+  const w = wordsOf(spec);
   if (spec.t === "moon") return moonBody({ year: spec.p.y, south: spec.p.s === 1, words: w });
   if (spec.t === "night") {
     const jd = jdOf(spec.p.d, NIGHT_HOUR);
@@ -74,6 +78,8 @@ export function customBody(spec: CustomSpec, data: { sky?: SkyData; city?: City 
     const date = dateOf(spec.p.d);
     return planetsBody({ jd: jdOf(spec.p.d, PLANETS_HOUR), caption: { title: fitName(w ?? date), sub: w ? date : "The eight planets around the sun", sub2: "Sun at the centre · distances on a square-root scale" }, rich: true });
   }
+  // The other templates draw in their own chunks (lib/custom/renderers).
+  if (spec.t !== "sky") throw new Error(`${spec.t} draws in its own template`);
   const city = data.city!;
   const m = skyMoment(spec.p, city);
   const date = longDate(m.y, m.mo, m.d);
