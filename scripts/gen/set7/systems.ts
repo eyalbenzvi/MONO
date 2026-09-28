@@ -6,6 +6,7 @@
  * vector line work.
  */
 import { DEG, INK, caption, circle, dot, f1, line, path, polyline, rect, text, type Set7Design } from "./kit";
+import { dial, slideRule as slideRuleScales } from "../../../lib/custom/draw/instruments";
 
 const FEAT = { geometric: 0.75, line_art: 0.7, clean_minimal: 0.55, retro: 0.45, dark_industrial: 0.35, abstract: 0.35, density: 0.25, contrast: 0.75, typography: 0.2 };
 
@@ -144,29 +145,6 @@ function gates(): Set7Design {
 /* Dials                                                                */
 /* ------------------------------------------------------------------ */
 
-/** A round dial: ticks on an arc, labels, a needle. */
-function dial(o: { from: number; to: number; ticks: number; major: number; labels: (i: number) => string; needle: number; r?: number; inner?: string; words?: [number, string][] }): string {
-  const CX = 150, CY = 160, R = o.r ?? 105;
-  let s = circle(CX, CY, R + 14, 1.6) + circle(CX, CY, R + 10, 0.6);
-  const ang = (t: number) => (o.from + (o.to - o.from) * t - 90) * DEG;
-  for (let i = 0; i <= o.ticks; i++) {
-    const a = ang(i / o.ticks);
-    const major = i % o.major === 0;
-    s += line(CX + Math.cos(a) * R, CY + Math.sin(a) * R, CX + Math.cos(a) * (R - (major ? 12 : 6)), CY + Math.sin(a) * (R - (major ? 12 : 6)), major ? 1.6 : 0.7);
-    if (major) {
-      const lab = o.labels(i);
-      if (lab) s += text(CX + Math.cos(a) * (R - 24), CY + Math.sin(a) * (R - 24) + 4, lab, 11, { bold: true });
-    }
-  }
-  for (const [t, w] of o.words ?? []) {
-    const a = ang(t);
-    s += `<text x="${f1(CX + Math.cos(a) * (R - 42))}" y="${f1(CY + Math.sin(a) * (R - 42))}" fill="${INK}" font-size="6.5" font-family="DejaVu Sans Mono, monospace" text-anchor="middle" letter-spacing="1" transform="rotate(${f1((a / DEG) + 90)} ${f1(CX + Math.cos(a) * (R - 42))} ${f1(CY + Math.sin(a) * (R - 42))})">${w}</text>`;
-  }
-  const a = ang(o.needle);
-  s += line(CX - Math.cos(a) * 16, CY - Math.sin(a) * 16, CX + Math.cos(a) * (R - 8), CY + Math.sin(a) * (R - 8), 2.2) + circle(CX, CY, 5, 1.4) + dot(CX, CY, 2);
-  return s + (o.inner ?? "");
-}
-
 function dials(): Set7Design[] {
   const list: [string, string, string, string, string][] = [
     ["Altimeter", "altimeter", "Hundreds of feet, 0 to 9",
@@ -241,27 +219,7 @@ function dials(): Set7Design[] {
 
 function slideRule(): Set7Design {
   // Four scales side by side, 1 at the top: A (squares), C, D, CI (reciprocals); position = log10.
-  const Y0 = 36, LEN = 256;
-  const cols: [string, number, (x: number) => number, number[]][] = [
-    ["A", 60, (x) => Math.log10(x) / 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
-    ["C", 120, (x) => Math.log10(x), [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10]],
-    ["D", 180, (x) => Math.log10(x), [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10]],
-    ["CI", 240, (x) => 1 - Math.log10(x), [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10]],
-  ];
-  let s = "";
-  for (const [name, x, pos, labels] of cols) {
-    s += line(x, Y0, x, Y0 + LEN, 1.2) + text(x, Y0 - 8, name, 8, { bold: true });
-    const top = name === "A" ? 100 : 10;
-    // Ticks in whole hundredths, so labels stay exact.
-    for (let h = 100; h <= top * 100; h += h < (name === "A" ? 1000 : 200) ? (name === "A" ? 50 : 5) : name === "A" ? 500 : 10) {
-      const v = h / 100;
-      const t = pos(v);
-      const y = Y0 + t * LEN;
-      const major = labels.some((l) => Math.abs(l - v) < 1e-6);
-      s += line(x, y, x - (major ? 9 : 4), y, major ? 1 : 0.5);
-      if (major) s += text(x + 4, y + 2.2, String(v), 5.5, { anchor: "start" });
-    }
-  }
+  const s = slideRuleScales();
   return {
     body: s + caption(322, "Slide Rule", "Scales A, C, D and CI: distance is the logarithm", "Multiply by adding lengths"),
     variant: "slide-rule",

@@ -5,7 +5,8 @@
  * characters. Every code is the standard's own.
  */
 import type { FeatureKey } from "../../../types/shirt";
-import { INK, caption, dot, f1, line, path, polyline, text, type Set7Design } from "./kit";
+import { INK, caption, dot, line, path, polyline, text, type Set7Design } from "./kit";
+import { binaryText, paperTape, punchCard } from "../../../lib/custom/draw/code";
 
 const FEAT = { retro: 0.85, typography: 0.55, geometric: 0.5, clean_minimal: 0.45, dark_industrial: 0.35, abstract: 0.3, density: 0.4, contrast: 0.8, line_art: 0.3 };
 
@@ -26,62 +27,6 @@ function asciiTable(): string {
     if (c) s += line(x0 + c * cw, y0 - 4, x0 + c * cw, y0 + 16 * rh - 6, 0.5);
   }
   s += line(x0, y0 - 4, x0 + 8 * cw, y0 - 4, 0.8);
-  return s;
-}
-
-/** IBM 029 punch rows for a character: 12, 11, 0–9 (row index 0 = 12, 1 = 11, 2 = 0 … 11 = 9). */
-function hollerith(ch: string): number[] {
-  const row = (d: number) => d + 2;
-  if (/[0-9]/.test(ch)) return [row(+ch)];
-  if (/[A-I]/.test(ch)) return [0, row(ch.charCodeAt(0) - 64)];
-  if (/[J-R]/.test(ch)) return [1, row(ch.charCodeAt(0) - 73)];
-  if (/[S-Z]/.test(ch)) return [row(0), row(ch.charCodeAt(0) - 81)];
-  const special: Record<string, number[]> = { " ": [], ",": [row(0), row(3), row(8)], ".": [0, row(3), row(8)], "-": [1], "=": [row(6), row(8)], "(": [0, row(5), row(8)], ")": [1, row(5), row(8)], "+": [0, row(6), row(8)], "*": [1, row(4), row(8)], "/": [row(0), row(1)], "'": [row(5), row(8)] };
-  return special[ch] ?? [];
-}
-
-function punchCard(line1: string): string {
-  // The 80-column card on its side: columns run down the print, rows across.
-  const X0 = 44, Y0 = 26, colH = 3.4, rowW = 17.4;
-  const W = 12 * rowW + 16, H = 80 * colH + 10;
-  let s = path(polyline([[X0, Y0 + 14], [X0 + 14, Y0], [X0 + W, Y0], [X0 + W, Y0 + H], [X0, Y0 + H]], true), 1.3);
-  const labels = ["12", "11", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-  labels.forEach((l, r) => (s += text(X0 + 8 + r * rowW + rowW / 2, Y0 + H + 9, l, 5)));
-  // The printed digits 0–9 in every column, as one repeating tile (a card has 800 of them).
-  const id = `card${line1.length}${line1.charCodeAt(line1.length - 1)}`;
-  let tile = "";
-  for (let r = 2; r < 12; r++) tile += text(8 + r * rowW + rowW / 2, 2.6, labels[r], 2.6);
-  s += `<defs><pattern id="${id}" x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${colH}" patternUnits="userSpaceOnUse">${tile}</pattern></defs>`;
-  s += `<rect x="${X0}" y="${f1(Y0 + 5)}" width="${f1(W)}" height="${f1(80 * colH)}" fill="url(#${id})"/>`;
-  const txt = line1.toUpperCase().padEnd(80, " ");
-  for (let c = 0; c < 80; c++) {
-    const y = Y0 + 5 + c * colH;
-    const punched = new Set(hollerith(txt[c]));
-    for (const r of punched) {
-      const x = X0 + 8 + r * rowW + rowW / 2;
-      // A hole: a clean slot in the card (the digit under it is punched away).
-      s += `<rect x="${f1(x - 2.6)}" y="${f1(y + 0.2)}" width="5.2" height="2.8" fill="${INK}"/>`;
-    }
-    if (txt[c] !== " ") s += text(X0 + 3.5, y + 2.6, txt[c], 3, { anchor: "middle" });
-  }
-  return s;
-}
-
-function paperTape(msg: string): string {
-  // ITA2 (Baudot–Murray), holes 1–5, the feed hole between 3 and 4. Tape runs down the print.
-  const code: Record<string, string> = { A: "11000", B: "10011", C: "01110", D: "10010", E: "10000", F: "10110", G: "01011", H: "00101", I: "01100", J: "11010", K: "11110", L: "01001", M: "00111", N: "00110", O: "00011", P: "01101", Q: "11101", R: "01010", S: "10100", T: "00001", U: "11100", V: "01111", W: "11001", X: "10111", Y: "10101", Z: "10001", " ": "00100" };
-  const X = 150, pitch = 6.2, y0 = 28;
-  const w = 6 * 9 + 12;
-  const H = msg.length * pitch + 8;
-  let s = line(X - w / 2, y0 - 6, X - w / 2, y0 + H, 1.2) + line(X + w / 2, y0 - 6, X + w / 2, y0 + H, 1.2);
-  [...msg].forEach((ch, i) => {
-    const y = y0 + i * pitch;
-    const bits = code[ch];
-    const xs = [-2.5, -1.5, -0.5, 0.9, 1.9].map((k) => X + k * 9 - 0.2);
-    for (let b = 0; b < 5; b++) s += bits[b] === "1" ? dot(xs[b] - 2, y, 2.3) : "";
-    s += dot(X + 0.2 * 9 - 2, y, 0.9);
-    s += text(X + w / 2 + 8, y + 2, ch === " " ? "␣" : ch, 5, { anchor: "start" }) + text(X - w / 2 - 8, y + 2, bits, 3.8, { anchor: "end" });
-  });
   return s;
 }
 
@@ -132,18 +77,6 @@ function dotMatrix(): string {
     const col = i % 6, row = Math.floor(i / 6);
     const x0 = 36 + col * 40, y0 = 40 + row * 56;
     rows.forEach((bits, r) => [...bits].forEach((b, c) => (s += b === "1" ? dot(x0 + c * 5.4, y0 + r * 5.4, 2) : dot(x0 + c * 5.4, y0 + r * 5.4, 0.5))));
-  });
-  return s;
-}
-
-function binaryText(msg: string): string {
-  let s = "";
-  [...msg].forEach((ch, i) => {
-    const y = 44 + i * 19;
-    const bits = ch.charCodeAt(0).toString(2).padStart(8, "0");
-    s += text(48, y + 4, ch === " " ? "SP" : ch, 9, { bold: true });
-    [...bits].forEach((b, k) => (s += b === "1" ? dot(80 + k * 22, y, 6) : `<circle cx="${f1(80 + k * 22)}" cy="${f1(y)}" r="6" fill="none" stroke="${INK}" stroke-width="1"/>`));
-    s += text(262, y + 3, ch.charCodeAt(0).toString(16).toUpperCase(), 7, { anchor: "start" });
   });
   return s;
 }

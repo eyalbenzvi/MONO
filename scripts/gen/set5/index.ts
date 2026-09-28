@@ -15,6 +15,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { FeatureKey } from "../../../types/shirt";
 import { H, M, W, mulberry32, n1, type Rng } from "../core";
+import { fit, polyline } from "../../../lib/custom/draw/paths";
+import { harmonographPoints, lissajousPath, tracePath } from "../../../lib/custom/draw/curves";
+import { phyllotaxis, plant } from "../../../lib/custom/draw/botany";
+import { guilloche, rosette } from "../../../lib/custom/draw/ornament";
 
 export interface Set5Design {
   body: string;
@@ -32,33 +36,6 @@ export interface Set5Design {
 const SKY = path.resolve(__dirname, "..", "..", "..", "data", "sky");
 const DEG = Math.PI / 180;
 const f1 = (n: number) => n1(n).toString();
-
-/* ------------------------------------------------------------------ */
-/* Paths                                                               */
-/* ------------------------------------------------------------------ */
-
-/** A polyline as compact path data (absolute, one decimal: minify makes it relative). */
-function polyline(points: [number, number][]): string {
-  let d = "";
-  let last = "";
-  points.forEach(([x, y], i) => {
-    const p = `${f1(x)} ${f1(y)}`;
-    if (p === last) return;
-    d += (i === 0 ? "M" : "L") + p;
-    last = p;
-  });
-  return d;
-}
-
-/** Fit points into a box (keeping proportions), centred. */
-function fit(points: [number, number][][], box: { x: number; y: number; w: number; h: number }): [number, number][][] {
-  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const line of points) for (const [x, y] of line) (x0 = Math.min(x0, x)), (y0 = Math.min(y0, y)), (x1 = Math.max(x1, x)), (y1 = Math.max(y1, y));
-  const s = Math.min(box.w / (x1 - x0 || 1), box.h / (y1 - y0 || 1));
-  const ox = box.x + (box.w - (x1 - x0) * s) / 2 - x0 * s;
-  const oy = box.y + (box.h - (y1 - y0) * s) / 2 - y0 * s;
-  return points.map((line) => line.map(([x, y]) => [x * s + ox, y * s + oy] as [number, number]));
-}
 
 const text = (x: number, y: number, s: string, ink: string, size: number, opts = "") =>
   `<text x="${x}" y="${y}" fill="${ink}" font-size="${size}" font-family="DejaVu Sans Mono, monospace" text-anchor="middle"${opts}>${s.replace(/&/g, "&amp;")}</text>`;
@@ -211,28 +188,18 @@ function curveDesigns(): Set5Design[] {
     // Re-seed a trace that collapses to a line (pendulums cancelling out).
     for (let attempt = 0; ; attempt++) {
       const rng = mulberry32(0x4a3 + k * 7919 + attempt * 101);
-      const det = [1, 1 + (rng() - 0.5) * 0.02, 1, 1 + (rng() - 0.5) * 0.02];
+      const det: Four = [1, 1 + (rng() - 0.5) * 0.02, 1, 1 + (rng() - 0.5) * 0.02];
       const px = rng() * Math.PI * 2, py = rng() * Math.PI * 2;
-      const p = [px, px + (rng() - 0.5) * 1.2, py, py + (rng() - 0.5) * 1.2];
-      const d = [0, 0, 0, 0].map(() => 0.012 + rng() * 0.012);
-      const m = Math.max(a, b);
-      const N = 4000;
-      pts = [];
-      for (let i = 0; i < N; i++) {
-        const t = ((i / N) * 150 * m) / m;
-        pts.push([
-          Math.sin(a * det[0] * t + p[0]) * Math.exp(-d[0] * t) + Math.sin(a * det[1] * t + p[1]) * Math.exp(-d[1] * t),
-          Math.sin(b * det[2] * t + p[2]) * Math.exp(-d[2] * t) + Math.sin(b * det[3] * t + p[3]) * Math.exp(-d[3] * t),
-        ]);
-      }
+      const p: Four = [px, px + (rng() - 0.5) * 1.2, py, py + (rng() - 0.5) * 1.2];
+      const d = [0, 0, 0, 0].map(() => 0.012 + rng() * 0.012) as Four;
+      pts = harmonographPoints({ a, b, detune: det, phases: p, damping: d });
       const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
       const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
       if ((w / h < 2 && h / w < 2) || attempt > 20) break;
     }
-    const [line] = fit([pts], box);
     const tempo = TEMPOS[Math.floor(k / HARM.length) % TEMPOS.length];
     out.push({
-      body: `<path d="${polyline(line)}" fill="none" stroke="${ink}" stroke-width=".45"/>` + text(150, 362, `HARMONOGRAPH · ${r}`, ink, 9, ` letter-spacing="2"`),
+      body: tracePath(pts, box) + text(150, 362, `HARMONOGRAPH · ${r}`, ink, 9, ` letter-spacing="2"`),
       variant: "harmonograph",
       source: "curves",
       title: `${tempo} ${RATIO_NAMES[r]}`,
@@ -249,21 +216,8 @@ function curveDesigns(): Set5Design[] {
     const rng = mulberry32(0x71c + k * 104729);
     const delta = (Math.PI / 2) * (0.2 + rng() * 0.8);
     const copies = Math.min(6 + Math.floor(rng() * 10), Math.floor(9000 / Math.min(900, 100 * Math.max(a, b))));
-    const lines: [number, number][][] = [];
-    for (let c = 0; c < copies; c++) {
-      const s = 1 - c * 0.035;
-      const pts: [number, number][] = [];
-      // Enough points for a smooth curve, few enough for a light file (copies × points under ~9,000).
-      const steps = Math.min(900, 100 * Math.max(a, b));
-      for (let i = 0; i <= steps; i++) {
-        const t = (i / steps) * Math.PI * 2;
-        pts.push([s * Math.sin(a * t + delta + c * 0.02), s * Math.sin(b * t)]);
-      }
-      lines.push(pts);
-    }
-    const fitted = fit(lines, { x: M + 10, y: M + 30, w: W - 2 * M - 20, h: W - 2 * M - 20 });
     out.push({
-      body: `<path d="${fitted.map(polyline).join("")}" fill="none" stroke="${ink}" stroke-width=".5"/>` + text(150, 362, `LISSAJOUS · ${a}:${b}`, ink, 9, ` letter-spacing="2"`),
+      body: lissajousPath({ a, b, delta, copies }, { x: M + 10, y: M + 30, w: W - 2 * M - 20, h: W - 2 * M - 20 }) + text(150, 362, `LISSAJOUS · ${a}:${b}`, ink, 9, ` letter-spacing="2"`),
       variant: "lissajous",
       source: "curves",
       title: `Lissajous ${a}:${b}${k >= pairs.length ? " Ribbon" : ""}`,
@@ -315,6 +269,7 @@ function curveDesigns(): Set5Design[] {
   return out;
 }
 
+type Four = [number, number, number, number];
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
 
 /* ------------------------------------------------------------------ */
@@ -334,14 +289,7 @@ function botanyDesigns(): Set5Design[] {
     const [angle, name] = ANGLES[k % ANGLES.length];
     const n = 500 + Math.floor(rng() * 700);
     const grow = rng() < 0.5;
-    const R = 120;
-    let body = "";
-    for (let i = 1; i <= n; i++) {
-      const r = R * Math.sqrt(i / n);
-      const th = i * angle * DEG;
-      const size = grow ? 0.6 + 2.6 * Math.sqrt(i / n) : 3.2 - 2.4 * Math.sqrt(i / n);
-      body += `<circle cx="${f1(150 + r * Math.cos(th))}" cy="${f1(180 + r * Math.sin(th))}" r="${f1(Math.max(0.5, size))}" fill="${ink}"/>`;
-    }
+    const body = phyllotaxis({ n, angle, grow });
     const round = Math.floor(k / ANGLES.length);
     out.push({
       body: body + text(150, 356, `PHYLLOTAXIS · ${angle}°`, ink, 9, ` letter-spacing="2"`),
@@ -366,34 +314,10 @@ function botanyDesigns(): Set5Design[] {
     const rng = mulberry32(0xb07 + k * 2654435761);
     const angle = sys.angle * (0.85 + rng() * 0.3);
     const lean = (rng() - 0.5) * 14;
-    let str = sys.axiom;
-    for (let i = 0; i < sys.iter; i++) str = [...str].map((ch) => sys.rules[ch] ?? ch).join("");
-    const lines: [number, number][][] = [];
-    const stack: [number, number, number][] = [];
-    let [x, y, a] = [0, 0, -90 + lean];
-    for (const ch of str) {
-      if (ch === "F") {
-        const nx = x + Math.cos(a * DEG) * (0.9 + rng() * 0.2);
-        const ny = y + Math.sin(a * DEG) * (0.9 + rng() * 0.2);
-        lines.push([[x, y], [nx, ny]]);
-        [x, y] = [nx, ny];
-      } else if (ch === "+") a += angle * (0.9 + rng() * 0.2);
-      else if (ch === "-") a -= angle * (0.9 + rng() * 0.2);
-      else if (ch === "[") stack.push([x, y, a]);
-      else if (ch === "]") [x, y, a] = stack.pop()!;
-    }
-    // Merge consecutive segments into polylines.
-    const merged: [number, number][][] = [];
-    for (const seg of lines) {
-      const last = merged[merged.length - 1];
-      if (last && Math.hypot(last[last.length - 1][0] - seg[0][0], last[last.length - 1][1] - seg[0][1]) < 1e-9) last.push(seg[1]);
-      else merged.push([...seg]);
-    }
-    const fitted = fit(merged, { x: M + 6, y: M + 10, w: W - 2 * M - 12, h: H - 2 * M - 56 });
     const word = PLANT_WORDS[k % PLANT_WORDS.length];
     const kind = PLANT_KINDS[Math.floor(k / PLANT_WORDS.length) % PLANT_KINDS.length];
     out.push({
-      body: `<path d="${fitted.map(polyline).join("")}" fill="none" stroke="${ink}" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round"/>`,
+      body: plant(sys, angle, lean, rng, { x: M + 6, y: M + 10, w: W - 2 * M - 12, h: H - 2 * M - 56 }),
       variant: `lsystem-${sys.kind}`,
       source: "botany",
       title: `${word} ${kind}`,
@@ -423,26 +347,11 @@ function ornamentDesigns(): Set5Design[] {
     const bands = 1 + Math.floor(rng() * 3);
     // Enough strands for the moiré, few enough for a light file (under 80 KB).
     const strands = Math.min(5 + Math.floor(rng() * 7), Math.floor(16 / bands));
-    let d = "";
-    for (let b = 0; b < bands; b++) {
-      const R = 30 + (b + 0.5) * (84 / bands);
-      const amp = (84 / bands) * (0.25 + rng() * 0.2);
-      const lobeK = lobes * (b + 1);
-      for (let s = 0; s < strands; s++) {
-        const ph = (s / strands) * ((Math.PI * 2) / lobeK);
-        const pts: [number, number][] = [];
-        const steps = Math.max(240, lobeK * 10);
-        for (let i = 0; i <= steps; i++) {
-          const t = (i / steps) * Math.PI * 2;
-          const r = R + amp * Math.sin(lobeK * t + ph * lobeK);
-          pts.push([C.x + r * Math.cos(t), C.y + r * Math.sin(t)]);
-        }
-        d += polyline(pts) + "Z";
-      }
-    }
+    // Each band's wave height, drawn in the order the catalogue always drew them.
+    const amps = Array.from({ length: bands }, () => 0.25 + rng() * 0.2);
     const metal = METALS[k % METALS.length];
     out.push({
-      body: `<path d="${d}" fill="none" stroke="${ink}" stroke-width=".55"/>`,
+      body: guilloche({ lobes, strands, amps, cx: C.x, cy: C.y }),
       variant: "guilloche",
       source: "ornament",
       title: `${metal} Guilloche${k >= METALS.length ? ` ${["", "II", "III", "IV"][Math.floor(k / METALS.length)]}` : ""}`,
@@ -457,25 +366,8 @@ function ornamentDesigns(): Set5Design[] {
     const n = FOLDS[k % FOLDS.length];
     const rng = mulberry32(0x3a3 + k * 97);
     const rings = 3 + Math.floor(rng() * 4);
-    let body = "";
-    for (let r = 0; r < rings; r++) {
-      const R = 118 - r * (100 / rings);
-      const step = Math.max(2, Math.floor((n - 1) / 2) - (r % 2));
-      // {n/step} as a compound: gcd(n, step) separate stars.
-      const g = gcd(n, step);
-      let d = "";
-      for (let c = 0; c < g; c++) {
-        const pts: [number, number][] = [];
-        for (let i = 0; i <= n / g; i++) {
-          const a = ((c + i * step) / n) * Math.PI * 2 + (r % 2 ? Math.PI / n : 0) - Math.PI / 2;
-          pts.push([C.x + R * Math.cos(a), C.y + R * Math.sin(a)]);
-        }
-        d += polyline(pts) + "Z";
-      }
-      body += `<path d="${d}" fill="none" stroke="${ink}" stroke-width="${f1(1.4 - r * 0.15)}" stroke-linejoin="round"/>`;
-      if (rng() < 0.5) body += `<circle cx="${C.x}" cy="${C.y}" r="${f1(R * 0.62)}" fill="none" stroke="${ink}" stroke-width=".6"/>`;
-    }
-    body += `<circle cx="${C.x}" cy="${C.y}" r="4" fill="${ink}"/>`;
+    // Whether each ring carries an interlace circle, drawn in the catalogue's order.
+    const body = rosette({ n, circles: Array.from({ length: rings }, () => rng() < 0.5), cx: C.x, cy: C.y });
     const round = Math.floor(k / FOLDS.length);
     out.push({
       body,
