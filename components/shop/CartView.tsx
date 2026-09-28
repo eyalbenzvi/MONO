@@ -17,7 +17,7 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { apiConfigured, fetchReferral, isEmail } from "@/lib/api";
 import { arrivalRange, formatArrival } from "@/lib/delivery";
-import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type BaseColor, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
@@ -43,7 +43,7 @@ function LineMockup({ line, className }: { line: CartLine; className?: string })
   );
 }
 
-type Step = "bag" | "details" | "done";
+type Step = "bag" | "details" | "payment" | "done";
 
 export function CartView() {
   const hydrated = useHydrated();
@@ -58,6 +58,8 @@ export function CartView() {
   // to the bag and returning keeps what was typed.
   const [values, setValues] = useState<Record<Field, string>>(EMPTY_DETAILS);
   const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
+  // Who it goes to, once the delivery form is done (memory only): the payment step shows it and places the order.
+  const [customer, setCustomer] = useState<Customer | null>(null);
   // A new step puts focus on its heading (never back on the page body).
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
@@ -97,9 +99,9 @@ export function CartView() {
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
       <div className={`mx-auto px-4 pb-28 pt-1 ${step !== "done" && count > 0 ? "max-w-3xl lg:max-w-5xl" : "max-w-3xl"}`}>
         <div className="mb-4 flex items-center justify-between">
-          {step === "details" ? (
-            <button type="button" onClick={() => go("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <Icon name="arrow-left" className="h-4 w-4" /> Bag
+          {step === "details" || step === "payment" ? (
+            <button type="button" onClick={() => go(step === "payment" ? "details" : "bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+              <Icon name="arrow-left" className="h-4 w-4" /> {step === "payment" ? "Delivery details" : "Bag"}
             </button>
           ) : (
             <Link href="/shop/" className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
@@ -109,7 +111,7 @@ export function CartView() {
         </div>
 
         <h1 ref={heading} tabIndex={-1} className="mb-4 text-2xl font-bold tracking-tight outline-none">
-          {step === "bag" ? "Your bag" : "Delivery details"}
+          {step === "bag" ? "Your bag" : step === "details" ? "Delivery details" : "Payment"}
         </h1>
 
         {count === 0 ? (
@@ -149,9 +151,9 @@ export function CartView() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{lineTitle(line)}</p>
-                          {/* The colour, in words (change it on the product page); the size is the control below. */}
+                          {/* The tee's own price (the line's total is on the right); colour, size and quantity are the controls below. */}
                           <p className="text-xs text-neutral-400">
-                            {COLOR_LABELS[line.color]} tee
+                            {formatPrice(line.lineTotal / line.qty)} each
                             {line.custom && (
                               <>
                                 {" · "}
@@ -165,6 +167,19 @@ export function CartView() {
                         <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
                       </div>
                       <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
+                        <select
+                          value={line.color}
+                          onChange={(e) => changeCartItem(line, { color: e.target.value as BaseColor })}
+                          disabled={line.shirt.colors.length < 2}
+                          aria-label="Colour"
+                          className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white ring-1 ring-white/10 disabled:opacity-100"
+                        >
+                          {line.shirt.colors.map((c) => (
+                            <option key={c} value={c} className="bg-ink-900">
+                              {COLOR_LABELS[c]} tee
+                            </option>
+                          ))}
+                        </select>
                         <select
                           value={line.size}
                           onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
@@ -181,10 +196,9 @@ export function CartView() {
                             </optgroup>
                           ))}
                         </select>
-                        {/* Quantity only once there's more than one (add again for another). */}
-                        {line.qty > 1 && (
+                        {/* Quantity; at one, the trash below takes the line out. */}
                         <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
-                          <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
+                          <button type="button" aria-label="Decrease quantity" disabled={line.qty <= 1} onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
                             <Icon name="minus" className="h-3.5 w-3.5" />
                           </button>
                           <span className="w-5 text-center font-mono text-sm" aria-live="polite">{line.qty}</span>
@@ -192,7 +206,6 @@ export function CartView() {
                             <Icon name="plus" className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        )}
                         <button type="button" aria-label={`Remove ${lineTitle(line)}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
                           <Icon name="trash-2" className="h-4 w-4" />
                         </button>
@@ -222,6 +235,23 @@ export function CartView() {
               </div>
             </div>
           </>
+        ) : step === "payment" && customer ? (
+          <Payment
+            customer={customer}
+            total={total}
+            summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
+            onEdit={() => go("details")}
+            onPay={() => {
+              const order = placeOrder(customer);
+              if (order) {
+                setPlaced(order);
+                go("done");
+                setValues(EMPTY_DETAILS);
+                setTouched({});
+                setCustomer(null);
+              }
+            }}
+          />
         ) : (
           <DetailsForm
             values={values}
@@ -231,14 +261,9 @@ export function CartView() {
             total={total}
             lines={lines}
             summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
-            onSubmit={(customer) => {
-              const order = placeOrder(customer);
-              if (order) {
-                setPlaced(order);
-                go("done");
-                setValues(EMPTY_DETAILS);
-                setTouched({});
-              }
+            onSubmit={(c) => {
+              setCustomer(c);
+              go("payment");
             }}
           />
         )}
@@ -496,11 +521,60 @@ function DetailsForm({
         </Link>
       </p>
       <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
-        Place demo order · {formatPrice(total)}
+        Continue to payment · {formatPrice(total)}
       </button>
       </div>
       </div>
     </form>
+  );
+}
+
+/**
+ * The last step: where it goes (with a way back to change it), what it
+ * costs, and the button that places the order. A demo store: no card is
+ * asked for and nothing is charged, and the page says so.
+ */
+function Payment({ customer, total, summary, onEdit, onPay }: { customer: Customer; total: number; summary: React.ReactNode; onEdit: () => void; onPay: () => void }) {
+  const country = STORE_POLICY.countries.find(([code]) => code === customer.country)?.[1] ?? customer.country;
+  return (
+    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
+      <div className="grid gap-3">
+        <section className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/10" aria-label="Delivery">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 text-sm">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-400">Deliver to</p>
+              <p className="font-semibold">{customer.name}</p>
+              <p className="text-neutral-300">{customer.address}</p>
+              <p className="text-neutral-300">
+                {customer.city} {customer.zip} · {country}
+              </p>
+              <p className="text-neutral-400">{customer.email}</p>
+            </div>
+            <button type="button" onClick={onEdit} className="h-9 shrink-0 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+              Edit
+            </button>
+          </div>
+        </section>
+        <section className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/10" aria-label="Payment method">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-400">Payment</p>
+          <p className="flex items-center gap-2 text-sm text-neutral-200">
+            <Icon name="lock" className="h-4 w-4 shrink-0" /> Demo store: no card is needed and no payment is taken.
+          </p>
+          <p className="mt-2 text-xs text-neutral-400">
+            Nothing ships.{" "}
+            <Link href="/about/#this-site" className="underline underline-offset-2 hover:text-white">
+              About this site
+            </Link>
+          </p>
+        </section>
+      </div>
+      <div className="mt-3 lg:sticky lg:top-4 lg:mt-0">
+        {summary}
+        <button type="button" data-autofocus onClick={onPay} className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
+          Place demo order · {formatPrice(total)}
+        </button>
+      </div>
+    </div>
   );
 }
 

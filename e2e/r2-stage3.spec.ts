@@ -27,6 +27,8 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
     ["Postcode / ZIP", "6100001"],
   ])
     await page.getByLabel(label).fill(value);
+  await page.getByRole("button", { name: /^Continue to payment/ }).tap();
+  await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
   await page.getByRole("button", { name: /Place demo order/ }).tap();
   await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
 

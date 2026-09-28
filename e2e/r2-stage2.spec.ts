@@ -292,6 +292,8 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
       ["Postcode / ZIP", "6100001"],
     ])
       await page.getByLabel(label).fill(value);
+    await page.getByRole("button", { name: /^Continue to payment/ }).tap();
+    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
     await page.getByRole("button", { name: /Place demo order/ }).tap();
     await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
     await expect(page.locator('input[type="email"]')).toHaveCount(0);
