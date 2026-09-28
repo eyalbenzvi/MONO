@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useLayoutEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
@@ -10,6 +10,7 @@ import { MiniBag } from "@/components/shop/MiniBag";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useCartStore } from "@/store/cartStore";
+import { useMakeStore } from "@/store/makeStore";
 import { migrateLegacySession, removeRetiredKeys } from "@/store/legacySession";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -24,7 +25,11 @@ function CatalogGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** The Open Call sheet loads only when it's opened (from an upload's review status). */
+const OfferSheet = lazy(() => import("@/components/upload/OfferSheet").then((m) => ({ default: m.OfferSheet })));
+
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const offerOpen = useUiStore((s) => !!s.offer);
   const savedOpen = useUiStore((s) => s.savedOpen);
   const setSavedOpen = useUiStore((s) => s.setSavedOpen);
   const pathname = usePathname();
@@ -62,9 +67,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     void catalogReady().then(async () => {
       migrateLegacySession();
       removeRetiredKeys();
-      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]);
+      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), useMakeStore.persist.rehydrate()]);
       useTasteStore.getState().fillDeck();
       useUiStore.getState().setHydrated();
+      // Uploads: a bag line whose file is gone from this device leaves the bag; old rasters go.
+      void import("@/lib/upload/prune").then((m) => m.pruneUploads());
     });
 
     // A friend's taste link (/?taste=…): kept for this session so the taste
@@ -114,6 +121,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AlgoDebugPanel />
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
       <ShareSheet />
+      {offerOpen && (
+        <Suspense fallback={null}>
+          <OfferSheet />
+        </Suspense>
+      )}
       <MiniBag />
       <Toast />
     </div>

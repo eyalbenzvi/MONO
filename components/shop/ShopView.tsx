@@ -8,6 +8,7 @@ import { CategoryFilter, TeeSwatches } from "@/components/shop/ShopFilters";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { MadeTile } from "@/components/shop/MadeTile";
 import { SharedList } from "@/components/shop/ShopExtras";
+import { acceptedDesigns } from "@/lib/upload/designs";
 import { SHIRTS, dedupeByFamily, filterShop, filtersFromQuery, getShirtById, type ShopFilters } from "@/lib/catalog";
 import { decodeFacets, encodeFacets, type Facet } from "@/lib/search/facetCodec";
 import { useShopSearch } from "@/components/shop/useShopSearch";
@@ -95,7 +96,9 @@ export function ShopView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const shown = useMemo(() => new Set(useTasteStore.getState().seen), [hydrated, sort, tee, cats]);
   // (Only once hydrated: the pre-rendered page has no browser to seed from, and must match.)
-  const ranked = useMemo(() => rankShirts(rankVector, SHIRTS, sort, hydrated ? { rotate: daySeed(), demote: shown } : {}), [rankVector, sort, shown, hydrated]);
+  // Designs the Open Call accepted on this device join the grid, ranked by taste like any other (no boost; never in Discover).
+  const pool = useMemo(() => (hydrated ? [...SHIRTS, ...acceptedDesigns().flatMap((d) => getShirtById(d.id) ?? [])] : SHIRTS), [hydrated]);
+  const ranked = useMemo(() => rankShirts(rankVector, pool, sort, hydrated ? { rotate: daySeed(), demote: shown } : {}), [rankVector, pool, sort, shown, hydrated]);
   // One design per family (the best-ranked one) — its siblings are offered as
   // variations on the product page. The top of the grid is diversified
   // (display only; scores are untouched): no three in a row of one

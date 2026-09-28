@@ -72,7 +72,11 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
  * to whole pixels as bake.ts rounds it), screened onto black or multiplied
  * onto white.
  */
-export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, photo: CanvasImageSource, svg: string, box: readonly number[], color: BaseColor) {
+/** A print to lay on the tee: an SVG, or a picture already in the tee colour's inks (an upload's raster, lib/upload/bitmap). */
+export type PrintSource = string | CanvasImageSource;
+const printOf = (p: PrintSource, w: number, h: number): CanvasImageSource => (typeof p === "string" ? printCanvas(p, w, h) : p);
+
+export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, photo: CanvasImageSource, svg: PrintSource, box: readonly number[], color: BaseColor) {
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
@@ -80,7 +84,7 @@ export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, 
   ctx.drawImage(photo, 0, 0, w, h);
   const [bx, by, bw, bh] = [Math.round(box[0] * w), Math.round(box[1] * h), Math.round(box[2] * w), Math.round(box[3] * h)];
   ctx.globalCompositeOperation = color === "black" ? "screen" : "multiply";
-  ctx.drawImage(printCanvas(svg, bw, bh), bx, by, bw, bh);
+  ctx.drawImage(printOf(svg, bw, bh), bx, by, bw, bh);
   ctx.restore();
 }
 
@@ -88,14 +92,14 @@ export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, 
  * The close-up: the photo's print area enlarged to w × h, the print over all
  * of it (bake.ts detail()).
  */
-export function drawDetail(ctx: CanvasRenderingContext2D, w: number, h: number, photo: HTMLImageElement, svg: string, box: readonly number[], color: BaseColor) {
+export function drawDetail(ctx: CanvasRenderingContext2D, w: number, h: number, photo: HTMLImageElement, svg: PrintSource, box: readonly number[], color: BaseColor) {
   const [W, H] = [photo.naturalWidth, photo.naturalHeight];
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(photo, Math.round(box[0] * W), Math.round(box[1] * H), Math.round(box[2] * W), Math.round(box[3] * H), 0, 0, w, h);
   ctx.globalCompositeOperation = color === "black" ? "screen" : "multiply";
-  ctx.drawImage(printCanvas(svg, w, h), 0, 0, w, h);
+  ctx.drawImage(printOf(svg, w, h), 0, 0, w, h);
   ctx.restore();
 }
 

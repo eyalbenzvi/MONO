@@ -354,6 +354,34 @@ function popcount(x: number) {
  * design), passed in so the page can load the index lazily; 64 when there
  * are none.
  */
+/**
+ * The hash an upload is compared with the catalogue by: the ink's own box,
+ * widened (centred) or deepened (from its top) to the catalogue's 3 : 4 and
+ * hashed as a print laid out the catalogue's way (top-aligned, centred). A
+ * Small print is then its design, not a mostly empty sheet, which would
+ * match every sparse catalogue print.
+ */
+export function designHash(ink: Uint8Array, w: number, h: number): string {
+  let [x0, y0, x1, y1] = [w, h, -1, -1];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (ink[y * w + x]) (x0 = Math.min(x0, x)), (x1 = Math.max(x1, x)), (y0 = Math.min(y0, y)), (y1 = Math.max(y1, y));
+  if (x1 < 0) return dhash(ink, w, h);
+  let [bw, bh] = [x1 - x0 + 1, y1 - y0 + 1];
+  if (bw * 4 < bh * 3) {
+    const nw = Math.ceil((bh * 3) / 4);
+    x0 -= Math.floor((nw - bw) / 2);
+    bw = nw;
+  } else bh = Math.ceil((bw * 4) / 3);
+  const crop = new Uint8Array(bw * bh);
+  for (let y = 0; y < bh; y++)
+    for (let x = 0; x < bw; x++) {
+      const [sx, sy] = [x0 + x, y0 + y];
+      if (sx >= 0 && sx < w && sy < h) crop[y * bw + x] = ink[sy * w + sx];
+    }
+  return dhash(crop, bw, bh);
+}
+
 export function nearestCatalogue(hash: string, hashes: Uint32Array): number {
   const [a, b] = [parseInt(hash.slice(0, 8), 16), parseInt(hash.slice(8, 16), 16)];
   let best = 64;

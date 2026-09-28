@@ -4,7 +4,7 @@ import type { CustomSpec } from "@/lib/custom/spec";
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { Facet } from "@/lib/search/facetCodec";
-import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UploadRef, UserProfileVector } from "@/types/shirt";
 
 export interface ToastState {
   message: string;
@@ -68,7 +68,9 @@ interface UiState {
   productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
   /** The share sheet's tee; `make` is a made-for-you print's link payload (lib/custom encodeMake). */
-  share: { id: string; color: BaseColor; make?: string } | null;
+  share: { id: string; color: BaseColor; make?: string; upload?: string } | null;
+  /** The upload the Open Call sheet is open for. */
+  offer: string | null;
   /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
   /** "Buy now" / the confirmation's Checkout: the bag opens on the delivery form (once). */
@@ -89,8 +91,10 @@ interface UiState {
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
   setProductOrigin: (origin: ProductOrigin | null) => void;
-  openShare: (id: string, color: BaseColor, make?: string) => void;
+  /** `upload`: an uploaded print's id (its picture is shared, never the file or a link to it). */
+  openShare: (id: string, color: BaseColor, make?: string, upload?: string) => void;
   closeShare: () => void;
+  openOffer: (uploadId: string | null) => void;
   noteAdded: (note: Omit<AddedNote, "nonce">) => void;
   clearAdded: () => void;
 }
@@ -111,6 +115,8 @@ export interface AddedNote {
   pair?: boolean;
   /** A personalised print: Undo takes back its lines, not the original's. */
   custom?: CustomSpec;
+  /** An uploaded print: Undo takes back its lines. */
+  upload?: UploadRef;
   nonce: number;
 }
 
@@ -152,6 +158,7 @@ export const useUiStore = create<UiState>()((set) => ({
   shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE, query: "", facets: [] },
   productOrigin: null,
   share: null,
+  offer: null,
   added: null,
   checkoutRequested: false,
   requestCheckout: (on = true) => set({ checkoutRequested: on }),
@@ -169,8 +176,9 @@ export const useUiStore = create<UiState>()((set) => ({
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
   setProductOrigin: (productOrigin) => set({ productOrigin }),
-  openShare: (id, color, make) => set({ share: { id, color, ...(make ? { make } : {}) } }),
+  openShare: (id, color, make, upload) => set({ share: { id, color, ...(make ? { make } : {}), ...(upload ? { upload } : {}) } }),
   closeShare: () => set({ share: null }),
+  openOffer: (offer) => set({ offer }),
   noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
   clearAdded: () => set({ added: null }),
 }));

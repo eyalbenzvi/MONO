@@ -2,6 +2,7 @@
 
 import { initialCart, useCartStore } from "@/store/cartStore";
 import { initialTaste, useTasteStore } from "@/store/tasteStore";
+import { initialMake, useMakeStore } from "@/store/makeStore";
 import { catalogReady } from "@/lib/catalog";
 
 /**
@@ -16,6 +17,7 @@ export async function syncFromStorage(key: string | null) {
   const stores = [
     { store: useTasteStore, initial: initialTaste },
     { store: useCartStore, initial: initialCart },
+    { store: useMakeStore, initial: initialMake },
   ] as const;
   for (const { store, initial } of stores) {
     const name = store.persist.getOptions().name!;

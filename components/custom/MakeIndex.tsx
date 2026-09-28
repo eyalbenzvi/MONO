@@ -13,8 +13,8 @@ import { SIZES } from "@/lib/images";
 
 /**
  * Make: one ink, for one person. From ours (our designs, each adapted from
- * one thing of yours: a night, a name, a line) and, once it opens, from
- * yours (your own picture or words). Each card shows an example (a real
+ * one thing of yours: a night, a name, a line) and from yours (your own
+ * picture or words, /make/yours/). Each card shows an example (a real
  * print; the words on it are ours) and what it is made from.
  */
 export function MakeIndex() {
@@ -38,6 +38,20 @@ export function MakeIndex() {
               </li>
             ))}
           </ul>
+        </section>
+        <section className="mt-14" aria-labelledby="make-yours">
+          <h2 id="make-yours" className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+            From yours
+          </h2>
+          <p className="mt-1 text-sm text-neutral-300">Your picture or words, in one ink.</p>
+          <div className="mt-5 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4" data-from="yours">
+            <Link href="/make/yours/" className="group flex aspect-[512/704] flex-col justify-end rounded-3xl bg-ink-900 p-5 ring-1 ring-white/10 transition hover:ring-white/30" data-made="yours">
+              <p className="text-sm text-neutral-400">A picture, a drawing or words.</p>
+              <p className="mt-2 flex items-center gap-1.5 text-base font-bold">
+                Start with a file <Icon name="arrow-right" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </p>
+            </Link>
+          </div>
         </section>
       </div>
     </div>

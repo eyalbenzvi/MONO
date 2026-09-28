@@ -176,3 +176,23 @@ describe("uploads: near-duplicates by the catalogue's dHash", () => {
     expect(nearestCatalogue(h, new Uint32Array([0xf180c5d9, 0x5155c961]))).toBe(0);
   });
 });
+
+describe("designHash: the design, wherever it sits on the sheet", () => {
+  it("hashes a small placement like the same picture placed full", async () => {
+    const { designHash } = await import("@/lib/upload/measure");
+    const W = 300, H = 400;
+    const draw = (x0: number, y0: number, s: number) => {
+      const ink = new Uint8Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const [u, v] = [(x - x0) / s, (y - y0) / s];
+        if (u >= 0 && u < 1 && v >= 0 && v < 4 / 3 && (u < 0.5 ? v < 0.6 : v > 0.7)) ink[y * W + x] = 1;
+      }
+      return ink;
+    };
+    const [a, b] = [designHash(draw(0, 0, 300), W, H), designHash(draw(110, 12, 80), W, H)];
+    const bits = [...a].reduce((n, c, i) => n + [...(parseInt(c, 16) ^ parseInt(b[i], 16)).toString(2)].filter((x) => x === "1").length, 0);
+    expect(bits).toBeLessThanOrEqual(BAR.duplicate);
+    // The same small picture on a mostly empty sheet, hashed whole, is far from it: what used to match sparse designs.
+    expect(dhash(draw(110, 12, 80), W, H)).not.toBe(a);
+  });
+});

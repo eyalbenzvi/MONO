@@ -5,13 +5,13 @@ import { assetUrl } from "@/lib/catalog";
 import { MODEL_ASPECT, mockupImage } from "@/lib/images";
 import { modelFor } from "@/lib/models";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
-import { drawDetail, drawMockup, loadImage } from "@/lib/custom/raster";
+import { drawDetail, drawMockup, loadImage, type PrintSource } from "@/lib/custom/raster";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 interface CustomMockupProps {
   shirt: ShirtProduct;
-  /** The personalised print (lib/custom renderCustomSvg), in the tee colour's inks. */
-  svg: string;
+  /** The personalised print (lib/custom renderCustomSvg), in the tee colour's inks; or an uploaded print's picture in those inks (lib/upload/bitmap). */
+  svg: PrintSource;
   color?: BaseColor;
   className?: string;
   style?: React.CSSProperties;
@@ -20,6 +20,8 @@ interface CustomMockupProps {
   zoomed?: boolean;
   /** Called with the milliseconds a render took (the editor slows its preview on a slow device). */
   onRender?: (ms: number) => void;
+  /** What the picture is, for a screen reader (default: the design's title, personalised). */
+  label?: string;
 }
 
 /**
@@ -29,7 +31,7 @@ interface CustomMockupProps {
  * original's baked picture holds the place. Zoomed, the print alone at
  * 1500 px covers its box, as the baked close-up does.
  */
-export function CustomMockup({ shirt, svg, color: wanted, className = "", style, zoomed = false, onRender }: CustomMockupProps) {
+export function CustomMockup({ shirt, svg, color: wanted, className = "", style, zoomed = false, onRender, label }: CustomMockupProps) {
   const color = teeColor(shirt, wanted);
   const model = modelFor(shirt, color);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -99,7 +101,7 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
       className={`relative select-none overflow-hidden ${className}`}
       style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }}
       role="img"
-      aria-label={`${shirt.title}, personalised, worn on a ${color === "black" ? "black" : "white"} tee`}
+      aria-label={`${label ?? `${shirt.title}, personalised`}, worn on a ${color === "black" ? "black" : "white"} tee`}
     >
       {!drawn && <img src={base.src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />}
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" data-mockup data-custom />

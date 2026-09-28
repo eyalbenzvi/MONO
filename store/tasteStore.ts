@@ -95,6 +95,8 @@ interface TasteActions {
   toggleSaved: (id: string) => void;
   /** "Use this" on a personalised print: a weak like of its design, once per design. */
   likeCustom: (id: string) => void;
+  /** An upload nudges the taste once (CUSTOM_LIKE), on the axes measured from it only; `key` is the upload's id. */
+  likeUpload: (key: string, measured: Partial<UserProfileVector>) => void;
   removeLiked: (id: string) => void;
   /** Put a removed tee back in Saved without training on it again. */
   /** Put a removed id back (at its old position in likedIds, when given). */
@@ -246,7 +248,7 @@ export function sanitizeTaste(raw: unknown): TasteState {
     onboardingSeen: r.onboardingSeen === true,
     daily: dailyOf(r.daily),
     milestones: Array.isArray(r.milestones) ? TASTE_LEVELS.filter((l) => (r.milestones as unknown[]).includes(l)) : [],
-    customLiked: ids(r.customLiked),
+    customLiked: [...ids(r.customLiked), ...(Array.isArray(r.customLiked) ? (r.customLiked as unknown[]).filter((x): x is string => typeof x === "string" && /^upload:[a-z0-9]{4,24}$/.test(x)) : [])],
   };
 }
 
@@ -415,6 +417,15 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         });
         if (!alreadySeen && !topStays.length) useUiStore.setState({ isFlipped: false });
         track("save", { id });
+      },
+
+      likeUpload: (key, measured) => {
+        const s = get();
+        const id = `upload:${key}`;
+        if (s.customLiked.includes(id)) return;
+        const v = { ...s.preferenceVector };
+        for (const [k, target] of Object.entries(measured) as [keyof UserProfileVector, number][]) if (Number.isFinite(target)) v[k] = Math.min(1, Math.max(0, v[k] + CUSTOM_LIKE * (target - v[k])));
+        set({ preferenceVector: v, customLiked: [...s.customLiked, id] });
       },
 
       likeCustom: (id) => {

@@ -14,9 +14,14 @@ test("Make is in plain sight: a header tab, the shop's first card, and a way in 
   await expect(page.getByRole("heading", { name: "From ours" })).toBeVisible();
   // Each card says what it is made from.
   const lines = await page.locator('[data-from="ours"] li p').allTextContents();
-  expect(lines.length).toBeGreaterThanOrEqual(4);
-  for (const l of lines) expect(l).toMatch(/^From /);
-  for (const name of ["Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"]) await expect(page.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
+  expect(lines).toEqual(["From your swipes", "From your name", "From a line you draw", "From your voice", "From your house", "From a number", "From a night", "From a moon", "From a day", "From a year"]);
+  const names = ["Your Taste", "Your Name", "Your Line", "Your Voice", "Your House", "Your Number", "Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"];
+  expect((await page.locator('[data-from="ours"] li h3').allTextContents()).map((t) => t.trim())).toEqual(names);
+  // From yours: one card, to the upload page.
+  await expect(page.getByRole("heading", { name: "From yours" })).toBeVisible();
+  await expect(page.getByText("Your picture or words, in one ink.")).toBeVisible();
+  await expect(page.locator('[data-from="yours"] a')).toHaveAttribute("href", /\/make\/yours\/$/);
+  await expect(page.locator('[data-from="yours"] a')).toContainText("Start with a file");
   // Each card is a real print, drawn in the browser.
   await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length);
 

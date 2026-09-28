@@ -7,7 +7,8 @@ import { validate, type CustomSpec } from "@/lib/custom/spec";
 import { getShirtById } from "@/lib/catalog";
 import { firstTouch, itemOf, track, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
-import { SIZES, teeColor, type BaseColor, type CartItem, type Customer, type Order, type OrderItem, type OrderRecord, type ShirtSize } from "@/types/shirt";
+import { useMakeStore } from "@/store/makeStore";
+import { SIZES, teeColor, type BaseColor, type CartItem, type Customer, type Order, type OrderItem, type OrderRecord, type ShirtSize, type UploadRef } from "@/types/shirt";
 import { arrivalRange } from "@/lib/delivery";
 
 export const CART_KEY = "mono-cart";
@@ -34,6 +35,8 @@ export interface AddOptions {
   source?: AddSource;
   /** A personalised print (only ever from its product page). */
   custom?: CustomSpec;
+  /** An uploaded print (only ever from /make/yours/). */
+  upload?: UploadRef;
 }
 
 interface CartActions {
@@ -45,7 +48,7 @@ interface CartActions {
   addPair: (id: string, size: ShirtSize, options?: AddOptions) => boolean;
   setCartQty: (line: LineKey, qty: number) => void;
   /** Take back exactly what one add put in the bag (the mini bag's Undo). */
-  undoAdd: (note: Pick<AddedNote, "id" | "size" | "added" | "custom">) => void;
+  undoAdd: (note: Pick<AddedNote, "id" | "size" | "added" | "custom" | "upload">) => void;
   changeCartItem: (line: LineKey, to: Partial<Pick<CartItem, "size" | "color" | "custom">>) => void;
   /** Returns the full order (with the customer, for the confirmation); persists only its record. */
   placeOrder: (customer: Customer) => Order | null;
@@ -82,13 +85,33 @@ const lines = (x: unknown): CartItem[] =>
     ? (x as CartItem[]).flatMap((i) => {
         if (!wellFormed(i)) return [];
         const line: CartItem = { id: i.id, size: i.size, color: i.color, qty: Math.min(i.qty, MAX_QTY) };
+        if (i.upload !== undefined) {
+          const upload = uploadRef(i.upload);
+          return upload && i.custom === undefined ? [{ ...line, upload }] : [];
+        }
         if (i.custom === undefined) return [line];
         const custom = validate(i.custom);
         return custom ? [{ ...line, custom }] : [];
       })
     : [];
-/** An order's lines: a personalised one keeps only its template (never its inputs). */
-export const orderItem = (i: CartItem | OrderItem): OrderItem => ({ id: i.id, size: i.size, color: i.color, qty: i.qty, ...(i.custom && (i.custom.t === "sky" || i.custom.t === "moon") ? { custom: { t: i.custom.t } } : {}) });
+const MODES: readonly UploadRef["mode"][] = ["dots", "lines", "line", "vector", "words"];
+/** A bag line's upload reference, well formed or null (its raster's presence is checked apart, in IndexedDB). */
+export function uploadRef(x: unknown): UploadRef | null {
+  const u = x as Partial<UploadRef> | null;
+  if (!u || typeof u !== "object") return null;
+  if (typeof u.id !== "string" || !/^[a-z0-9]{4,24}$/.test(u.id) || typeof u.hash !== "string" || !/^[0-9a-f]{4,32}$/.test(u.hash)) return null;
+  if (!MODES.includes(u.mode as UploadRef["mode"]) || (u.size !== "full" && u.size !== "small")) return null;
+  return { id: u.id, mode: u.mode as UploadRef["mode"], size: u.size, hash: u.hash };
+}
+/** An order's lines: a personalised one keeps only its template, an uploaded one only its mode (never the inputs). */
+export const orderItem = (i: CartItem | OrderItem): OrderItem => ({
+  id: i.id,
+  size: i.size,
+  color: i.color,
+  qty: i.qty,
+  ...(i.custom ? { custom: { t: i.custom.t } } : {}),
+  ...(i.upload && MODES.includes(i.upload.mode) ? { upload: { mode: i.upload.mode } } : {}),
+});
 const orderLines = (x: unknown): OrderItem[] => (Array.isArray(x) ? (x as OrderItem[]).filter(wellFormed as (i: OrderItem) => boolean).map((i) => orderItem({ ...i, qty: Math.min(i.qty, MAX_QTY) })) : []);
 /**
  * Bag lines in a colour the design isn't sold in (T3: a design sold in one
@@ -172,6 +195,7 @@ export function migrateCart(persisted: unknown, version: number): unknown {
     const o = s.lastOrder as Record<string, unknown>;
     s.lastOrder = { ...o, items: orderLines(o.items) };
   }
+  // v5 → v6: uploaded prints (a line's `upload`). Nothing to move: no line had one.
   return s;
 }
 
@@ -197,7 +221,9 @@ export const useCartStore = create<CartState & CartActions>()(
         const tee = teeColor(shirt, color ?? get().selectedColors[id]);
         const custom = options.custom ? validate(options.custom) ?? undefined : undefined;
         if (options.custom && !custom) return false;
-        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty, ...(custom ? { custom } : {}) });
+        const upload = options.upload ? uploadRef(options.upload) ?? undefined : undefined;
+        if (options.upload && !upload) return false;
+        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
         set((s) => ({
           cart: items,
           selectedSizes: { ...s.selectedSizes, [id]: size },
@@ -207,8 +233,8 @@ export const useCartStore = create<CartState & CartActions>()(
         if (capped) toast(`Max ${MAX_QTY} per item`);
         else {
           // One confirmation everywhere: the mini bag (with Undo).
-          if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...(custom ? { custom } : {}) });
-          trackEcommerce("add_to_cart", { items: [itemOf(shirt, { color: tee, size, quantity: qty, custom })], source: options.source ?? "product" });
+          if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
+          trackEcommerce("add_to_cart", { items: [itemOf(shirt, { color: tee, size, quantity: qty, custom, upload })], source: options.source ?? "product" });
         }
         return !capped;
       },
@@ -221,22 +247,24 @@ export const useCartStore = create<CartState & CartActions>()(
         // completes the pair; with both, there's nothing to add.
         const custom = options.custom ? validate(options.custom) ?? undefined : undefined;
         if (options.custom && !custom) return false;
-        const status = pairStatus(get().cart, id, size, custom);
+        const upload = options.upload ? uploadRef(options.upload) ?? undefined : undefined;
+        if (options.upload && !upload) return false;
+        const status = pairStatus(get().cart, id, size, custom, upload);
         if (status.capped) {
           toast(`Max ${MAX_QTY} per item — the pair wasn't added`);
           return false;
         }
         if (status.missing.length === 0) return false;
         let items = get().cart;
-        for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1, ...(custom ? { custom } : {}) }).items;
+        for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) }).items;
         set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
         const completes = status.have.length > 0;
-        if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true, ...(custom ? { custom } : {}) });
+        if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
         // The pair is worth its pair price, not two full prices: its saving is
         // the items' discount (all of it on the tee that completes a pair).
-        const saving = 2 * unitPrice({ custom }, shirt) - pairPrice(custom);
+        const saving = 2 * unitPrice({ custom, upload }, shirt) - pairPrice(custom, upload);
         const discount = saving / status.missing.length;
-        trackEcommerce("add_to_cart", { items: status.missing.map((color) => itemOf(shirt, { color, size, discount, custom })), source: options.source ?? "product", pair: true });
+        trackEcommerce("add_to_cart", { items: status.missing.map((color) => itemOf(shirt, { color, size, discount, custom, upload })), source: options.source ?? "product", pair: true });
         return true;
       },
 
@@ -245,22 +273,22 @@ export const useCartStore = create<CartState & CartActions>()(
         set((s) => ({ cart: setItemQty(s.cart, line, qty) }));
         const removed = before - Math.max(0, Math.min(qty, MAX_QTY));
         const shirt = getShirtById(line.id);
-        if (removed > 0 && shirt) trackEcommerce("remove_from_cart", { items: [itemOf(shirt, { color: line.color, size: line.size, quantity: removed, custom: line.custom })] });
+        if (removed > 0 && shirt) trackEcommerce("remove_from_cart", { items: [itemOf(shirt, { color: line.color, size: line.size, quantity: removed, custom: line.custom, upload: line.upload })] });
       },
 
-      undoAdd: ({ id, size, added, custom }) => {
+      undoAdd: ({ id, size, added, custom, upload }) => {
         let items = get().cart;
         const shirt = getShirtById(id);
         const removed: BaseColor[] = [];
         for (const color of added) {
-          const line = items.find((i) => sameLine(i, { id, size, color, custom }));
+          const line = items.find((i) => sameLine(i, { id, size, color, custom, upload }));
           if (line) {
             items = setItemQty(items, line, line.qty - 1);
             removed.push(color);
           }
         }
         set({ cart: items });
-        if (shirt && removed.length) trackEcommerce("remove_from_cart", { items: removed.map((color) => itemOf(shirt, { color, size, custom })), source: "minibag" });
+        if (shirt && removed.length) trackEcommerce("remove_from_cart", { items: removed.map((color) => itemOf(shirt, { color, size, custom, upload })), source: "minibag" });
       },
 
       changeCartItem: (line, to) => {
@@ -289,8 +317,14 @@ export const useCartStore = create<CartState & CartActions>()(
         const order: Order = { ...record, items: cart, customer, arrives: { from: from.getTime(), to: to.getTime() } };
         // Persist the record only: no name, email or address on the device.
         set({ lastOrder: record, cart: [] });
+        // Uploaded prints go to the (simulated) review; their working copies leave the device.
+        const uploads = [...new Set(cart.flatMap((l) => (l.upload ? [l.upload.id] : [])))];
+        if (uploads.length) {
+          useMakeStore.getState().submitReviews(record.number, uploads);
+          void import("@/lib/upload/store").then((m) => (m.available() ? Promise.all(uploads.map(m.dropSource)) : undefined)).catch(() => {});
+        }
         // Per print: a design, and a personalised one's spec (its pairs are its own).
-        const printOf = (l: { id: string; custom?: CustomSpec }) => `${l.id}|${customKey(l.custom)}`;
+        const printOf = (l: { id: string; custom?: CustomSpec; upload?: UploadRef }) => `${l.id}|${customKey(l.custom, l.upload)}`;
         const saving = new Map(totals.pairs.map((p) => [`${p.id}|${p.key ?? ""}`, p.saving]));
         const units = new Map<string, number>();
         for (const l of totals.lines) units.set(printOf(l), (units.get(printOf(l)) ?? 0) + l.qty);
@@ -300,7 +334,7 @@ export const useCartStore = create<CartState & CartActions>()(
           shipping: order.shipping,
           discount: order.discount ?? 0,
           // A design's pair saving, spread over its units (items add up to the value).
-          items: totals.lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, custom: l.custom, discount: saving.has(printOf(l)) ? saving.get(printOf(l))! / units.get(printOf(l))! : undefined })),
+          items: totals.lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, custom: l.custom, upload: l.upload, discount: saving.has(printOf(l)) ? saving.get(printOf(l))! / units.get(printOf(l))! : undefined })),
           first_touch: firstTouch(),
         });
         return order;
@@ -308,7 +342,7 @@ export const useCartStore = create<CartState & CartActions>()(
     }),
     {
       name: CART_KEY,
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateCart,
       skipHydration: true,

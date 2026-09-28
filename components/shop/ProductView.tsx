@@ -30,6 +30,8 @@ import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
 import { madeFor } from "@/lib/custom/products";
+import { acceptedDesigns, creditLine } from "@/lib/upload/designs";
+import { isUploadDesign } from "@/lib/upload/openCall";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };
@@ -104,7 +106,9 @@ export function ProductView({
   related?: { variations: RelatedLink[]; similar: RelatedLink[] };
 }) {
   const shirt = getShirtById(id);
-  const details = useShirtDetails(shirt ? id : null, initialDetails);
+  // An Open Call design (this device only) has no shard of details: its credit is its story.
+  const openCall = isUploadDesign(id) ? acceptedDesigns().find((d) => d.id === id) : undefined;
+  const details = useShirtDetails(shirt && !openCall ? id : null, initialDetails);
   const router = useRouter();
   const hydrated = useHydrated();
   const showMatch = useShowMatch();
@@ -338,6 +342,11 @@ export function ProductView({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+                {openCall && (
+                  <p className="mt-0.5 text-sm text-neutral-400" data-credit>
+                    {creditLine(openCall)}
+                  </p>
+                )}
                 {/* The computed skies lead to their made-for-you tee (Your Night Sky, Your Planets, Your Year of Moons). */}
                 {made && (
                   <Link href={`/make/${made.slug}/`} className="-my-1.5 inline-flex h-10 items-center gap-1 text-sm text-neutral-400 transition-colors hover:text-white" data-make-your-own>

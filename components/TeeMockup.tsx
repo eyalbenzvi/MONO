@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
+import { acceptedDesigns } from "@/lib/upload/designs";
+import { isUploadDesign } from "@/lib/upload/openCall";
 import { Sharper } from "@/components/Sharper";
 import { usePageZoom } from "@/hooks/usePageZoom";
 import { MODEL_ASPECT, detailBox, detailPath, mockupImage } from "@/lib/images";
@@ -29,7 +31,27 @@ interface TeeMockupProps {
  * model photo with the print already on the fabric. Zoomed in, a close-up
  * of the print (the same picture, finer) covers the print's area.
  */
-export function TeeMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false }: TeeMockupProps) {
+/** An Open Call design (on this device only) has no baked picture: its raster is drawn from IndexedDB. */
+const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
+
+export function TeeMockup(props: TeeMockupProps) {
+  const { shirt, color, className, sizes } = props;
+  if (isUploadDesign(shirt.id)) {
+    const d = acceptedDesigns().find((x) => x.id === shirt.id);
+    const tee = teeColor(shirt, color);
+    const empty = <div className={className} style={{ aspectRatio: `${MODEL_ASPECT}` }} />;
+    return d ? (
+      <Suspense fallback={empty}>
+        <UploadMockup shirt={shirt} uploadId={d.uploadId} color={tee} sizes={sizes} className={className} />
+      </Suspense>
+    ) : (
+      empty
+    );
+  }
+  return <BakedMockup {...props} />;
+}
+
+function BakedMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false }: TeeMockupProps) {
   const color = teeColor(shirt, wanted);
   const page = usePageZoom();
   const { src, srcSet } = mockupImage(shirt, color);

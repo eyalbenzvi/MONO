@@ -17,24 +17,36 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
 import { apiConfigured, fetchReferral, isEmail } from "@/lib/api";
 import { arrivalRange, formatArrival } from "@/lib/delivery";
-import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize, type UploadRef } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
 import { customKey } from "@/lib/cart";
+import { ReviewStatus, useOrderTickets } from "@/components/upload/ReviewStatus";
+import { useMakeStore } from "@/store/makeStore";
 import { customTitle, encodeMake, type CustomSpec } from "@/lib/custom/spec";
 
 // A made-for-you line's picture draws its own print; its code loads only when the bag holds one.
 const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup"));
 
 /** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
-const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec }) => (l.custom ? customTitle(l.custom) : l.shirt.title);
+const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec; upload?: UploadRef }) =>
+  l.upload ? (useMakeStore.getState().uploads[l.upload.id]?.title ?? "Your file") : l.custom ? customTitle(l.custom) : l.shirt.title;
 /** A line's key (a made-for-you print's spec makes it a line of its own). */
-const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec }) => `${l.id}-${l.size}-${l.color}-${customKey(l.custom)}`;
+const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec; upload?: UploadRef }) => `${l.id}-${l.size}-${l.color}-${customKey(l.custom, l.upload)}`;
 /** Where a line leads: its product page, a made-for-you one with its print in the address. */
-const lineHref = (l: { id: string; custom?: CustomSpec }) => (l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}` : productHref(l.id));
+const lineHref = (l: { id: string; custom?: CustomSpec; upload?: UploadRef }) =>
+  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}` : productHref(l.id);
+
+const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
 function LineMockup({ line, className }: { line: CartLine; className?: string }) {
+  if (line.upload)
+    return (
+      <Suspense fallback={<div className={className} style={{ aspectRatio: "3 / 4" }} />}>
+        <UploadMockup shirt={line.shirt} uploadId={line.upload.id} color={line.color} className={className} label={useMakeStore.getState().uploads[line.upload.id]?.title} />
+      </Suspense>
+    );
   if (!line.custom) return <TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />;
   return (
     <Suspense fallback={<TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />}>
@@ -44,6 +56,20 @@ function LineMockup({ line, className }: { line: CartLine; className?: string })
 }
 
 type Step = "bag" | "details" | "done";
+
+/** The uploaded prints of an order and where their (simulated) review stands. */
+function UploadReviews({ order }: { order: string }) {
+  const tickets = useOrderTickets(order);
+  if (!tickets.length) return null;
+  return (
+    <div className="mt-5 w-full space-y-2" data-upload-reviews>
+      {tickets.map((t) => (
+        <ReviewStatus key={t.id} ticket={t} offer={(id) => useUiStore.getState().openOffer(id)} />
+      ))}
+      <p className="text-xs text-neutral-500">Reviews are simulated in this demo.</p>
+    </div>
+  );
+}
 
 export function CartView() {
   const hydrated = useHydrated();
@@ -162,8 +188,8 @@ export function CartView() {
                           <p className="truncate text-sm font-semibold">{lineTitle(line)}</p>
                           {/* The colour, in words (change it on the product page); the size is the control below. */}
                           <p className="text-xs text-neutral-400">
-                            {COLOR_LABELS[line.color]} tee
-                            {line.custom && (
+                            {line.upload ? `Your file · ${COLOR_LABELS[line.color]}` : `${COLOR_LABELS[line.color]} tee`}
+                            {(line.custom || line.upload) && (
                               <>
                                 {" · "}
                                 <Link href={lineHref(line)} className="text-neutral-300 underline underline-offset-2 hover:text-white">
@@ -229,7 +255,7 @@ export function CartView() {
             <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
               <Icon name="rotate-ccw" className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
             </p>
-            {lines.some((l) => l.custom) && <p className="mt-1 text-center text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>}
+            {lines.some((l) => l.custom || l.upload) && <p className="mt-1 text-center text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>}
               </div>
             </div>
           </>
@@ -577,10 +603,12 @@ function Confirmation({ order }: { order: Order }) {
           </li>
         </ul>
 
+        <UploadReviews order={order.number} />
+
         {first && (
           <button
             type="button"
-            onClick={() => useUiStore.getState().openShare(first.id, first.color)}
+            onClick={() => useUiStore.getState().openShare(first.id, first.color, first.custom ? encodeMake(first.custom) : undefined, first.upload?.id)}
             className="mt-6 h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white"
           >
             Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}

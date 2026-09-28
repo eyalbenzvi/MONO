@@ -70,11 +70,14 @@ const HOW_TO: Partial<Record<ShareChannel, string>> = {
 // Generated images are reused while the page lives (same tee, colour, format).
 const cache = new Map<string, Promise<Blob>>();
 // A made-for-you print's picture is drawn here (its code loads only then).
-const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, make?: string) => {
-  const key = `${shirt.id}|${color}|${format}|${make ?? ""}`;
+const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, make?: string, upload?: string) => {
+  const key = `${shirt.id}|${color}|${format}|${make ?? ""}|${upload ?? ""}`;
   const spec = make ? decodeMake(make) : null;
   if (!cache.has(key)) {
-    const p = spec
+    const p = upload
+      ? // An uploaded print: its picture only (the link goes to /make/yours/, never to the file).
+        renderShareImage(shirt, color, format, { tee: import("@/components/upload/UploadMockup").then((m) => m.drawUploadTee(shirt, upload, color)), price: STORE_POLICY.customPrice })
+      : spec
       ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)), price: STORE_POLICY.customPrice })
       : renderShareImage(shirt, color, format);
     p.catch(() => cache.delete(key));
@@ -105,10 +108,10 @@ export function ShareSheet() {
   const share = useUiStore((s) => s.share);
   const close = useUiStore((s) => s.closeShare);
   const shirt = share ? getShirtById(share.id) : undefined;
-  return <AnimatePresence>{share && shirt && <Sheet key={shirt.id} shirt={shirt} initialColor={share.color} make={share.make} onClose={close} />}</AnimatePresence>;
+  return <AnimatePresence>{share && shirt && <Sheet key={shirt.id} shirt={shirt} initialColor={share.color} make={share.make} upload={share.upload} onClose={close} />}</AnimatePresence>;
 }
 
-function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; onClose: () => void }) {
+function Sheet({ shirt, initialColor, make, upload, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; upload?: string; onClose: () => void }) {
   const showToast = useUiStore((s) => s.showToast);
   const [color, setColor] = useState<BaseColor>(teeColor(shirt, initialColor));
   const [format, setFormat] = useState<ShareFormat>("story");
@@ -125,14 +128,14 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
     let live = true;
     setBlob(null);
     setFailed(false);
-    imageFor(shirt, color, format, make).then(
+    imageFor(shirt, color, format, make, upload).then(
       (b) => live && setBlob(b),
       () => live && setFailed(true),
     );
     return () => {
       live = false;
     };
-  }, [shirt, color, format, make]);
+  }, [shirt, color, format, make, upload]);
 
   const preview = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob]);
   useEffect(() => () => {

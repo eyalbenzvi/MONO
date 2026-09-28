@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { FORCE_KEY } from "@/store/makeStore";
+import { REFUSE_REASONS } from "@/lib/upload/review";
 import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { getShirtById } from "@/lib/catalog";
@@ -158,6 +160,7 @@ function DebugPanel() {
                 </ul>
               </Section>
             )}
+            <ReviewForce />
           </motion.div>
         )}
       </AnimatePresence>
@@ -193,5 +196,41 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <p className="mb-2 truncate text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-400">{title}</p>
       {children}
     </div>
+  );
+}
+
+/** Uploads: force the next simulated review (and Open Call) result, as `?review=` does. Kept for the tab. */
+function ReviewForce() {
+  const [value, setValue] = useState(() => {
+    try {
+      return sessionStorage.getItem(FORCE_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const options = ["", "person", ...REFUSE_REASONS.map((r) => `refuse:${r}`), "accept", "decline"];
+  return (
+    <Section title="Upload review">
+      <select
+        aria-label="Force the upload review"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          try {
+            if (e.target.value) sessionStorage.setItem(FORCE_KEY, e.target.value);
+            else sessionStorage.removeItem(FORCE_KEY);
+          } catch {
+            /* storage unavailable */
+          }
+        }}
+        className="h-8 w-full rounded-lg bg-white/[0.06] px-2 text-[11px] text-white ring-1 ring-white/10"
+      >
+        {options.map((o) => (
+          <option key={o} value={o} className="bg-ink-900">
+            {o || "As the checks say"}
+          </option>
+        ))}
+      </select>
+    </Section>
   );
 }

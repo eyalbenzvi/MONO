@@ -1,16 +1,74 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { NeedDots } from "@/components/NeedDots";
-import { getShirtById } from "@/lib/catalog";
+import { getShirtById, productHref } from "@/lib/catalog";
 import { cartTotals } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import { topPicks } from "@/lib/match";
 import { shareTaste } from "@/lib/shareTaste";
 import { archetypeOf } from "@/lib/taste";
+import { MAKE_KEY } from "@/lib/upload/designs";
+import { OFFER_STATE_LINE, SALES_LINE, offerState } from "@/lib/upload/openCall";
+import { useMakeStore } from "@/store/makeStore";
+import { ReviewStatus, useOrderTickets } from "@/components/upload/ReviewStatus";
+
+/** "Your offers": each upload offered to the Open Call, its state, and Withdraw (on this device only). */
+function YourOffers() {
+  const offers = useMakeStore((s) => s.offers);
+  const [now, setNow] = useState(() => Date.now());
+  const list = Object.values(offers).filter((o) => !o.withdrawn).sort((a, b) => b.submittedAt - a.submittedAt);
+  const pending = list.some((o) => offerState(o, now) === "offered");
+  useEffect(() => {
+    if (!pending) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [pending]);
+  if (!list.length) return null;
+  return (
+    <Section title="Your offers">
+      <ul className="border-t border-white/15" data-offers>
+        {list.map((o) => {
+          const state = offerState(o, now);
+          return (
+            <li key={o.uploadId} className="border-b border-white/15 py-3 text-sm" data-offer={state}>
+              <div className="flex items-baseline justify-between gap-3">
+                {state === "accepted" ? (
+                  <Link href={productHref(o.id)} className="truncate font-semibold text-white underline-offset-2 hover:underline">
+                    {o.title}
+                  </Link>
+                ) : (
+                  <span className="truncate font-semibold text-white">{o.title}</span>
+                )}
+                <button type="button" onClick={() => useMakeStore.getState().withdraw(o.uploadId)} className="shrink-0 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
+                  Withdraw
+                </button>
+              </div>
+              <p className="mt-0.5 text-xs text-neutral-400">{OFFER_STATE_LINE[state]}</p>
+              {state === "accepted" && <p className="text-xs text-neutral-500">{SALES_LINE}</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  );
+}
+
+/** The last order's uploaded prints and their (simulated) review. */
+function LastOrderUploads({ order }: { order: string }) {
+  const tickets = useOrderTickets(order);
+  if (!tickets.length) return null;
+  return (
+    <div className="space-y-2 py-2" data-upload-reviews>
+      {tickets.map((t) => (
+        <ReviewStatus key={t.id} ticket={t} offer={(id) => useUiStore.getState().openOffer(id)} />
+      ))}
+    </div>
+  );
+}
 import { CART_KEY, useCartCount, useCartStore } from "@/store/cartStore";
 import { TASTE_KEY, startOverWithUndo, useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -125,10 +183,13 @@ export function MeView() {
           </Section>
         )}
 
+        <YourOffers />
+
         <Section title="Account">
           <div className="border-t border-white/15">
             <Row href="/cart/" label="Bag" value={String(cartCount)} />
             {lastOrder && <Row label="Last order" value={`${lastOrder.number} · ${formatPrice(lastOrder.total)}`} />}
+            {lastOrder && <LastOrderUploads order={lastOrder.number} />}
             {preferred && <Row label="Size" value={SIZE_LABELS[preferred]} />}
             <Row href="/about/" label="About" />
           </div>
@@ -143,11 +204,13 @@ export function MeView() {
           )}
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (!confirmClear) return setConfirmClear(true);
-              // Everything this site stored, gone: taste, Saved, bag, last order.
+              // Everything this site stored, gone: taste, Saved, bag, last order, and uploaded files (IndexedDB too).
               localStorage.removeItem(TASTE_KEY);
               localStorage.removeItem(CART_KEY);
+              localStorage.removeItem(MAKE_KEY);
+              await import("@/lib/upload/store").then((m) => (m.available() ? m.clearUploads() : undefined)).catch(() => {});
               window.location.assign(window.location.pathname.replace(/me\/?$/, ""));
             }}
             onBlur={() => setConfirmClear(false)}

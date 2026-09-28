@@ -19,6 +19,8 @@ export const STORE_POLICY = {
   /** A made-for-you tee's price, and the pair of one print in black and white (lib/cart unitPrice / pairPrice). */
   customPrice: 75,
   customPairPrice: 130,
+  /** What the Open Call pays a maker per tee and per pair sold, and its name (brief 6.7; pending approval like the rest). */
+  openCall: { perTee: 6, perPair: 10, call: "Open Call 01" },
   /** Under the returns line in the bag, when it holds a personalised tee. */
   customReturns: "Made for you: size exchanges only",
   /**
