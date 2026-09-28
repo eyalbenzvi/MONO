@@ -148,26 +148,41 @@ State lives in three Zustand stores:
 
 State read back from `localStorage` goes through a guard (`sanitizeTaste` / `sanitizeCart`): malformed or unknown entries fall back to defaults. Sessions from the old single store (`mono-session-v1`, v3–v6) are migrated once into the split stores (`store/legacySession.ts`). Other tabs' writes are picked up through the `storage` event. Product events go to `window.dataLayer` via `lib/analytics.ts` (no third-party script; a tag manager can forward them).
 
-## Personalised prints ("Made for you", `/make/`)
+## Make: from ours, from yours (`/make/`)
 
-Four tees of their own, each drawn in the browser from the customer's own inputs with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). A **Make** tab in the header, the shop's first card and a "Make your own →" link on the designs they're drawn like lead to them.
+One ink, for one person, in two tracks. **From ours**: ten of our designs, each adapted from one thing of yours and drawn in the browser with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). **From yours**: your own picture, drawing or words, converted to one ink on your device (`lib/upload`). A **Make** tab in the header, the shop's first card ("Make one yours →") and a "Make your own →" link on the designs they're drawn like lead to them.
 
-| Product | Page | Inputs | Drawn like |
+| Product | Page | From | Drawn like |
 | --- | --- | --- | --- |
+| Your Taste | `/make/taste/` | your swipes (17 axes, `q`) | Phyllotaxis, L-systems: a plant grown from your taste |
+| Your Name | `/make/code/` | your name, in a code (card, tape, Morse, braille, binary) | the type and terminal data designs |
+| Your Line | `/make/line/` | a line you draw (RDP-simplified, delta-encoded) | Rosettes, guilloche |
+| Your Voice | `/make/voice/` | three seconds of your voice (pitch, harmonics, fade, onset; never the sound) | Harmonographs, Lissajous |
+| Your House | `/make/house/` | floors, windows, roof, door, number | Facades, brick bonds, the orders: an architect's elevation |
+| Your Number | `/make/number/` | a number or a time, its unit and label | Dials, slide rules |
 | Your Night Sky | `/make/sky/` | a night, optional time, the place | the Night Sky designs |
-| Your Moon | `/make/moon/` | a night, north or south | a new template: that night's moon in a hexagonal dot screen, phase and % lit |
-| Your Planets | `/make/planets/` | a day (to 2050, the orbital elements' range) | the Planets designs, heavier, with each planet's last 30 days drawn bold |
+| Your Moon | `/make/moon/` | a night, north or south | that night's moon in a hexagonal dot screen |
+| Your Planets | `/make/planets/` | a day (to 2050) | the Planets designs |
 | Your Year of Moons | `/make/year/` | a year, north or south | the Moon Phases designs |
 
-- **Your words** (optional, up to 28 Latin-script characters) are the print's first line; the date drops to the line under them. The place starts from the visitor's time zone (its biggest city in the list; London when there's none), with a small "Change"; north or south follows it.
-- **The page is the editor**: the picture is redrawn as you type (a canvas renderer of the templates' SVG subset, 55–64 ms at 4× CPU throttling), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) can't be bought. Every template is fuzzed over its whole range in `tests/custom.fuzz.test.ts`.
-- **A spec** (`lib/custom/spec.ts`) is small, strict and versioned: `{ t, v: 1, p }`, validated field by field, dates real and in range. It travels only in the address (`?make=`, base64url of its canonical JSON) and in the bag line.
-- **Price and policy** (`lib/store-policy.ts`, pending approval): a made-for-you tee is `customPrice` ($75), the pair of one print in black and white `customPairPrice` ($130); a regular tee is $50 (`PRICE`) and its pair $90 (`PAIR_PRICE`). "Made for you: size exchanges only."
-- **The bag** (cart store v5): a made-for-you line is keyed by design, size, colour and the spec's hash, priced by `unitPrice`, pictured with its own print, titled "Your Moon · 19 November 2021" with an Edit link back to it. The pair discount counts per print.
-- **Places**: GeoNames cities of 200,000+ people plus capitals (3,185, ~71 KB gzipped) and the star data, published under content hashes and loaded only on a sky page (`scripts/tools/buildCities.ts`, `publishCustom.ts`). Places: GeoNames (CC BY 4.0); print font: DejaVu Sans Mono (subset WOFF2).
-- **Sharing**: the share sheet's link carries the print and says so ("This link includes the date and place"); its image is the personalised tee.
-- **Privacy**: the date, time, place, year and words never leave the device except in a link the customer shares on purpose. Analytics get the template only (`customize_open`, `customize_apply`; an item's variant reads `<colour>-custom`, its name the product's); the saved last order keeps only which template; nothing else is stored. `e2e/custom.spec.ts` checks `dataLayer` and storage for them.
-- **Taste**: buying one counts as a small like (0.05, once) of the design it's drawn like, never its inputs.
+- **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
+- **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."
+- **A spec** (`lib/custom/spec.ts`) is small, strict and versioned: `{ t, v: 1, p }`, validated field by field. It travels only in the address (`?make=`) and in the bag line, and only when the print can be rebuilt from it.
+- **Price and policy** (`lib/store-policy.ts`, pending approval): every Make tee is `customPrice` ($75), the pair of one print in black and white `customPairPrice` ($130), offered only when both tees pass. "Made for you: size exchanges only."
+- **Places**: GeoNames cities of 200,000+ people plus capitals and the star data, published under content hashes and loaded only on a sky page (`scripts/tools/buildCities.ts`, `publishCustom.ts`). Places: GeoNames (CC BY 4.0); print font: DejaVu Sans Mono (subset WOFF2).
+- **Taste**: adding one nudges the taste once per product (0.05) toward the design it's drawn like; an upload nudges only the axes measured from it.
+
+### From yours (`/make/yours/`)
+
+Four steps on one page, the picture always at the top: **A** a file (PNG, JPG, WebP, SVG; 25 MB; short side 800 px for Small, 1,100 for Full) or words (3 lines of 24); **B** the preview (Dots · Lines for a photograph, Full · Small, the tee chosen by rule, one line saying why, or why not); **C** the rights box and "What we won't print"; **D** size and bag.
+
+- **Conversion** runs in a same-origin module worker (`lib/upload/worker.ts`; no blob workers, the CSP unchanged): SVGs are sanitised and rasterised, drawings get a Sauvola threshold and clean-up, photographs a port of `scripts/photos/halftone.py` (AM round dot, 30 lpi, 45°, 8–80%) or Canny lines. The result is a 1500 × 2000 one-bit raster, EXIF dropped.
+- **The quality bar** (`lib/upload/measure.ts`) is the catalogue's: `solidBlock`, `assessPrint` ≥ 53, coverage 1–45%, detail, the thinnest line and gap (5th percentile of the skeleton's width), and no near-duplicate of a catalogue design (dHash). Reasons live in `lib/upload/reasons.ts`.
+- **The bag** (cart store v6): an upload line carries `{ id, mode, size, hash }`; its raster stays in IndexedDB (`lib/upload/store.ts`). A line whose raster is gone leaves the bag with one line saying so. The last order keeps only the mode.
+- **The review is simulated** (`lib/upload/review.ts`): queued, then cleared after 20 s; a file near a threshold passes a person first. `?review=refuse:<logo|artwork|person|explicit|hate|words|quality>` or `?review=person` (or the debug panel) force a state. The status shows on the confirmation and in `/me`; a refused file can be replaced on the same order line.
+- **The Open Call** (simulated): a cleared file of the catalogue tier can be offered; 30 s later it is accepted (quality ≥ 72, nothing within Hamming 12) and joins this device's shop as `mono-u-…` with its credit, ranked by taste, never in Discover. `/me` lists "Your offers" with Withdraw. `STORE_POLICY.openCall`: $6 a tee, $10 a pair.
+- **Deletion**: a raster 30 days after its review cleared (unless accepted), an abandoned upload after 7 days; "Clear data" in `/me` clears IndexedDB too. Sharing an upload shares its picture only, with a link to `/make/yours/`.
+- **Privacy**: inputs stay on the device. Analytics get the template or kind, never content (`make_open`, `customize_apply`, `voice_record {ok}`, `line_draw {points_bucket}`, `upload_start {kind}`, `upload_preview {class, tier}`, `upload_refused {reason}`, `offer_submit`, `offer_result {accepted}`); an item's variant reads `<colour>-custom` or `<colour>-upload`.
 
 ## Analytics (`lib/analytics.ts`)
 

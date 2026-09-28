@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { STORE_POLICY } from "@/lib/store-policy";
 import { SHIRTS } from "@/lib/catalog";
 import { pageMeta } from "@/lib/seo";
 
@@ -63,6 +64,9 @@ export default function AboutPage() {
           <p className="mt-3 text-xs leading-relaxed text-neutral-500">
             A demo store: nothing is charged and nothing ships. Your taste stays in this browser. Archive prints are public domain, credited on
             each tee; the models are generated images. Places: GeoNames (CC BY 4.0).
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+            Upload reviews are simulated. {`Designs from the Open Call pay their makers $${STORE_POLICY.openCall.perTee} a tee.`}
           </p>
         </section>
       </article>
