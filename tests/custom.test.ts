@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import shirts from "../data/shirts.json";
 import { julian } from "@/lib/custom/kit";
@@ -7,6 +8,8 @@ import { wrap } from "@/lib/custom/svg";
 import { moonBody } from "@/lib/custom/templates/moon";
 import { latLon, skyBody } from "@/lib/custom/templates/sky";
 import { localToUtc } from "@/lib/custom/tz";
+import { decodeCities, searchCities } from "@/lib/custom/data";
+import { publishedCustom } from "../scripts/tools/publishCustom";
 import { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg, specHash, templateFor, validate, type City, type CustomSpec } from "@/lib/custom";
 
 const LIB = path.resolve(__dirname, "..", "lib", "custom");
@@ -139,5 +142,45 @@ describe("personalised prints: local time to UTC, for that date", () => {
   });
   it("uses local mean time before a zone's standard time (Jerusalem, 1910: +2:20:40)", () => {
     expect(new Date(localToUtc("Asia/Jerusalem", 1910, 1, 1, 22, 0).utc).toISOString()).toBe("1910-01-01T19:39:20.000Z");
+  });
+});
+
+describe("personalised prints: the data", () => {
+  const citiesFile = readJson("data/cities/cities.json");
+  const places = decodeCities(citiesFile);
+  const gz = (s: string) => gzipSync(s).length / 1024;
+  const published = publishedCustom();
+
+  it("fits its budgets: cities ≤ 80 KB and the sky ≤ 30 KB gzipped, published under their content hashes", () => {
+    expect(gz(published.cities.json)).toBeLessThanOrEqual(80);
+    expect(gz(published.sky.json)).toBeLessThanOrEqual(30);
+    const m = readJson("data/custom.manifest.json");
+    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file });
+    expect(readFileSync(path.join(ROOT, "public", "data", m.cities), "utf8")).toBe(published.cities.json);
+  });
+
+  it("the place list is sorted by id, credits its source, and every zone is one this runtime knows", () => {
+    expect(citiesFile.credit).toBe("GeoNames, CC BY 4.0");
+    const ids: number[] = citiesFile.id;
+    expect(ids.every((id, i) => i === 0 || id > ids[i - 1])).toBe(true);
+    for (const z of citiesFile.zones as string[]) expect(() => new Intl.DateTimeFormat("en", { timeZone: z }), z).not.toThrow();
+    // National capitals are kept whatever their size (Reykjavík, about 120,000 people).
+    expect(places.list.some((c) => c.name === "Reykjavík")).toBe(true);
+  });
+
+  it("finds cities by the start of a word of the city or country, accents folded, the biggest first", () => {
+    const names = (q: string) => searchCities(places, q).map((c) => `${c.name}, ${c.country}`);
+    expect(names("tel")[0]).toBe("Tel Aviv, Israel");
+    expect(names("york")).toContain("New York City, United States");
+    expect(names("reykjavik")[0]).toBe("Reykjavík, Iceland");
+    expect(searchCities(places, "a")).toHaveLength(6);
+    expect(names("zzzz")).toEqual([]);
+    expect(names("israel").length).toBeGreaterThan(0);
+  });
+
+  it("the sky data draws the same charts as the catalogue's full star list", () => {
+    const s: CustomSpec = { t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14" } };
+    const full = renderCustomSvg(s, "black", { sky: SKY, city: TLV });
+    expect(renderCustomSvg(s, "black", { sky: JSON.parse(published.sky.json), city: TLV })).toBe(full);
   });
 });

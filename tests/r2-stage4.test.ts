@@ -1,4 +1,5 @@
 import { WAVE_DROP } from "../scripts/sources/waves";
+import customManifest from "../data/custom.manifest.json";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -137,7 +138,7 @@ describe("R21: the index head describes the data", () => {
     const dir = path.resolve(__dirname, "..", "public", "data");
     const files = readdirSync(dir).sort();
     // (Empty shards — a range of retired or unused numbers — are one file: same content, same hash.)
-    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file, searchManifest.file])].sort());
+    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file, searchManifest.file, customManifest.cities, customManifest.sky])].sort());
     const search = readFileSync(path.join(dir, searchManifest.file), "utf8");
     expect(searchManifest.file).toBe(`search.${createHash("sha256").update(search).digest("hex").slice(0, 10)}.json`);
     index.shards.forEach((hash, k) => {
