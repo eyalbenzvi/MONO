@@ -51,7 +51,7 @@ export function shareTitle(shirt: ShirtProduct) {
 
 /** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
 export function shareMessage(shirt: ShirtProduct, color: BaseColor, make?: string) {
-  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price + STORE_POLICY.customPremium)}.`;
+  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(STORE_POLICY.customPrice)}.`;
   return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price)}.`;
 }
 

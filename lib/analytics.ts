@@ -85,8 +85,8 @@ export interface EcomItem {
 }
 
 /**
- * A design as a commerce item. A personalised one is `<colour>-custom` at its
- * price with the premium; its name stays the design's own (the place, date or
+ * A design as a commerce item. A personalised one is `<colour>-custom` at the
+ * made-for-you price; its name stays the design's own (the place, date or
  * year a customer chose never reaches analytics).
  */
 export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown } = {}): EcomItem {
@@ -96,14 +96,14 @@ export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, qua
     item_category: CATEGORY_LABELS[shirt.category],
     item_variant: custom ? `${color}-custom` : color,
     ...(size ? { size } : {}),
-    price: shirt.price + (custom ? STORE_POLICY.customPremium : 0),
+    price: custom ? STORE_POLICY.customPrice : shirt.price,
     quantity,
     ...(discount ? { discount } : {}),
     ...(index !== undefined ? { index } : {}),
   };
 }
 
-/** What the items are worth after their discounts (the pair counts as $90, not $96). */
+/** What the items are worth after their discounts (the pair counts as $90, not $100). */
 export const itemsValue = (items: EcomItem[]) => Math.round(items.reduce((sum, i) => sum + (i.price - (i.discount ?? 0)) * i.quantity, 0) * 100) / 100;
 
 export function trackEcommerce(event: CommerceEvent, { items, value, ...rest }: { items: EcomItem[]; value?: number; source?: AddSource } & AnalyticsProps) {

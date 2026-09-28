@@ -75,7 +75,7 @@ const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, ma
   const spec = make ? decodeMake(make) : null;
   if (!cache.has(key)) {
     const p = spec
-      ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)), price: shirt.price + STORE_POLICY.customPremium })
+      ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)), price: STORE_POLICY.customPrice })
       : renderShareImage(shirt, color, format);
     p.catch(() => cache.delete(key));
     cache.set(key, p);

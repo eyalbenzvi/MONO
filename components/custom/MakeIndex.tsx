@@ -16,7 +16,7 @@ import { SIZES } from "@/lib/images";
  * example (a real print of a real day; the words on it are ours).
  */
 export function MakeIndex() {
-  const price = (getShirtById(MADE[0].id)?.price ?? 0) + STORE_POLICY.customPremium;
+  const price = STORE_POLICY.customPrice;
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl">

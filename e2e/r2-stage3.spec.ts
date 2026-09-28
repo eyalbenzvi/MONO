@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PRICE } from "../scripts/gen/constants";
 import { hydrated, seed } from "./helpers";
 import { W1 } from "../tests/fixtures";
 
@@ -37,7 +38,7 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   for (const name of once) expect(count(evs, name), name).toBe(1);
   expect(evs.find((e) => e.event === "landing")).toMatchObject({ utm_source: "news", utm_medium: "email", utm_campaign: "drop", ref: "friend", landing_path: "/shop/" });
   expect(evs.find((e) => e.event === "shop_view")).toMatchObject({ sort: "match" });
-  expect(evs.find((e) => e.event === "add_to_cart")).toMatchObject({ source: "product", value: 48, currency: "USD" });
+  expect(evs.find((e) => e.event === "add_to_cart")).toMatchObject({ source: "product", value: PRICE, currency: "USD" });
   const purchase = evs.find((e) => e.event === "purchase")!;
   expect(purchase.first_touch).toMatchObject({ utm_source: "news", ref: "friend" });
   expect(JSON.stringify(evs)).not.toContain("ada@example.com");

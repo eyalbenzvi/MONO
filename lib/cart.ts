@@ -13,8 +13,8 @@ export interface CartLine extends CartItem {
   lineTotal: number;
 }
 
-/** A tee's price: the design's, plus the premium when it's personalised (STORE_POLICY.customPremium). Every price of a line comes from here. */
-export const unitPrice = (line: { custom?: unknown }, shirt: Pick<ShirtProduct, "price">) => shirt.price + (line.custom ? STORE_POLICY.customPremium : 0);
+/** A tee's price: the design's, or the made-for-you price when it's personalised (STORE_POLICY.customPrice). Every price of a line comes from here. */
+export const unitPrice = (line: { custom?: unknown }, shirt: Pick<ShirtProduct, "price">) => (line.custom ? STORE_POLICY.customPrice : shirt.price);
 
 /** A personalised print's key part ("" for the original): same design, size, colour and spec = one line. */
 export const customKey = (custom?: CustomSpec) => (custom ? specHash(custom) : "");
@@ -32,8 +32,8 @@ export function cartLines(items: CartItem[]): CartLine[] {
  * (the one-tap button or two separate adds), in any sizes.
  */
 export const PAIR_PRICE = 90;
-/** The pair of one print: PAIR_PRICE, plus the premium on each tee when it's personalised. */
-export const pairPrice = (custom?: CustomSpec) => PAIR_PRICE + (custom ? 2 * STORE_POLICY.customPremium : 0);
+/** The pair of one print: PAIR_PRICE, or STORE_POLICY.customPairPrice when it's personalised. */
+export const pairPrice = (custom?: CustomSpec) => (custom ? STORE_POLICY.customPairPrice : PAIR_PRICE);
 
 /** What the bag already holds of "the pair" for one design in one size. */
 export interface PairStatus {

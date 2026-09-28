@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { PRICE } from "../scripts/gen/constants";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { CALIBRATION_IDS, hydrated, seed } from "./helpers";
@@ -38,7 +39,7 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
     expect(page).toContain('"variesBy":["https://schema.org/color","https://schema.org/size"]');
     expect(page).toContain('"itemCondition":"https://schema.org/NewCondition"');
     expect(page).toMatch(/"priceValidUntil":"\d{4}-12-31"/);
-    expect(page).toContain('<meta property="og:type" content="product"/><meta property="product:price:amount" content="48.00"/>');
+    expect(page).toContain(`<meta property="og:type" content="product"/><meta property="product:price:amount" content="${PRICE}.00"/>`);
     expect(page).toMatch(new RegExp(`<link rel="canonical" href="[^"]+/shop/${W1}/"/>`));
   });
 

@@ -53,7 +53,7 @@ test("Your Moon: words and a night, drawn as you go; into the bag as its own lin
   await drawn(page);
   await expect(page.locator("h1")).toHaveText("Your Moon");
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-  await page.getByRole("button", { name: /^Add to bag · M · \$58$/ }).tap();
+  await page.getByRole("button", { name: /^Add to bag · M · \$75$/ }).tap();
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "View bag" }).tap();
   await expect(page).toHaveURL(/\/cart\/$/);
   await expect(page.getByText("Your Moon · 19 November 2021")).toBeVisible();

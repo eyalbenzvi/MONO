@@ -58,6 +58,9 @@ test.describe("U5: zoom in place on the Discover card", () => {
     await page.goto("");
     await hydrated(page);
     const card = page.locator('[aria-roledescription="card"]').first();
+    // A double tap needs the card settled (its entrance done): taps during it can land as one.
+    await expect(card).toBeVisible();
+    await page.waitForTimeout(500);
     await card.tap({ position: { x: 180, y: 250 } });
     await page.waitForTimeout(60);
     await card.tap({ position: { x: 180, y: 250 } });
