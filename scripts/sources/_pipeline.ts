@@ -42,6 +42,8 @@ export interface World {
   wave: number;
   name: string;
   keywords: string[];
+  /** The words each source's own search is asked for (fewer and plainer than the keywords). */
+  queries: string[];
   signalFlags?: boolean;
 }
 
@@ -109,11 +111,35 @@ export async function candidates(adapter: Adapter, world: World, cap: number): P
 export const readCandidates = (source: SourceId, wave: number) => readJson<Candidate[]>(path.join(cacheDir(source), `candidates-wave-${wave}.json`), []);
 export const readPrepped = (source: SourceId, wave: number) => readJson<Prepped[]>(path.join(cacheDir(source), `prepped-wave-${wave}.json`), []);
 
+/**
+ * A JSON GET, cached on disk per source (a re-run reads the cache: resumable, and polite to the APIs),
+ * retried with backoff on 429 and 5xx.
+ */
+export async function getJson<T = any>(source: SourceId, url: string, { tries = 6, cache = true } = {}): Promise<T | null> {
+  const file = path.join(mkdir(path.join(cacheDir(source), "http")), `${createHash("sha1").update(url).digest("hex")}.json`);
+  if (cache && existsSync(file)) return JSON.parse(readFileSync(file, "utf8")) as T;
+  for (let i = 0; ; i++) {
+    try {
+      const r = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+      if (r.ok) {
+        const text = await r.text();
+        if (cache) writeFileSync(file, text);
+        return JSON.parse(text) as T;
+      }
+      if ((r.status !== 429 && r.status < 500) || i >= tries) return null;
+    } catch {
+      if (i >= tries) return null;
+    }
+    await new Promise((res) => setTimeout(res, 1500 * 2 ** i));
+  }
+}
+export const UA = "MONO-catalogue/1.0 (https://github.com/eyalbenzvi/mono; public-domain works for one-ink tees)";
+
 async function download(url: string, file: string, tries = 4): Promise<boolean> {
   if (existsSync(file)) return true;
   for (let i = 0; ; i++) {
     try {
-      const r = await fetch(url, { headers: { "User-Agent": "MONO catalogue (public-domain works; contact via repository)" } });
+      const r = await fetch(url, { headers: { "User-Agent": UA } });
       if (r.ok) {
         writeFileSync(file, Buffer.from(await r.arrayBuffer()));
         return true;
@@ -126,7 +152,7 @@ async function download(url: string, file: string, tries = 4): Promise<boolean> 
   }
 }
 
-async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>) {
+export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>) {
   let next = 0;
   await Promise.all(Array.from({ length: n }, async () => {
     while (next < items.length) await fn(items[next++]);
