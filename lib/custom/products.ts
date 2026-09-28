@@ -78,6 +78,20 @@ export const MADE: MadeProduct[] = [
     hints: { dense: "Too many repeats for this line. Try fewer repeats.", faint: "Try a longer line." },
   },
   {
+    slug: "voice",
+    id: "make-voice",
+    template: "voice",
+    name: "Your Voice",
+    line: "Three seconds of your voice, drawn by two pendulums.",
+    from: "From your voice",
+    base: "harmonograph",
+    bases: ["harmonograph", "lissajous"],
+    wordsHint: "Maya, humming",
+    // G3 hummed: a fifth between its strongest partials, a slow fade.
+    example: { t: "voice", v: 1, p: { a: 3, b: 2, d: 0.012, ph: 1.2, f: 196 } },
+    hints: { dense: "Hum a steadier note.", faint: "Hum a little longer." },
+  },
+  {
     slug: "house",
     id: "make-house",
     template: "house",

@@ -208,8 +208,8 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     return { t: "line", v: 1, p: { s: p.s, n: p.n as LineParams["n"], ...(p.m === 1 ? { m: 1 as const } : {}), ...words } };
   }
   if (spec.t === "voice") {
-    if (!int(p.a, 1, 7) || !int(p.b, 1, 7) || gcd(p.a, p.b) !== 1) return null;
-    if (!num(p.d, 0.001, 0.05, 4) || !num(p.ph, 0, 6.29, 2) || !int(p.f, 50, 1000)) return null;
+    if (!int(p.a, 1, 7) || !int(p.b, 1, 7) || p.a === p.b || gcd(p.a, p.b) !== 1) return null;
+    if (!num(p.d, 0.003, 0.03, 4) || !num(p.ph, 0, 6.29, 2) || !int(p.f, 50, 1000)) return null;
     return { t: "voice", v: 1, p: { a: p.a, b: p.b, d: p.d as number, ph: p.ph as number, f: p.f, ...words } };
   }
   if (spec.t === "house") {

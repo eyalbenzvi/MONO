@@ -59,8 +59,8 @@ describe("Make, from ours: the six new specs validate strictly and round-trip", 
 
   it("Your Voice: a:b both 1–7 and coprime, damping, phase, pitch", () => {
     ok({ t: "voice", v: 1, p: { a: 3, b: 2, d: 0.012, ph: 1.57, f: 196 } });
-    ok({ t: "voice", v: 1, p: { a: 1, b: 1, d: 0.003, ph: 0, f: 50, w: "Hum" } });
-    for (const p of [{ a: 4, b: 2 }, { a: 8, b: 1 }, { a: 0, b: 1 }, { d: 0.2 }, { d: 0.01234 }, { ph: 7 }, { f: 40 }, { f: 196.5 }])
+    ok({ t: "voice", v: 1, p: { a: 2, b: 1, d: 0.003, ph: 0, f: 50, w: "Hum" } });
+    for (const p of [{ a: 4, b: 2 }, { a: 1, b: 1 }, { a: 8, b: 1 }, { a: 0, b: 1 }, { d: 0.2 }, { d: 0.01234 }, { ph: 7 }, { f: 40 }, { f: 196.5 }])
       no({ t: "voice", v: 1, p: { a: 3, b: 2, d: 0.012, ph: 1.57, f: 196, ...p } });
   });
 

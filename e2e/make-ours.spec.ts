@@ -65,6 +65,8 @@ test("the designs a product is drawn like lead to it (Make your own →)", async
     ["slide-rule", "number"],
     ["facade", "house"],
     ["brick-bond", "house"],
+    ["harmonograph", "voice"],
+    ["lissajous", "voice"],
   ] as const) {
     const s = shirts.find((x) => x.variant === variant)!;
     await page.goto(`shop/${s.id}/`);
@@ -187,4 +189,80 @@ test("Your House: floors by keyboard, a dome, the door to the left, a number; in
   await expect(p2.getByRole("spinbutton", { name: "Floors" })).toHaveAttribute("aria-valuenow", "5");
   await expect(p2.getByRole("radio", { name: "Dome" })).toHaveAttribute("aria-checked", "true");
   await other.close();
+});
+
+/** A microphone that hums: 220 Hz with its octave, from an oscillator, in place of the real one. */
+const HUM = `
+  navigator.mediaDevices.getUserMedia = async () => {
+    const ctx = new AudioContext();
+    const out = ctx.createMediaStreamDestination();
+    for (const [f, g] of [[220, 0.5], [440, 0.3]]) {
+      const o = ctx.createOscillator();
+      const gain = ctx.createGain();
+      o.frequency.value = f;
+      gain.gain.value = g;
+      o.connect(gain).connect(out);
+      o.start();
+    }
+    return out.stream;
+  };
+`;
+
+test("Your Voice: hold to record (by keyboard), the hum's pitch reaches the print and the bag; the link rebuilds it without any sound", async ({ page, browser }) => {
+  await page.addInitScript(HUM);
+  await page.goto("make/voice/");
+  await hydrated(page);
+  await drawn(page);
+  await expect(page.getByText("Only the pitch and the fade are kept. Nothing is recorded.")).toBeVisible();
+  const before = page.url();
+  await page.locator("[data-record]").focus();
+  await page.keyboard.down(" ");
+  await expect(page.locator("[data-record]")).toHaveText("Listening…");
+  await page.waitForTimeout(1600);
+  await page.keyboard.up(" ");
+  await expect(page.locator("[data-record]")).toHaveText("Hold to record");
+  await expect.poll(() => page.url()).not.toBe(before);
+  const spec = JSON.parse(Buffer.from(new URL(page.url()).searchParams.get("make")!.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString());
+  expect(spec.p.f).toBeGreaterThan(210);
+  expect(spec.p.f).toBeLessThan(230);
+  expect(Object.keys(spec.p).sort()).toEqual(["a", "b", "d", "f", "ph"]);
+  expect(await page.evaluate(() => (window.dataLayer ?? []).filter((e) => e.event === "voice_record").map((e) => e.ok))).toEqual([true]);
+  const link = page.url();
+  await addAndOpenBag(page);
+  await expect(page.getByText(new RegExp(`^Your Voice · ${spec.p.f} Hz$`))).toBeVisible();
+  const other = await browser.newContext();
+  const p2 = await other.newPage();
+  await p2.goto(link);
+  await hydrated(p2);
+  await drawn(p2);
+  await expect(p2).toHaveURL(link);
+  await other.close();
+});
+
+test("Your Voice: the microphone refused leaves the example and a way to Your Line; silence says it didn't catch a note", async ({ page, browser }) => {
+  await page.addInitScript(`navigator.mediaDevices.getUserMedia = async () => { throw new DOMException("denied", "NotAllowedError"); };`);
+  await page.goto("make/voice/");
+  await hydrated(page);
+  await drawn(page);
+  const example = page.url();
+  await page.locator("[data-record]").focus();
+  await page.keyboard.down(" ");
+  await page.keyboard.up(" ");
+  await expect(page.getByText("The microphone is off. Allow it, or try Your Line.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Your Line" })).toHaveAttribute("href", /\/make\/line\/$/);
+  expect(page.url()).toBe(example);
+  await expect(page.getByRole("button", { name: /^Add to bag|Choose size/ }).first()).toBeVisible();
+
+  // A silent microphone: nothing voiced.
+  const ctx = await browser.newContext();
+  const p2 = await ctx.newPage();
+  await p2.addInitScript(`navigator.mediaDevices.getUserMedia = async () => new AudioContext().createMediaStreamDestination().stream;`);
+  await p2.goto("make/voice/");
+  await hydrated(p2);
+  await p2.locator("[data-record]").focus();
+  await p2.keyboard.down(" ");
+  await p2.waitForTimeout(1200);
+  await p2.keyboard.up(" ");
+  await expect(p2.getByText("Didn’t catch a note. Hum for three seconds.")).toBeVisible();
+  await ctx.close();
 });

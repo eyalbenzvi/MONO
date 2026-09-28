@@ -19,6 +19,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<{ render: Renderer }>>> = {
   taste: () => import("./templates/taste"),
   code: () => import("./templates/code"),
   line: () => import("./templates/line"),
+  voice: () => import("./templates/voice"),
   house: () => import("./templates/house"),
   number: () => import("./templates/number"),
 };

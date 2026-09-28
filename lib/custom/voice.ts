@@ -74,12 +74,12 @@ function goertzel(x: Float32Array, from: number, to: number, freq: number, sr: n
 
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
 
-/** The nearest fraction p:q with p, q ≤ 7 to a ratio ≥ 1. */
+/** The nearest fraction p:q with q < p ≤ 7 to a ratio > 1 (two different partials never make 1:1, which would draw a bare ring). */
 export function simpleRatio(r: number): [number, number] {
-  let best: [number, number] = [1, 1];
+  let best: [number, number] = [2, 1];
   let err = Infinity;
-  for (let q = 1; q <= 7; q++)
-    for (let p = q; p <= 7; p++) {
+  for (let q = 1; q <= 6; q++)
+    for (let p = q + 1; p <= 7; p++) {
       if (gcd(p, q) !== 1) continue;
       const e = Math.abs(p / q - r);
       if (e < err - 1e-9) (err = e), (best = [p, q]);

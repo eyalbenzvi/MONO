@@ -44,7 +44,13 @@ export type AnalyticsEvent =
   // Make: the product or template only, never what was typed, drawn or said.
   | "make_open"
   | "customize_apply"
-  | "line_draw";
+  | "line_draw"
+  | "voice_record"
+  | "upload_start"
+  | "upload_preview"
+  | "upload_refused"
+  | "offer_submit"
+  | "offer_result";
 
 export type AnalyticsProps = Record<string, unknown>;
 
@@ -76,7 +82,7 @@ export interface EcomItem {
   item_name: string;
   item_category: string;
   /** The tee colour. */
-  item_variant: BaseColor | `${BaseColor}-custom`;
+  item_variant: BaseColor | `${BaseColor}-custom` | `${BaseColor}-upload`;
   size?: ShirtSize;
   price: number;
   quantity: number;
@@ -90,14 +96,14 @@ export interface EcomItem {
  * made-for-you price; its name stays the design's own (the place, date or
  * year a customer chose never reaches analytics).
  */
-export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown } = {}): EcomItem {
+export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom, upload }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown; upload?: unknown } = {}): EcomItem {
   return {
     item_id: shirt.id,
     item_name: shirt.title,
     item_category: CATEGORY_LABELS[shirt.category],
-    item_variant: custom ? `${color}-custom` : color,
+    item_variant: upload ? `${color}-upload` : custom ? `${color}-custom` : color,
     ...(size ? { size } : {}),
-    price: custom ? STORE_POLICY.customPrice : shirt.price,
+    price: custom || upload ? STORE_POLICY.customPrice : shirt.price,
     quantity,
     ...(discount ? { discount } : {}),
     ...(index !== undefined ? { index } : {}),
