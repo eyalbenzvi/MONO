@@ -1,7 +1,9 @@
 /**
- * What drawing a personalised print needs in the browser (the templates and
- * their data): one chunk, loaded when a page first shows or edits one, so a
- * product page without one carries none of it.
+ * What drawing a made-for-you print needs in the browser (the templates and
+ * their data): one chunk, loaded when a page first shows one, so pages
+ * without one carry none of it.
  */
-export { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg } from "@/lib/custom";
-export { loadCities, loadSky } from "@/lib/custom/data";
+export { customSummary, decodeMake, renderCustomSvg } from "@/lib/custom";
+export { loadCities, loadSky, searchCities } from "@/lib/custom/data";
+export { drawMockup, loadImage } from "@/lib/custom/raster";
+export { loadCanvasFonts } from "@/lib/custom/canvasSvg";

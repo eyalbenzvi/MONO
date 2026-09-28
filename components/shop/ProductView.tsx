@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import type { IconName } from "@/lib/icons";
 import Link from "next/link";
@@ -25,27 +25,11 @@ import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
 import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, teeColor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { pairLabel, pairPrice, pairStatus } from "@/lib/cart";
+import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
-import { itemOf, track, trackEcommerce } from "@/lib/analytics";
-import { MakeItYours } from "@/components/custom/MakeItYours";
-import { useCustom, useCustomArrival } from "@/components/custom/useCustom";
-import { encodeMake, type CustomSpec } from "@/lib/custom/spec";
-
-// A personalised print's pieces load only when one is shown or edited (the page stays as light as before).
-const CustomMockup = lazy(() => import("@/components/custom/CustomMockup").then((m) => ({ default: m.CustomMockup })));
-const CustomPrint = lazy(() => import("@/components/custom/CustomPrint").then((m) => ({ default: m.CustomPrint })));
-const EditorSheet = lazy(() => import("@/components/custom/EditorSheet").then((m) => ({ default: m.EditorSheet })));
-
-/** The address with `make` set to a spec, or taken out (the rest kept; replaceState, so Back is unchanged). */
-function setMakeParam(spec: CustomSpec | null) {
-  const q = new URLSearchParams(window.location.search);
-  if (spec) q.set("make", encodeMake(spec));
-  else q.delete("make");
-  const rest = q.toString();
-  window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
-}
+import { itemOf, trackEcommerce } from "@/lib/analytics";
+import { madeFor } from "@/lib/custom/products";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };
@@ -58,7 +42,7 @@ const CHOICES: readonly Choice[] = ["black", "white", "both"];
  * its price anchor); the original is marked in the label. A design sold in
  * one colour only (T3) shows that colour, and no choice.
  */
-function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
+export function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
   const keys = radioKeys(CHOICES, value, onChange);
   // Sold in one colour (T3): no choice to make — say so, plainly.
   if (colors.length < 2)
@@ -181,30 +165,6 @@ export function ProductView({
   // "Both": the black + white pair, picked in the same picker as the colour.
   const [pickBoth, setBoth] = useState(false);
 
-  // "Make it yours" (base designs of the sky and moon templates only): the
-  // print applied (the store and the address), and the editor's live preview.
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [preview, setPreview] = useState<CustomSpec | null>(null);
-  const custom = useCustom(shirt, shirt ? teeColor(shirt, hydrated ? pickedColor : null) : "black", editorOpen ? preview : null);
-  const openOnArrival = useCustomArrival(shirt, hydrated);
-  useEffect(() => {
-    if (openOnArrival) setEditorOpen(true);
-  }, [openOnArrival]);
-  // The tab's title follows the personalised title (the page's static title and metadata stay the design's).
-  useEffect(() => {
-    if (!shirt || !custom.spec || custom.title === shirt.title) return;
-    const before = document.title;
-    document.title = `${custom.title} | MONO`;
-    return () => {
-      document.title = before;
-    };
-  }, [shirt, custom.spec, custom.title]);
-  const openEditor = () => {
-    if (!custom.template) return;
-    setEditorOpen(true);
-    track("customize_open", { template: custom.template });
-  };
-
   if (!shirt) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-400">
@@ -221,6 +181,7 @@ export function ProductView({
   const black = color === "black";
   const size = hydrated ? selected : undefined;
   const why = showMatch ? whyMatch(vector, shirt, likedIds) : null;
+  const made = madeFor(shirt.variant);
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
   // the variations above) and at most one per algorithm. Precomputed by the
@@ -230,7 +191,7 @@ export function ProductView({
     .filter((s): s is ShirtProduct => !!s)
     .slice(0, 4);
 
-  const addedKey = `${size}-${both ? "both" : color}-${custom.spec ? encodeMake(custom.spec) : ""}`;
+  const addedKey = `${size}-${both ? "both" : color}`;
   const phase = added?.key === addedKey ? added.phase : null;
   const confirmAdded = (key: string) => {
     setAdded({ key, phase: "added" });
@@ -244,24 +205,20 @@ export function ProductView({
   };
 
   // What "Both" would add now, given the bag (this size): only what's missing.
-  const pair = both && size ? pairStatus(cart, shirt.id, size, custom.spec ?? undefined) : null;
+  const pair = both && size ? pairStatus(cart, shirt.id, size) : null;
   const pairComplete = !!pair && pair.missing.length === 0;
   // Never a dead, disabled button: without a size it guides you to the sizes.
   const onBuy = () => {
     if (!size) return needSize();
     if (phase === "view" || pairComplete) return router.push("/cart/");
-    const spec = custom.spec ?? undefined;
-    if (both ? addPair(shirt.id, size, { source: "product", custom: spec }) : addToCart(shirt.id, size, color, 1, { source: "product", custom: spec })) confirmAdded(addedKey);
+    if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) confirmAdded(addedKey);
   };
   // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
   const sizeText = size ? SIZE_LABELS[size] : "";
   // The price shows here only — where money changes hands (plus the bag).
-  // A personalised print costs the premium more per tee (lib/cart unitPrice, pairPrice).
-  const unit = custom.price;
-  const pairTotal = pairPrice(custom.spec ?? undefined);
-  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${formatPrice(pairTotal)}` : pairLabel(pair, unit, pairTotal)) : `Add to bag · ${formatPrice(unit)}`;
+  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${formatPrice(PAIR_PRICE)}` : pairLabel(pair, shirt.price)) : `Add to bag · ${formatPrice(shirt.price)}`;
   const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
-  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${formatPrice(pairTotal)}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(pairTotal - unit)}`) : `Add · ${formatPrice(unit)}`;
+  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${formatPrice(PAIR_PRICE)}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${formatPrice(shirt.price)}`;
 
   const goBack = () => {
     // Return to the exact shop state (filters + scroll) when this product was
@@ -291,7 +248,7 @@ export function ProductView({
                 ? { label: "Show on the tee", icon: "layers", onSelect: () => setView("tee") }
                 : { label: "Show the print only", icon: "layers", onSelect: () => setView("print") },
               { label: "Share", icon: "share-2", onSelect: () => useUiStore.getState().openShare(shirt.id, color) },
-              ...(custom.template ? [{ label: "Make it yours", icon: "pencil" as const, onSelect: openEditor }] : []),
+              ...(made ? [{ label: "Make your own", icon: "pencil" as const, onSelect: () => router.push(`/make/${made.slug}/`) }] : []),
             ]}
           />
         </div>
@@ -350,18 +307,8 @@ export function ProductView({
               >
                 {view === "print" ? (
                   <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
-                    {custom.svg ? (
-                      <Suspense fallback={<PrintImage shirt={shirt} color={color} sizes={SIZES.product} />}>
-                        <CustomPrint svg={custom.svg} />
-                      </Suspense>
-                    ) : (
-                      <PrintImage shirt={shirt} color={color} priority sizes={SIZES.product} />
-                    )}
+                    <PrintImage shirt={shirt} color={color} priority sizes={SIZES.product} />
                   </div>
-                ) : custom.svg ? (
-                  <Suspense fallback={<TeeMockup shirt={shirt} color={color} sizes={SIZES.product} className="h-full max-h-full" />}>
-                    <CustomMockup shirt={shirt} svg={custom.svg} color={color} sizes={SIZES.product} className="h-full max-h-full" />
-                  </Suspense>
                 ) : (
                   <TeeMockup shirt={shirt} color={color} priority sizes={SIZES.product} className="h-full max-h-full" />
                 )}
@@ -379,7 +326,7 @@ export function ProductView({
                 }}
               />
             </div>
-            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} customSvg={custom.svg} onClose={() => setZoom(false)} />}</AnimatePresence>
+            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} onClose={() => setZoom(false)} />}</AnimatePresence>
           </div>
 
           {/* Info */}
@@ -387,8 +334,13 @@ export function ProductView({
             {/* Just the name; everything about the design sits behind ⓘ. */}
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{custom.title}</h1>
-                <MakeItYours template={custom.template} summary={custom.summary} onOpen={openEditor} />
+                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+                {/* The computed skies lead to their made-for-you tee (Your Night Sky, Your Planets, Your Year of Moons). */}
+                {made && (
+                  <Link href={`/make/${made.slug}/`} className="-my-1.5 inline-flex h-10 items-center gap-1 text-sm text-neutral-400 transition-colors hover:text-white" data-make-your-own>
+                    Make your own <Icon name="arrow-right" className="h-3.5 w-3.5" />
+                  </Link>
+                )}
                 {/* The learning, felt: said only when it's true (a top or strong match, with traits in
                     common), and the line itself opens why. */}
                 {why && (
@@ -569,39 +521,6 @@ export function ProductView({
           </section>
         )}
       </div>
-
-      <AnimatePresence>
-        {editorOpen && custom.template && (
-          <Suspense key="editor" fallback={null}>
-          <EditorSheet
-            shirt={shirt}
-            template={custom.template}
-            color={color}
-            applied={custom.spec}
-            onPreview={setPreview}
-            onApply={(spec) => {
-              useUiStore.getState().setCustom(shirt.id, spec);
-              setMakeParam(spec);
-              setEditorOpen(false);
-              setPreview(null);
-              // A third of a like of the design, once (its taste, not the inputs).
-              useTasteStore.getState().likeCustom(shirt.id);
-              track("customize_apply", { template: custom.template });
-            }}
-            onOriginal={() => {
-              useUiStore.getState().setCustom(shirt.id, null);
-              setMakeParam(null);
-              setEditorOpen(false);
-              setPreview(null);
-            }}
-            onClose={() => {
-              setEditorOpen(false);
-              setPreview(null);
-            }}
-          />
-          </Suspense>
-        )}
-      </AnimatePresence>
 
       {/* Mobile: sticky buy bar, always visible, never disabled */}
       {/* Narrow phones: tighter gaps below 360 px, and below 400 px Share

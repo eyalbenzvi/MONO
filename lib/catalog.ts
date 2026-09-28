@@ -1,4 +1,5 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
+import { madeById } from "@/lib/custom/products";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
@@ -124,7 +125,25 @@ const loading = (() => {
 export const catalogReady = () => loading;
 export const isCatalogReady = () => ready;
 
-export const getShirtById = (id: string) => BY_ID.get(id);
+/**
+ * Made-for-you tees (lib/custom/products): not in SHIRTS, but resolved by id,
+ * built from the catalogue design each is drawn like.
+ */
+const MADE_BY_ID = new Map<string, ShirtProduct>();
+function madeProduct(id: string): ShirtProduct | undefined {
+  const m = madeById(id);
+  if (!m) return undefined;
+  let made = MADE_BY_ID.get(id);
+  if (!made) {
+    const base = SHIRTS.find((s) => s.variant === m.base);
+    if (!base) return undefined;
+    made = { ...base, id: m.id, title: m.name, variant: `make-${m.slug}`, family: m.id, colors: ["black", "white"], rank: Number.MAX_SAFE_INTEGER, weak: false };
+    MADE_BY_ID.set(id, made);
+  }
+  return made;
+}
+
+export const getShirtById = (id: string) => BY_ID.get(id) ?? madeProduct(id);
 
 /** Each detail shard's file (named by its content hash, from the index head). */
 export const shardFile = (k: number) => `/data/details-${k}.${shardHashes[k]}.json`;
@@ -160,6 +179,8 @@ export function isPrerendered(shirt: ShirtProduct) {
 
 /** Link to a product page (relative to the base path, like next/link hrefs). */
 export function productHref(id: string, hash = "") {
+  const made = madeById(id);
+  if (made) return `/make/${made.slug}/${hash}`;
   const shirt = BY_ID.get(id);
   return !shirt || isPrerendered(shirt) ? `/shop/${id}/${hash}` : `/shop/p/?id=${id}${hash}`;
 }

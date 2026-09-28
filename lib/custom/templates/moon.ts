@@ -24,10 +24,12 @@ export function moonShape(cx: number, cy: number, r: number, k: number, waxing: 
 export interface MoonInput {
   year: number;
   south?: boolean;
+  /** The customer's words: the caption's first line (the year moves to the next). */
+  words?: string;
 }
 
 /** The year's calendar of moons and its caption: the print's body (white ink, unwrapped). */
-export function moonBody({ year, south = false }: MoonInput): string {
+export function moonBody({ year, south = false, words }: MoonInput): string {
   let body = "";
   const X = 42, DX = 7.6, Y = 62, DY = 19.5, R = 3.4;
   for (const d of [1, 5, 10, 15, 20, 25, 30]) body += text(X + (d - 1) * DX, Y - 10, String(d), 5.5);
@@ -40,6 +42,7 @@ export function moonBody({ year, south = false }: MoonInput): string {
       body += moonShape(X + (d - 1) * DX, y, R, k, waxing, south);
     }
   }
-  body += caption(318, `Moon ${year}`, "Every day at 00:00 UTC", south ? "Waxing lit on the left, as seen from the south" : "Waxing lit on the right, as seen from the north");
+  const side = south ? "Waxing lit on the left, as seen from the south" : "Waxing lit on the right, as seen from the north";
+  body += words ? caption(318, words, `${year} · every day at 00:00 UTC`, side) : caption(318, `Moon ${year}`, "Every day at 00:00 UTC", side);
   return body;
 }

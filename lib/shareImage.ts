@@ -29,7 +29,7 @@ export async function loadMockup(shirt: ShirtProduct, color: BaseColor): Promise
 }
 
 /** Draws the picture `w` px wide with rounded corners, top-left at (x, y). Returns its height. */
-function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, img: HTMLImageElement) {
+function drawTee(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, img: CanvasImageSource) {
   const h = w / MODEL_ASPECT;
   ctx.save();
   roundRect(ctx, x, y, w, h, w * 0.05);
@@ -83,13 +83,14 @@ function logo(ctx: CanvasRenderingContext2D, cx: number, y: number, scale: numbe
   ctx.restore();
 }
 
-export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, format: ShareFormat): Promise<Blob> {
+/** `tee` is the picture when it isn't the baked one (a made-for-you print, drawn in the browser); `price` the tee's when it isn't the design's. */
+export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, format: ShareFormat, { tee: drawn, price = shirt.price }: { tee?: Promise<CanvasImageSource>; price?: number } = {}): Promise<Blob> {
   const { w, h } = SHARE_SIZES[format];
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
-  const tee = await loadMockup(shirt, color);
+  const tee = await (drawn ?? loadMockup(shirt, color));
   const story = format === "story";
 
   // stage background: soft spotlight on near-black
@@ -114,7 +115,7 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
   fitFont(ctx, shirt.title, w - 120, story ? 84 : 58, 800);
   ctx.fillText(shirt.title, w / 2, y);
   y += story ? 70 : 48;
-  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee  ·  ${formatPrice(shirt.price)}`;
+  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee  ·  ${formatPrice(price)}`;
   fitFont(ctx, meta, w - 120, story ? 40 : 30, 500);
   ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.fillText(meta, w / 2, y);

@@ -8,6 +8,8 @@ import { channelLink, productShareUrl, shareFileName, shareMessage, shareTitle, 
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useUiStore } from "@/store/useUiStore";
+import { decodeMake } from "@/lib/custom/spec";
+import { STORE_POLICY } from "@/lib/store-policy";
 import { COLOR_LABELS, COLORS, teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { track } from "@/lib/analytics";
 import { copyText, downloadBlob } from "@/lib/clipboard";
@@ -67,10 +69,14 @@ const HOW_TO: Partial<Record<ShareChannel, string>> = {
 
 // Generated images are reused while the page lives (same tee, colour, format).
 const cache = new Map<string, Promise<Blob>>();
-const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat) => {
-  const key = `${shirt.id}|${color}|${format}`;
+// A made-for-you print's picture is drawn here (its code loads only then).
+const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, make?: string) => {
+  const key = `${shirt.id}|${color}|${format}|${make ?? ""}`;
+  const spec = make ? decodeMake(make) : null;
   if (!cache.has(key)) {
-    const p = renderShareImage(shirt, color, format);
+    const p = spec
+      ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)), price: shirt.price + STORE_POLICY.customPremium })
+      : renderShareImage(shirt, color, format);
     p.catch(() => cache.delete(key));
     cache.set(key, p);
   }
@@ -78,14 +84,21 @@ const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat) =>
 };
 
 
+/** What a made-for-you link gives away, said before it's sent. */
+function makeNote(make: string) {
+  const spec = decodeMake(make);
+  const what = spec?.t === "moon" ? "the year" : spec?.t === "sky" ? "the date and place" : "the date";
+  return `This link includes ${what}${spec?.p.w ? " and your words" : ""}`;
+}
+
 export function ShareSheet() {
   const share = useUiStore((s) => s.share);
   const close = useUiStore((s) => s.closeShare);
   const shirt = share ? getShirtById(share.id) : undefined;
-  return <AnimatePresence>{share && shirt && <Sheet key={shirt.id} shirt={shirt} initialColor={share.color} onClose={close} />}</AnimatePresence>;
+  return <AnimatePresence>{share && shirt && <Sheet key={shirt.id} shirt={shirt} initialColor={share.color} make={share.make} onClose={close} />}</AnimatePresence>;
 }
 
-function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; onClose: () => void }) {
+function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; onClose: () => void }) {
   const showToast = useUiStore((s) => s.showToast);
   const [color, setColor] = useState<BaseColor>(teeColor(shirt, initialColor));
   const [format, setFormat] = useState<ShareFormat>("story");
@@ -102,14 +115,14 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
     let live = true;
     setBlob(null);
     setFailed(false);
-    imageFor(shirt, color, format).then(
+    imageFor(shirt, color, format, make).then(
       (b) => live && setBlob(b),
       () => live && setFailed(true),
     );
     return () => {
       live = false;
     };
-  }, [shirt, color, format]);
+  }, [shirt, color, format, make]);
 
   const preview = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob]);
   useEffect(() => () => {
@@ -121,10 +134,10 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
   const canShareFiles = !!file && canShare && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
 
   const nativeShare = async (ref: ShareChannel, withFile: boolean) => {
-    const url = productShareUrl(shirt, color, ref);
+    const url = productShareUrl(shirt, color, ref, undefined, make);
     try {
-      if (withFile && file) await navigator.share({ files: [file], title: shareTitle(shirt), text: `${shareMessage(shirt, color)}\n${url}` });
-      else await navigator.share({ title: shareTitle(shirt), text: shareMessage(shirt, color), url });
+      if (withFile && file) await navigator.share({ files: [file], title: shareTitle(shirt), text: `${shareMessage(shirt, color, make)}\n${url}` });
+      else await navigator.share({ title: shareTitle(shirt), text: shareMessage(shirt, color, make), url });
       // Only a share that went through (not a dismissed sheet).
       track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
       return true;
@@ -137,7 +150,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
   const act = async (ch: ShareChannel) => {
     setHint(null);
     const done = (method: string) => track("share", { id: shirt.id, channel: ch, method, color, format });
-    const url = productShareUrl(shirt, color, ch);
+    const url = productShareUrl(shirt, color, ch, undefined, make);
     if (ch === "copy") {
       const copied = await copyText(url);
       showToast(copied ? "Link copied" : "Couldn't copy the link");
@@ -162,7 +175,7 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
       setHint(HOW_TO[ch]!);
       return;
     }
-    const link = channelLink(ch, shirt, color);
+    const link = channelLink(ch, shirt, color, undefined, make);
     if (!link) return;
     // The app's own share screen opens; whether it's sent there can't be known.
     if (link.startsWith("mailto:") || link.startsWith("sms:")) window.location.href = link;
@@ -189,6 +202,8 @@ function Sheet({ shirt, initialColor, onClose }: { shirt: ShirtProduct; initialC
           <div className="min-w-0">
             <h2 className="text-lg font-bold">Share this tee</h2>
             <p className="truncate text-sm text-neutral-400">{shirt.title}</p>
+            {/* The link opens this very print: the date and place ride in it (lib/custom spec). */}
+            {make && <p className="mt-0.5 text-xs text-neutral-400" data-share-note>{makeNote(make)}</p>}
           </div>
           <button type="button" onClick={onClose} aria-label="Close share" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/15">
             <Icon name="x" className="h-5 w-5" />

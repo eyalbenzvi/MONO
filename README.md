@@ -148,6 +148,27 @@ State lives in three Zustand stores:
 
 State read back from `localStorage` goes through a guard (`sanitizeTaste` / `sanitizeCart`): malformed or unknown entries fall back to defaults. Sessions from the old single store (`mono-session-v1`, v3–v6) are migrated once into the split stores (`store/legacySession.ts`). Other tabs' writes are picked up through the `storage` event. Product events go to `window.dataLayer` via `lib/analytics.ts` (no third-party script; a tag manager can forward them).
 
+## Personalised prints ("Made for you", `/make/`)
+
+Four tees of their own, each drawn in the browser from the customer's own inputs with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). A **Make** tab in the header, the shop's first card and a "Make your own →" link on the designs they're drawn like lead to them.
+
+| Product | Page | Inputs | Drawn like |
+| --- | --- | --- | --- |
+| Your Night Sky | `/make/sky/` | a night, optional time, the place | the Night Sky designs |
+| Your Moon | `/make/moon/` | a night, north or south | a new template: that night's moon in a hexagonal dot screen, phase and % lit |
+| Your Planets | `/make/planets/` | a day (to 2050, the orbital elements' range) | the Planets designs, heavier, with each planet's last 30 days drawn bold |
+| Your Year of Moons | `/make/year/` | a year, north or south | the Moon Phases designs |
+
+- **Your words** (optional, up to 28 Latin-script characters) are the print's first line; the date drops to the line under them. The place starts from the visitor's time zone (its biggest city in the list; London when there's none), with a small "Change"; north or south follows it.
+- **The page is the editor**: the picture is redrawn as you type (a canvas renderer of the templates' SVG subset, 55–64 ms at 4× CPU throttling), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) can't be bought. Every template is fuzzed over its whole range in `tests/custom.fuzz.test.ts`.
+- **A spec** (`lib/custom/spec.ts`) is small, strict and versioned: `{ t, v: 1, p }`, validated field by field, dates real and in range. It travels only in the address (`?make=`, base64url of its canonical JSON) and in the bag line.
+- **Price and policy** (`lib/store-policy.ts`, pending approval): the design's price plus `customPremium` ($10: $58), the pair $90 + 2 × $10. "Made for you: size exchanges only."
+- **The bag** (cart store v5): a made-for-you line is keyed by design, size, colour and the spec's hash, priced by `unitPrice`, pictured with its own print, titled "Your Moon · 19 November 2021" with an Edit link back to it. The pair discount counts per print.
+- **Places**: GeoNames cities of 200,000+ people plus capitals (3,185, ~71 KB gzipped) and the star data, published under content hashes and loaded only on a sky page (`scripts/tools/buildCities.ts`, `publishCustom.ts`). Places: GeoNames (CC BY 4.0); print font: DejaVu Sans Mono (subset WOFF2).
+- **Sharing**: the share sheet's link carries the print and says so ("This link includes the date and place"); its image is the personalised tee.
+- **Privacy**: the date, time, place, year and words never leave the device except in a link the customer shares on purpose. Analytics get the template only (`customize_open`, `customize_apply`; an item's variant reads `<colour>-custom`, its name the product's); the saved last order keeps only which template; nothing else is stored. `e2e/custom.spec.ts` checks `dataLayer` and storage for them.
+- **Taste**: buying one counts as a small like (0.05, once) of the design it's drawn like, never its inputs.
+
 ## Analytics (`lib/analytics.ts`)
 
 - **Attribution:** `landing` (utm_source / medium / campaign, ref, has_taste, has_list, landing_path, referrer) is recorded once per page load, before any page strips those tags from the address bar; the session's first touch is kept in sessionStorage and attached to `purchase`. `page_view` fires on every page, client-side navigations included.

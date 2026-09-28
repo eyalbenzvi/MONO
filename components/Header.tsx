@@ -12,6 +12,8 @@ import { useUiStore } from "@/store/useUiStore";
 const TABS = [
   { href: "/", label: "Discover", match: (p: string) => p === "/" },
   { href: "/shop/", label: "Shop", match: (p: string) => p.startsWith("/shop") },
+  // Made for you: the tees that are yours alone (lib/custom/products).
+  { href: "/make/", label: "Make", match: (p: string) => p.startsWith("/make") },
 ];
 
 export function Header() {
@@ -80,15 +82,15 @@ export function Header() {
             and hydration never patches class names — the active tab's text
             would stay grey on the white pill. */}
         <nav key={mounted ? "client" : "server"} aria-label="Sections" className="justify-self-center">
-          <div className="relative grid w-44 grid-cols-2 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-40 max-[339px]:w-36">
+          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-52 max-[339px]:w-44">
             {/* One pill, always rendered, moved under the active tab: the
                 markup never depends on the URL, so a page served at another
                 address (404.html) still hydrates cleanly. */}
             <motion.span
               aria-hidden
-              className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white"
+              className="absolute inset-y-1 left-1 w-[calc((100%-8px)/3)] rounded-full bg-white"
               initial={false}
-              animate={{ x: activeTab === 1 ? "100%" : "0%", opacity: activeTab === -1 ? 0 : 1 }}
+              animate={{ x: `${Math.max(0, activeTab) * 100}%`, opacity: activeTab === -1 ? 0 : 1 }}
               transition={{ type: "spring", stiffness: 420, damping: 34 }}
             />
             {TABS.map((tab) => {

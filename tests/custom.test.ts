@@ -10,7 +10,9 @@ import { latLon, skyBody } from "@/lib/custom/templates/sky";
 import { localToUtc } from "@/lib/custom/tz";
 import { decodeCities, searchCities } from "@/lib/custom/data";
 import { publishedCustom } from "../scripts/tools/publishCustom";
-import { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg, specHash, templateFor, validate, type City, type CustomSpec } from "@/lib/custom";
+import { getShirtById, productHref } from "@/lib/catalog";
+import { MADE, madeBySlug, madeFor } from "@/lib/custom/products";
+import { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg, specHash, templateFor, validate, cleanWords, WORDS_MAX, type City, type CustomSpec } from "@/lib/custom";
 
 const LIB = path.resolve(__dirname, "..", "lib", "custom");
 const files = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(path.join(dir, e.name)) : e.name.endsWith(".ts") ? [path.join(dir, e.name)] : []));
@@ -56,12 +58,25 @@ describe("personalised prints: the templates are the catalogue's", () => {
     }
   });
 
-  it("templateFor: exactly the ten base designs", () => {
-    const withTemplate = CATALOGUE.filter((s) => templateFor(s));
-    expect(withTemplate.map((s) => s.variant).sort()).toEqual([...Array(7).fill("sky-night"), ...Array(3).fill("moon-year")].sort());
-    expect(templateFor({ variant: "sky-night" })).toBe("sky");
-    expect(templateFor({ variant: "moon-year" })).toBe("moon");
-    expect(templateFor({ variant: "planets-date" })).toBeNull();
+  it("templateFor: only the made-for-you products; no catalogue design is personalised", () => {
+    expect(CATALOGUE.filter((s) => templateFor(s))).toEqual([]);
+    expect(MADE.map((m) => templateFor(getShirtById(m.id)!))).toEqual(MADE.map((m) => m.template));
+    expect(MADE.map((m) => m.template).sort()).toEqual(["moon", "night", "planets", "sky"]);
+  });
+
+  it("each made product is its base design's tee: its photos, taste and price; its own id, name and page", () => {
+    for (const m of MADE) {
+      const made = getShirtById(m.id)!;
+      const base = CATALOGUE.find((s) => s.variant === m.base)!;
+      expect(made, m.id).toMatchObject({ id: m.id, title: m.name, n: base.n, variant: `make-${m.slug}`, colors: ["black", "white"] });
+      expect(madeBySlug(m.slug)).toBe(m);
+      expect(productHref(m.id)).toBe(`/make/${m.slug}/`);
+    }
+    // The catalogue designs a product is drawn like link to it ("Make your own →"); the moon-year designs lead to Your Year of Moons.
+    expect(madeFor("sky-night")?.id).toBe("make-sky");
+    expect(madeFor("planets-date")?.id).toBe("make-planets");
+    expect(madeFor("moon-year")?.id).toBe("make-year");
+    expect(madeFor("halftone")).toBeUndefined();
   });
 });
 
@@ -87,11 +102,33 @@ describe("personalised prints: a spec", () => {
     expect(validate({ t: "moon", v: 1, p: { y: 1991 } })).toEqual({ t: "moon", v: 1, p: { y: 1991 } });
     expect(validate({ t: "moon", v: 1, p: { y: 1991, s: 1 } })).toEqual({ t: "moon", v: 1, p: { y: 1991, s: 1 } });
     for (const p of [{ y: 1899 }, { y: 2101 }, { y: 1991.5 }, { y: "1991" }, { y: 1991, s: 0 }, { y: 1991, s: true }]) expect(validate({ t: "moon", v: 1, p }), JSON.stringify(p)).toBeNull();
-    for (const bad of [null, 1, "x", [], { t: "planets", v: 1, p: {} }, { t: "moon", v: 1 }]) expect(validate(bad)).toBeNull();
+    for (const bad of [null, 1, "x", [], { t: "planets", v: 1, p: {} }, { t: "moon", v: 1 }, { t: "comet", v: 1, p: { d: "1991-03-14" } }]) expect(validate(bad)).toBeNull();
+  });
+
+  it("Your Moon and Your Planets: a real day; the planets only to their elements' last year", () => {
+    expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", s: 1 } })).toEqual({ t: "night", v: 1, p: { d: "2021-11-19", s: 1 } });
+    expect(validate({ t: "night", v: 1, p: { d: "2021-02-30" } })).toBeNull();
+    expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", s: 2 } })).toBeNull();
+    expect(validate({ t: "planets", v: 1, p: { d: "2050-12-31" } })).toEqual({ t: "planets", v: 1, p: { d: "2050-12-31" } });
+    expect(validate({ t: "planets", v: 1, p: { d: "2051-01-01" } })).toBeNull();
+    expect(validate({ t: "planets", v: 1, p: { d: "1900-01-01", s: 1 } })).toEqual({ t: "planets", v: 1, p: { d: "1900-01-01" } });
+  });
+
+  it("the words: tidied, at most WORDS_MAX characters the print's font can set; anything else and the spec is null", () => {
+    expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w: "  Noa,   welcome " } })).toEqual({ t: "night", v: 1, p: { d: "2021-11-19", w: "Noa, welcome" } });
+    expect(validate({ t: "moon", v: 1, p: { y: 2020, w: "Ça va · 2020!" } })?.p.w).toBe("Ça va · 2020!");
+    expect(cleanWords("x".repeat(WORDS_MAX))).toBe("x".repeat(WORDS_MAX));
+    for (const w of ["x".repeat(WORDS_MAX + 1), "", "   ", "נועה", "<b>hi</b>", "a\u0000b", 42]) expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w } }), String(w)).toBeNull();
+    expect(sky({ c: TLV.id, d: "1991-03-14", w: "The night we met" })).toEqual({ t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14", w: "The night we met" } });
   });
 
   it("round-trips through a link; garbage is null", () => {
-    const specs: CustomSpec[] = [{ t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14", t: "23:00" } }, { t: "moon", v: 1, p: { y: 1969, s: 1 } }];
+    const specs: CustomSpec[] = [
+      { t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14", t: "23:00" } },
+      { t: "moon", v: 1, p: { y: 1969, s: 1 } },
+      { t: "night", v: 1, p: { d: "2021-11-19", w: "Noël, à toi" } },
+      { t: "planets", v: 1, p: { d: "2012-06-06", w: "M".repeat(WORDS_MAX) } },
+    ];
     for (const s of specs) {
       expect(decodeMake(encodeMake(s), byId)).toEqual(s);
       expect(encodeMake(s)).toMatch(/^[A-Za-z0-9_-]+$/);
@@ -101,21 +138,34 @@ describe("personalised prints: a spec", () => {
     expect(specHash(specs[0])).not.toBe(specHash({ t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-15", t: "23:00" } }));
   });
 
-  it("titles and summaries", () => {
+  it("titles (the product and its day) and summaries (the words, else the place, else the day)", () => {
     const s: CustomSpec = { t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14" } };
-    expect(customTitle(s, TLV)).toBe("Night Sky over Tel Aviv, 14 March 1991");
-    expect(customSummary(s, TLV)).toBe("Tel Aviv · 14 March 1991");
-    expect(customTitle({ t: "moon", v: 1, p: { y: 1991 } })).toBe("Moon Phases of 1991");
+    expect(customTitle(s)).toBe("Your Night Sky · 14 March 1991");
+    expect(customSummary(s, TLV)).toBe("Tel Aviv");
+    expect(customSummary({ ...s, p: { ...s.p, w: "Us" } }, TLV)).toBe("“Us” · Tel Aviv");
+    expect(customTitle({ t: "moon", v: 1, p: { y: 1991 } })).toBe("Your Year of Moons · 1991");
     expect(customSummary({ t: "moon", v: 1, p: { y: 1991 } })).toBe("1991");
+    expect(customTitle({ t: "night", v: 1, p: { d: "2021-11-19" } })).toBe("Your Moon · 19 November 2021");
+    expect(customSummary({ t: "night", v: 1, p: { d: "2021-11-19", w: "Noa, welcome" } })).toBe("“Noa, welcome”");
+    expect(customTitle({ t: "planets", v: 1, p: { d: "2012-06-06" } })).toBe("Your Planets · 6 June 2012");
   });
 
   it("renders the same print twice; the caption says the date, or the date and the local time given", () => {
     const s: CustomSpec = { t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14" } };
     const a = renderCustomSvg(s, "black", { sky: SKY, city: TLV });
     expect(renderCustomSvg(s, "black", { sky: SKY, city: TLV })).toBe(a);
-    expect(a).toContain(">14 March 1991<");
-    expect(a).toContain(">TEL AVIV<");
-    expect(renderCustomSvg({ ...s, p: { ...s.p, t: "23:00" } }, "white", { sky: SKY, city: TLV })).toContain(">14 March 1991 · 23:00 local<");
+    expect(a).toContain(">14 MARCH 1991<");
+    expect(a).toContain(">Tel Aviv<");
+    expect(renderCustomSvg({ ...s, p: { ...s.p, t: "23:00" } }, "white", { sky: SKY, city: TLV })).toContain(">23:00 local · Tel Aviv<");
+    // The words lead; the day, the time and the place drop to the line under them.
+    const words = renderCustomSvg({ ...s, p: { ...s.p, t: "23:00", w: "The night we met" } }, "black", { sky: SKY, city: TLV });
+    expect(words).toContain(">THE NIGHT WE MET<");
+    expect(words).toContain(">14 March 1991 · 23:00 · Tel Aviv<");
+    const night = renderCustomSvg({ t: "night", v: 1, p: { d: "2021-11-19", s: 1, w: "Noa, welcome" } }, "black", {});
+    expect(night).toContain(">19 November 2021 · Full moon<");
+    expect(night).toContain(">100% lit · as seen from the south<");
+    expect(renderCustomSvg({ t: "planets", v: 1, p: { d: "2012-06-06" } }, "black", {})).toContain(">6 JUNE 2012<");
+    expect(renderCustomSvg({ t: "moon", v: 1, p: { y: 2020, w: "The year we moved" } }, "black", {})).toContain(">2020 · every day at 00:00 UTC<");
     const south = renderCustomSvg({ t: "moon", v: 1, p: { y: 1991, s: 1 } }, "black", {});
     expect(south).toContain("Waxing lit on the left, as seen from the south");
     expect(south).not.toBe(renderCustomSvg({ t: "moon", v: 1, p: { y: 1991 } }, "black", {}));

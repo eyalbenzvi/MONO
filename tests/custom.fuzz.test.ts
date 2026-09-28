@@ -2,7 +2,9 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import shirts from "../data/shirts.json";
-import { renderCustomSvg, FIRST_YEAR, LAST_YEAR, TITLE_MAX, type City, type CustomSpec } from "@/lib/custom";
+import { renderCustomSvg, FIRST_YEAR, LAST_YEAR, PLANETS_LAST_YEAR, TITLE_MAX, WORDS_MAX, cleanWords, type City, type CustomSpec } from "@/lib/custom";
+import { MADE } from "@/lib/custom/products";
+import { getShirtById } from "@/lib/catalog";
 import { decodeCities } from "@/lib/custom/data";
 import { customModelIds } from "@/lib/custom/models";
 import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../scripts/gen/quality";
@@ -35,6 +37,11 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const dayCount = Math.round((Date.UTC(LAST_YEAR, 11, 31) - Date.UTC(FIRST_YEAR, 0, 1)) / 86400000);
 const dateOf = (k: number) => new Date(Date.UTC(FIRST_YEAR, 0, 1) + k * 86400000).toISOString().slice(0, 10);
 
+/** A customer's words, a third of the time: some real ones, and the longest allowed (every character as wide: the font is monospaced). */
+const WORDS = ["The night we met", "Noa, welcome", "Our wedding day", "Happy 40th, Dad!", "Ç'est la vie · 1991", "M".repeat(WORDS_MAX), "Mum & Dad (always)"];
+const wordsRnd = mulberry32(0x3083);
+const words = () => (wordsRnd() < 0.34 ? { w: cleanWords(WORDS[Math.floor(wordsRnd() * WORDS.length)])! } : {});
+
 describe("personalised prints: every input makes a printable print", () => {
   it("2,000 random skies (and the edges: longest names, the poles' nearest cities, the equator, the range's ends) pass the solid-block and quality checks, and no caption line is wider than the print", () => {
     const rnd = mulberry32(0x5eed);
@@ -52,7 +59,7 @@ describe("personalised prints: every input makes a printable print", () => {
     const random: [City, string, string | undefined][] = Array.from({ length: 2000 }, () => [list[Math.floor(rnd() * list.length)], dateOf(Math.floor(rnd() * (dayCount + 1))), rnd() < 0.5 ? undefined : `${pad(Math.floor(rnd() * 24))}:${pad(Math.floor(rnd() * 60))}`]);
     const failures: string[] = [];
     for (const [city, d, t] of [...edges, ...random]) {
-      const spec: CustomSpec = { t: "sky", v: 1, p: { c: city.id, d, ...(t ? { t } : {}) } };
+      const spec: CustomSpec = { t: "sky", v: 1, p: { c: city.id, d, ...(t ? { t } : {}), ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, { sky: SKY, city }), color);
       if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${city.name} ${d} ${t ?? ""} ${color}: ${JSON.stringify(r)}`);
@@ -67,20 +74,57 @@ describe("personalised prints: every input makes a printable print", () => {
     const failures: string[] = [];
     for (let i = 0; i < 200; i++) {
       const y = i === 0 ? FIRST_YEAR : i === 1 ? LAST_YEAR : FIRST_YEAR + Math.floor(rnd() * (LAST_YEAR - FIRST_YEAR + 1));
-      const spec: CustomSpec = { t: "moon", v: 1, p: { y, ...(rnd() < 0.5 ? { s: 1 as const } : {}) } };
+      const spec: CustomSpec = { t: "moon", v: 1, p: { y, ...(rnd() < 0.5 ? { s: 1 as const } : {}), ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, {}), color);
       if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${y} ${JSON.stringify(r)}`);
     }
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
+
+  it("500 moon nights (every phase, both hemispheres, the range's ends) pass too", () => {
+    const rnd = mulberry32(0x9147);
+    const failures: string[] = [];
+    for (let i = 0; i < 500; i++) {
+      const d = i === 0 ? "1900-01-01" : i === 1 ? "2100-12-31" : dateOf(Math.floor(rnd() * (dayCount + 1)));
+      const spec: CustomSpec = { t: "night", v: 1, p: { d, ...(rnd() < 0.5 ? { s: 1 as const } : {}), ...words() } };
+      const color = rnd() < 0.5 ? "black" : "white";
+      const r = check(renderCustomSvg(spec, color, {}), color);
+      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
+    }
+    expect(failures.slice(0, 5)).toEqual([]);
+  }, 120_000);
+
+  it("300 planet days (to the elements' last year) pass too", () => {
+    const rnd = mulberry32(0x71a7);
+    const days = Math.round((Date.UTC(PLANETS_LAST_YEAR, 11, 31) - Date.UTC(FIRST_YEAR, 0, 1)) / 86400000);
+    const failures: string[] = [];
+    for (let i = 0; i < 300; i++) {
+      const d = i === 0 ? "1900-01-01" : i === 1 ? `${PLANETS_LAST_YEAR}-12-31` : dateOf(Math.floor(rnd() * (days + 1)));
+      const spec: CustomSpec = { t: "planets", v: 1, p: { d, ...words() } };
+      const color = rnd() < 0.5 ? "black" : "white";
+      const r = check(renderCustomSvg(spec, color, {}), color);
+      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
+    }
+    expect(failures.slice(0, 5)).toEqual([]);
+  }, 120_000);
+
+  it("each made product's example (what the Make pages show first) passes", () => {
+    for (const m of MADE) {
+      const city = m.example.t === "sky" ? places.byId(m.example.p.c) : undefined;
+      for (const color of ["black", "white"] as const) {
+        const r = check(renderCustomSvg(m.example, color, { sky: SKY, city }), color);
+        expect({ id: m.id, color, ...r, ok: !r.solid && r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
+      }
+    }
+  });
 });
 
 describe("personalised prints: the model photos they're drawn on", () => {
-  it("the list postbuild keeps is exactly what modelFor returns for the ten base designs in both colours, and every file is there", () => {
-    const base = (shirts as unknown as { n: number; variant: string }[]).filter((s) => s.variant === "sky-night" || s.variant === "moon-year");
+  it("the list postbuild keeps is exactly what modelFor returns for each made product (as the catalogue resolves it) in both colours, and every file is there", () => {
     const ids = customModelIds(shirts as unknown as { n: number; variant: string }[]);
-    const wanted = new Set(base.flatMap((s) => (["black", "white"] as const).map((c) => modelFor(s, c)!.id)));
+    const wanted = new Set(MADE.flatMap((m) => (["black", "white"] as const).map((c) => modelFor(getShirtById(m.id)!, c)!.id)));
+    expect(wanted.size).toBeGreaterThan(0);
     expect(new Set(ids)).toEqual(wanted);
     for (const id of ids) expect(existsSync(path.join(ROOT, "public", "models", `${id}.webp`)), id).toBe(true);
   });

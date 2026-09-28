@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Icon } from "@/components/Icon";
 import { CategoryFilter, TeeSwatches } from "@/components/shop/ShopFilters";
 import { ProductCard } from "@/components/shop/ProductCard";
+import { MadeTile } from "@/components/shop/MadeTile";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { SHIRTS, dedupeByFamily, filterShop, filtersFromQuery, getShirtById, type ShopFilters } from "@/lib/catalog";
 import { decodeFacets, encodeFacets, type Facet } from "@/lib/search/facetCodec";
@@ -446,6 +447,8 @@ export function ShopView() {
         {visible.length > 0 ? (
             <>
               <div key={sort} aria-busy={pending || undefined} className={`grid animate-[fade-in_0.25s_ease-out] transition-opacity duration-200 ${pending ? "opacity-40" : ""} grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6`}>
+                {/* The lighthouse: Made for you leads the shop while nothing narrows it. */}
+                {!searching && !cats.length && wave === null && <MadeTile />}
                 {visible.slice(0, limit).map(({ shirt, variations }, i) => (
                   <ProductCard
                     key={shirt.id}

@@ -7,6 +7,7 @@
  * device share sheet with an image file (see lib/shareImage), or by saving the
  * image and posting it from the app.
  */
+import { STORE_POLICY } from "@/lib/store-policy";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
@@ -32,8 +33,10 @@ export const SHARE_PARAMS = ["c", "ref", "utm_source", "utm_medium", "utm_campai
  * standard UTM parameters (utm_source = channel, utm_medium = share,
  * utm_campaign = tee_share), so any analytics tool attributes the visit.
  */
-export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string) {
+/** `make` is a made-for-you print's spec (lib/custom encodeMake): the link opens that print. */
+export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string, make?: string) {
   const q = new URLSearchParams();
+  if (make) q.set("make", make);
   if (color !== shirt.baseColor) q.set("c", color);
   q.set("utm_source", ref);
   q.set("utm_medium", "share");
@@ -47,14 +50,15 @@ export function shareTitle(shirt: ShirtProduct) {
 }
 
 /** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
-export function shareMessage(shirt: ShirtProduct, color: BaseColor) {
+export function shareMessage(shirt: ShirtProduct, color: BaseColor, make?: string) {
+  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price + STORE_POLICY.customPremium)}.`;
   return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price)}.`;
 }
 
 /** Web share intents. Each opens in a new tab / the app when installed. */
-export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string): string | null {
-  const url = productShareUrl(shirt, color, channel, origin);
-  const msg = shareMessage(shirt, color);
+export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string, make?: string): string | null {
+  const url = productShareUrl(shirt, color, channel, origin, make);
+  const msg = shareMessage(shirt, color, make);
   const enc = encodeURIComponent;
   switch (channel) {
     case "whatsapp":

@@ -67,7 +67,8 @@ interface UiState {
    */
   productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
-  share: { id: string; color: BaseColor } | null;
+  /** The share sheet's tee; `make` is a made-for-you print's link payload (lib/custom encodeMake). */
+  share: { id: string; color: BaseColor; make?: string } | null;
   /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
   /** A friend's taste from a shared /?taste= link (this session), to compare with. */
@@ -85,7 +86,7 @@ interface UiState {
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
   setProductOrigin: (origin: ProductOrigin | null) => void;
-  openShare: (id: string, color: BaseColor) => void;
+  openShare: (id: string, color: BaseColor, make?: string) => void;
   closeShare: () => void;
   noteAdded: (note: Omit<AddedNote, "nonce">) => void;
   clearAdded: () => void;
@@ -163,7 +164,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
   setProductOrigin: (productOrigin) => set({ productOrigin }),
-  openShare: (id, color) => set({ share: { id, color } }),
+  openShare: (id, color, make) => set({ share: { id, color, ...(make ? { make } : {}) } }),
   closeShare: () => set({ share: null }),
   noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
   clearAdded: () => set({ added: null }),

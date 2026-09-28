@@ -1,15 +1,18 @@
 import type { MetadataRoute } from "next";
 import { PRERENDERED } from "@/lib/catalog";
+import { MADE } from "@/lib/custom/products";
 import { SITE_URL } from "@/lib/seo";
 
 // Written once at build time (static export).
 export const dynamic = "force-static";
 
-/** Home, shop, about, and every pre-rendered product page. */
+/** Home, shop, the made-for-you pages, about, and every pre-rendered product page. */
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/shop/`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${SITE_URL}/make/`, changeFrequency: "monthly", priority: 0.8 },
+    ...MADE.map((m) => ({ url: `${SITE_URL}/make/${m.slug}/`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${SITE_URL}/about/`, changeFrequency: "monthly", priority: 0.5 },
     ...PRERENDERED.map((s) => ({ url: `${SITE_URL}/shop/${s.id}/`, changeFrequency: "monthly" as const, priority: 0.6 })),
   ];

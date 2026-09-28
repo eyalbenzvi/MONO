@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,6 +21,27 @@ import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type 
 import { formatPrice } from "@/lib/format";
 import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
+import { customKey } from "@/lib/cart";
+import { customTitle, encodeMake, type CustomSpec } from "@/lib/custom/spec";
+
+// A made-for-you line's picture draws its own print; its code loads only when the bag holds one.
+const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup"));
+
+/** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
+const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec }) => (l.custom ? customTitle(l.custom) : l.shirt.title);
+/** A line's key (a made-for-you print's spec makes it a line of its own). */
+const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec }) => `${l.id}-${l.size}-${l.color}-${customKey(l.custom)}`;
+/** Where a line leads: its product page, a made-for-you one with its print in the address. */
+const lineHref = (l: { id: string; custom?: CustomSpec }) => (l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}` : productHref(l.id));
+
+function LineMockup({ line, className }: { line: CartLine; className?: string }) {
+  if (!line.custom) return <TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />;
+  return (
+    <Suspense fallback={<TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />}>
+      <CustomLineMockup shirt={line.shirt} color={line.color} spec={line.custom} sizes={SIZES.thumb} className={className} />
+    </Suspense>
+  );
+}
 
 type Step = "bag" | "details" | "done";
 
@@ -114,22 +135,32 @@ export function CartView() {
               <AnimatePresence initial={false}>
                 {lines.map((line) => (
                   <motion.li
-                    key={`${line.id}-${line.size}-${line.color}`}
+                    key={lineKey(line)}
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
                     className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
                   >
-                    <Link tabIndex={-1} aria-hidden href={productHref(line.id)} className={`w-20 shrink-0 self-start rounded-xl p-1.5 max-[339px]:w-14 ${STAGE_BG}`}>
-                      <TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className="w-full" />
+                    <Link tabIndex={-1} aria-hidden href={lineHref(line)} className={`w-20 shrink-0 self-start rounded-xl p-1.5 max-[339px]:w-14 ${STAGE_BG}`}>
+                      <LineMockup line={line} className="w-full" />
                     </Link>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{line.shirt.title}</p>
+                          <p className="truncate text-sm font-semibold">{lineTitle(line)}</p>
                           {/* The colour, in words (change it on the product page); the size is the control below. */}
-                          <p className="text-xs text-neutral-400">{COLOR_LABELS[line.color]} tee</p>
+                          <p className="text-xs text-neutral-400">
+                            {COLOR_LABELS[line.color]} tee
+                            {line.custom && (
+                              <>
+                                {" · "}
+                                <Link href={lineHref(line)} className="text-neutral-300 underline underline-offset-2 hover:text-white">
+                                  Edit
+                                </Link>
+                              </>
+                            )}
+                          </p>
                         </div>
                         <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
                       </div>
@@ -162,7 +193,7 @@ export function CartView() {
                           </button>
                         </div>
                         )}
-                        <button type="button" aria-label={`Remove ${line.shirt.title}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
+                        <button type="button" aria-label={`Remove ${lineTitle(line)}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
                           <Icon name="trash-2" className="h-4 w-4" />
                         </button>
                       </div>
@@ -187,6 +218,7 @@ export function CartView() {
             <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
               <Icon name="rotate-ccw" className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
             </p>
+            {lines.some((l) => l.custom) && <p className="mt-1 text-center text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>}
               </div>
             </div>
           </>
@@ -448,7 +480,7 @@ function DetailsForm({
             <TeeMockup shirt={l.shirt} color={l.color} sizes={SIZES.thumb} className="w-full" />
             {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
             <span className="sr-only">
-              {l.qty} × {l.shirt.title}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}
+              {l.qty} × {lineTitle(l)}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}
             </span>
           </li>
         ))}
@@ -504,16 +536,16 @@ function Confirmation({ order }: { order: Order }) {
         </p>
         <div className="mt-6 flex w-full justify-center -space-x-3">
           {lines.slice(0, 4).map((l) => (
-            <div key={`${l.id}-${l.size}-${l.color}`} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
-              <TeeMockup shirt={l.shirt} color={l.color} sizes={SIZES.thumb} className="w-full" />
+            <div key={lineKey(l)} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
+              <LineMockup line={l} className="w-full" />
             </div>
           ))}
         </div>
         <ul className="mt-6 w-full space-y-1 text-left text-sm">
           {lines.map((l) => (
-            <li key={`${l.id}-${l.size}-${l.color}`} className="flex justify-between text-neutral-300">
+            <li key={lineKey(l)} className="flex justify-between text-neutral-300">
               <span>
-                {l.qty}× {l.shirt.title} · {COLOR_LABELS[l.color]} · {SIZE_LABELS[l.size]}
+                {l.qty}× {lineTitle(l)} · {COLOR_LABELS[l.color]} · {SIZE_LABELS[l.size]}
               </span>
               <span className="font-mono">{formatPrice(l.lineTotal)}</span>
             </li>

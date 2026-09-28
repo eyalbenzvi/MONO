@@ -7,7 +7,11 @@ import manifest from "../data/custom.manifest.json";
 
 type Entry = { n: number; variant: string; title: string };
 type Model = { id: string; color: "black" | "white"; box: [number, number, number, number] };
-const BASE = (shirts as unknown as Entry[]).filter((s) => s.variant === "sky-night" || s.variant === "moon-year");
+const ALL = shirts as unknown as Entry[];
+/** Every computed design a made-for-you template draws (the canvas is checked on all their prints). */
+const COMPUTED = ALL.filter((s) => ["sky-night", "moon-year", "planets-date"].includes(s.variant));
+/** The designs the made-for-you tees wear (lib/catalog madeProduct: the first of each variant): their model photos are the ones that ship. */
+const WORN = ["sky-night", "moon-year", "planets-date"].map((v) => ALL.find((s) => s.variant === v)!);
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 /** lib/models modelFor, by the same rule (the test runs outside the app's aliases). */
 const modelFor = (n: number, color: "black" | "white") => {
@@ -40,11 +44,11 @@ async function bundle() {
 // A page of the site is the canvas; the CSP is set aside for the test's own script (the app never evaluates one).
 test.use({ bypassCSP: true });
 
-test("M4: a personalised print is drawn like the baked pictures (under 2% mean difference, all ten base designs, both colours)", async ({ page }) => {
+test("M4: a personalised print is drawn like the baked pictures (under 2% mean difference, each design a made-for-you tee wears, both colours)", async ({ page }) => {
   await page.goto("about/");
   await page.evaluate(await bundle());
   const results: { n: number; color: string; diff: number }[] = [];
-  for (const s of BASE)
+  for (const s of WORN)
     for (const color of ["black", "white"] as const) {
       const m = modelFor(s.n, color);
       const diff = await page.evaluate(
@@ -75,7 +79,7 @@ test("M4: a personalised print is drawn like the baked pictures (under 2% mean d
   for (const r of results) expect(r.diff, `${r.n} ${r.color}`).toBeLessThan(0.02);
 });
 
-test("M4: the canvas draws a print as the browser draws its SVG (the print alone, all ten base designs, under 2% mean difference)", async ({ page }) => {
+test("M4: the canvas draws a print as the browser draws its SVG (the print alone, every sky, moon and planets design, under 2% mean difference)", async ({ page }) => {
   await page.goto("about/");
   await page.evaluate(await bundle());
   const diffs = await page.evaluate(
@@ -103,7 +107,7 @@ test("M4: the canvas draws a print as the browser draws its SVG (the print alone
       }
       return out;
     },
-    { ns: BASE.map((s) => s.n), base: BASE_PATH },
+    { ns: COMPUTED.map((s) => s.n), base: BASE_PATH },
   );
   console.log(`canvas vs SVG image: ${diffs.map(([n, d, a, b]) => `${n} ${(d * 100).toFixed(2)}% (ink ${(a * 100).toFixed(1)}% / ${(b * 100).toFixed(1)}%)`).join(", ")}`);
   for (const [n, d, a, b] of diffs) {
@@ -141,7 +145,7 @@ test("M4: a sky print renders (SVG and picture) in well under 100 ms at 4× CPU 
       const median = (v: number[]) => v.slice(1).sort((a, b) => a - b)[2];
       return { total: median(times), svg: median(split) };
     },
-    { base: BASE_PATH, skyFile: manifest.sky, model: modelFor(7002, "black") },
+    { base: BASE_PATH, skyFile: manifest.sky, model: modelFor(WORN[0].n, "black") },
   );
   console.log(`sky render at 4× CPU throttling: ${ms.total.toFixed(1)} ms (the SVG ${ms.svg.toFixed(1)} ms, the picture the rest; target ≤ 50)`);
   expect(ms.total).toBeLessThan(100);
