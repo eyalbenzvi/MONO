@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { LIKE_RATE, matchScore, updateUserVector } from "@/lib/recommendation";
+import { CUSTOM_LIKE, LIKE_RATE, matchScore, nudgeVector, updateUserVector } from "@/lib/recommendation";
 import { CALIBRATION_IDS, CALIBRATION_TOTAL, DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
@@ -80,6 +80,8 @@ export interface TasteState {
   daily: Daily;
   /** Taste levels already reached (announced once, never again after an undo). */
   milestones: TasteLevel[];
+  /** Designs made personal ("Use this"): each nudged the taste once (CUSTOM_LIKE). Ids only, never the inputs. */
+  customLiked: string[];
 }
 
 interface TasteActions {
@@ -91,6 +93,8 @@ interface TasteActions {
   undoLast: () => void;
   /** Heart in the shop / drawer: save (a "like" that also trains) or unsave. */
   toggleSaved: (id: string) => void;
+  /** "Use this" on a personalised print: a weak like of its design, once per design. */
+  likeCustom: (id: string) => void;
   removeLiked: (id: string) => void;
   /** Put a removed tee back in Saved without training on it again. */
   /** Put a removed id back (at its old position in likedIds, when given). */
@@ -146,6 +150,7 @@ export const initialTaste = (): TasteState => ({
   onboardingSeen: false,
   daily: emptyDaily(),
   milestones: [],
+  customLiked: [],
 });
 
 export const tasteOf = (s: TasteState): TasteState => ({
@@ -160,6 +165,7 @@ export const tasteOf = (s: TasteState): TasteState => ({
   onboardingSeen: s.onboardingSeen,
   daily: s.daily,
   milestones: s.milestones,
+  customLiked: s.customLiked,
 });
 
 const pushEvent = (history: SwipeEvent[], e: SwipeEvent) => [...history, e].slice(-HISTORY_LIMIT);
@@ -240,6 +246,7 @@ export function sanitizeTaste(raw: unknown): TasteState {
     onboardingSeen: r.onboardingSeen === true,
     daily: dailyOf(r.daily),
     milestones: Array.isArray(r.milestones) ? TASTE_LEVELS.filter((l) => (r.milestones as unknown[]).includes(l)) : [],
+    customLiked: ids(r.customLiked),
   };
 }
 
@@ -408,6 +415,13 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         });
         if (!alreadySeen && !topStays.length) useUiStore.setState({ isFlipped: false });
         track("save", { id });
+      },
+
+      likeCustom: (id) => {
+        const s = get();
+        const shirt = getShirtById(id);
+        if (!shirt || s.customLiked.includes(id)) return;
+        set({ preferenceVector: nudgeVector(s.preferenceVector, shirt.features, CUSTOM_LIKE), customLiked: [...s.customLiked, id] });
       },
 
       // Unsaving takes the like back out of the taste (and so the title):

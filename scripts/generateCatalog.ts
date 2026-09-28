@@ -38,6 +38,7 @@ import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrin
 import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
+import { wrap } from "../lib/custom/svg";
 import { alwaysRetired, overhaulRetired, retiredIds } from "./gen/retire";
 import { H, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
@@ -618,10 +619,8 @@ function seventhSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   designs.forEach((d, k) => {
     const n = SET7_FIRST_N + k;
     const baseColor = colors[k];
-    const [ink, ground] = baseColor === "black" ? ["#FFFFFF", "#000000"] : ["#000000", "#FFFFFF"];
-    const svg = minifySvg(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${ground}"/>${d.body.replace(/#FFFFFF/g, ink)}</svg>`,
-    );
+    // The wrapper the personalised prints share (lib/custom/svg).
+    const svg = wrap(d.body, baseColor);
     writeFileSync(path.join(PRINTS_DIR, `print_${n}.svg`), svg);
     bytes += svg.length;
     const f = { ...d.features };

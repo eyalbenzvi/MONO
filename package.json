@@ -17,7 +17,7 @@
     "e2e": "playwright test",
     "sprites": "tsx scripts/tools/sprites.tsx",
     "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
-    "prebuild": "tsx scripts/tools/publishIndex.ts && npm run search:index && npm run images",
+    "prebuild": "tsx scripts/tools/publishIndex.ts && tsx scripts/tools/publishCustom.ts && npm run search:index && npm run images",
     "search:index": "tsx --tsconfig tsconfig.scripts.json scripts/tools/searchIndex.ts",
     "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts"
   },

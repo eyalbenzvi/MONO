@@ -10,6 +10,8 @@ import {
 
 export const LIKE_RATE = 0.15;
 export const DISLIKE_RATE = 0.08;
+/** "Make it yours" on a design: a weak like of it (a third of one), once per design. */
+export const CUSTOM_LIKE = 0.05;
 export const EXPLORE_PROBABILITY = 0.2;
 export const CALIBRATION_SIZE = 10;
 
@@ -112,6 +114,13 @@ export function makeScorer(userVec: UserProfileVector) {
     const centered = ((cos + 1) / 2) * 100;
     return { score: Math.round(raw * (1 - confidence) + centered * confidence), raw };
   };
+}
+
+/** Move the user vector toward a design by `rate` (a weak like: CUSTOM_LIKE), each dimension clamped to [0, 1]. */
+export function nudgeVector(currentVec: UserProfileVector, shirtFeatures: FeatureVector, rate: number): UserProfileVector {
+  const next = { ...currentVec };
+  for (const k of FEATURE_KEYS) next[k] = clamp01(currentVec[k] + rate * (shirtFeatures[k] - currentVec[k]));
+  return next;
 }
 
 /**

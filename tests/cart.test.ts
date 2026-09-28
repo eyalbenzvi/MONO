@@ -109,9 +109,9 @@ describe("cart", () => {
       { id: a.id, size: "M", color: "black", qty: 1 },
       { id: a.id, size: "L", color: "white", qty: 1 },
     ]);
-    expect(pair.subtotal).toBe(96);
-    expect(pair.discount).toBe(6);
-    expect(pair.pairs).toEqual([{ id: a.id, pairs: 1, saving: 6 }]);
+    expect(pair.subtotal).toBe(2 * PRICE);
+    expect(pair.discount).toBe(2 * PRICE - PAIR_PRICE);
+    expect(pair.pairs).toEqual([{ id: a.id, pairs: 1, saving: 2 * PRICE - PAIR_PRICE }]);
     expect(pair.shipping).toBe(0);
     expect(pair.total).toBe(90);
     // two black + one white of the same print = one pair; other prints don't pair up
@@ -120,10 +120,10 @@ describe("cart", () => {
       { id: a.id, size: "M", color: "white", qty: 1 },
       { id: b.id, size: "M", color: "white", qty: 1 },
     ]);
-    expect(mixed.discount).toBe(6);
+    expect(mixed.discount).toBe(2 * PRICE - PAIR_PRICE);
     expect(mixed.total).toBe(PRICE * 4 - (2 * PRICE - PAIR_PRICE));
     // two full pairs
-    expect(cartTotals([{ id: a.id, size: "S", color: "black", qty: 2 }, { id: a.id, size: "XL", color: "white", qty: 2 }]).discount).toBe(12);
+    expect(cartTotals([{ id: a.id, size: "S", color: "black", qty: 2 }, { id: a.id, size: "XL", color: "white", qty: 2 }]).discount).toBe(2 * (2 * PRICE - PAIR_PRICE));
     // one colour only: no discount
     expect(cartTotals([{ id: a.id, size: "M", color: "black", qty: 3 }]).discount).toBe(0);
   });
@@ -145,5 +145,27 @@ describe("colourways", () => {
     expect(skuFor("MN-GEO-W-0001", "black")).toBe("MN-GEO-B-0001");
     expect(skuFor("MN-GEO-B-0001", "black")).toBe("MN-GEO-B-0001");
     for (const s of SHIRTS.slice(0, 50)) expect(skuFor(s.sku, otherColor(s.baseColor))).not.toBe(s.sku);
+  });
+});
+
+describe("the price list: tee, pair, made-for-you tee and its pair", () => {
+  it("a tee $50 and its pair $90; a made-for-you tee $75 and its pair $130, counted per print in the bag", async () => {
+    const { unitPrice, pairPrice, cartTotals } = await import("@/lib/cart");
+    const { MADE } = await import("@/lib/custom/products");
+    const spec = { t: "night" as const, v: 1 as const, p: { d: "2021-11-19" } };
+    expect(PRICE).toBe(50);
+    expect(PAIR_PRICE).toBe(90);
+    expect(unitPrice({}, { price: PRICE })).toBe(50);
+    expect(unitPrice({ custom: spec }, { price: PRICE })).toBe(75);
+    expect(pairPrice()).toBe(90);
+    expect(pairPrice(spec)).toBe(130);
+    const id = MADE.find((m) => m.template === "night")!.id;
+    const both = cartTotals([
+      { id, size: "M", color: "black", qty: 1, custom: spec },
+      { id, size: "L", color: "white", qty: 1, custom: spec },
+    ]);
+    expect(both.subtotal).toBe(150);
+    expect(both.discount).toBe(20);
+    expect(both.total).toBe(130);
   });
 });

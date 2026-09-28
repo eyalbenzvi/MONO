@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PRICE } from "../scripts/gen/constants";
 import { hydrated, seed, openSaved } from "./helpers";
 import { B1, B2, B3, B9, W1 } from "../tests/fixtures";
 
@@ -139,7 +140,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(card.getByText(/\$\d/)).toHaveCount(0);
   });
 
-  test("R13: every add confirms in one row (Added · M, View bag) — nothing else to press", async ({ page }) => {
+  test("R13: every add confirms in one row (Added · M, Checkout) — nothing else to press", async ({ page }) => {
     await seed(page);
     await page.goto(`shop/${W1}/`);
     await hydrated(page);
@@ -147,7 +148,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toContainText("Added · M");
-    await expect(sheet.getByRole("link", { name: "View bag" })).toBeVisible();
+    await expect(sheet.getByRole("link", { name: "Checkout" })).toBeVisible();
     await expect(sheet.getByRole("button")).toHaveCount(0);
     await expect(page.getByRole("link", { name: /^Bag \(1\)/ })).toBeVisible();
   });
@@ -226,7 +227,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(both).not.toContainText("$");
     await expect(page.locator("main h1 + span, main h1 ~ span.font-mono")).toHaveCount(0);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-    await expect(page.getByRole("button", { name: /^Add to bag · \$48$/ }).last()).toBeVisible();
+    await expect(page.getByRole("button", { name: new RegExp(`^Add to bag · \\$${PRICE}$`) }).last()).toBeVisible();
     await both.tap();
     await expect(page.getByRole("button", { name: /^Add both · \$90$/ }).last()).toBeVisible();
     await expect(page.getByText(/One of a kind|Get it in both/)).toHaveCount(0);

@@ -42,7 +42,7 @@ test.describe("R17: ← Shop after moving between products", () => {
     await page.locator(".sticky.bottom-0").getByRole("button", { name: /Add/ }).tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toBeVisible();
-    await sheet.getByRole("link", { name: "View bag" }).tap();
+    await sheet.getByRole("link", { name: "Checkout" }).tap();
     await page.waitForURL(/\/cart\/$/);
     await page.goBack();
     await page.waitForURL(new RegExp(`/shop/${a}/$`));

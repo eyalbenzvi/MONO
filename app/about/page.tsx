@@ -61,8 +61,8 @@ export default function AboutPage() {
             About this site
           </h2>
           <p className="mt-3 text-xs leading-relaxed text-neutral-500">
-            A demo store: nothing is charged and nothing ships. Your taste stays in this browser. Archive prints are CC0 from Smithsonian Open
-            Access, credited on each tee; the models are generated images.
+            A demo store: nothing is charged and nothing ships. Your taste stays in this browser. Archive prints are public domain, credited on
+            each tee; the models are generated images. Places: GeoNames (CC BY 4.0).
           </p>
         </section>
       </article>

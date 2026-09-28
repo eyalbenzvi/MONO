@@ -19,6 +19,7 @@ import path from "node:path";
 import full from "../../data/shirts.json";
 import { homeJsonLd, jsonLd, productJsonLd } from "../../lib/structuredData";
 import { contentSecurityPolicy } from "../../lib/csp";
+import { customModelIds } from "../../lib/custom/models";
 import type { CatalogEntry } from "../../types/shirt";
 
 const ROOT = path.resolve(__dirname, "../..");
@@ -62,13 +63,17 @@ export function withCsp(html: string) {
 /**
  * The export carries only what pages show. The prints and model photos are
  * inputs of the pictures baked into img/ (scripts/images/bake.ts) and don't
- * ship; baked pictures and link previews of retired designs (left in a
+ * ship (but the photos personalised prints are drawn on); baked pictures and link previews of retired designs (left in a
  * local public/ from earlier builds) don't either.
  */
 function pruneRetired(): number {
   let removed = 0;
-  for (const dir of ["prints", "models"].map((d) => path.join(OUT, d)))
-    if (existsSync(dir)) (removed += readdirSync(dir, { recursive: true }).length), rmSync(dir, { recursive: true });
+  const prints = path.join(OUT, "prints");
+  if (existsSync(prints)) (removed += readdirSync(prints, { recursive: true }).length), rmSync(prints, { recursive: true });
+  // The personalised prints draw on a few model photos in the browser (lib/custom/models): those stay.
+  const models = path.join(OUT, "models");
+  const keep = new Set(customModelIds(SHIRTS).map((id) => `${id}.webp`));
+  if (existsSync(models)) for (const f of readdirSync(models)) if (!keep.has(f)) rmSync(path.join(models, f), { recursive: true }), removed++;
   const alive = new Set(SHIRTS.map((s) => s.n));
   for (const [dir, re] of [
     [path.join(OUT, "img", "m"), /^(\d+)-/],

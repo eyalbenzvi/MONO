@@ -7,7 +7,7 @@ export const PER_CATEGORY = 200;
 /** Designs the first four sets generate (17 source categories): ids mono-0001 … mono-<TOTAL>, before retirement. */
 export const TOTAL = 17 * PER_CATEGORY;
 /** Every tee costs the same (both colourways too). */
-export const PRICE = 48;
+export const PRICE = 50;
 /** Designs per weekly drop (ids in order). */
 export const DROP_SIZE = 40;
 /** Designs per detail shard in public/data. */

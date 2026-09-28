@@ -32,7 +32,7 @@ describe("R06: commerce events in GA4's shape", () => {
     expect(e.items).toEqual([{ item_id: W1, item_name: expect.any(String), item_category: expect.any(String), item_variant: "white", size: "M", price: PRICE, quantity: 1 }]);
   });
 
-  it("the pair counts as $90 (not $96), its saving as the items' discount; completing it counts +$42", async () => {
+  it("the pair counts as PAIR_PRICE (not two tees), its saving as the items' discount; completing it counts the difference", async () => {
     const s = await fresh();
     s.useCartStore.getState().addPair(W1, "M", { source: "product" });
     const [pair] = events("add_to_cart");
@@ -44,14 +44,14 @@ describe("R06: commerce events in GA4's shape", () => {
     const t = await fresh();
     t.useCartStore.getState().addToCart(B4, "M", "black");
     t.useCartStore.getState().addPair(B4, "M");
-    expect(events("add_to_cart")[1]).toMatchObject({ value: 42, items: [{ item_variant: "white", discount: 6 }] });
+    expect(events("add_to_cart")[1]).toMatchObject({ value: PAIR_PRICE - PRICE, items: [{ item_variant: "white", discount: 2 * PRICE - PAIR_PRICE }] });
   });
 
   it("remove_from_cart when a line goes down or out (and for the mini bag's Undo)", async () => {
     const s = await fresh();
     s.useCartStore.getState().addToCart(W1, "M", "black", 3);
     s.useCartStore.getState().setCartQty({ id: W1, size: "M", color: "black" }, 1);
-    expect(events("remove_from_cart")[0]).toMatchObject({ value: 96, items: [{ quantity: 2 }] });
+    expect(events("remove_from_cart")[0]).toMatchObject({ value: 2 * PRICE, items: [{ quantity: 2 }] });
     s.useCartStore.getState().undoAdd({ id: W1, size: "M", added: ["black"] });
     expect(events("remove_from_cart")[1]).toMatchObject({ source: "minibag", items: [{ quantity: 1 }] });
   });
@@ -63,9 +63,9 @@ describe("R06: commerce events in GA4's shape", () => {
     s.useCartStore.getState().addToCart(W1, "L", "black");
     s.useCartStore.getState().placeOrder({ name: "A", email: "a@b.co", address: "1 St", city: "X", zip: "1234", country: "US" });
     const [p] = events("purchase");
-    expect(p).toMatchObject({ currency: "USD", value: 138, shipping: 0, discount: 6 });
+    expect(p).toMatchObject({ currency: "USD", value: PAIR_PRICE + PRICE, shipping: 0, discount: 2 * PRICE - PAIR_PRICE });
     expect(p.transaction_id).toMatch(/^MONO-/);
-    expect(s.itemsValue(p.items)).toBe(138);
+    expect(s.itemsValue(p.items)).toBe(PAIR_PRICE + PRICE);
     expect(p.first_touch).toMatchObject({ utm_source: "news", utm_campaign: "drop", ref: "friend", landing_path: "/shop/", referrer: "https://mail.example" });
     expect(JSON.stringify(p)).not.toMatch(/a@b\.co|1 St/);
   });

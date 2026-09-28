@@ -1,5 +1,6 @@
 "use client";
 
+import type { CustomSpec } from "@/lib/custom/spec";
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { Facet } from "@/lib/search/facetCodec";
@@ -35,6 +36,10 @@ interface UiState {
   dialogs: number;
   /** The design shown in the full-screen zoom, if open. */
   zoomId: string | null;
+  /** Personalised prints being looked at, per design (memory only; the address carries the rest). */
+  custom: Record<string, CustomSpec>;
+  /** The last city chosen in the editor, pre-filled next time (memory only). */
+  lastCity: number | null;
   /** The Discover card's picture is zoomed in place (swipe keys wait). */
   cardZoomed: boolean;
   /** The Saved drawer is open (opened from the personal area). */
@@ -62,9 +67,13 @@ interface UiState {
    */
   productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
-  share: { id: string; color: BaseColor } | null;
+  /** The share sheet's tee; `make` is a made-for-you print's link payload (lib/custom encodeMake). */
+  share: { id: string; color: BaseColor; make?: string } | null;
   /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
+  /** "Buy now" / the confirmation's Checkout: the bag opens on the delivery form (once). */
+  checkoutRequested: boolean;
+  requestCheckout: (on?: boolean) => void;
   /** A friend's taste from a shared /?taste= link (this session), to compare with. */
   friendTaste: UserProfileVector | null;
 
@@ -72,13 +81,15 @@ interface UiState {
   toggleFlip: (value?: boolean) => void;
   showToast: (message: string, action?: ToastState["action"]) => void;
   setZoom: (id: string | null) => void;
+  setCustom: (id: string, spec: CustomSpec | null) => void;
+  setLastCity: (id: number) => void;
   setCardZoomed: (on: boolean) => void;
   setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
   setProductOrigin: (origin: ProductOrigin | null) => void;
-  openShare: (id: string, color: BaseColor) => void;
+  openShare: (id: string, color: BaseColor, make?: string) => void;
   closeShare: () => void;
   noteAdded: (note: Omit<AddedNote, "nonce">) => void;
   clearAdded: () => void;
@@ -98,6 +109,8 @@ export interface AddedNote {
   added: BaseColor[];
   /** Added as (or completing) the black + white pair. */
   pair?: boolean;
+  /** A personalised print: Undo takes back its lines, not the original's. */
+  custom?: CustomSpec;
   nonce: number;
 }
 
@@ -124,6 +137,14 @@ export const useUiStore = create<UiState>()((set) => ({
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
   showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
   setZoom: (zoomId) => set({ zoomId }),
+  custom: {},
+  lastCity: null,
+  setCustom: (id, spec) =>
+    set((s) => {
+      const { [id]: _gone, ...rest } = s.custom;
+      return { custom: spec ? { ...rest, [id]: spec } : rest };
+    }),
+  setLastCity: (lastCity) => set({ lastCity }),
   setCardZoomed: (cardZoomed) => set({ cardZoomed }),
   setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
@@ -132,6 +153,8 @@ export const useUiStore = create<UiState>()((set) => ({
   productOrigin: null,
   share: null,
   added: null,
+  checkoutRequested: false,
+  requestCheckout: (on = true) => set({ checkoutRequested: on }),
   friendTaste: null,
 
   setDebug: (on) => {
@@ -146,7 +169,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
   setProductOrigin: (productOrigin) => set({ productOrigin }),
-  openShare: (id, color) => set({ share: { id, color } }),
+  openShare: (id, color, make) => set({ share: { id, color, ...(make ? { make } : {}) } }),
   closeShare: () => set({ share: null }),
   noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
   clearAdded: () => set({ added: null }),

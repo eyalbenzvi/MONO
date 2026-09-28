@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { PrintImage } from "@/components/PrintImage";
 import { TeeMockup } from "@/components/TeeMockup";
+
+// Only when a personalised print is zoomed (its code stays out of the page until then).
+const CustomMockup = lazy(() => import("@/components/custom/CustomMockup").then((m) => ({ default: m.CustomMockup })));
+const CustomPrint = lazy(() => import("@/components/custom/CustomPrint").then((m) => ({ default: m.CustomPrint })));
 import { zoomStep } from "@/components/Sharper";
 import { SIZES } from "@/lib/images";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -31,6 +35,7 @@ export function ZoomViewer({
   onClose,
   returnFocusTo,
   printCm = PRINT_SIZE_CM,
+  customSvg,
 }: {
   shirt: ShirtProduct;
   color: BaseColor;
@@ -41,6 +46,8 @@ export function ZoomViewer({
   onClose: () => void;
   /** Where focus goes on close when nothing was focused before (opened by a pinch). */
   returnFocusTo?: () => HTMLElement | null | undefined;
+  /** A personalised print (lib/custom): shown instead of the design's own. */
+  customSvg?: string | null;
 }) {
   const [view, setView] = useState<View>(initialView);
   const [t, setT] = useState<Transform>({ s: 1, x: 0, y: 0 });
@@ -199,10 +206,22 @@ export function ZoomViewer({
         >
           {view === "print" ? (
             <div ref={printBox} className="aspect-[3/4] h-full max-w-full overflow-hidden rounded-[3px]" style={{ maxHeight: "min(100%, calc((100vw - 32px) * 4 / 3))" }}>
-              <PrintImage shirt={shirt} color={color} sizes={printWidth ? `${printWidth}px` : SIZES.zoom} zoom={zoomStep(t.s)} />
+              {customSvg ? (
+                <Suspense fallback={null}>
+                  <CustomPrint svg={customSvg} />
+                </Suspense>
+              ) : (
+                <PrintImage shirt={shirt} color={color} sizes={printWidth ? `${printWidth}px` : SIZES.zoom} zoom={zoomStep(t.s)} />
+              )}
             </div>
           ) : (
-            <TeeMockup shirt={shirt} color={color} sizes={SIZES.zoom} zoomed={t.s > 1.3} className="max-h-full w-full max-w-[640px]" />
+            customSvg ? (
+              <Suspense fallback={<TeeMockup shirt={shirt} color={color} sizes={SIZES.zoom} className="max-h-full w-full max-w-[640px]" />}>
+                <CustomMockup shirt={shirt} svg={customSvg} color={color} sizes={SIZES.zoom} zoomed={t.s > 1.3} className="max-h-full w-full max-w-[640px]" />
+              </Suspense>
+            ) : (
+              <TeeMockup shirt={shirt} color={color} sizes={SIZES.zoom} zoomed={t.s > 1.3} className="max-h-full w-full max-w-[640px]" />
+            )
           )}
         </div>
       </div>

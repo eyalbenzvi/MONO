@@ -167,7 +167,7 @@ describe("R10: Get it in both adds only what's missing", () => {
     const { pairStatus, pairLabel } = await import("@/lib/cart");
     const price = PRICE;
     expect(pairLabel(pairStatus([], W1, "M"), price)).toBe("Get it in both");
-    expect(pairLabel(pairStatus([{ id: W1, size: "M", color: "white", qty: 1 }], W1, "M"), price)).toBe("Complete the pair · +$42");
+    expect(pairLabel(pairStatus([{ id: W1, size: "M", color: "white", qty: 1 }], W1, "M"), price)).toBe(`Complete the pair · +$${PAIR_PRICE - PRICE}`);
     expect(
       pairLabel(
         pairStatus(

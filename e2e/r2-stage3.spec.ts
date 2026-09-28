@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PRICE } from "../scripts/gen/constants";
 import { hydrated, seed } from "./helpers";
 import { W1 } from "../tests/fixtures";
 
@@ -16,9 +17,10 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   await page.waitForURL(/\/shop\/mono-\d+\/$/);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
-  await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "View bag" }).tap();
+  // The confirmation's Checkout goes straight to the delivery form.
+  await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
   await page.waitForURL(/\/cart\/$/);
-  await page.getByRole("button", { name: /^Checkout/ }).tap();
+  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
   for (const [label, value] of [
     ["Full name", "Ada Lovelace"],
     ["Email", "ada@example.com"],
@@ -35,7 +37,7 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   for (const name of once) expect(count(evs, name), name).toBe(1);
   expect(evs.find((e) => e.event === "landing")).toMatchObject({ utm_source: "news", utm_medium: "email", utm_campaign: "drop", ref: "friend", landing_path: "/shop/" });
   expect(evs.find((e) => e.event === "shop_view")).toMatchObject({ sort: "match" });
-  expect(evs.find((e) => e.event === "add_to_cart")).toMatchObject({ source: "product", value: 48, currency: "USD" });
+  expect(evs.find((e) => e.event === "add_to_cart")).toMatchObject({ source: "product", value: PRICE, currency: "USD" });
   const purchase = evs.find((e) => e.event === "purchase")!;
   expect(purchase.first_touch).toMatchObject({ utm_source: "news", ref: "friend" });
   expect(JSON.stringify(evs)).not.toContain("ada@example.com");

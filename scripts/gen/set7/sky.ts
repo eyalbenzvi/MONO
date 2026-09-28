@@ -10,6 +10,10 @@
 import { readFileSync } from "node:fs";
 import nodePath from "node:path";
 import { DEG, INK, caption, circle, dot, f1, julian, line, longDate, norm360, path, polyline, shortMonth, text, type Set7Design } from "./kit";
+import { latLon, skyChart } from "../../../lib/custom/templates/sky";
+import { moonBody } from "../../../lib/custom/templates/moon";
+import { planetsBody } from "../../../lib/custom/templates/planets";
+export { moonPhase } from "../../../lib/custom/astro";
 
 const SKY = nodePath.resolve(__dirname, "..", "..", "..", "data", "sky");
 
@@ -37,57 +41,9 @@ const PLACES: Place[] = [
   { name: "Ushuaia", lat: -54.801, lon: -68.303, utc: -3 },
 ];
 
-const latLon = (lat: number, lon: number) => `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"} ${Math.abs(lon).toFixed(2)}°${lon >= 0 ? "E" : "W"}`;
-
-function skyChart(stars: [number, number, number][], lines: [number, number][][], p: Place, when: { y: number; mo: number; d: number; h: number; mi: number }): string {
-  // Local time → UTC → Greenwich and local sidereal time.
-  const jd = julian(when.y, when.mo, when.d, when.h, when.mi) - p.utc / 24;
-  const lst = norm360(280.46061837 + 360.98564736629 * (jd - 2451545) + p.lon);
-  const phi = p.lat * DEG;
-  const altAz = (ra: number, dec: number): [number, number] => {
-    const H = (lst - norm360(ra)) * DEG;
-    const d = dec * DEG;
-    const alt = Math.asin(Math.sin(phi) * Math.sin(d) + Math.cos(phi) * Math.cos(d) * Math.cos(H));
-    const az = Math.atan2(-Math.sin(H) * Math.cos(d), Math.cos(phi) * Math.sin(d) - Math.sin(phi) * Math.cos(d) * Math.cos(H));
-    return [alt, az];
-  };
-  // Stereographic, zenith at the centre, horizon the circle; north up, east on the left (a chart held overhead).
-  const CX = 150, CY = 160, R = 118;
-  const xy = (alt: number, az: number): [number, number] => {
-    const r = R * Math.tan((Math.PI / 2 - alt) / 2);
-    return [CX - r * Math.sin(az), CY - r * Math.cos(az)];
-  };
-  let body = circle(CX, CY, R, 1.3) + circle(CX, CY, R + 5, 0.5);
-  for (let k = 0; k < 360; k += 10) {
-    const a = k * DEG;
-    const r1 = k % 30 === 0 ? R + 5 : R + 2.5;
-    body += line(CX - R * Math.sin(a), CY - R * Math.cos(a), CX - r1 * Math.sin(a), CY - r1 * Math.cos(a), 0.5);
-  }
-  for (const [label, a] of [["N", 0], ["E", 90], ["S", 180], ["W", 270]] as const) {
-    const r = R + 13;
-    body += text(CX - r * Math.sin(a * DEG), CY - r * Math.cos(a * DEG) + 3, label, 8, { bold: true });
-  }
-  // The figures, where both ends of a stroke are above the horizon.
-  let d = "";
-  for (const l of lines)
-    for (let i = 1; i < l.length; i++) {
-      const [a1, z1] = altAz(l[i - 1][0], l[i - 1][1]);
-      const [a2, z2] = altAz(l[i][0], l[i][1]);
-      if (a1 > 0.02 && a2 > 0.02) d += polyline([xy(a1, z1), xy(a2, z2)]);
-    }
-  body += path(d, 0.6);
-  let n = 0;
-  for (const [ra, dec, mag] of stars) {
-    if (mag > 4.8) continue;
-    const [alt, az] = altAz(ra, dec);
-    if (alt <= 0) continue;
-    const [x, y] = xy(alt, az);
-    body += dot(x, y, Math.max(0.75, 3.3 - 0.58 * mag));
-    n++;
-  }
-  void n;
-  return body;
-}
+/** The chart at a place's local time (standard time, `utc` hours ahead of UTC). */
+const chartAt = (stars: [number, number, number][], lines: [number, number][][], p: Place, when: { y: number; mo: number; d: number; h: number; mi: number }) =>
+  skyChart({ stars, lines }, p, julian(when.y, when.mo, when.d, when.h, when.mi) - p.utc / 24);
 
 function skyDesigns(): Set7Design[] {
   const stars: [number, number, number][] = JSON.parse(readFileSync(nodePath.join(SKY, "stars.json"), "utf8"));
@@ -99,7 +55,7 @@ function skyDesigns(): Set7Design[] {
     const north = p.lat >= 0;
     const when = { y: 2000, mo: north ? 12 : 6, d: 21, h: 0, mi: 0 };
     out.push({
-      body: skyChart(stars, lines, p, when) + caption(318, p.name, `${longDate(when.y, when.mo, when.d)} · 00:00 local`, latLon(p.lat, p.lon)),
+      body: chartAt(stars, lines, p, when) + caption(318, p.name, `${longDate(when.y, when.mo, when.d)} · 00:00 local`, latLon(p.lat, p.lon)),
       variant: "sky-night",
       category: "sky",
       title: `Night Sky over ${p.name}, ${longDate(when.y, when.mo, when.d)}`,
@@ -116,7 +72,7 @@ function skyDesigns(): Set7Design[] {
   ];
   for (const [p, when, what, sub] of events)
     out.push({
-      body: skyChart(stars, lines, p, when) + caption(318, p.name, sub, latLon(p.lat, p.lon)),
+      body: chartAt(stars, lines, p, when) + caption(318, p.name, sub, latLon(p.lat, p.lon)),
       variant: "sky-night",
       category: "sky",
       title: `Night Sky over ${p.name}, ${longDate(when.y, when.mo, when.d)}`,
@@ -132,30 +88,6 @@ function skyDesigns(): Set7Design[] {
 /* The moon, every day of a year                                        */
 /* ------------------------------------------------------------------ */
 
-/** The moon's phase at a Julian date: illuminated fraction and whether it is waxing (Meeus, ch. 48–49, low precision). */
-export function moonPhase(jd: number): { k: number; waxing: boolean } {
-  const T = (jd - 2451545) / 36525;
-  const D = 297.8501921 + 445267.1114034 * T;
-  const M = 357.5291092 + 35999.0502909 * T;
-  const Mp = 134.9633964 + 477198.8675055 * T;
-  const s = (a: number) => Math.sin(a * DEG);
-  const i = 180 - D - 6.289 * s(Mp) + 2.1 * s(M) - 1.274 * s(2 * D - Mp) - 0.658 * s(2 * D) - 0.214 * s(2 * Mp) - 0.11 * s(D);
-  return { k: (1 + Math.cos(i * DEG)) / 2, waxing: norm360(D) < 180 };
-}
-
-/** The lit part of a small moon (as seen from the north: waxing lit on the right). */
-function moonShape(cx: number, cy: number, r: number, k: number, waxing: boolean): string {
-  let s = circle(cx, cy, r, 0.45);
-  if (k < 0.03) return s;
-  if (k > 0.97) return s + dot(cx, cy, r);
-  const rx = Math.abs(1 - 2 * k) * r;
-  const top = `${f1(cx)} ${f1(cy - r)}`, bottom = `${f1(cx)} ${f1(cy + r)}`;
-  const d = waxing
-    ? `M${top}A${f1(r)} ${f1(r)} 0 0 1 ${bottom}A${f1(rx)} ${f1(r)} 0 0 ${k > 0.5 ? 1 : 0} ${top}Z`
-    : `M${top}A${f1(r)} ${f1(r)} 0 0 0 ${bottom}A${f1(rx)} ${f1(r)} 0 0 ${k > 0.5 ? 0 : 1} ${top}Z`;
-  return s + `<path d="${d}" fill="${INK}"/>`;
-}
-
 function moonDesigns(): Set7Design[] {
   const out: Set7Design[] = [];
   const years: [number, string][] = [
@@ -164,19 +96,7 @@ function moonDesigns(): Set7Design[] {
     [2026, ""],
   ];
   for (const [year, why] of years) {
-    let body = "";
-    const X = 42, DX = 7.6, Y = 62, DY = 19.5, R = 3.4;
-    for (const d of [1, 5, 10, 15, 20, 25, 30]) body += text(X + (d - 1) * DX, Y - 10, String(d), 5.5);
-    for (let mo = 1; mo <= 12; mo++) {
-      const y = Y + (mo - 1) * DY;
-      body += text(X - 12, y + 2, shortMonth(mo), 6, { anchor: "end" });
-      const days = new Date(Date.UTC(year, mo, 0)).getUTCDate();
-      for (let d = 1; d <= days; d++) {
-        const { k, waxing } = moonPhase(julian(year, mo, d, 0, 0));
-        body += moonShape(X + (d - 1) * DX, y, R, k, waxing);
-      }
-    }
-    body += caption(318, `Moon ${year}`, "Every day at 00:00 UTC", "Waxing lit on the right, as seen from the north");
+    const body = moonBody({ year });
     out.push({
       body,
       variant: "moon-year",
@@ -195,33 +115,6 @@ function moonDesigns(): Set7Design[] {
 /* The planets on a date                                                */
 /* ------------------------------------------------------------------ */
 
-/** JPL's approximate Keplerian elements (Standish, 1800–2050): a (AU), e, L, ϖ (°) at J2000 and per century. */
-const PLANETS: [string, number, number, number, number, number, number, number][] = [
-  // name, a, e, e/cy, L, L/cy, ϖ, ϖ/cy
-  ["Mercury", 0.38709927, 0.20563593, 0.00001906, 252.2503235, 149472.67411175, 77.45779628, 0.16047689],
-  ["Venus", 0.72333566, 0.00677672, -0.00004107, 181.9790995, 58517.81538729, 131.60246718, 0.00268329],
-  ["Earth", 1.00000261, 0.01671123, -0.00004392, 100.46457166, 35999.37244981, 102.93768193, 0.32327364],
-  ["Mars", 1.52371034, 0.0933941, 0.00007882, -4.55343205, 19140.30268499, -23.94362959, 0.44441088],
-  ["Jupiter", 5.202887, 0.04838624, -0.00013253, 34.39644051, 3034.74612775, 14.72847983, 0.21252668],
-  ["Saturn", 9.53667594, 0.05386179, -0.00050991, 49.95424423, 1222.49362201, 92.59887831, -0.41897216],
-  ["Uranus", 19.18916464, 0.04725744, -0.00004397, 313.23810451, 428.48202785, 170.9542763, 0.40805281],
-  ["Neptune", 30.06992276, 0.00859048, 0.00005105, -55.12002969, 218.45945325, 44.96476227, -0.32241464],
-];
-
-/** A planet's heliocentric position (AU, in its orbit's plane) at a Julian date. */
-function planetAt(p: (typeof PLANETS)[number], jd: number): { x: number; y: number; a: number; e: number; w: number } {
-  const T = (jd - 2451545) / 36525;
-  const [, a, e0, de, L0, dL, w0, dw] = p;
-  const e = e0 + de * T;
-  const w = w0 + dw * T;
-  const M = norm360(L0 + dL * T - w) * DEG;
-  let E = M;
-  for (let i = 0; i < 12; i++) E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
-  const xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E);
-  const r = Math.hypot(xp, yp), v = Math.atan2(yp, xp) + w * DEG;
-  return { x: r * Math.cos(v), y: r * Math.sin(v), a, e, w };
-}
-
 function planetDesigns(): Set7Design[] {
   const dates: [number, number, number, string, string][] = [
     [1957, 10, 4, "Sputnik 1", "the day Sputnik 1 was launched"],
@@ -230,29 +123,8 @@ function planetDesigns(): Set7Design[] {
     [2006, 1, 19, "New Horizons", "the day New Horizons left for Pluto"],
   ];
   const out: Set7Design[] = [];
-  const CX = 150, CY = 160, RMAX = 122;
-  // Distances on a square-root scale, so Mercury and Neptune share the print.
-  const sc = (r: number) => 10 + (RMAX - 10) * Math.sqrt(r / 30.4);
   for (const [y, mo, d, name, what] of dates) {
-    const jd = julian(y, mo, d, 12, 0);
-    let body = circle(CX, CY, 4, 0.9) + dot(CX, CY, 1.4);
-    for (const p of PLANETS) {
-      const { x, y: py, a, e, w } = planetAt(p, jd);
-      const orbit: [number, number][] = [];
-      for (let k = 0; k <= 180; k++) {
-        const E = (k / 180) * Math.PI * 2;
-        const xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E);
-        const r = Math.hypot(xp, yp), v = Math.atan2(yp, xp) + w * DEG;
-        orbit.push([CX + sc(r) * Math.cos(v), CY - sc(r) * Math.sin(v)]);
-      }
-      body += path(polyline(orbit, true), 0.55);
-      const r = Math.hypot(x, py), v = Math.atan2(py, x);
-      const [px, pyy] = [CX + sc(r) * Math.cos(v), CY - sc(r) * Math.sin(v)];
-      body += dot(px, pyy, 2.6);
-      const out2 = sc(r) + 9;
-      body += text(CX + out2 * Math.cos(v), CY - out2 * Math.sin(v) + 2.2, p[0].slice(0, 2).toUpperCase(), 5.5, { bold: true });
-    }
-    body += caption(318, name, longDate(y, mo, d), "Sun at the centre · distances on a square-root scale");
+    const body = planetsBody({ jd: julian(y, mo, d, 12, 0), caption: { title: name, sub: longDate(y, mo, d), sub2: "Sun at the centre · distances on a square-root scale" } });
     out.push({
       body,
       variant: "planets-date",

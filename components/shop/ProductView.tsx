@@ -29,6 +29,7 @@ import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
+import { madeFor } from "@/lib/custom/products";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };
@@ -41,7 +42,7 @@ const CHOICES: readonly Choice[] = ["black", "white", "both"];
  * its price anchor); the original is marked in the label. A design sold in
  * one colour only (T3) shows that colour, and no choice.
  */
-function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
+export function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
   const keys = radioKeys(CHOICES, value, onChange);
   // Sold in one colour (T3): no choice to make — say so, plainly.
   if (colors.length < 2)
@@ -180,6 +181,7 @@ export function ProductView({
   const black = color === "black";
   const size = hydrated ? selected : undefined;
   const why = showMatch ? whyMatch(vector, shirt, likedIds) : null;
+  const made = madeFor(shirt.variant);
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
   // the variations above) and at most one per algorithm. Precomputed by the
@@ -246,6 +248,7 @@ export function ProductView({
                 ? { label: "Show on the tee", icon: "layers", onSelect: () => setView("tee") }
                 : { label: "Show the print only", icon: "layers", onSelect: () => setView("print") },
               { label: "Share", icon: "share-2", onSelect: () => useUiStore.getState().openShare(shirt.id, color) },
+              ...(made ? [{ label: "Make your own", icon: "pencil" as const, onSelect: () => router.push(`/make/${made.slug}/`) }] : []),
             ]}
           />
         </div>
@@ -332,6 +335,12 @@ export function ProductView({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
+                {/* The computed skies lead to their made-for-you tee (Your Night Sky, Your Planets, Your Year of Moons). */}
+                {made && (
+                  <Link href={`/make/${made.slug}/`} className="-my-1.5 inline-flex h-10 items-center gap-1 text-sm text-neutral-400 transition-colors hover:text-white" data-make-your-own>
+                    Make your own <Icon name="arrow-right" className="h-3.5 w-3.5" />
+                  </Link>
+                )}
                 {/* The learning, felt: said only when it's true (a top or strong match, with traits in
                     common), and the line itself opens why. */}
                 {why && (
