@@ -244,14 +244,15 @@ const num = (v: unknown, lo: number, hi: number, dp: number) => typeof v === "nu
 const TASTE_Q = /^[0-9a]{17}$/;
 
 /**
- * What each code can carry. Punched card: the IBM 029 keypunch's letters,
- * digits and punctuation. Paper tape: ITA2's letters and figures. Morse and
+ * What each code can carry (exactly what lib/custom/draw/code punches).
+ * Punched card: the IBM 029 keypunch's letters, digits and the punctuation
+ * the catalogue's card codes. Paper tape: ITA2's letters and figures. Morse and
  * braille: letters, digits and the space. Binary: printable ASCII (case kept;
  * the others print in capitals).
  */
 export const CODE_CHARS: Record<CodeKind, RegExp> = {
-  card: /^[A-Z0-9 &\-/.,'()+*$%#@:;="?<>!]$/,
-  tape: /^[A-Z0-9 \-?:().,'/+=!&#$]$/,
+  card: /^[A-Z0-9 \-/.,'()+*=]$/,
+  tape: /^[A-Z0-9 \-?:().,'/+=]$/,
   morse: /^[A-Z0-9 ]$/,
   braille: /^[A-Z0-9 ]$/,
   binary: /^[\x20-\x7e]$/,

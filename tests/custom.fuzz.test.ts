@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import shirts from "../data/shirts.json";
 import { renderCustomSvg, FIRST_YEAR, LAST_YEAR, PLANETS_LAST_YEAR, TITLE_MAX, WORDS_MAX, cleanWords, type City, type CustomSpec } from "@/lib/custom";
 import { MADE } from "@/lib/custom/products";
+import { loadRenderer } from "@/lib/custom/renderers";
 import { getShirtById } from "@/lib/catalog";
 import { decodeCities } from "@/lib/custom/data";
 import { customModelIds } from "@/lib/custom/models";
@@ -109,11 +110,12 @@ describe("personalised prints: every input makes a printable print", () => {
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
 
-  it("each made product's example (what the Make pages show first) passes", () => {
+  it("each made product's example (what the Make pages show first) passes", async () => {
     for (const m of MADE) {
       const city = m.example.t === "sky" ? places.byId(m.example.p.c) : undefined;
+      const render = await loadRenderer(m.template);
       for (const color of ["black", "white"] as const) {
-        const r = check(renderCustomSvg(m.example, color, { sky: SKY, city }), color);
+        const r = check(render(m.example, color, { sky: SKY, city }), color);
         expect({ id: m.id, color, ...r, ok: !r.solid && r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
       }
     }

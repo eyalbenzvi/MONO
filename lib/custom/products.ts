@@ -10,7 +10,7 @@ import type { PrintHints } from "./printCheck";
 import type { CustomSpec, TemplateId } from "./spec";
 
 export interface MadeProduct {
-  slug: "sky" | "moon" | "year" | "planets";
+  slug: "taste" | "code" | "line" | "voice" | "house" | "number" | "sky" | "moon" | "year" | "planets";
   id: string;
   template: TemplateId;
   name: string;
@@ -20,8 +20,8 @@ export interface MadeProduct {
   from: string;
   /** The catalogue design (by variant) it is drawn like. */
   base: string;
-  /** What the words field suggests. */
-  wordsHint: string;
+  /** What the words (or name) field suggests. */
+  wordsHint?: string;
   /** The example the Make index shows (a real print, not the customer's). */
   example: CustomSpec;
   /** What to change when a print fails the gate ("Try fewer repeats."). */
@@ -37,6 +37,19 @@ const DATED: PrintHints = { dense: "Try another date.", faint: "Try another date
 export const FALLBACK_CITY = 2643743;
 
 export const MADE: MadeProduct[] = [
+  {
+    slug: "code",
+    id: "make-code",
+    template: "code",
+    name: "Your Name",
+    line: "Your name, punched, tapped or dotted in one of the old codes.",
+    from: "From your name",
+    base: "terminal-data",
+    bases: ["terminal-data", "type-data"],
+    wordsHint: "Noa",
+    example: { t: "code", v: 1, p: { x: "NOA", k: "card" } },
+    hints: { dense: "Try another code.", faint: "Try a longer name, or another code." },
+  },
   {
     slug: "sky",
     id: "make-sky",

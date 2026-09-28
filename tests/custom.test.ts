@@ -61,7 +61,9 @@ describe("personalised prints: the templates are the catalogue's", () => {
   it("templateFor: only the made-for-you products; no catalogue design is personalised", () => {
     expect(CATALOGUE.filter((s) => templateFor(s))).toEqual([]);
     expect(MADE.map((m) => templateFor(getShirtById(m.id)!))).toEqual(MADE.map((m) => m.template));
-    expect(MADE.map((m) => m.template).sort()).toEqual(["moon", "night", "planets", "sky"]);
+    // Every product takes a different kind of input: one template each, the four dated ones among them.
+    expect(new Set(MADE.map((m) => m.template)).size).toBe(MADE.length);
+    expect(MADE.map((m) => m.template)).toEqual(expect.arrayContaining(["moon", "night", "planets", "sky"]));
   });
 
   it("each made product is its base design's tee: its photos, taste and price; its own id, name and page", () => {

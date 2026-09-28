@@ -34,7 +34,13 @@ const SLOW_DEBOUNCE = 300;
 
 /** Each product's fields, a chunk of its own (a product's page loads only its editor). */
 const DateEditor = lazy(() => import("@/components/custom/editors/DateEditor"));
-const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = { sky: DateEditor, moon: DateEditor, night: DateEditor, planets: DateEditor };
+const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
+  sky: DateEditor,
+  moon: DateEditor,
+  night: DateEditor,
+  planets: DateEditor,
+  code: lazy(() => import("@/components/custom/editors/CodeEditor")),
+};
 
 interface Shown {
   spec: CustomSpec;

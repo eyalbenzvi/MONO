@@ -15,7 +15,9 @@ export interface RenderData {
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 
 /** Templates with a chunk of their own (each module exports `render`). */
-const OWN: Partial<Record<TemplateId, () => Promise<{ render: Renderer }>>> = {};
+const OWN: Partial<Record<TemplateId, () => Promise<{ render: Renderer }>>> = {
+  code: () => import("./templates/code"),
+};
 
 export async function loadRenderer(t: TemplateId): Promise<Renderer> {
   const own = OWN[t];
