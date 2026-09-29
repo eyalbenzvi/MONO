@@ -4,6 +4,7 @@
  * so a product's page carries only its own drawing code.
  */
 import type { BaseColor } from "@/types/shirt";
+import type { Lines } from "./kit";
 import type { City, CustomSpec, TemplateId } from "./spec";
 import type { SkyData } from "./templates/sky";
 
@@ -16,9 +17,14 @@ export interface RenderData {
 }
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 
-/** A template's chunk: its drawing, and what it loads first (data of its own, published at build time), when it needs any. */
+/** A template's caption lines as ours (before the visitor's own, `cap`): what the caption editor shows for a line not yet rewritten. */
+export type Captioner = (spec: CustomSpec, data: RenderData) => Lines;
+
+/** A template's chunk: its drawing, its caption's lines, and what it loads first (data of its own, published at build time), when it needs any. */
 export interface TemplateModule {
   render: Renderer;
+  /** Every template has one; optional only while the templates move to it. */
+  captionOf?: Captioner;
   prepare?: (spec: CustomSpec) => Promise<RenderData>;
 }
 /** Templates with a chunk of their own (each module exports `render`, and `prepare` when it needs data). */
@@ -57,6 +63,13 @@ export async function prepareData(spec: CustomSpec): Promise<RenderData> {
   const own = OWN[spec.t];
   const m = own ? await own() : null;
   return m?.prepare ? m.prepare(spec) : {};
+}
+
+/** A template's caption lines (ours), from its chunk (the dated four from lib/custom). */
+export async function loadCaptioner(t: TemplateId): Promise<Captioner> {
+  const own = OWN[t];
+  if (own) return (await own()).captionOf ?? ((): Lines => [undefined]);
+  return (await import("./index")).customCaption;
 }
 
 export async function loadRenderer(t: TemplateId): Promise<Renderer> {

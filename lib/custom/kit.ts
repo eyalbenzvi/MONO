@@ -165,9 +165,25 @@ export const circle = (cx: number, cy: number, r: number, width = 1) => `<circle
 export const dot = (cx: number, cy: number, r: number) => `<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(r)}" fill="${INK}"/>`;
 export const rect = (x: number, y: number, w: number, h: number, width = 1) => `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" fill="none" stroke="${INK}" stroke-width="${width}"/>`;
 
-/** A title block under a print: the name set bold and spaced, a line under it. */
-export function caption(y: number, title: string, sub?: string, sub2?: string): string {
-  let s = text(150, y, title.toUpperCase(), title.length > 22 ? 10 : 12, { bold: true, spacing: title.length > 22 ? 1 : 2.5 });
+/** A caption's three lines: the title, the line under it, the one under that (absent: not drawn). */
+export type Lines = [string | undefined, (string | undefined)?, (string | undefined)?];
+/**
+ * A caption's lines as printed: each line ours (the template's default)
+ * unless the visitor's `cap` has one for it; "" hides it. With no `cap`,
+ * exactly the defaults, so every print made before captions stays byte for
+ * byte.
+ */
+export function captionLines(defaults: readonly (string | undefined)[], cap?: readonly (string | null)[]): Lines {
+  const at = (i: number) => {
+    const c = cap?.[i];
+    return c === null || c === undefined ? defaults[i] : c || undefined;
+  };
+  return [at(0), at(1), at(2)];
+}
+
+/** A title block under a print: the name set bold and spaced, a line under it. A hidden title leaves its lines in place. */
+export function caption(y: number, title: string | undefined, sub?: string, sub2?: string): string {
+  let s = title ? text(150, y, title.toUpperCase(), title.length > 22 ? 10 : 12, { bold: true, spacing: title.length > 22 ? 1 : 2.5 }) : "";
   // Sized to fit the print's width (a monospace character is 0.6 em).
   const fit = (t: string, max: number) => Math.min(max, 264 / (0.6 * t.length));
   if (sub) s += text(150, y + 15, sub, fit(sub, 8));

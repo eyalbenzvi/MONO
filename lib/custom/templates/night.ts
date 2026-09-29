@@ -12,7 +12,7 @@ export interface NightInput {
   /** The moment, as a Julian date (UT). */
   jd: number;
   south?: boolean;
-  caption: { title: string; sub?: string; sub2?: string };
+  caption: { title?: string; sub?: string; sub2?: string };
 }
 
 /** The phase's everyday name ("Waxing gibbous"), from its illuminated fraction and direction. */

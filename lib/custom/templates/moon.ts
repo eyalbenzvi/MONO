@@ -4,7 +4,8 @@
  * lit side is the other one, so every moon is mirrored.
  */
 import { moonPhase } from "../astro";
-import { INK, caption, circle, dot, f1, julian, shortMonth, text } from "../kit";
+import { INK, caption, captionLines, circle, dot, f1, julian, shortMonth, text, type Lines } from "../kit";
+import type { Cap } from "../specKit";
 
 /** The lit part of a small moon (as seen from the north: waxing lit on the right; `south` mirrors it). */
 export function moonShape(cx: number, cy: number, r: number, k: number, waxing: boolean, south = false): string {
@@ -28,8 +29,15 @@ export interface MoonInput {
   words?: string;
 }
 
-/** The year's calendar of moons and its caption: the print's body (white ink, unwrapped). */
-export function moonBody({ year, south = false, words }: MoonInput): string {
+/** The caption's lines (ours): the words and the year, or the year alone; the side it's seen from. */
+export function moonCaption({ year, south = false, words }: MoonInput): Lines {
+  const side = south ? "Waxing lit on the left, as seen from the south" : "Waxing lit on the right, as seen from the north";
+  return words ? [words, `${year} · every day at 00:00 UTC`, side] : [`Moon ${year}`, "Every day at 00:00 UTC", side];
+}
+
+/** The year's calendar of moons and its caption (with the visitor's own lines, `cap`): the print's body (white ink, unwrapped). */
+export function moonBody(input: MoonInput, cap?: Cap): string {
+  const { year, south = false } = input;
   let body = "";
   const X = 42, DX = 7.6, Y = 62, DY = 19.5, R = 3.4;
   for (const d of [1, 5, 10, 15, 20, 25, 30]) body += text(X + (d - 1) * DX, Y - 10, String(d), 5.5);
@@ -42,7 +50,6 @@ export function moonBody({ year, south = false, words }: MoonInput): string {
       body += moonShape(X + (d - 1) * DX, y, R, k, waxing, south);
     }
   }
-  const side = south ? "Waxing lit on the left, as seen from the south" : "Waxing lit on the right, as seen from the north";
-  body += words ? caption(318, words, `${year} · every day at 00:00 UTC`, side) : caption(318, `Moon ${year}`, "Every day at 00:00 UTC", side);
+  body += caption(318, ...captionLines(moonCaption(input), cap));
   return body;
 }

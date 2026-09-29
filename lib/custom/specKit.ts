@@ -135,3 +135,41 @@ export function unpackPlaces(s: unknown, opts: { min: number; max: number; years
   }
   return rows;
 }
+
+/**
+ * The visitor's own caption (every Make product's optional `cap`): up to
+ * three lines, one per caption line in order (0 the title, 1 the line under
+ * it, 2 the one under that; lib/custom/kit captionLines). Each is null (our
+ * line, the default) or the visitor's line (the words' rule, the line's own
+ * length); "" hides the line where the product allows it. A trailing run of
+ * nulls is dropped, and no `cap` at all is every line ours: links, bag lines
+ * and orders made before captions stay as they were.
+ */
+export type Cap = (string | null)[];
+export const CAP_LINES = 3;
+/** Each line's longest: the title (bold, spaced, shrunk past 22) and the two smaller lines. */
+export const CAP_MAX = [24, 36, 36] as const;
+export interface CapRule {
+  /** Each line's longest (CAP_MAX unless a product's print holds less). */
+  max?: readonly number[];
+  /** Which lines may be hidden (""), each checked against the gate with the example (tests/make). */
+  hide?: readonly boolean[];
+}
+/** The `cap` of a spec's params: `{}` when absent or all ours, `{ cap }` when valid (trailing nulls dropped), null otherwise. */
+export function capOf(p: Record<string, unknown>, rule: CapRule = {}): { cap?: Cap } | null {
+  if (p.cap === undefined) return {};
+  if (!Array.isArray(p.cap) || p.cap.length > CAP_LINES) return null;
+  const max = rule.max ?? CAP_MAX;
+  const out: Cap = [];
+  for (let i = 0; i < p.cap.length; i++) {
+    const v: unknown = p.cap[i];
+    if (v === null) out.push(null);
+    else if (v === "" && rule.hide?.[i]) out.push("");
+    else if (typeof v === "string" && v !== "" && cleanWords(v, max[i]) === v) out.push(v);
+    else return null;
+  }
+  while (out.length && out[out.length - 1] === null) out.pop();
+  return out.length ? { cap: out } : {};
+}
+/** The words a print's first line carries: the visitor's title (cap[0]) when set, else the words of a link made before captions (`w`). */
+export const titleWords = (p: { w?: string; cap?: Cap }): string | undefined => (typeof p.cap?.[0] === "string" && p.cap[0] ? p.cap[0] : p.w);

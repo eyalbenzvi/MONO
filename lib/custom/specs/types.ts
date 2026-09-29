@@ -8,6 +8,7 @@
 import type { PrintHints } from "../printCheck";
 import type { MakeGroup } from "../products";
 import type { City } from "../spec";
+import type { CapRule } from "../specKit";
 
 export interface CheckContext {
   /** The place list, when the caller has it: a city id must then be a known city. */
@@ -32,6 +33,8 @@ export interface ProductMeta<P> {
 
 export interface SpecModule<P> {
   NAME: string;
+  /** The caption's rule (which lines may be hidden, each line's longest); every line kept, CAP_MAX long, when absent. */
+  CAP?: CapRule;
   check: (p: Record<string, unknown>, ctx: CheckContext) => P | null;
   detail: (p: P) => string;
   PRODUCT: ProductMeta<P>;

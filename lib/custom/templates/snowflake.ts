@@ -15,7 +15,8 @@
  * 32-bit hash spread over continuous ranges), so no two names give the same
  * flake in practice.
  */
-import { INK, caption, f1 } from "../kit";
+import { INK, caption, captionLines, f1, type Lines } from "../kit";
+import type { Cap } from "../specKit";
 import { broadArms, growCrystal, type Crystal } from "../draw/snowflake";
 import { mulberry32 } from "../rng";
 import type { CustomSpec } from "../spec";
@@ -142,8 +143,8 @@ function chain(segs: [string, string][]): string {
   return d;
 }
 
-/** A grown crystal drawn, the name under it. */
-export function crystalBody(c: Crystal, name: string, sub2?: string, plate = 0): string {
+/** A grown crystal drawn, the name under it (and the visitor's own caption lines, `cap`). */
+export function crystalBody(c: Crystal, name: string, sub2?: string, plate = 0, cap?: Cap): string {
   const h = RADIUS / Math.max(c.radius + 1, 20);
   // Axial (q, r) to the print, turned so an arm points up.
   const pos = (q: number, r: number): [number, number] => [CX + r * SQ3 * h, CY - (q + r / 2) * h];
@@ -156,12 +157,19 @@ export function crystalBody(c: Crystal, name: string, sub2?: string, plate = 0):
     s += `<path d="${hex(plate + 0.5)}" fill="${GROUND}" stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"/>`;
     s += `<path d="${hex((plate + 0.5) * 0.55)}" fill="none" stroke="${INK}" stroke-width=".6" stroke-linejoin="round"/>`;
   }
-  return s + caption(338, name, "A snow crystal grown from a name", sub2);
+  return s + caption(338, ...captionLines([name, "A snow crystal grown from a name", sub2], cap));
 }
+
+const modelLine = (f: Flake) => `Reiter's model · alpha ${f.alpha.toFixed(2)} · beta ${f.beta.toFixed(3)} · gamma ${f.gamma.toPrecision(2)}`;
+
+/** The caption's lines (ours): the name, what it is, the model's numbers. */
+export const snowflakeCaption = (p: SnowflakeParams): Lines => [p.n, "A snow crystal grown from a name", modelLine(flakeFor(p.n).flake)];
 
 export function snowflakeBody(p: SnowflakeParams): string {
   const { flake, crystal } = flakeFor(p.n);
-  return crystalBody(crystal, p.n, `Reiter's model · alpha ${flake.alpha.toFixed(2)} · beta ${flake.beta.toFixed(3)} · gamma ${flake.gamma.toPrecision(2)}`, flake.plate);
+  return crystalBody(crystal, p.n, modelLine(flake), flake.plate, p.cap);
 }
+
+export const captionOf = (spec: CustomSpec) => snowflakeCaption((spec as { p: SnowflakeParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(snowflakeBody((spec as { p: SnowflakeParams }).p), color);

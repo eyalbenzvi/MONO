@@ -41,7 +41,7 @@ const RICH = { orbit: 1.2, trail: 3, dot: 4, days: 30 };
 export interface PlanetsInput {
   /** The moment, as a Julian date (UT). */
   jd: number;
-  caption: { title: string; sub?: string; sub2?: string };
+  caption: { title?: string; sub?: string; sub2?: string };
   /**
    * "Your Planets" (a tee of its own, not a catalogue print): heavier orbits
    * and planets, and each planet's path through the 30 days up to the date

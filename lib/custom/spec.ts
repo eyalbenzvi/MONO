@@ -6,7 +6,7 @@
  * drawing the print lives in lib/custom (index), loaded when one is shown.
  */
 import type { ShirtProduct } from "@/types/shirt";
-import { FIRST_YEAR, LAST_YEAR, WORDS_MAX, b64url, cleanWords, int, isObj, num, parseDate, parseTime } from "./specKit";
+import { FIRST_YEAR, LAST_YEAR, WORDS_MAX, b64url, capOf, cleanWords, int, isObj, num, parseDate, parseTime, titleWords, type Cap, type CapRule } from "./specKit";
 import { fnv1aChars } from "@/lib/hash";
 import { EXTRA, type ExtraId, type ExtraSpec } from "./specs";
 
@@ -16,8 +16,12 @@ export type { ExtraId };
 /** The first twelve templates (their params below); the later products each keep theirs in a module of their own (lib/custom/specs). */
 type BaseId = "sky" | "moon" | "night" | "planets" | "taste" | "code" | "line" | "voice" | "house" | "number" | "place" | "ascii";
 export type TemplateId = BaseId | ExtraId;
-/** The customer's own words, the print's first line (optional, WORDS_MAX characters of the print font's script). */
-interface Words {
+/** The visitor's own caption lines (specKit capOf; every product has them). */
+interface Captioned {
+  cap?: Cap;
+}
+/** The customer's own words, the print's first line (optional, WORDS_MAX characters of the print font's script): links made before captions; the editor now writes cap[0]. */
+interface Words extends Captioned {
   w?: string;
 }
 /** Your Night Sky: stable city id, "YYYY-MM-DD", optional "HH:MM" (local). */
@@ -41,12 +45,12 @@ export interface PlanetsParams extends Words {
   d: string;
 }
 /** Your Taste: the taste vector, each axis quantised to 0–10 and written in base 36 (FEATURE_KEYS order), 17 characters. */
-export interface TasteParams {
+export interface TasteParams extends Captioned {
   q: string;
 }
 export type CodeKind = "card" | "tape" | "morse" | "braille" | "binary";
 /** Your Name: the text, its code, and `h: 1` to leave the plain letters out ("Keep it secret"). */
-export interface CodeParams {
+export interface CodeParams extends Captioned {
   x: string;
   k: CodeKind;
   h?: 1;
@@ -78,7 +82,7 @@ export interface HouseParams extends Words {
 }
 export type Face = "dial" | "stopwatch";
 /** Your Number: a number, or a time "h:mm:ss"; its unit; a label; the face. */
-export interface NumberParams {
+export interface NumberParams extends Captioned {
   v: number | string;
   u: string;
   l?: string;
@@ -218,6 +222,19 @@ const TEMPLATES: Record<string, TemplateId> = {
 /** The template a product is made with (by its variant), or null. */
 export const templateFor = (shirt: Pick<ShirtProduct, "variant">): TemplateId | null => TEMPLATES[shirt.variant] ?? null;
 
+/** Each original product's caption rule: which lines may be hidden (tests/make/captions.test.ts checks each against the gate). */
+export const BASE_CAP: Partial<Record<BaseId, CapRule>> = {};
+
+/** A product's caption rule (the original twelve here, the later ones in their spec modules). */
+export const capRuleFor = (t: TemplateId): CapRule => (t in EXTRA ? ((EXTRA[t as ExtraId] as { CAP?: CapRule }).CAP ?? {}) : (BASE_CAP[t as BaseId] ?? {}));
+/**
+ * The products whose words (`w`) were the caption's first line: their editors
+ * now write cap[0] instead, and a link that arrives with `w` opens with it as
+ * the visitor's title (the validator still reads `w`, so the link prints as
+ * it did).
+ */
+export const WORDS_TITLE = new Set<TemplateId>([]);
+
 /** The planets' orbital elements hold to 2050 (JPL, Standish). */
 export const PLANETS_LAST_YEAR = 2050;
 /** No time given: the evening of that day. */
@@ -242,6 +259,9 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     if (!w) return null;
     words = { w };
   }
+  const cap = capOf(p, BASE_CAP[spec.t as BaseId] ?? {});
+  if (!cap) return null;
+  words = { ...words, ...cap };
   const south = p.s === undefined ? {} : p.s === 1 ? { s: 1 as const } : null;
   if (spec.t === "sky") {
     if (typeof p.c !== "number" || !Number.isInteger(p.c) || p.c <= 0 || p.c > 0xffffffff) return null;
@@ -265,7 +285,7 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
   }
   if (spec.t === "taste") {
     if (typeof p.q !== "string" || !TASTE_Q.test(p.q)) return null;
-    return { t: "taste", v: 1, p: { q: p.q } };
+    return { t: "taste", v: 1, p: { q: p.q, ...cap } };
   }
   if (spec.t === "code") {
     if (typeof p.k !== "string" || !(p.k in CODE_CHARS) || typeof p.x !== "string") return null;
@@ -273,7 +293,7 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     const x = codeText(p.x, k);
     if (!x || x !== p.x || codeProblem(x, k)) return null;
     if (p.h !== undefined && p.h !== 1) return null;
-    return { t: "code", v: 1, p: { x, k, ...(p.h === 1 ? { h: 1 as const } : {}) } };
+    return { t: "code", v: 1, p: { x, k, ...(p.h === 1 ? { h: 1 as const } : {}), ...cap } };
   }
   if (spec.t === "line") {
     if (typeof p.s !== "string" || !decodeStroke(p.s)) return null;
@@ -305,7 +325,7 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
       if (!c) return null;
       l = { l: c };
     }
-    return { t: "number", v: 1, p: { v: p.v as number | string, u: p.u, ...l, face: p.face } };
+    return { t: "number", v: 1, p: { v: p.v as number | string, u: p.u, ...l, face: p.face, ...cap } };
   }
   if (spec.t === "place") {
     if (!num(p.la, -90, 90, 2) || !num(p.lo, -180, 180, 2)) return null;
@@ -514,12 +534,14 @@ const NOTE_MAX = 22;
 const cut = (s: string) => (s.length > NOTE_MAX ? `${s.slice(0, NOTE_MAX - 1).trimEnd()}…` : s);
 /**
  * A made-for-you tee's title, in the bag and the confirmation: the product,
- * its day (or year, or what sets it apart), and its words when it has some
- * and they aren't already said (so two night skies of one date tell apart).
+ * its day (or year, or what sets it apart), and the visitor's title line (or
+ * its words) when it has one and it isn't already said (so two night skies of
+ * one date tell apart).
  */
 export function customTitle(spec: CustomSpec): string {
   const detail = customDetail(spec);
-  const w = (spec.p as { w?: unknown }).w;
+  // The visitor's title line (cap[0]) when set, else a link's words from before captions.
+  const w = titleWords(spec.p as { w?: string; cap?: Cap });
   const note = typeof w === "string" && w && !detail.includes(w) ? cut(w) : "";
   return [PRODUCT_NAMES[spec.t], detail && cut(detail), note].filter(Boolean).join(" · ");
 }

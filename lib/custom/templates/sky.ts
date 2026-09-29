@@ -18,7 +18,7 @@ export interface SkyInput {
   place: { lat: number; lon: number };
   /** The moment as a Julian date (UT). */
   jd: number;
-  caption: { title: string; sub?: string; sub2?: string };
+  caption: { title?: string; sub?: string; sub2?: string };
 }
 
 /** A place's coordinates as the caption writes them ("31.78°N 35.24°E"). */

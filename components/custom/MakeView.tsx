@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useCallback, useEffect, useRef, useState, type ComponentType } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
@@ -11,6 +11,8 @@ import { ZoomViewer } from "@/components/ZoomViewer";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { CustomPrint } from "@/components/custom/CustomPrint";
 import type { EditorProps, EditorState } from "@/components/custom/editors/types";
+import { CaptionField, capFromDrafts, type CapDraft } from "@/components/custom/editors/CaptionField";
+import { useLexicon } from "@/components/custom/editors/Field";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { lineKey, pairPrice, pairStatus, unitPrice } from "@/lib/cart";
@@ -19,9 +21,11 @@ import { checkPrint, type PrintCheck } from "@/lib/custom/printCheck";
 import { MADE, MAKE_GROUPS, madeBySlug, type MadeProduct } from "@/lib/custom/products";
 import { FROM_KEY } from "@/lib/custom/makeFrom";
 import { inkFromCanvas } from "@/lib/custom/raster";
-import { loadRenderer, type Renderer } from "@/lib/custom/renderers";
+import { loadCaptioner, loadRenderer, type Captioner, type Renderer } from "@/lib/custom/renderers";
+import type { Lines } from "@/lib/custom/kit";
+import type { Cap } from "@/lib/custom/specKit";
 import { drawOnly } from "@/lib/custom/svg";
-import { decodeMake, encodeMake, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
+import { WORDS_TITLE, capRuleFor, decodeMake, encodeMake, validate, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
 import { SIZES } from "@/lib/images";
 import { STORE_POLICY } from "@/lib/store-policy";
@@ -171,8 +175,25 @@ function Maker({ made }: { made: MadeProduct }) {
   const [editKey, setEditKey] = useState<string | null>(null);
   const editing = editKey ? cart.find((l) => lineKey(l) === editKey) : undefined;
   // What the editor makes of its fields.
-  const [state, setState] = useState<EditorState>({ spec: null });
-  const onEditor = useCallback((s: EditorState) => setState(s), []);
+  const [edited, setEdited] = useState<EditorState>({ spec: null });
+  const onEditor = useCallback((s: EditorState) => setEdited(s), []);
+  // The visitor's own caption lines (CaptionField), from the address's print when it has some: a link from before
+  // captions carries its words as `w`, the title of the products whose editors now write cap[0].
+  const capRule = capRuleFor(made.template);
+  const [capDraft, setCapDraft] = useState<CapDraft>([]);
+  useEffect(() => {
+    if (!arrival) return;
+    const p = arrival.p as { cap?: Cap; w?: string };
+    const draft: CapDraft = [...(p.cap ?? [])];
+    if (WORDS_TITLE.has(made.template) && p.w && (draft[0] ?? null) === null) draft[0] = p.w;
+    setCapDraft(draft);
+  }, [arrival, made.template]);
+  const capLex = useLexicon(capDraft.some((d) => !!d));
+  const cap = capFromDrafts(capDraft, capRule, capLex);
+  // The print: the editor's fields and the caption's lines together (a caption line that can't print holds it back, with its reason).
+  const mergedKey = edited.spec && cap ? JSON.stringify(validate({ ...edited.spec, p: { ...edited.spec.p, cap } })) : "";
+  const merged = useMemo(() => (mergedKey && mergedKey !== "null" ? (JSON.parse(mergedKey) as CustomSpec) : null), [mergedKey]);
+  const state: EditorState = useMemo(() => ({ ...edited, spec: merged }), [edited, merged]);
   // Until the fields make a print (empty, or not yet valid), the stage shows the product's example.
   // A field gone invalid keeps the last print that was (never a jump back to the example, as if the input were ignored).
   const lastGood = useRef<CustomSpec | null>(null);
@@ -295,7 +316,7 @@ function Maker({ made }: { made: MadeProduct }) {
     if (editing) {
       // Saving an edit replaces its line (its quantity kept), then back to the bag.
       useCartStore.getState().changeCartItem(editing, { custom: state.spec, color, size });
-      track("customize_apply", { template: made.template });
+      track("customize_apply", { template: made.template, caption_edited: capEdited });
       return router.push("/cart/");
     }
     const ok = both && pairOk ? addPair(made.id, size, { source: "product", custom: state.spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
@@ -304,7 +325,7 @@ function Maker({ made }: { made: MadeProduct }) {
     // A small like of the design it's drawn like (its taste, never the inputs; once per design).
     const base = SHIRTS.find((s) => s.variant === made.base);
     if (base) useTasteStore.getState().likeCustom(base.id);
-    track("customize_apply", { template: made.template });
+    track("customize_apply", { template: made.template, caption_edited: capEdited });
   };
   const onBuyRef = useRef(onBuy);
   onBuyRef.current = onBuy;
@@ -318,6 +339,31 @@ function Maker({ made }: { made: MadeProduct }) {
   const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : `Add to bag${sized} · ${formatPrice(unit)}`;
   // The mini bag confirms an add; the button says so for a moment, then is itself again.
   const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
+
+  // How many caption lines are the visitor's (analytics counts them, never the words).
+  const capEdited = (state.spec ? ((state.spec.p as { cap?: Cap }).cap ?? []) : []).filter((c) => c !== null).length;
+  // The caption as we'd print it (each line not yet rewritten follows the fields), for the caption editor.
+  const [captioner, setCaptioner] = useState<Captioner | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadCaptioner(made.template).then((c) => live && setCaptioner(() => c));
+    return () => {
+      live = false;
+    };
+  }, [made.template]);
+  const ours: Lines = (() => {
+    if (!captioner || !spec) return [undefined];
+    try {
+      return captioner(spec, state.data ?? {});
+    } catch {
+      return [undefined];
+    }
+  })();
+  // The page's title says the visitor's title line when there is one.
+  const titleLine = (spec?.p as { cap?: Cap } | undefined)?.cap?.[0];
+  useEffect(() => {
+    if (titleLine) document.title = `${titleLine} · ${made.name} | MONO`;
+  }, [titleLine, made.name]);
 
   const [zoom, setZoom] = useState(false);
   // A phone's square stage frames the print on the chest; wider screens show the whole view.
@@ -425,6 +471,7 @@ function Maker({ made }: { made: MadeProduct }) {
                   <Editor made={made} arrival={arrival} touched={tried} onChange={onEditor} />
                 </Suspense>
               )}
+              {Editor && arrival !== undefined && !state.blocked && <CaptionField ours={ours} value={capDraft} onChange={setCapDraft} rule={capRule} follows={made.from.toLowerCase()} />}
               {problem && (
                 <p className="text-xs text-neutral-300" role="status" data-print-problem>
                   {problem}
