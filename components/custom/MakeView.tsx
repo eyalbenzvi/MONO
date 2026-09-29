@@ -147,11 +147,12 @@ export function MakeView({ slug }: { slug: string }) {
     } catch {
       /* storage unavailable */
     }
-    setCameFrom(from === "index" || from === "sibling" ? from : "design");
-    track("make_open", { product: made.slug, group: made.group, source: from === "index" || from === "sibling" ? from : "design" });
+    const source = from === "index" || from === "sibling" || from === "two" ? from : "design";
+    setCameFrom(source);
+    track("make_open", { product: made.slug, group: made.group, source });
   }, [hydrated, arrival, made]);
 
-  const [cameFrom, setCameFrom] = useState<"index" | "sibling" | "design">("design");
+  const [cameFrom, setCameFrom] = useState<"index" | "sibling" | "two" | "design">("design");
   // What the editor makes of its fields.
   const [state, setState] = useState<EditorState>({ spec: null });
   const onEditor = useCallback((s: EditorState) => setState(s), []);

@@ -47,6 +47,11 @@ export function MakeIndex() {
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl">
         <MakeHeader track="ours" filter={<MakeFilter groups={groups} counts={COUNTS} onChange={choose} />} />
+        <p className="mt-4 text-sm">
+          <Link href="/make/two/" className="text-neutral-300 underline underline-offset-4 hover:text-white" data-for-two>
+            For two: one date, every print it makes →
+          </Link>
+        </p>
         {MAKE_GROUPS.filter((g) => COUNTS[g.id] > 0 && (!groups.length || groups.includes(g.id))).map((g) => (
           <section key={g.id} id={g.id} className="mt-10 scroll-mt-24" aria-labelledby={`make-${g.id}`}>
             <h2 id={`make-${g.id}`} className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
