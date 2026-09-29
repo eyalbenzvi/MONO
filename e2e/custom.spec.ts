@@ -27,8 +27,9 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);
-  // Each card is a real print, drawn in the browser (For two's too).
-  await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length + 1);
+  // Each card is a real print (For two's too), baked at build time: the index draws nothing itself.
+  await expect(page.locator("img[data-card-baked]")).toHaveCount(lines.length + 1);
+  await expect(page.locator("canvas[data-custom]")).toHaveCount(0);
 
   await page.goto("shop/");
   await hydrated(page);

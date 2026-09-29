@@ -19,7 +19,7 @@
     "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
     "prebuild": "tsx scripts/tools/publishIndex.ts && tsx scripts/tools/publishCustom.ts && npm run search:index && npm run images",
     "search:index": "tsx --tsconfig tsconfig.scripts.json scripts/tools/searchIndex.ts",
-    "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts"
+    "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts && tsx --tsconfig tsconfig.scripts.json scripts/images/bakeMake.ts"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",

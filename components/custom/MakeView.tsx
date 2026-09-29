@@ -20,6 +20,7 @@ import { MADE, MAKE_GROUPS, madeBySlug, type MadeProduct } from "@/lib/custom/pr
 import { FROM_KEY } from "@/lib/custom/makeFrom";
 import { inkFromCanvas } from "@/lib/custom/raster";
 import { loadRenderer, type Renderer } from "@/lib/custom/renderers";
+import { drawOnly } from "@/lib/custom/svg";
 import { decodeMake, encodeMake, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
 import { SIZES } from "@/lib/images";
@@ -29,9 +30,16 @@ import { useTasteStore } from "@/store/tasteStore";
 import { scrollIntoViewQuietly, useHydrated, useUiStore } from "@/store/useUiStore";
 import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt";
 
+// Prints on this page are drawn, never saved: no minifying (lib/custom/svg).
+drawOnly();
+
 /** The preview waits this long after a change (longer on a device where a render is slow). */
 const DEBOUNCE = 150;
 const SLOW_DEBOUNCE = 300;
+/** A draw and check slower than this marks the device slow (its preview then waits longer after a keystroke). */
+const SLOW_MS = 100;
+/** The other tee is checked this long after the first is shown. */
+const OTHER_TEE_MS = 250;
 /** How long a tap made before the print is ready is kept (longer, and the add would come as a surprise). */
 const WAIT_MS = 4000;
 
@@ -82,7 +90,8 @@ interface Shown {
   spec: CustomSpec;
   svg: string;
   color: BaseColor;
-  check: PrintCheck;
+  /** The print check; null for the moment between the picture painting and its check (a separate task, so a keystroke's work is split). */
+  check: PrintCheck | null;
   /** Whether the other tee prints this spec too (the pair is offered only then); null until checked. */
   other: boolean | null;
   /** The print on the other tee, once checked (shown beside this one when both are chosen). */
@@ -164,9 +173,9 @@ export function MakeView({ slug }: { slug: string }) {
     };
   }, [made.template]);
   const slow = useRef(false);
-  /** Draws and checks the print now (fonts loaded). */
+  /** Draws the print now (fonts loaded) and checks it: at once, or (`later`) in the next task, so the picture paints first. */
   const draw = useCallback(
-    (spec: CustomSpec, color: BaseColor): Shown | null => {
+    (spec: CustomSpec, color: BaseColor, later = false): Shown | null => {
       if (!renderer) return null;
       const start = performance.now();
       let svg: string;
@@ -176,27 +185,40 @@ export function MakeView({ slug }: { slug: string }) {
         // Its data isn't in yet (the example sky before the editor has its place): drawn when it is.
         return null;
       }
-      const check = checkPrint(inkFromCanvas(svg, color), made.hints);
-      if (performance.now() - start > 100) slow.current = true;
-      const next = { spec, svg, color, check, other: null };
-      setShown(next);
-      if (check.ok && spec === state.spec && !state.blocked) {
-        const q = new URLSearchParams(window.location.search);
-        q.set("make", encodeMake(spec));
-        window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
+      const real = spec === state.spec && !state.blocked;
+      const checked = (check: PrintCheck) => {
+        if (performance.now() - start > SLOW_MS) slow.current = true;
+        // The address carries a print once it's known to print.
+        if (check.ok && real) {
+          const q = new URLSearchParams(window.location.search);
+          q.set("make", encodeMake(spec));
+          window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
+        }
+        return check;
+      };
+      if (!later) {
+        const next = { spec, svg, color, check: checked(checkPrint(inkFromCanvas(svg, color), made.hints)), other: null };
+        setShown(next);
+        return next;
       }
-      return next;
+      const first: Shown = { spec, svg, color, check: null, other: null };
+      setShown(first);
+      setTimeout(() => {
+        const check = checked(checkPrint(inkFromCanvas(svg, color), made.hints));
+        setShown((s) => (s === first ? { ...s, check } : s));
+      }, 0);
+      return first;
     },
     [renderer, state.data, state.blocked, state.spec, made.hints],
   );
   useEffect(() => {
     if (!spec || !renderer) return;
-    const t = setTimeout(() => loadCanvasFonts().then(() => draw(spec, color)), slow.current ? SLOW_DEBOUNCE : DEBOUNCE);
+    const t = setTimeout(() => loadCanvasFonts().then(() => draw(spec, color, true)), slow.current ? SLOW_DEBOUNCE : DEBOUNCE);
     return () => clearTimeout(t);
   }, [spec, renderer, color, draw]);
   // Then, quietly, the other tee: the pair is offered only when both print.
   useEffect(() => {
-    if (!shown || shown.other !== null || !shown.check.ok || !renderer || !shirt || shirt.colors.length < 2) return;
+    if (!shown || shown.other !== null || !shown.check?.ok || !renderer || !shirt || shirt.colors.length < 2) return;
     const t = setTimeout(() => {
       const c = otherColor(shown.color);
       let otherSvg: string;
@@ -207,11 +229,11 @@ export function MakeView({ slug }: { slug: string }) {
       }
       const ok = checkPrint(inkFromCanvas(otherSvg, c), made.hints).ok;
       setShown((s) => (s === shown ? { ...s, other: ok, otherSvg } : s));
-    }, 250);
+    }, OTHER_TEE_MS);
     return () => clearTimeout(t);
   }, [shown, renderer, shirt, state.data, made.hints]);
   const current = shown && shown.spec === spec && shown.color === color ? shown : null;
-  const ready = !!current?.check.ok && !example;
+  const ready = !!current?.check?.ok && !example;
   const pairOk = current?.other === true;
   useEffect(() => {
     if (both && current && current.other === false) setBoth(false);
@@ -242,7 +264,7 @@ export function MakeView({ slug }: { slug: string }) {
     if (!renderer) return setWaiting(Date.now());
     // A tap right after a change doesn't wait for the preview: the print is drawn and checked now.
     const now = ready ? current : draw(state.spec, color);
-    if (!now?.check.ok) return;
+    if (!now?.check?.ok) return;
     if (!size) return needSize();
     if (editing) {
       // Saving an edit replaces its line (its quantity kept), then back to the bag.
@@ -287,7 +309,7 @@ export function MakeView({ slug }: { slug: string }) {
   if (!shirt) return null;
   const Editor = EDITORS[made.template];
   const svg = shown && shown.color === color ? shown.svg : null;
-  const problem = current && !current.check.ok && !state.blocked ? current.check.reason : null;
+  const problem = current?.check && !current.check.ok && !state.blocked ? current.check.reason : null;
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">

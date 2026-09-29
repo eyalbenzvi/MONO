@@ -16,6 +16,18 @@ test("every later product is on the Make index, in its group", async ({ page }) 
   for (const m of LATER) await expect(page.locator(`ul[data-group="${m.group}"] [data-made="${m.slug}"]`), m.slug).toHaveCount(1);
 });
 
+test("the Make index draws nothing: every card is its baked picture; one that won't load is drawn instead", async ({ page }) => {
+  await page.route("**/img/make/moon-*.webp", (r) => r.abort());
+  await page.goto("make/");
+  await hydrated(page);
+  const baked = page.locator("img[data-card-baked]");
+  // Every product, and For two, less the one whose picture failed.
+  await expect(baked).toHaveCount(MADE.length);
+  await expect(page.locator('[data-made="sky"]').locator("xpath=../..").locator("img[data-card-baked]")).toHaveJSProperty("complete", true);
+  // Only the failed card draws (and nothing else runs the drawing code).
+  await expect(page.locator("canvas[data-custom]")).toHaveCount(1, { timeout: 20_000 });
+});
+
 test("the Make index's filter shows only the groups chosen, keeps them in the address, and All brings the rest back", async ({ page }) => {
   let crashed = false;
   page.on("crash", () => (crashed = true));

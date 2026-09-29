@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { MakeHeader } from "@/components/custom/MakeHeader";
 import { MakeFilter } from "@/components/custom/MakeFilter";
 import { markFrom } from "@/lib/custom/makeFrom";
 import { drawPrint } from "@/components/custom/useCustom";
 import { STAGE_BG } from "@/components/stage";
-import { getShirtById } from "@/lib/catalog";
+import { assetUrl, getShirtById } from "@/lib/catalog";
+import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "@/lib/custom/makeCards";
 import { MADE, MAKE_GROUPS, madeBySlug, type MakeGroup, type MadeProduct } from "@/lib/custom/products";
-import { validate, type CustomSpec } from "@/lib/custom/spec";
+import type { CustomSpec } from "@/lib/custom/spec";
 import { SIZES } from "@/lib/images";
 
 /** Your Taste's card, drawn from the visitor's own taste once it's known (its store loads apart from this page). */
@@ -26,9 +27,8 @@ const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
 const COUNTS = Object.fromEntries(MAKE_GROUPS.map((g) => [g.id, MADE.filter((m) => m.group === g.id).length])) as Record<MakeGroup, number>;
 /** A card's name: the product's, without its leading "Your" (the product page and the bag keep it). */
 const cardName = (name: string) => name.replace(/^Your /, "");
-/** For two's card: our example couple's initials, woven (the page itself shows every print their date makes). */
+/** For two's card: our example couple's initials, woven (lib/custom/makeCards). */
 const MONOGRAM = madeBySlug("monogram") as MadeProduct;
-const TWO_SPEC = validate({ t: "monogram", v: 1, p: { x: "ND", s: "lace", y: 2016 } }) ?? MONOGRAM.example;
 const GROUP_IDS = MAKE_GROUPS.map((g) => g.id);
 /** The groups the address asks for (`?g=date.name`), known ones only, in their order. */
 const groupsFrom = (search: string): MakeGroup[] => {
@@ -72,7 +72,7 @@ export function MakeIndex() {
               {/* For two, a card among the dated prints: one date, every print it makes. */}
               {g.id === "date" && (
                 <li>
-                  <MakeCard made={MONOGRAM} spec={TWO_SPEC} name="For two" from="One date, every print" href="/make/two/" data-for-two />
+                  <MakeCard made={MONOGRAM} spec={TWO_SPEC} baked={TWO_KEY} name="For two" from="One date, every print" href="/make/two/" data-for-two />
                 </li>
               )}
             </ul>
@@ -83,30 +83,62 @@ export function MakeIndex() {
   );
 }
 
+/**
+ * A Make card: the example print worn, baked at build time
+ * (scripts/images/bakeMake.ts), so the index draws nothing; a card drawn
+ * from the visitor's own input (Your Taste, once known), or one whose picture
+ * didn't load, is drawn here instead.
+ */
 export function MakeCard({
   made,
   spec = made.example,
+  baked = spec === made.example ? made.slug : undefined,
   from = made.from,
   name = made.name,
   href = `/make/${made.slug}/`,
   ...rest
-}: { made: MadeProduct; spec?: CustomSpec; from?: string; name?: string; href?: string; "data-for-two"?: boolean }) {
+}: { made: MadeProduct; spec?: CustomSpec; baked?: string; from?: string; name?: string; href?: string; "data-for-two"?: boolean }) {
   const shirt = getShirtById(made.id);
   const color = shirt?.baseColor ?? "black";
+  const [failed, setFailed] = useState(false);
+  const live = !baked || failed;
+  // A picture that failed before the page woke up (it's in the served HTML) fires no onError here: checked once mounted.
+  const img = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const el = img.current;
+    if (el?.complete && el.naturalWidth === 0) setFailed(true);
+  }, []);
   const [svg, setSvg] = useState<string | null>(null);
   useEffect(() => {
-    let live = true;
+    if (!live) return;
+    let on = true;
     drawPrint(spec, color)
-      .then((d) => live && setSvg(d.svg))
+      .then((d) => on && setSvg(d.svg))
       .catch(() => {});
     return () => {
-      live = false;
+      on = false;
     };
-  }, [spec, color]);
+  }, [spec, color, live]);
   return (
     <div className="group relative isolate">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
-        {shirt && svg ? (
+        {!live ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            ref={img}
+            src={assetUrl(cardPath(baked!, CARD_WIDTHS[0]))}
+            srcSet={CARD_WIDTHS.map((w) => `${assetUrl(cardPath(baked!, w))} ${w}w`).join(", ")}
+            sizes={SIZES.grid}
+            width={CARD_WIDTHS[0]}
+            height={(CARD_WIDTHS[0] * 4) / 3}
+            loading="lazy"
+            decoding="async"
+            alt={`${made.name}, personalised, worn on a ${color} tee`}
+            onError={() => setFailed(true)}
+            className="block aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-[1.03]"
+            data-card-baked
+          />
+        ) : shirt && svg ? (
           <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} crop className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
         ) : (
           <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />

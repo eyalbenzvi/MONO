@@ -5,6 +5,7 @@ import { assetUrl } from "@/lib/catalog";
 import { MODEL_ASPECT, mockupImage } from "@/lib/images";
 import { modelFor } from "@/lib/models";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
+import { chestBox } from "@/lib/custom/chest";
 import { drawDetail, drawMockup, loadImage, release, type PrintSource } from "@/lib/custom/raster";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
@@ -26,22 +27,14 @@ interface CustomMockupProps {
   crop?: boolean;
 }
 
-/** The print's share of a chest crop's width. */
-const CROP_FILL = 0.6;
-/** The chest crop of a model photo, as fractions of it, around its print box: 3:4, the print CROP_FILL wide, a little room above. */
-export function chestCrop(box: readonly number[]): { x: number; y: number; w: number; h: number } {
-  const w = Math.min(1, box[2] / CROP_FILL);
-  const h = Math.min(1, (w * MODEL_ASPECT * 4) / 3);
-  const x = Math.min(1 - w, Math.max(0, box[0] + box[2] / 2 - w / 2));
-  const y = Math.min(1 - h, Math.max(0, box[1] - h * 0.12));
-  return { x, y, w, h };
-}
+/** The chest crop (lib/custom/chest, shared with the Make cards' baker). */
+export const chestCrop = chestBox;
 
 /**
  * A personalised print worn: TeeMockup's layout, drawn in the browser. The
  * model photo the design always uses in that colour, the print laid in its
  * box as bake.ts lays the catalogue's. Until the first drawing is in, the
- * original's baked picture holds the place. Zoomed, the print alone at
+ * bare model photo holds the place. Zoomed, the print alone at
  * 1500 px covers its box, as the baked close-up does.
  */
 export function CustomMockup({ shirt, svg, color: wanted, className = "", style, zoomed = false, onRender, label, crop = false }: CustomMockupProps) {
@@ -127,7 +120,8 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
     };
   }, [zoomed, svg, fontsIn, model, color]);
 
-  const base = mockupImage(shirt, color);
+  // Until the drawing is in: the same model photo, bare (never another design's picture, and there in either colour).
+  const base = model ? assetUrl(`/models/${model.id}.webp`) : mockupImage(shirt, color).src;
   const box = model?.box;
   // Cropped: a 3:4 window on the chest. The baked stand-in is the whole picture, larger, behind it; the canvas draws only the window.
   const c = crop && box ? chestCrop(box) : null;
@@ -136,7 +130,7 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
       className="absolute"
       style={c ? { left: `${(-c.x / c.w) * 100}%`, top: `${(-c.y / c.h) * 100}%`, width: `${100 / c.w}%`, height: `${100 / c.h}%` } : { inset: 0 }}
     >
-      {!drawn && <img src={base.src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />}
+      {!drawn && <img src={base} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />}
       {zoomed && box && (
         <canvas
           ref={detailRef}

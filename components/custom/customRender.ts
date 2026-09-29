@@ -3,6 +3,11 @@
  * their data): one chunk, loaded when a page first shows one, so pages
  * without one carry none of it.
  */
+import { drawOnly } from "@/lib/custom/svg";
+
+// Prints here are drawn, never saved: no minifying (lib/custom/svg).
+drawOnly();
+
 export { customSummary, decodeMake, renderCustomSvg } from "@/lib/custom";
 export { loadRenderer, prepareData } from "@/lib/custom/renderers";
 export { loadCities, loadSky, searchCities } from "@/lib/custom/data";

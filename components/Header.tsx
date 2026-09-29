@@ -82,16 +82,15 @@ export function Header() {
             and hydration never patches class names — the active tab's text
             would stay grey on the white pill. */}
         <nav key={mounted ? "client" : "server"} aria-label="Sections" className="justify-self-center">
-          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-52 max-[339px]:w-44">
+          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-52 max-[339px]:w-[11.5rem]">
             {/* One pill, always rendered, moved under the active tab: the
                 markup never depends on the URL, so a page served at another
                 address (404.html) still hydrates cleanly. */}
-            <motion.span
+            {/* Moved by a CSS transition (on the compositor), so it slides even while a page is busy loading. */}
+            <span
               aria-hidden
-              className="absolute inset-y-1 left-1 w-[calc((100%-8px)/3)] rounded-full bg-white"
-              initial={false}
-              animate={{ x: `${Math.max(0, activeTab) * 100}%`, opacity: activeTab === -1 ? 0 : 1 }}
-              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              className="absolute inset-y-1 left-1 w-[calc((100%-8px)/3)] rounded-full bg-white transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.3,1.25,0.5,1)] motion-reduce:transition-none"
+              style={{ transform: `translateX(${Math.max(0, activeTab) * 100}%)`, opacity: activeTab === -1 ? 0 : 1 }}
             />
             {TABS.map((tab) => {
               const active = tab.match(pathname);
@@ -100,7 +99,7 @@ export function Header() {
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={`relative z-10 flex h-9 items-center justify-center rounded-full text-sm font-semibold transition-colors max-[399px]:text-[13px] max-[339px]:text-xs ${
+                  className={`relative z-10 flex h-9 items-center justify-center rounded-full px-1 text-sm font-semibold transition-colors max-[399px]:text-[13px] max-[399px]:tracking-tight max-[339px]:text-xs ${
                     active ? "text-black" : "text-neutral-400 hover:text-white"
                   }`}
                 >
@@ -111,7 +110,8 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 justify-self-end max-[399px]:gap-2.5">
+        {/* Room for the bag kept even while it's hidden, so the tabs never shift when it appears. */}
+        <div className="flex min-w-[5.5rem] shrink-0 items-center justify-end gap-2 justify-self-end max-[399px]:gap-2.5">
           {/* Minimal: the bag shows only once it holds something; Saved,
               taste and the rest live in the personal area (the heart flies here). */}
           <AnimatePresence initial={false}>

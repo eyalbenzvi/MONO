@@ -57,7 +57,7 @@ export function svgIn(shirt: CatalogEntry, color: BaseColor): string {
 }
 
 /** A grey picture held in memory: one byte a pixel. */
-interface Grey {
+export interface Grey {
   data: Buffer;
   width: number;
   height: number;
@@ -90,7 +90,7 @@ const shrink = (print: Grey, w: number, h: number) => raw(print).resize(w, h, { 
 const blend = (color: BaseColor) => (color === "black" ? "screen" : "multiply");
 
 /** The design on its model photo, `w` px wide. */
-async function mockup(color: BaseColor, print: Grey, w: number, photo: sharp.Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
+export async function mockup(color: BaseColor, print: Grey, w: number, photo: sharp.Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
   const h = Math.round((w * photo.height!) / photo.width!);
   const [bx, by, bw, bh] = [Math.round(box[0] * w), Math.round(box[1] * h), Math.round(box[2] * w), Math.round(box[3] * h)];
   const ink = await shrink(print, bw, bh).toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer();
