@@ -6,7 +6,17 @@ const cart = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getIte
 
 /** Drags a row sideways by `dx`, stopping halfway to look, then lets go. */
 async function swipe(page: Page, id: string, dx: number, look?: () => Promise<void>) {
-  const box = (await page.locator(`[data-saved-row="${id}"] > div`).last().boundingBox())!;
+  const row = page.locator(`[data-saved-row="${id}"] > div`).last();
+  // The drawer slides in: measure the row once it has stopped moving.
+  let box = (await row.boundingBox())!;
+  await expect
+    .poll(async () => {
+      const now = (await row.boundingBox())!;
+      const still = now.x === box.x && now.y === box.y;
+      box = now;
+      return still;
+    })
+    .toBe(true);
   const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
   await page.mouse.move(x, y);
   await page.mouse.down();
