@@ -9,7 +9,7 @@ export function CustomPrint({ svg, className = "" }: { svg: string; className?: 
   useEffect(() => {
     let url: string | null = null;
     let live = true;
-    loadFontCss().then((css) => {
+    loadFontCss(svg).then((css) => {
       if (!live) return;
       url = URL.createObjectURL(new Blob([withFonts(svg, css)], { type: "image/svg+xml" }));
       setSrc(url);

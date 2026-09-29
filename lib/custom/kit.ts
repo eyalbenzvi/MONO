@@ -6,6 +6,9 @@
  * print with other inputs.
  */
 import { julian } from "./astro";
+import fontWidths from "./fontWidths.json";
+
+const WIDTHS = fontWidths as Record<Exclude<Family, "mono">, { regular: Record<string, number>; bold?: Record<string, number> }>;
 
 export const INK = "#FFFFFF";
 export const DEG = Math.PI / 180;
@@ -16,9 +19,53 @@ export const f1 = (n: number) => n1(n).toString();
 /** Text made safe inside SVG markup. */
 export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Monospace text, centred unless an anchor is given. */
-export const text = (x: number, y: number, s: string, size: number, opts: { anchor?: "start" | "middle" | "end"; bold?: boolean; spacing?: number } = {}) =>
-  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="DejaVu Sans Mono, monospace" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(s)}</text>`;
+/**
+ * The print's type families: DejaVu Sans Mono (every print until now), and
+ * the Make prints' own (scripts/tools/buildPrintFonts.py): a text serif, a
+ * condensed sans and a blackletter for mastheads. The SVG names the family;
+ * resvg (the gate) and the canvas preview load the same files.
+ */
+export type Family = "mono" | "serif" | "condensed" | "blackletter";
+export const FONT_FAMILY: Record<Family, string> = {
+  mono: "DejaVu Sans Mono, monospace",
+  serif: "Libre Caslon Text, serif",
+  condensed: "Oswald, sans-serif",
+  blackletter: "UnifrakturMaguntia, serif",
+};
+export interface TextOpts {
+  anchor?: "start" | "middle" | "end";
+  bold?: boolean;
+  spacing?: number;
+  /** Mono unless given (and then written exactly as before, so every earlier print stays byte for byte). */
+  family?: Family;
+}
+
+/** Text in the print's type (monospace unless a family is given), centred unless an anchor is given. */
+export const text = (x: number, y: number, s: string, size: number, opts: TextOpts = {}) =>
+  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="${FONT_FAMILY[opts.family ?? "mono"]}" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(s)}</text>`;
+
+/** DejaVu Sans Mono's advance, em (every character alike). */
+export const MONO_ADVANCE = 0.602;
+/** A character the face lacks (it falls back): measured as a wide letter, so a line is never under-measured. */
+const MISSING = 0.6;
+/**
+ * A line's width in print units, as it sets: the face's own advances
+ * (lib/custom/fontWidths.json, from the font files), plus letter-spacing after
+ * every character (SVG's and the canvas's rule). Kerning is left out: it only
+ * ever narrows a line.
+ */
+export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" | "spacing" | "family"> = {}): number {
+  const chars = [...s];
+  const family = opts.family ?? "mono";
+  let em = 0;
+  if (family === "mono") em = chars.length * MONO_ADVANCE;
+  else {
+    const faces = WIDTHS[family];
+    const face = (opts.bold ? faces.bold : undefined) ?? faces.regular;
+    for (const ch of chars) em += (face[ch] ?? MISSING * 1000) / 1000;
+  }
+  return em * size + chars.length * (opts.spacing ?? 0);
+}
 
 /** A polyline as path data (one decimal). */
 export function polyline(points: [number, number][], close = false): string {

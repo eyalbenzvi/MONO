@@ -29,6 +29,7 @@ import shirtsJson from "../../data/shirts.json";
 import { needsInvert } from "../../lib/catalog";
 import { DETAIL_WIDTH, MOCKUP_WIDTHS, PRINT_WIDTHS, detailPath, isVector, mockupPath, printPath } from "../../lib/images";
 import { modelFor } from "../../lib/models";
+import { fontFiles } from "../gen/fonts";
 import type { BaseColor, CatalogEntry } from "../../types/shirt";
 
 /** Bumped whenever the recipe below changes: every picture is baked again. */
@@ -38,10 +39,8 @@ const PUBLIC = path.join(ROOT, "public");
 const STAMP = path.join(ROOT, "node_modules", ".cache", "mono-images.json");
 const ALL = shirtsJson as unknown as CatalogEntry[];
 
-// The prints' fonts, as the link previews load them (DejaVu ships on the CI runner).
-const FONT_FILES = ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/truetype/liberation"]
-  .flatMap((d) => ["DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSansMono.ttf", "LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationSerif-Regular.ttf", "LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf"].map((f) => path.join(d, f)))
-  .filter((f) => existsSync(f));
+// The prints' fonts, as the link previews load them (DejaVu ships on the CI runner), and the Make prints' own (scripts/gen/fonts).
+const FONT_FILES = fontFiles(["DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSansMono.ttf", "LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationSerif-Regular.ttf", "LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf"]);
 export const FONT_OPTS = FONT_FILES.length
   ? { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "Liberation Sans", serifFamily: "Liberation Serif", monospaceFamily: "DejaVu Sans Mono" }
   : { loadSystemFonts: true, defaultFontFamily: "DejaVu Sans" };

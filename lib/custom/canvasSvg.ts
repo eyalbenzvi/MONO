@@ -4,26 +4,45 @@
  * groups that translate and scale) drawn with the canvas's own primitives, path data through Path2D (which
  * reads SVG path data as it is). Several times faster than decoding the SVG
  * as an image, which is what lets the editor's preview follow the typing.
- * Text is set in DejaVu Sans Mono, registered once through the FontFace API
- * from the same subset files (scripts/tools/buildFonts.py).
+ * Text is set in the family the SVG names (DejaVu Sans Mono, or the Make
+ * prints' serif, condensed or blackletter), each registered once through the
+ * FontFace API from the same subset files (scripts/tools/buildFonts.py,
+ * buildPrintFonts.py).
  */
 import { assetUrl } from "@/lib/catalog";
 
-const FILES = [
-  ["/fonts/dejavu-sans-mono.woff2", "normal"],
-  ["/fonts/dejavu-sans-mono-bold.woff2", "bold"],
-] as const;
 /** The family the canvas uses (its own name, so a system DejaVu can't stand in for the subset). */
 export const FAMILY = "MONO DejaVu Sans Mono";
+/** Each SVG family (lib/custom/kit FONT_FAMILY, first name) and the canvas's own name for it. */
+const FAMILIES: Record<string, string> = {
+  "DejaVu Sans Mono": FAMILY,
+  "Libre Caslon Text": "MONO Libre Caslon Text",
+  Oswald: "MONO Oswald",
+  UnifrakturMaguntia: "MONO UnifrakturMaguntia",
+};
+const FILES = [
+  ["/fonts/dejavu-sans-mono.woff2", FAMILY, "normal"],
+  ["/fonts/dejavu-sans-mono-bold.woff2", FAMILY, "bold"],
+  ["/fonts/libre-caslon-text.woff2", FAMILIES["Libre Caslon Text"], "normal"],
+  ["/fonts/libre-caslon-text-bold.woff2", FAMILIES["Libre Caslon Text"], "bold"],
+  ["/fonts/oswald.woff2", FAMILIES.Oswald, "normal"],
+  ["/fonts/oswald-bold.woff2", FAMILIES.Oswald, "bold"],
+  ["/fonts/unifraktur-maguntia.woff2", FAMILIES.UnifrakturMaguntia, "normal"],
+] as const;
+/** The canvas font stack for an SVG font-family: its own face, then the generic the SVG names. */
+const canvasFamily = (svgFamily: string | undefined) => {
+  const [first, generic] = (svgFamily ?? "").split(",").map((f) => f.trim());
+  return `"${FAMILIES[first] ?? FAMILY}", ${generic || "monospace"}`;
+};
 
 let fonts: Promise<void> | null = null;
-/** Registers the print font with the document (once). A missing file falls back to the monospace face. */
+/** Registers the print fonts with the document (once). A missing file falls back to the generic face. */
 export function loadCanvasFonts(): Promise<void> {
   fonts ??= Promise.all(
-    FILES.map(([file, weight]) =>
+    FILES.map(([file, family, weight]) =>
       fetch(assetUrl(file))
         .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(file))))
-        .then((buf) => new FontFace(FAMILY, buf, { weight }).load())
+        .then((buf) => new FontFace(family, buf, { weight }).load())
         .then((face) => void document.fonts.add(face))
         .catch(() => {}),
     ),
@@ -75,7 +94,7 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
     ctx.setLineDash(a["stroke-dasharray"] ? a["stroke-dasharray"].split(/[\s,]+/).map(Number) : []);
     if (tag === "text") {
       const size = n("font-size", 16);
-      ctx.font = `${a["font-weight"] === "bold" ? "bold " : ""}${size}px "${FAMILY}", monospace`;
+      ctx.font = `${a["font-weight"] === "bold" ? "bold " : ""}${size}px ${canvasFamily(a["font-family"])}`;
       ctx.fillStyle = fill ?? "#000";
       ctx.textBaseline = "alphabetic";
       const text = entities(content ?? "");

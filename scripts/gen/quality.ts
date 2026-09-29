@@ -2,9 +2,8 @@
  * Print quality and real size, measured by rendering each print small with
  * resvg (deterministic: fixed font files, fixed size).
  */
-import { existsSync } from "node:fs";
-import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
+import { fontFiles } from "./fonts";
 import type { BaseColor } from "../../types/shirt";
 
 /** measurePrint's old score under which a generated print is too faint to make at all (the fifth set's sparse constellations). */
@@ -12,14 +11,8 @@ export const FAINT = 35;
 /** The printed area on the tee, cm (the 300×400 print; matches PRINT_SIZE_CM). */
 const PRINT_CM = { width: 28, height: 37 };
 
-// Fixed font files (the same on every run and on the CI runner's Ubuntu).
-const FONT_FILES = ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/truetype/liberation"]
-  .flatMap((d) =>
-    ["DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSansMono.ttf", "LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationSerif-Regular.ttf", "LiberationSerif-Italic.ttf", "LiberationSerif-Bold.ttf", "LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf"].map((f) =>
-      path.join(d, f),
-    ),
-  )
-  .filter((f) => existsSync(f));
+// Fixed font files (the same on every run and on the CI runner's Ubuntu), and the Make prints' own (scripts/gen/fonts).
+const FONT_FILES = fontFiles(["DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSansMono.ttf", "LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationSerif-Regular.ttf", "LiberationSerif-Italic.ttf", "LiberationSerif-Bold.ttf", "LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf"]);
 
 /**
  * Quality 0–100 from the print itself, rendered at 150 px wide: how much

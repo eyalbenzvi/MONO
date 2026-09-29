@@ -3,18 +3,24 @@
  * straight onto the canvas (canvasSvg) and laid the way bake.ts lays the
  * catalogue's: screen on a black tee, multiply on a white one. "Show the print
  * only" shows the SVG itself through an <img> (a blob: URL, which the CSP
- * allows); an image can't load a web font, so the print font (DejaVu Sans
- * Mono, cut to the captions' characters: scripts/tools/buildFonts.py) is
- * embedded in it first.
+ * allows); an image can't load a web font, so the print's fonts (DejaVu Sans
+ * Mono, and the Make faces it names: scripts/tools/buildFonts.py,
+ * buildPrintFonts.py) are embedded in it first.
  */
 import { assetUrl } from "@/lib/catalog";
 import type { BaseColor } from "@/types/shirt";
 import { drawSvg, printCanvas } from "./canvasSvg";
 import { CHECK_H, CHECK_W, type InkRaster } from "./quality";
 
+/** Each print face: its file, the family the SVG names (lib/custom/kit FONT_FAMILY) and its weight. */
 const FONTS = [
-  ["/fonts/dejavu-sans-mono.woff2", "normal"],
-  ["/fonts/dejavu-sans-mono-bold.woff2", "bold"],
+  ["/fonts/dejavu-sans-mono.woff2", "DejaVu Sans Mono", "normal"],
+  ["/fonts/dejavu-sans-mono-bold.woff2", "DejaVu Sans Mono", "bold"],
+  ["/fonts/libre-caslon-text.woff2", "Libre Caslon Text", "normal"],
+  ["/fonts/libre-caslon-text-bold.woff2", "Libre Caslon Text", "bold"],
+  ["/fonts/oswald.woff2", "Oswald", "normal"],
+  ["/fonts/oswald-bold.woff2", "Oswald", "bold"],
+  ["/fonts/unifraktur-maguntia.woff2", "UnifrakturMaguntia", "normal"],
 ] as const;
 
 const toBase64 = (buf: ArrayBuffer) => {
@@ -24,18 +30,22 @@ const toBase64 = (buf: ArrayBuffer) => {
   return btoa(s);
 };
 
-let fontCss: Promise<string> | null = null;
-/** The @font-face rules with the font files inline (fetched once). A missing file leaves the fallback face. */
-export function loadFontCss(): Promise<string> {
-  fontCss ??= Promise.all(
-    FONTS.map(([file, weight]) =>
-      fetch(assetUrl(file))
-        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(file))))
-        .then((b) => `@font-face{font-family:"DejaVu Sans Mono";font-weight:${weight};src:url(data:font/woff2;base64,${toBase64(b)}) format("woff2")}`)
-        .catch(() => ""),
-    ),
-  ).then((rules) => rules.join(""));
-  return fontCss;
+const rules = new Map<string, Promise<string>>();
+/** One face's @font-face rule with its file inline (fetched once). A missing file leaves the fallback face. */
+const faceRule = ([file, family, weight]: (typeof FONTS)[number]) => {
+  let r = rules.get(file);
+  if (!r) {
+    r = fetch(assetUrl(file))
+      .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(file))))
+      .then((b) => `@font-face{font-family:"${family}";font-weight:${weight};src:url(data:font/woff2;base64,${toBase64(b)}) format("woff2")}`)
+      .catch(() => "");
+    rules.set(file, r);
+  }
+  return r;
+};
+/** The @font-face rules a print needs: the faces of the families it names (every face when no print is given). */
+export function loadFontCss(svg?: string): Promise<string> {
+  return Promise.all(FONTS.filter(([, family]) => !svg || svg.includes(family)).map(faceRule)).then((r) => r.join(""));
 }
 
 /** The SVG with the font rules in it. */

@@ -4,9 +4,16 @@
  * flags) and no text wider than the print. Measured with resvg, as the
  * catalogue's audit measures its own designs.
  */
+import { FONT_FAMILY, textWidth, type Family } from "@/lib/custom/kit";
 import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../../scripts/gen/quality";
 
-/** A text's width in print units, the monospace way (DejaVu Sans Mono's advance is 0.602 em), scaled by an enclosing group's scale when there is one. */
+/** The family a text's font-family names (lib/custom/kit FONT_FAMILY). */
+const familyOf = (attrs: string): Family => {
+  const f = /font-family="([^"]*)"/.exec(attrs)?.[1] ?? "";
+  return (Object.entries(FONT_FAMILY).find(([, v]) => v === f)?.[0] as Family | undefined) ?? "mono";
+};
+
+/** A text's width in print units, in its own face (lib/custom/kit textWidth: the font files' advances), scaled by an enclosing group's scale when there is one. */
 export function wideTexts(svg: string, max = 292): string[] {
   const out: string[] = [];
   const scale = [1];
@@ -16,8 +23,8 @@ export function wideTexts(svg: string, max = 292): string[] {
     else {
       const size = Number(/font-size="([\d.]+)"/.exec(m[2])?.[1] ?? 0);
       const spacing = Number(/letter-spacing="([\d.]+)"/.exec(m[2])?.[1] ?? 0);
-      const chars = [...m[3].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")].length;
-      if (chars * (0.602 * size + spacing) * scale[scale.length - 1] > max) out.push(m[3]);
+      const t = m[3].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      if (textWidth(t, size, { spacing, family: familyOf(m[2]), bold: /font-weight="bold"/.test(m[2]) }) * scale[scale.length - 1] > max) out.push(m[3]);
     }
   }
   return out;
