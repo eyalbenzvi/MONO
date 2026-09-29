@@ -38,6 +38,16 @@ const CASES: Case[] = [
       await expect(page.locator("#make-editions-est")).toHaveValue("1952");
     },
   },
+  {
+    slug: "sayings",
+    fill: async (page) => {
+      await page.locator("#make-sayings-who").fill("Savta");
+      await page.locator("#make-sayings-s0").fill("Put a jumper on.");
+      await page.locator("#make-sayings-s1").fill("Eat, you’re too thin.");
+      await page.locator("#make-sayings-s2").fill("Call when you get there.");
+    },
+    again: async (page) => expect(page.locator("#make-sayings-s2")).toHaveValue("Call when you get there."),
+  },
 ];
 
 for (const c of CASES)

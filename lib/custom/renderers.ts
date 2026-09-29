@@ -57,6 +57,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   island: () => import("./templates/island"),
   qr: () => import("./templates/qr"),
   editions: () => import("./templates/editions"),
+  sayings: () => import("./templates/sayings"),
   telegram: () => import("./templates/telegram"),
 };
 

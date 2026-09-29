@@ -25,8 +25,9 @@ import * as island from "./island";
 import * as qr from "./qr";
 import * as telegram from "./telegram";
 import * as editions from "./editions";
+import * as sayings from "./sayings";
 
-export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions };
+export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings };
 export type ExtraId = keyof typeof EXTRA;
 export type ExtraParams = { [K in ExtraId]: (typeof EXTRA)[K] extends SpecModule<infer P> ? P : never };
 export type ExtraSpec = { [K in ExtraId]: { t: K; v: 1; p: ExtraParams[K] } }[ExtraId];
