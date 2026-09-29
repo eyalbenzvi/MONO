@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
 
@@ -10,7 +11,7 @@ import { STORE_POLICY } from "@/lib/store-policy";
  * toggling), and one line for the track. From ours is /make/, from yours
  * /make/yours/.
  */
-export function MakeHeader({ track }: { track: "ours" | "yours" }) {
+export function MakeHeader({ track, filter }: { track: "ours" | "yours"; filter?: ReactNode }) {
   const line =
     track === "ours"
       ? `Our designs, from one thing of yours. ${formatPrice(STORE_POLICY.customPrice)}, or ${formatPrice(STORE_POLICY.customPairPrice)} the pair.`
@@ -32,7 +33,10 @@ export function MakeHeader({ track }: { track: "ours" | "yours" }) {
         {tab("ours", "From ours", "/make/")}
         {tab("yours", "From yours", "/make/yours/")}
       </nav>
-      <p className="mt-3 max-w-xl text-sm text-neutral-400">{line}</p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="max-w-xl text-sm text-neutral-400">{line}</p>
+        {filter}
+      </div>
     </div>
   );
 }

@@ -43,6 +43,7 @@ export type AnalyticsEvent =
   | "share_taste"
   // Make: the product or template only, never what was typed, drawn or said.
   | "make_open"
+  | "make_filter"
   | "customize_apply"
   | "line_draw"
   | "voice_record"
