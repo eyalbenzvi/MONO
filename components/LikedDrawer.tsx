@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
@@ -15,7 +16,7 @@ import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getShirtById, productHref } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { TIER_LABEL, tierOf } from "@/lib/match";
-import { useCartCount, useCartStore } from "@/store/cartStore";
+import { sizeFor, useCartCount, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SIZE_LABELS, type BaseColor, type ShirtProduct, type ShirtSize, type UserProfileVector } from "@/types/shirt";
@@ -240,7 +241,16 @@ function ListActions({ items, vector, addAll }: { items: ShirtProduct[]; vector:
   );
 }
 
-/** A quiet row: picture, name and match, remove. Tap to open the tee. */
+/** How far a row travels before letting go acts (px), and how fast a flick must be. */
+const SWIPE_AT = 90;
+const FLICK = 500;
+
+/**
+ * A quiet row: picture, name and match, remove. Tap to open the tee. Swiped,
+ * as in a mail app, it says what letting go will do: right, "Add to bag · M"
+ * (the size remembered; without one, "Choose size", which opens the tee);
+ * left, "Remove". The label turns solid once the row has gone far enough.
+ */
 function SavedRow({
   shirt,
   vector,
@@ -253,8 +263,26 @@ function SavedRow({
   onNavigate: () => void;
   onRemove: () => void;
 }) {
+  const router = useRouter();
   const color: BaseColor = useCartStore((s) => s.selectedColors[shirt.id]) ?? shirt.baseColor;
+  const size = useCartStore((s) => sizeFor(s, shirt.id));
   const tier = vector ? tierOf(vector, matchScore(vector, shirt.features)) : null;
+  // Which way the row is going, and whether far enough to act.
+  const x = useMotionValue(0);
+  const [pull, setPull] = useState<{ dir: "add" | "remove" | null; armed: boolean }>({ dir: null, armed: false });
+  useMotionValueEvent(x, "change", (v) => {
+    const dir = v > 4 ? "add" : v < -4 ? "remove" : null;
+    const armed = Math.abs(v) >= SWIPE_AT;
+    if (dir !== pull.dir || armed !== pull.armed) setPull({ dir, armed });
+  });
+  const addLabel = size ? `Add to bag · ${SIZE_LABELS[size]}` : "Choose size";
+  const add = () => {
+    if (!size) {
+      onNavigate();
+      return router.push(productHref(shirt.id));
+    }
+    useCartStore.getState().addToCart(shirt.id, size, color, 1, { source: "saved" });
+  };
 
   return (
     <motion.li
@@ -262,36 +290,53 @@ function SavedRow({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={{ left: 0.7, right: 0 }}
-      dragDirectionLock
-      onDragEnd={(_, info) => {
-        if (info.offset.x < -90 || info.velocity.x < -500) onRemove();
-      }}
       data-saved-row={shirt.id}
-      className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
+      className="relative overflow-hidden rounded-2xl"
     >
-      <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
-        <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="w-full" />
-      </Link>
-      {/* Name and match, then remove (swipe left works too). */}
-      <div className="min-w-0 flex-1">
-        <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
-          <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
-          <p className="truncate text-xs text-neutral-400">
-            {tier ? TIER_LABEL[tier] : CATEGORY_LABELS[shirt.category]}
-          </p>
-        </Link>
+      {/* What letting go will do, under the row: add on the left (the row moves right), remove on the right. */}
+      <div aria-hidden className={`absolute inset-0 flex items-center px-4 text-sm font-semibold transition-colors ${pull.dir === "remove" ? "justify-end" : "justify-start"} ${pull.armed ? "bg-white text-black" : "bg-white/[0.08] text-neutral-300"}`} data-swipe-action={pull.dir ?? undefined}>
+        {pull.dir === "add" && (
+          <span className="inline-flex items-center gap-2">
+            <Icon name="shopping-bag" className="h-4 w-4" /> {addLabel}
+          </span>
+        )}
+        {pull.dir === "remove" && (
+          <span className="inline-flex items-center gap-2">
+            Remove <Icon name="trash-2" className="h-4 w-4" />
+          </span>
+        )}
       </div>
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remove ${shirt.title}`}
-        className="flex h-10 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white"
+      <motion.div
+        style={{ x }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.7}
+        dragDirectionLock
+        onDragEnd={(_, info) => {
+          if (info.offset.x < -SWIPE_AT || info.velocity.x < -FLICK) onRemove();
+          else if (info.offset.x > SWIPE_AT || info.velocity.x > FLICK) add();
+        }}
+        className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
       >
-        <Icon name="x" className="h-4 w-4" />
-      </button>
+        <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
+          <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="w-full" />
+        </Link>
+        {/* Name and match, then remove (swipe left works too; swipe right adds to the bag). */}
+        <div className="min-w-0 flex-1">
+          <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
+            <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
+            <p className="truncate text-xs text-neutral-400">{tier ? TIER_LABEL[tier] : CATEGORY_LABELS[shirt.category]}</p>
+          </Link>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${shirt.title}`}
+          className="flex h-10 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white"
+        >
+          <Icon name="x" className="h-4 w-4" />
+        </button>
+      </motion.div>
     </motion.li>
   );
 }

@@ -67,7 +67,7 @@ export function MiniBag() {
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) setHeld(false);
           }}
-          className="fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-[45] flex items-center gap-2 rounded-2xl bg-ink-900/95 p-2 pr-2 max-[399px]:pl-3 shadow-2xl shadow-black ring-1 ring-white/15 backdrop-blur-md md:left-auto md:right-6 md:w-[380px]"
+          className="fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-[60] flex items-center gap-2 rounded-2xl bg-ink-900/95 p-2 pr-2 max-[399px]:pl-3 shadow-2xl shadow-black ring-1 ring-white/15 backdrop-blur-md md:left-auto md:right-6 md:w-[380px]"
         >
           <div className={`w-10 shrink-0 rounded-lg p-0.5 max-[399px]:hidden ${STAGE_BG}`}>
             {note.upload ? (
