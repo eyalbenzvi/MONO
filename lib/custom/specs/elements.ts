@@ -34,7 +34,7 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => p.x;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your name spelled in the symbols of the periodic table, each with its number and element.",
+  line: "Your name, spelled in element symbols.",
   from: "A name or a word",
   group: "name",
   base: "type-data",

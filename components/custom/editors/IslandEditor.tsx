@@ -12,7 +12,7 @@ function nameOf(raw: string, max: number, lex: Lexicon | null): { value: string 
   const t = raw.replace(/\s+/g, " ").trim();
   if (!t) return { value: null, error: null };
   const clean = cleanWords(t, max);
-  if (!clean) return { value: null, error: `Up to ${max} letters, numbers and simple punctuation` };
+  if (!clean) return { value: null, error: `Up to ${max} letters and numbers.` };
   if (!lex) return { value: null, error: null };
   const refused = lex.wordsProblem(clean);
   return refused ? { value: null, error: refused } : { value: clean, error: null };
@@ -21,10 +21,11 @@ function nameOf(raw: string, max: number, lex: Lexicon | null): { value: string 
 /** Your Island: the island's name (it grows from it), up to six places named for your people, and "Another island" for a different one from the same name. */
 export default function IslandEditor({ made, arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "island" ? arrival.p : null;
-  const start = a ?? (made.example.p as Params);
-  const [name, setName] = useState(start.n);
-  const [places, setPlaces] = useState<string[]>(start.x?.length ? start.x : [""]);
-  const [redraw, setRedraw] = useState(start.s ?? 0);
+  const ex = made.example.p as Params;
+  const [name, setName] = useState(a?.n ?? "");
+  // A link's places, else as many empty ones as the example has.
+  const [places, setPlaces] = useState<string[]>(a ? (a.x?.length ? a.x : [""]) : (ex.x ?? [""]).map(() => ""));
+  const [redraw, setRedraw] = useState(a?.s ?? 0);
   const lex = useLexicon(true);
 
   const n = nameOf(name, ISLAND_NAME_MAX, lex);
@@ -45,7 +46,7 @@ export default function IslandEditor({ made, arrival, touched, onChange }: Edito
   const link = "h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
   return (
     <>
-      <Field label="The island's name" hint="it grows from the name" error={nameError} htmlFor="make-island">
+      <Field label="The island’s name" error={nameError} htmlFor="make-island">
         <input id="make-island" value={name} maxLength={ISLAND_NAME_MAX + 4} placeholder={made.wordsHint} autoComplete="off" onChange={(e) => setName(e.target.value)} aria-invalid={!!nameError} className={INPUT} />
       </Field>
       <div className="space-y-2">

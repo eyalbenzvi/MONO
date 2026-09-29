@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
+import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { MILESTONES_MAX, MILESTONE_LABEL_MAX, PRODUCT, WEEKS_YEARS, weeksDateProblem, type Milestone, type Params } from "@/lib/custom/specs/weeks";
 import { Field, WordsField, useLexicon, useWords } from "./Field";
 import { Segmented } from "./Segmented";
@@ -17,23 +17,24 @@ const today = () => {
 /** Your Life in Weeks: the birthday, the day it's counted to, 80 or 90 years, up to five milestones, the words. */
 export default function WeeksEditor({ made, arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "weeks" ? (arrival.p as Params) : null;
-  const start = a ?? PRODUCT.example;
-  const [b, setB] = useState(start.b);
+  const ex = PRODUCT.example;
+  const [b, setB] = useState(a?.b ?? "");
   const [asOf, setAsOf] = useState(a ? a.a : today);
-  const [n, setN] = useState<Params["n"]>(start.n);
-  const [marks, setMarks] = useState<{ d: string; l: string }[]>((start.m ?? []).map(([d, l]) => ({ d, l })));
+  const [n, setN] = useState<Params["n"]>((a ?? ex).n);
+  // A link's milestones, else as many empty rows as the example has, its labels as placeholders.
+  const [marks, setMarks] = useState<{ d: string; l: string }[]>(() => (a ? (a.m ?? []).map(([d, l]) => ({ d, l })) : (ex.m ?? []).map(() => ({ d: "", l: "" }))));
   const words = useWords(a?.w ?? "");
   const lex = useLexicon(marks.some((m) => m.l.trim()));
 
   const bOk = !!parseDate(b);
-  const bError = bOk ? null : touched || b ? "A date between 1900 and 2100" : null;
+  const bError = bOk ? null : touched || b ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null;
   const asError = bOk ? weeksDateProblem(b, n, asOf) : null;
   // A row left empty is no milestone; a half-filled one says what it needs.
   const rows = marks.map((m) => {
     const d = m.d, l = m.l.replace(/\s+/g, " ").trim();
     if (!d && !l) return { skip: true, error: null, d, l };
     const dErr = !bOk ? null : d ? weeksDateProblem(b, n, d) : "Pick its date";
-    const lErr = !l ? "Name it" : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? `Up to ${MILESTONE_LABEL_MAX} letters, numbers and simple punctuation` : lex ? lex.wordsProblem(l) : null;
+    const lErr = !l ? "Name it" : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? `Up to ${MILESTONE_LABEL_MAX} letters and numbers.` : lex ? lex.wordsProblem(l) : null;
     return { skip: false, error: dErr ?? lErr, d, l };
   });
   const kept = rows.filter((r) => !r.skip);
@@ -53,7 +54,7 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
 
   const setMark = (i: number, v: Partial<{ d: string; l: string }>) => setMarks((xs) => xs.map((x, j) => (j === i ? { ...x, ...v } : x)));
   const dateInput = (id: string, value: string, set: (v: string) => void, invalid: boolean) => (
-    <input id={id} type="date" min="1900-01-01" max="2100-12-31" value={value} onChange={(e) => set(e.target.value)} aria-invalid={invalid} className={INPUT} />
+    <input id={id} type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={value} onChange={(e) => set(e.target.value)} aria-invalid={invalid} className={INPUT} />
   );
 
   return (
@@ -62,7 +63,7 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
         <Field label="Birthday" error={bError} htmlFor="make-weeks-born">
           {dateInput("make-weeks-born", b, setB, !!bError)}
         </Field>
-        <Field label="Counted to" error={asError} htmlFor="make-weeks-to">
+        <Field label="Until" error={asError} htmlFor="make-weeks-to">
           {dateInput("make-weeks-to", asOf, setAsOf, !!asError)}
         </Field>
       </div>
@@ -73,7 +74,7 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
             {dateInput(`make-weeks-m${i}`, mk.d, (d) => setMark(i, { d }), !!rows[i].error)}
           </Field>
           <Field label="Label" htmlFor={`make-weeks-l${i}`}>
-            <input id={`make-weeks-l${i}`} value={mk.l} maxLength={MILESTONE_LABEL_MAX + 4} placeholder="Married" autoComplete="off" onChange={(e) => setMark(i, { l: e.target.value })} aria-invalid={!!rows[i].error} className={INPUT} />
+            <input id={`make-weeks-l${i}`} value={mk.l} maxLength={MILESTONE_LABEL_MAX + 4} placeholder={ex.m?.[i]?.[1] ?? "Married"} autoComplete="off" onChange={(e) => setMark(i, { l: e.target.value })} aria-invalid={!!rows[i].error} className={INPUT} />
           </Field>
           <button type="button" onClick={() => setMarks((xs) => xs.filter((_, j) => j !== i))} aria-label={`Remove milestone ${i + 1}`} className="h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
             Remove

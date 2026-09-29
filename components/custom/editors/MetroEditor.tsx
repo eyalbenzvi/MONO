@@ -17,9 +17,11 @@ interface Station {
 
 /** Your Metro Map: the lines (people or eras), the stations in order with the lines that stop at each, and your words. */
 export default function MetroEditor({ made, arrival, touched, onChange }: EditorProps) {
-  const a = arrival?.t === "metro" ? arrival.p : PRODUCT.example;
-  const [lines, setLines] = useState<string[]>(a.l);
-  const [stations, setStations] = useState<Station[]>(a.s.map((name, j) => ({ name, mask: a.k[j] })));
+  // The example's shape (its lines, its stations and who stops where) with its names as placeholders; a link's print fills the names in.
+  const ex = PRODUCT.example;
+  const a = arrival?.t === "metro" ? arrival.p : null;
+  const [lines, setLines] = useState<string[]>(a ? a.l : ex.l.map(() => ""));
+  const [stations, setStations] = useState<Station[]>((a ?? ex).s.map((name, j) => ({ name: a ? name : "", mask: (a ?? ex).k[j] })));
   const words = useWords(arrival?.t === "metro" ? (arrival.p.w ?? "") : "");
   const lex = useLexicon(true);
 
@@ -27,7 +29,7 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
     const t = text.trim();
     if (!t) return touched ? "Type a name" : "";
     const c = cleanWords(t, max);
-    if (!c) return `Up to ${max} letters, numbers and simple punctuation`;
+    if (!c) return `Up to ${max} letters and numbers.`;
     return lex ? lex.wordsProblem(c) : null;
   };
   const lineErrors = lines.map((l) => problem(l, LINE_MAX));
@@ -55,16 +57,14 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
     // The bits above the line removed move down one.
     setStations((xs) => xs.map((x) => ({ ...x, mask: (x.mask & ((1 << i) - 1)) | ((x.mask >> (i + 1)) << i) })));
   };
-  const moveUp = (j: number) => setStations((xs) => xs.map((x, i) => (i === j - 1 ? xs[j] : i === j ? xs[j - 1] : x)));
 
   return (
     <>
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
       <div className="space-y-2">
         {lines.map((l, i) => (
           <div key={i} className="grid grid-cols-[1fr_auto] items-end gap-3">
             <Field label={`Line ${i + 1}`} hint={STYLE_NAME[i]} error={lineErrors[i]} htmlFor={`make-metro-line${i}`}>
-              <input id={`make-metro-line${i}`} value={l} maxLength={LINE_MAX + 4} placeholder="Noa" autoComplete="off" onChange={(e) => setLines((xs) => xs.map((x, t) => (t === i ? e.target.value : x)))} aria-invalid={!!lineErrors[i]} className={INPUT} />
+              <input id={`make-metro-line${i}`} value={l} maxLength={LINE_MAX + 4} placeholder={ex.l[i] ?? "Noa"} autoComplete="off" onChange={(e) => setLines((xs) => xs.map((x, t) => (t === i ? e.target.value : x)))} aria-invalid={!!lineErrors[i]} className={INPUT} />
             </Field>
             <button type="button" onClick={() => removeLine(i)} disabled={lines.length <= METRO_LINES[0]} aria-label={`Remove line ${i + 1}`} className={LINK}>
               Remove
@@ -80,13 +80,10 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
       <div className="space-y-3">
         {stations.map((s, j) => (
           <div key={j} className="space-y-1.5">
-            <div className="grid grid-cols-[1fr_auto_auto] items-end gap-3">
+            <div className="grid grid-cols-[1fr_auto] items-end gap-3">
               <Field label={`Station ${j + 1}`} error={stationErrors[j]} htmlFor={`make-metro-station${j}`}>
-                <input id={`make-metro-station${j}`} value={s.name} maxLength={STATION_MAX + 4} placeholder="Tel Aviv" autoComplete="off" onChange={(e) => setStation(j, { name: e.target.value })} aria-invalid={!!stationErrors[j]} className={INPUT} />
+                <input id={`make-metro-station${j}`} value={s.name} maxLength={STATION_MAX + 4} placeholder={ex.s[j] ?? "Tel Aviv"} autoComplete="off" onChange={(e) => setStation(j, { name: e.target.value })} aria-invalid={!!stationErrors[j]} className={INPUT} />
               </Field>
-              <button type="button" onClick={() => moveUp(j)} disabled={j === 0} aria-label={`Move station ${j + 1} up`} className={LINK}>
-                Up
-              </button>
               <button type="button" onClick={() => setStations((xs) => xs.filter((_, i) => i !== j))} disabled={stations.length <= METRO_STATIONS[0]} aria-label={`Remove station ${j + 1}`} className={LINK}>
                 Remove
               </button>
@@ -110,6 +107,7 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
         )}
         {mapProblem && <p className="text-xs text-neutral-300">{mapProblem}.</p>}
       </div>
+      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

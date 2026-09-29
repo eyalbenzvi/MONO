@@ -37,7 +37,7 @@ export default function MonogramEditor({ arrival, touched, onChange }: EditorPro
         <input id="make-monogram-initials" value={initials} maxLength={6} placeholder="NDL" autoComplete="off" autoCapitalize="characters" onChange={(e) => setInitials(e.target.value)} aria-invalid={!!error} className={`${INPUT} font-mono uppercase`} />
       </Field>
       <Segmented label="Arrangement" options={MONO_STYLES} value={style} onChange={setStyle} format={(s) => STYLE_LABEL[s]} />
-      <Field label="Year" hint="optional" error={y === null ? "A year from 1900 to 2100" : null} htmlFor="make-monogram-year">
+      <Field label="Year" hint="optional" error={y === null ? "A year from 1900 to 2100." : null} htmlFor="make-monogram-year">
         <input id="make-monogram-year" value={year} inputMode="numeric" maxLength={4} placeholder="2024" autoComplete="off" onChange={(e) => setYear(e.target.value.replace(/\D/g, ""))} aria-invalid={y === null} className={`${INPUT} font-mono`} />
       </Field>
     </>

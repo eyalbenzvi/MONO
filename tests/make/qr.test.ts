@@ -78,7 +78,7 @@ describe("Your Link: the spec", () => {
     expect(linkProblem("https://example.org/for-noa")).toBeNull();
     expect(linkProblem("")).toMatch(/Type a web address/);
     expect(linkProblem("example.org/a b")).toMatch(/No spaces/);
-    expect(linkProblem("example.org/é")).toMatch(/can't hold "é"/);
+    expect(linkProblem("example.org/é")).toMatch(/can’t hold "é"/);
     expect(linkProblem("example")).toMatch(/Add the domain/);
     expect(linkProblem("example.org:8080")).toMatch(/port/);
     expect(linkProblem("mailto:me@example.org")).toMatch(/Only web addresses/);

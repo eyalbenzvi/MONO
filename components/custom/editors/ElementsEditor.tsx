@@ -13,7 +13,7 @@ const cap = (s: string) => s[0] + s.slice(1).toLowerCase();
 function spellProblem(x: string): string {
   const gaps = missing(x);
   const near = nearestSpellable(x, ELEMENTS_LEN[0]);
-  const why = gaps.length === 1 ? `No element's symbol fits the ${gaps[0]}.` : `No element's symbols fit ${gaps.join(" and ")} here.`;
+  const why = gaps.length === 1 ? `No element’s symbol fits the ${gaps[0]}.` : `No element’s symbols fit ${gaps.join(" and ")} here.`;
   return near ? `${why} Try "${cap(near)}".` : why;
 }
 

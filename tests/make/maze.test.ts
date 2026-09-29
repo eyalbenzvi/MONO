@@ -84,7 +84,7 @@ describe("Your Maze: the spec", () => {
   it("reads typed initials the way the editor does", () => {
     expect(mazeProblem("n. b.")).toBeNull();
     expect(mazeProblem("abcd")).toMatch(/Up to 3/);
-    expect(mazeProblem("é")).toMatch(/can't spell/);
+    expect(mazeProblem("é")).toMatch(/can’t spell/);
     expect(mazeProblem(" . ")).toMatch(/One to three/);
   });
 });

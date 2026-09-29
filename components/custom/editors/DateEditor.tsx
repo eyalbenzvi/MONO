@@ -28,9 +28,9 @@ export function autoCity(places: Places): City | undefined {
 }
 
 /**
- * The four dated products' fields: your words, your day (a night, a day or
- * a year), and for a sky the time and the place (from your time zone, with
- * a small "Change"); north or south for the moons.
+ * The four dated products' fields: your day (a night, a day or a year), for
+ * a sky the time and the place (from your time zone, with a small "Change"),
+ * north or south for the moons, and your words.
  */
 export default function DateEditor({ made, arrival, touched: tried, onChange }: EditorProps) {
   const t = made.template;
@@ -93,14 +93,13 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
 
   const all = tried || false;
   const errors = {
-    date: (touched.date || all) && !dateOk ? `Pick a date between ${FIRST_YEAR} and ${lastYear}` : "",
+    date: (touched.date || all) && !dateOk ? `A date from ${FIRST_YEAR} to ${lastYear}.` : "",
     time: (touched.time || all) && time && !parseTime(time) ? "Pick a time, or leave it empty" : "",
-    year: (touched.year || all) && t === "moon" && !spec ? `Pick a year between ${FIRST_YEAR} and ${LAST_YEAR}` : "",
+    year: (touched.year || all) && t === "moon" && !spec ? `A year from ${FIRST_YEAR} to ${LAST_YEAR}.` : "",
   };
 
   return (
     <>
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={all} />
       {t === "moon" ? (
         <Field label="Year" error={errors.year} htmlFor="make-year">
           <input
@@ -167,6 +166,7 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
           <span aria-hidden className="relative h-6 w-10 rounded-full bg-white/15 transition peer-checked:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-white peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4 peer-checked:after:bg-black" />
         </label>
       )}
+      <WordsField words={words} hint={made.wordsHint ?? ""} touched={all} />
     </>
   );
 }

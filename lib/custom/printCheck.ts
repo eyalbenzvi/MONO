@@ -32,10 +32,10 @@ export function checkPrint(ink: InkRaster, hints: PrintHints = {}): PrintCheck {
   if (ok) return { ok, quality: a.quality, reason: null };
   const say = (lead: string, hint?: string) => [lead, hint].filter(Boolean).join(" ");
   let reason: string;
-  if (solid) reason = say("Too much ink in one place.", hints.dense);
-  else if (a.ink > DENSE) reason = say("Too dense to print.", hints.dense);
+  if (solid) reason = say("Too much ink to print.", hints.dense);
+  else if (a.ink > DENSE) reason = say("Too much ink to print.", hints.dense);
   else if (a.ink < FAINT || a.flags.includes("flat")) reason = say("Too faint to print.", hints.faint);
   else if (a.flags.includes("sliver")) reason = say("Too narrow to print.", hints.faint);
-  else reason = say("This one won't print well.", hints.faint ?? hints.dense);
+  else reason = say("This one won’t print well.", hints.faint ?? hints.dense);
   return { ok, quality: a.quality, reason };
 }

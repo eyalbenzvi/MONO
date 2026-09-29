@@ -27,7 +27,7 @@ export function mazeProblem(typed: string): string | null {
   const x = mazeInitials(typed);
   if (!x) return "One to three letters or figures";
   const bad = [...x].find((ch) => !/[A-Z0-9]/.test(ch));
-  if (bad) return `The maze can't spell "${bad}". Letters A to Z and figures only`;
+  if (bad) return `The maze can’t spell "${bad}". Letters A to Z and figures only`;
   return x.length > MAZE_MAX ? `Up to ${MAZE_MAX} letters` : null;
 }
 /** Typed initials as the spec keeps them: capitals, without spaces and full stops ("n. b." → "NB"). */

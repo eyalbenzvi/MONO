@@ -28,7 +28,7 @@ export function automatonWordProblem(raw: string): string | null {
   const bad = [...t].find((c) => !/[A-Za-z0-9 .,'&:!?()-]/.test(c));
   if (bad) {
     const plain = bad.normalize("NFKD").replace(/\p{M}/gu, "");
-    return /^[A-Za-z]$/.test(plain) ? `ASCII letters only. Try "${plain}".` : "Letters, numbers and simple punctuation";
+    return /^[A-Za-z]$/.test(plain) ? `ASCII letters only. Try "${plain}".` : "Letters and numbers.";
   }
   return t.length > AUTOMATON_MAX ? `Up to ${AUTOMATON_MAX} characters` : null;
 }
@@ -43,8 +43,8 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => `${p.x} · Rule ${p.r}`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your name in ASCII bits, grown row by row under one of Wolfram's rules.",
-  from: "A name and a rule",
+  line: "Your name in ASCII bits, grown row by row under one of Wolfram’s rules.",
+  from: "A name",
   group: "name",
   base: "matrix",
   bases: ["matrix", "terminal-data"],

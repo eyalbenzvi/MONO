@@ -80,7 +80,6 @@ export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
 
   return (
     <>
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
       <Segmented label="Where" options={["city", "exact"] as const} value={mode} onChange={setMode} format={(x) => (x === "city" ? "A city" : "Exact place")} />
       {mode === "city" ? (
         <CityField places={places} value={city} onChange={(c) => c && setCityId(c.id)} error="" onBlur={() => {}} />
@@ -102,9 +101,10 @@ export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
           </p>
         </div>
       )}
-      <Field label="The day" hint="optional" error={dateOk ? null : `Pick a day between ${FIRST_YEAR} and ${LAST_YEAR}`} htmlFor="make-date">
+      <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-date">
         <input id="make-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
       </Field>
+      <WordsField words={words} hint={made.wordsHint ?? ""} />
     </>
   );
 }

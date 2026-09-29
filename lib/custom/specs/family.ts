@@ -82,7 +82,7 @@ export const detail = (p: Params) => p.w ?? p.n[0];
 
 export const PRODUCT: ProductMeta<Params> = {
   line: "A fan chart of your family: you in the middle, each generation a ring further out.",
-  from: "Your name, then theirs",
+  from: "Your family’s names",
   group: "people",
   base: "concentric",
   bases: ["concentric", "rosette"],

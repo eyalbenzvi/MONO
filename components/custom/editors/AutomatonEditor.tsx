@@ -31,7 +31,7 @@ export default function AutomatonEditor({ made, arrival, touched, onChange }: Ed
 
   return (
     <>
-      <Field label="Your word" hint={`up to ${AUTOMATON_MAX} characters; capitals change the bits`} error={error} htmlFor="make-automaton-word">
+      <Field label="Your word" hint={`up to ${AUTOMATON_MAX} characters`} error={error} htmlFor="make-automaton-word">
         <input id="make-automaton-word" value={text} maxLength={AUTOMATON_MAX + 4} placeholder={made.wordsHint} autoComplete="off" onChange={(e) => setText(e.target.value)} aria-invalid={!!error} className={INPUT} />
       </Field>
       <Segmented label="Rule" options={AUTOMATON_RULES} value={rule} onChange={setRule} />

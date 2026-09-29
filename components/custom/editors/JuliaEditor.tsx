@@ -25,7 +25,7 @@ export default function JuliaEditor({ made, arrival, touched, onChange }: Editor
 
   return (
     <>
-      <Field label="Date" error={(left || touched) && !dateOk ? `Pick a date between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-julia-date">
+      <Field label="Date" error={(left || touched) && !dateOk ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null} htmlFor="make-julia-date">
         <input
           id="make-julia-date"
           type="date"

@@ -96,7 +96,7 @@ describe("Make, from ours: the six new specs validate strictly and round-trip", 
       expect(customTitle(s)).toMatch(/^Your /);
     }
     expect(specHash({ t: "house", v: 1, p: { no: 14, dr: "r", r: "stepped", wn: 4, fl: 3 } } as unknown as CustomSpec)).toBe(specHash(specs[4]));
-    expect(customTitle(specs[1])).toBe("Your Name · NOA");
+    expect(customTitle(specs[1])).toBe("Your Name in Code · NOA");
     expect(customTitle(specs[3])).toBe("Your Voice · 196 Hz");
     expect(customTitle(specs[4])).toBe("Your House · No. 14");
     expect(customTitle(specs[5])).toBe("Your Number · First marathon");

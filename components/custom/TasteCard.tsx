@@ -15,5 +15,5 @@ export default function TasteCard({ made }: { made: MadeProduct }) {
   const vector = useTasteStore((s) => s.preferenceVector);
   const own = hydrated && complete;
   const spec: CustomSpec = useMemo(() => (own ? { t: "taste", v: 1, p: { q: tasteQ(vector) } } : made.example), [own, vector, made.example]);
-  return <MakeCard made={made} spec={spec} from={hydrated ? (complete ? "Your swipes, as they stand" : "Your swipes. Swipe a few first.") : made.from} />;
+  return <MakeCard made={made} spec={spec} from={hydrated ? (complete ? "Your swipes, as they stand" : "Ten swipes first") : made.from} />;
 }

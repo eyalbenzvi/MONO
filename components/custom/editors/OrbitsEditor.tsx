@@ -25,14 +25,17 @@ interface Row {
  * the angle), who's at the centre, and a title.
  */
 export default function OrbitsEditor({ made, arrival, touched, onChange }: EditorProps) {
-  const a = arrival?.t === "orbits" ? arrival.p : PRODUCT.example;
+  const ex = PRODUCT.example;
+  const a = arrival?.t === "orbits" ? arrival.p : null;
+  // A link's print fills the rows; else as many empty rows as the example has, its names as placeholders.
   const [rows, setRows] = useState<Row[]>(() => {
+    if (!a) return ex.n.map(() => ({ name: "", date: "" }));
     const days = unpackDays(a.b) ?? [];
     return a.n.map((name, i) => ({ name, date: days[i] !== undefined ? iso(days[i]) : "" }));
   });
-  const [centre, setCentre] = useState<number>(arrival?.t === "orbits" ? (arrival.p.s ?? -1) : -1);
+  const [centre, setCentre] = useState<number>(a?.s ?? -1);
   const [left, setLeft] = useState<Record<number, boolean>>({});
-  const words = useWords(arrival?.t === "orbits" ? (arrival.p.w ?? "") : (PRODUCT.example.w ?? ""));
+  const words = useWords(a?.w ?? "");
   const lex = useLexicon(rows.some((r) => r.name.trim()));
 
   const names = rows.map((r) => cleanWords(r.name, ORBIT_NAME));
@@ -40,10 +43,10 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
   const nameError = (i: number) => {
     const r = rows[i];
     if (!r.name.trim()) return touched || left[i] ? "Type a name" : null;
-    if (!names[i]) return `Up to ${ORBIT_NAME} letters, numbers and simple punctuation`;
+    if (!names[i]) return `Up to ${ORBIT_NAME} letters and numbers.`;
     return lex ? lex.wordsProblem(names[i]!) : null;
   };
-  const dateError = (i: number) => (!dates[i] && (touched || left[i]) ? `A date between ${FIRST_YEAR} and ${LAST_YEAR}` : null);
+  const dateError = (i: number) => (!dates[i] && (touched || left[i]) ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null);
   const ok = !!lex && rows.every((_, i) => names[i] && !nameError(i) && dates[i]);
   const days = ok ? (dates as string[]).map(dayOf) : [];
   const sun = centre >= 0 && centre < rows.length ? centre : -1;
@@ -76,7 +79,7 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
           {rows.map((r, i) => (
             <div key={i} className="grid grid-cols-[1fr_9.5rem] items-start gap-2">
               <Field label={`Name ${i + 1}`} error={nameError(i)} htmlFor={`make-orbits-name-${i}`}>
-                <input id={`make-orbits-name-${i}`} value={r.name} maxLength={ORBIT_NAME + 4} placeholder="Noa" autoComplete="off" onChange={(e) => set(i, { name: e.target.value })} onBlur={() => setLeft((x) => ({ ...x, [i]: true }))} aria-invalid={!!nameError(i)} className={INPUT} />
+                <input id={`make-orbits-name-${i}`} value={r.name} maxLength={ORBIT_NAME + 4} placeholder={ex.n[i] ?? "Noa"} autoComplete="off" onChange={(e) => set(i, { name: e.target.value })} onBlur={() => setLeft((x) => ({ ...x, [i]: true }))} aria-invalid={!!nameError(i)} className={INPUT} />
               </Field>
               <Field label="Born" error={dateError(i)} htmlFor={`make-orbits-date-${i}`}>
                 <input id={`make-orbits-date-${i}`} type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={r.date} onChange={(e) => set(i, { date: e.target.value })} onBlur={() => setLeft((x) => ({ ...x, [i]: true }))} aria-invalid={!!dateError(i)} className={INPUT} />

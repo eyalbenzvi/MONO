@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CityField, cityLabel } from "@/components/custom/CityField";
 import { CustomMockup } from "@/components/custom/CustomMockup";
+import { Icon } from "@/components/Icon";
 import { autoCity } from "@/components/custom/editors/DateEditor";
-import { Field, useLexicon, useWords } from "@/components/custom/editors/Field";
+import { Field, WORDS_INPUT_MAX, useLexicon, useWords } from "@/components/custom/editors/Field";
 import { INPUT } from "@/components/custom/editors/types";
 import { drawPrint } from "@/components/custom/useCustom";
 import { STAGE_BG } from "@/components/stage";
@@ -14,7 +15,7 @@ import { loadCities, type Places } from "@/lib/custom/data";
 import { TWO_EXAMPLE, TWO_NAME_MAX, cleanName, forTwo, readTwo, writeTwo, type TwoCard, type TwoQuery } from "@/lib/custom/forTwo";
 import { markFrom } from "@/lib/custom/makeFrom";
 import { madeBySlug, type MadeProduct } from "@/lib/custom/products";
-import { FIRST_YEAR, LAST_YEAR, WORDS_MAX, customDay, encodeMake, parseDate } from "@/lib/custom/spec";
+import { FIRST_YEAR, LAST_YEAR, customDay, encodeMake, parseDate } from "@/lib/custom/spec";
 import { SIZES } from "@/lib/images";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -109,16 +110,18 @@ export function ForTwo() {
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${s ? `?${s}` : ""}${window.location.hash}`);
   }, [ready, own, date, words.value, nameA.value, nameB.value, choice, chosen, here]);
 
-  const dateError = touchedDate && date && !own ? `Pick a date between ${FIRST_YEAR} and ${LAST_YEAR}` : "";
+  const dateError = touchedDate && date && !own ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : "";
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl">
-        <Link href="/make/" className="text-xs text-neutral-400 underline-offset-4 hover:text-white hover:underline">
-          Make
-        </Link>
-        <h1 className="mt-1 text-balance text-3xl font-black tracking-tight md:text-5xl">For two</h1>
-        <p className="mt-3 max-w-xl text-sm text-neutral-400">A date of yours, and every print we can make from it.</p>
+        <div className="mb-2">
+          <Link href="/make/" className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+            <Icon name="arrow-left" className="h-4 w-4" /> Make
+          </Link>
+        </div>
+        <h1 className="text-balance text-3xl font-black tracking-tight md:text-5xl">For two</h1>
+        <p className="mt-3 max-w-xl text-sm text-neutral-400">One date of you two, and every print it makes.</p>
 
         <form className="mt-6 grid max-w-xl gap-4" onSubmit={(e) => e.preventDefault()} data-two-form>
           <Field label="The date" error={dateError} htmlFor="two-date">
@@ -138,7 +141,7 @@ export function ForTwo() {
             <input
               id="two-words"
               value={words.text}
-              maxLength={WORDS_MAX}
+              maxLength={WORDS_INPUT_MAX}
               placeholder={TWO_EXAMPLE.w}
               autoComplete="off"
               onChange={(e) => words.setText(e.target.value)}
@@ -176,8 +179,7 @@ export function ForTwo() {
             <p className="flex min-h-10 flex-wrap items-center gap-x-2 text-sm text-neutral-400" data-place>
               {city ? (
                 <span>
-                  In <span className="text-neutral-200">{cityLabel(city)}</span>
-                  {!chosen ? " (your time zone)" : ""}
+                  Seen from <span className="text-neutral-200">{cityLabel(city)}</span>
                 </span>
               ) : (
                 <span>{choice === "none" || noPlaces ? "No place: no sky, no globe" : "Finding your place…"}</span>
@@ -190,10 +192,10 @@ export function ForTwo() {
         </form>
 
         <section className="mt-10" aria-labelledby="two-prints">
-          <h2 id="two-prints" className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+          <h2 id="two-prints" className={own ? "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400" : "sr-only"}>
             {own ? `From ${customDay({ t: "night", v: 1, p: { d: date } })}` : "Shown with our example"}
           </h2>
-          {!own && <p className="mt-1 text-xs text-neutral-500">Put in your date.</p>}
+          {!own && <p className="text-xs text-neutral-500">Put in your date.</p>}
           <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4" data-two={own ? "yours" : "example"}>
             {cards.length
               ? cards.map((c) => (

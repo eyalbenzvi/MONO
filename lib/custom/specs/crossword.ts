@@ -49,7 +49,7 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => p.w ?? `${crossNames(p.x).length} names`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your people's names, fitted into one crossword.",
+  line: "Your people’s names, fitted into one crossword.",
   from: "Four to twelve names",
   group: "people",
   base: "type-data",

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { CustomSpec } from "@/lib/custom/spec";
-import { MARK_DIGIT, PRODUCT, RINGS_SPAN, SCARS_MAX, spanProblem, type Params } from "@/lib/custom/specs/rings";
+import { FIRST_YEAR, LAST_YEAR, type CustomSpec } from "@/lib/custom/spec";
+import { MARK_DIGIT, PRODUCT, SCARS_MAX, spanProblem, type Params } from "@/lib/custom/specs/rings";
 import { Field, WordsField, useWords } from "./Field";
 import { INPUT, type EditorProps } from "./types";
 
@@ -36,25 +36,26 @@ const marked = (p: Params, d: string) => [...p.m].flatMap((x, i) => (x === d ? [
 /** Your Tree Rings: the first and last year, the good years, the hard years, the scars, the words. */
 export default function RingsEditor({ made, arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "rings" ? (arrival.p as Params) : null;
-  const start = a ?? PRODUCT.example;
-  const [from, setFrom] = useState(String(start.b));
-  const [to, setTo] = useState(String(a ? a.c : Math.max(start.b, Math.min(start.b + RINGS_SPAN, new Date().getFullYear()))));
-  const [good, setGood] = useState(yearsText(marked(start, MARK_DIGIT.good)));
-  const [hard, setHard] = useState(yearsText(marked(start, MARK_DIGIT.hard)));
-  const [scars, setScars] = useState((start.s ?? []).join(", "));
+  const ex = PRODUCT.example;
+  const [from, setFrom] = useState(a ? String(a.b) : "");
+  const [to, setTo] = useState(a ? String(a.c) : "");
+  const [good, setGood] = useState(a ? yearsText(marked(a, MARK_DIGIT.good)) : "");
+  const [hard, setHard] = useState(a ? yearsText(marked(a, MARK_DIGIT.hard)) : "");
+  const [scars, setScars] = useState((a?.s ?? []).join(", "));
   const words = useWords(a?.w ?? "");
 
   const [b, c] = [Number(from), Number(to)];
   const yearOk = (s: string) => /^\d{4}$/.test(s);
-  const fromError = !yearOk(from) ? (touched || from ? "A year, four figures" : null) : spanProblem(b, b);
-  const toError = fromError ? null : !yearOk(to) ? "A year, four figures" : spanProblem(b, c);
-  const spanOk = !fromError && !toError;
+  const yearError = `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
+  const fromError = !yearOk(from) ? (touched || from ? yearError : null) : spanProblem(b, b);
+  const toError = fromError ? null : !yearOk(to) ? (touched || to ? yearError : null) : spanProblem(b, c);
+  const spanOk = yearOk(from) && yearOk(to) && !fromError && !toError;
   const g = spanOk ? parseYears(good, b, c) : [];
   const h = spanOk ? parseYears(hard, b, c) : [];
   const sc = spanOk ? parseYears(scars, b, c) : [];
   const both = Array.isArray(g) && Array.isArray(h) ? g.find((y) => h.includes(y)) : undefined;
   const goodError = typeof g === "string" ? g : null;
-  const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can't be good and hard` : null;
+  const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can’t be good and hard` : null;
   const scarError = typeof sc === "string" ? sc : sc.length > SCARS_MAX ? `Up to ${SCARS_MAX} scars` : null;
   const w = words.value;
   let spec: CustomSpec | null = null;
@@ -71,8 +72,8 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
     report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
   }, [key]);
 
-  const year = (id: string, value: string, set: (v: string) => void, invalid: boolean) => (
-    <input id={id} inputMode="numeric" maxLength={4} autoComplete="off" value={value} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} aria-invalid={invalid} className={`${INPUT} font-mono`} />
+  const year = (id: string, value: string, set: (v: string) => void, invalid: boolean, placeholder: string) => (
+    <input id={id} inputMode="numeric" maxLength={4} autoComplete="off" placeholder={placeholder} value={value} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} aria-invalid={invalid} className={`${INPUT} font-mono`} />
   );
   const list = (id: string, value: string, set: (v: string) => void, invalid: boolean, placeholder: string) => (
     <input id={id} value={value} autoComplete="off" placeholder={placeholder} onChange={(e) => set(e.target.value)} aria-invalid={invalid} className={`${INPUT} font-mono`} />
@@ -81,11 +82,11 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
   return (
     <>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="First year" hint="the pith" error={fromError} htmlFor="make-rings-from">
-          {year("make-rings-from", from, setFrom, !!fromError)}
+        <Field label="First year" error={fromError} htmlFor="make-rings-from">
+          {year("make-rings-from", from, setFrom, !!fromError, String(ex.b))}
         </Field>
-        <Field label="Last year" hint="the bark" error={toError} htmlFor="make-rings-to">
-          {year("make-rings-to", to, setTo, !!toError)}
+        <Field label="Last year" error={toError} htmlFor="make-rings-to">
+          {year("make-rings-to", to, setTo, !!toError, String(ex.c))}
         </Field>
       </div>
       <Field label="Good years" hint="wide rings" error={goodError} htmlFor="make-rings-good">

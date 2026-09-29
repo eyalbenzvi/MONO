@@ -27,7 +27,7 @@ export interface Params {
   r?: ChessResult;
 }
 
-export const NAME = "Your Game";
+export const NAME = "Your Chess Game";
 /** Plies kept (sixty moves each). */
 export const CHESS_MAX_PLIES = 120;
 export const PLAYER_MAX = 18;
@@ -62,8 +62,8 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => (p.a && p.b ? `${p.a} v ${p.b}` : `${Math.ceil(p.m.length / 4)} moves`);
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "A game you played: every piece's journey across the board, move by move.",
-  from: "A game you played",
+  line: "A game you played: every piece’s journey across the board, move by move.",
+  from: "A chess game’s moves",
   group: "you",
   base: "tiling",
   bases: ["tiling", "khatam"],

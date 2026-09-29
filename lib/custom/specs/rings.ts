@@ -27,8 +27,8 @@ export const MARK_DIGIT: Record<YearMark, string> = { hard: "0", normal: "1", go
 
 /** Why this span can't be drawn, in one line, or null. */
 export function spanProblem(b: number, c: number): string | null {
-  if (!int(b, FIRST_YEAR, LAST_YEAR)) return `A year between ${FIRST_YEAR} and ${LAST_YEAR}`;
-  if (!int(c, FIRST_YEAR, LAST_YEAR)) return `A year between ${FIRST_YEAR} and ${LAST_YEAR}`;
+  if (!int(b, FIRST_YEAR, LAST_YEAR)) return `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
+  if (!int(c, FIRST_YEAR, LAST_YEAR)) return `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
   if (c < b) return "The same year or later";
   return c - b > RINGS_SPAN ? `Up to ${RINGS_SPAN + 1} years` : null;
 }
@@ -52,7 +52,7 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => p.w ?? (p.b === p.c ? String(p.b) : `${p.b}–${p.c}`);
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your years as the rings of a tree: wide for the good ones, narrow for the hard, and the scars.",
+  line: "Your years as tree rings: wide for good, narrow for hard.",
   from: "Your years, good and hard",
   group: "date",
   base: "concentric",

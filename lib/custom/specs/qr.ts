@@ -57,14 +57,14 @@ export function linkProblem(typed: string): string | null {
   if (!a) return "Type a web address";
   if (/\s/.test(a)) return "No spaces in a web address";
   const bad = [...a].find((c) => !SAFE.test(c));
-  if (bad) return `A web address can't hold "${bad}"`;
+  if (bad) return `A web address can’t hold "${bad}"`;
   if (a.length > LINK_MAX) return `Up to ${LINK_MAX} characters`;
   const [host, rest] = split(a);
   if (host.includes(":")) return host.split(":")[0].includes(".") ? "No port numbers" : "Only web addresses (https://)";
   if (host.includes("@")) return "No names or passwords in the address";
-  if (!HOST.test(host)) return host.includes(".") ? "That domain doesn't look right" : "Add the domain, like example.org";
+  if (!HOST.test(host)) return host.includes(".") ? "That domain doesn’t look right" : "Add the domain, like example.org";
   if (!REST.test(rest)) return "A % must be followed by two hex digits";
-  return linkOk(a) ? null : "That address doesn't look right";
+  return linkOk(a) ? null : "That address doesn’t look right";
 }
 
 /** What the code holds. */
@@ -81,7 +81,7 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => (p.a.length > 40 ? `${p.a.slice(0, 39)}…` : p.a);
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "A web address of yours as a QR code that really scans, the address set under it.",
+  line: "Your web address as a QR code that scans.",
   from: "A web address",
   group: "you",
   base: "terminal-data",

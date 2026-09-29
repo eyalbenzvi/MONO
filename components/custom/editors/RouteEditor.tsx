@@ -71,7 +71,7 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
     setFileName(file.name);
     if (file.size > 30 << 20) return setFileError("That file is too big. Try one under 30 MB."), setTrack(null), setShape(null);
     const got = readGpx(await file.text());
-    if (!got || got.track.length < 2) return setFileError("That doesn't look like a GPX file with a track."), setTrack(null), setShape(null);
+    if (!got || got.track.length < 2) return setFileError("That doesn’t look like a GPX file with a track."), setTrack(null), setShape(null);
     setTrack(got.track);
     const km = routeFromTrack(got.track, false);
     if (typeof km !== "string") setDist(String(km.k));
@@ -163,7 +163,7 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
         <Field label="Distance" hint="km, optional" error={k === null ? `0.1 to ${ROUTE_MAX_KM} km` : null} htmlFor="make-route-km">
           <input id="make-route-km" value={dist} inputMode="decimal" maxLength={6} autoComplete="off" placeholder="10.5" onChange={(e) => setDist(e.target.value)} aria-invalid={k === null} className={`${INPUT} font-mono`} />
         </Field>
-        <Field label="The day" hint="optional" error={dateOk ? null : `Pick a day between ${FIRST_YEAR} and ${LAST_YEAR}`} htmlFor="make-route-date">
+        <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-route-date">
           <input id="make-route-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
         </Field>
       </div>

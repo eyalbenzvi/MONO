@@ -25,7 +25,7 @@ function movesText(p: Params): string {
 function nameOf(text: string, lex: ReturnType<typeof useLexicon>) {
   const t = text.trim();
   const clean = t ? cleanWords(t, PLAYER_MAX) : undefined;
-  const error = t && clean === null ? `Up to ${PLAYER_MAX} letters, numbers and simple punctuation` : clean && lex ? lex.wordsProblem(clean) : null;
+  const error = t && clean === null ? `Up to ${PLAYER_MAX} letters and numbers.` : clean && lex ? lex.wordsProblem(clean) : null;
   return { value: t ? (error || !lex ? null : clean) : undefined, error };
 }
 
@@ -42,7 +42,7 @@ export default function ChessEditor({ arrival, touched, onChange }: EditorProps)
 
   const read = useMemo(() => (pgn.trim() ? readPgn(pgn, CHESS_MAX_PLIES) : null), [pgn]);
   const game: Game | null = read && "game" in read ? read.game : null;
-  const gameError = !pgn.trim() ? (touched ? "Paste the game's moves" : null) : read && "error" in read ? read.error : null;
+  const gameError = !pgn.trim() ? (touched ? "Paste the game’s moves" : null) : read && "error" in read ? read.error : null;
   const dateOk = !date || !!parseDate(date);
 
   // A pasted game brings its players, day and result.
@@ -101,7 +101,7 @@ export default function ChessEditor({ arrival, touched, onChange }: EditorProps)
           <input id="make-chess-black" value={black} maxLength={PLAYER_MAX + 12} autoComplete="off" onChange={(e) => setBlack(e.target.value)} aria-invalid={!!b.error} className={INPUT} />
         </Field>
       </div>
-      <Field label="The day" hint="optional" error={dateOk ? null : `Pick a day between ${FIRST_YEAR} and ${LAST_YEAR}`} htmlFor="make-chess-date">
+      <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-chess-date">
         <input id="make-chess-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
       </Field>
       <Segmented label="Result" options={RESULT_OPTIONS} value={result} onChange={setResult} format={(r) => RESULT_LABEL[r]} />

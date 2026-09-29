@@ -13,8 +13,7 @@ import { INPUT, type EditorProps } from "./types";
  */
 export default function QrEditor({ made, arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "qr" ? (arrival.p as Params) : null;
-  const start = a ?? PRODUCT.example;
-  const [typed, setTyped] = useState(start.h ? linkUrl(start) : start.a);
+  const [typed, setTyped] = useState(a ? (a.h ? linkUrl(a) : a.a) : "");
   const words = useWords(a?.w ?? "");
   const lex = useLexicon(!!typed.trim());
 
@@ -41,7 +40,7 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
           id="make-qr-link"
           value={typed}
           maxLength={LINK_MAX + 8}
-          placeholder="example.org/for-noa"
+          placeholder={PRODUCT.example.a}
           inputMode="url"
           autoComplete="off"
           autoCapitalize="none"
@@ -49,14 +48,15 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
           spellCheck={false}
           onChange={(e) => setTyped(e.target.value)}
           aria-invalid={!!error}
-          aria-describedby="make-qr-note"
+          aria-describedby={spec ? "make-qr-note" : undefined}
           className={`${INPUT} font-mono`}
         />
       </Field>
-      <p id="make-qr-note" className="text-xs text-neutral-500">
-        {spec ? `Scans as ${linkUrl({ a: addr, h: http ? 1 : undefined })}. ` : ""}
-        Nothing is looked up online: point your phone at the preview to try it. Most phone cameras read the white-on-black code too.
-      </p>
+      {spec && (
+        <p id="make-qr-note" className="text-xs text-neutral-500">
+          Scans as {linkUrl({ a: addr, h: http ? 1 : undefined })}.
+        </p>
+      )}
       <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );

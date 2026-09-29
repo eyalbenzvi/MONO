@@ -83,7 +83,7 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
       setSource(await readPicture(file));
       setFileError(null);
     } catch {
-      setFileError("This browser can't open that file. Try a JPEG or a PNG.");
+      setFileError("This browser can’t open that file. Try a JPEG or a PNG.");
     }
   };
   const ex = made.example.t === "ascii" ? made.example.p : null;

@@ -42,7 +42,7 @@ describe("Your Automaton: the spec", () => {
     expect(automatonWordProblem("Maya Cohen")).toBeNull();
     expect(automatonWordProblem("Zoë")).toBe('ASCII letters only. Try "e".');
     expect(automatonWordProblem("x".repeat(11))).toBe(`Up to ${AUTOMATON_MAX} characters`);
-    expect(automatonWordProblem("a☃")).toBe("Letters, numbers and simple punctuation");
+    expect(automatonWordProblem("a☃")).toBe("Letters and numbers.");
     expect(wordsProblem("N1KE")).not.toBeNull();
     expect(wordsProblem(ex.x)).toBeNull();
   });

@@ -35,7 +35,7 @@ export function check(p: Record<string, unknown>, ctx: CheckContext): Params | n
 export const detail = (p: Params) => p.w ?? `${p.c.length} places`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "The places you've been, joined on a globe in the order you went.",
+  line: "The places you’ve been, joined on a globe in the order you went.",
   from: "Two to eight places",
   group: "place",
   base: "daylight",

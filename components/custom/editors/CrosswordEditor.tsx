@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { CROSS_MAX, CROSS_MIN, PRODUCT, crossNames, crossWordProblem } from "@/lib/custom/specs/crossword";
 import { buildCrossword } from "@/lib/custom/draw/crossword";
-import { Field, useLexicon, useWords } from "./Field";
+import { Field, WORDS_INPUT_MAX, useLexicon, useWords } from "./Field";
 import { Switch } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -19,9 +19,9 @@ const namesOf = (text: string) => text.toUpperCase().split(/[\s,;]+/).filter(Boo
 export default function CrosswordEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "crossword" ? arrival.p : null;
   const ex = PRODUCT.example;
-  const [text, setText] = useState(crossNames((a ?? ex).x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", "));
-  const [blank, setBlank] = useState((a ?? ex).h === 1);
-  const title = useWords(a ? (a.w ?? "") : (ex.w ?? ""));
+  const [text, setText] = useState(a ? crossNames(a.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ") : "");
+  const [blank, setBlank] = useState(a?.h === 1);
+  const title = useWords(a?.w ?? "");
   const lex = useLexicon(!!text.trim());
 
   const names = namesOf(text);
@@ -60,12 +60,12 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
   return (
     <>
       <Field label="Names" hint={`${CROSS_MIN} to ${CROSS_MAX}, one word each`} error={namesError ?? note} htmlFor="make-crossword-names">
-        <input id="make-crossword-names" value={text} placeholder="Miriam, David, Noa, Ella" autoComplete="off" autoCapitalize="words" onChange={(e) => setText(e.target.value)} aria-invalid={!!namesError} className={INPUT} />
+        <input id="make-crossword-names" value={text} placeholder={crossNames(ex.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ")} autoComplete="off" autoCapitalize="words" onChange={(e) => setText(e.target.value)} aria-invalid={!!namesError} className={INPUT} />
       </Field>
       <Field label="Title" hint="optional" error={title.error} htmlFor="make-crossword-title">
-        <input id="make-crossword-title" value={title.text} maxLength={28} placeholder={PRODUCT.wordsHint} autoComplete="off" onChange={(e) => title.setText(e.target.value)} onBlur={title.touch} aria-invalid={!!title.error} className={INPUT} />
+        <input id="make-crossword-title" value={title.text} maxLength={WORDS_INPUT_MAX} placeholder={PRODUCT.wordsHint} autoComplete="off" onChange={(e) => title.setText(e.target.value)} onBlur={title.touch} aria-invalid={!!title.error} className={INPUT} />
       </Field>
-      <Switch label="Leave it blank to fill in" checked={blank} onChange={setBlank} />
+      <Switch label="Blank, to solve" checked={blank} onChange={setBlank} />
     </>
   );
 }

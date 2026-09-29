@@ -42,7 +42,7 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => [[...p.x].join("."), p.y].filter(Boolean).join(" · ");
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your initials woven as ribbons, in a letter drawn with rule and compass.",
+  line: "Your initials, woven as ribbons.",
   from: "Two or three initials",
   group: "name",
   base: "rosette",

@@ -53,7 +53,7 @@ export default function CodeEditor({ made, arrival, touched, onChange }: EditorP
         <input id="make-name" value={name} maxLength={CODE_MAX + 4} placeholder={made.wordsHint} autoComplete="off" autoCapitalize="characters" onChange={(e) => setName(e.target.value)} aria-invalid={!!error} className={INPUT} />
       </Field>
       <Segmented label="Code" options={KINDS} value={kind} onChange={setKind} format={(k) => CODE_NAMES[k]} />
-      <Switch label="Keep it secret" checked={secret} onChange={setSecret} />
+      <Switch label="Hide the letters" checked={secret} onChange={setSecret} />
     </>
   );
 }

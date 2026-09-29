@@ -92,7 +92,7 @@ export const detail = (p: Params) => p.w ?? (p.k !== undefined ? km(p.k) : "A dr
 
 export const PRODUCT: ProductMeta<Params> = {
   line: "Your run, ride or hike, drawn as a map of its own.",
-  from: "A GPX file or a line",
+  from: "A run, ride or hike",
   group: "place",
   base: "contours",
   wordsHint: "Sunday long run",

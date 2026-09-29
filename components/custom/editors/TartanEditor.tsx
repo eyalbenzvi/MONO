@@ -26,7 +26,7 @@ export default function TartanEditor({ made, arrival, touched, onChange }: Edito
       ? "Type a family name"
       : null
     : cleanWords(n, TARTAN_NAME_MAX) !== n
-      ? `Up to ${TARTAN_NAME_MAX} letters, and simple punctuation`
+      ? `Up to ${TARTAN_NAME_MAX} letters and numbers.`
       : lex
         ? lex.wordsProblem(n)
         : null;

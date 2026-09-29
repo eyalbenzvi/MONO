@@ -12,7 +12,7 @@ const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-whit
 
 /**
  * Your Journey: the places in the order you went (one place field adds the
- * next; each can move up or go), and your words.
+ * next; each can go), and your words.
  */
 export default function JourneyEditor({ made, arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "journey" ? arrival.p : null;
@@ -41,12 +41,10 @@ export default function JourneyEditor({ made, arrival, touched, onChange }: Edit
     report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list } });
   }, [key, places]);
 
-  const move = (i: number) => setIds((xs) => xs.map((x, j) => (j === i - 1 ? xs[i] : j === i ? xs[i - 1] : x)));
   const shown = problem && (touched || ids.length >= 2) ? problem : null;
 
   return (
     <>
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
       <div>
         <p className="mb-1 text-xs font-medium text-neutral-400" id="make-journey-stops">
           The places, in order <span className="text-neutral-500">up to {JOURNEY_MAX}</span>
@@ -59,9 +57,6 @@ export default function JourneyEditor({ made, arrival, touched, onChange }: Edit
               <li key={`${i}-${id}`} className="flex items-center gap-3 text-sm text-white">
                 <span className="w-4 text-right font-mono text-neutral-400">{i + 1}</span>
                 <span className="min-w-0 flex-1 truncate">{name}</span>
-                <button type="button" onClick={() => move(i)} disabled={i === 0} aria-label={`Move ${c?.name ?? "place"} up`} className={LINK}>
-                  Up
-                </button>
                 <button type="button" onClick={() => setIds((xs) => xs.filter((_, j) => j !== i))} aria-label={`Remove ${c?.name ?? "place"}`} className={LINK}>
                   Remove
                 </button>
@@ -86,6 +81,7 @@ export default function JourneyEditor({ made, arrival, touched, onChange }: Edit
           onBlur={() => {}}
         />
       )}
+      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

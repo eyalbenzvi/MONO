@@ -34,7 +34,7 @@ export default function NumberEditor({ arrival, touched, onChange }: EditorProps
   const u = isTime ? "" : unit === OTHER ? free.trim() : unit;
   const unitError = unit === OTHER && !isTime && u && !UNIT_FREE.test(u) ? "Up to 6 letters, numbers or signs" : unit === OTHER && lex && u ? lex.wordsProblem(u) : null;
   const l = label.trim() ? cleanWords(label) : undefined;
-  const labelError = label.trim() ? (l === null ? `Up to ${WORDS_MAX} letters, numbers and simple punctuation` : lex ? lex.wordsProblem(label) : null) : null;
+  const labelError = label.trim() ? (l === null ? `Up to ${WORDS_MAX} letters and numbers.` : lex ? lex.wordsProblem(label) : null) : null;
   const valueError = v === null && (touched || raw.trim()) ? "A number (up to 99999, three decimals) or a time like 3:41:07" : null;
   const f: Face = isTime ? face : "dial";
   const spec: CustomSpec | null = v !== null && lex && !unitError && !labelError && l !== null ? { t: "number", v: 1, p: { v, u, ...(l ? { l } : {}), face: f } } : null;
