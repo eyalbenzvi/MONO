@@ -21,6 +21,7 @@ import {
   midtoneShare,
   place,
   sanitiseSvg,
+  shapesOf,
   screenTone,
   tooSmall,
   type Pixels,
@@ -320,5 +321,18 @@ describe("uploads: an SVG built to hang or to reach out is refused", () => {
     expect(sanitiseSvg(wrap('<rect style="fill:u\\72l(#a)" width="1" height="1"/>')).ok).toBe(false);
     // An ordinary drawing with a few reused shapes still passes.
     expect(sanitiseSvg(wrap('<defs><circle id="c" r="1"/></defs><use href="#c"/><use href="#c" x="3"/>')).ok).toBe(true);
+  });
+  it("a backslash outside the styles (a file path in <desc>) is text, not a CSS escape", () => {
+    expect(sanitiseSvg(wrap('<style>rect{fill:#000}</style><desc>C:\\Users\\me\\art.ai</desc><rect width="1" height="1"/>')).ok).toBe(true);
+  });
+  it("counting stays linear: a big map with ids, and a file nested thousands deep, are checked at once", () => {
+    const map = wrap(Array.from({ length: 80_000 }, (_, i) => `<path id="p${i}" d="M0 0h1"/>`).join(""));
+    let t = performance.now();
+    expect(shapesOf(map)).toBe(80_001); // the <svg> counts too
+    expect(performance.now() - t).toBeLessThan(1500);
+    const deep = wrap(`${Array.from({ length: 20_000 }, (_, i) => `<g id="g${i}">`).join("")}<rect width="1" height="1"/>${"</g>".repeat(20_000)}`);
+    t = performance.now();
+    expect(shapesOf(deep)).toBe(20_002);
+    expect(performance.now() - t).toBeLessThan(1500);
   });
 });

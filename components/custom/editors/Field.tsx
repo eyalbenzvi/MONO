@@ -22,11 +22,12 @@ export function useLexicon(wanted: boolean): Lexicon | null {
  * white ring on the control, a marked line, announced, and tied to the
  * control by aria-describedby).
  */
-export function Field({ label, hint, error, htmlFor, children }: { label: string; hint?: string; error?: string | null; htmlFor: string; children: React.ReactNode }) {
+export function Field({ label, hint, error, note, htmlFor, children }: { label: string; hint?: string; error?: string | null; note?: string | null; htmlFor: string; children: React.ReactNode }) {
   const errId = `${htmlFor}-error`;
+  const noteId = `${htmlFor}-note`;
   // A single control gets the error tied to it (and marked invalid, which rings it).
   const only = Children.count(children) === 1 && isValidElement(children) ? (children as ReactElement<Record<string, unknown>>) : null;
-  const control = only && error ? cloneElement(only, { "aria-describedby": errId, "aria-invalid": only.props["aria-invalid"] ?? true }) : children;
+  const control = only && error ? cloneElement(only, { "aria-describedby": errId, "aria-invalid": only.props["aria-invalid"] ?? true }) : only && note ? cloneElement(only, { "aria-describedby": noteId }) : children;
   return (
     <div>
       <label htmlFor={htmlFor} className="mb-1 flex items-baseline gap-2 text-xs font-medium text-neutral-400">
@@ -42,16 +43,22 @@ export function Field({ label, hint, error, htmlFor, children }: { label: string
           {error}
         </p>
       )}
+      {/* A note is information, not a problem: a quiet line, never marked or announced as an error. */}
+      {!error && note && (
+        <p id={noteId} className="mt-1.5 break-words text-xs text-neutral-400 [overflow-wrap:anywhere]">
+          {note}
+        </p>
+      )}
     </div>
   );
 }
 
 /** The characters a print's words can use (lib/custom/specKit WORDS), one at a time. */
 const PRINTABLE_CHAR = /[\p{Script=Latin}0-9 .,'’&:!?·()-]/u;
-/** The first character the print can't set, or null. */
-export const unprintable = (text: string) => [...text].find((c) => !PRINTABLE_CHAR.test(c)) ?? null;
+/** The first character the print can't set, or null. Any space (a non-breaking one pasted in) prints as a plain one, as cleanWords tidies it. */
+export const unprintable = (text: string) => [...text.replace(/\s/g, " ")].find((c) => !PRINTABLE_CHAR.test(c)) ?? null;
 /** Why a character can't print, naming it (never "too long" for a short word). */
-export const charLine = (c: string) => `We can’t print “${c}”. Latin letters, figures and . , ’ & : ! ? ( ) - only.`;
+export const charLine = (c: string) => `We can’t print “${c}”. Latin letters, figures and . , ’ & : ! ? · ( ) - only.`;
 /** A name or words that can't print: the character that can't, else the length. */
 export const nameLine = (text: string, max: number) => {
   const c = unprintable(text);

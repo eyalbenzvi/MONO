@@ -898,40 +898,64 @@ const SVG_MAX_SHAPES = 100_000;
 export function shapesOf(svg: string): number {
   const own = new Map<string, number>();
   const refs = new Map<string, string[]>();
-  const stack: { name: string; id?: string }[] = [];
-  const scope = () => [...stack].reverse().find((e) => e.id)?.id ?? "#root";
-  const add = (m: Map<string, string[]>, k: string, v: string) => m.set(k, [...(m.get(k) ?? []), v]);
+  const addRef = (k: string, v: string) => {
+    const list = refs.get(k);
+    if (list) list.push(v);
+    else refs.set(k, [v]);
+  };
+  // The open elements, each with the scope its children count in (its own id, else its parent's): linear in the tags.
+  const names: string[] = [];
+  const scopes: string[] = [];
   for (const [tag] of svg.matchAll(/<[^>!?][^>]*>/g)) {
     const close = /^<\s*\//.exec(tag);
     const name = /^<\s*\/?\s*([\w:-]+)/.exec(tag)?.[1]?.toLowerCase() ?? "";
     if (close) {
-      const at = stack.map((e) => e.name).lastIndexOf(name);
-      if (at >= 0) stack.length = at;
+      // Well-formed files close the innermost element: found at once from the end.
+      let at = names.length - 1;
+      while (at >= 0 && names[at] !== name) at--;
+      if (at >= 0) names.length = scopes.length = at;
       continue;
     }
-    const here = scope();
+    const here = scopes.length ? scopes[scopes.length - 1] : "#root";
     own.set(here, (own.get(here) ?? 0) + 1);
     const id = /\sid\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1];
     if (name === "use") {
       const target = /href\s*=\s*["']\s*#([^"']+)["']/i.exec(tag)?.[1];
-      if (target) add(refs, here, target);
+      if (target) addRef(here, target);
     }
-    if (id) add(refs, here, id);
-    if (!/\/\s*>$/.test(tag)) stack.push({ name, id });
+    if (id) addRef(here, id);
+    if (!/\/\s*>$/.test(tag)) {
+      names.push(name);
+      scopes.push(id ?? here);
+    }
   }
+  // Each scope's weight, depth first without recursion (a file nested thousands deep can't overflow the stack).
   const memo = new Map<string, number>();
   const busy = new Set<string>();
-  const weight = (k: string): number => {
-    if (memo.has(k)) return memo.get(k)!;
-    if (busy.has(k)) return Infinity;
-    busy.add(k);
-    let n = own.get(k) ?? 0;
-    for (const r of refs.get(k) ?? []) n += weight(r);
-    busy.delete(k);
-    memo.set(k, n);
-    return n;
-  };
-  return weight("#root");
+  const todo: { k: string; i: number; n: number }[] = [{ k: "#root", i: 0, n: own.get("#root") ?? 0 }];
+  busy.add("#root");
+  while (todo.length) {
+    const top = todo[todo.length - 1];
+    const list = refs.get(top.k) ?? [];
+    if (top.i < list.length) {
+      const r = list[top.i++];
+      const known = memo.get(r);
+      if (known !== undefined) top.n += known;
+      else if (busy.has(r)) return Infinity;
+      else {
+        busy.add(r);
+        todo.push({ k: r, i: 0, n: own.get(r) ?? 0 });
+      }
+      continue;
+    }
+    todo.pop();
+    busy.delete(top.k);
+    memo.set(top.k, top.n);
+    if (todo.length) todo[todo.length - 1].n += top.n;
+    // Past the cap there's nothing left to learn.
+    if (top.n > SVG_MAX_SHAPES) return top.n;
+  }
+  return memo.get("#root") ?? 0;
 }
 
 export function sanitiseSvg(text: string): { ok: true; svg: string } | { ok: false; reason: typeof SVG_REFUSED } {
@@ -943,7 +967,8 @@ export function sanitiseSvg(text: string): { ok: true; svg: string } | { ok: fal
   // Size: nested <use> multiplies (7 levels of ten is ten million shapes); no artwork needs that many.
   if (shapesOf(svg) > SVG_MAX_SHAPES) return no;
   // CSS escapes (u\72l(…), @\69mport) would slip past the checks above; artwork doesn't need them.
-  if (/<style[\s\S]*?\\|style\s*=\s*["'][^"']*\\/i.test(svg)) return no;
+  // Only inside a <style> element or a style attribute: a backslash elsewhere (a path in <desc>) is text.
+  if (/<style\b[^>]*>(?:(?!<\/style)[^\\])*\\|style\s*=\s*["'][^"']*\\/i.test(svg)) return no;
   return { ok: true, svg };
 }
 

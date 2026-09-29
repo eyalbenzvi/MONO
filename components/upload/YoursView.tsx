@@ -179,13 +179,18 @@ function Yours() {
         }
       }
       if (want !== "start") go("start", true);
+    }).catch(() => {
+      // The converter didn't load: the start screen, with the reason (never a blank "Your print").
+      setStartError(LOAD_FAILED);
+      if (want !== "start") go("start", true);
     });
     // Once, on arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
   const carryOn = async () => {
-    const c = await loadClient();
+    const c = await loadClient().catch(() => null);
+    if (!c) return setStartError(LOAD_FAILED);
     const d = await c.reopen(c.DRAFT);
     if (!d) return setDraftName(null);
     applyReopened(d);
@@ -200,8 +205,18 @@ function Yours() {
       const n = ++opened.current;
       setStartError(null);
       setOpening(true);
-      const c = await loadClient();
-      const r = await c.openFile(file);
+      let c: Awaited<ReturnType<typeof loadClient>>;
+      let r: Awaited<ReturnType<typeof c.openFile>>;
+      try {
+        c = await loadClient();
+        r = await c.openFile(file);
+      } catch {
+        // The converter didn't load (a dropped connection): the button comes back, with the reason.
+        if (n !== opened.current) return;
+        setOpening(false);
+        setStartError(LOAD_FAILED);
+        return;
+      }
       if (n !== opened.current) return;
       setOpening(false);
       if (!r.ok) {

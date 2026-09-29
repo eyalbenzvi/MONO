@@ -71,7 +71,8 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
   const label = `${shirt.title}, worn on a ${color === "black" ? "black" : "white"} tee`;
   if (failed)
     return (
-      <div className={`relative flex select-none flex-col items-center justify-center gap-2 overflow-hidden text-center ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} data-mockup-failed>
+      // z-10: above a card's full-size link even when a hover transform makes this box its own stacking context.
+      <div className={`relative z-10 flex select-none flex-col items-center justify-center gap-2 overflow-hidden text-center ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} data-mockup-failed>
         <p className="px-3 text-xs text-neutral-300">That didn&rsquo;t load.</p>
         <button
           type="button"

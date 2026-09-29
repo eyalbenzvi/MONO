@@ -252,5 +252,7 @@ describe("search: a design named exactly is found, not a miss", () => {
     const r = run(id);
     expect(r.results[0].shirt.id).toBe(s.id);
     expect(r.relaxed).toBeNull();
+    // Only that design: the rest of the catalogue isn't listed after it.
+    expect(r.results.map((x) => x.shirt.id)).toEqual([s.id]);
   });
 });

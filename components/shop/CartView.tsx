@@ -112,7 +112,11 @@ export function CartView() {
     const here = window.location.hash === "#details";
     if (next === "details" && !here) window.history.pushState(window.history.state, "", `${window.location.pathname}${window.location.search}#details`);
     else if (next === "bag" && here) return window.history.back();
-    else if (next === "done" && here) window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+    else if (next === "done" && here) {
+      // The form's step is left behind (not kept as a second bag entry): one Back leaves the confirmation.
+      setStep(next);
+      return window.history.back();
+    }
     setStep(next);
   };
   useEffect(() => {
