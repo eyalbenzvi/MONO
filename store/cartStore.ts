@@ -93,7 +93,7 @@ const lines = (x: unknown): CartItem[] =>
         return custom ? [{ ...line, custom }] : [];
       })
     : [];
-const MODES: readonly UploadRef["mode"][] = ["dots", "lines", "line", "vector", "words"];
+const MODES: readonly UploadRef["mode"][] = ["dots", "lines", "line", "vector"];
 /** A bag line's upload reference, well formed or null (its raster's presence is checked apart, in IndexedDB). */
 export function uploadRef(x: unknown): UploadRef | null {
   const u = x as Partial<UploadRef> | null;

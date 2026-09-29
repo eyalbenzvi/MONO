@@ -16,7 +16,7 @@ import type { UploadMode } from "@/types/shirt";
 export interface UploadMeta {
   id: string;
   title: string;
-  cls: "line" | "photo" | "vector" | "words";
+  cls: "line" | "photo" | "vector";
   mode: UploadMode;
   size: "full" | "small";
   /** The tees it prints on, the chosen one first. */

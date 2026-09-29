@@ -422,11 +422,7 @@ export async function reopen(id: string): Promise<{ source: Source; settings: Se
   if (!u) return null;
   const settings = { ...DEFAULTS, ...(u.settings as Partial<Settings> | undefined) };
   const name = u.name ?? useMakeStore.getState().uploads[id]?.title ?? "file";
-  if (!u.source) {
-    // A draft with nothing to open (words, from before they were taken out) is only in the way.
-    if (id === DRAFT) void clearDraft();
-    return null;
-  }
+  if (!u.source) return null;
   const r = await openFile(u.source, name);
   return r.ok ? { source: r.source, settings, name } : null;
 }

@@ -147,22 +147,6 @@ test("From yours: an old address (#start) opens Your print; a file dropped on it
   await ready(page);
 });
 
-test("From yours: a Words line from before stays in the bag and checks out, with no Edit", async ({ page }) => {
-  await uploadToBag(page, "rings.png", await drawing());
-  // As a bag from before Words were taken out: the same kept print, marked as words.
-  await page.evaluate(() => {
-    const s = JSON.parse(localStorage.getItem("mono-cart")!);
-    s.state.cart = s.state.cart.map((l: { upload: { mode: string } }) => ({ ...l, upload: { ...l.upload, mode: "words" } }));
-    localStorage.setItem("mono-cart", JSON.stringify(s));
-  });
-  await page.goto("cart/");
-  await hydrated(page);
-  await expect(page.getByText(/^Your words ·/)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Edit" })).toHaveCount(0);
-  await page.getByRole("button", { name: /^Checkout/ }).tap();
-  await expect(page.getByRole("list", { name: "Items" }).locator("li")).toHaveCount(1);
-});
-
 test("From yours: Edit from the bag opens the same file at Your print; rights aren't asked again; Save changes replaces the line", async ({ page }) => {
   await uploadToBag(page, "rings.png", await drawing());
   await page.goto("cart/");

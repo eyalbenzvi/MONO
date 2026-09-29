@@ -298,7 +298,7 @@ export interface CartItem {
   upload?: UploadRef;
 }
 
-export type UploadMode = "dots" | "lines" | "line" | "vector" | "words";
+export type UploadMode = "dots" | "lines" | "line" | "vector";
 export interface UploadRef {
   id: string;
   mode: UploadMode;
