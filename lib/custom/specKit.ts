@@ -103,3 +103,35 @@ export function unpackInts(s: unknown, maxBytes: number): number[] | null {
   // One spelling per list (no over-long varints), so the same input is always the same spec.
   return packInts(out) === s ? out : null;
 }
+
+/**
+ * A list of places with an optional year each (Your World Tour, Your
+ * Signpost, and every product built on the places-and-years editor): cities
+ * of the place list by GeoNames id, in order. Packed as varints (packInts:
+ * each row its id, then its year counted from FIRST_YEAR, 0 for none), so 24
+ * rows stay a short link.
+ */
+export interface PlaceRow {
+  /** GeoNames id (data/cities). */
+  c: number;
+  y?: number;
+}
+export const packPlaces = (rows: readonly PlaceRow[]) => packInts(rows.flatMap((r) => [r.c, r.y === undefined ? 0 : r.y - FIRST_YEAR + 1]));
+/**
+ * packPlaces read back: the rows, or null when malformed, outside `min`–`max`
+ * rows, a year out of range (or any year when `years` is false), or (with the
+ * place list) a city it doesn't know.
+ */
+export function unpackPlaces(s: unknown, opts: { min: number; max: number; years?: boolean }, cityById?: (id: number) => unknown): PlaceRow[] | null {
+  const n = unpackInts(s, opts.max * 10);
+  if (!n || n.length % 2 || n.length / 2 < opts.min || n.length / 2 > opts.max) return null;
+  const rows: PlaceRow[] = [];
+  for (let i = 0; i < n.length; i += 2) {
+    const [c, y] = [n[i], n[i + 1]];
+    if (!int(c, 1, 0xffffffff) || (cityById && !cityById(c))) return null;
+    if (y === 0) rows.push({ c });
+    else if (opts.years !== false && int(y, 1, LAST_YEAR - FIRST_YEAR + 1)) rows.push({ c, y: y + FIRST_YEAR - 1 });
+    else return null;
+  }
+  return rows;
+}

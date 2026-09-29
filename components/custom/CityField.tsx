@@ -11,7 +11,7 @@ export const cityLabel = (c: City) => `${c.name}, ${c.country}`;
  * starts in the city or its country, accents folded; lib/custom/data), arrows
  * to move, Enter to choose, Esc to close the list (a second Esc closes the sheet).
  */
-export function CityField({ places, value, onChange, error, onBlur }: { places: Places | null; value: City | undefined; onChange: (c: City | null) => void; error: string; onBlur: () => void }) {
+export function CityField({ places, value, onChange, error, onBlur, label = "Place" }: { places: Places | null; value: City | undefined; onChange: (c: City | null) => void; error: string; onBlur: () => void; label?: string }) {
   const [text, setText] = useState(value ? cityLabel(value) : "");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -29,7 +29,7 @@ export function CityField({ places, value, onChange, error, onBlur }: { places: 
   return (
     <div className="relative">
       <label htmlFor="custom-place" className="mb-1 block text-xs font-medium text-neutral-400">
-        Place
+        {label}
       </label>
       <input
         id="custom-place"
