@@ -1,4 +1,6 @@
 {
   "cities": "cities.8ed0c8b07c.json",
-  "sky": "sky.ba7aeee58f.json"
+  "sky": "sky.ba7aeee58f.json",
+  "countries": "countries.5fde78f980.json",
+  "airports": "airports.ce988519de.json"
 }
