@@ -59,7 +59,10 @@ function serveLocalFetch() {
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (!url.startsWith("/")) return real(input, init);
-    return new Response(readFileSync(path.join(PUBLIC, url.split("?")[0])));
+    // The page's URLs carry the Pages base path (assetUrl: /MONO/data/…); the file is under public/ without it.
+    const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+    const file = base && url.startsWith(`${base}/`) ? url.slice(base.length) : url;
+    return new Response(readFileSync(path.join(PUBLIC, file.split("?")[0])));
   }) as typeof fetch;
 }
 

@@ -178,10 +178,10 @@ describe("search: the index file", () => {
       else queries.push([`${w} ${file.vocab[Math.floor(rnd() * file.vocab.length)]} `, facet]);
     }
     for (const [q, f] of queries.slice(0, 50)) run(q, f); // warm up
-    // Each query's best of three runs: the engine's own time, not the other test files sharing the CPU.
+    // Each query's best of five runs: the engine's own time, not the other test files (or a shared CI runner) taking the CPU.
     const times = queries.map(([q, f]) => {
       let best = Infinity;
-      for (let k = 0; k < 3; k++) {
+      for (let k = 0; k < 5; k++) {
         const t = performance.now();
         run(q, f);
         best = Math.min(best, performance.now() - t);
