@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { captionLines } from "@/lib/custom/kit";
 import { MADE } from "@/lib/custom/products";
-import { loadCaptioner } from "@/lib/custom/renderers";
+import { NO_CAPTION, loadCaptioner } from "@/lib/custom/renderers";
 import { capRuleFor, encodeMake, validate } from "@/lib/custom/spec";
 import { capOf, titleWords } from "@/lib/custom/specKit";
 import { CAPTIONED_LINK_MAX, MAX_CAP, SOME_CAP, withCap } from "./captions";
@@ -34,9 +34,11 @@ describe("captions: the spec (specKit capOf)", () => {
   });
 });
 
-/** The products whose templates draw the visitor's caption (every product, once they all have: then this list goes). */
-const DONE = new Set(["snowflake", "sky", "moon", "planets", "year"]);
-const PRODUCTS = MADE.filter((m) => DONE.has(m.slug));
+/** The products whose templates draw the visitor's caption (every product, once they all have: then the filter goes). */
+const PRODUCTS: typeof MADE = [];
+beforeAll(async () => {
+  for (const m of MADE) if ((await loadCaptioner(m.template)) !== NO_CAPTION) PRODUCTS.push(m);
+});
 
 describe("captions: every From ours product", () => {
   it("has its caption's lines, and a spec without cap round-trips unchanged", async () => {

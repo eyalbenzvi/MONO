@@ -75,3 +75,10 @@ export async function pickCategories(page: Page, labels: string[]) {
   await page.keyboard.press("Escape");
   await expect(sheet).toHaveCount(0);
 }
+
+/** A caption line's field ("Edit the text under the print", opened when it's closed): 0 the title, 1 and 2 the lines under it. */
+export async function captionLine(page: Page, i: 0 | 1 | 2) {
+  const toggle = page.locator("[data-caption] > button");
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+  return page.locator(`[data-cap-line="${i}"]`);
+}

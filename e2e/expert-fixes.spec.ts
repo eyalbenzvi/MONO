@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hydrated, seed } from "./helpers";
+import { captionLine, hydrated, seed } from "./helpers";
 import { B1 } from "../tests/fixtures";
 
 test("checkout: the phone's Back on Delivery details returns to the bag, and Forward keeps what was typed", async ({ page }) => {
@@ -41,10 +41,10 @@ test("a catalogue that won't load says so, with a reload, instead of a page that
 test("Make: a character the print can't set is named (never 'too long'), and Add brings the field into view with the focus", async ({ page }) => {
   await page.goto("make/sky/");
   await hydrated(page);
-  const words = page.getByLabel(/^Your words/);
+  const words = await captionLine(page, 0);
   await words.fill("שלום");
-  await expect(page.locator("#make-words-error")).toHaveText(/We can’t print “ש”/);
-  await expect(words).toHaveAttribute("aria-describedby", "make-words-error");
+  const described = await words.getAttribute("aria-describedby");
+  await expect(page.locator(`[id="${described}"]`)).toHaveText(/We can’t print “ש”/);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.getByRole("button", { name: /^Add to bag · M/ }).tap();
   await expect(words).toBeFocused();

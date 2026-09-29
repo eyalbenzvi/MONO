@@ -103,7 +103,9 @@ function makeNote(make: string) {
     ascii: "your letters",
   };
   const what = (spec && WHAT[spec.t]) ?? "the date";
-  return `This link includes ${what}${spec && "w" in spec.p && spec.p.w ? " and your words" : ""}`;
+  const cap = spec ? ((spec.p as { cap?: (string | null)[] }).cap ?? []) : [];
+  const words = (spec && "w" in spec.p && spec.p.w) || cap.some((c) => !!c);
+  return `This link includes ${what}${words ? " and your words" : ""}`;
 }
 
 export function ShareSheet() {

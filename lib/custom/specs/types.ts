@@ -35,6 +35,8 @@ export interface SpecModule<P> {
   NAME: string;
   /** The caption's rule (which lines may be hidden, each line's longest); every line kept, CAP_MAX long, when absent. */
   CAP?: CapRule;
+  /** Its words (`w`) were the caption's first line: the editor writes cap[0] instead, and a link's `w` opens as the visitor's title. */
+  WORDS_TITLE?: boolean;
   check: (p: Record<string, unknown>, ctx: CheckContext) => P | null;
   detail: (p: P) => string;
   PRODUCT: ProductMeta<P>;

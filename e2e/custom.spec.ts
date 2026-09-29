@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { captionLine, hydrated } from "./helpers";
 import { MOON, OTHERS, PLANETS, SKY, TEL_AVIV, TLV_1991, make } from "./fixtures/custom";
 import { MADE, MAKE_GROUPS } from "../lib/custom/products";
 
@@ -63,7 +63,7 @@ async function drawn(page: Page) {
 test("Your Moon: words and a night, drawn as you go; into the bag as its own line, with its own title, price and returns", async ({ page }) => {
   await page.goto("make/moon/");
   await hydrated(page);
-  await page.getByLabel("Your words").fill("Noa, welcome");
+  await (await captionLine(page, 0)).fill("Noa, welcome");
   await page.getByLabel("Night", { exact: true }).fill("2021-11-19");
   await drawn(page);
   await expect(page.locator("h1")).toHaveText("Your Moon");
@@ -79,7 +79,7 @@ test("Your Moon: words and a night, drawn as you go; into the bag as its own lin
   // Edit goes back to that very print.
   await page.getByRole("link", { name: "Edit" }).tap();
   await expect(page).toHaveURL(/\/make\/moon\/\?make=/);
-  await expect(page.getByLabel("Your words")).toHaveValue("Noa, welcome");
+  await expect(await captionLine(page, 0)).toHaveValue("Noa, welcome");
   await expect(page.getByLabel("Night", { exact: true })).toHaveValue("2021-11-19");
 });
 
@@ -99,13 +99,14 @@ test("Your Night Sky: the place comes from your time zone and can be changed; a 
   await page.goto(`make/sky/?make=${TLV_1991}`);
   await hydrated(page);
   await expect(page.locator("[data-place]")).toContainText("Tel Aviv");
-  await expect(page.getByLabel("Your words")).toHaveValue("The night we met");
+  // A link from before captions: its words open as the visitor's title.
+  await expect(await captionLine(page, 0)).toHaveValue("The night we met");
   await expect(page.getByLabel("Night", { exact: true })).toHaveValue("1991-03-14");
   for (const bad of ["garbage!", make({ t: "sky", v: 2, p: { c: TEL_AVIV, d: "1991-03-14" } }), make({ t: "moon", v: 1, p: { y: 1991 } })]) {
     await page.goto(`make/sky/?make=${bad}`);
     await hydrated(page);
     await expect(page.locator("[data-place]")).toContainText("(your time zone)");
-    await expect(page.getByLabel("Your words")).toHaveValue("");
+    await expect(page.locator("[data-caption] > button")).toHaveAttribute("aria-expanded", "false");
   }
   await ctx.close();
 });
@@ -158,7 +159,8 @@ test("privacy: the date, place and words stay on the device: never in analytics,
   );
   expect(leaks).toEqual([]);
   const cart = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart")!).state.cart);
-  expect(cart).toEqual([expect.objectContaining({ id: "make-sky", custom: { t: "sky", v: 1, p: { c: TEL_AVIV, d: "1991-03-14", w: "The night we met" } } })]);
+  // A link from before captions carries its words as w; reopened, they're the visitor's title line (cap[0]), printed the same.
+  expect(cart).toEqual([expect.objectContaining({ id: "make-sky", custom: { t: "sky", v: 1, p: { c: TEL_AVIV, d: "1991-03-14", cap: ["The night we met"] } } })]);
 });
 
 test("Your words go through the lexicon: a brand or a slur is refused in one line, and nothing is drawn or added", async ({ page }) => {
@@ -168,9 +170,10 @@ test("Your words go through the lexicon: a brand or a slur is refused in one lin
   // The address carries this very night before anything is typed.
   await expect(page).toHaveURL(new RegExp(`make=${make({ t: "night", v: 1, p: { d: "2021-11-19" } })}$`));
   const url = page.url();
-  await page.getByLabel("Your words").fill("n1k3");
+  const title = await captionLine(page, 0);
+  await title.fill("n1k3");
   await expect(page.getByText("Those words name a brand.")).toBeVisible();
-  await page.getByLabel("Your words").fill("1 4 8 8");
+  await title.fill("1 4 8 8");
   await expect(page.getByText("We don't print that.")).toBeVisible();
   // The address keeps the last printable print.
   await page.waitForTimeout(400);
@@ -178,6 +181,6 @@ test("Your words go through the lexicon: a brand or a slur is refused in one lin
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.getByRole("button", { name: /^Add to bag/ }).tap();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart") ?? '{"state":{"cart":[]}}').state.cart.length)).toBe(0);
-  await page.getByLabel("Your words").fill("Noa, welcome");
+  await title.fill("Noa, welcome");
   await expect(page.getByText(/name a brand|don't print/)).toHaveCount(0);
 });

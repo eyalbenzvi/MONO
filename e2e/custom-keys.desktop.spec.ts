@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { captionLine, hydrated } from "./helpers";
 
 // The date field's typing order is the locale's (month first in en-US).
 test.use({ locale: "en-US", timezoneId: "Europe/London" });
@@ -30,7 +30,7 @@ test("Your Night Sky by keyboard: date, time, the place combobox (arrows, Enter,
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
   await expect(page.locator("[data-place]")).toContainText("Reykjavík, Iceland");
-  await page.getByLabel("Your words").focus();
+  await (await captionLine(page, 0)).focus();
   await page.keyboard.type("The night we met");
   await expect(page.locator("canvas[data-custom]")).toBeVisible();
   await expect(page).toHaveURL(/[?&]make=/);

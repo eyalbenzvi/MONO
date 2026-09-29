@@ -6,7 +6,7 @@ import { loadCities, loadSky, type Places } from "@/lib/custom/data";
 import { FALLBACK_CITY } from "@/lib/custom/products";
 import { FIRST_YEAR, LAST_YEAR, PLANETS_LAST_YEAR, parseDate, parseTime, type City, type CustomSpec } from "@/lib/custom/spec";
 import type { SkyData } from "@/lib/custom/templates/sky";
-import { Field, WordsField, useWords } from "./Field";
+import { Field } from "./Field";
 import { INPUT, type EditorProps } from "./types";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -30,7 +30,7 @@ export function autoCity(places: Places): City | undefined {
 /**
  * The four dated products' fields: your day (a night, a day or a year), for
  * a sky the time and the place (from your time zone, with a small "Change"),
- * north or south for the moons, and your words.
+ * north or south for the moons. The words are the caption's title (CaptionField, cap[0]).
  */
 export default function DateEditor({ made, arrival, touched: tried, onChange }: EditorProps) {
   const t = made.template;
@@ -53,7 +53,6 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
 
   // Fields: from the address when it carries a print for this product, else today and your place.
   const a = arrival;
-  const words = useWords(a && "w" in a.p ? (a.p.w ?? "") : "");
   const [date, setDate] = useState(a && (a.t === "sky" || a.t === "night" || a.t === "planets") ? a.p.d : today);
   const [time, setTime] = useState(a?.t === "sky" ? (a.p.t ?? "") : "");
   const [year, setYear] = useState(a?.t === "moon" ? String(a.p.y) : String(new Date().getFullYear()));
@@ -68,22 +67,19 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
   const southNow = south ?? (here ? here.lat < 0 : false);
 
   const lastYear = t === "planets" ? PLANETS_LAST_YEAR : LAST_YEAR;
-  const w = words.value;
   const dateOk = !!parseDate(date) && Number(date.slice(0, 4)) <= lastYear;
   const spec: CustomSpec | null = useMemo(() => {
-    if (w === null) return null;
-    const ws = w ? { w } : {};
     const s = southNow ? { s: 1 as const } : {};
     if (t === "moon") {
       const y = Number(year);
-      return /^\d{4}$/.test(year) && y >= FIRST_YEAR && y <= LAST_YEAR ? { t: "moon", v: 1, p: { y, ...s, ...ws } } : null;
+      return /^\d{4}$/.test(year) && y >= FIRST_YEAR && y <= LAST_YEAR ? { t: "moon", v: 1, p: { y, ...s } } : null;
     }
     if (!dateOk) return null;
-    if (t === "night") return { t: "night", v: 1, p: { d: date, ...s, ...ws } };
-    if (t === "planets") return { t: "planets", v: 1, p: { d: date, ...ws } };
+    if (t === "night") return { t: "night", v: 1, p: { d: date, ...s } };
+    if (t === "planets") return { t: "planets", v: 1, p: { d: date } };
     if (!city || (time && !parseTime(time))) return null;
-    return { t: "sky", v: 1, p: { c: city.id, d: date, ...(time ? { t: time } : {}), ...ws } };
-  }, [w, southNow, t, year, dateOk, date, city, time]);
+    return { t: "sky", v: 1, p: { c: city.id, d: date, ...(time ? { t: time } : {}) } };
+  }, [southNow, t, year, dateOk, date, city, time]);
 
   const report = useRef(onChange);
   report.current = onChange;
@@ -166,7 +162,6 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
           <span aria-hidden className="relative h-6 w-10 rounded-full bg-white/15 transition peer-checked:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-white peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4 peer-checked:after:bg-black" />
         </label>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={all} />
     </>
   );
 }

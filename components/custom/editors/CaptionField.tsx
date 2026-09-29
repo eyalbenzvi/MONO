@@ -84,6 +84,8 @@ export function CaptionField({ ours, value, onChange, rule, follows }: { ours: L
                     placeholder={mine === "" ? "Hidden" : "Type a line"}
                     autoComplete="off"
                     onChange={(e) => set(i, e.target.value)}
+                    // Our line, selected on the way in: typing replaces it (a line of one's own, not ours with more on the end).
+                    onFocus={(e) => mine === null && e.currentTarget.select()}
                     aria-invalid={!!error}
                     className={INPUT}
                     data-cap-line={i}

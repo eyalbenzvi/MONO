@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { captionLine, hydrated } from "./helpers";
 import { TEL_AVIV, TLV_1991, make } from "./fixtures/custom";
 
 const cards = (page: Page) => page.locator("[data-two] [data-card]");
@@ -37,8 +37,8 @@ test("For two: a date, what it was and two names; the address keeps them; a card
   await card(page, "planets").getByRole("link").tap();
   await page.waitForURL(/\/make\/planets\/\?make=/);
   await hydrated(page);
-  await expect(page.getByLabel("Your words")).toHaveValue("Our wedding");
-  await expect(page.getByLabel("Day")).toHaveValue("2012-06-06");
+  await expect(await captionLine(page, 0)).toHaveValue("Our wedding");
+  await expect(page.getByLabel("Day", { exact: true })).toHaveValue("2012-06-06");
 });
 
 test("For two: only the prints the inputs allow", async ({ page }) => {

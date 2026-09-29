@@ -65,10 +65,13 @@ export async function prepareData(spec: CustomSpec): Promise<RenderData> {
   return m?.prepare ? m.prepare(spec) : {};
 }
 
+/** A template without its caption's lines yet (only while the templates move to them). */
+export const NO_CAPTION: Captioner = () => [undefined];
+
 /** A template's caption lines (ours), from its chunk (the dated four from lib/custom). */
 export async function loadCaptioner(t: TemplateId): Promise<Captioner> {
   const own = OWN[t];
-  if (own) return (await own()).captionOf ?? ((): Lines => [undefined]);
+  if (own) return (await own()).captionOf ?? NO_CAPTION;
   return (await import("./index")).customCaption;
 }
 

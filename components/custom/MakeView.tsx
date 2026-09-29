@@ -25,7 +25,7 @@ import { loadCaptioner, loadRenderer, type Captioner, type Renderer } from "@/li
 import type { Lines } from "@/lib/custom/kit";
 import type { Cap } from "@/lib/custom/specKit";
 import { drawOnly } from "@/lib/custom/svg";
-import { WORDS_TITLE, capRuleFor, decodeMake, encodeMake, validate, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
+import { capRuleFor, wordsTitle, decodeMake, encodeMake, validate, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
 import { SIZES } from "@/lib/images";
 import { STORE_POLICY } from "@/lib/store-policy";
@@ -185,7 +185,7 @@ function Maker({ made }: { made: MadeProduct }) {
     if (!arrival) return;
     const p = arrival.p as { cap?: Cap; w?: string };
     const draft: CapDraft = [...(p.cap ?? [])];
-    if (WORDS_TITLE.has(made.template) && p.w && (draft[0] ?? null) === null) draft[0] = p.w;
+    if (wordsTitle(made.template) && p.w && (draft[0] ?? null) === null) draft[0] = p.w;
     setCapDraft(draft);
   }, [arrival, made.template]);
   const capLex = useLexicon(capDraft.some((d) => !!d));

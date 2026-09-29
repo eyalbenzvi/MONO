@@ -228,12 +228,13 @@ export const BASE_CAP: Partial<Record<BaseId, CapRule>> = {};
 /** A product's caption rule (the original twelve here, the later ones in their spec modules). */
 export const capRuleFor = (t: TemplateId): CapRule => (t in EXTRA ? ((EXTRA[t as ExtraId] as { CAP?: CapRule }).CAP ?? {}) : (BASE_CAP[t as BaseId] ?? {}));
 /**
- * The products whose words (`w`) were the caption's first line: their editors
- * now write cap[0] instead, and a link that arrives with `w` opens with it as
- * the visitor's title (the validator still reads `w`, so the link prints as
- * it did).
+ * The original products whose words (`w`) were the caption's first line (the
+ * later ones say so in their spec modules, WORDS_TITLE): their editors write
+ * cap[0] instead, and a link that arrives with `w` opens with it as the
+ * visitor's title (the validator still reads `w`, so the link prints as it did).
  */
-export const WORDS_TITLE = new Set<TemplateId>([]);
+const BASE_WORDS_TITLE: readonly BaseId[] = ["sky", "moon", "night", "planets"];
+export const wordsTitle = (t: TemplateId): boolean => (t in EXTRA ? (EXTRA[t as ExtraId] as { WORDS_TITLE?: boolean }).WORDS_TITLE === true : BASE_WORDS_TITLE.includes(t as BaseId));
 
 /** The planets' orbital elements hold to 2050 (JPL, Standish). */
 export const PLANETS_LAST_YEAR = 2050;
