@@ -12,18 +12,27 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/cs
 
 function serve(port = 0) {
   const server = http.createServer((req, res) => {
-    let url = decodeURIComponent(req.url.split("?")[0]);
+    let url;
+    try {
+      url = decodeURIComponent(req.url.split("?")[0]);
+    } catch {
+      // A malformed escape (%E0%A4%A) is the client's mistake, not a crash.
+      res.writeHead(400, { "content-type": "text/plain" });
+      return res.end("Bad request");
+    }
     if (BASE_PATH && url.startsWith(BASE_PATH)) url = url.slice(BASE_PATH.length) || "/";
     let file = path.join(OUT, url);
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
     if (!fs.existsSync(file) && fs.existsSync(file + ".html")) file += ".html";
     let status = 200;
-    if (!file.startsWith(OUT) || !fs.existsSync(file)) {
+    if (!file.startsWith(OUT + path.sep) || !fs.existsSync(file)) {
       file = path.join(OUT, "404.html");
       status = 404;
     }
     res.writeHead(status, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
-    fs.createReadStream(file).pipe(res);
+    fs.createReadStream(file)
+      .on("error", () => res.end())
+      .pipe(res);
   });
   return new Promise((resolve) => server.listen(port, "127.0.0.1", () => resolve(server)));
 }

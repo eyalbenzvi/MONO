@@ -27,6 +27,8 @@ const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default:
 type Step = "start" | "print" | "size";
 const STEPS: Step[] = ["start", "print", "size"];
 const loadClient = () => import("@/lib/upload/client");
+/** The status when the converter's code can't be loaded. */
+const LOAD_FAILED = "Couldn’t load. Check your connection and try again.";
 /** The draft is saved this long after the last change. */
 const DRAFT_SAVE_MS = 500;
 const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
@@ -61,6 +63,7 @@ function Yours() {
   const params = useSearchParams();
   const editId = params.get("edit");
   const replaceId = params.get("replace");
+  const replacing = useMakeStore((s) => (replaceId ? s.reviews[replaceId] : undefined));
   const shirt = getShirtById(YOURS_ID)!;
 
   const [step, setStep] = useState<Step>("start");
@@ -258,6 +261,11 @@ function Yours() {
       }
       setFixes(found);
       track("upload_fix_offered", { reason: p.code, n: found.length });
+    }).catch(() => {
+      // The converter didn't load (a dropped connection): never left on "Converting…".
+      if (n !== run.current) return;
+      setBusy(false);
+      setStatus(LOAD_FAILED);
     });
     // The draft follows every change, half a second after the last (a slider dragged doesn't store the file again at every step).
     const save = setTimeout(() => void loadClient().then((c) => c.saveDraft(source, settings)), DRAFT_SAVE_MS);
@@ -441,7 +449,7 @@ function Yours() {
           </div>
           <div className="min-w-0 space-y-6">
             {step === "start" && (
-              <StartPanel error={startError} draftName={draftName} onCarryOn={carryOn} replacing={replaceId ? useMakeStore.getState().reviews[replaceId] : undefined} />
+              <StartPanel error={startError} draftName={draftName} onCarryOn={carryOn} replacing={replacing} />
             )}
             {step === "print" && settings && (
               <PrintStep
@@ -562,10 +570,17 @@ function PrintStep({
   const [cropFix, setCropFix] = useState(false);
   useEffect(() => {
     if (!failed || !source) return setCropFix(false);
-    void loadClient().then((c) => {
-      setMeaning(c.MEANING);
-      setCropFix(c.fixesFor(failed, settings, source).some((f) => f.id === "crop"));
-    });
+    let live = true;
+    void loadClient()
+      .then((c) => {
+        if (!live) return;
+        setMeaning(c.MEANING);
+        setCropFix(c.fixesFor(failed, settings, source).some((f) => f.id === "crop"));
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
   }, [failed, source, settings]);
   return (
     <>

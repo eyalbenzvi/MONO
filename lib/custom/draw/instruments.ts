@@ -4,7 +4,7 @@
  * catalogue sets its needles at fixed readings; a template sets them at a
  * customer's own number.
  */
-import { DEG, INK, circle, dot, f1, line, text } from "../kit";
+import { DEG, INK, circle, dot, esc, f1, line, text } from "../kit";
 
 export interface Dial {
   /** Where the scale starts and ends, degrees clockwise from twelve o'clock. */
@@ -43,7 +43,7 @@ export function dial(o: Dial): string {
   }
   for (const [t, w] of o.words ?? []) {
     const a = ang(t);
-    s += `<text x="${f1(CX + Math.cos(a) * (R - 42))}" y="${f1(CY + Math.sin(a) * (R - 42))}" fill="${INK}" font-size="6.5" font-family="DejaVu Sans Mono, monospace" text-anchor="middle" letter-spacing="1" transform="rotate(${f1((a / DEG) + 90)} ${f1(CX + Math.cos(a) * (R - 42))} ${f1(CY + Math.sin(a) * (R - 42))})">${w}</text>`;
+    s += `<text x="${f1(CX + Math.cos(a) * (R - 42))}" y="${f1(CY + Math.sin(a) * (R - 42))}" fill="${INK}" font-size="6.5" font-family="DejaVu Sans Mono, monospace" text-anchor="middle" letter-spacing="1" transform="rotate(${f1((a / DEG) + 90)} ${f1(CX + Math.cos(a) * (R - 42))} ${f1(CY + Math.sin(a) * (R - 42))})">${esc(w)}</text>`;
   }
   const a = ang(o.needle);
   s += line(CX - Math.cos(a) * 16, CY - Math.sin(a) * 16, CX + Math.cos(a) * (R - 8), CY + Math.sin(a) * (R - 8), 2.2) + circle(CX, CY, 5, 1.4) + dot(CX, CY, 2);

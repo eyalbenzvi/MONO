@@ -36,6 +36,8 @@ const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
 const FLIP_DISTANCE = 80;
+/** The spring a card returns to the centre on (a cancelled drag, an undo). */
+const SNAP_BACK = { type: "spring", stiffness: 500, damping: 32 } as const;
 /** Button / keyboard swipes: short and snappy. */
 const BUTTON_FLY_S = 0.26;
 
@@ -253,8 +255,8 @@ function TopCard({
   // Pinch zooms the picture in place; the card lets go of the finger and
   // settles, and swipes wait until the picture is back to its whole.
   const zoom = useInPlaceZoom(cardRef, !isFlipped && !isLeaving, () => {
-    animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-    animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+    animate(x, 0, SNAP_BACK);
+    animate(y, 0, SNAP_BACK);
   });
   const { reset: resetZoom } = zoom;
   // Flipping or leaving shows the whole picture again.
@@ -300,16 +302,16 @@ function TopCard({
     const { offset, velocity } = info;
     // A drag that turned into a pinch never swipes: the card settles.
     if (zoom.zoomed || zoom.moved()) {
-      animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-      animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+      animate(x, 0, SNAP_BACK);
+      animate(y, 0, SNAP_BACK);
       return;
     }
     if (offset.x > SWIPE_DISTANCE || velocity.x > SWIPE_VELOCITY) return flyOut("like", velocity);
     if (offset.x < -SWIPE_DISTANCE || velocity.x < -SWIPE_VELOCITY) return flyOut("dislike", velocity);
     if ((offset.y < -FLIP_DISTANCE || velocity.y < -500) && Math.abs(offset.x) < SWIPE_DISTANCE) toggleFlip();
     // Snap back.
-    animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-    animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+    animate(x, 0, SNAP_BACK);
+    animate(y, 0, SNAP_BACK);
   };
 
   return (

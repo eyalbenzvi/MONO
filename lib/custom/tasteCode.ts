@@ -4,9 +4,10 @@
  * tastes give the same plant, and the link stays short.
  */
 import { FEATURE_KEYS, type FeatureKey } from "@/types/shirt";
+import { clamp01 } from "@/lib/math";
 
 export const tasteQ = (vector: Partial<Record<FeatureKey, number>>) =>
-  FEATURE_KEYS.map((k) => Math.round(Math.min(1, Math.max(0, vector[k] ?? 0.5)) * 10).toString(36)).join("");
+  FEATURE_KEYS.map((k) => Math.round(clamp01(vector[k] ?? 0.5) * 10).toString(36)).join("");
 
 /** The vector a spec's `q` stands for (each axis back to 0–1, in tenths). */
 export const tasteFromQ = (q: string): Record<FeatureKey, number> =>

@@ -198,6 +198,18 @@ export function migrateCart(persisted: unknown, version: number): unknown {
   return s;
 }
 
+/** A line's print, checked: null when one was given but isn't valid (nothing is added). */
+function resolvePrint(options: { custom?: unknown; upload?: unknown }): { custom?: CustomSpec; upload?: UploadRef } | null {
+  const custom = options.custom ? validate(options.custom) ?? undefined : undefined;
+  if (options.custom && !custom) return null;
+  const upload = options.upload ? uploadRef(options.upload) ?? undefined : undefined;
+  if (options.upload && !upload) return null;
+  return { custom, upload };
+}
+
+/** Only the print fields a line has (no `custom: undefined` keys). */
+const printFields = (custom?: CustomSpec, upload?: UploadRef) => ({ ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
+
 export const useCartStore = create<CartState & CartActions>()(
   persist(
     (set, get) => ({
@@ -218,11 +230,10 @@ export const useCartStore = create<CartState & CartActions>()(
         const shirt = getShirtById(id);
         if (!shirt) return false;
         const tee = teeColor(shirt, color ?? get().selectedColors[id]);
-        const custom = options.custom ? validate(options.custom) ?? undefined : undefined;
-        if (options.custom && !custom) return false;
-        const upload = options.upload ? uploadRef(options.upload) ?? undefined : undefined;
-        if (options.upload && !upload) return false;
-        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
+        const print = resolvePrint(options);
+        if (!print) return false;
+        const { custom, upload } = print;
+        const { items, capped } = addItem(get().cart, { id, size, color: tee, qty, ...printFields(custom, upload) });
         set((s) => ({
           cart: items,
           selectedSizes: { ...s.selectedSizes, [id]: size },
@@ -232,7 +243,7 @@ export const useCartStore = create<CartState & CartActions>()(
         if (capped) toast(`Max ${MAX_QTY} per item`);
         else {
           // One confirmation everywhere: the mini bag (with Undo).
-          if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
+          if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...printFields(custom, upload) });
           trackEcommerce("add_to_cart", { items: [itemOf(shirt, { color: tee, size, quantity: qty, custom, upload })], source: options.source ?? "product" });
         }
         return !capped;
@@ -244,10 +255,9 @@ export const useCartStore = create<CartState & CartActions>()(
         if (!shirt || shirt.colors.length < 2) return false;
         // Only what's missing: with one colour already in the bag, this
         // completes the pair; with both, there's nothing to add.
-        const custom = options.custom ? validate(options.custom) ?? undefined : undefined;
-        if (options.custom && !custom) return false;
-        const upload = options.upload ? uploadRef(options.upload) ?? undefined : undefined;
-        if (options.upload && !upload) return false;
+        const print = resolvePrint(options);
+        if (!print) return false;
+        const { custom, upload } = print;
         const status = pairStatus(get().cart, id, size, custom, upload);
         if (status.capped) {
           toast(`Max ${MAX_QTY} per item — the pair wasn't added`);
@@ -255,9 +265,9 @@ export const useCartStore = create<CartState & CartActions>()(
         }
         if (status.missing.length === 0) return false;
         let items = get().cart;
-        for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) }).items;
+        for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1, ...printFields(custom, upload) }).items;
         set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
-        if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
+        if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true, ...printFields(custom, upload) });
         // The pair is worth its pair price, not two full prices: its saving is
         // the items' discount (all of it on the tee that completes a pair).
         const saving = 2 * unitPrice({ custom, upload }, shirt) - pairPrice(custom, upload);

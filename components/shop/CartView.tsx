@@ -41,10 +41,11 @@ const lineHref = (l: CartLine) =>
 const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
 function LineMockup({ line, className }: { line: CartLine; className?: string }) {
+  const label = useMakeStore((s) => (line.upload ? s.uploads[line.upload.id]?.title : undefined));
   if (line.upload)
     return (
       <Suspense fallback={<div className={className} style={{ aspectRatio: "3 / 4" }} />}>
-        <UploadMockup shirt={line.shirt} uploadId={line.upload.id} color={line.color} className={className} label={useMakeStore.getState().uploads[line.upload.id]?.title} />
+        <UploadMockup shirt={line.shirt} uploadId={line.upload.id} color={line.color} className={className} label={label} />
       </Suspense>
     );
   if (!line.custom) return <TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />;
@@ -73,6 +74,8 @@ function UploadReviews({ order }: { order: string }) {
 
 export function CartView() {
   const hydrated = useHydrated();
+  // lineTitle reads the uploads' titles: subscribed, so a rename shows here (and in the form and the confirmation).
+  useMakeStore((s) => s.uploads);
   const cart = useCartStore((s) => s.cart);
   const lastOrder = useCartStore((s) => s.lastOrder);
   const setCartQty = useCartStore((s) => s.setCartQty);

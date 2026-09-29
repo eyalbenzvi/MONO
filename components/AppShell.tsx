@@ -3,11 +3,9 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
-import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
 import { Header } from "@/components/Header";
 import { LikedDrawer } from "@/components/LikedDrawer";
 import { MiniBag } from "@/components/shop/MiniBag";
-import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useCartStore } from "@/store/cartStore";
 import { migrateLegacySession, removeRetiredKeys } from "@/store/legacySession";
@@ -38,6 +36,9 @@ function LoadFailed() {
 }
 
 /** The Open Call sheet loads only when it's opened (from an upload's review status). */
+// Loaded when first needed: the debug panel (?debug=1) and the share sheet (with its image renderer).
+const AlgoDebugPanel = lazy(() => import("@/components/AlgoDebugPanel").then((m) => ({ default: m.AlgoDebugPanel })));
+const ShareSheet = lazy(() => import("@/components/ShareSheet").then((m) => ({ default: m.ShareSheet })));
 const OfferSheet = lazy(() => import("@/components/upload/OfferSheet").then((m) => ({ default: m.OfferSheet })));
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -46,6 +47,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const setSavedOpen = useUiStore((s) => s.setSavedOpen);
   const pathname = usePathname();
   const hydrated = useUiStore((s) => s.hydrated);
+  const debug = useUiStore((s) => s.debug);
+  // Kept mounted once opened, so the sheet's close animation still plays.
+  const sharing = useUiStore((s) => s.share != null);
+  const [shareLoaded, setShareLoaded] = useState(false);
+  if (sharing && !shareLoaded) setShareLoaded(true);
 
   // How this visit arrived (UTM, ref, a shared taste or list), recorded
   // before any page removes those tags from the address bar: layout
@@ -156,9 +162,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <CatalogGate>{children}</CatalogGate>
         </Suspense>
       </main>
-      <AlgoDebugPanel />
+      {debug && (
+        <Suspense fallback={null}>
+          <AlgoDebugPanel />
+        </Suspense>
+      )}
       <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
-      <ShareSheet />
+      {shareLoaded && (
+        <Suspense fallback={null}>
+          <ShareSheet />
+        </Suspense>
+      )}
       {offerOpen && (
         <Suspense fallback={null}>
           <OfferSheet />

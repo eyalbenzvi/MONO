@@ -1,5 +1,6 @@
 import { centeredCosine, profileSharpness, topTraits } from "@/lib/recommendation";
 import { FEATURE_KEYS, createInitialVector, type FeatureKey, type UserProfileVector } from "@/types/shirt";
+import { clamp01 } from "@/lib/math";
 
 /**
  * A name for a taste profile, from its strongest trait (then the second, to
@@ -43,7 +44,7 @@ export function archetypeOf(vector: UserProfileVector): { name: string; traits: 
  * they don't carry read as neutral (0.5), so old links keep working.
  */
 export function encodeTaste(vector: UserProfileVector): string {
-  return FEATURE_KEYS.map((k) => Math.round(Math.min(1, Math.max(0, vector[k])) * 100).toString(36).padStart(2, "0")).join("");
+  return FEATURE_KEYS.map((k) => Math.round(clamp01(vector[k]) * 100).toString(36).padStart(2, "0")).join("");
 }
 
 /** Code lengths of earlier builds: 16 features (before "photographic"). */

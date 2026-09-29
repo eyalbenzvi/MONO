@@ -5,6 +5,7 @@ import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { Facet } from "@/lib/search/facetCodec";
 import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UploadRef, UserProfileVector } from "@/types/shirt";
+import { nonce } from "@/lib/math";
 
 export interface ToastState {
   message: string;
@@ -25,7 +26,7 @@ interface UiState {
   /** The Discover card shows its details face. */
   isFlipped: boolean;
   /**
-   * Button/keyboard swipes waiting to run. Rapid taps queue up (max 5) and
+   * Button/keyboard swipes waiting to run. Rapid taps queue up (max SWIPE_QUEUE_MAX) and
    * play one after another instead of being dropped mid-animation.
    */
   swipeQueue: { action: SwipeAction; nonce: number }[];
@@ -141,7 +142,7 @@ export const useUiStore = create<UiState>()((set) => ({
   savedOpen: false,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
-  showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
+  showToast: (message, action) => set({ toast: { message, action, nonce: nonce() } }),
   setZoom: (zoomId) => set({ zoomId }),
   custom: {},
   lastCity: null,
@@ -179,7 +180,7 @@ export const useUiStore = create<UiState>()((set) => ({
   openShare: (id, color, make, upload) => set({ share: { id, color, ...(make ? { make } : {}), ...(upload ? { upload } : {}) } }),
   closeShare: () => set({ share: null }),
   openOffer: (offer) => set({ offer }),
-  noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
+  noteAdded: (note) => set({ added: { ...note, nonce: nonce() } }),
   clearAdded: () => set({ added: null }),
 }));
 
@@ -203,13 +204,21 @@ let programmaticUntil = 0;
  */
 export function scrollIntoViewQuietly(el: Element | null | undefined, options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" }) {
   if (!el) return;
-  programmaticUntil = Date.now() + 900;
+  programmaticUntil = Date.now() + QUIET_SCROLL_MS;
   useUiStore.getState().setHeaderHidden(false);
   el.scrollIntoView(options);
 }
 
+/** How long a scroll started by the page (a smooth scrollIntoView) is ignored by the header. */
+const QUIET_SCROLL_MS = 900;
+/** Button/keyboard swipes waiting at most (tasteStore drops taps past this). */
+export const SWIPE_QUEUE_MAX = 5;
 /** Downward travel (px, one direction) before the header slides away… */
 const HIDE_AFTER = 48;
+/** …never while still this close to the top (px)… */
+const HIDE_BELOW = 120;
+/** …and always back within this distance of the top (px). */
+const SHOW_ABOVE = 40;
 /** …upward travel before it comes back… */
 const SHOW_AFTER = 24;
 /** …and a pause while it animates, so momentum jitter can't flip it back. */
@@ -240,11 +249,11 @@ export function makeHeaderScrollHandler() {
     if (dy === 0 || now < settleUntil) return;
     travel = Math.sign(dy) === Math.sign(travel) ? travel + dy : dy;
     const { headerHidden, setHeaderHidden } = useUiStore.getState();
-    if (!headerHidden && travel > HIDE_AFTER && y > 120) {
+    if (!headerHidden && travel > HIDE_AFTER && y > HIDE_BELOW) {
       setHeaderHidden(true);
       settleUntil = now + SETTLE_MS;
       travel = 0;
-    } else if (headerHidden && (travel < -SHOW_AFTER || y < 40)) {
+    } else if (headerHidden && (travel < -SHOW_AFTER || y < SHOW_ABOVE)) {
       setHeaderHidden(false);
       settleUntil = now + SETTLE_MS;
       travel = 0;

@@ -173,12 +173,17 @@ export { bolden } from "./analyse";
 /* ------------------------------------------------------------------ */
 
 let hashes: Promise<Uint32Array | null> | null = null;
-/** The catalogue's dHashes (lib/search's index, in the catalogue's order), loaded once; null when it can't be. */
+/** The catalogue's dHashes (lib/search's index, in the catalogue's order), loaded once; null when it can't be (this time). */
 const catalogueHashes = () =>
   (hashes ??= import("@/lib/search/load")
     .then((m) => m.loadSearchIndex())
     .then((i) => i?.hash ?? null)
-    .catch(() => null));
+    .catch(() => null)
+    // A failed load is tried again next time (the near-copy check isn't lost for the session).
+    .then((h) => {
+      if (!h) hashes = null;
+      return h;
+    }));
 
 /** The refusal's kind, for analytics and the fixes (never the file or its words). */
 export function codeOf(reason: string): string {

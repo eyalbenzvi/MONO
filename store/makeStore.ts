@@ -72,25 +72,39 @@ const obj = (x: unknown): Record<string, unknown> => (x && typeof x === "object"
 const str = (x: unknown): x is string => typeof x === "string" && x.length > 0 && x.length < 200;
 const num = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
 
-/** What localStorage held, reduced to well-formed entries (anything else is dropped). */
+/** Keys that would reach an object's prototype if copied onto it. */
+const UNSAFE = new Set(["__proto__", "constructor", "prototype"]);
+/** The entries of a stored record, without keys that could touch a prototype. */
+const entries = (x: unknown) => Object.entries(obj(x)).filter(([k]) => !UNSAFE.has(k));
+/** Only the named fields (the ones the type has), so nothing else stored comes back in. */
+function pick<T>(v: T, keys: readonly (keyof T)[]): T {
+  const out = {} as T;
+  for (const k of keys) if (Object.prototype.hasOwnProperty.call(v, k)) out[k] = v[k];
+  return out;
+}
+const UPLOAD_FIELDS = ["id", "title", "cls", "mode", "size", "tees", "hash", "tier", "near", "quality", "distance", "category", "features", "createdAt", "ordered"] as const satisfies readonly (keyof UploadMeta)[];
+const TICKET_FIELDS = ["id", "uploadId", "order", "submittedAt", "near", "force", "replaces"] as const satisfies readonly (keyof ReviewTicket)[];
+const OFFER_FIELDS = ["uploadId", "id", "title", "category", "credit", "submittedAt", "quality", "distance", "force", "withdrawn", "features", "colors"] as const satisfies readonly (keyof AcceptedDesign)[];
+
+/** What localStorage held, reduced to well-formed entries and their known fields (anything else is dropped). */
 export function sanitizeMake(raw: unknown): MakeState {
   const r = obj(raw);
   const uploads: Record<string, UploadMeta> = {};
-  for (const [k, v] of Object.entries(obj(r.uploads))) {
+  for (const [k, v] of entries(r.uploads)) {
     const u = v as UploadMeta;
-    if (str(u?.id) && u.id === k && str(u.title) && str(u.hash) && num(u.createdAt) && Array.isArray(u.tees) && u.tees.length) uploads[k] = u;
+    if (str(u?.id) && u.id === k && str(u.title) && str(u.hash) && num(u.createdAt) && Array.isArray(u.tees) && u.tees.length) uploads[k] = pick(u, UPLOAD_FIELDS);
   }
   const reviews: Record<string, ReviewTicket> = {};
-  for (const [k, v] of Object.entries(obj(r.reviews))) {
+  for (const [k, v] of entries(r.reviews)) {
     const t = v as ReviewTicket;
     const force = t?.force;
     const forceOk = !force || force.state === "person" || (force.state === "refused" && REFUSE_REASONS.includes(force.reason));
-    if (str(t?.id) && t.id === k && str(t.uploadId) && str(t.order) && num(t.submittedAt) && typeof t.near === "boolean" && forceOk) reviews[k] = t;
+    if (str(t?.id) && t.id === k && str(t.uploadId) && str(t.order) && num(t.submittedAt) && typeof t.near === "boolean" && forceOk) reviews[k] = pick(t, TICKET_FIELDS);
   }
   const offers: Record<string, AcceptedDesign> = {};
-  for (const [k, v] of Object.entries(obj(r.offers))) {
+  for (const [k, v] of entries(r.offers)) {
     const o = v as AcceptedDesign;
-    if (str(o?.uploadId) && o.uploadId === k && str(o.id) && str(o.title) && str(o.credit) && num(o.submittedAt) && num(o.quality) && num(o.distance) && Array.isArray(o.colors) && o.colors.length) offers[k] = o;
+    if (str(o?.uploadId) && o.uploadId === k && str(o.id) && str(o.title) && str(o.credit) && num(o.submittedAt) && num(o.quality) && num(o.distance) && Array.isArray(o.colors) && o.colors.length) offers[k] = pick(o, OFFER_FIELDS);
   }
   return { uploads, reviews, offers };
 }

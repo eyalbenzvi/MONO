@@ -22,6 +22,15 @@ import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 type Filters = ShopFilters;
 
 // The open search box (field, suggestions, prepared parameters) loads only when opened.
+/** The first cards of a filter warmed ahead: about the first screen (a desktop row holds more). */
+const WARM_CARDS = { desktop: 10, phone: 6 };
+/** A restored `?page=` is held to this many pages (a hand-typed 10000 can't render the whole shop at once). */
+const MAX_RESTORED_PAGES = 200;
+/** Scrolled this far (px), the filter bar counts as stuck under the header. */
+const STUCK_AFTER = 44;
+/** The next page loads when the end of the grid is this close (px). */
+const LOAD_AHEAD_PX = 600;
+
 const SearchPanel = dynamic(() => import("@/components/shop/SearchPanel"), {
   ssr: false,
   loading: () => <div aria-hidden className="h-10 flex-1 rounded-full bg-white/[0.06] ring-1 ring-white/10" />,
@@ -104,20 +113,27 @@ export function ShopView() {
   // category or tee colour (not colour once one is chosen: every card is on
   // it), no algorithm repeats, and a wildcard every 8th card when ranking for you.
   // Search (lib/search): the colour and categories chosen narrow it too. "Top matches" is worked out here, never sent.
-  const result = useMemo(() => {
-    if (!searching || !runtime) return null;
-    const narrow: Facet[] = [...cats.map((value) => ({ kind: "category", value }) as Facet), ...(tee ? [{ kind: "tee", value: tee } as Facet] : [])];
-    return runtime.mod.search(runtime.index, SHIRTS, {
-      query: deferredQuery,
-      facets: [...facets, ...narrow],
-      vector: rankVector,
-      tasteKnown: complete,
-      seen: shown,
-      matches: facets.some((f) => f.kind === "match") ? runtime.mod.topMatches(rankVector) : undefined,
-      order: ranked,
-      literal,
-    });
-  }, [searching, runtime, deferredQuery, facets, cats, tee, rankVector, complete, shown, ranked, literal]);
+  // The search on the chosen colour, before the categories narrow it: the filter's counts come from it, and
+  // with no category chosen it is the result itself (one search per query, not two).
+  const searchWith = useCallback(
+    (narrowCats: readonly ShirtCategory[]) => {
+      if (!runtime) return null;
+      const narrow: Facet[] = [...narrowCats.map((value) => ({ kind: "category", value }) as Facet), ...(tee ? [{ kind: "tee", value: tee } as Facet] : [])];
+      return runtime.mod.search(runtime.index, SHIRTS, {
+        query: deferredQuery,
+        facets: [...facets, ...narrow],
+        vector: rankVector,
+        tasteKnown: complete,
+        seen: shown,
+        matches: facets.some((f) => f.kind === "match") ? runtime.mod.topMatches(rankVector) : undefined,
+        order: ranked,
+        literal,
+      });
+    },
+    [runtime, deferredQuery, facets, tee, rankVector, complete, shown, ranked, literal],
+  );
+  const withinColour = useMemo(() => (searching ? searchWith([]) : null), [searching, searchWith]);
+  const result = useMemo(() => (!searching ? null : cats.length ? searchWith(cats) : withinColour), [searching, cats, searchWith, withinColour]);
   // A content wave's designs only (/shop/?wave=<n>, docs/content/waves.md): read after hydration, never linked.
   const [wave, setWave] = useState<number | null>(null);
   useEffect(() => {
@@ -130,10 +146,7 @@ export function ShopView() {
   // How many designs each category holds on the chosen colour — within the search while one is on (the filter's rows; an empty one is disabled).
   // A card's variations count too, so "All" is the catalogue's own number (the About page's, the meta's).
   const counts = useMemo(() => {
-    const within =
-      result && runtime
-        ? runtime.mod.search(runtime.index, SHIRTS, { query: deferredQuery, facets: [...facets, ...(tee ? [{ kind: "tee", value: tee } as Facet] : [])], vector: rankVector, tasteKnown: complete, seen: shown, order: ranked, literal })
-        : null;
+    const within = withinColour;
     const on = within ? (within.mode === "text" ? within.results : dedupeByFamily(within.results)) : dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
     const by = Object.fromEntries(SHIRT_CATEGORIES.map((c) => [c, 0])) as Record<ShirtCategory, number>;
     let total = 0;
@@ -143,8 +156,7 @@ export function ShopView() {
       total += n;
     }
     return { by, total };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ranked, tee, result]);
+  }, [ranked, tee, withinColour]);
   visibleRef.current = visible;
 
   // The first cards a filter would show (the current one with each change):
@@ -152,7 +164,7 @@ export function ShopView() {
   // shows whole tees.
   const firstFor = useCallback(
     (f: Filters) => {
-      const n = typeof window !== "undefined" && window.innerWidth >= 1024 ? 10 : 6;
+      const n = typeof window !== "undefined" && window.innerWidth >= 1024 ? WARM_CARDS.desktop : WARM_CARDS.phone;
       return dedupeByFamily(filterShop(ranked, f)).slice(0, n).map((x) => x.shirt);
     },
     [ranked],
@@ -205,7 +217,7 @@ export function ShopView() {
     if (!hydrated) return;
     const q = new URLSearchParams(window.location.search);
     const page = Number(q.get("page"));
-    if (Number.isInteger(page) && page > 1) setShop({ limit: Math.min(page, 200) * SHOP_PAGE_SIZE });
+    if (Number.isInteger(page) && page > 1) setShop({ limit: Math.min(page, MAX_RESTORED_PAGES) * SHOP_PAGE_SIZE });
     if (q.has("page")) {
       q.delete("page");
       const rest = q.toString();
@@ -230,7 +242,7 @@ export function ShopView() {
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!restoring.current) onHeaderScroll(e);
     shopScroll.top = e.currentTarget.scrollTop;
-    const isStuck = e.currentTarget.scrollTop > 44;
+    const isStuck = e.currentTarget.scrollTop > STUCK_AFTER;
     if (isStuck !== stuck) setStuck(isStuck);
   };
 
@@ -241,7 +253,7 @@ export function ShopView() {
     if (!el) return;
     const io = new IntersectionObserver(
       (entries) => entries[0]?.isIntersecting && setShop({ limit: useUiStore.getState().shop.limit + SHOP_PAGE_SIZE }),
-      { rootMargin: "600px 0px" },
+      { rootMargin: `${LOAD_AHEAD_PX}px 0px` },
     );
     io.observe(el);
     return () => io.disconnect();

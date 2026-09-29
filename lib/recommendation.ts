@@ -7,6 +7,7 @@ import {
   type SwipeAction,
   type UserProfileVector,
 } from "@/types/shirt";
+import { clamp01 } from "@/lib/math";
 
 export const LIKE_RATE = 0.15;
 export const DISLIKE_RATE = 0.08;
@@ -14,7 +15,6 @@ export const DISLIKE_RATE = 0.08;
 export const CUSTOM_LIKE = 0.05;
 export const CALIBRATION_SIZE = 10;
 
-const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 
 /**

@@ -23,6 +23,7 @@
  */
 import { REASONS } from "./reasons";
 import { MAX_LONG } from "./pixels";
+import { BOXES, MM_PER_PX, OUT_H, OUT_W, PX_PER_MM, type PrintSize } from "./grid";
 
 export interface Pixels {
   w: number;
@@ -35,7 +36,7 @@ export type UploadClass = "line" | "photo" | "vector";
 export type Mode = "dots" | "lines" | "line" | "vector";
 /** What the page may ask of a picture: its class's own mode, Dots or Lines (a photograph), or Drawing (a photograph read as line work: a sketch shot on paper). */
 export type Ask = Mode | "drawing";
-export type PrintSize = "full" | "small";
+export type { PrintSize } from "./grid";
 export type Tee = "black" | "white";
 
 /** A photograph's tone on the print grid: luminance after levels, and where the picture is (0 outside it or on its removed background). */
@@ -64,22 +65,7 @@ export interface Converted {
 /* The print grid                                                       */
 /* ------------------------------------------------------------------ */
 
-export const OUT_W = 1500;
-export const OUT_H = 2000;
-/** The grid is 28 cm across: 1 px ≈ 0.187 mm, at Full and Small alike (Small is a smaller placement on the same grid). */
-export const MM_PER_PX = 280 / OUT_W;
-export const PX_PER_MM = OUT_W / 280;
-/**
- * The catalogue's fixed placement (scripts/tools/topAlignPrints TOP): every
- * picture starts 3% down the print area, centred across. Full fills the
- * 28 × 37 cm area below that margin; Small is a 12 × 12 cm square with the
- * same top, centred.
- */
-export const TOP = Math.round(0.03 * OUT_H);
-export const BOXES: Record<PrintSize, { x: number; y: number; w: number; h: number }> = {
-  full: { x: 0, y: TOP, w: OUT_W, h: Math.min(OUT_H - TOP, Math.round(370 * PX_PER_MM)) },
-  small: { x: Math.round((OUT_W - 120 * PX_PER_MM) / 2), y: TOP, w: Math.round(120 * PX_PER_MM), h: Math.round(120 * PX_PER_MM) },
-};
+export { BOXES, MM_PER_PX, OUT_H, OUT_W, PX_PER_MM, TOP } from "./grid";
 /** The worker's decode cap (brief 6.2): the long side, px (lib/upload/pixels, which has no converter to load). */
 export { MAX_LONG } from "./pixels";
 /**

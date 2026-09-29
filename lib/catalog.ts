@@ -170,8 +170,11 @@ function yoursProduct(id: string): ShirtProduct | undefined {
     }
     return made;
   }
-  return isUploadDesign(id) ? uploadProduct(id, SHIRTS.find((s) => s.category === "pattern") ?? SHIRTS[0]) : undefined;
+  if (!isUploadDesign(id)) return undefined;
+  patternBase ??= SHIRTS.find((s) => s.category === "pattern") ?? SHIRTS[0];
+  return uploadProduct(id, patternBase);
 }
+let patternBase: ShirtProduct | undefined;
 
 export const getShirtById = (id: string) => BY_ID.get(id) ?? madeProduct(id) ?? yoursProduct(id);
 

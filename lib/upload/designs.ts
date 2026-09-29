@@ -27,11 +27,15 @@ function persistedOffers(): Record<string, AcceptedDesign> | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(MAKE_KEY);
-    return raw ? ((JSON.parse(raw)?.state?.offers ?? null) as Record<string, AcceptedDesign> | null) : null;
+    if (!raw) return null;
+    // Parsed once per stored value: the bag and the taste ask per line.
+    if (parsed?.raw !== raw) parsed = { raw, offers: (JSON.parse(raw)?.state?.offers ?? null) as Record<string, AcceptedDesign> | null };
+    return parsed.offers;
   } catch {
     return null;
   }
 }
+let parsed: { raw: string; offers: Record<string, AcceptedDesign> | null } | null = null;
 
 /** The accepted designs now (accepted and not withdrawn), newest first. */
 export function acceptedDesigns(offers: Record<string, AcceptedDesign> | null = persistedOffers(), now = Date.now()): AcceptedDesign[] {

@@ -4,8 +4,10 @@
  * for CustomMockup), as the stored PNG (1-bit alpha, nothing else in it),
  * and back.
  */
-export const W = 1500;
-export const H = 2000;
+import { OUT_H, OUT_W } from "./grid";
+
+export const W = OUT_W;
+export const H = OUT_H;
 
 /** The print in the tee's inks: the tee's colour as ground, the other as ink (screen / multiply lays it on the photo). */
 export function inkCanvas(ink: Uint8Array, tee: "black" | "white", w = W, h = H): HTMLCanvasElement {

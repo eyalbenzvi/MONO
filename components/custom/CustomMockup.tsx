@@ -109,12 +109,15 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
     const canvas = detailRef.current;
     if (!zoomed || !canvas || !model || !fontsIn) return;
     let live = true;
-    loadImage(assetUrl(`/models/${model.id}.webp`)).then((photo) => {
-      if (!live) return;
-      canvas.width = 1500;
-      canvas.height = 2000;
-      drawDetail(canvas.getContext("2d")!, 1500, 2000, photo, svg, model.box, color);
-    });
+    // The close-up is extra: when the photo won't load, the mockup below it stays.
+    loadImage(assetUrl(`/models/${model.id}.webp`))
+      .then((photo) => {
+        if (!live) return;
+        canvas.width = 1500;
+        canvas.height = 2000;
+        drawDetail(canvas.getContext("2d")!, 1500, 2000, photo, svg, model.box, color);
+      })
+      .catch(() => {});
     return () => {
       live = false;
     };

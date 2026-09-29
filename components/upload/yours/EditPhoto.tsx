@@ -7,11 +7,11 @@ import type { IconName } from "@/lib/icons";
 import { MIN_SHORT, type Pixels } from "@/lib/upload/convert";
 import type { Crop, Rot, Settings, Source } from "@/lib/upload/client";
 import { TONE_MAX, cropPixels, sourcePixels, strengthen, tone } from "@/lib/upload/pixels";
+import { clamp } from "@/lib/math";
 
 export type PhotoEdits = Pick<Settings, "crop" | "rot" | "flip" | "light" | "contrast" | "stronger">;
 
 const FULL: Crop = { x: 0, y: 0, w: 1, h: 1 };
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 /** The crop's shapes, as width over height in the picture's own pixels (null: free). */
 const ASPECTS: { id: string; label: string; r: number | null }[] = [
   { id: "free", label: "Free", r: null },

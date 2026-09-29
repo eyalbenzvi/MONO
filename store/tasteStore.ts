@@ -6,9 +6,10 @@ import { CUSTOM_LIKE, LIKE_RATE, matchScore, nudgeVector, updateUserVector } fro
 import { CALIBRATION_IDS, CALIBRATION_TOTAL, DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
-import { useUiStore } from "@/store/useUiStore";
+import { useUiStore, SWIPE_QUEUE_MAX } from "@/store/useUiStore";
 import { FEATURE_KEYS, createInitialVector, type RecommendationStrategy, type SwipeAction, type SwipeEvent, type UserProfileVector } from "@/types/shirt";
 import { TASTE_LEVELS, countSwipe, emptyDaily, tasteLevel, type Daily, type TasteLevel } from "@/lib/taste";
+import { clamp01, nonce } from "@/lib/math";
 
 export { DECK_SIZE, type DeckEntry };
 
@@ -41,13 +42,21 @@ export interface TasteProgress {
 type Evidence = Pick<TasteState, "likedIds" | "dislikedIds" | "seen" | "calibrationAcknowledged">;
 
 export function tasteProgress(s: Evidence): TasteProgress {
-  const done = calibrationDone(CALIBRATION_IDS, s.seen);
-  const tested = s.calibrationAcknowledged || done >= CALIBRATION_TOTAL;
-  const likes = s.likedIds.length;
-  const passes = s.dislikedIds.length;
+  return progressFrom(calibrationDoneOf(s.seen), s.calibrationAcknowledged, s.likedIds.length, s.dislikedIds.length);
+}
+
+function progressFrom(done: number, acknowledged: boolean, likes: number, passes: number): TasteProgress {
+  const tested = acknowledged || done >= CALIBRATION_TOTAL;
   const likesNeeded = Math.max(0, MIN_LIKES - likes);
   const passesNeeded = Math.max(0, MIN_PASSES - passes);
   return { done, total: CALIBRATION_TOTAL, likes, passes, likesNeeded, passesNeeded, phase: !tested ? "test" : likesNeeded || passesNeeded ? "more" : "known" };
+}
+
+/** Calibration prints seen, per family; remembered for the last `seen` array (the store keeps it until a swipe changes it). */
+let doneCache: { seen: readonly string[]; done: number } | null = null;
+function calibrationDoneOf(seen: string[]) {
+  if (doneCache?.seen !== seen) doneCache = { seen, done: calibrationDone(CALIBRATION_IDS, seen) };
+  return doneCache.done;
 }
 
 export const tasteKnown = (s: Evidence) => tasteProgress(s).phase === "known";
@@ -133,7 +142,7 @@ export function unlearn(s: Pick<TasteState, "preferenceVector" | "swipeHistory">
     return { preferenceVector: v, swipeHistory };
   }
   const v = { ...s.preferenceVector };
-  for (const k of Object.keys(v) as (keyof UserProfileVector)[]) v[k] = Math.min(1, Math.max(0, (v[k] - LIKE_RATE * shirt.features[k]) / (1 - LIKE_RATE)));
+  for (const k of Object.keys(v) as (keyof UserProfileVector)[]) v[k] = clamp01((v[k] - LIKE_RATE * shirt.features[k]) / (1 - LIKE_RATE));
   return { preferenceVector: v, swipeHistory };
 }
 
@@ -199,7 +208,7 @@ function vectorOf(x: unknown): UserProfileVector {
   if (x && typeof x === "object")
     for (const k of FEATURE_KEYS) {
       const n = (x as Record<string, unknown>)[k];
-      if (typeof n === "number" && Number.isFinite(n)) v[k] = Math.min(1, Math.max(0, n));
+      if (typeof n === "number" && Number.isFinite(n)) v[k] = clamp01(n);
     }
   return v;
 }
@@ -224,8 +233,7 @@ function eventOf(x: unknown): SwipeEvent | null {
 }
 
 export function sanitizeTaste(raw: unknown): TasteState {
-  const d = initialTaste();
-  if (!raw || typeof raw !== "object") return d;
+  if (!raw || typeof raw !== "object") return initialTaste();
   const r = raw as Partial<Record<keyof TasteState, unknown>>;
   const history = Array.isArray(r.swipeHistory) ? r.swipeHistory.map(eventOf).filter((e): e is SwipeEvent => !!e).slice(-HISTORY_LIMIT) : [];
   const seen = ids(r.seen);
@@ -303,8 +311,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
 
       requestSwipe: (action) => {
         const ui = useUiStore.getState();
-        if (get().deck.length === 0 || ui.swipeQueue.length >= 5) return;
-        useUiStore.setState({ swipeQueue: [...ui.swipeQueue, { action, nonce: Date.now() + Math.random() }] });
+        if (get().deck.length === 0 || ui.swipeQueue.length >= SWIPE_QUEUE_MAX) return;
+        useUiStore.setState({ swipeQueue: [...ui.swipeQueue, { action, nonce: nonce() }] });
       },
 
       commitSwipe: (shirtId, action, fromQueue = false) => {
@@ -424,7 +432,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         const id = `upload:${key}`;
         if (s.customLiked.includes(id)) return;
         const v = { ...s.preferenceVector };
-        for (const [k, target] of Object.entries(measured) as [keyof UserProfileVector, number][]) if (Number.isFinite(target)) v[k] = Math.min(1, Math.max(0, v[k] + CUSTOM_LIKE * (target - v[k])));
+        for (const [k, target] of Object.entries(measured) as [keyof UserProfileVector, number][]) if (Number.isFinite(target)) v[k] = clamp01(v[k] + CUSTOM_LIKE * (target - v[k]));
         set({ preferenceVector: v, customLiked: [...s.customLiked, id] });
       },
 
@@ -503,13 +511,13 @@ export const useTasteStore = create<TasteState & TasteActions>()(
 export function useCalibrationProgress() {
   // Counted per family: saving a sibling of a calibration print in the shop
   // also counts. Primitive selectors, so the result only changes with them.
-  const done = useTasteStore((s) => calibrationDone(CALIBRATION_IDS, s.seen));
+  const done = useTasteStore((s) => calibrationDoneOf(s.seen));
   const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
   const likes = useTasteStore((s) => s.likedIds.length);
   const passes = useTasteStore((s) => s.dislikedIds.length);
-  const p = tasteProgress({ likedIds: Array(likes), dislikedIds: Array(passes), seen: [], calibrationAcknowledged: acknowledged || done >= CALIBRATION_TOTAL });
+  const p = progressFrom(done, acknowledged, likes, passes);
   // `complete`: the taste is known — the one gate for everything personal.
-  return { ...p, done, complete: p.phase === "known" };
+  return { ...p, complete: p.phase === "known" };
 }
 
 /** Reset taste and Saved, with an Undo toast that restores it all. */

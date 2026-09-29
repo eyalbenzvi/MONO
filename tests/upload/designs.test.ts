@@ -40,4 +40,20 @@ describe("Open Call designs on this device", () => {
     useMakeStore.getState().withdraw("u1abc");
     expect(useMakeStore.getState().offers.u1abc.withdrawn).toBe(true);
   });
+  it("a stored record can't reach a prototype, and only known fields come back (SEC-15)", async () => {
+    const { sanitizeMake } = await fresh();
+    const raw = JSON.parse(`{"offers":{"__proto__":${JSON.stringify(offer({ uploadId: "__proto__" }))},"u1abc":${JSON.stringify(offer({ extra: "<script>" }))}}}`);
+    const s = sanitizeMake(raw);
+    expect(Object.keys(s.offers)).toEqual(["u1abc"]);
+    expect(Object.getPrototypeOf(s.offers)).toBe(Object.prototype);
+    expect("extra" in s.offers.u1abc).toBe(false);
+    expect(s.offers.u1abc).toMatchObject({ id: "mono-u-k1", title: "Heron at Dusk", colors: ["white", "black"] });
+  });
+  it("the stored offers are read again when they change (parsed once per stored value)", async () => {
+    storage.setItem("mono-make", JSON.stringify({ state: { offers: { u1abc: offer() } }, version: 1 }));
+    const { getShirtById } = await fresh();
+    expect(getShirtById("mono-u-k1")?.title).toBe("Heron at Dusk");
+    storage.setItem("mono-make", JSON.stringify({ state: { offers: { u1abc: offer({ withdrawn: true }) } }, version: 1 }));
+    expect(getShirtById("mono-u-k1")).toBeUndefined();
+  });
 });

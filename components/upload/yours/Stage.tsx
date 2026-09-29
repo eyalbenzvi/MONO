@@ -6,11 +6,13 @@ import { STAGE_BG } from "@/components/stage";
 import { track } from "@/lib/analytics";
 import { assetUrl } from "@/lib/catalog";
 import type { Settings, Source, Tee } from "@/lib/upload/client";
+import { BOXES, OUT_W } from "@/lib/upload/grid";
 import { sourcePixels } from "@/lib/upload/pixels";
 import type { ShirtProduct } from "@/types/shirt";
 
-/** The Full box on the 300 × 400 print (top 3%, the whole width, as lib/upload/convert BOXES). */
-const BOX = { x: 0, y: 12, w: 300, h: 388 };
+/** The Full box on the 300 × 400 print: lib/upload/grid BOXES.full at a fifth of the size. */
+const K = 300 / OUT_W;
+const BOX = { x: BOXES.full.x * K, y: Math.round(BOXES.full.y * K), w: BOXES.full.w * K, h: Math.round(BOXES.full.h * K) };
 
 /** A print-sized canvas in a tee's colour with the source laid in the Full box, faded and grey: what's being converted. */
 export function placeholder(src: Source, s: Settings, tee: Tee): HTMLCanvasElement {

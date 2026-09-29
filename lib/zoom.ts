@@ -1,4 +1,5 @@
 /** Zoom maths shared by the full-screen zoom and the in-place card zoom. */
+import { clamp01 } from "@/lib/math";
 
 export interface ZoomTransform {
   /** Scale. */
@@ -39,6 +40,6 @@ export function rubberBand(s: number, min: number, max: number): number {
  * to 0–1, so an overshooting ease never takes it past either end.
  */
 export function zoomBetween(from: ZoomTransform, to: ZoomTransform, p: number): ZoomTransform {
-  const k = Math.min(1, Math.max(0, p));
+  const k = clamp01(p);
   return { s: from.s + (to.s - from.s) * k, x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
 }

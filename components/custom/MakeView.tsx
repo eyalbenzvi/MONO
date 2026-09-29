@@ -109,8 +109,8 @@ interface Shown {
  */
 /** "More from a date →": this product's group on the index. */
 function MoreFrom({ made }: { made: MadeProduct }) {
-  const group = MAKE_GROUPS.find((g) => g.id === made.group)!;
-  if (!MADE.some((m) => m.group === made.group && m.slug !== made.slug)) return null;
+  const group = MAKE_GROUPS.find((g) => g.id === made.group);
+  if (!group || !MADE.some((m) => m.group === made.group && m.slug !== made.slug)) return null;
   return (
     <Link href={`/make/#${made.group}`} className="text-xs text-neutral-300 underline underline-offset-2 hover:text-white" data-siblings>
       More {group.label.toLowerCase()} →
@@ -119,7 +119,21 @@ function MoreFrom({ made }: { made: MadeProduct }) {
 }
 
 export function MakeView({ slug }: { slug: string }) {
-  const made = madeBySlug(slug) as MadeProduct;
+  const made = madeBySlug(slug);
+  // Pages are only built for known slugs; anything else gets the way back, never a crash.
+  if (!made)
+    return (
+      <main className="mx-auto max-w-md px-4 py-16 text-center">
+        <p className="text-neutral-300">This print isn&rsquo;t here.</p>
+        <Link href="/make/" className="mt-4 inline-block text-sm underline underline-offset-2">
+          See what you can make →
+        </Link>
+      </main>
+    );
+  return <Maker made={made} />;
+}
+
+function Maker({ made }: { made: MadeProduct }) {
   const router = useRouter();
   const hydrated = useHydrated();
   const shirt = getShirtById(made.id);

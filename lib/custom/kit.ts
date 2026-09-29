@@ -13,7 +13,8 @@ export const DEG = Math.PI / 180;
 const n1 = (n: number) => Math.round(n * 10) / 10;
 export const f1 = (n: number) => n1(n).toString();
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/** Text made safe inside SVG markup. */
+export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Monospace text, centred unless an anchor is given. */
 export const text = (x: number, y: number, s: string, size: number, opts: { anchor?: "start" | "middle" | "end"; bold?: boolean; spacing?: number } = {}) =>

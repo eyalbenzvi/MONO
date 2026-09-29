@@ -26,6 +26,7 @@ import { FEATURE_KEYS, type FeatureKey, type FeatureVector, type ShirtCategory }
 import PRIORS from "@/data/upload/priors.json";
 import { MM_PER_PX, OUT_H, OUT_W, type Converted } from "./convert";
 import { checkRaster, type Measures } from "./measure";
+import { clamp01 } from "@/lib/math";
 
 export interface Priors {
   categories: Record<ShirtCategory, FeatureVector>;
@@ -40,7 +41,7 @@ export interface UploadMeta {
 /** The axes the print itself decides (the rest come from the category's catalogue mean). */
 export const MEASURED: readonly FeatureKey[] = ["density", "contrast", "halftone_raster", "line_art", "clean_minimal", "geometric", "typography", "photographic"];
 
-const clamp = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
+const clamp = (v: number) => (Number.isFinite(v) ? clamp01(v) : 0);
 
 /** The raster's cells counted as ink (the check's threshold), and those on an edge (a 4-neighbour not ink). */
 function edges(r: { w: number; h: number; ink: Float32Array }) {
