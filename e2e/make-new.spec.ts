@@ -48,6 +48,15 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-sayings-s2")).toHaveValue("Call when you get there."),
   },
+  {
+    slug: "label",
+    fill: async (page) => {
+      await page.locator("#make-label-name").fill("Maya Cohen");
+      await page.locator("#make-label-born").fill("1990");
+      await page.locator("#make-label-medium").fill("Oil on nerves");
+    },
+    again: async (page) => expect(page.locator("#make-label-medium")).toHaveValue("Oil on nerves"),
+  },
 ];
 
 for (const c of CASES)

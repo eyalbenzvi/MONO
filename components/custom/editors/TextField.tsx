@@ -28,11 +28,18 @@ export function useText(initial: string, max: number, lex: Lexicon | null, opts:
 export type TextState = ReturnType<typeof useText>;
 
 /** A text field for a useText state: a one-line input, or a box for a longer text. */
-export function TextField({ id, label, hint, state, max, placeholder, rows }: { id: string; label: string; hint?: string; state: TextState; max: number; placeholder?: string; rows?: number }) {
-  const common = { id, value: state.text, maxLength: max + 8, placeholder, autoComplete: "off", onChange: (e: { target: { value: string } }) => state.setText(e.target.value), "aria-invalid": !!state.error };
+export function TextField({ id, label, hint, state, max, placeholder, rows, suggestions }: { id: string; label: string; hint?: string; state: TextState; max: number; placeholder?: string; rows?: number; suggestions?: readonly string[] }) {
+  const common = { id, list: suggestions ? `${id}-ours` : undefined, value: state.text, maxLength: max + 8, placeholder, autoComplete: "off", onChange: (e: { target: { value: string } }) => state.setText(e.target.value), "aria-invalid": !!state.error };
   return (
     <Field label={label} hint={hint} error={state.error} htmlFor={id}>
       {rows ? <textarea {...common} rows={rows} className={`${INPUT} h-auto py-2 leading-snug`} /> : <input {...common} className={INPUT} />}
+      {suggestions && (
+        <datalist id={`${id}-ours`}>
+          {suggestions.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+      )}
     </Field>
   );
 }
