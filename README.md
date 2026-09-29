@@ -181,6 +181,7 @@ One ink, for one person, in two tracks. **From ours**: twelve of our designs, ea
 | Your Crossword | `/make/crossword/` | four to twelve names, filled in or blank to solve | the type-data designs: one crossword, hatched where a printed one is black |
 | Your Family Orbits | `/make/orbits/` | two to nine names and birthdays, a chosen centre | orbit-moons: a solar system, an orbit each in age order, each at its birthday |
 | Your Fractal | `/make/julia/` | a date (and words) | the attractors: a Julia set from the edge of the Mandelbrot set, drawn as contours |
+| Your Monogram | `/make/monogram/` | two or three initials, a style (interlaced, stacked, seal), a year | the rosettes and guilloche: ribbon letters woven over and under |
 
 - **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
 - **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."
