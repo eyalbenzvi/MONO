@@ -173,6 +173,7 @@ One ink, for one person, in two tracks. **From ours**: twelve of our designs, ea
 | Your Life in Weeks | `/make/weeks/` | a birthday, the day to count to, 80 or 90 years, up to five milestones | the Dot-Matrix designs: a week lived a dot, a week to come a ring |
 | Your Maze | `/make/maze/` | one to three initials and a level | the Dot-Matrix designs: a perfect maze whose way through spells the initials |
 | Your Tree Rings | `/make/rings/` | a span of years (to 101), the good and the hard ones, up to three scars | the Concentric designs: a seeded cross-section, a ring a year |
+| Your Tartan | `/make/tartan/` | a family name, and a sett derived from it or set stripe by stripe | Truchet Tiles (the nearest textile): a 2/2 twill in hatched tones |
 
 - **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
 - **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."
