@@ -39,3 +39,18 @@ describe("Make: the print fonts", () => {
     }
   });
 });
+
+describe("Make: fitting text to a box", () => {
+  it("wraps word by word, shrinks a step at a time, and gives up at the floor", async () => {
+    const { fitText, wrapWords, textWidth: tw } = await import("@/lib/custom/kit");
+    expect(wrapWords("one two three", 1000, 10)).toEqual(["one two three"]);
+    expect(wrapWords("one two three", tw("one two", 10), 10)).toEqual(["one two", "three"]);
+    expect(wrapWords("unbreakable", 5, 10)).toBeNull();
+    const fit = fitText("The quick brown fox jumps over the lazy dog", 120, { size: 14, floor: 8, maxLines: 2, family: "serif" })!;
+    expect(fit.lines.length).toBeLessThanOrEqual(2);
+    expect(fit.size).toBeLessThan(14);
+    for (const l of fit.lines) expect(tw(l, fit.size, { family: "serif" })).toBeLessThanOrEqual(120);
+    expect(fitText("x".repeat(80), 120, { size: 14, floor: 8, maxLines: 3 })).toBeNull();
+    expect(fitText("Short", 120, { size: 14, floor: 8, maxLines: 1 })).toEqual({ lines: ["Short"], size: 14 });
+  });
+});

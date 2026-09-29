@@ -67,6 +67,45 @@ export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" |
   return em * size + chars.length * (opts.spacing ?? 0);
 }
 
+/** Words wrapped to a width at one size: the lines (greedy, word by word), or null when a word alone is wider. */
+export function wrapWords(words: string, width: number, size: number, opts: Pick<TextOpts, "bold" | "spacing" | "family"> = {}): string[] | null {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words.split(/\s+/).filter(Boolean)) {
+    if (textWidth(word, size, opts) > width) return null;
+    const next = line ? `${line} ${word}` : word;
+    if (textWidth(next, size, opts) <= width) line = next;
+    else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/** The fit of a text: its lines and the size they set at. */
+export interface Fit {
+  lines: string[];
+  size: number;
+}
+/**
+ * Words set to fit a box: wrapped to `width` at `size`, then a `step`
+ * smaller at a time down to `floor`, until they take at most `maxLines`
+ * lines. Null when they can't fit even at the floor: the editor then says
+ * TOO_LONG, and nothing is drawn smaller than the floor.
+ */
+export function fitText(words: string, width: number, opts: Pick<TextOpts, "bold" | "spacing" | "family"> & { size: number; floor: number; maxLines: number; step?: number }): Fit | null {
+  const step = opts.step ?? 0.5;
+  for (let size = opts.size; size >= opts.floor - 1e-9; size = Math.round((size - step) * 100) / 100) {
+    const lines = wrapWords(words, width, size, opts);
+    if (lines && lines.length <= opts.maxLines) return { lines, size };
+  }
+  return null;
+}
+/** What the editor says when a text can't fit the print (fitText null). */
+export const TOO_LONG = "Too long for the print. Try shorter.";
+
 /** The air arcText adds between letters, em. */
 export const ARC_TRACK = 0.08;
 /**
