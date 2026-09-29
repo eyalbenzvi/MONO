@@ -22,7 +22,7 @@ const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
  * Make, from ours: our designs, each adapted from one thing of yours,
  * grouped by what you arrive with (a date, a name, a place, yourself) as
  * shop-style cards: the example print on its tee, the name, and what it
- * takes. From yours (your own file or words) is the other track, behind the
+ * takes. From yours (your own photo or drawing) is the other track, behind the
  * switch (/make/yours/).
  */
 const COUNTS = Object.fromEntries(MAKE_GROUPS.map((g) => [g.id, MADE.filter((m) => m.group === g.id).length])) as Record<MakeGroup, number>;

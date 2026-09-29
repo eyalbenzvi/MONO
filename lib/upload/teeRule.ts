@@ -1,7 +1,7 @@
 /**
  * Which tee an upload goes on, and whether the other is offered (brief 6.3;
  * the page marks the pick "Suggested", without a reason line).
- * - Line work (line, vector, words, a photograph as Lines) keeps its
+ * - Line work (line, vector, a photograph as Lines) keeps its
  *   polarity: dark marks on light go on white in black ink; on a black tee
  *   the same shapes print in white ink. The other
  *   tee is offered when the print passes there too (a black tee asks for

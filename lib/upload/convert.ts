@@ -329,7 +329,7 @@ function midtonesOf(p: Pixels): number {
   return midtoneShare(lightOnDark(g, s.w, s.h) ? invert(g) : g, s.w, s.h);
 }
 
-/** Line or photograph, from the midtones (an SVG is a vector and words are words before this is asked). */
+/** Line or photograph, from the midtones (an SVG is a vector before this is asked). */
 export const classify = (p: Pixels): "line" | "photo" => (midtonesOf(p) < LINE_MIDTONES ? "line" : "photo");
 
 /** The values in the outer ring of the picture, r px deep, every step-th pixel. */
@@ -461,7 +461,7 @@ export function clean(ink: Uint8Array, w: number, h: number, pxPerMm: number): U
   return ink;
 }
 
-/** Plain threshold at mid-grey (vector, words). */
+/** Plain threshold at mid-grey (vector). */
 function threshold(g: Float32Array, t = 0.5): Uint8Array {
   const out = new Uint8Array(g.length);
   for (let i = 0; i < g.length; i++) out[i] = g[i] < t ? 1 : 0;
