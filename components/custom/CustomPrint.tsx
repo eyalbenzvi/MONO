@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { loadFontCss, withFonts } from "@/lib/custom/raster";
 
-/** "Show the print only" for a personalised print: the SVG itself, its font inside (an image can't load one). */
+/** "Print" (the print alone) for a personalised print: the SVG itself, its font inside (an image can't load one). */
 export function CustomPrint({ svg, className = "" }: { svg: string; className?: string }) {
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {

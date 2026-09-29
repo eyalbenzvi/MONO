@@ -25,7 +25,7 @@ import { CATEGORY_LABELS, type SwipeAction, FEATURE_LABELS, type UserProfileVect
 const SWIPE_DISTANCE = 110;
 /** Sideways drag elasticity: the card moves this share of the pointer travel. */
 const ELASTIC_X = 0.9;
-/** Card travel at the commit point, where the LIKE / NOPE stamp locks in. */
+/** Card travel at the commit point, where the LIKE / PASS stamp locks in. */
 const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
@@ -225,7 +225,7 @@ function TopCard({
         // Fly out on the compositor (Web Animations): a busy main thread —
         // React re-rendering, the next card mounting — can't stall or skip
         // it, so the card always visibly leaves. Framer's own release spring
-        // is stopped so x stays put (and the LIKE / NOPE stamp stays lit).
+        // is stopped so x stays put (and the LIKE / PASS stamp stays lit).
         x.stop();
         y.stop();
         const from = getComputedStyle(el).transform;
@@ -277,7 +277,7 @@ function TopCard({
     });
   }, [undoFx, x]);
 
-  // First-run hint: one gentle wiggle so LIKE / NOPE reveal themselves.
+  // First-run hint: one gentle wiggle so LIKE / PASS reveal themselves.
   // With reduced motion only the legend below explains the gestures.
   const hinted = useRef(false);
   useEffect(() => {
@@ -353,7 +353,7 @@ function TopCard({
         {zoom.announce}
       </span>
 
-      {/* Swipe stamps: monochrome — LIKE solid white, NOPE an outline. */}
+      {/* Swipe stamps: monochrome — LIKE solid white, PASS an outline. */}
       <motion.div
         style={{ opacity: likeOpacity, rotate: -12 }}
         animate={{ scale: locked === "like" ? 1.1 : 1 }}
@@ -368,7 +368,7 @@ function TopCard({
         transition={{ type: "spring", stiffness: 600, damping: 18 }}
         className="pointer-events-none absolute right-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-neutral-200 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-neutral-100 will-change-[opacity]"
       >
-        <Icon name="x" className="h-6 w-6" strokeWidth={3} /> NOPE
+        <Icon name="x" className="h-6 w-6" strokeWidth={3} /> PASS
       </motion.div>
       <motion.div
         style={{ opacity: infoOpacity }}

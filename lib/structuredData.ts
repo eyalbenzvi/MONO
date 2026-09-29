@@ -114,5 +114,53 @@ export function productJsonLd(shirt: CatalogEntry) {
 }
 
 
+/**
+ * A Make product's page: made to order from the visitor's own date, name or
+ * place, so a Product with one offer at the made-for-you price (either tee,
+ * any size), its link-preview image the product's example print, and a
+ * breadcrumb through Make.
+ */
+export function makeJsonLd(m: { slug: string; name: string; line: string }) {
+  const url = `${SITE_URL}/make/${m.slug}/`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      ORGANIZATION,
+      ...POLICIES,
+      {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        name: m.name,
+        description: m.line,
+        category: "Personalised T-shirt",
+        brand: { "@type": "Brand", name: "MONO" },
+        image: [ogImage(`make-${m.slug}`).url],
+        url,
+        color: [COLOR_LABELS.black, COLOR_LABELS.white],
+        size: [...SIZES],
+        offers: {
+          "@type": "Offer",
+          url,
+          price: STORE_POLICY.customPrice.toFixed(2),
+          priceCurrency: "USD",
+          priceValidUntil: PRICE_VALID_UNTIL,
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+          shippingDetails: { "@id": `${SITE_URL}/#shipping` },
+          hasMerchantReturnPolicy: { "@id": `${SITE_URL}/#returns` },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "MONO", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "Make", item: `${SITE_URL}/make/` },
+          { "@type": "ListItem", position: 3, name: m.name, item: url },
+        ],
+      },
+    ],
+  };
+}
+
 /** JSON inside a <script> tag: escape "<" so no string can close it. */
 export const jsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, "\\u003c");

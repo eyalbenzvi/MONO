@@ -57,7 +57,7 @@ export function TasteSheet({ open, onClose }: { open: boolean; onClose: () => vo
                   label="More for your taste"
                   items={[
                     {
-                      label: "Reset taste (clears Saved, undo right after)",
+                      label: "Reset taste",
                       icon: "rotate-ccw",
                       danger: true,
                       onSelect: () => {

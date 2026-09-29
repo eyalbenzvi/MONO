@@ -9,8 +9,8 @@
  * - a forced state (`?review=refuse:<reason>` or `?review=person`, or the
  *   debug panel) is fixed at submit time: a refusal lands when the queue ends.
  *
- * The page says "Up to 2 days"; the demo notes (About, checkout) say the
- * review is simulated.
+ * The page says "Up to 2 days"; the order confirmation says the review is
+ * simulated.
  */
 
 export type ReviewState = "queued" | "person" | "cleared" | "refused";

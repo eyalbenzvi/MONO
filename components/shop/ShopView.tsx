@@ -128,6 +128,7 @@ export function ShopView() {
   // First open: the current grid stays, dimmed, until the index is in (never an empty flash).
   const pending = searching && runtime === undefined;
   // How many designs each category holds on the chosen colour — within the search while one is on (the filter's rows; an empty one is disabled).
+  // A card's variations count too, so "All" is the catalogue's own number (the About page's, the meta's).
   const counts = useMemo(() => {
     const within =
       result && runtime
@@ -135,8 +136,13 @@ export function ShopView() {
         : null;
     const on = within ? (within.mode === "text" ? within.results : dedupeByFamily(within.results)) : dedupeByFamily(filterShop(ranked, { tee, cats: [] }));
     const by = Object.fromEntries(SHIRT_CATEGORIES.map((c) => [c, 0])) as Record<ShirtCategory, number>;
-    for (const { shirt } of on) by[shirt.category]++;
-    return { by, total: on.length };
+    let total = 0;
+    for (const item of on) {
+      const n = 1 + ("variations" in item ? (item.variations as number) : 0);
+      by[item.shirt.category] += n;
+      total += n;
+    }
+    return { by, total };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ranked, tee, result]);
   visibleRef.current = visible;
@@ -473,7 +479,7 @@ export function ShopView() {
                     }}
                     className="flex h-11 items-center rounded-full px-5 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5"
                   >
-                    Show more · {visible.length - limit} left
+                    Show more · {(visible.length - limit).toLocaleString("en-US")} left
                   </Link>
                 </div>
               )}

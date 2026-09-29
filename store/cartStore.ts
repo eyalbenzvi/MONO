@@ -312,7 +312,7 @@ export const useCartStore = create<CartState & CartActions>()(
           total: totals.total,
           placedAt: now,
         };
-        const { from, to } = arrivalRange(new Date(now));
+        const { from, to } = arrivalRange(new Date(now), cart.some((l) => l.upload));
         const order: Order = { ...record, items: cart, customer, arrives: { from: from.getTime(), to: to.getTime() } };
         // Persist the record only: no name, email or address on the device.
         set({ lastOrder: record, cart: [] });

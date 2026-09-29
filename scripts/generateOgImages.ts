@@ -6,6 +6,7 @@
  * around the tee as the site shows it (lib/images, baked first if needed).
  *
  *   npm run og            # writes public/og/*.jpg (git-ignored; built in CI)
+ *   npm run og -- make    # only the Make products' previews (og/make-<slug>.jpg)
  *
  * Runs before `next build` so the images are exported with the site.
  */
@@ -20,6 +21,10 @@ import { MODEL_ASPECT, mockupPath } from "../lib/images";
 import { allJobs, bakeAll } from "./images/bake";
 import sharp from "sharp";
 import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
+import { loadRenderer } from "../lib/custom/renderers";
+import { decodeCities, type CitiesFile } from "../lib/custom/data";
+import { MADE, type MadeProduct } from "../lib/custom/products";
+import { STORE_POLICY } from "../lib/store-policy";
 
 const ALL = shirtsJson as unknown as CatalogEntry[];
 /**
@@ -88,6 +93,43 @@ function productSvg(shirt: CatalogEntry) {
   <rect x="620" y="420" width="${ctaW.toFixed(0)}" height="64" rx="32" fill="#fff"/>
   <text x="${(620 + ctaW / 2).toFixed(0)}" y="461" font-size="25" font-weight="700" text-anchor="middle" ${FONT} fill="#000">${cta}</text>
   <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);
+}
+
+/**
+ * A Make product's preview: its example print (as the page's stage first
+ * shows it, on the tee's own colour), its name and line, the made-for-you
+ * price, and the way in.
+ */
+function makeSvg(m: MadeProduct, printPng: string, color: "black" | "white") {
+  const titleSize = fit(m.name, 540, 60);
+  const cta = "Make yours →";
+  const ctaW = cta.length * 25 * ADV.bold * 0.92 + 64;
+  const [pw, ph] = [405, 540];
+  return frame(`
+  ${spot(320, 315, 285)}
+  <rect x="${320 - pw / 2 - 18}" y="${45 - 18 + 0}" width="${pw + 36}" height="${ph + 36}" rx="22" fill="${color === "black" ? "#000" : "#fff"}"/>
+  <image href="data:image/png;base64,${printPng}" x="${320 - pw / 2}" y="45" width="${pw}" height="${ph}" preserveAspectRatio="xMidYMid meet"/>
+  ${logo(620, 92)}
+  <text x="620" y="245" font-size="${titleSize.toFixed(1)}" font-weight="700" ${FONT} fill="#fff">${esc(m.name)}</text>
+  <text x="620" y="296" font-size="${fit(m.line, 540, 26, ADV.regular).toFixed(1)}" ${FONT} fill="#fff" fill-opacity="0.75">${esc(m.line)}</text>
+  <text x="620" y="336" font-size="23" ${FONT} fill="#fff" fill-opacity="0.55">Made for you · $${STORE_POLICY.customPrice} · black or white</text>
+  <rect x="620" y="420" width="${ctaW.toFixed(0)}" height="64" rx="32" fill="#fff"/>
+  <text x="${(620 + ctaW / 2).toFixed(0)}" y="461" font-size="25" font-weight="700" text-anchor="middle" ${FONT} fill="#000">${cta}</text>
+  <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);
+}
+
+/** Every Make product's preview, public/og/make-<slug>.jpg, from its example drawn as the page draws it (with the stars and the place list). */
+async function renderMake() {
+  const read = (f: string) => JSON.parse(readFileSync(path.join(ROOT, "data", f), "utf8"));
+  const sky = { stars: read("sky/stars.json"), lines: (read("sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
+  const places = decodeCities(read("cities/cities.json") as CitiesFile);
+  for (const m of MADE) {
+    const color = (ALL.find((s) => s.id === m.id)?.baseColor ?? "black") as "black" | "white";
+    const c = (m.example.p as { c?: number }).c;
+    const svg = (await loadRenderer(m.template))(m.example, color, { sky, city: c !== undefined ? places.byId(c) : undefined, places: places.list });
+    const png = new Resvg(svg, { fitTo: { mode: "height", value: 1080 }, font: FONT_OPTS }).render().asPng();
+    writeFileSync(path.join(OUT, `make-${m.slug}.jpg`), await render(makeSvg(m, Buffer.from(png).toString("base64"), color)));
+  }
 }
 
 /** Three strong prints from different categories, by editorial rank (no weak ones). */
@@ -171,6 +213,8 @@ async function main() {
     await renderList(SHIRTS.slice(range[0], range[1]), false);
     return;
   }
+  // `npm run og -- make`: the Make products' previews only.
+  if (process.argv[2] === "make") return void (await renderMake());
   const only = process.argv[2] ? new Set(process.argv.slice(2)) : null;
   const list = only ? SHIRTS.filter((s) => only.has(s.id)) : SHIRTS;
   // The tees' pictures first (the build bakes the rest; unchanged ones are skipped).
@@ -194,6 +238,7 @@ async function main() {
   }
   await loadTees(defaultPicks());
   writeFileSync(path.join(OUT, "default.jpg"), await render(defaultSvg()));
+  await renderMake();
   const missing = list.filter((s) => !existsSync(outFile(s)));
   if (missing.length) throw new Error(`${missing.length} OG images missing, e.g. ${missing[0].id}`);
   const bytes = list.reduce((sum, s) => sum + statSync(outFile(s)).size, 0);

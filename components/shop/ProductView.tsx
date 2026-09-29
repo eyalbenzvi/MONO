@@ -205,7 +205,8 @@ export function ProductView({
     setAdded({ key, phase: "added" });
     // The header comes back so the bag (and its count) is in view.
     useUiStore.getState().setHeaderHidden(false);
-    setTimeout(() => setAdded((a) => (a?.key === key ? { key, phase: "view" } : a)), 1200);
+    // The mini bag is the confirmation: the button says Added for a moment, then is itself again.
+    setTimeout(() => setAdded((a) => (a?.key === key ? null : a)), 2500);
   };
   const needSize = () => {
     scrollIntoViewQuietly(sizeRow.current);
@@ -251,12 +252,8 @@ export function ProductView({
             label={`More for ${shirt.title}`}
             className="-mr-2"
             items={[
-              { label: "Zoom in on the print", icon: "zoom-in", onSelect: () => setZoom(true) },
-              view === "print"
-                ? { label: "Show on the tee", icon: "layers", onSelect: () => setView("tee") }
-                : { label: "Show the print only", icon: "layers", onSelect: () => setView("print") },
+              view === "print" ? { label: "On the tee", icon: "layers", onSelect: () => setView("tee") } : { label: "Print", icon: "layers", onSelect: () => setView("print") },
               { label: "Share", icon: "share-2", onSelect: () => useUiStore.getState().openShare(shirt.id, color) },
-              ...(made ? [{ label: "Make your own", icon: "pencil" as const, onSelect: () => router.push(`/make/${made.slug}/`) }] : []),
             ]}
           />
         </div>
@@ -474,6 +471,15 @@ export function ProductView({
             </div>
 
 
+            {/* One quiet line of what's promised (no price here). */}
+            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400" data-trust>
+              {STORE_POLICY.trust.map((t) => (
+                <span key={t.key} className="inline-flex items-center gap-1.5">
+                  <Icon name={TRUST_ICONS[t.key]} className="h-3.5 w-3.5" strokeWidth={1.5} /> {t.text}
+                </span>
+              ))}
+            </p>
+
             {/* Desktop: inline buy row (mobile uses the sticky bar below) */}
             <div className="mt-4 hidden gap-2 md:flex">
               <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} />
@@ -537,7 +543,7 @@ export function ProductView({
               <h2 className="text-base font-semibold">Similar prints</h2>
               {/* The whole shop, ordered by closeness to this one (a "Like this" search). */}
               <Link href={`/shop/?like=${shirt.id}`} className="-my-3 inline-flex h-11 items-center text-xs font-semibold text-neutral-300 underline underline-offset-4 hover:text-white">
-                More like this
+                See all
               </Link>
             </div>
             <div className="grid grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-4">

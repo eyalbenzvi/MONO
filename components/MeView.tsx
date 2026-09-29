@@ -77,7 +77,7 @@ import { SIZE_LABELS, type ShirtProduct } from "@/types/shirt";
 /**
  * The personal area ("You", the person icon): everything the site keeps for
  * this visitor, set like the About page — the taste the store has learned,
- * real counts, what it picks for you, Saved, the bag and last order, your
+ * what it picks for you, Saved, the last order, your
  * size, and (quietly, at the end) resetting or clearing it all. Nothing
  * leaves the browser.
  */
@@ -103,35 +103,17 @@ export function MeView() {
   // Known: the archetype. After the test without enough likes and passes (or
   // after unsaving below them): not enough to go on. Before it: not yet.
   const [lead, word] = calibrated ? (name.startsWith("The ") ? ["The", name.slice(4)] : ["", name]) : phase === "more" ? ["Not", "enough."] : ["Not", "yet."];
-  // Real counts only (zero shows as 0).
-  const facts: [number, string][] = [
-    [seen, "rated"],
-    [saved.length, "saved"],
-    [cartCount, "in bag"],
-  ];
 
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-clip">
       <div className="mx-auto max-w-[560px] px-5 pb-16 pt-8">
         <p className={LABEL}>Your taste</p>
         {/* Sized to its longest word, so a long name (RETROFUTURIST) still fits the screen. */}
-        <h1 className="mt-4 font-black uppercase leading-[0.95] tracking-[0.08em]" style={{ fontSize: fitFont(Math.max(...`${lead} ${word}`.split(" ").map((w) => w.length))) }}>
+        <h1 className="mt-4 text-balance text-3xl font-black leading-tight tracking-tight md:text-5xl">
           {lead && <span className="block">{lead}</span>}
           <span className="-mx-2 my-1 block w-fit bg-white px-2 text-black">{word}</span>
         </h1>
         {phase === "more" && <NeedDots className="mt-4 -ml-1" />}
-
-        <dl className="mt-8 grid grid-cols-3 border-y border-white/15">
-          {facts.map(([n, label], i) => (
-            <div key={label} className={`py-5 ${i ? "border-l border-white/15 pl-4" : ""}`}>
-              <dt className="sr-only">{label}</dt>
-              <dd className="font-mono text-2xl font-bold tabular-nums text-white">{n}</dd>
-              <dd aria-hidden className="mt-1 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500">
-                {label}
-              </dd>
-            </div>
-          ))}
-        </dl>
 
         {/* A bag with something in it: checkout is the first thing here, one tap to the delivery form. */}
         {cartCount > 0 && (
@@ -185,15 +167,16 @@ export function MeView() {
 
         <YourOffers />
 
-        <Section title="Account">
-          <div className="border-t border-white/15">
-            <Row href="/cart/" label="Bag" value={String(cartCount)} />
-            {lastOrder && <Row label="Last order" value={`${lastOrder.number} · ${formatPrice(lastOrder.total)}`} />}
-            {lastOrder && <LastOrderUploads order={lastOrder.number} />}
-            {preferred && <Row label="Size" value={SIZE_LABELS[preferred]} />}
-            <Row href="/about/" label="About" />
-          </div>
-        </Section>
+        {/* What the header and logo don't already give: the last order and the size kept. */}
+        {(lastOrder || preferred) && (
+          <Section title="Account">
+            <div className="border-t border-white/15">
+              {lastOrder && <Row label="Last order" value={`${lastOrder.number} · ${formatPrice(lastOrder.total)}`} />}
+              {lastOrder && <LastOrderUploads order={lastOrder.number} />}
+              {preferred && <Row label="Size" value={SIZE_LABELS[preferred]} />}
+            </div>
+          </Section>
+        )}
 
         {/* The quiet end: destructive actions as plain text. */}
         <div className="mt-10 flex gap-6" aria-live="polite">
@@ -225,8 +208,6 @@ export function MeView() {
   );
 }
 
-/** Heavy caps with wide tracking run about 0.85em a letter: the largest size (to 3.75rem) that fits `chars` in the column. */
-const fitFont = (chars: number) => `min(3.75rem, 11vw, calc((min(100vw, 560px) - 3.5rem) / ${(chars * 0.85).toFixed(2)}))`;
 
 const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500";
 const ACTION = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 hover:text-white";

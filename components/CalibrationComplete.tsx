@@ -69,7 +69,7 @@ export function CalibrationComplete() {
             <TraitChips keys={traits} className="mt-3" stagger />
 
             <div className="mt-4">
-              <ShirtStrip shirts={picks} layout="grid" names={false} label="Top picks for you" onOpen={close} />
+              <ShirtStrip shirts={picks} layout="grid" names={false} label="Picked for you" onOpen={close} />
             </div>
 
             {friend && (

@@ -8,8 +8,8 @@ const COUNT = SHIRTS.length.toLocaleString("en-US");
 
 export const metadata: Metadata = pageMeta({
   path: "/about/",
-  title: "About MONO — Monochrome Tees, Ranked by Your Taste",
-  description: `Black or white tees, one-ink prints. Swipe a few and MONO ranks all ${COUNT} designs for you. A demo store: nothing is charged.`,
+  title: "About | MONO",
+  description: `Black. White. One ink. Swipe a few and MONO ranks all ${COUNT} designs to your taste.`,
 });
 
 /** The brand's three words, set like the mark: heavy caps, wide tracking. */
@@ -22,8 +22,8 @@ const FACTS: [string, string][] = [
 ];
 
 /**
- * The brand page (the logo leads here): three words set like the mark, one line, and
- * the honest note about this demo. Short on purpose.
+ * The brand page (the logo leads here): three words set like the mark, one
+ * line, three facts. Short on purpose.
  */
 export default function AboutPage() {
   return (

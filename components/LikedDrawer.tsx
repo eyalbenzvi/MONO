@@ -137,7 +137,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 )}
               </AnimatePresence>
               <p className="sr-only" aria-live="polite">
-                {removed ? `Removed ${removed.shirt.title}. Undo is available.` : ""}
+                {removed ? "Removed · Undo" : ""}
               </p>
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 pb-20 text-center text-neutral-400">

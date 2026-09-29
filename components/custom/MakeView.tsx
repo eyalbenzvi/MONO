@@ -329,7 +329,7 @@ export function MakeView({ slug }: { slug: string }) {
               onClick={() => setView((v) => (v === "tee" ? "print" : "tee"))}
               className="absolute bottom-3 right-3 flex h-10 items-center rounded-full bg-black/55 px-3 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-md"
             >
-              {view === "tee" ? "The print" : "On the tee"}
+              {view === "tee" ? "Print" : "On the tee"}
             </button>
             <AnimatePresence>{zoom && svg && <ZoomViewer shirt={shirt} color={color} initialView={view} customSvg={svg} onClose={() => setZoom(false)} />}</AnimatePresence>
           </div>

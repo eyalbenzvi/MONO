@@ -8,7 +8,7 @@ const DESCRIPTION = "Swipe ten black-and-white tees. MONO ranks over a thousand 
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${SITE_URL}/`),
-  title: "MONO — Monochrome Tee Discovery",
+  title: "MONO — swipe your taste in tees",
   description: DESCRIPTION,
   manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/site.webmanifest`,
   openGraph: {

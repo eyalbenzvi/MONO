@@ -11,7 +11,7 @@ const PRICE = PRICES.length === 1 ? `one price, $${PRICES[0]}` : `from $${Math.m
 
 export const metadata: Metadata = pageMeta({
   path: "/shop/",
-  title: "Shop monochrome tees — MONO",
+  title: "Shop monochrome tees | MONO",
   description: `${COUNT} graphic tees, black or white — drawn, archive and photo prints, ${PRICE}. Take the ${CALIBRATION_TOTAL}-swipe taste test and the shop ranks itself for you.`,
 });
 

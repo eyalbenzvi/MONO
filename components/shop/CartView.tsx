@@ -150,16 +150,13 @@ export function CartView() {
         {count === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <Icon name="shopping-bag" className="h-10 w-10 text-neutral-600" />
-            <p className="text-sm text-neutral-400">Your bag is empty.</p>
-            <Link href="/shop/" className="flex h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black">
-              Browse the shop
-            </Link>
+            <p className="text-sm text-neutral-400">Nothing in here yet. Your top picks are below.</p>
             {lastOrder && (
               <p className="mt-4 text-xs text-neutral-400">
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
               </p>
             )}
-            <Suggestions exclude={[]} title="Picked from your taste" source="empty_bag" savedFirst />
+            <Suggestions exclude={[]} title="Picked for you" source="empty_bag" savedFirst />
           </div>
         ) : step === "bag" ? (
           <>
@@ -250,10 +247,10 @@ export function CartView() {
             >
               <Icon name="lock" className="h-4 w-4" /> Checkout · {formatPrice(total)}
             </button>
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
-              <Icon name="rotate-ccw" className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
+            {/* Only the policy that applies: returns, size exchanges for made-for-you tees, or one line for both. */}
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-neutral-400" data-policy>
+              <Icon name="rotate-ccw" className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden /> {policyLine(lines)}
             </p>
-            {lines.some((l) => l.custom || l.upload) && <p className="mt-1 text-center text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>}
               </div>
             </div>
           </>
@@ -283,6 +280,14 @@ export function CartView() {
 }
 
 
+/** The returns line for what's in the bag. */
+function policyLine(lines: CartLine[]): string {
+  const made = lines.filter((l) => l.custom || l.upload).length;
+  if (!made) return STORE_POLICY.returns;
+  if (made === lines.length) return STORE_POLICY.customReturns;
+  return `${STORE_POLICY.returns}, except made-for-you tees (size exchanges only).`;
+}
+
 /** Bag lines as GA4 items, each print's pair saving spread over its units (a print: a design and a personalised one's spec, as `purchase` counts them). */
 function ecomItems(lines: CartLine[], pairs: { id: string; key?: string; saving: number }[]) {
   const printOf = (l: CartLine) => `${l.id}|${customKey(l.custom, l.upload)}`;
@@ -300,9 +305,7 @@ function ecomItems(lines: CartLine[], pairs: { id: string; key?: string; saving:
  * Three prints not already chosen (no family already in the bag or just
  * bought): on an empty bag, from Saved first; then the best matches once
  * the taste test is done (topPicks), otherwise from Saved, otherwise none.
- * Used in the bag
- * ("One more from your taste"), an empty bag and after an order ("Your
- * next match").
+ * Used on an empty bag ("Picked for you").
  */
 function Suggestions({ exclude, title: heading, source, savedFirst = false }: { exclude: string[]; title: string; source: AddSource; savedFirst?: boolean }) {
   const showMatch = useShowMatch();
@@ -315,7 +318,7 @@ function Suggestions({ exclude, title: heading, source, savedFirst = false }: { 
     const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
     // An empty bag starts from what was saved (F05).
     const saved = pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
-    if (savedFirst && saved.length) return { picks: saved, title: "From your Saved" };
+    if (savedFirst && saved.length) return { picks: saved, title: heading };
     const fromTaste = showMatch
       ? topPicks(vector, 3, { excludeFamilies: skip })
       : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
@@ -400,6 +403,21 @@ const EXPRESS_PAY = process.env.NEXT_PUBLIC_EXPRESS_PAY ?? "";
 
 const EMPTY_DETAILS: Record<Field, string> = { name: "", email: "", address: "", city: "", zip: "", country: "US" };
 
+/** The visitor's country among those offered, from their time zone's biggest city (the place list Make uses); null when it isn't one of them. */
+async function countryFromZone(): Promise<string | null> {
+  let zone = "";
+  try {
+    zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return null;
+  }
+  const places = await import("@/lib/custom/data").then((m) => m.loadCities()).catch(() => null);
+  const city = places?.list.filter((c) => c.tz === zone).sort((a, b) => b.pop - a.pop)[0];
+  // The place list says "The Netherlands"; the form, "Netherlands".
+  const country = city?.country.replace(/^The /, "");
+  return STORE_POLICY.countries.find(([, name]) => name === country)?.[0] ?? null;
+}
+
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 
 function DetailsForm({
@@ -424,7 +442,17 @@ function DetailsForm({
 }) {
   const form = useRef<HTMLFormElement>(null);
   const errors = validate(values);
-  const arrives = formatArrival(arrivalRange());
+  // An upload waiting for its check adds its review days.
+  const arrives = formatArrival(arrivalRange(new Date(), lines.some((l) => l.upload)));
+  // The country, from the time zone as Make finds a place (its biggest city), until one is chosen.
+  const chosen = useRef(false);
+  useEffect(() => {
+    let live = true;
+    void countryFromZone().then((code) => live && code && !chosen.current && setValues((v) => ({ ...v, country: code })));
+    return () => {
+      live = false;
+    };
+  }, [setValues]);
 
   const field = (f: (typeof FIELDS)[number]) => {
     const err = touched[f.key] && errors[f.key];
@@ -495,7 +523,10 @@ function DetailsForm({
               name="country"
               autoComplete="country"
               value={values.country}
-              onChange={(e) => setValues((v) => ({ ...v, country: e.target.value }))}
+              onChange={(e) => {
+                chosen.current = true;
+                setValues((v) => ({ ...v, country: e.target.value }));
+              }}
               className="h-12 w-full rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none ring-1 ring-white/10 focus:ring-white/50"
             >
               {STORE_POLICY.countries.map(([code, name]) => (

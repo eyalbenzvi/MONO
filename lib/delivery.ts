@@ -16,13 +16,17 @@ export function addBusinessDays(date: Date, n: number): Date {
   return d;
 }
 
+/** An uploaded print is checked by a person first: up to this many business days. */
+export const REVIEW_DAYS = 2;
+
 /**
  * Estimated arrival window for an order placed at `now`, from the store's
- * delivery policy (print + ship, then transit; business days).
+ * delivery policy (print + ship, then transit; business days); an order
+ * with an upload awaiting review can take up to REVIEW_DAYS longer.
  */
-export function arrivalRange(now: Date = new Date()): { from: Date; to: Date } {
+export function arrivalRange(now: Date = new Date(), review = false): { from: Date; to: Date } {
   const { shipDays, transitDays } = STORE_POLICY.delivery;
-  return { from: addBusinessDays(now, shipDays[0] + transitDays[0]), to: addBusinessDays(now, shipDays[1] + transitDays[1]) };
+  return { from: addBusinessDays(now, shipDays[0] + transitDays[0]), to: addBusinessDays(now, shipDays[1] + transitDays[1] + (review ? REVIEW_DAYS : 0)) };
 }
 
 /** "Arrives Tue 6 – Fri 9 Oct" (month once when both ends share it). */

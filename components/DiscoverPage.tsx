@@ -63,7 +63,6 @@ function HowItWorks() {
       <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
       <ul className="mt-3 space-y-2 text-sm text-neutral-300">
         <li>→ Like what you&apos;d wear, ← pass on the rest.</li>
-        <li>Every swipe teaches MONO your taste in prints.</li>
         <li>Then the shop ranks all {SHIRTS.length.toLocaleString("en-US")} designs for you.</li>
       </ul>
     </aside>
