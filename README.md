@@ -178,6 +178,7 @@ One ink, for one person, in two tracks. **From ours**: twelve of our designs, ea
 | Your Game | `/make/chess/` | a game's moves (PGN, replayed on the device, up to 120 plies), the players, the day, the result | Truchet Tiles (the nearest grid): every piece's path across a hatched board |
 | Your Snowflake | `/make/snowflake/` | a name (it seeds the crystal) | the rosettes: a six-fold crystal grown by Reiter's model from a hexagonal plate |
 | Your Metro Map | `/make/metro/` | two to four lines (people, eras) and up to 16 stations | the schematic designs: an octilinear map, lines told apart by stroke |
+| Your Crossword | `/make/crossword/` | four to twelve names, filled in or blank to solve | the type-data designs: one crossword, hatched where a printed one is black |
 
 - **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
 - **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."
