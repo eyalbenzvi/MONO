@@ -15,7 +15,9 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   // The two tracks behind one switch; From ours grouped by what you arrive with.
   await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
   const groups = await page.locator("section h2").allTextContents();
-  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label));
+  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label).concat("For two"));
+  // For two is a category of its own: one card, to its page.
+  await expect(page.locator('ul[data-group="two"] a[data-for-two]')).toHaveAttribute("href", /\/make\/two\/$/);
   expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(MADE.map((m) => m.name));
   // Each card says what it takes (Your Taste's, what the swipes have made of it).
   const lines = await page.locator('[data-from="ours"] li p').allTextContents();
@@ -23,8 +25,8 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);
-  // Each card is a real print, drawn in the browser.
-  await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length);
+  // Each card is a real print, drawn in the browser (For two's too).
+  await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length + 1);
 
   await page.goto("shop/");
   await hydrated(page);
