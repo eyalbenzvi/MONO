@@ -117,6 +117,39 @@ test("M4: the canvas draws a print as the browser draws its SVG (the print alone
   }
 });
 
+test("the later products: the canvas draws each example as the browser draws its SVG (both colours, under 2% mean difference)", async ({ page }) => {
+  await page.goto("about/");
+  await page.evaluate(await bundle());
+  const diffs = await page.evaluate(async () => {
+    const c = (window as unknown as { __custom: any }).__custom;
+    await c.loadCanvasFonts();
+    const css = await c.loadFontCss();
+    const out: [string, number, number][] = [];
+    // The first twelve draw in lib/custom (index) or are checked above; the later ones each in a chunk of their own.
+    const early = ["sky", "moon", "night", "planets", "taste", "code", "line", "voice", "house", "number", "place", "ascii"];
+    for (const m of c.MADE.filter((m: { template: string }) => !early.includes(m.template)))
+      for (const color of ["black", "white"]) {
+        const render = await c.loadRenderer(m.template);
+        const svg = render(m.example, color, await c.prepareData(m.example));
+        const img = await c.svgImage(c.withFonts(svg, css));
+        const [W, H] = [600, 800];
+        const a = c.printCanvas(svg, W, H);
+        const b = document.createElement("canvas");
+        b.width = W;
+        b.height = H;
+        b.getContext("2d")!.drawImage(img, 0, 0, W, H);
+        const pa = a.getContext("2d").getImageData(0, 0, W, H).data;
+        const pb = b.getContext("2d")!.getImageData(0, 0, W, H).data;
+        let sum = 0;
+        for (let i = 0; i < pa.length; i += 4) sum += Math.abs(pa[i] - pb[i]);
+        out.push([`${m.slug}-${color}`, sum / ((pa.length / 4) * 255), svg.length]);
+      }
+    return out;
+  });
+  console.log(`later products, canvas vs SVG image: ${diffs.map(([n, d]) => `${n} ${(d * 100).toFixed(2)}%`).join(", ")}`);
+  for (const [n, d] of diffs) expect(d, n).toBeLessThan(0.02);
+});
+
 test("M4: a sky print renders (SVG and picture) in well under 100 ms at 4× CPU throttling", async ({ page }) => {
   await page.goto("about/");
   await page.evaluate(await bundle());
