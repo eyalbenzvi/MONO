@@ -5,16 +5,16 @@ import { CityField } from "@/components/custom/CityField";
 import { loadCities, type Places } from "@/lib/custom/data";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { JOURNEY_MAX, PRODUCT, journeyProblem } from "@/lib/custom/specs/journey";
-import { WordsField, useWords } from "./Field";
+
 import type { EditorProps } from "./types";
 
 const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
 
 /**
  * Your Journey: the places in the order you went (one place field adds the
- * next; each can go), and your words.
+ * next; each can go), and the caption (CaptionField).
  */
-export default function JourneyEditor({ made, arrival, touched, onChange }: EditorProps) {
+export default function JourneyEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "journey" ? arrival.p : null;
   const [places, setPlaces] = useState<Places | null>(null);
   useEffect(() => {
@@ -28,11 +28,9 @@ export default function JourneyEditor({ made, arrival, touched, onChange }: Edit
   }, []);
   const [ids, setIds] = useState<number[]>(a?.c ?? PRODUCT.example.c);
   const [adding, setAdding] = useState(0);
-  const words = useWords(a?.w ?? "");
 
   const problem = journeyProblem(ids);
-  const w = words.value;
-  const spec: CustomSpec | null = places && !problem && w !== null && ids.every((id) => places.byId(id)) ? { t: "journey", v: 1, p: { c: ids, ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = places && !problem && ids.every((id) => places.byId(id)) ? { t: "journey", v: 1, p: { c: ids } } : null;
 
   const report = useRef(onChange);
   report.current = onChange;
@@ -81,7 +79,6 @@ export default function JourneyEditor({ made, arrival, touched, onChange }: Edit
           onBlur={() => {}}
         />
       )}
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

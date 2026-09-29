@@ -8,7 +8,8 @@
  * grid is left blank and the names are listed under it by length, to be
  * fitted back in. A name that crosses no other sits a cell clear, on its own.
  */
-import { INK, caption, f1, text } from "../kit";
+import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { buildCrossword, type Crossword } from "../draw/crossword";
 import type { CustomSpec } from "../spec";
 import { crossNames, type Params } from "../specs/crossword";
@@ -43,7 +44,8 @@ function listLines(words: string[], max: number): string[] {
   return lines;
 }
 
-export function crosswordBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function crosswordDraw(p: Params): [string, Lines, number] {
   const names = crossNames(p.x);
   const cw = buildCrossword(names);
   const blank = p.h === 1;
@@ -104,9 +106,18 @@ export function crosswordBody(p: Params): string {
     const top = Math.min(y0 + cw.rows * cell + 16 + size, 320 - (lines.length - 1) * lead);
     lines.forEach((l, i) => (s += text(150, top + i * lead, l, size)));
   }
-  const title = p.w ?? "Crossword";
+  const title = titleWords(p) ?? "Crossword";
   const sub = `${names.length} names · ${cw.crossings === 0 ? "no" : cw.crossings} ${cw.crossings === 1 ? "crossing" : "crossings"}${blank ? " · fill them in" : ""}`;
-  return s + caption(338, title, sub);
+  return [s, [title, sub, undefined], 338];
 }
+/** The caption's lines (ours). */
+export const crosswordCaption = (p: Params): Lines => crosswordDraw(p)[1];
+
+export function crosswordBody(p: Params): string {
+  const [s, lines, y] = crosswordDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => crosswordCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(crosswordBody((spec as { p: Params }).p), color);

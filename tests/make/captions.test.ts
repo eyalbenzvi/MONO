@@ -1,10 +1,10 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { captionLines } from "@/lib/custom/kit";
 import { MADE } from "@/lib/custom/products";
-import { NO_CAPTION, loadCaptioner } from "@/lib/custom/renderers";
+import { loadCaptioner } from "@/lib/custom/renderers";
 import { capRuleFor, encodeMake, validate } from "@/lib/custom/spec";
 import { capOf, titleWords } from "@/lib/custom/specKit";
-import { CAPTIONED_LINK_MAX, MAX_CAP, SOME_CAP, withCap } from "./captions";
+import { CAP_LINK_EXTRA, captionedLinkMax, MAX_CAP, SOME_CAP, withCap } from "./captions";
 import { gate } from "./fuzz";
 import { dataFor, drawSpec } from "./render";
 
@@ -34,11 +34,8 @@ describe("captions: the spec (specKit capOf)", () => {
   });
 });
 
-/** The products whose templates draw the visitor's caption (every product, once they all have: then the filter goes). */
-const PRODUCTS: typeof MADE = [];
-beforeAll(async () => {
-  for (const m of MADE) if ((await loadCaptioner(m.template)) !== NO_CAPTION) PRODUCTS.push(m);
-});
+/** Every From ours product draws the visitor's caption. */
+const PRODUCTS = MADE;
 
 describe("captions: every From ours product", () => {
   it("has its caption's lines, and a spec without cap round-trips unchanged", async () => {
@@ -86,7 +83,9 @@ describe("captions: every From ours product", () => {
     const failures: string[] = [];
     for (const m of PRODUCTS) {
       const s = validate(withCap(m.example, MAX_CAP))!;
-      expect(encodeMake(s).length, m.slug).toBeLessThanOrEqual(CAPTIONED_LINK_MAX);
+      const n = encodeMake(s).length;
+      expect(n - encodeMake(validate(m.example)!).length, m.slug).toBeLessThanOrEqual(CAP_LINK_EXTRA);
+      expect(n, m.slug).toBeLessThanOrEqual(captionedLinkMax(m.slug));
       for (const color of ["black", "white"] as const) {
         const bad = gate(await drawSpec(s, color), color);
         if (bad) failures.push(`${m.slug} ${color}: ${bad}`);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { ORBIT_MAX, ORBIT_MIN, ORBIT_NAME, PRODUCT, dateOf, dayOf, eldest, packDays, unpackDays } from "@/lib/custom/specs/orbits";
-import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
@@ -25,7 +25,7 @@ interface Row {
  * date places them: the eldest is the sun, the elder nearer, the birthday
  * the angle), who's at the centre, and a title.
  */
-export default function OrbitsEditor({ made, arrival, touched, onChange }: EditorProps) {
+export default function OrbitsEditor({ arrival, touched, onChange }: EditorProps) {
   const ex = PRODUCT.example;
   const a = arrival?.t === "orbits" ? arrival.p : null;
   // A link's print fills the rows; else as many empty rows as the example has, its names as placeholders.
@@ -36,7 +36,6 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
   });
   const [centre, setCentre] = useState<number>(a?.s ?? -1);
   const [left, setLeft] = useState<Record<number, boolean>>({});
-  const words = useWords(a?.w ?? "");
   const lex = useLexicon(rows.some((r) => r.name.trim()));
 
   const names = rows.map((r) => cleanWords(r.name, ORBIT_NAME));
@@ -51,10 +50,9 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
   const ok = !!lex && rows.every((_, i) => names[i] && !nameError(i) && dates[i]);
   const days = ok ? (dates as string[]).map(dayOf) : [];
   const sun = centre >= 0 && centre < rows.length ? centre : -1;
-  const w = words.value;
   const spec: CustomSpec | null =
-    ok && w !== null
-      ? { t: "orbits", v: 1, p: { n: names as string[], b: packDays(dates as string[]), ...(sun >= 0 && sun !== eldest(days) ? { s: sun } : {}), ...(w ? { w } : {}) } }
+    ok
+      ? { t: "orbits", v: 1, p: { n: names as string[], b: packDays(dates as string[]), ...(sun >= 0 && sun !== eldest(days) ? { s: sun } : {}) } }
       : null;
 
   useReportSpec(spec, onChange);
@@ -93,7 +91,6 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
         </div>
       </div>
       <Segmented label="At the centre" options={[-1, ...rows.map((_, i) => i)]} value={sun} onChange={setCentre} format={(i) => (i < 0 ? "The eldest" : names[i] || `Name ${i + 1}`)} />
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

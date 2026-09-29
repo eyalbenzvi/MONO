@@ -8,7 +8,7 @@
  * its thread, the tone's weight, the densest capped so it never fills.
  * The sett is centred on its first pivot, so the swatch is symmetric.
  */
-import { INK, caption, f1 } from "../kit";
+import { INK, caption, f1, captionLines, type Lines } from "../kit";
 import { WEIGHT, deriveSett, repeatOf } from "../draw/tartan";
 import type { CustomSpec } from "../spec";
 import { parseSett, type Params, type Tone } from "../specs/tartan";
@@ -22,7 +22,8 @@ const FRINGE = 7;
 /** Air at each end of a float. */
 const END = 0;
 
-export function tartanBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function tartanDraw(p: Params): [string, Lines, number] {
   const sett = p.t ? parseSett(p.t)! : deriveSett(p.n);
   const rep = repeatOf(sett);
   const u = Math.min(4.6, Math.max(3.2, BOX.w / rep.length));
@@ -81,7 +82,16 @@ export function tartanBody(p: Params): string {
   for (const t of ["K", "D", "L"] as Tone[]) if (fringe[t]) s += `<path d="${fringe[t]}" fill="none" stroke="${INK}" stroke-width="${width(t)}" stroke-linecap="round"/>`;
 
   const written = sett.map(([t, c]) => `${t}${c}`).join(" ");
-  return s + caption(338, `The ${p.n} Sett`, `${written} · 2/2 twill`, p.w);
+  return [s, [`The ${p.n} Sett`, `${written} · 2/2 twill`, p.w], 338];
 }
+/** The caption's lines (ours). */
+export const tartanCaption = (p: Params): Lines => tartanDraw(p)[1];
+
+export function tartanBody(p: Params): string {
+  const [s, lines, y] = tartanDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => tartanCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(tartanBody((spec as { p: Params }).p), color);

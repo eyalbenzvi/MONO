@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated, seed } from "./helpers";
+import { captionLine, hydrated, seed } from "./helpers";
 import { make } from "./fixtures/custom";
 import catalogue from "../data/shirts.json";
 
@@ -303,8 +303,8 @@ test("Your Place: exact coordinates with their hemispheres, a day, words; bag; t
   await page.locator("#make-lon").fill("74.0060 W");
   await expect(page.getByText("40°43′N 74°01′W")).toBeVisible();
   await page.locator("#make-date").fill("2001-09-11");
-  await page.locator("#make-words").fill("Where I was");
-  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "place", v: 1, p: { la: 40.71, lo: -74.01, d: "2001-09-11", w: "Where I was" } })}$`));
+  await (await captionLine(page, 0)).fill("Where I was");
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "place", v: 1, p: { la: 40.71, lo: -74.01, d: "2001-09-11", cap: ["Where I was"] } })}$`));
   const link = page.url();
   await addAndOpenBag(page);
   await expect(page.getByText("Your Place · Where I was")).toBeVisible();

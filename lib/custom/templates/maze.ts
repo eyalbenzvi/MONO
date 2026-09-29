@@ -7,7 +7,8 @@
  * With `s: 1` the way through is drawn as a thin dotted line, and the
  * letters appear.
  */
-import { INK, caption, f1 } from "../kit";
+import { INK, caption, f1, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { AREA, E, S, buildMaze } from "../draw/maze";
 import type { CustomSpec } from "../spec";
 import { MAZE_LEVEL_NAMES, dotted, type Params } from "../specs/maze";
@@ -16,7 +17,8 @@ import type { BaseColor } from "@/types/shirt";
 
 const TOP = 32;
 
-export function mazeBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function mazeDraw(p: Params): [string, Lines, number] {
   const mz = buildMaze(p.x, p.d);
   const { cols, rows, cell, open } = mz;
   const x0 = 150 - (cols * cell) / 2, y0 = TOP + (AREA.h - rows * cell) / 2;
@@ -56,7 +58,16 @@ export function mazeBody(p: Params): string {
   }
 
   const sub = p.s ? "The one way through, dotted." : "In at the top, out at the bottom. One way through.";
-  return s + caption(340, p.w ?? dotted(p.x), sub, `${MAZE_LEVEL_NAMES[p.d]} · ${cols} by ${rows}`);
+  return [s, [titleWords(p) ?? dotted(p.x), sub, `${MAZE_LEVEL_NAMES[p.d]} · ${cols} by ${rows}`], 340];
 }
+/** The caption's lines (ours). */
+export const mazeCaption = (p: Params): Lines => mazeDraw(p)[1];
+
+export function mazeBody(p: Params): string {
+  const [s, lines, y] = mazeDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => mazeCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(mazeBody((spec as { p: Params }).p), color);

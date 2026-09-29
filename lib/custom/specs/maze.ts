@@ -2,7 +2,7 @@
  * Your Maze: one to three initials and how hard it is. The way through
  * spells the initials (lib/custom/draw/maze); `s: 1` draws it, dotted.
  */
-import { flag, wordsOf } from "../specKit";
+import { flag, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export type MazeLevel = (typeof MAZE_LEVELS)[number];
@@ -14,6 +14,7 @@ export interface Params {
   /** Draw the way through, dotted. */
   s?: 1;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Maze";
@@ -32,6 +33,11 @@ export function mazeProblem(typed: string): string | null {
 }
 /** Typed initials as the spec keeps them: capitals, without spaces and full stops ("n. b." → "NB"). */
 export const mazeInitials = (typed: string) => typed.toUpperCase().replace(/[\s.]/g, "");
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (typeof p.x !== "string" || !MAZE_INITIALS.test(p.x) || !MAZE_LEVELS.includes(p.d as never)) return null;

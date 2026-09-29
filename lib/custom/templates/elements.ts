@@ -7,7 +7,7 @@
  * A letter no symbol covers (the editor never offers such a word) is drawn
  * as a dashed empty tile, so the print still says plainly what's missing.
  */
-import { INK, caption, f1, line, rect, text } from "../kit";
+import { INK, caption, f1, line, rect, text, captionLines, type Lines } from "../kit";
 import { ELEMENTS, type Element } from "../draw/elements";
 import { spell, type Tile } from "../draw/elementsSpell";
 import type { Params } from "../specs/elements";
@@ -51,8 +51,8 @@ function tile(t: Tile, x: number, y: number, w: number, h: number): string {
   return s;
 }
 
-/** The print's body (white ink, unwrapped). */
-export function elementsBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function elementsDraw(p: Params): [string, Lines, number] {
   const tiles = spell(p.x);
   const els = tiles.flatMap((t) => ("el" in t ? [t.el] : []));
   let s = miniTable(new Set(els.map((e) => e[0])));
@@ -73,7 +73,17 @@ export function elementsBody(p: Params): string {
   const symbols = tiles.map((t) => ("el" in t ? t.el[1] : "?")).join(" · ");
   const gaps = tiles.filter((t) => "miss" in t).map((t) => (t as { miss: string }).miss);
   const sub2 = gaps.length ? `No element for ${[...new Set(gaps)].join(", ")}` : `${els.length} elements · ${els.reduce((a, e) => a + e[0], 0)} protons`;
-  return s + caption(338, p.x, symbols, sub2);
+  return [s, [p.x, symbols, sub2], 338];
 }
+/** The caption's lines (ours). */
+export const elementsCaption = (p: Params): Lines => elementsDraw(p)[1];
+
+/** The print's body (white ink, unwrapped). */
+export function elementsBody(p: Params): string {
+  const [s, lines, y] = elementsDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => elementsCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(elementsBody((spec as { p: Params }).p), color);

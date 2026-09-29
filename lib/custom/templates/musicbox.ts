@@ -9,7 +9,8 @@
  * leader. A short tune goes round again until the strip is full (a music box
  * plays in a loop), each pass opened with a double rule.
  */
-import { INK, caption, f1, line, text } from "../kit";
+import { INK, caption, f1, line, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import { PITCHES, isSharp, pitchName, unpackNotes, type Params } from "../specs/musicbox";
 import { wrap } from "../svg";
@@ -22,7 +23,8 @@ const LEAD = 22, Y0 = 54, GRID_H = 256;
 /** A strip is at least this many steps long (a short tune goes round again). */
 const MIN_STEPS = 32;
 
-export function musicboxBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function musicboxDraw(p: Params): [string, Lines, number] {
   const notes = unpackNotes(p.m) ?? [];
   const last = notes.length ? notes[notes.length - 1][0] : 0;
   // The tune's length, to the half bar (four eighths); passes to fill the strip.
@@ -86,9 +88,18 @@ export function musicboxBody(p: Params): string {
   for (const [cx, cy] of at) holes += `M${f1(cx - r)} ${f1(cy)}a${r} ${r} 0 1 0 ${f1(2 * r)} 0a${r} ${r} 0 1 0 ${f1(-2 * r)} 0`;
   s += `<path d="${holes}" fill="${INK}"/>`;
 
-  const title = p.w ?? "Music box";
+  const title = titleWords(p) ?? "Music box";
   const sub = `${notes.length} notes · ${len / 2} beats · C4 to C6`;
-  return s + caption(340, title, sub, reps > 1 ? `25-note strip · played ${reps} times round` : "25-note strip");
+  return [s, [title, sub, reps > 1 ? `25-note strip · played ${reps} times round` : "25-note strip"], 340];
 }
+/** The caption's lines (ours). */
+export const musicboxCaption = (p: Params): Lines => musicboxDraw(p)[1];
+
+export function musicboxBody(p: Params): string {
+  const [s, lines, y] = musicboxDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => musicboxCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(musicboxBody((spec as { p: Params }).p), color);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, type CustomSpec } from "@/lib/custom/spec";
 import { MARK_DIGIT, PRODUCT, SCARS_MAX, spanProblem, type Params } from "@/lib/custom/specs/rings";
-import { Field, WordsField, useWords } from "./Field";
+import { Field } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
@@ -34,8 +34,8 @@ function yearsText(ys: number[]): string {
 }
 const marked = (p: Params, d: string) => [...p.m].flatMap((x, i) => (x === d ? [p.b + i] : []));
 
-/** Your Tree Rings: the first and last year, the good years, the hard years, the scars, the words. */
-export default function RingsEditor({ made, arrival, touched, onChange }: EditorProps) {
+/** Your Tree Rings: the first and last year, the good years, the hard years, the scars. */
+export default function RingsEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "rings" ? (arrival.p as Params) : null;
   const ex = PRODUCT.example;
   const [from, setFrom] = useState(a ? String(a.b) : "");
@@ -43,7 +43,6 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
   const [good, setGood] = useState(a ? yearsText(marked(a, MARK_DIGIT.good)) : "");
   const [hard, setHard] = useState(a ? yearsText(marked(a, MARK_DIGIT.hard)) : "");
   const [scars, setScars] = useState((a?.s ?? []).join(", "));
-  const words = useWords(a?.w ?? "");
 
   const [b, c] = [Number(from), Number(to)];
   const yearOk = (s: string) => /^\d{4}$/.test(s);
@@ -58,12 +57,11 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
   const goodError = typeof g === "string" ? g : null;
   const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can’t be good and hard` : null;
   const scarError = typeof sc === "string" ? sc : sc.length > SCARS_MAX ? `Up to ${SCARS_MAX} scars` : null;
-  const w = words.value;
   let spec: CustomSpec | null = null;
-  if (spanOk && !goodError && !hardError && !scarError && w !== null) {
+  if (spanOk && !goodError && !hardError && !scarError) {
     const m = Array.from({ length: c - b + 1 }, (_, i) => ((g as number[]).includes(b + i) ? MARK_DIGIT.good : (h as number[]).includes(b + i) ? MARK_DIGIT.hard : MARK_DIGIT.normal)).join("");
     const s = sc as number[];
-    spec = { t: "rings", v: 1, p: { b, c, m, ...(s.length ? { s } : {}), ...(w ? { w } : {}) } };
+    spec = { t: "rings", v: 1, p: { b, c, m, ...(s.length ? { s } : {}) } };
   }
 
   useReportSpec(spec, onChange);
@@ -94,7 +92,6 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
       <Field label="Scars" hint={`up to ${SCARS_MAX}: a fire, a break`} error={scarError} htmlFor="make-rings-scars">
         {list("make-rings-scars", scars, setScars, !!scarError, "2009")}
       </Field>
-      <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

@@ -253,8 +253,10 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
   const p = spec.p;
   if (typeof spec.t === "string" && Object.hasOwn(EXTRA, spec.t)) {
     const t = spec.t as ExtraId;
-    const q = (EXTRA[t].check as (p: Record<string, unknown>, ctx: { cityById?: typeof cityById }) => unknown)(p, { cityById });
-    return q ? ({ t, v: 1, p: q } as CustomSpec) : null;
+    const q = (EXTRA[t].check as (p: Record<string, unknown>, ctx: { cityById?: typeof cityById }) => Record<string, unknown> | null)(p, { cityById });
+    // The caption's lines, by the product's rule (its CAP), for every later product alike.
+    const cap = capOf(p, capRuleFor(t));
+    return q && cap ? ({ t, v: 1, p: { ...q, ...cap } } as CustomSpec) : null;
   }
   let words: Words = {};
   if (p.w !== undefined) {

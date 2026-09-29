@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { LINE_MAX, METRO_LINES, METRO_STATIONS, PRODUCT, STATION_MAX, metroProblem } from "@/lib/custom/specs/metro";
-import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
@@ -16,14 +16,13 @@ interface Station {
   mask: number;
 }
 
-/** Your Metro Map: the lines (people or eras), the stations in order with the lines that stop at each, and your words. */
-export default function MetroEditor({ made, arrival, touched, onChange }: EditorProps) {
+/** Your Metro Map: the lines (people or eras), the stations in order with the lines that stop at each, and the caption (CaptionField). */
+export default function MetroEditor({ arrival, touched, onChange }: EditorProps) {
   // The example's shape (its lines, its stations and who stops where) with its names as placeholders; a link's print fills the names in.
   const ex = PRODUCT.example;
   const a = arrival?.t === "metro" ? arrival.p : null;
   const [lines, setLines] = useState<string[]>(a ? a.l : ex.l.map(() => ""));
   const [stations, setStations] = useState<Station[]>((a ?? ex).s.map((name, j) => ({ name: a ? name : "", mask: (a ?? ex).k[j] })));
-  const words = useWords(arrival?.t === "metro" ? (arrival.p.w ?? "") : "");
   const lex = useLexicon(true);
 
   const problem = (text: string, max: number) => {
@@ -38,11 +37,10 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
   const all = (1 << lines.length) - 1;
   const masks = stations.map((s) => s.mask & all);
   const mapProblem = metroProblem(lines.length, masks);
-  const w = words.value;
   const fine = (e: string | null) => e === null;
   const spec: CustomSpec | null =
-    lex && lineErrors.every(fine) && stationErrors.every(fine) && !mapProblem && w !== null
-      ? { t: "metro", v: 1, p: { l: lines.map((l) => cleanWords(l, LINE_MAX)!), s: stations.map((s) => cleanWords(s.name, STATION_MAX)!), k: masks, ...(w ? { w } : {}) } }
+    lex && lineErrors.every(fine) && stationErrors.every(fine) && !mapProblem
+      ? { t: "metro", v: 1, p: { l: lines.map((l) => cleanWords(l, LINE_MAX)!), s: stations.map((s) => cleanWords(s.name, STATION_MAX)!), k: masks } }
       : null;
 
   useReportSpec(spec, onChange);
@@ -103,7 +101,6 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
         )}
         {mapProblem && <p className="text-xs text-neutral-300">{mapProblem}.</p>}
       </div>
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

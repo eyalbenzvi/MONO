@@ -7,7 +7,7 @@
  * hatched. Years, when any are given, travel packed (born and died a slot,
  * 0 for none, else the year less 1599).
  */
-import { label, unpackInts, wordsOf } from "../specKit";
+import { label, unpackInts, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -16,6 +16,7 @@ export interface Params {
   /** Years: packInts of born, died per slot (0 none, else year − YEAR_BASE). Absent when there are none. */
   y?: string;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Family Tree";
@@ -54,6 +55,11 @@ export function familyYears(p: Params): Years[] {
 }
 /** Years a slot to the packed ints (0 none). */
 export const packYears = (ys: readonly Years[]) => ys.flatMap(([b, d]) => [b === null ? 0 : b - YEAR_BASE, d === null ? 0 : d - YEAR_BASE]);
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!Array.isArray(p.n) || (p.n.length !== 7 && p.n.length !== 15)) return null;

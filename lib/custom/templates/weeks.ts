@@ -9,7 +9,8 @@
  * labels pushed apart so they never touch.
  */
 import { GROUND } from "../svg";
-import { INK, caption, dot, f1, line, text } from "../kit";
+import { INK, caption, dot, f1, line, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { parseDate, type CustomSpec } from "../spec";
 import { weeksDay, type Params } from "../specs/weeks";
 import { wrap } from "../svg";
@@ -33,7 +34,8 @@ export function weekCell(b: string, s: string): [row: number, col: number] {
 
 const thousands = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-export function weeksBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function weeksDraw(p: Params): [string, Lines, number] {
   const rows = p.n;
   const gaps = rows / 10 - 1;
   const pitch = (BOTTOM - TOP - gaps * DECADE - (rows / 10) * HALF) / rows;
@@ -87,7 +89,16 @@ export function weeksBody(p: Params): string {
   }
 
   const span = `${weeksDay(p.b)} – ${weeksDay(p.a)}`;
-  return s + caption(340, p.w ?? "A life in weeks", span, `${thousands(lived)} of ${thousands(rows * 52)} weeks`);
+  return [s, [titleWords(p) ?? "A life in weeks", span, `${thousands(lived)} of ${thousands(rows * 52)} weeks`], 340];
 }
+/** The caption's lines (ours). */
+export const weeksCaption = (p: Params): Lines => weeksDraw(p)[1];
+
+export function weeksBody(p: Params): string {
+  const [s, lines, y] = weeksDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => weeksCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(weeksBody((spec as { p: Params }).p), color);

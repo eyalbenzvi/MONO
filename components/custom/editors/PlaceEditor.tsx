@@ -25,7 +25,7 @@ function parseCoord(raw: string, max: number, pos: string, neg: string): number 
  * (latitude and longitude, typed or from this device's location, rounded to
  * about a kilometre), the day it happened (optional). The words are the caption's title (CaptionField, cap[0]).
  */
-export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
+export default function PlaceEditor({ arrival, onChange }: EditorProps) {
   const a = arrival?.t === "place" ? arrival.p : null;
   const [places, setPlaces] = useState<Places | null>(null);
   useEffect(() => {

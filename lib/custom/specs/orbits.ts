@@ -4,7 +4,7 @@
  * age, each at the angle of their birthday. Names and birth dates; the
  * dates travel packed (days since 1900 as varints), so nine people still fit a link.
  */
-import { isObj, label, packInts, parseDate, unpackInts, wordsOf } from "../specKit";
+import { isObj, label, packInts, parseDate, unpackInts, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -15,6 +15,7 @@ export interface Params {
   /** Who's the sun, by position in `n`, when it isn't the eldest. */
   s?: number;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Family Orbits";
@@ -43,6 +44,11 @@ export const unpackDays = (b: unknown): number[] | null => {
 };
 /** The eldest's position (the first of them on a tie): the sun unless another is chosen. */
 export const eldest = (days: number[]) => days.indexOf(Math.min(...days));
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!isObj(p) || !Array.isArray(p.n) || p.n.length < ORBIT_MIN || p.n.length > ORBIT_MAX) return null;

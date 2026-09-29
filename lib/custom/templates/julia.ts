@@ -8,9 +8,9 @@
  * nearest of its mathematical designs: hairlines traced from an equation,
  * one ink, the equation's numbers in the caption.
  */
-import { INK, caption, longDate } from "../kit";
+import { INK, caption, captionLines, longDate, type Lines } from "../kit";
 import { juliaDrawing } from "../draw/julia";
-import { dayNumber, parseDate } from "../specKit";
+import { dayNumber, parseDate, titleWords, type Cap } from "../specKit";
 import type { CustomSpec } from "../spec";
 import type { Params } from "../specs/julia";
 import { wrap } from "../svg";
@@ -98,21 +98,35 @@ const BOX = { x: 30, y: 24, w: 240, h: 282 };
 /** c written as the caption has it: "c = -0.7269 + 0.1889i". */
 export const cLabel = (re: number, im: number) => `c = ${re < 0 ? "-" : ""}${(Math.abs(re) / 1e4).toFixed(4)} ${im < 0 ? "-" : "+"} ${(Math.abs(im) / 1e4).toFixed(4)}i`;
 
-export function juliaFor(re: number, im: number, title: string, day?: string): string {
+/** The caption's lines for a set: the title, then one line with the day in it when the title is the words (the print's depth stays the same). */
+const juliaLines = (re: number, im: number, title: string, day?: string): Lines => [title, `${day ? `${day} · ` : ""}Julia set · ${cLabel(re, im)}`, undefined];
+
+export function juliaFor(re: number, im: number, title: string, day?: string, cap?: Cap): string {
   const j = juliaDrawing(re / 1e4, im / 1e4, BOX);
   return (
     `<path d="${j.bands}" fill="none" stroke="${INK}" stroke-width=".45" stroke-linejoin="round"/>` +
     (j.inner ? `<path d="${j.inner}" fill="none" stroke="${INK}" stroke-width=".4" stroke-linejoin="round"/>` : "") +
     `<path d="${j.edge}" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>` +
     // One line under the title, with the day in it when the title is the words (the print's depth stays the same).
-    caption(338, title, `${day ? `${day} · ` : ""}Julia set · ${cLabel(re, im)}`)
+    caption(338, ...captionLines(juliaLines(re, im, title, day), cap))
   );
 }
 
-export function juliaBody(p: Params): string {
+/** The set's c for the day, and the caption's title and day (the visitor's words, else the day). */
+function juliaOf(p: Params): [number, number, string, string | undefined] {
   const [y, mo, d] = parseDate(p.d)!;
   const [re, im] = BAND[bandIndex(p.d)];
-  return juliaFor(re, im, p.w ?? longDate(y, mo, d), p.w ? longDate(y, mo, d) : undefined);
+  const w = titleWords(p);
+  return [re, im, w ?? longDate(y, mo, d), w ? longDate(y, mo, d) : undefined];
 }
+
+/** The caption's lines (ours). */
+export const juliaCaption = (p: Params): Lines => juliaLines(...juliaOf(p));
+
+export function juliaBody(p: Params): string {
+  return juliaFor(...juliaOf(p), p.cap);
+}
+
+export const captionOf = (spec: CustomSpec) => juliaCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(juliaBody((spec as { p: Params }).p), color);

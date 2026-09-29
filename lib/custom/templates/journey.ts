@@ -11,7 +11,8 @@
  * through the side that faces us. Stops are numbered; the list and the total
  * distance sit under the globe.
  */
-import { INK, caption, f1, text } from "../kit";
+import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { loadCities } from "../data";
 import type { City, CustomSpec } from "../spec";
 import type { Params as JourneyParams } from "../specs/journey";
@@ -89,7 +90,8 @@ function basis(v: V3): [V3, V3] {
 
 const km = (n: number) => String(Math.round(n / 10) * 10).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-export function journeyBody(p: JourneyParams, places: City[] = []): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, number] {
   const byId = new Map(places.map((c) => [c.id, c]));
   const cities = p.c.map((id) => byId.get(id));
   const known = cities.filter((c): c is City => !!c);
@@ -255,10 +257,19 @@ export function journeyBody(p: JourneyParams, places: City[] = []): string {
 
   const first = known[0]?.name, last = known[known.length - 1]?.name;
   const route = first && last ? (first === last ? `${first} and back` : `${first} to ${last}`) : "Your Journey";
-  const title = p.w ?? (route.length <= 34 ? route : "Your Journey");
+  const title = titleWords(p) ?? (route.length <= 34 ? route : "Your Journey");
   const sub = `${cities.length} stops · ${km(total)} km`;
-  return s + caption(338, title, sub, p.w && route.length <= 44 ? route : undefined);
+  return [s, [title, sub, titleWords(p) && route.length <= 44 ? route : undefined], 338];
 }
+/** The caption's lines (ours). */
+export const journeyCaption = (p: JourneyParams, places: City[] = []): Lines => journeyDraw(p, places)[1];
+
+export function journeyBody(p: JourneyParams, places: City[] = []): string {
+  const [s, lines, y] = journeyDraw(p, places);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec, data: RenderData = {}) => journeyCaption((spec as { p: JourneyParams }).p, data.places ?? []);
 
 export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(journeyBody((spec as { p: JourneyParams }).p, data.places ?? []), color);
 

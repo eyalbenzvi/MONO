@@ -3,19 +3,18 @@
 import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { LINK_MAX, PRODUCT, linkOk, linkProblem, linkUrl, tidyLink, type Params } from "@/lib/custom/specs/qr";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, useLexicon } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /**
- * Your Link: the web address and the words. Nothing is fetched or checked
+ * Your Link: the web address (the caption is CaptionField's). Nothing is fetched or checked
  * online: the address is encoded on this device as typed, and the preview
  * scans, so the customer can try it with their own phone.
  */
-export default function QrEditor({ made, arrival, touched, onChange }: EditorProps) {
+export default function QrEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "qr" ? (arrival.p as Params) : null;
   const [typed, setTyped] = useState(a ? (a.h ? linkUrl(a) : a.a) : "");
-  const words = useWords(a?.w ?? "");
   const lex = useLexicon(!!typed.trim());
 
   const { a: addr, http } = tidyLink(typed);
@@ -23,9 +22,8 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
   // The address prints, so its words go through the lexicon too ("n1ke.com" names a brand).
   const refused = addr && !problem && lex ? lex.wordsProblem(addr) : null;
   const error = problem ?? refused;
-  const w = words.value;
   const spec: CustomSpec | null =
-    addr && !error && linkOk(addr) && lex && w !== null ? { t: "qr", v: 1, p: { a: addr, ...(http ? { h: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
+    addr && !error && linkOk(addr) && lex ? { t: "qr", v: 1, p: { a: addr, ...(http ? { h: 1 as const } : {}) } } : null;
 
   useReportSpec(spec, onChange);
 
@@ -53,7 +51,6 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
           Scans as {linkUrl({ a: addr, h: http ? 1 : undefined })}.
         </p>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

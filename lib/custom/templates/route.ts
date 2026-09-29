@@ -7,7 +7,8 @@
  * had heights, the profile as a strip of bars. No place is named or kept:
  * the spec holds the shape only (lib/custom/specs/route).
  */
-import { INK, caption, f1, line, longDate, text } from "../kit";
+import { INK, caption, f1, line, longDate, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { isolines } from "../draw/islandMarch";
 import type { Point } from "../draw/paths";
 import { simplify } from "../stroke";
@@ -31,7 +32,8 @@ const pathOf = (pts: Point[], width: number | string, extra = "") => {
   return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${extra}/>`;
 };
 
-export function routeBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function routeDraw(p: Params): [string, Lines, number] {
   const grid = routePoints(p.r)!;
   const elev = p.e ? routeElevation(p.e) : null;
   const FY1 = elev ? 226 : 300;
@@ -124,9 +126,18 @@ export function routeBody(p: Params): string {
 
   const date = p.d ? parseDate(p.d) : null;
   const dist0 = p.k !== undefined ? km(p.k) : undefined;
-  const title = p.w ?? dist0 ?? "My route";
+  const title = titleWords(p) ?? dist0 ?? "My route";
   const sub = [title === dist0 ? undefined : dist0, date ? longDate(...date) : undefined].filter(Boolean).join(" · ") || (p.m ? undefined : "Drawn by hand");
-  return out + caption(338, title, sub || sub2, sub ? sub2 : undefined);
+  return [out, [title, sub || sub2, sub ? sub2 : undefined], 338];
 }
+/** The caption's lines (ours). */
+export const routeCaption = (p: Params): Lines => routeDraw(p)[1];
+
+export function routeBody(p: Params): string {
+  const [s, lines, y] = routeDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => routeCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(routeBody((spec as { p: Params }).p), color);

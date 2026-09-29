@@ -3,13 +3,14 @@
  * list, data/cities, by GeoNames id) and optional words. Drawn by
  * lib/custom/templates/journey.
  */
-import { int, wordsOf } from "../specKit";
+import { int, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
   /** The stops, in order: GeoNames ids (data/cities). The same city may come back, never twice in a row. */
   c: number[];
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Journey";
@@ -22,6 +23,11 @@ export function journeyProblem(ids: readonly number[]): string | null {
   if (ids.length > JOURNEY_MAX) return `Up to ${JOURNEY_MAX} places`;
   return ids.some((id, i) => i > 0 && ids[i - 1] === id) ? "The same place twice in a row" : null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, ctx: CheckContext): Params | null {
   const c = p.c;

@@ -5,11 +5,13 @@
  * worked out by the spelling (lib/custom/draw/elementsSpell), which the
  * editor asks before offering a print and the template draws from.
  */
+import type { Cap, CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
   /** The word, capitals A–Z. */
   x: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Name in Elements";
@@ -26,6 +28,9 @@ export function elementsWordProblem(raw: string): string | null {
   }
   return t.length < ELEMENTS_LEN[0] || t.length > ELEMENTS_LEN[1] ? `${ELEMENTS_LEN[0]} to ${ELEMENTS_LEN[1]} letters` : null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   return typeof p.x === "string" && WORD.test(p.x) ? { x: p.x } : null;

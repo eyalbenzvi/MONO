@@ -7,13 +7,14 @@
  * one step only, is no tune: the spec needs two steps at least, and the
  * editor says so instead of drawing a strip.
  */
-import { unpackInts, wordsOf } from "../specKit";
+import { unpackInts, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
   /** The notes: packInts of [dStep, dPitch] a note (see above). */
   m: string;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Music Box";
@@ -65,6 +66,11 @@ export function unpackNotes(m: unknown): Note[] | null {
   }
   return notesProblem(out) ? null : out;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!unpackNotes(p.m)) return null;

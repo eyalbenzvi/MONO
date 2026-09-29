@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { packInts } from "@/lib/custom/specKit";
 import { FAMILY_NAME_MAX, PRODUCT, familyYears, packYears, parseYears, yearsProblem, yearsText, type Params, type Years } from "@/lib/custom/specs/family";
-import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { Switch } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
@@ -13,15 +13,14 @@ import { INPUT, type EditorProps } from "./types";
 const RELATION = ["You", "Father", "Mother", "Father’s father", "Father’s mother", "Mother’s father", "Mother’s mother"];
 const LEGEND = "mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500";
 
-/** Your Family Tree: your name, your parents, grandparents and (a switch) great-grandparents, each with optional years; the words. */
-export default function FamilyEditor({ made, arrival, touched, onChange }: EditorProps) {
+/** Your Family Tree: your name, your parents, grandparents and (a switch) great-grandparents, each with optional years. */
+export default function FamilyEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "family" ? (arrival.p as Params) : null;
   const ex = PRODUCT.example;
   const pad = <T,>(xs: T[], fill: T) => [...xs, ...Array<T>(15 - xs.length).fill(fill)];
   const [names, setNames] = useState<string[]>(() => pad(a?.n ?? [], ""));
   const [years, setYears] = useState<string[]>(() => pad(a ? familyYears(a).map(yearsText).map((t) => t.replace(/^b\. /, "").replace(/^d\. /, "–")) : [], ""));
   const [four, setFour] = useState(a?.n.length === 15);
-  const words = useWords(a ? (a.w ?? "") : "");
   const count = four ? 15 : 7;
   const lex = useLexicon(names.slice(0, count).some((n) => n.trim()));
 
@@ -40,11 +39,10 @@ export default function FamilyEditor({ made, arrival, touched, onChange }: Edito
     const yearsError = !ys ? "Years like 1932–2010" : yearsProblem(ys) ?? (!nm && (ys[0] !== null || ys[1] !== null) ? "Name them first" : null);
     return { nm, ys: (ys ?? [null, null]) as Years, nameError, yearsError };
   });
-  const w = words.value;
-  const ok = !!rows[0].nm && lex && rows.every((r) => !r.nameError && !r.yearsError) && w !== null;
+  const ok = !!rows[0].nm && lex && rows.every((r) => !r.nameError && !r.yearsError);
   const ys = rows.map((r) => r.ys);
   const anyYears = ys.some(([b, d]) => b !== null || d !== null);
-  const spec: CustomSpec | null = ok ? { t: "family", v: 1, p: { n: rows.map((r) => r.nm), ...(anyYears ? { y: packInts(packYears(ys)) } : {}), ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = ok ? { t: "family", v: 1, p: { n: rows.map((r) => r.nm), ...(anyYears ? { y: packInts(packYears(ys)) } : {}) } } : null;
 
   useReportSpec(spec, onChange);
 
@@ -88,7 +86,6 @@ export default function FamilyEditor({ made, arrival, touched, onChange }: Edito
           ))}
         </fieldset>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

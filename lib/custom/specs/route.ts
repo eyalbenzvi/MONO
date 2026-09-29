@@ -6,7 +6,7 @@
  * each step delta-encoded (`packInts`), with the metres one step stands for.
  * No place: nothing in the spec says where on earth it was.
  */
-import { int, num, packInts, parseDate, unpackInts, wordsOf } from "../specKit";
+import { int, num, packInts, parseDate, unpackInts, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -21,6 +21,7 @@ export interface Params {
   /** The day ("YYYY-MM-DD"). */
   d?: string;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Route";
@@ -67,6 +68,11 @@ export function routeElevation(e: unknown): { lo: number; hi: number; q: number[
   return { lo, hi, q };
 }
 export const packElevation = (lo: number, hi: number, q: readonly number[]) => packInts([lo, hi, ...q.map((h, i) => (i ? h - q[i - 1] : h))]);
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   const words = wordsOf(p);

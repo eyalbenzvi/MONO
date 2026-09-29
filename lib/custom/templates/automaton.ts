@@ -7,7 +7,7 @@
  * block. The word sits at the top as its bits, one digit over each cell of
  * the first row, its letters over their bytes.
  */
-import { INK, caption, f1, text } from "../kit";
+import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
 import type { Params } from "../specs/automaton";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
@@ -44,8 +44,8 @@ export function evolve(bits: number[], rule: number, cols: number, rows: number)
   return out;
 }
 
-/** The print's body (white ink, unwrapped). */
-export function automatonBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function automatonDraw(p: Params): [string, Lines, number] {
   const bits = wordBits(p.x);
   const cols = cellsAcross(bits.length);
   const s = (X1 - X0) / cols;
@@ -79,7 +79,17 @@ export function automatonBody(p: Params): string {
     });
     if (d) out += `<path d="${d}" fill="${INK}"/>`;
   });
-  return out + caption(338, p.x, `Rule ${p.r} · ${cols} cells · ${rows} generations`, "Elementary cellular automaton from the word's ASCII bits");
+  return [out, [p.x, `Rule ${p.r} · ${cols} cells · ${rows} generations`, "Elementary cellular automaton from the word's ASCII bits"], 338];
 }
+/** The caption's lines (ours). */
+export const automatonCaption = (p: Params): Lines => automatonDraw(p)[1];
+
+/** The print's body (white ink, unwrapped). */
+export function automatonBody(p: Params): string {
+  const [s, lines, y] = automatonDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => automatonCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(automatonBody((spec as { p: Params }).p), color);

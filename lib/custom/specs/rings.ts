@@ -3,7 +3,7 @@
  * good, normal or hard (one base-3 digit a year: 0 hard, 1 normal, 2 good),
  * and up to three scars (a fire, a break) in years of the span.
  */
-import { FIRST_YEAR, LAST_YEAR, int, wordsOf } from "../specKit";
+import { FIRST_YEAR, LAST_YEAR, int, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -16,6 +16,7 @@ export interface Params {
   /** Scarred years, in order, inside the span. */
   s?: number[];
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Tree Rings";
@@ -32,6 +33,11 @@ export function spanProblem(b: number, c: number): string | null {
   if (c < b) return "The same year or later";
   return c - b > RINGS_SPAN ? `Up to ${RINGS_SPAN + 1} years` : null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (typeof p.b !== "number" || typeof p.c !== "number" || spanProblem(p.b, p.c)) return null;

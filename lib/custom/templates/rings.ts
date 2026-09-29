@@ -14,7 +14,8 @@
  * over a long span the lean flattens, the air narrows and the widths even
  * out to fit.
  */
-import { INK, caption, dot, f1, polyline } from "../kit";
+import { INK, caption, dot, f1, polyline, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import type { Params } from "../specs/rings";
 import { mulberry32 } from "../rng";
@@ -40,7 +41,8 @@ const fnv = fnv1aChars;
 const TAU = Math.PI * 2;
 const angDist = (a: number, b: number) => Math.abs(((((a - b) % TAU) + TAU + Math.PI) % TAU) - Math.PI);
 
-export function ringsBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function ringsDraw(p: Params): [string, Lines, number] {
   const n = p.c - p.b + 1;
   const rnd = mulberry32(fnv(`rings:${p.b}`));
   // Widths from the marks, a young tree's first rings wider, seeded noise.
@@ -222,7 +224,16 @@ export function ringsBody(p: Params): string {
   const sc = p.s ?? [];
   if (sc.length) bits.push(sc.length === 1 ? `a scar in ${sc[0]}` : `scars in ${sc.slice(0, -1).join(", ")} and ${sc[sc.length - 1]}`);
   const span = n === 1 ? `${p.b} · one ring` : `${p.b}–${p.c} · ${n} rings`;
-  return s + caption(344, p.w ?? "Tree rings", span, bits.join(" · ") || undefined);
+  return [s, [titleWords(p) ?? "Tree rings", span, bits.join(" · ") || undefined], 344];
 }
+/** The caption's lines (ours). */
+export const ringsCaption = (p: Params): Lines => ringsDraw(p)[1];
+
+export function ringsBody(p: Params): string {
+  const [s, lines, y] = ringsDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => ringsCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(ringsBody((spec as { p: Params }).p), color);

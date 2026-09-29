@@ -3,20 +3,18 @@
 import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { PRODUCT } from "@/lib/custom/specs/julia";
-import { Field, WordsField, useWords } from "./Field";
+import { Field } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
-/** Your Fractal: the date (it picks the set) and your words. */
-export default function JuliaEditor({ made, arrival, touched, onChange }: EditorProps) {
+/** Your Fractal: the date (it picks the set) and the caption (CaptionField). */
+export default function JuliaEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "julia" ? arrival.p : null;
   const [date, setDate] = useState(a?.d ?? PRODUCT.example.d);
   const [left, setLeft] = useState(false);
-  const words = useWords(a?.w ?? "");
 
   const dateOk = !!parseDate(date);
-  const w = words.value;
-  const spec: CustomSpec | null = dateOk && w !== null ? { t: "julia", v: 1, p: { d: date, ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = dateOk ? { t: "julia", v: 1, p: { d: date } } : null;
   useReportSpec(spec, onChange);
 
   return (
@@ -34,7 +32,6 @@ export default function JuliaEditor({ made, arrival, touched, onChange }: Editor
           className={INPUT}
         />
       </Field>
-      <WordsField words={words} hint={made.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

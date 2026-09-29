@@ -11,7 +11,7 @@
  * bays, spread out (each as far as it can be from the ones before), each
  * name on a patch of ground cleared of lines.
  */
-import { INK, caption, circle, f1, line, text } from "../kit";
+import { INK, caption, circle, f1, line, text, captionLines, type Lines } from "../kit";
 import { fbm, isolines, pad } from "../draw/islandMarch";
 import type { Point } from "../draw/paths";
 import type { CustomSpec } from "../spec";
@@ -140,7 +140,8 @@ interface Box {
 }
 const hit = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
-export function islandBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function islandDraw(p: Params): [string, Lines, number] {
   const { h } = islandGround(p.n, p.s ?? 0);
   let hmax = 0;
   for (const v of h) hmax = Math.max(hmax, v);
@@ -270,7 +271,16 @@ export function islandBody(p: Params): string {
 
   const joined = names.join(" · ");
   const sub = !names.length ? "Uncharted" : joined.length <= 56 ? joined : `${names.length} places`;
-  return s + caption(342, p.n, sub);
+  return [s, [p.n, sub, undefined], 342];
 }
+/** The caption's lines (ours). */
+export const islandCaption = (p: Params): Lines => islandDraw(p)[1];
+
+export function islandBody(p: Params): string {
+  const [s, lines, y] = islandDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => islandCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(islandBody((spec as { p: Params }).p), color);

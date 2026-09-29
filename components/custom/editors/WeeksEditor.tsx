@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { MILESTONES_MAX, MILESTONE_LABEL_MAX, PRODUCT, WEEKS_YEARS, weeksDateProblem, type Milestone, type Params } from "@/lib/custom/specs/weeks";
-import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
@@ -15,8 +15,8 @@ const today = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-/** Your Life in Weeks: the birthday, the day it's counted to, 80 or 90 years, up to five milestones, the words. */
-export default function WeeksEditor({ made, arrival, touched, onChange }: EditorProps) {
+/** Your Life in Weeks: the birthday, the day it's counted to, 80 or 90 years, up to five milestones. */
+export default function WeeksEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "weeks" ? (arrival.p as Params) : null;
   const ex = PRODUCT.example;
   const [b, setB] = useState(a?.b ?? "");
@@ -24,7 +24,6 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
   const [n, setN] = useState<Params["n"]>((a ?? ex).n);
   // A link's milestones, else as many empty rows as the example has, its labels as placeholders.
   const [marks, setMarks] = useState<{ d: string; l: string }[]>(() => (a ? (a.m ?? []).map(([d, l]) => ({ d, l })) : (ex.m ?? []).map(() => ({ d: "", l: "" }))));
-  const words = useWords(a?.w ?? "");
   const lex = useLexicon(marks.some((m) => m.l.trim()));
 
   const bOk = !!parseDate(b);
@@ -42,9 +41,8 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
   const dates = kept.map((r) => r.d).sort();
   const twice = dates.some((d, i) => i > 0 && d === dates[i - 1]);
   const m: Milestone[] = kept.map((r) => [r.d, r.l] as Milestone).sort((x, y) => (x[0] < y[0] ? -1 : 1));
-  const w = words.value;
-  const ok = bOk && !asError && !twice && rows.every((r) => !r.error) && (!kept.length || lex) && w !== null;
-  const spec: CustomSpec | null = ok ? { t: "weeks", v: 1, p: { b, a: asOf, n, ...(m.length ? { m } : {}), ...(w ? { w } : {}) } } : null;
+  const ok = bOk && !asError && !twice && rows.every((r) => !r.error) && (!kept.length || lex);
+  const spec: CustomSpec | null = ok ? { t: "weeks", v: 1, p: { b, a: asOf, n, ...(m.length ? { m } : {}) } } : null;
 
   useReportSpec(spec, onChange);
 
@@ -83,7 +81,6 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
           Add a milestone
         </button>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

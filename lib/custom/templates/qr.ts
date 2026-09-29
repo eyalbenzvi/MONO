@@ -14,7 +14,8 @@
  * white, so the code is inverted, which the phone cameras (iOS Camera,
  * Google Lens and Android's own) read.
  */
-import { INK, caption, f1, line, text } from "../kit";
+import { INK, caption, f1, line, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { encodeQr } from "../draw/qr";
 import { hostOf, linkUrl, type Params } from "../specs/qr";
 import { wrap } from "../svg";
@@ -68,11 +69,11 @@ function marks(x0: number, y0: number, x1: number, y1: number): string {
   return s;
 }
 
-/** The print's body (white ink, unwrapped). */
-export function qrBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function qrDraw(p: Params): [string, Lines, number] {
   const url = linkUrl(p);
   const qr = encodeQr(url, QR_MIN_VERSION);
-  if (!qr) return caption(338, "Your link", "Too long for a code");
+  if (!qr) return ["", ["Your link", "Too long for a code", undefined], 338];
   const { size, dark, align, version, mask } = qr;
   const m = CODE.s / size;
   const at = (i: number) => i * m;
@@ -110,8 +111,18 @@ export function qrBody(p: Params): string {
   const top = (y1 + 326) / 2 - ((lines.length - 1) * lead) / 2 + size2 * 0.35;
   lines.forEach((l, i) => (s += text(150, top + i * lead, l, Math.round(size2 * 10) / 10, { bold: true })));
   const host = hostOf(p.a);
-  const title = p.w ?? (host.length <= 28 ? host : `${host.slice(0, 27)}…`);
-  return s + caption(342, title, `QR code · version ${version} · error correction Q`, "A quarter of it can be lost and it still reads");
+  const title = titleWords(p) ?? (host.length <= 28 ? host : `${host.slice(0, 27)}…`);
+  return [s, [title, `QR code · version ${version} · error correction Q`, "A quarter of it can be lost and it still reads"], 342];
 }
+/** The caption's lines (ours). */
+export const qrCaption = (p: Params): Lines => qrDraw(p)[1];
+
+/** The print's body (white ink, unwrapped). */
+export function qrBody(p: Params): string {
+  const [s, lines, y] = qrDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => qrCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(qrBody((spec as { p: Params }).p), color);

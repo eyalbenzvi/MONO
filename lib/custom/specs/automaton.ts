@@ -4,6 +4,7 @@
  * a few rules known to keep drawing (fuzzed over many words: none dies out
  * or fills solid), each cell a dot or a square.
  */
+import type { Cap, CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -13,6 +14,7 @@ export interface Params {
   r: (typeof AUTOMATON_RULES)[number];
   /** Squares instead of dots. */
   s?: 1;
+  cap?: Cap;
 }
 
 export const NAME = "Your Automaton";
@@ -32,6 +34,9 @@ export function automatonWordProblem(raw: string): string | null {
   }
   return t.length > AUTOMATON_MAX ? `Up to ${AUTOMATON_MAX} characters` : null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (typeof p.x !== "string" || p.x.length > AUTOMATON_MAX || !WORD.test(p.x)) return null;

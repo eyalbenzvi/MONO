@@ -9,7 +9,8 @@
  * smaller line. A ring shares one size, the largest its longest name allows.
  * Blank slots are hatched. A double rule and a ring of ticks close it.
  */
-import { INK, arcText as arcTextKit, caption, circle, f1, text } from "../kit";
+import { INK, arcText as arcTextKit, caption, circle, f1, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import { familyYears, yearsText, type Params } from "../specs/family";
 import { wrap } from "../svg";
@@ -98,7 +99,8 @@ function ringSize(names: string[], years: string[], r0: number, r1: number, swee
   return size;
 }
 
-export function familyBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function familyDraw(p: Params): [string, Lines, number] {
   const gens = p.n.length === 15 ? 4 : 3;
   const rs = radii(gens);
   const ys = familyYears(p).map(yearsText);
@@ -166,9 +168,19 @@ export function familyBody(p: Params): string {
   s += circle(CX, CY, r0 - 2.6, 0.4);
 
   const named = p.n.filter(Boolean).length;
-  const title = p.w ?? "Family tree";
-  return s + caption(340, title, `${gens === 4 ? "Four" : "Three"} generations · ${named} of ${p.n.length} names`);
+  const title = titleWords(p) ?? "Family tree";
+  return [s, [title, `${gens === 4 ? "Four" : "Three"} generations · ${named} of ${p.n.length} names`, undefined], 340];
 }
+/** The caption's lines (ours). */
+export const familyCaption = (p: Params): Lines => familyDraw(p)[1];
+
+export function familyBody(p: Params): string {
+  const [s, lines, y] = familyDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
 const f1Size = (v: number) => Math.round(v * 10) / 10;
+
+export const captionOf = (spec: CustomSpec) => familyCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(familyBody((spec as { p: Params }).p), color);

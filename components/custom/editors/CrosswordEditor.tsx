@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { CROSS_MAX, CROSS_MIN, PRODUCT, crossNames, crossWordProblem } from "@/lib/custom/specs/crossword";
 import { buildCrossword } from "@/lib/custom/draw/crossword";
-import { Field, WORDS_INPUT_MAX, useLexicon, useWords } from "./Field";
+import { Field, useLexicon } from "./Field";
 import { Switch } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -21,7 +21,6 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
   const ex = PRODUCT.example;
   const [text, setText] = useState(a ? crossNames(a.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ") : "");
   const [blank, setBlank] = useState(a?.h === 1);
-  const title = useWords(a?.w ?? "");
   const lex = useLexicon(!!text.trim());
 
   const names = namesOf(text);
@@ -43,8 +42,7 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
               ? lex.wordsProblem(names.join(" "))
               : null;
   const ok = names.length > 0 && !namesError && !!lex;
-  const w = title.value;
-  const spec: CustomSpec | null = ok && w !== null ? { t: "crossword", v: 1, p: { x: names.join(" "), ...(blank ? { h: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = ok ? { t: "crossword", v: 1, p: { x: names.join(" "), ...(blank ? { h: 1 as const } : {}) } } : null;
   // Which names cross nothing (the builder takes tens of milliseconds at most).
   const key = spec ? JSON.stringify(spec) : "";
   const namesKey = ok ? names.join(" ") : "";
@@ -61,9 +59,6 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
     <>
       <Field label="Names" hint={`${CROSS_MIN} to ${CROSS_MAX}, one word each`} error={namesError} note={note} htmlFor="make-crossword-names">
         <input id="make-crossword-names" maxLength={CROSS_MAX * 14} value={text} placeholder={crossNames(ex.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ")} autoComplete="off" autoCapitalize="words" onChange={(e) => setText(e.target.value)} aria-invalid={!!namesError} className={INPUT} />
-      </Field>
-      <Field label="Title" hint="optional" error={title.error} htmlFor="make-crossword-title">
-        <input id="make-crossword-title" value={title.text} maxLength={WORDS_INPUT_MAX} placeholder={PRODUCT.wordsHint} autoComplete="off" onChange={(e) => title.setText(e.target.value)} onBlur={title.touch} aria-invalid={!!title.error} className={INPUT} />
       </Field>
       <Switch label="Blank, to solve" checked={blank} onChange={setBlank} />
     </>

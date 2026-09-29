@@ -2,7 +2,7 @@
  * Your Snowflake: a name (or a word), the seed of the crystal and printed
  * small beneath it. Drawn by lib/custom/templates/snowflake.
  */
-import { capOf, label, type Cap, type CapRule } from "../specKit";
+import { label, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -18,8 +18,7 @@ export const SNOWFLAKE_MAX = 20;
 export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
-  const cap = capOf(p, CAP);
-  return label(p.n, SNOWFLAKE_MAX) && cap ? { n: p.n, ...cap } : null;
+  return label(p.n, SNOWFLAKE_MAX) ? { n: p.n } : null;
 }
 
 export const detail = (p: Params) => p.n;

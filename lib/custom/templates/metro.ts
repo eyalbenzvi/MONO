@@ -16,7 +16,8 @@
  * already set (vertical rather than horizontal, as the names then have
  * their own rows); the whole is then centred on the print.
  */
-import { INK, caption, f1, text } from "../kit";
+import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { mulberry32 } from "../rng";
 import type { CustomSpec } from "../spec";
 import { LINE_STYLES, type Params as MetroParams } from "../specs/metro";
@@ -241,7 +242,8 @@ export function metroPlan(p: MetroParams) {
   return { ...map, sc, segs, marks, placed };
 }
 
-export function metroBody(p: MetroParams): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function metroDraw(p: MetroParams): [string, Lines, number] {
   const { routes, stations, rows, changed, sc, segs, placed } = metroPlan(p);
   let s = "";
   // Lines first, the last line under the first, each cased in the ground so it crosses the river and the others cleanly.
@@ -278,8 +280,17 @@ export function metroBody(p: MetroParams): string {
     });
   });
   const route = `${p.s[0]} to ${p.s[p.s.length - 1]}`;
-  const title = p.w ?? (route.length <= 30 ? route : "Our Map");
-  return out + caption(338, title, `${p.l.length} lines · ${p.s.length} stations`, p.w && route.length <= 44 ? route : undefined);
+  const title = titleWords(p) ?? (route.length <= 30 ? route : "Our Map");
+  return [out, [title, `${p.l.length} lines · ${p.s.length} stations`, titleWords(p) && route.length <= 44 ? route : undefined], 338];
 }
+/** The caption's lines (ours). */
+export const metroCaption = (p: MetroParams): Lines => metroDraw(p)[1];
+
+export function metroBody(p: MetroParams): string {
+  const [s, lines, y] = metroDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => metroCaption((spec as { p: MetroParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(metroBody((spec as { p: MetroParams }).p), color);

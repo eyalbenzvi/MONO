@@ -3,7 +3,7 @@
  * constructed alphabet (lib/custom/draw/monogram), in one of three
  * arrangements, with an optional year.
  */
-import { isObj } from "../specKit";
+import { isObj, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export const MONO_STYLES = ["lace", "stack", "seal"] as const;
@@ -16,6 +16,7 @@ export interface Params {
   s: MonoStyle;
   /** The year under it (1900–2100). */
   y?: number;
+  cap?: Cap;
 }
 
 export const NAME = "Your Monogram";
@@ -31,6 +32,9 @@ export function initialsProblem(raw: string): string | null {
   }
   return t.length < 2 || t.length > 3 ? "Two or three letters" : null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!isObj(p) || typeof p.x !== "string" || !INITIALS.test(p.x)) return null;

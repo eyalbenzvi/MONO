@@ -8,7 +8,7 @@
  * (lib/custom/draw/ornament), as a watch dial or a banknote's. The year, when
  * given, sits under it between two rules.
  */
-import { INK, line, text } from "../kit";
+import { INK, captionLines, line, text, type Lines } from "../kit";
 import { GLYPHS, interlace, meeting, placedStrokes, type Placed } from "../draw/monogram";
 import { guilloche } from "../draw/ornament";
 import type { CustomSpec } from "../spec";
@@ -131,8 +131,18 @@ export function monogramBody(p: Params): string {
   }
   s += interlace(placed.letters, ribbonFor(placed.width));
   if (dated) s += year(p.y!, 322, p.s === "seal" ? 80 : p.s === "stack" ? 70 : 90);
-  return s + text(CX, 356, `${chars.join(" · ")}`, 7, { spacing: 2 });
+  // The caption: the letters, spaced, at the foot; the visitor's own lines under them, smaller.
+  const [l1, l2, l3] = captionLines(monogramCaption(p), p.cap);
+  if (l1) s += text(CX, 356, l1, 7, { spacing: 2 });
+  if (l2) s += text(CX, 367, l2, 6);
+  if (l3) s += text(CX, 377, l3, 6);
+  return s;
 }
+
+/** The caption's lines (ours): the letters, spaced; nothing under them until the visitor writes it. */
+export const monogramCaption = (p: Params): Lines => [[...p.x].join(" · "), undefined, undefined];
+
+export const captionOf = (spec: CustomSpec) => monogramCaption((spec as { p: Params }).p);
 
 /** The ribbon at a given width in print units. */
 const ribbonFor = (width: number) => ribbon(width, 1);

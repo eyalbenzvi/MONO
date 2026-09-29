@@ -9,7 +9,8 @@
  * the letters turn to read left to right. Orbits are concentric and at
  * least a label's height apart, so no two names can meet.
  */
-import { INK, caption, circle, dot, f1, line, text } from "../kit";
+import { INK, caption, circle, dot, f1, line, text, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { dateOf, eldest, unpackDays, type Params } from "../specs/orbits";
 import type { CustomSpec } from "../spec";
 import { wrap } from "../svg";
@@ -76,7 +77,8 @@ function brokenCircle(r: number, gaps: [number, number][], width: number): strin
   return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${width}"/>`;
 }
 
-export function orbitsBody(p: Params): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function orbitsDraw(p: Params): [string, Lines, number] {
   const days = unpackDays(p.b)!;
   const sun = p.s ?? eldest(days);
   const people = p.n.map((name, i) => ({ name, i, day: days[i], date: dateOf(days[i]) }));
@@ -135,10 +137,19 @@ export function orbitsBody(p: Params): string {
   });
 
   const years = people.map((q) => q.date[0]);
-  const title = p.w ?? "Family Orbits";
+  const title = titleWords(p) ?? "Family Orbits";
   const [y0, y1] = [Math.min(...years), Math.max(...years)];
   const sub = `${people.length} people · ${y0 === y1 ? `all born ${y0}` : `${y0}–${y1}`}`;
-  return s + caption(338, title, sub, `${S.name} at the centre · the elder nearer · each at their birthday`);
+  return [s, [title, sub, `${S.name} at the centre · the elder nearer · each at their birthday`], 338];
 }
+/** The caption's lines (ours). */
+export const orbitsCaption = (p: Params): Lines => orbitsDraw(p)[1];
+
+export function orbitsBody(p: Params): string {
+  const [s, lines, y] = orbitsDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => orbitsCaption((spec as { p: Params }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(orbitsBody((spec as { p: Params }).p), color);

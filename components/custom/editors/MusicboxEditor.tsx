@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { packInts } from "@/lib/custom/specKit";
 import { NOTES_MAX, PITCHES, PRODUCT, STEPS, isSharp, notesProblem, packNotes, pitchName, tidyNotes, unpackNotes, type Note, type Params } from "@/lib/custom/specs/musicbox";
-import { WordsField, useWords } from "./Field";
+
 import { type EditorProps } from "./types";
 
 /** A step's length when played back (an eighth at about 136 bpm). */
@@ -35,20 +35,18 @@ function pluck(ctx: AudioContext, out: AudioNode, p: number, t: number) {
 }
 
 /** Your Music Box: notes on a step grid (the strip itself) or from a two-octave keyboard, a local playback, the title. */
-export default function MusicboxEditor({ made, arrival, touched, onChange }: EditorProps) {
+export default function MusicboxEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "musicbox" ? (arrival.p as Params) : null;
   const [notes, setNotes] = useState<Note[]>(() => unpackNotes((a ?? PRODUCT.example).m) ?? []);
   const [cursor, setCursor] = useState<[step: number, pitch: number]>([0, 12]);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
-  const words = useWords(a?.w ?? "");
   const audio = useRef<{ ctx: AudioContext; out: GainNode; raf: number } | null>(null);
   const grid = useRef<HTMLDivElement>(null);
 
   const tidy = tidyNotes(notes);
   const problem = notesProblem(tidy);
-  const w = words.value;
-  const spec: CustomSpec | null = !problem && w !== null ? { t: "musicbox", v: 1, p: { m: packInts(packNotes(tidy)), ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = !problem ? { t: "musicbox", v: 1, p: { m: packInts(packNotes(tidy)) } } : null;
 
   const report = useRef(onChange);
   report.current = onChange;
@@ -222,7 +220,6 @@ export default function MusicboxEditor({ made, arrival, touched, onChange }: Edi
         </div>
         {problem ? <p className="mt-2 text-xs text-neutral-300">{problem}</p> : full && <p className="mt-2 text-xs text-neutral-500">{NOTES_MAX} notes at most.</p>}
       </div>
-      <WordsField words={words} hint={made.wordsHint ?? PRODUCT.wordsHint ?? ""} touched={touched} />
     </>
   );
 }

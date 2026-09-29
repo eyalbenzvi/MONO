@@ -16,7 +16,7 @@ const bucket = (n: number) => (n < 10 ? "<10" : n < 50 ? "10-49" : n < 200 ? "50
  * drawing again replaces it), "Clear", and "Example lines" for a page
  * without a pointer; the repeat and the mirror. The words are the caption's title (CaptionField, cap[0]).
  */
-export default function LineEditor({ made, arrival, onChange }: EditorProps) {
+export default function LineEditor({ arrival, onChange }: EditorProps) {
   const a = arrival?.t === "line" ? arrival.p : null;
   const [s, setS] = useState<string | null>(a?.s ?? exampleStroke(0));
   const [n, setN] = useState<LineParams["n"]>(a?.n ?? 12);

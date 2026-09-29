@@ -24,7 +24,7 @@ export type Captioner = (spec: CustomSpec, data: RenderData) => Lines;
 export interface TemplateModule {
   render: Renderer;
   /** Every template has one; optional only while the templates move to it. */
-  captionOf?: Captioner;
+  captionOf: Captioner;
   prepare?: (spec: CustomSpec) => Promise<RenderData>;
 }
 /** Templates with a chunk of their own (each module exports `render`, and `prepare` when it needs data). */
@@ -65,13 +65,10 @@ export async function prepareData(spec: CustomSpec): Promise<RenderData> {
   return m?.prepare ? m.prepare(spec) : {};
 }
 
-/** A template without its caption's lines yet (only while the templates move to them). */
-export const NO_CAPTION: Captioner = () => [undefined];
-
 /** A template's caption lines (ours), from its chunk (the dated four from lib/custom). */
 export async function loadCaptioner(t: TemplateId): Promise<Captioner> {
   const own = OWN[t];
-  if (own) return (await own()).captionOf ?? NO_CAPTION;
+  if (own) return (await own()).captionOf;
   return (await import("./index")).customCaption;
 }
 

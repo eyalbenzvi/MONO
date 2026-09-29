@@ -10,7 +10,7 @@
  * designs (a square grid, one ink, tone from hatching); the khatam tiles are
  * the next nearest.
  */
-import { INK, caption, f1, longDate, text } from "../kit";
+import { INK, caption, f1, longDate, text, captionLines, type Lines } from "../kit";
 import { PROMOS, decodeMoves, fileOf, inCheck, isLegal, legalMoves, play, rankOf, startPosition, toSan, type Move, type Piece, type Position } from "../draw/chess";
 import { parseDate, type CustomSpec } from "../spec";
 import { unpackInts } from "../specKit";
@@ -114,7 +114,8 @@ function scoreSheet(sans: string[], top: number, bottom: number): string {
   return "";
 }
 
-export function chessBody(p: ChessParams): string {
+/** The drawing, the caption's lines as ours, and where the caption sits. */
+function chessDraw(p: ChessParams): [string, Lines, number] {
   const game = replay(p);
   let s = "";
   // The board: dark squares hatched at 45°, a frame, files and ranks.
@@ -172,7 +173,16 @@ export function chessBody(p: ChessParams): string {
   const moves = Math.ceil(plies / 2);
   const sub = [`${moves} ${moves === 1 ? "move" : "moves"}`, mate ? "checkmate" : null, result].filter(Boolean).join(" · ");
   const date = p.d ? parseDate(p.d) : null;
-  return s + caption(342, title, sub, date ? longDate(...date) : undefined);
+  return [s, [title, sub, date ? longDate(...date) : undefined], 342];
 }
+/** The caption's lines (ours). */
+export const chessCaption = (p: ChessParams): Lines => chessDraw(p)[1];
+
+export function chessBody(p: ChessParams): string {
+  const [s, lines, y] = chessDraw(p);
+  return s + caption(y, ...captionLines(lines, p.cap));
+}
+
+export const captionOf = (spec: CustomSpec) => chessCaption((spec as { p: ChessParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(chessBody((spec as { p: ChessParams }).p), color);

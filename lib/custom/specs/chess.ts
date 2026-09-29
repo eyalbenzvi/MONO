@@ -10,7 +10,7 @@
  * [ply, piece] pairs, piece 1 knight, 2 bishop, 3 rook, plies rising. The
  * template replays the moves and stops at the first that isn't legal.
  */
-import { label, parseDate, unpackInts } from "../specKit";
+import { label, parseDate, unpackInts, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export type ChessResult = "1-0" | "0-1" | "1/2";
@@ -25,6 +25,7 @@ export interface Params {
   /** The day ("YYYY-MM-DD"). */
   d?: string;
   r?: ChessResult;
+  cap?: Cap;
 }
 
 export const NAME = "Your Chess Game";
@@ -33,6 +34,9 @@ export const CHESS_MAX_PLIES = 120;
 export const PLAYER_MAX = 18;
 export const RESULTS: readonly ChessResult[] = ["1-0", "0-1", "1/2"];
 const MOVES = /^(?:[A-Za-z0-9_-]{2}){1,120}$/;
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (typeof p.m !== "string" || !MOVES.test(p.m)) return null;

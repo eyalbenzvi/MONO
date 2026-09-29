@@ -6,7 +6,7 @@
  * fetched or checked online; whether the address leads anywhere is the
  * customer's to try (the preview scans).
  */
-import { flag, wordsOf } from "../specKit";
+import { flag, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -15,6 +15,7 @@ export interface Params {
   /** Scans as http:// (https:// otherwise). */
   h?: 1;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Link";
@@ -69,6 +70,11 @@ export function linkProblem(typed: string): string | null {
 
 /** What the code holds. */
 export const linkUrl = (p: Pick<Params, "a" | "h">) => `${p.h ? "http" : "https"}://${p.a}`;
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (typeof p.a !== "string" || !linkOk(p.a)) return null;

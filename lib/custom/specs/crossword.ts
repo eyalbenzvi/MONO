@@ -4,7 +4,7 @@
  * catalogue's Type prints. The names print filled in, or (`h: 1`) as a blank
  * grid with the names listed under it by length, to be fitted back in.
  */
-import { isObj, wordsOf } from "../specKit";
+import { isObj, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -14,6 +14,7 @@ export interface Params {
   h?: 1;
   /** The title (optional words). */
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Crossword";
@@ -35,6 +36,11 @@ export function crossWordProblem(raw: string): string | null {
 
 /** The names of a spec's `x`. */
 export const crossNames = (x: string) => x.split(" ");
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!isObj(p) || typeof p.x !== "string" || p.x.length > 160) return null;

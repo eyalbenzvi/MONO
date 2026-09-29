@@ -2,16 +2,22 @@
  * Your Fractal: a date drawn as a Julia set (lib/custom/templates/julia
  * picks the set's c from a curated band by the day). A date and optional words.
  */
-import { isObj, parseDate, wordsOf } from "../specKit";
+import { isObj, parseDate, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
   /** The day, "YYYY-MM-DD" (1900–2100). */
   d: string;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Fractal";
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!isObj(p) || !parseDate(p.d)) return null;

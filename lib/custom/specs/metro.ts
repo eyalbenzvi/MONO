@@ -7,7 +7,7 @@
  * too faint to print). Optional words for the title. Drawn by
  * lib/custom/templates/metro.
  */
-import { int, label, wordsOf } from "../specKit";
+import { int, label, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -18,6 +18,7 @@ export interface Params {
   /** Per station, the lines that stop there: bit i for line i. */
   k: number[];
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Metro Map";
@@ -38,6 +39,11 @@ export function metroProblem(lines: number, k: readonly number[]): string | null
   for (let i = 0; i < lines; i++) if (!k.some((m) => m & (1 << i) && m !== 1 << i)) return "Every line needs to share a station with another";
   return null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   const { l, s, k } = p;

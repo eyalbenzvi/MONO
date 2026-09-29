@@ -4,7 +4,7 @@
  * (lib/custom/draw/tartan). A sett is 4–8 stripes, each a tone and a thread
  * count: K the densest hatch, D dense, L sparse, W blank ("K8W2D12L4").
  */
-import { label, wordsOf } from "../specKit";
+import { label, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -13,6 +13,7 @@ export interface Params {
   /** The sett, when edited: tone letters and counts, 4–8 stripes, neighbours unlike. */
   t?: string;
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Tartan";
@@ -30,6 +31,9 @@ export function parseSett(t: unknown): [Tone, number][] | null {
   return out.reduce((a, [, c]) => a + c, 0) <= SETT_MAX ? out : null;
 }
 export const settText = (s: [Tone, number][]) => s.map(([t, c]) => `${t}${c}`).join("");
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!label(p.n, TARTAN_NAME_MAX)) return null;

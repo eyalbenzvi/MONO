@@ -4,7 +4,7 @@
  * to is part of the spec (never "today" at drawing time), so the same link
  * always draws the same print.
  */
-import { FIRST_YEAR, LAST_YEAR, label, parseDate, wordsOf } from "../specKit";
+import { FIRST_YEAR, LAST_YEAR, label, parseDate, wordsOf, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export type Milestone = [date: string, label: string];
@@ -18,6 +18,7 @@ export interface Params {
   /** Milestones, in date order, one a day, inside the grid. */
   m?: Milestone[];
   w?: string;
+  cap?: Cap;
 }
 
 export const NAME = "Your Life in Weeks";
@@ -39,6 +40,11 @@ export function weeksDateProblem(b: string, n: number, s: string): string | null
   if (utc(d) >= gridEnd(b, n)) return `Within the ${n} years`;
   return null;
 }
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
+/** The words (`w`) were the caption's title: the editor now writes cap[0]. */
+export const WORDS_TITLE = true;
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!parseDate(p.b) || !WEEKS_YEARS.includes(p.n as never)) return null;

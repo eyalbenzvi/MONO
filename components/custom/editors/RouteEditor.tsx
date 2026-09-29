@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { routeFromDrawing, routeFromTrack, type TrackPoint } from "@/lib/custom/draw/route";
 import { FIRST_YEAR, LAST_YEAR, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { ROUTE_MAX_KM, routePoints, type Params } from "@/lib/custom/specs/route";
-import { Field, WordsField, useWords } from "./Field";
+import { Field } from "./Field";
 import { Segmented, Switch } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
@@ -50,7 +50,6 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
   const [fileName, setFileName] = useState("");
   const [date, setDate] = useState(start.d ?? "");
   const [dist, setDist] = useState(start.k !== undefined ? String(start.k) : "");
-  const words = useWords(start.w ?? "");
   const pad = useRef<HTMLDivElement>(null);
   const [drawing, setDrawing] = useState<[number, number][] | null>(null);
 
@@ -81,10 +80,9 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
 
   const k = dist.trim() === "" ? undefined : KM.test(dist.trim()) && Number(dist.trim().replace(",", ".")) >= 0.1 && Number(dist.trim().replace(",", ".")) <= ROUTE_MAX_KM ? Number(dist.trim().replace(",", ".")) : null;
   const dateOk = !date || (!!parseDate(date) && Number(date.slice(0, 4)) >= FIRST_YEAR && Number(date.slice(0, 4)) <= LAST_YEAR);
-  const w = words.value;
   const spec: CustomSpec | null =
-    shape && k !== null && dateOk && w !== null
-      ? { t: "route", v: 1, p: { r: shape.r, ...(shape.m !== undefined ? { m: shape.m } : {}), ...(k !== undefined ? { k } : {}), ...(shape.e ? { e: shape.e } : {}), ...(date ? { d: date } : {}), ...(w ? { w } : {}) } }
+    shape && k !== null && dateOk
+      ? { t: "route", v: 1, p: { r: shape.r, ...(shape.m !== undefined ? { m: shape.m } : {}), ...(k !== undefined ? { k } : {}), ...(shape.e ? { e: shape.e } : {}), ...(date ? { d: date } : {}) } }
       : null;
   useReportSpec(spec, onChange);
 
@@ -154,7 +152,6 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
           </div>
         </div>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Distance" hint="km, optional" error={k === null ? `0.1 to ${ROUTE_MAX_KM} km` : null} htmlFor="make-route-km">
           <input id="make-route-km" value={dist} inputMode="decimal" maxLength={6} autoComplete="off" placeholder="10.5" onChange={(e) => setDist(e.target.value)} aria-invalid={k === null} className={`${INPUT} font-mono`} />

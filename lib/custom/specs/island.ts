@@ -2,7 +2,7 @@
  * Your Island: an island grown from a name (seeded noise, lib/custom/
  * templates/island), with up to six places on it, named for your people.
  */
-import { int, label } from "../specKit";
+import { int, label, type Cap, type CapRule } from "../specKit";
 import type { CheckContext, ProductMeta } from "./types";
 
 export interface Params {
@@ -12,6 +12,7 @@ export interface Params {
   x?: string[];
   /** Another island from the same name: 1–ISLAND_REDRAWS (absent: the first). */
   s?: number;
+  cap?: Cap;
 }
 
 export const NAME = "Your Island";
@@ -19,6 +20,9 @@ export const ISLAND_NAME_MAX = 20;
 export const ISLAND_PLACE_MAX = 14;
 export const ISLAND_PLACES = 6;
 export const ISLAND_REDRAWS = 99;
+
+/** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */
+export const CAP: CapRule = { hide: [true, true, true] };
 
 export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | null {
   if (!label(p.n, ISLAND_NAME_MAX)) return null;
