@@ -53,7 +53,7 @@ export const detail = (p: Params) => p.w ?? p.l.join(" · ");
 
 export const PRODUCT: ProductMeta<Params> = {
   line: "Your story as a metro map: its people as lines, its places as stations.",
-  from: "Lines and their stations",
+  from: "Your story, stop by stop",
   group: "people",
   base: "schematic",
   wordsHint: "How we got here",

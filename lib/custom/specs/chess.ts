@@ -63,7 +63,7 @@ export const detail = (p: Params) => (p.a && p.b ? `${p.a} v ${p.b}` : `${Math.c
 
 export const PRODUCT: ProductMeta<Params> = {
   line: "A game you played: every piece's journey across the board, move by move.",
-  from: "A game's moves (PGN)",
+  from: "A game you played",
   group: "you",
   base: "tiling",
   bases: ["tiling", "khatam"],

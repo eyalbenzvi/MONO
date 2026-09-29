@@ -92,7 +92,7 @@ const LIST: MadeProduct[] = [
     template: "ascii",
     name: "Your ASCII",
     line: "Your words as big letters, typed out of characters.",
-    from: "A word or two",
+    from: "A word or a picture",
     group: "name",
     base: "ascii-shade",
     bases: ["ascii-*"],
