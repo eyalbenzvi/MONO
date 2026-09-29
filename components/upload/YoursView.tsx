@@ -485,7 +485,7 @@ function Start({
 }) {
   const [drag, setDrag] = useState(false);
   const TILES = [
-    { kind: "photo", label: "A photo", line: "Printed in dots. JPG, PNG or WebP." },
+    { kind: "photo", label: "A photo", line: "A pet, a place, a day out. Printed in dots. JPG, PNG or WebP." },
     { kind: "drawing", label: "A drawing", line: "Your lines, cleaned up. A scan, a photo of paper, or SVG." },
     { kind: "words", label: "Words", line: "Up to three lines, in our type." },
   ];
@@ -524,12 +524,12 @@ function Start({
               data-tile={t.kind}
               className="group flex w-full items-stretch gap-4 overflow-hidden rounded-2xl text-left ring-1 ring-white/10 transition hover:ring-white/30 focus-visible:ring-2 focus-visible:ring-white md:flex-col md:gap-0"
             >
-              <div className={`grid w-36 shrink-0 grid-cols-2 md:w-full ${STAGE_BG}`} aria-hidden>
-                {/* The real converter's work: the input, and the print it made. */}
+              {/* The real converter's work: the input, and the print it made, framed alike (3:4, the same crop) and never stretched with the text. */}
+              <div className={`grid w-40 shrink-0 grid-cols-2 gap-px self-start md:w-full ${STAGE_BG}`} aria-hidden>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={assetUrl(`/make/yours/${t.kind}-before.webp`)} alt="" className="aspect-[3/4] h-full w-full object-cover opacity-90" />
+                <img src={assetUrl(`/make/yours/${t.kind}-before.webp`)} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={assetUrl(`/make/yours/${t.kind}-after.webp`)} alt="" className="aspect-[3/4] h-full w-full object-cover" />
+                <img src={assetUrl(`/make/yours/${t.kind}-after.webp`)} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
               </div>
               <div className="flex flex-col justify-center py-3 pr-3 md:p-4">
                 <span className="text-base font-bold">{opening === t.kind ? "Opening…" : t.label}</span>
@@ -614,7 +614,7 @@ function PrintStep({
             value={words}
             rows={3}
             autoFocus={!words}
-            placeholder={"SUNDAY\nBEST"}
+            placeholder={"MODERATE\nBECOMING\nGOOD"}
             onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORDS_LINES).map((l) => l.slice(0, WORDS_CHARS)).join("\n"))}
             className="w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-base text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
           />
