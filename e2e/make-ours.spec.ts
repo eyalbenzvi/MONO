@@ -20,7 +20,7 @@ async function addAndOpenBag(page: Page) {
   await hydrated(page);
 }
 
-test("Your Name: a name in a code, redrawn as it changes; a character the code lacks is refused as typed; into the bag; the link reopens it", async ({ page, browser }) => {
+test("Your Name in Code: a name in a code, redrawn as it changes; a character the code lacks is refused as typed; into the bag; the link reopens it", async ({ page, browser }) => {
   await page.goto("make/code/");
   await hydrated(page);
   await page.getByLabel("Your name", { exact: true }).fill("Noa");
@@ -32,13 +32,13 @@ test("Your Name: a name in a code, redrawn as it changes; a character the code l
   await page.getByLabel("Your name", { exact: true }).fill("René");
   await expect(page.getByText('Paper tape has no "é". Try "e".')).toBeVisible();
   await page.getByLabel("Your name", { exact: true }).fill("Rene");
-  await page.getByText("Keep it secret").tap();
-  await expect(page.getByRole("switch", { name: "Keep it secret" })).toBeChecked();
+  await page.getByText("Hide the letters").tap();
+  await expect(page.getByRole("switch", { name: "Hide the letters" })).toBeChecked();
   // The address carries exactly this print once it's drawn.
   await expect(page).toHaveURL(new RegExp(`make=${make({ t: "code", v: 1, p: { x: "RENE", k: "tape", h: 1 } })}$`));
   const link = page.url();
   await addAndOpenBag(page);
-  await expect(page.getByText("Your Name · RENE")).toBeVisible();
+  await expect(page.getByText("Your Name in Code · RENE")).toBeVisible();
   // The link opens that very print in a fresh visit.
   const other = await browser.newContext();
   const p2 = await other.newPage();
@@ -46,11 +46,11 @@ test("Your Name: a name in a code, redrawn as it changes; a character the code l
   await hydrated(p2);
   await expect(p2.getByLabel("Your name", { exact: true })).toHaveValue("RENE");
   await expect(p2.getByRole("radio", { name: "Paper tape" })).toHaveAttribute("aria-checked", "true");
-  await expect(p2.getByRole("switch", { name: "Keep it secret" })).toBeChecked();
+  await expect(p2.getByRole("switch", { name: "Hide the letters" })).toBeChecked();
   await other.close();
 });
 
-test("Your Name: the lexicon refuses a brand as a name", async ({ page }) => {
+test("Your Name in Code: the lexicon refuses a brand as a name", async ({ page }) => {
   await page.goto("make/code/");
   await hydrated(page);
   await page.getByLabel("Your name", { exact: true }).fill("N1KE");
@@ -108,7 +108,7 @@ test("Your Line: draw a line on the pad, turn it 8 times, mirror it; into the ba
   await other.close();
 });
 
-test("Your Taste: before the taste test, the example and a way to Discover (no bag); after it, your plant, into the bag", async ({ page, browser }) => {
+test("Your Taste Plant: before the taste test, the example and a way to Discover (no bag); after it, your plant, into the bag", async ({ page, browser }) => {
   await page.goto("make/taste/");
   await hydrated(page);
   await expect(page.getByRole("link", { name: "Ten swipes first →" })).toBeVisible();
@@ -120,14 +120,15 @@ test("Your Taste: before the taste test, the example and a way to Discover (no b
   await seed(p2);
   await p2.goto("make/taste/");
   await hydrated(p2);
-  await expect(p2.getByText("Grown from your swipes.", { exact: false })).toBeVisible();
+  // The taste is known: no nudge to swipe first.
+  await expect(p2.getByRole("link", { name: "Ten swipes first →" })).toHaveCount(0);
   await drawn(p2);
   await addAndOpenBag(p2);
-  await expect(p2.getByText("Your Taste", { exact: true })).toBeVisible();
+  await expect(p2.getByText("Your Taste Plant", { exact: true })).toBeVisible();
   await ctx.close();
 });
 
-test("Your Taste: a friend's taste that came with the visit can be grown instead (the gift)", async ({ page }) => {
+test("Your Taste Plant: a friend's taste that came with the visit can be grown instead (the gift)", async ({ page }) => {
   await seed(page);
   await page.goto("make/taste/?taste=2i1e1e2n1e1e1e1e1e1e1e281e1e1e1e1e");
   await hydrated(page);

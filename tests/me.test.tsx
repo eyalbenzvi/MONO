@@ -32,7 +32,7 @@ describe("U1: a minimal header", () => {
 });
 
 describe("U2: the personal area", () => {
-  it("before the taste test it invites one; after it, the taste set like About, real counts, picks, Saved and the quiet actions", () => {
+  it("before the taste test it invites one; after it, the taste, picks, Saved and the quiet actions (no stats row)", () => {
     const { rerender, container } = render(<MeView />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Notyet.");
     expect(screen.getByRole("link", { name: "Start swiping" })).toBeTruthy();
@@ -40,9 +40,8 @@ describe("U2: the personal area", () => {
     act(() => useTasteStore.setState({ seen: [...CALIBRATION_IDS], likedIds: [...CALIBRATION_IDS.slice(0, 2), SHIRTS[5].id], dislikedIds: CALIBRATION_IDS.slice(2, 5) }));
     rerender(<MeView />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).not.toMatch(/Not/);
-    // Counts from the store: rated, saved, in bag.
-    const counts = [...container.querySelectorAll("dl dd.font-mono")].map((d) => d.textContent);
-    expect(counts).toEqual([String(CALIBRATION_IDS.length), "3", "0"]);
+    // No stats row (M24): the header and Saved already say it.
+    expect(container.querySelectorAll("dl dd.font-mono")).toHaveLength(0);
     expect(screen.getByRole("list", { name: "Picked for you" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Edit saved" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Share my taste" })).toBeTruthy();
