@@ -5,7 +5,7 @@ import { MOON, OTHERS, PLANETS, SKY, TEL_AVIV, TLV_1991, make } from "./fixtures
 // The visitor's zone decides the place a sky starts from.
 test.use({ timezoneId: "Asia/Jerusalem" });
 
-test("Make is in plain sight: a header tab, the shop's first card, and a way in from the designs it's drawn like", async ({ page }) => {
+test("Make is in plain sight: a header tab and a way in from the designs it's drawn like; the shop is only the shop", async ({ page }) => {
   await page.goto("");
   await hydrated(page);
   await page.getByRole("link", { name: "Make", exact: true }).tap();
@@ -29,10 +29,9 @@ test("Make is in plain sight: a header tab, the shop's first card, and a way in 
 
   await page.goto("shop/");
   await hydrated(page);
-  const first = page.locator("main a").first();
-  await expect(first).toHaveAttribute("data-made-tile");
-  await first.tap();
-  await expect(page).toHaveURL(/\/make\/$/);
+  // No card in the shop's grid leads to Make.
+  await expect(page.locator("main a").first()).toBeVisible();
+  await expect(page.locator('main a[href$="/make/"]')).toHaveCount(0);
 
   for (const [s, slug] of [
     [SKY, "sky"],
