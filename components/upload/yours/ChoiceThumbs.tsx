@@ -100,8 +100,8 @@ export function ChoiceThumbs({ source, settings, preview, choice, onSettings, on
           label="Style"
           value={settings.mode}
           onChange={(v) => onSettings({ mode: v })}
-          // Another style is offered once it's known to print (never shown, then taken away while it's being tried).
-          options={STYLES.filter((v) => v === settings.mode || altMode(v)?.ok).map((v) => ({ value: v, label: STYLE_LABEL[v] }))}
+          // A style is offered until it's known not to print (a tap before then shows why, with the fix that passes).
+          options={STYLES.filter((v) => v === settings.mode || prints(altMode(v))).map((v) => ({ value: v, label: STYLE_LABEL[v] }))}
         />
       )}
       <Segments
