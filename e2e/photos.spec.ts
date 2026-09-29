@@ -83,7 +83,7 @@ test("sizes: XXL and kids' sizes on the product page, labelled in the bag", asyn
   await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
 });
 
-test("T5 / U6: the logo opens About — three words, one line, an honest note; the bag links to it", async ({ page }) => {
+test("T5 / U6: the logo opens About — three words, one line on a line of its own, no small print", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("");
   await hydrated(page);
@@ -93,12 +93,13 @@ test("T5 / U6: the logo opens About — three words, one line, an honest note; t
   // Short on purpose: well under a hundred words on the page.
   const words = (await page.locator("main article").innerText()).split(/\s+/).filter(Boolean).length;
   expect(words).toBeLessThan(80);
-  await expect(page.locator("#this-site")).toHaveText("About this site");
-  await expect(page.getByText(/nothing is charged/)).toBeVisible();
+  await expect(page.getByText("MONO ranks every design to your taste.")).toBeVisible();
+  await expect(page.locator("#this-site")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
   await page.evaluate((id) => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id, size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })), W1);
   await page.goto("cart/");
   await hydrated(page);
   await page.getByRole("button", { name: /^Checkout/ }).first().tap();
-  await expect(page.getByRole("link", { name: "About this site" })).toHaveAttribute("href", /\/about\/#this-site$/);
+  // The bag still says it's a demo store, where it matters.
+  await expect(page.getByText("Demo store — no payment is taken and nothing ships.")).toBeVisible();
 });

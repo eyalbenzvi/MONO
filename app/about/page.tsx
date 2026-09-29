@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { STORE_POLICY } from "@/lib/store-policy";
 import { SHIRTS } from "@/lib/catalog";
 import { pageMeta } from "@/lib/seo";
 
@@ -41,7 +40,11 @@ export default function AboutPage() {
           ))}
         </h1>
 
-        <p className="mt-8 max-w-[22rem] text-base leading-relaxed text-neutral-300">Swipe a few. MONO ranks every design to your taste.</p>
+        <p className="mt-8 max-w-[22rem] text-base leading-relaxed text-neutral-300">
+          Swipe a few.
+          <br />
+          MONO ranks every design to your taste.
+        </p>
 
         <dl className="mt-10 grid grid-cols-3 border-y border-white/15">
           {FACTS.map(([n, label], i) => (
@@ -57,18 +60,6 @@ export default function AboutPage() {
           Start swiping
         </Link>
 
-        <section aria-labelledby="this-site" className="mt-14">
-          <h2 id="this-site" className="scroll-mt-24 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500">
-            About this site
-          </h2>
-          <p className="mt-3 text-xs leading-relaxed text-neutral-500">
-            A demo store: nothing is charged and nothing ships. Your taste stays in this browser. Archive prints are public domain, credited on
-            each tee; the models are generated images. Places: GeoNames (CC BY 4.0).
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-neutral-500">
-            Upload reviews are simulated. {`Designs from the Open Call pay their makers $${STORE_POLICY.openCall.perTee} a tee.`}
-          </p>
-        </section>
       </article>
     </div>
   );

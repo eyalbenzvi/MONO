@@ -71,6 +71,13 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   streets: lazy(() => import("@/components/custom/editors/StreetsEditor")),
 };
 
+/** The data a print is drawn from, credited where it's used (the place list's licence asks for it). */
+const CREDITS: Partial<Record<TemplateId, string>> = {
+  sky: "Places: GeoNames (CC BY 4.0).",
+  place: "Places: GeoNames (CC BY 4.0).",
+  journey: "Places: GeoNames (CC BY 4.0).",
+};
+
 interface Shown {
   spec: CustomSpec;
   svg: string;
@@ -334,7 +341,9 @@ export function MakeView({ slug }: { slug: string }) {
                     <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
                     {buyLabel}
                   </button>
-                  <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.</p>
+                  <p className="text-xs text-neutral-500">
+                    {STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.{CREDITS[made.template] ? ` ${CREDITS[made.template]}` : ""}
+                  </p>
                   <Siblings made={made} spec={current?.spec ?? state.spec} />
                 </>
               )}
