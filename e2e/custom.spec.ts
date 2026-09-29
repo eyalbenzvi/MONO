@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated } from "./helpers";
 import { MOON, OTHERS, PLANETS, SKY, TEL_AVIV, TLV_1991, make } from "./fixtures/custom";
+import { MADE, MAKE_GROUPS } from "../lib/custom/products";
 
 // The visitor's zone decides the place a sky starts from.
 test.use({ timezoneId: "Asia/Jerusalem" });
@@ -14,13 +15,11 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   // The two tracks behind one switch; From ours grouped by what you arrive with.
   await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
   const groups = await page.locator("section h2").allTextContents();
-  expect(groups.map((g) => g.trim())).toEqual(["From a date", "From a name", "From a place", "From you"]);
-  const names = ["Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons", "Your Name", "Your ASCII", "Your Place", "Your House", "Your Voice", "Your Line", "Your Number", "Your Taste"];
-  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(names);
-  // Each card says what it takes.
+  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label));
+  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(MADE.map((m) => m.name));
+  // Each card says what it takes (Your Taste's, what the swipes have made of it).
   const lines = await page.locator('[data-from="ours"] li p').allTextContents();
-  expect(lines.slice(0, 11)).toEqual(["A night and a place", "A night", "A day", "A year", "A name, in an old code", "A word or two", "A place and a day", "Floors, windows, a door", "Three seconds of humming", "A line you draw", "A number and what it was"]);
-  expect(lines[11]).toMatch(/^Your swipes/);
+  MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);
