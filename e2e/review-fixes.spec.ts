@@ -45,12 +45,14 @@ test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout s
   await hydrated(page);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
+  await expect(page.getByRole("img", { name: /personalised/ }).first()).toBeVisible();
   await buy(page).tap();
   // The add is confirmed before the page is left.
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Second" } })}`);
   await hydrated(page);
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
+  await expect(page.getByRole("img", { name: /personalised/ }).first()).toBeVisible();
   await buy(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   await page.goto("cart/");
@@ -76,6 +78,22 @@ test("B5: Enter in a Make field closes the keyboard and never adds to the bag", 
   await page.waitForTimeout(500);
   expect(await cartItems(page)).toEqual([]);
   await expect(page.getByRole("region", { name: "Added to bag" })).toHaveCount(0);
+});
+
+test("A tap on Add before the print is ready (a slow phone) is kept, and adds once it is", async ({ page }) => {
+  // Every script asked for after the page is up (the word list, the drawing code) comes 1.5 s late.
+  await page.route("**/_next/static/chunks/**", async (route) => {
+    await new Promise((r) => setTimeout(r, 1500));
+    await route.continue();
+  });
+  await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Late" } })}`);
+  await hydrated(page);
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await buy(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible({ timeout: 10_000 });
+  expect(await cartItems(page)).toEqual([expect.objectContaining({ size: "M", qty: 1 })]);
+  // Never an error for words that were only still being checked.
+  await expect(page.getByText(/^Up to/)).toHaveCount(0);
 });
 
 test("M1 + B3: From yours is Start, Your print, Size; the rights are one line above the button; Change goes back to Your print", async ({ page }) => {

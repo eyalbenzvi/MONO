@@ -48,12 +48,14 @@ export function useWords(initial = "") {
   const value = text.trim() ? (refused || !lex ? null : cleanWords(text)) : undefined;
   // A refusal shows at once (it's not a typo to finish); the character rule once the field is left.
   const error = refused ?? (lex && value === null && (left || text.length >= WORDS_INPUT_MAX) ? upTo(WORDS_INPUT_MAX) : null);
-  return { text, setText, value, error, touch: () => setLeft(true) };
+  // Still checking (the word list is loading): neither a print nor an error yet.
+  const pending = !!text.trim() && !lex;
+  return { text, setText, value, error, pending, touch: () => setLeft(true) };
 }
 
 export function WordsField({ words, hint, touched }: { words: ReturnType<typeof useWords>; hint: string; touched?: boolean }) {
   return (
-    <Field label="Your words" hint="optional" error={words.error ?? (touched && words.value === null && !words.error ? upTo(WORDS_INPUT_MAX) : null)} htmlFor="make-words">
+    <Field label="Your words" hint="optional" error={words.error ?? (touched && words.value === null && !words.pending ? upTo(WORDS_INPUT_MAX) : null)} htmlFor="make-words">
       <input
         id="make-words"
         value={words.text}

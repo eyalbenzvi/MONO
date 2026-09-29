@@ -32,6 +32,8 @@ import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt
 /** The preview waits this long after a change (longer on a device where a render is slow). */
 const DEBOUNCE = 150;
 const SLOW_DEBOUNCE = 300;
+/** How long a tap made before the print is ready is kept (longer, and the add would come as a surprise). */
+const WAIT_MS = 4000;
 
 /** Each product's fields, a chunk of its own (a product's page loads only its editor). */
 const DateEditor = lazy(() => import("@/components/custom/editors/DateEditor"));
@@ -230,8 +232,14 @@ export function MakeView({ slug }: { slug: string }) {
   const unit = shirt ? unitPrice({ custom: true }, shirt) : 0;
   const pairTotal = pairPrice(spec ?? undefined);
   const pair = both && size && spec ? pairStatus(cart, made.id, size, spec) : null;
+  // A tap before the print is ready (a slow phone: the drawing code or the word list still loading) is kept, and done once it is, if that's soon.
+  const [waiting, setWaiting] = useState(0);
   const onBuy = () => {
-    if (!state.spec) return setTried(true);
+    if (!state.spec) {
+      setTried(true);
+      return setWaiting(Date.now());
+    }
+    if (!renderer) return setWaiting(Date.now());
     // A tap right after a change doesn't wait for the preview: the print is drawn and checked now.
     const now = ready ? current : draw(state.spec, color);
     if (!now?.check.ok) return;
@@ -251,6 +259,13 @@ export function MakeView({ slug }: { slug: string }) {
     if (base) useTasteStore.getState().likeCustom(base.id);
     track("customize_apply", { template: made.template });
   };
+  const onBuyRef = useRef(onBuy);
+  onBuyRef.current = onBuy;
+  useEffect(() => {
+    if (!waiting || !renderer || !state.spec) return;
+    setWaiting(0);
+    if (Date.now() - waiting < WAIT_MS) void loadCanvasFonts().then(() => onBuyRef.current());
+  }, [waiting, renderer, state.spec]);
   // The size in every label that adds, the price as it was.
   const sized = size ? ` · ${SIZE_LABELS[size]}` : "";
   const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : `Add to bag${sized} · ${formatPrice(unit)}`;
