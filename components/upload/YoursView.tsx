@@ -194,6 +194,8 @@ function Yours() {
   const pick = (kind: string) => {
     setTile(kind);
     track("yours_start_tile", { kind });
+    // A link is Your Link's own page (a QR code drawn from the address, not a file).
+    if (kind === "link") return router.push("/make/qr/");
     if (kind === "words") {
       setWordsMode(true);
       setSource(null);
@@ -488,6 +490,7 @@ function Start({
     { kind: "photo", label: "A photo", line: "A pet, a place, a day out. Printed in dots. JPG, PNG or WebP." },
     { kind: "drawing", label: "A drawing", line: "Your lines, cleaned up. A scan, a photo of paper, or SVG." },
     { kind: "words", label: "Words", line: "Up to three lines, in our type." },
+    { kind: "link", label: "A link", line: "A web address, as a QR code that scans." },
   ];
   return (
     <div
@@ -515,7 +518,7 @@ function Start({
       <h2 ref={heading} tabIndex={-1} className="mt-8 text-lg font-bold outline-none">
         What do you have?
       </h2>
-      <ul className="mt-4 grid gap-3 md:grid-cols-3">
+      <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {TILES.map((t) => (
           <li key={t.kind}>
             <button

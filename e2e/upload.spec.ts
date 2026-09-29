@@ -51,7 +51,12 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page).toHaveURL(/\/make\/yours\/$/);
   await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
   // Every tile shows the converter's own before and after, never an empty box.
-  for (const kind of ["photo", "drawing", "words"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
+  for (const kind of ["photo", "drawing", "words", "link"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
+  // A link opens Your Link (a QR code drawn from the address, not a file); Back returns here.
+  await page.locator('[data-tile="link"]').tap();
+  await expect(page).toHaveURL(/\/make\/qr\/$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/make\/yours\/$/);
   await page.goBack();
   await expect(page).toHaveURL(/\/shop\/$/);
 });
