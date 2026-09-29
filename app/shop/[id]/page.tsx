@@ -5,7 +5,8 @@ import { getDetails, getEntry } from "@/lib/catalogServer";
 import { ogImage, pageMeta, productDescription, productTitle } from "@/lib/seo";
 import type { ShirtProduct } from "@/types/shirt";
 
-export const dynamicParams = false;
+// Only the pages built exist in the export; `next dev` (which errors on false with output: "export") renders any.
+export const dynamicParams = process.env.NODE_ENV !== "production";
 
 /** All designs by default; NEXT_PUBLIC_PRERENDER_LIMIT keeps only the top of the rank (see README). */
 export function generateStaticParams() {
