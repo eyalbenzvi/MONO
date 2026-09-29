@@ -18,13 +18,12 @@ test("Words: six types, each named in itself; a type loads only its own font", a
   page.on("request", (r) => r.url().includes("/fonts/words/") && fonts.push(r.url().split("/fonts/words/")[1]));
   await words(page, "SLOW\nMORNINGS");
   await ready(page);
-  await expect(page.getByRole("radiogroup", { name: "Type" }).getByRole("radio")).toHaveText(["", "", "", "", "", ""]);
   await expect(page.getByRole("radiogroup", { name: "Type" }).getByRole("radio")).toHaveCount(6);
   await expect(face(page, "Mono")).toHaveAttribute("aria-checked", "true");
   await face(page, "Serif").tap();
   await expect(face(page, "Serif")).toHaveAttribute("aria-checked", "true");
   await ready(page);
-  await expect(primary(page)).toHaveText(/^Looks good/);
+  await expect(primary(page)).toHaveText(/^Next/);
   expect(fonts.filter((f) => f.endsWith(".woff2")).sort()).toEqual(["dejavu-sans-mono-bold.woff2", "fraunces-black.woff2"]);
   // The picker's names are one sprite of outlines, not fonts.
   expect(fonts).toContain("names.svg");
@@ -34,7 +33,7 @@ test("Words: a short word prints at Full, its letters capped (in cm); Medium and
   await words(page, "YES");
   await ready(page);
   await expect(page.locator("[data-cap-readout]")).toHaveText(/^Letters (\d|10)\.\d cm tall\.$/);
-  const size = page.getByRole("radiogroup", { name: "Size" });
+  const size = page.getByRole("radiogroup", { name: "Print size" });
   await expect(size.getByRole("radio")).toHaveText([/^Full · 28 cm/, /^Medium · 18 cm/, /^Small · 12 cm/]);
   const before = await page.locator("[data-cap-readout]").textContent();
   await size.getByRole("radio", { name: /^Medium/ }).tap();
@@ -80,14 +79,13 @@ test("Words: Lines and Align only with two lines or more; Capitals sets them in 
 });
 
 test("Words: Edit from the bag keeps the type, the case and the size", async ({ page }) => {
-  await words(page, "MODERATE\nBECOMING\nGOOD");
+  await words(page, "Hold fast\nto what is good");
   await ready(page);
   await face(page, "Gothic").tap();
   await page.getByRole("radio", { name: "Capitals" }).tap();
   await ready(page);
   await primary(page).tap();
-  await primary(page).tap();
-  await expect(page.locator("[data-summary]")).toContainText(/^Words · Gothic · Full · /);
+  await expect(page.locator("[data-summary]")).toContainText(/^Words · Gothic · /);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await primary(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
@@ -97,6 +95,6 @@ test("Words: Edit from the bag keeps the type, the case and the size", async ({ 
   await expect(page).toHaveURL(/\/make\/yours\/\?edit=.*#print$/);
   await expect(face(page, "Gothic")).toHaveAttribute("aria-checked", "true");
   await expect(page.getByRole("radio", { name: "Capitals" })).toHaveAttribute("aria-checked", "true");
-  await expect(page.locator("#upload-words")).toHaveValue("MODERATE\nBECOMING\nGOOD");
+  await expect(page.locator("#upload-words")).toHaveValue("Hold fast\nto what is good");
   await ready(page);
 });

@@ -26,7 +26,7 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   await expect.poll(() => tee.evaluate((i: HTMLImageElement) => i.currentSrc)).toContain(`/img/m/${photo.n}-${photo.baseColor}-`);
   // The print alone.
   await page.getByRole("button", { name: `More for ${photo.title}` }).tap();
-  await page.getByRole("button", { name: "Show the print only" }).tap();
+  await page.getByRole("button", { name: "Print", exact: true }).tap();
   const print = page.locator(`main img[alt="${photo.title} print"]`).first();
   await expect(print).toHaveAttribute("src", new RegExp(`/img/p/${photo.n}-${photo.baseColor}-1500\\.webp$`));
   // T3: a photograph is sold on its own tee only — no colour choice, never inverted.

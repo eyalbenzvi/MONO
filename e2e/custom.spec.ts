@@ -15,12 +15,14 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   // The two tracks behind one switch; From ours grouped by what you arrive with.
   await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
   const groups = await page.locator("section h2").allTextContents();
-  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label).concat("For two"));
-  // For two is a category of its own: one card, to its page.
-  await expect(page.locator('ul[data-group="two"] a[data-for-two]')).toHaveAttribute("href", /\/make\/two\/$/);
-  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(MADE.map((m) => m.name));
+  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label));
+  // For two is a card among the dated prints, to its page.
+  await expect(page.locator('ul[data-group="date"] a[data-for-two]')).toHaveAttribute("href", /\/make\/two\/$/);
+  // Cards name the product without its leading "Your" (its page and the bag keep it).
+  const cards = MAKE_GROUPS.flatMap((g) => [...MADE.filter((m) => m.group === g.id).map((m) => m.name.replace(/^Your /, "")), ...(g.id === "date" ? ["For two"] : [])]);
+  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(cards);
   // Each card says what it takes (Your Taste's, what the swipes have made of it).
-  const lines = await page.locator('[data-from="ours"] li p').allTextContents();
+  const lines = await page.locator('[data-from="ours"] li:not(:has([data-for-two])) p').allTextContents();
   MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);

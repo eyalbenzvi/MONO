@@ -51,11 +51,11 @@ test("search: \"/\" opens it; a typo still finds the design and says what it rea
   await expect(page.getByRole("button", { name: `Remove ${look.label}` })).toHaveCount(0);
 });
 
-test("search: \"More like this\" on a product opens the shop ordered by closeness, without the design's own family", async ({ page }) => {
+test("search: \"See all\" beside Similar prints opens the shop ordered by closeness, without the design's own family", async ({ page }) => {
   const shirt = CATALOG[40];
   await page.goto(`shop/${shirt.id}/`);
   await hydrated(page);
-  await page.getByRole("link", { name: "More like this" }).click();
+  await page.getByRole("link", { name: "See all" }).click();
   await expect(page).toHaveURL(new RegExp(`/shop/\\?like=${shirt.id}`));
   await expect(page.getByRole("button", { name: "Remove Like this" })).toBeVisible();
   const ids = await page.locator('main a[href*="/shop/mono-"]').evaluateAll((as) => as.slice(0, 12).map((a) => a.getAttribute("href")!.match(/mono-\d+/)![0]));

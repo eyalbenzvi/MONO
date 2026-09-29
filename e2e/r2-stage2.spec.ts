@@ -243,7 +243,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("button", { name: /^More for / }).tap();
-    await page.getByRole("button", { name: "Show the print only" }).tap();
+    await page.getByRole("button", { name: "Print", exact: true }).tap();
     await page.waitForTimeout(500); // the picture cross-fades to the print
     await page.getByRole("button", { name: "Zoom in on the print" }).tap();
     const zoom = page.getByRole("dialog", { name: /zoom/ });

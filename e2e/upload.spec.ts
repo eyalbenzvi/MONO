@@ -8,14 +8,12 @@ async function choose(page: Page, name: string, buffer: Buffer, mimeType = "imag
 const ready = (page: Page) => expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 25_000 });
 const primary = (page: Page) => page.locator("[data-primary]");
 
-/** From Start to the bag: a file, Looks good, I confirm, M, Add to bag. */
+/** From Start to the bag: a file, Next, M, Add to bag (adding confirms the rights). */
 async function uploadToBag(page: Page, name: string, buffer: Buffer, query = "") {
   await page.goto(`make/yours/${query}`);
   await hydrated(page);
   await choose(page, name, buffer);
   await ready(page);
-  await primary(page).tap();
-  await expect(page.locator('[data-step="rights"]')).toBeVisible();
   await primary(page).tap();
   await expect(page.locator('[data-step="size"]')).toBeVisible();
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
@@ -61,26 +59,24 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page).toHaveURL(/\/shop\/$/);
 });
 
-test("From yours, a photo: the print shows while converting, then Style, Size and Tee as real results; Lines; rights; size; the bag", async ({ page }) => {
+test("From yours, a photo: the print shows while converting, then Style, Print size and Tee; Lines; size, the rights in one line; the bag", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "IMG_2041 heron at dusk.png", await photo());
   await expect(page).toHaveURL(/#print$/);
   await ready(page);
-  await expect(page.locator("[data-upload-line]")).toHaveText(/^A (light|dark) picture, so (black|white): the ink draws its (lights|darks)\.$/);
   await expect(page.getByRole("radiogroup", { name: "Style" }).getByRole("radio")).toHaveCount(3);
   await expect(page.getByRole("radiogroup", { name: "Tee" }).getByText("Suggested")).toBeVisible();
   await page.getByRole("radio", { name: /^Lines/ }).tap();
   await ready(page);
-  await expect(primary(page)).toHaveText(/^Looks good · \$(75|130)$/);
+  await expect(primary(page)).toHaveText(/^Next · \$(75|130)$/);
   await primary(page).tap();
-  await expect(page).toHaveURL(/#rights$/);
+  await expect(page).toHaveURL(/#size$/);
   await page.getByRole("button", { name: "What we won’t print" }).tap();
   await expect(page.getByRole("dialog", { name: "What we won’t print" })).toBeVisible();
   await page.getByRole("button", { name: "Close" }).tap();
-  await primary(page).tap();
-  await expect(page).toHaveURL(/#size$/);
-  await expect(page.locator("[data-title]")).toHaveValue("Heron At Dusk");
+  // The title made from the file, as text; a tap edits it.
+  await expect(page.locator("[data-title-text]")).toHaveText("Heron At Dusk");
   await expect(page.locator("[data-summary]")).toContainText("Lines · Full ·");
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await primary(page).tap();
@@ -97,14 +93,11 @@ test("From yours: Back walks back through the steps, and the draft comes back af
   await choose(page, "rings.png", await drawing());
   await ready(page);
   await primary(page).tap();
-  await primary(page).tap();
   await expect(page).toHaveURL(/#size$/);
-  await page.goBack();
-  await expect(page.locator('[data-step="rights"]')).toBeVisible();
   await page.reload();
   await hydrated(page);
   // A reload opens the file in hand again, where it was.
-  await expect(page.locator('[data-step="rights"]')).toBeVisible();
+  await expect(page.locator('[data-step="size"]')).toBeVisible();
   await ready(page);
   await page.goBack();
   await expect(page.locator('[data-step="print"]')).toBeVisible();
@@ -121,22 +114,22 @@ test("From yours: a print that fails shows itself, says why, and offers the fix 
   await page.getByRole("radio", { name: /^Lines/ }).tap();
   await expect(page.locator('[data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
   await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText(/^Gaps under 0\.6 mm\./);
-  await expect(page.locator("[data-fix-card]")).toContainText("Gaps too narrow.");
+  await expect(page.locator("[data-fix-card]")).toContainText("They’d fill in with ink.");
   await expect(primary(page)).toHaveText("Use Dots", { timeout: 25_000 });
   await primary(page).tap();
   await ready(page);
   await expect(page.getByRole("radio", { name: /^Dots/ })).toHaveAttribute("aria-checked", "true");
-  await expect(primary(page)).toHaveText(/^Looks good/);
+  await expect(primary(page)).toHaveText(/^Next/);
 });
 
-test("From yours: big enough for Small, not Full — it goes to Small and says so; Full is greyed with why", async ({ page }) => {
+test("From yours: big enough for Small, not Full — it goes to Small and says so; Full isn't offered", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "medium.png", await mediumPhoto());
   await ready(page);
   await expect(page.getByText("Big enough for Small, not Full. We’ve set Small.")).toBeVisible();
   await expect(page.getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByRole("radio", { name: /^Full: File too small/ })).toHaveAttribute("aria-disabled", "true");
+  await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Full/ })).toHaveCount(0, { timeout: 25_000 });
 });
 
 test("From yours: words set as you type, no button; a brand is refused as typed", async ({ page }) => {
@@ -147,7 +140,7 @@ test("From yours: words set as you type, no button; a brand is refused as typed"
   await expect(page.locator('[data-upload-preview="empty"]')).toBeVisible();
   await page.locator("#upload-words").fill("SLOW\nMORNINGS");
   await ready(page);
-  await expect(primary(page)).toHaveText(/^Looks good/);
+  await expect(primary(page)).toHaveText(/^Next/);
   await page.locator("#upload-words").fill("NIKE");
   await expect(page.locator("[data-words-error]")).toHaveText("Those words name a brand.");
 });
@@ -285,7 +278,7 @@ test("Analytics carry the kind and the tier, never the file's name, title or pix
   expect(layer.toLowerCase()).not.toMatch(/grandma|garden|1987|data:image/);
 });
 
-test("From yours by keyboard: tiles, choices, rights and size without a pointer", async ({ page }) => {
+test("From yours by keyboard: tiles, choices and size without a pointer", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "rings.png", await drawing());
@@ -295,9 +288,7 @@ test("From yours by keyboard: tiles, choices, rights and size without a pointer"
   await ready(page);
   await primary(page).focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator('[data-step="rights"]')).toBeFocused();
-  await primary(page).focus();
-  await page.keyboard.press("Enter");
+  await expect(page.locator('[data-step="size"]')).toBeFocused();
   await page.getByRole("radio", { name: /^M\b/ }).first().focus();
   await page.keyboard.press("Enter");
   await primary(page).focus();

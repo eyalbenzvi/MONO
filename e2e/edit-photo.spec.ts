@@ -116,6 +116,5 @@ test("one tile for a photo or a drawing; a pencil sketch read as a photograph ca
   // It stays a choice once taken (the print is line work now, but the picture was a photograph).
   await expect(style.getByRole("radio")).toHaveCount(3);
   await page.locator("[data-primary]").tap();
-  await page.locator("[data-primary]").tap();
   await expect(page.locator("[data-summary]")).toContainText(/^Drawing · /);
 });

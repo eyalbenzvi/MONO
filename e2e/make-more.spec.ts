@@ -35,8 +35,7 @@ test("the Make index's filter shows only the groups chosen, keeps them in the ad
   await page.getByRole("button", { name: "Categories, 2 selected" }).tap();
   await page.getByRole("checkbox", { name: /^All/ }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
-  // Every group, and For two after them.
-  await expect(page.locator("ul[data-group]")).toHaveCount(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).length + 1);
+  await expect(page.locator("ul[data-group]")).toHaveCount(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).length);
   expect(crashed).toBe(false);
 });
 

@@ -328,18 +328,14 @@ test("Your Place: 'Where I am now' fills the place from this device, rounded to 
   await ctx.close();
 });
 
-test("A product page's siblings carry what's typed: a name to Your ASCII; Back returns to the index", async ({ page }) => {
+test("A product page leads to the rest of its group on the index (More from a name →); Back returns to the index", async ({ page }) => {
   await page.goto("make/");
   await hydrated(page);
   await page.locator('[data-made="code"]').tap();
   await expect(page).toHaveURL(/\/make\/code\/$/);
-  await page.locator("#make-name").fill("Maya");
-  await drawn(page);
-  const sib = page.locator("[data-siblings]");
-  await expect(sib).toContainText("Also from a name:");
-  await expect(sib.getByRole("link", { name: "Your ASCII" })).toHaveAttribute("href", new RegExp(`make=${make({ t: "ascii", v: 1, p: { x: ["MAYA"], f: "self", s: 1 } })}$`));
-  await sib.getByRole("link", { name: "Your ASCII" }).tap();
-  await expect(page).toHaveURL(/\/make\/ascii\//);
-  await hydrated(page);
-  await expect(page.locator("#make-big")).toHaveValue("MAYA");
+  const more = page.locator("[data-siblings]");
+  await expect(more).toHaveText("More from a name →");
+  await expect(more).toHaveAttribute("href", /\/make\/#name$/);
+  await page.getByRole("link", { name: "Make", exact: true }).first().tap();
+  await expect(page).toHaveURL(/\/make\/(#name)?$/);
 });
