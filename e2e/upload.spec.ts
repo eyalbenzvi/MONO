@@ -292,7 +292,9 @@ test("From yours by keyboard: tiles, choices and size without a pointer", async 
   await ready(page);
   await page.getByRole("radio", { name: /^Small/ }).focus();
   await page.keyboard.press("Enter");
-  await ready(page);
+  // Small is converted afresh: the last print stays "ready" on the stage meanwhile, so wait for Next itself (enabled only once it's done).
+  await expect(primary(page)).toBeEnabled({ timeout: 25_000 });
+  await expect(primary(page)).toHaveText(/^Next/);
   await primary(page).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator('[data-step="size"]')).toBeFocused();
