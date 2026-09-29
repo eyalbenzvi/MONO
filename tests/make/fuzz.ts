@@ -10,7 +10,7 @@ import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../../scripts/gen
 export function wideTexts(svg: string, max = 292): string[] {
   const out: string[] = [];
   const scale = [1];
-  for (const m of svg.matchAll(/<g\b[^>]*?(?:scale\(([\d.]+)[^)]*\))?[^>]*>|<\/g>|<text([^>]*)>([^<]*)<\/text>/g)) {
+  for (const m of svg.matchAll(/<g\b(?:[^>]*?scale\(([\d.]+)[^)]*\))?[^>]*>|<\/g>|<text([^>]*)>([^<]*)<\/text>/g)) {
     if (m[0] === "</g>") scale.pop();
     else if (m[0].startsWith("<g")) scale.push(scale[scale.length - 1] * Number(m[1] ?? 1));
     else {
