@@ -7,8 +7,8 @@ You are working in the MONO repository (Next.js, static export). Build all of th
 work below, end to end, without stopping between waves. Commit locally after
 every product (and every infrastructure step) with a clear message, and keep the
 branch green at every commit. Do NOT push anything to the remote while you work:
-no git push of any kind until everything below is finished, checked and
-reported. Push once, at the very end (section 5). Only stop early for something
+no git push of any kind until everything below is finished and checked.
+Push once, at the very end (section 5). Only stop early for something
 you truly cannot do (for example the network policy blocks a data source); then
 say exactly what is blocked and carry on with everything else.
 
