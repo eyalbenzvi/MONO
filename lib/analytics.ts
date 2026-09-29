@@ -136,9 +136,6 @@ export function trackEcommerce(event: CommerceEvent, { items, value, ...rest }: 
 
 const FIRST_TOUCH_KEY = "mono-first-touch";
 
-/** Query parameters that are read once and then removed from the address bar. */
-export const LANDING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "ref", "taste", "list"] as const;
-
 export interface Landing {
   utm_source: string | null;
   utm_medium: string | null;

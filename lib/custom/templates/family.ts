@@ -29,12 +29,6 @@ function radii(gens: number): number[] {
   return gens === 4 ? [0, 31, 60, 90, R] : [0, 36, 76, R];
 }
 
-/** An arc as path data (clockwise from a0 to a1, degrees from north). */
-function arc(r: number, a0: number, a1: number): string {
-  const [x0, y0] = pt(r, a0), [x1, y1] = pt(r, a1);
-  return `M${f1(x0)} ${f1(y0)}A${f1(r)} ${f1(r)} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${f1(x1)} ${f1(y1)}`;
-}
-
 /**
  * Letters along a circle of radius r, centred on angle `mid`: each glyph a
  * rotated group. `up`: the letters' tops face outwards (the upper half); else

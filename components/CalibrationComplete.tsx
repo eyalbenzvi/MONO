@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { ShirtStrip } from "@/components/ShirtStrip";

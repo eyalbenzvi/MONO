@@ -15,7 +15,7 @@ import { shopList } from "@/components/shop/shopList";
 import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
-import { COLORS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { COLORS, SHIRT_CATEGORIES, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
 
@@ -50,8 +50,7 @@ function searchToUrl(query: string, facets: readonly Facet[], push: boolean) {
 
 export function ShopView() {
   const hydrated = useHydrated();
-  const vector = useTasteStore((s) => s.preferenceVector);
-  const { done, total, complete } = useCalibrationProgress();
+  const { complete } = useCalibrationProgress();
   // One primitive per selector: the grid re-renders only when these change.
   const tee = useUiStore((s) => s.shop.tee);
   const cats = useUiStore((s) => s.shop.cats);

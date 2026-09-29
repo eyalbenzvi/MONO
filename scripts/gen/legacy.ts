@@ -4,12 +4,7 @@
  * byte-identical when the catalog is regenerated.
  */
 import type { SourceCategory } from "../../types/shirt";
-import {
-  IH, IW, M, W, H, X0, Y0,
-  clamp01, int, n1, pick, polygon, pts, range, smooth,
-  type Design, type Generator, type Rng, type Signature,
-  POLYGON, an, scale, screen,
-} from "./core";
+import { IH, IW, W, H, X0, Y0, clamp01, int, n1, pick, polygon, pts, range, smooth, type Generator, type Rng, POLYGON, an, scale, screen } from "./core";
 import { MONO, SANS, measure, sizeToFit } from "./art";
 import { facadeGrid as facadeGridDrawing } from "../../lib/custom/draw/architecture";
 

@@ -85,25 +85,6 @@ export function pad(f: ArrayLike<number>, w: number, h: number, v: number): Floa
   return out;
 }
 
-/**
- * Horizontal hatching inside closed rings (even–odd: a ring inside a ring is
- * a hole): for each row y = y0, y0 + gap, …, the spans inside, as [x1, x2, y].
- */
-export function hatchSpans(rings: Point[][], y0: number, y1: number, gap: number): [number, number, number][] {
-  const out: [number, number, number][] = [];
-  for (let y = y0; y <= y1; y += gap) {
-    const xs: number[] = [];
-    for (const r of rings)
-      for (let i = 0; i < r.length; i++) {
-        const [a, b] = [r[i], r[(i + 1) % r.length]];
-        if (a[1] <= y !== b[1] <= y) xs.push(a[0] + ((y - a[1]) / (b[1] - a[1])) * (b[0] - a[0]));
-      }
-    xs.sort((p, q) => p - q);
-    for (let i = 0; i + 1 < xs.length; i += 2) out.push([xs[i], xs[i + 1], y]);
-  }
-  return out;
-}
-
 /** Whether a point is inside the rings (even–odd). */
 export function inside(rings: Point[][], x: number, y: number): boolean {
   let c = false;

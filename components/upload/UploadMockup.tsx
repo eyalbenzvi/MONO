@@ -30,15 +30,6 @@ export function uploadCanvas(uploadId: string, color: BaseColor): Promise<HTMLCa
   }
   return cache.get(key)!;
 }
-/** Forget a drawn raster (the upload was edited or deleted). */
-export const forgetUploadCanvas = (uploadId: string) => {
-  for (const k of [...cache.keys()])
-    if (k.startsWith(`${uploadId}|`)) {
-      void cache.get(k)!.then(release);
-      cache.delete(k);
-    }
-};
-
 /** An uploaded print worn: the model photo with the raster laid in the print box; an empty stage until it's read. */
 export default function UploadMockup({ shirt, uploadId, color, className = "", label }: { shirt: ShirtProduct; uploadId: string; color: BaseColor; sizes?: string; className?: string; label?: string }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);

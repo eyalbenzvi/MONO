@@ -5,7 +5,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
-import type { BaseColor, Medium } from "../../types/shirt";
+import type { BaseColor } from "../../types/shirt";
 
 /** measurePrint's old score under which a generated print is too faint to make at all (the fifth set's sparse constellations). */
 export const FAINT = 35;

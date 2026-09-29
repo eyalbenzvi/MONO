@@ -120,5 +120,3 @@ export function decodeIndex(file: SearchIndexFile, catalogIds: readonly string[]
   };
 }
 
-/** A design's visual measure (0–1). */
-export const visualOf = (index: SearchIndex, pos: number, key: (typeof VISUAL_KEYS)[number]) => Q64.indexOf(index.file.visual.m[pos * 5 + VISUAL_KEYS.indexOf(key)]) / 63;

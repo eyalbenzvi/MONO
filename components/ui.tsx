@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Icon } from "@/components/Icon";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { TIER_LABEL, type MatchTier } from "@/lib/match";
 import { ADULT_SIZES, COLOR_LABELS, FEATURE_LABELS, KID_SIZES, SIZE_LABELS, SIZE_SHORT, isKidSize, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
 
 export { STAGE_BG } from "@/components/stage";
@@ -21,118 +20,6 @@ export function useShowMatch() {
   const hydrated = useUiStore((s) => s.hydrated);
   const { complete } = useCalibrationProgress();
   return hydrated && complete;
-}
-
-/**
- * How well a design matches, in words (lib/match: a tier by percentile in
- * the catalog — raw % bunch up in the 90s and say little). With `why`, the
- * badge is a button: tapping it shows the traits behind the match.
- */
-export function MatchBadge({
-  tier,
-  quiet = false,
-  size = "md",
-  strong = false,
-  why,
-}: {
-  tier: MatchTier;
-  /** Translucent (over busy grid images). */
-  quiet?: boolean;
-  size?: "sm" | "md";
-  /** One-time shimmer (a top pick on a "for you" Discover card). */
-  strong?: boolean;
-  /** The traits behind the match, computed when opened. */
-  why?: () => FeatureKey[];
-}) {
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        setOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", away, true);
-    document.addEventListener("keydown", esc, true);
-    return () => {
-      document.removeEventListener("pointerdown", away, true);
-      document.removeEventListener("keydown", esc, true);
-    };
-  }, [open]);
-
-  const tone = quiet ? "bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-sm" : "bg-white text-black";
-  // No overflow-hidden here: it would clip the button's enlarged touch area
-  // (::before). The shimmer clips itself inside its own rounded box.
-  const cls = `relative inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-bold ${size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs"} ${tone}`;
-  const label = TIER_LABEL[tier];
-  const shimmer = strong && (
-    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
-      <motion.span
-        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent"
-        initial={{ x: "-120%" }}
-        animate={{ x: "260%" }}
-        transition={{ duration: 0.6, delay: 0.25, ease: "easeInOut" }}
-      />
-    </span>
-  );
-  if (!why) {
-    return (
-      <motion.span initial={{ scale: 0.9, opacity: 0.6 }} animate={{ scale: 1, opacity: 1 }} className={cls}>
-        {label}
-        {shimmer}
-      </motion.span>
-    );
-  }
-  const reasons = open ? why() : [];
-  return (
-    <span ref={root} className="relative inline-flex">
-      <motion.button
-        type="button"
-        initial={{ scale: 0.9, opacity: 0.6 }}
-        animate={{ scale: 1, opacity: 1 }}
-        aria-expanded={open}
-        aria-label={`${label} — why?`}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen((o) => !o);
-        }}
-        className={`${cls} before:absolute before:-inset-2 before:content-['']`}
-      >
-        {label}
-        {shimmer}
-      </motion.button>
-      <AnimatePresence>
-        {open && (
-          <motion.span
-            role="status"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            // Opens upward (the badge sits low on a card), within the screen width.
-            className="absolute bottom-full left-0 z-30 mb-2 block w-max max-w-[min(220px,calc(100vw-2rem))] rounded-2xl bg-ink-900 p-3 text-left text-xs font-normal text-neutral-300 shadow-2xl shadow-black ring-1 ring-white/15"
-          >
-            <span className="mb-1.5 block font-semibold text-white">Why it matches you</span>
-            {reasons.length > 0 ? (
-              <span className="flex flex-wrap gap-1">
-                {reasons.map((k) => (
-                  <span key={k} className="rounded-full bg-white/10 px-2 py-0.5 text-white">
-                    {FEATURE_LABELS[k]}
-                  </span>
-                ))}
-              </span>
-            ) : (
-              "Close to your overall taste."
-            )}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </span>
-  );
 }
 
 /**
@@ -332,31 +219,6 @@ export function SaveButton({ id, size = "sm", className = "" }: { id: string; si
     >
       <Icon name="heart" className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
     </motion.button>
-  );
-}
-
-/**
- * Share, next to the heart: opens the share sheet (native share where there
- * is one, else the channels, copy link and save image; links carry UTM tags).
- */
-export function ShareButton({ id, title, color, size = "sm", className = "" }: { id: string; title: string; color: BaseColor; size?: "sm" | "lg"; className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        useUiStore.getState().openShare(id, color);
-      }}
-      aria-label={`Share ${title}`}
-      className={`flex items-center justify-center rounded-full transition-colors ${
-        size === "sm"
-          ? "bg-black/55 text-white ring-1 ring-white/15 before:absolute before:-inset-1.5 before:content-[''] hover:bg-black/75"
-          : "h-12 w-12 shrink-0 bg-white/5 text-white ring-1 ring-white/15 hover:bg-white/10"
-      } ${className}`}
-    >
-      <Icon name="share-2" className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} />
-    </button>
   );
 }
 

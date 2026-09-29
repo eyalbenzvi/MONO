@@ -35,8 +35,6 @@ import { mulberry32 } from "../gen/core";
 
 const ROOT = path.join(__dirname, "..", "..");
 const OUT = path.join(ROOT, "public", "make", "yours");
-const FONT_DIR = "/usr/share/fonts/truetype/dejavu";
-const fontFiles = (names: string[]) => names.map((f) => path.join(FONT_DIR, f)).filter((f) => fs.existsSync(f));
 /** The tile images, px: 3:4, twice the desktop tile's half. */
 const [TW, TH] = [360, 480];
 

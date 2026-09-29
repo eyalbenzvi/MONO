@@ -223,5 +223,3 @@ export function meeting(a: Placed, b: Placed, width: number): { crossings: numbe
   return { crossings: xs.length - poor, poor, parallel, touch };
 }
 
-/** A word's letters that the alphabet has (A–Z), in capitals. */
-export const monogramLetters = (s: string) => [...s.toUpperCase()].filter((c) => GLYPHS[c]);

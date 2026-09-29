@@ -136,7 +136,6 @@ export const TAG_HIGH = 0.85;
 export const TAG_LOW = 0.15;
 
 export const MEDIUM_LABELS: Record<string, string> = { drawn: "Drawn", ink: "Archive print", photo: "Photograph" };
-export const TEE_LABELS: Record<string, string> = { black: "Black tee", white: "White tee" };
 
 /** Words that ride along after an artist's name in museum records (nationality). */
 export const ARTIST_SUFFIXES = ["Scottish", "Swiss", "Bohemian", "Flemish", "French", "German", "Dutch", "Italian", "English", "American", "Japanese", "Chinese", "British", "Austrian", "Spanish"];

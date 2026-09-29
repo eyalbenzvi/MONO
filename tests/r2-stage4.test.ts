@@ -19,7 +19,6 @@ import { TOTAL } from "../scripts/gen/constants";
 import { W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
-const byId = new Map(FULL.map((s) => [s.id, s]));
 
 describe("I01: names that say what the print shows", () => {
   it("every design has a subject, and the SEO title reads 'Name — Subject Style Tee | MONO'", () => {

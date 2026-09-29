@@ -2,7 +2,6 @@ import {
   FEATURE_KEYS,
   type FeatureKey,
   type FeatureVector,
-  type RecommendationStrategy,
   type ShirtProduct,
   type SwipeAction,
   type UserProfileVector,
@@ -12,7 +11,6 @@ export const LIKE_RATE = 0.15;
 export const DISLIKE_RATE = 0.08;
 /** "Make it yours" on a design: a weak like of it (a third of one), once per design. */
 export const CUSTOM_LIKE = 0.05;
-export const EXPLORE_PROBABILITY = 0.2;
 export const CALIBRATION_SIZE = 10;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -204,50 +202,6 @@ export function getCalibrationQueue<T extends Pick<ShirtProduct, "id" | "feature
   return chosen;
 }
 
-export interface NextCardResult {
-  shirt: ShirtProduct;
-  strategy: Exclude<RecommendationStrategy, "calibration">;
-  score: number;
-}
-
-/**
- * Choose the next card from the unseen pool.
- *  - greedy:  highest match score to the user vector.
- *  - explore: the shirt most orthogonal to the user vector (centered cosine
- *             closest to 0) — probes taste dimensions the profile hasn't
- *             committed to, without serving an obvious anti-match.
- * When `strategy` is omitted it is rolled: 80% greedy / 20% explore.
- */
-export function getNextCard(
-  userVec: UserProfileVector,
-  availableShirts: ShirtProduct[],
-  seenIds: Iterable<string>,
-  strategy?: "greedy" | "explore",
-  rng: () => number = Math.random,
-): NextCardResult | null {
-  const seen = new Set(seenIds);
-  const unseen = availableShirts.filter((s) => !seen.has(s.id));
-  if (unseen.length === 0) return null;
-
-  const chosenStrategy = strategy ?? (rng() < EXPLORE_PROBABILITY ? "explore" : "greedy");
-
-  const score = makeScorer(userVec);
-  let best = unseen[0];
-  let bestKey = chosenStrategy === "greedy" ? -Infinity : Infinity;
-  for (const shirt of unseen) {
-    let key: number;
-    if (chosenStrategy === "greedy") {
-      const r = score(shirt.features);
-      key = r.score + r.raw / 1000;
-    } else key = Math.abs(centeredCosine(userVec, shirt.features));
-    if (chosenStrategy === "greedy" ? key > bestKey : key < bestKey) {
-      bestKey = key;
-      best = shirt;
-    }
-  }
-  return { shirt: best, strategy: chosenStrategy, score: score(best.features).score };
-}
-
 /** Per-feature contribution breakdown for the debug panel. */
 export function similarityBreakdown(userVec: UserProfileVector, features: FeatureVector) {
   const dot = FEATURE_KEYS.reduce((s, k) => s + userVec[k] * features[k], 0);
@@ -334,28 +288,6 @@ export function daySeed(d = new Date()): string {
     /* storage blocked: a shared order for today */
   }
   return `${salt}:${day}`;
-}
-
-/**
- * Prints closest in style to `shirt` (centered cosine), excluding itself.
- * Top-k partial selection (a small sorted buffer) rather than a full sort.
- * The product page uses the generator's precomputed list; this stays for
- * the generator and tests.
- */
-export function similarShirts(shirt: ShirtProduct, shirts: ShirtProduct[], n = 4): ShirtProduct[] {
-  const better = (a: { s: ShirtProduct; sim: number }, b: { s: ShirtProduct; sim: number }) =>
-    a.sim > b.sim || (a.sim === b.sim && a.s.id.localeCompare(b.s.id) < 0);
-  const top: { s: ShirtProduct; sim: number }[] = [];
-  for (const s of shirts) {
-    if (s.id === shirt.id) continue;
-    const item = { s, sim: centeredCosine(shirt.features, s.features) };
-    if (top.length === n && !better(item, top[n - 1])) continue;
-    let i = top.length;
-    while (i > 0 && better(item, top[i - 1])) i--;
-    top.splice(i, 0, item);
-    if (top.length > n) top.pop();
-  }
-  return top.map(({ s }) => s);
 }
 
 /**

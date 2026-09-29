@@ -5,10 +5,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
-import { SaveButton, STAGE_BG, TeeDot } from "@/components/ui";
+import { SaveButton, STAGE_BG } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
-import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
-import { isNew } from "@/lib/taste";
+import { type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { useHydrated } from "@/store/useUiStore";
 import { productHref } from "@/lib/catalog";
 

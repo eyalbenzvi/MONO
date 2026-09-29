@@ -257,7 +257,6 @@ export const useCartStore = create<CartState & CartActions>()(
         let items = get().cart;
         for (const color of status.missing) items = addItem(items, { id, size, color, qty: 1, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) }).items;
         set((s) => ({ cart: items, selectedSizes: { ...s.selectedSizes, [id]: size }, preferredSize: size }));
-        const completes = status.have.length > 0;
         if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: status.missing.length === 1 ? status.missing[0] : shirt.baseColor, added: status.missing, pair: true, ...(custom ? { custom } : {}), ...(upload ? { upload } : {}) });
         // The pair is worth its pair price, not two full prices: its saving is
         // the items' discount (all of it on the tee that completes a pair).

@@ -3,16 +3,15 @@
  * from the index tables (or the catalog), never names hard-coded here.
  */
 import type { ShirtProduct } from "@/types/shirt";
-import type { SearchIndex, TableEntry } from "./format";
+import type { SearchIndex } from "./format";
 
-import { FACET_KINDS, type Facet, type FacetKind } from "./facetCodec";
+import type { Facet, FacetKind } from "./facetCodec";
 
 export { FACET_KINDS, decodeFacets, encodeFacets, sameFacet, type Facet, type FacetKind } from "./facetCodec";
 
 /** Kinds kept in the index tables (the rest come from the catalog or the viewer). */
 export const TABLE_KINDS = ["category", "medium", "style", "variant", "source", "era", "artist", "look"] as const;
 type TableKind = (typeof TABLE_KINDS)[number];
-const isTableKind = (k: FacetKind): k is TableKind => (TABLE_KINDS as readonly string[]).includes(k);
 
 /** A kind's small grey name next to a suggestion ("Hokusai · artist"). */
 export const KIND_LABELS: Record<FacetKind, string> = {
@@ -54,12 +53,6 @@ export interface FacetContext {
 }
 
 const WEEK = 7 * 86_400_000;
-
-/** The table entry for a facet, if the index has one. */
-export function tableEntry(index: SearchIndex, f: Facet): TableEntry | undefined {
-  if (!isTableKind(f.kind)) return undefined;
-  return index.file.tables[f.kind].find((e) => e.id === f.value);
-}
 
 /** A test for one facet over catalog positions. "like" isn't a filter (it orders: lib/search/like). */
 export function facetTest(ctx: FacetContext, f: Facet): (pos: number) => boolean {

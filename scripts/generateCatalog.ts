@@ -28,13 +28,13 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { checkPrint } from "./tools/blockCheck";
 import { firstSentence, isWordTitled, plainTitles } from "./gen/titles";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
-import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, solidBlock, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
+import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
 import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";

@@ -4,11 +4,7 @@
  * (halftone dots / hatching for tone), captions come from ./copy.
  */
 import type { SourceCategory } from "../../types/shirt";
-import {
-  IH, IW, H, X0, Y0,
-  an, clamp01, int, n1, pick, range, scale, smooth,
-  type Design, type Generator, type Rng,
-} from "./core";
+import { IH, IW, H, X0, Y0, an, clamp01, int, n1, pick, range, scale, smooth, type Generator, type Rng } from "./core";
 import {
   ICONS, MONO, OBJECTS, SANS, SERIF, SPRITES,
   bitmapRects, drawPrims, esc, fitLines, measure, pixelText, sizeToFit, textEl, toneDefs,

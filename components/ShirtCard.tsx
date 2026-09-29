@@ -4,24 +4,16 @@ import { memo, useMemo } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
-import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
 import { STAGE_BG, useShowMatch } from "@/components/ui";
-import { tierOf } from "@/lib/match";
 import { becauseOf } from "@/lib/because";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import type { InPlaceZoom } from "@/hooks/useInPlaceZoom";
-import {
-  CATEGORY_LABELS,
-  COLOR_LABELS,
-  printSizeLabel,
-  type RecommendationStrategy,
-  type ShirtProduct,
-} from "@/types/shirt";
+import { CATEGORY_LABELS, type RecommendationStrategy, type ShirtProduct } from "@/types/shirt";
 
 interface ShirtCardProps {
   shirt: ShirtProduct;
@@ -40,8 +32,6 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
-  const vector = useTasteStore((s) => s.preferenceVector);
-  const tier = showMatch ? tierOf(vector, score) : null;
   const likedIds = useTasteStore((s) => s.likedIds);
   const because = useMemo(() => (showMatch ? becauseOf(shirt, likedIds) : null), [showMatch, shirt, likedIds]);
   // backface-visibility hides a face visually but not from hit-testing, so the
@@ -122,7 +112,6 @@ const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) :
 
 function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
-  const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
   const openShare = useUiStore((s) => s.openShare);
   const undoable = useTasteStore(canUndo);

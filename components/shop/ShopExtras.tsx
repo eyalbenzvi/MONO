@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
-import { fetchTrending } from "@/lib/api";
 import { getShirtById } from "@/lib/catalog";
 import type { ShirtProduct } from "@/types/shirt";
 
@@ -47,24 +46,3 @@ export function SharedList() {
   return <Strip title={`A shared list · ${shirts.length} tee${shirts.length === 1 ? "" : "s"}`} shirts={shirts} onClose={() => setShirts([])} />;
 }
 
-/**
- * "Most swiped right this week" — only with real data from the API
- * (lib/api fetchTrending). Without an API there is no data, so nothing is
- * rendered: never an invented number or list.
- */
-export function Trending() {
-  const [data, setData] = useState<{ label: string; shirts: ShirtProduct[] } | null>(null);
-  useEffect(() => {
-    let live = true;
-    void fetchTrending().then((t) => {
-      if (!live || !t) return;
-      const shirts = t.ids.map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s).slice(0, 12);
-      if (shirts.length) setData({ label: t.label, shirts });
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
-  if (!data) return null;
-  return <Strip title={data.label} shirts={data.shirts} />;
-}

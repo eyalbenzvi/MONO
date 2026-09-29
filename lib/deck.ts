@@ -1,4 +1,4 @@
-import { CALIBRATION_IDS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
+import { SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
 import { centeredCosine, makeScorer } from "@/lib/recommendation";
 import type { RecommendationStrategy, ShirtProduct, UserProfileVector } from "@/types/shirt";
 

@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import type { FeatureKey } from "../../../types/shirt";
 import nodePath from "node:path";
-import { INK, caption, circle, dot, f1, line, rect, text, type Set7Design } from "./kit";
+import { INK, caption, circle, f1, line, rect, text, type Set7Design } from "./kit";
 import { BRAILLE, MORSE, brailleCell, morseMarks } from "../../../lib/custom/draw/code";
 
 const FEAT = { typography: 0.9, clean_minimal: 0.75, geometric: 0.35, line_art: 0.3, abstract: 0.15, density: 0.35, contrast: 0.8, classic: 0.3, retro: 0.15 };

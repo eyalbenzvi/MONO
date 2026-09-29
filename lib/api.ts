@@ -39,23 +39,6 @@ export async function signup(email: string, source: SignupSource, taste?: Record
   }
 }
 
-/**
- * Real aggregate data (e.g. "most swiped right this week"). Without an API
- * there is no data, so this resolves to null and callers render nothing —
- * never a made-up number.
- */
-export async function fetchTrending(): Promise<{ ids: string[]; label: string } | null> {
-  if (!apiConfigured) return null;
-  try {
-    const r = await fetch(`${API_URL}/trending`);
-    if (!r.ok) return null;
-    const data = (await r.json()) as { ids?: unknown; label?: unknown };
-    return Array.isArray(data.ids) && typeof data.label === "string" ? { ids: data.ids.filter((x): x is string => typeof x === "string"), label: data.label } : null;
-  } catch {
-    return null;
-  }
-}
-
 /** Referral code for "Give $10, get $10" — only with an API that issues them. */
 export async function fetchReferral(orderNumber: string): Promise<{ code: string; url: string } | null> {
   if (!apiConfigured) return null;

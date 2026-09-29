@@ -268,5 +268,3 @@ export function encodeQr(text: string, minVersion = 1): QrCode | null {
   return { version: v, size, mask: bestMask, dark: best, align };
 }
 
-/** Whether module (x, y) of a code of this size belongs to a finder pattern or its separator. */
-export const inFinder = (x: number, y: number, size: number) => (x < 8 && y < 8) || (x >= size - 8 && y < 8) || (x < 8 && y >= size - 8);

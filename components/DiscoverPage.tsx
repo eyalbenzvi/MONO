@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Icon } from "@/components/Icon";
-import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
-import { tierOf } from "@/lib/match";
-import { biggestShift, profileSharpness } from "@/lib/recommendation";
+import { profileSharpness } from "@/lib/recommendation";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { SHIRTS } from "@/lib/catalog";
 import { archetypeOf, tasteLevel } from "@/lib/taste";
@@ -16,7 +13,6 @@ import { TasteSheet } from "@/components/TasteSheet";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { NeedDots } from "@/components/NeedDots";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
-import { FEATURE_LABELS } from "@/types/shirt";
 
 /**
  * Phones held sideways hide the strip above the card, so its essentials sit
