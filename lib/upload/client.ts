@@ -362,9 +362,8 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
     case "gap":
       add(full, f.size === "small");
       add(dots, photo && s.mode === "lines");
-      add(bolder, f.code === "stroke" && s.mode === "drawing" && !s.bolder);
-      add(bolder, f.code === "stroke" && !photo && !s.bolder);
-      add(bolder, f.code === "stroke" && photo && s.mode === "lines" && !s.bolder);
+      // Thin lines: bolder helps a drawing or any non-photo, and a photo in Lines.
+      add(bolder, f.code === "stroke" && !s.bolder && (s.mode === "drawing" || !photo || s.mode === "lines"));
       break;
     case "plain":
       add(full, f.size === "small");

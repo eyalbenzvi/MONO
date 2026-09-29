@@ -72,6 +72,10 @@ function UploadReviews({ order }: { order: string }) {
   );
 }
 
+/** begin_checkout, from the bag's totals (the Checkout button and "Buy now" alike). */
+const beginCheckout = (t: Pick<ReturnType<typeof cartTotals>, "total" | "discount" | "shipping" | "lines" | "pairs">) =>
+  trackEcommerce("begin_checkout", { value: t.total, discount: t.discount, shipping: t.shipping, items: ecomItems(t.lines, t.pairs) });
+
 export function CartView() {
   const hydrated = useHydrated();
   // lineTitle reads the uploads' titles: subscribed, so a rename shows here (and in the form and the confirmation).
@@ -127,6 +131,7 @@ export function CartView() {
   }, []);
 
   const { lines, count, subtotal, discount, pairs, shipping, total } = cartTotals(cart);
+  const pairCount = pairs.reduce((n, p) => n + p.pairs, 0);
   const showMatch = useShowMatch();
   const hasPicks = useTasteStore((s) => s.likedIds.length > 0) || showMatch;
 
@@ -138,7 +143,7 @@ export function CartView() {
     const t = cartTotals(useCartStore.getState().cart);
     if (!t.count) return;
     go("details");
-    trackEcommerce("begin_checkout", { value: t.total, discount: t.discount, shipping: t.shipping, items: ecomItems(t.lines, t.pairs) });
+    beginCheckout(t);
   }, [hydrated, checkoutRequested]);
 
   // view_cart once per visit to the bag, when it has loaded.
@@ -268,12 +273,12 @@ export function CartView() {
                 </ul>
               </div>
               <div className="lg:sticky lg:top-4 lg:[&>*:first-child]:mt-0">
-            <Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} />
+            <Summary subtotal={subtotal} discount={discount} pairCount={pairCount} shipping={shipping} total={total} />
             <button
               type="button"
               onClick={() => {
                 go("details");
-                trackEcommerce("begin_checkout", { value: total, discount, shipping, items: ecomItems(lines, pairs) });
+                beginCheckout({ total, discount, shipping, lines, pairs });
               }}
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
             >
@@ -294,7 +299,7 @@ export function CartView() {
             setTouched={setTouched}
             total={total}
             lines={lines}
-            summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
+            summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairCount} shipping={shipping} total={total} compact itemCount={count} />}
             onSubmit={(customer) => {
               const order = placeOrder(customer);
               if (order) {
