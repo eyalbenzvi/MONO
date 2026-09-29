@@ -11,5 +11,6 @@ export default defineConfig({
       { find: "@", replacement: fileURLToPath(new URL(".", import.meta.url)) },
     ],
   },
-  test: { include: ["tests/**/*.test.{ts,tsx}"], environment: "node" },
+  // Many tests render prints with resvg; with the Make fuzzes running beside them, five seconds is too tight a default.
+  test: { include: ["tests/**/*.test.{ts,tsx}"], environment: "node", testTimeout: 30_000 },
 });

@@ -71,7 +71,8 @@ describe("lib/custom/draw: the generator's drawings, reusable by templates", () 
   it("stays pure and small (each module is bundled per page)", () => {
     for (const f of readdirSync(DRAW)) {
       const src = readFileSync(path.join(DRAW, f), "utf8");
-      expect(src, f).not.toMatch(/from "node:|require\(|Math\.random|Date\b/);
+      // No node, no randomness, no clock (a PGN's "Date" header is text; Date.UTC is arithmetic).
+      expect(src, f).not.toMatch(/from "node:|require\(|Math\.random|new Date\(\s*\)|Date\.now\(/);
       expect(gzipSync(src).length, f).toBeLessThan(25_000);
     }
   });

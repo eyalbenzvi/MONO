@@ -58,7 +58,8 @@ describe("Part 0: no print lands on the tee as a solid block of ink", () => {
       if (c.reject) refused.push(`${s.id} ${c.reject}`);
     }
     expect(refused).toEqual([]);
-  }, 300_000);
+  // The whole catalogue at the print's size: some five minutes alone, more beside the other suites.
+  }, 900_000);
 
   it("no description mentions a solid ink block or a knockout, and the generator has no knockout mode", () => {
     for (const s of FULL) expect(`${s.summary} ${s.description}`, s.id).not.toMatch(/solid ink block|knock(ed)?[ -]?out/i);

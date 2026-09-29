@@ -115,11 +115,13 @@ describe("personalised prints: every input makes a printable print", () => {
       const city = m.example.t === "sky" ? places.byId(m.example.p.c) : undefined;
       const render = await loadRenderer(m.template);
       for (const color of ["black", "white"] as const) {
-        const r = check(render(m.example, color, { sky: SKY, city }), color);
+        // The place list too: Your Journey's globe draws the world's cities (its prepare() loads them on the site).
+        const r = check(render(m.example, color, { sky: SKY, city, places: places.list }), color);
         expect({ id: m.id, color, ...r, ok: !r.solid && r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
       }
     }
-  });
+    // Thirty-one products on two tees, each measured with resvg.
+  }, 120_000);
 });
 
 describe("personalised prints: the model photos they're drawn on", () => {
