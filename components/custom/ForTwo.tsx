@@ -204,7 +204,7 @@ export function ForTwo() {
               : Array.from({ length: 4 }, (_, i) => (
                   <li key={i} aria-hidden>
                     <div className={`rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
-                      <div className="aspect-[512/704] w-full animate-pulse rounded-xl bg-white/[0.03]" />
+                      <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" />
                     </div>
                   </li>
                 ))}
@@ -237,9 +237,9 @@ function TwoCardView({ made, card }: { made: MadeProduct; card: TwoCard }) {
     <div className="group relative isolate" data-card={made.slug}>
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
         {shirt && svg ? (
-          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} crop className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
         ) : (
-          <div className="aspect-[512/704] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />
+          <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />
         )}
       </div>
       <div className="mt-2 px-0.5">

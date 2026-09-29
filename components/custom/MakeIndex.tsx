@@ -24,6 +24,8 @@ const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
  * switch (/make/yours/).
  */
 const COUNTS = Object.fromEntries(MAKE_GROUPS.map((g) => [g.id, MADE.filter((m) => m.group === g.id).length])) as Record<MakeGroup, number>;
+/** A card's name: the product's, without its leading "Your" (the product page and the bag keep it). */
+const cardName = (name: string) => name.replace(/^Your /, "");
 /** For two's card: our example couple's initials, woven (the page itself shows every print their date makes). */
 const MONOGRAM = madeBySlug("monogram") as MadeProduct;
 const TWO_SPEC = validate({ t: "monogram", v: 1, p: { x: "ND", s: "lace", y: 2016 } }) ?? MONOGRAM.example;
@@ -67,21 +69,15 @@ export function MakeIndex() {
                   )}
                 </li>
               ))}
+              {/* For two, a card among the dated prints: one date, every print it makes. */}
+              {g.id === "date" && (
+                <li>
+                  <MakeCard made={MONOGRAM} spec={TWO_SPEC} name="For two" from="One date, every print" href="/make/two/" data-for-two />
+                </li>
+              )}
             </ul>
           </section>
         ))}
-        {!groups.length && (
-          <section id="two" className="mt-10 scroll-mt-24" aria-labelledby="make-two">
-            <h2 id="make-two" className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
-              For two
-            </h2>
-            <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4" data-group="two">
-              <li>
-                <MakeCard made={MONOGRAM} spec={TWO_SPEC} name="For two" from="One date, every print" href="/make/two/" data-for-two />
-              </li>
-            </ul>
-          </section>
-        )}
       </div>
     </div>
   );
@@ -111,9 +107,9 @@ export function MakeCard({
     <div className="group relative isolate">
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
         {shirt && svg ? (
-          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} crop className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
         ) : (
-          <div className="aspect-[512/704] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />
+          <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />
         )}
       </div>
       <div className="mt-2 px-0.5">
@@ -123,7 +119,7 @@ export function MakeCard({
           onClick={() => markFrom("index")}
           className="block truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
         >
-          {name}
+          {cardName(name)}
         </Link>
         <p className="mt-0.5 truncate text-xs text-neutral-400">{from}</p>
       </div>

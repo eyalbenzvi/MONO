@@ -247,6 +247,15 @@ export function MakeView({ slug }: { slug: string }) {
   const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
 
   const [zoom, setZoom] = useState(false);
+  // A phone's square stage frames the print on the chest; wider screens show the whole view.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia("(max-width: 767px)");
+    const on = () => setNarrow(q.matches);
+    on();
+    q.addEventListener("change", on);
+    return () => q.removeEventListener("change", on);
+  }, []);
   const [view, setView] = useState<"tee" | "print">("tee");
 
   if (!shirt) return null;
@@ -296,7 +305,7 @@ export function MakeView({ slug }: { slug: string }) {
                   <CustomMockup shirt={shirt} svg={current.otherSvg} color={otherColor(color)} sizes={SIZES.product} className="max-h-full min-w-0 flex-1" />
                 </div>
               ) : svg ? (
-                <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.product} className="h-full max-h-full" />
+                <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.product} crop={narrow} className="h-full max-h-full" />
               ) : (
                 <div className="aspect-[512/704] h-full animate-pulse rounded-2xl bg-white/[0.03]" aria-hidden />
               )}

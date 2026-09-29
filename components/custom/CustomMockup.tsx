@@ -22,6 +22,19 @@ interface CustomMockupProps {
   onRender?: (ms: number) => void;
   /** What the picture is, for a screen reader (default: the design's title, personalised). */
   label?: string;
+  /** Framed on the chest (3:4), the print about three fifths of the width: a small card or a phone's stage reads the print, not the view. */
+  crop?: boolean;
+}
+
+/** The print's share of a chest crop's width. */
+const CROP_FILL = 0.6;
+/** The chest crop of a model photo, as fractions of it, around its print box: 3:4, the print CROP_FILL wide, a little room above. */
+export function chestCrop(box: readonly number[]): { x: number; y: number; w: number; h: number } {
+  const w = Math.min(1, box[2] / CROP_FILL);
+  const h = Math.min(1, (w * MODEL_ASPECT * 4) / 3);
+  const x = Math.min(1 - w, Math.max(0, box[0] + box[2] / 2 - w / 2));
+  const y = Math.min(1 - h, Math.max(0, box[1] - h * 0.12));
+  return { x, y, w, h };
 }
 
 /**
@@ -31,7 +44,7 @@ interface CustomMockupProps {
  * original's baked picture holds the place. Zoomed, the print alone at
  * 1500 px covers its box, as the baked close-up does.
  */
-export function CustomMockup({ shirt, svg, color: wanted, className = "", style, zoomed = false, onRender, label }: CustomMockupProps) {
+export function CustomMockup({ shirt, svg, color: wanted, className = "", style, zoomed = false, onRender, label, crop = false }: CustomMockupProps) {
   const color = teeColor(shirt, wanted);
   const model = modelFor(shirt, color);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -104,13 +117,13 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
 
   const base = mockupImage(shirt, color);
   const box = model?.box;
-  return (
+  // Cropped: the whole picture drawn larger inside a 3:4 window on the chest (the canvas is the picture's, measured from its own box).
+  const c = crop && box ? chestCrop(box) : null;
+  const picture = (
     <div
       ref={wrapRef}
-      className={`relative select-none overflow-hidden ${className}`}
-      style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }}
-      role="img"
-      aria-label={`${label ?? `${shirt.title}, personalised`}, worn on a ${color === "black" ? "black" : "white"} tee`}
+      className="absolute"
+      style={c ? { left: `${(-c.x / c.w) * 100}%`, top: `${(-c.y / c.h) * 100}%`, width: `${100 / c.w}%`, height: `${100 / c.h}%` } : { inset: 0 }}
     >
       {!drawn && <img src={base.src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />}
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" data-mockup data-custom />
@@ -122,6 +135,17 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
           data-detail
         />
       )}
+    </div>
+  );
+  return (
+    <div
+      className={`relative select-none overflow-hidden ${className}`}
+      style={{ aspectRatio: c ? "3 / 4" : `${MODEL_ASPECT}`, ...style }}
+      role="img"
+      aria-label={`${label ?? `${shirt.title}, personalised`}, worn on a ${color === "black" ? "black" : "white"} tee`}
+      {...(c ? { "data-crop": "chest" } : {})}
+    >
+      {picture}
     </div>
   );
 }
