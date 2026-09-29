@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
+import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
 import { SizeSelector, STAGE_BG, useShowMatch } from "@/components/ui";
@@ -151,7 +151,7 @@ export function LikedDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 <ul ref={list} className="space-y-2 pb-4">
                   <AnimatePresence initial={false}>
                     {items.map((shirt, row) => (
-                      <SavedRow key={shirt.id} shirt={shirt} vector={showMatch ? vector : null} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
+                      <SavedRow key={shirt.id} shirt={shirt} hint={row === 0} vector={showMatch ? vector : null} onNavigate={onClose} onRemove={() => remove(shirt, row)} />
                     ))}
                   </AnimatePresence>
                 </ul>
@@ -251,13 +251,18 @@ const FLICK = 500;
  * (the size remembered; without one, "Choose size", which opens the tee);
  * left, "Remove". The label turns solid once the row has gone far enough.
  */
+/** The first time Saved opens (on this device), the first row slides aside once to show what a swipe does (skipped with reduced motion). */
+const HINT_KEY = "mono-saved-hint";
+
 function SavedRow({
   shirt,
+  hint = false,
   vector,
   onNavigate,
   onRemove,
 }: {
   shirt: ShirtProduct;
+  hint?: boolean;
   /** The taste to match against, once the taste test is done (else null). */
   vector: UserProfileVector | null;
   onNavigate: () => void;
@@ -277,6 +282,18 @@ function SavedRow({
     const armed = Math.abs(v) >= SWIPE_AT;
     if (dir !== pull.dir || armed !== pull.armed) setPull({ dir, armed });
   });
+  useEffect(() => {
+    if (!hint || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    try {
+      if (localStorage.getItem(HINT_KEY)) return;
+      localStorage.setItem(HINT_KEY, "1");
+    } catch {
+      return;
+    }
+    // Right a little (Add peeks out), then back.
+    const run = animate(x, [0, 64, 0], { duration: 1.1, delay: 0.5, times: [0, 0.45, 1], ease: "easeInOut" });
+    return () => run.stop();
+  }, [hint, x]);
   const addLabel = size ? `Add to bag · ${SIZE_LABELS[size]}` : "Choose size";
   const add = () => {
     if (!size) {

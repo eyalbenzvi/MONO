@@ -159,6 +159,15 @@ let landed = false;
  * address bar: a `landing` event, and the first touch of the session (kept
  * in sessionStorage, attached to a purchase). Runs once per page load.
  */
+/** A URL's origin only (null for none, or a value that isn't a URL). */
+const originOf = (u: string) => {
+  try {
+    return u ? new URL(u).origin : null;
+  } catch {
+    return null;
+  }
+};
+
 export function captureLanding(loc: Pick<Location, "search" | "pathname"> = window.location, referrer = document.referrer): Landing | null {
   if (landed) return null;
   landed = true;
@@ -172,7 +181,8 @@ export function captureLanding(loc: Pick<Location, "search" | "pathname"> = wind
     has_list: q.has("list"),
     has_make: q.has("make"),
     landing_path: loc.pathname,
-    referrer: referrer || null,
+    // The referring site, not its page's address (which can carry another site's query).
+    referrer: originOf(referrer),
   };
   track("landing", { ...landing });
   try {

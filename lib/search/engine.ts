@@ -208,7 +208,8 @@ export function search(index: SearchIndex, catalog: readonly ShirtProduct[], opt
   let out = run(index, catalog, opts, parsed, slots, facets);
   // Never a dead end. Words are ORed (a design needs one), so dropping a known word can't help — only facets
   // go, latest first. Words the catalog doesn't know at all are reported (nothing stood in for them).
-  const droppedTerms = slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
+  // A design named exactly (an id, SKU or number) is found, not a miss: its words aren't "dropped".
+  const droppedTerms = parsed.exact.length || slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
   const droppedFacets: Facet[] = [];
   while (!out.hits.length && facets.length) {
     droppedFacets.push(facets.pop()!);

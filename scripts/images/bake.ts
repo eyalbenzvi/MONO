@@ -24,6 +24,7 @@ import os from "node:os";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
+import type { Metadata } from "sharp";
 import shirtsJson from "../../data/shirts.json";
 import { needsInvert } from "../../lib/catalog";
 import { DETAIL_WIDTH, MOCKUP_WIDTHS, PRINT_WIDTHS, detailPath, isVector, mockupPath, printPath } from "../../lib/images";
@@ -90,7 +91,7 @@ const shrink = (print: Grey, w: number, h: number) => raw(print).resize(w, h, { 
 const blend = (color: BaseColor) => (color === "black" ? "screen" : "multiply");
 
 /** The design on its model photo, `w` px wide. */
-export async function mockup(color: BaseColor, print: Grey, w: number, photo: sharp.Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
+export async function mockup(color: BaseColor, print: Grey, w: number, photo: Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
   const h = Math.round((w * photo.height!) / photo.width!);
   const [bx, by, bw, bh] = [Math.round(box[0] * w), Math.round(box[1] * h), Math.round(box[2] * w), Math.round(box[3] * h)];
   const ink = await shrink(print, bw, bh).toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer();
@@ -102,7 +103,7 @@ export async function mockup(color: BaseColor, print: Grey, w: number, photo: sh
 }
 
 /** The close-up: the print's area of the photo, enlarged to DETAIL_WIDTH, with the print on it. */
-async function detail(color: BaseColor, print: Grey, photo: sharp.Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
+async function detail(color: BaseColor, print: Grey, photo: Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
   const [W, H] = [photo.width!, photo.height!];
   const area = { left: Math.round(box[0] * W), top: Math.round(box[1] * H), width: Math.round(box[2] * W), height: Math.round(box[3] * H) };
   const h = Math.round((DETAIL_WIDTH * 4) / 3);

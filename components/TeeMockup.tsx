@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { acceptedDesigns } from "@/lib/upload/designs";
 import { isUploadDesign } from "@/lib/upload/keys";
 import { Sharper } from "@/components/Sharper";
@@ -54,16 +54,46 @@ export function TeeMockup(props: TeeMockupProps) {
 function BakedMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false }: TeeMockupProps) {
   const color = teeColor(shirt, wanted);
   const page = usePageZoom();
-  const { src, srcSet } = mockupImage(shirt, color);
+  const base = mockupImage(shirt, color);
+  // A picture that didn't load (offline, a blip): the brand's line and a retry, never the browser's broken-image icon.
+  const [attempt, setAttempt] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const img = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    // One that failed before the page woke up fires no onError here.
+    const el = img.current;
+    if (el?.complete && el.naturalWidth === 0 && el.currentSrc) setFailed(true);
+  }, []);
+  const again = (u: string) => (attempt ? `${u}${u.includes("?") ? "&" : "?"}r=${attempt}` : u);
+  const src = again(base.src);
+  const srcSet = base.srcSet?.replace(/(\S+)(\s+\d+w)/g, (_, u: string, w: string) => `${again(u)}${w}`);
   const box = detailBox(shirt, color);
+  const label = `${shirt.title}, worn on a ${color === "black" ? "black" : "white"} tee`;
+  if (failed)
+    return (
+      <div className={`relative flex select-none flex-col items-center justify-center gap-2 overflow-hidden text-center ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} data-mockup-failed>
+        <p className="px-3 text-xs text-neutral-300">That didn&rsquo;t load.</p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setFailed(false);
+            setAttempt((n) => n + 1);
+          }}
+          className="relative z-20 h-9 rounded-full px-4 text-xs font-semibold text-white ring-1 ring-white/30 hover:bg-white/10"
+          aria-label={`Try again: ${label}`}
+        >
+          Try again
+        </button>
+      </div>
+    );
   return (
-    <div
-      className={`relative select-none overflow-hidden ${className}`}
-      style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }}
-      role="img"
-      aria-label={`${shirt.title}, worn on a ${color === "black" ? "black" : "white"} tee`}
-    >
+    <div className={`relative select-none overflow-hidden ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} role="img" aria-label={label}>
       <img
+        key={attempt}
+        ref={img}
+        onError={() => setFailed(true)}
         src={src}
         srcSet={srcSet}
         sizes={sizes}

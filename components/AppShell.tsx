@@ -51,6 +51,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // effects run before every page's passive effects.
   useLayoutEffect(() => void captureLanding(), []);
 
+  // Framed by another site (clickjacking: the static host can't send frame-ancestors): the page steps aside and offers itself in its own window.
+  const [framed, setFramed] = useState(false);
+  useLayoutEffect(() => {
+    try {
+      setFramed(window.top !== window.self);
+    } catch {
+      setFramed(true);
+    }
+  }, []);
+
   // One page_view per page, client-side navigations included.
   useEffect(() => track("page_view", { page_path: pathname }), [pathname]);
 
@@ -125,6 +135,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       /* storage unavailable */
     }
   }, []);
+
+  if (framed)
+    return (
+      <div className="flex h-[100dvh] items-center justify-center bg-[#050505] p-6 text-center" data-framed>
+        <a href={typeof window === "undefined" ? "/" : window.location.href} target="_top" rel="noopener" className="text-sm font-semibold text-white underline underline-offset-4">
+          Open MONO
+        </a>
+      </div>
+    );
 
   return (
     <MotionConfig reducedMotion="user">

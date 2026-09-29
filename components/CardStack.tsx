@@ -19,6 +19,12 @@ import { getShirtById } from "@/lib/catalog";
 import { matchScore, biggestShift } from "@/lib/recommendation";
 import { startOverWithUndo, tasteKnown, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+
+/** A short haptic tick, once the page has been touched (before that, browsers refuse and log an error). */
+const buzz = (ms: number) => {
+  if ((navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive === false) return;
+  navigator.vibrate?.(ms);
+};
 import { CATEGORY_LABELS, type SwipeAction, FEATURE_LABELS, type UserProfileVector } from "@/types/shirt";
 
 /** Pointer travel that commits a swipe on release. */
@@ -54,7 +60,7 @@ export function CardStack() {
   // A like sends a small heart from the card to the Saved icon in the header.
   const onLiked = useCallback(
     (cardRect: DOMRect) => {
-      navigator.vibrate?.(8);
+      buzz(8);
       if (reduceMotion) return;
       const target = document.querySelector("[data-saved-target]");
       if (!target) return;
@@ -177,7 +183,7 @@ function TopCard({
     if (next === lockedRef.current) return;
     lockedRef.current = next;
     setLocked(next);
-    if (next && !leaving.current) navigator.vibrate?.(4);
+    if (next && !leaving.current) buzz(4);
   });
   const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
@@ -197,7 +203,7 @@ function TopCard({
       leaving.current = true;
       setIsLeaving(true);
       if (action === "like" && cardRef.current) onLiked(cardRef.current.getBoundingClientRect());
-      else navigator.vibrate?.(8);
+      else buzz(8);
       const dir = action === "like" ? 1 : -1;
       const width = typeof window !== "undefined" ? window.innerWidth : 500;
       const targetX = dir * (width + 200);

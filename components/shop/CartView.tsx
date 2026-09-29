@@ -124,6 +124,8 @@ export function CartView() {
   }, []);
 
   const { lines, count, subtotal, discount, pairs, shipping, total } = cartTotals(cart);
+  const showMatch = useShowMatch();
+  const hasPicks = useTasteStore((s) => s.likedIds.length > 0) || showMatch;
 
   // "Buy now" and the add confirmation's Checkout: straight to the delivery form (also when already here).
   const checkoutRequested = useUiStore((s) => s.checkoutRequested);
@@ -171,7 +173,13 @@ export function CartView() {
         {count === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <Icon name="shopping-bag" className="h-10 w-10 text-neutral-600" />
-            <p className="text-sm text-neutral-400">Nothing in here yet. Your top picks are below.</p>
+            {/* Picks below only when there are some (a taste, or something saved); a first visit gets the way to find them. */}
+            <p className="text-sm text-neutral-400">{hasPicks ? "Nothing in here yet. Your top picks are below." : "Nothing in here yet."}</p>
+            {!hasPicks && (
+              <Link href="/" className="mt-2 inline-flex h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-bold text-black">
+                Start swiping
+              </Link>
+            )}
             {lastOrder && (
               <p className="mt-4 text-xs text-neutral-400">
                 Last order {lastOrder.number} · {formatPrice(lastOrder.total)}

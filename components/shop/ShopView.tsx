@@ -60,7 +60,8 @@ export function ShopView() {
   const facets = useUiStore((s) => s.shop.facets);
   // The grid follows the typing without holding up the field.
   const deferredQuery = useDeferredValue(query);
-  const searching = query.trim() !== "" || facets.length > 0;
+  // Only letters or figures search (a query of emoji or punctuation alone is no search, not "1,370 tees").
+  const searching = /[\p{L}\p{N}]/u.test(query) || facets.length > 0;
   const { runtime, warm: warmSearch } = useShopSearch(searching);
   const [open, setOpen] = useState(false);
   const [focusNonce, setFocusNonce] = useState(0);
@@ -276,7 +277,8 @@ export function ShopView() {
     if (key === committed.current) return;
     committed.current = key;
     track("search", {
-      q: query.trim().slice(0, 64),
+      // What was typed, only when it found something (a miss is more often a name or an address typed by mistake).
+      ...(result.relaxed ? {} : { q: query.trim().slice(0, 64) }),
       terms: query.trim().split(/\s+/).filter(Boolean).length,
       results: visible.length,
       zero: !!result.relaxed,

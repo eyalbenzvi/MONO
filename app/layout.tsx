@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "MONO — swipe your taste in tees",
   description: DESCRIPTION,
   manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/site.webmanifest`,
+  // Links out carry the site's origin only, never a page's address (which can hold a print's details).
+  referrer: "strict-origin-when-cross-origin",
   openGraph: {
     type: "website",
     siteName: "MONO",

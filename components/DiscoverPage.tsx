@@ -186,10 +186,17 @@ function TopStrip() {
   return (
     <div className={STRIP} data-strip tabIndex={-1}>
       {/* Minimal: just the bar (a friend's link says whose taste this is, once). */}
-      {friend && !onboardingSeen && (
+      {friend && !onboardingSeen ? (
         <p className="h-4 truncate text-center text-[13px] font-medium leading-4 text-white">
           Your friend is {archetypeOf(friend).name} — swipe {CALIBRATION_TOTAL} to compare
         </p>
+      ) : (
+        done === 0 && (
+          // The first card only, on a phone (desktop has the column beside it): what the ten cards are for.
+          <p className="h-4 truncate text-center text-[13px] font-medium leading-4 text-neutral-300 lg:hidden" data-goal aria-hidden>
+            Swipe {CALIBRATION_TOTAL} tees. Get a shop ranked for you.
+          </p>
+        )
       )}
       <div className="mt-1 flex items-center">
         <div

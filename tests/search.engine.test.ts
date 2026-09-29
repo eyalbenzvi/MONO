@@ -244,3 +244,13 @@ describe("search: expert review (algorithm and content)", () => {
     expect(run("new york ").total).toBeGreaterThan(0);
   });
 });
+
+describe("search: a design named exactly is found, not a miss", () => {
+  it("an id, SKU or number leads the results and says no 'No match'", () => {
+    const s = SHIRTS[0];
+    const id = `mono-${String(s.n).padStart(4, "0")}`;
+    const r = run(id);
+    expect(r.results[0].shirt.id).toBe(s.id);
+    expect(r.relaxed).toBeNull();
+  });
+});

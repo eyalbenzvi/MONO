@@ -41,10 +41,11 @@ export const ProductCard = memo(function ProductCard({
   // "New" is judged on the viewer's clock, so only once running in the browser.
   const hydrated = useHydrated();
   const tag = topPick ? "Top pick" : null; // read by screen readers only: the card shows the name alone
+  // Served (and until the page wakes) the card is simply there: its fade-in is for cards that arrive later (a filter, more).
   // `isolate`: the card's own controls (z-10) stack inside the card and
   // never above the shop's sticky filter bar or a page's sticky buy bar.
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate" data-product-card>
+    <motion.div initial={hydrated ? { opacity: 0, y: 12 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate" data-product-card>
       <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
         <TeeMockup shirt={shirt} color={tee} sizes={SIZES.grid} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
       </div>

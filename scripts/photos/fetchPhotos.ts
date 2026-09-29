@@ -16,6 +16,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
+import type { Sharp } from "sharp";
 import { ARCHIVE_FIRST_N } from "../archive/source";
 import { BUCKET, PHOTO_FIRST_N, PHOTO_UNITS, PRINT_H, PRINT_W, photoOrder, type PhotoSource, type PhotoUnit } from "./source";
 import { EXCLUDE, SUBJECTS, PER_CATEGORY_PHOTOS, fixSubject } from "./curation";
@@ -202,7 +203,7 @@ async function prepOne(c: Candidate): Promise<{ webp: Buffer; meta: Omit<Prepped
   const small = await src.clone().greyscale().resize(WORK, WORK, { fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
   const object = plainBackdrop(new Uint8Array(small.data.buffer, small.data.byteOffset, small.info.width * small.info.height), small.info.width, small.info.height);
   if (object && !existsSync(cutFile(c.key))) return "needs-cut";
-  let layer: sharp.Sharp;
+  let layer: Sharp;
   let bw: number;
   let bh: number;
   if (object) {

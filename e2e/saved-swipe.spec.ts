@@ -64,3 +64,16 @@ test("Saved: a short drag springs back and does nothing", async ({ page }) => {
   await expect(page.locator(`[data-saved-row="${B9}"]`)).toBeVisible();
   expect(await cart(page)).toEqual([]);
 });
+
+test("Saved: the first time it opens, the first row slides aside once to show the swipe; never again", async ({ page }) => {
+  await page.getByRole("button", { name: /Close/ }).first().click().catch(() => {});
+  await page.evaluate(() => localStorage.removeItem("mono-saved-hint"));
+  await page.goto("shop/");
+  await hydrated(page);
+  await openSaved(page, { hint: true });
+  // Mid-hint the first row is pulled right: its "Add" label shows, then it settles back.
+  const label = page.locator("[data-saved-row] [data-swipe-action]").first();
+  await expect(label).toHaveAttribute("data-swipe-action", "add", { timeout: 4000 });
+  await expect(label).toHaveCount(0, { timeout: 4000 });
+  expect(await page.evaluate(() => localStorage.getItem("mono-saved-hint"))).toBe("1");
+});

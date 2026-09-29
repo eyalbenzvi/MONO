@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import type { Sharp } from "sharp";
 import { describe, expect, it } from "vitest";
 import { MAX_PIXELS, imageSize, tooManyPixels } from "@/lib/upload/header";
 
@@ -6,7 +7,7 @@ const img = (w: number, h: number) => sharp({ create: { width: w, height: h, cha
 
 describe("uploads: a picture's size from its header, before it's decoded", () => {
   it("reads PNG, JPEG, lossy and lossless WebP", async () => {
-    const buf = async (s: sharp.Sharp) => new Uint8Array(await s.toBuffer());
+    const buf = async (s: Sharp) => new Uint8Array(await s.toBuffer());
     expect(imageSize(await buf(img(1234, 567).png()))).toEqual({ w: 1234, h: 567 });
     expect(imageSize(await buf(img(1234, 567).jpeg()))).toEqual({ w: 1234, h: 567 });
     expect(imageSize(await buf(img(1234, 567).webp()))).toEqual({ w: 1234, h: 567 });

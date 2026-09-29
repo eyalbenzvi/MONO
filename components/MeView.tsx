@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { NeedDots } from "@/components/NeedDots";
-import { getShirtById, productHref } from "@/lib/catalog";
+import { familiesOf, getShirtById, productHref } from "@/lib/catalog";
 import { cartTotals } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import { topPicks } from "@/lib/match";
@@ -95,7 +95,14 @@ export function MeView() {
   const [confirmClear, setConfirmClear] = useState(false);
 
   const saved = useMemo(() => [...likedIds].reverse().map(getShirtById).filter((s): s is ShirtProduct => !!s), [likedIds]);
-  const picks = useMemo(() => (calibrated ? topPicks(vector, 6) : []), [calibrated, vector]);
+  // Picks are new to you: never a family already in the bag or saved (as the bag's own picks).
+  const cartKey = cart.map((l) => l.id).join(",");
+  const picks = useMemo(
+    () => (calibrated ? topPicks(vector, 6, { excludeFamilies: familiesOf([...cart.map((l) => l.id), ...likedIds]) }) : []),
+    // The bag's ids, as a string: its lines' other changes (size, quantity) don't move the picks.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [calibrated, vector, cartKey, likedIds],
+  );
 
   if (!hydrated) return <div className="flex-1" />;
   // Set like the About page: a plain first line, the heavy word on the one inverted bar.
@@ -189,10 +196,10 @@ export function MeView() {
             type="button"
             onClick={async () => {
               if (!confirmClear) return setConfirmClear(true);
-              // Everything this site stored, gone: taste, Saved, bag, last order, and uploaded files (IndexedDB too).
-              localStorage.removeItem(TASTE_KEY);
-              localStorage.removeItem(CART_KEY);
-              localStorage.removeItem(MAKE_KEY);
+              // Everything this site stored, gone: taste, Saved, bag, last order, searches, and uploaded files (IndexedDB too).
+              for (const k of [TASTE_KEY, CART_KEY, MAKE_KEY]) localStorage.removeItem(k);
+              for (const store of [localStorage, sessionStorage])
+                for (const k of Object.keys(store)) if (k.startsWith("mono-")) store.removeItem(k);
               await import("@/lib/upload/store").then((m) => (m.available() ? m.clearUploads() : undefined)).catch(() => {});
               window.location.assign(window.location.pathname.replace(/me\/?$/, ""));
             }}

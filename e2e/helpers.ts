@@ -54,7 +54,9 @@ export async function hydrated(page: Page) {
 }
 
 /** Saved lives in the personal area now: the person icon, then "Edit" (the Saved drawer). */
-export async function openSaved(page: import("@playwright/test").Page) {
+export async function openSaved(page: import("@playwright/test").Page, { hint = false } = {}) {
+  // The first-open swipe hint moves the first row: tests that swipe turn it off (e2e/saved-swipe covers it).
+  if (!hint) await page.evaluate(() => localStorage.setItem("mono-saved-hint", "1"));
   await page.getByRole("link", { name: "You: taste, saved, orders" }).click();
   await page.waitForURL(/\/me\/$/);
   await page.getByRole("button", { name: "Edit saved" }).click();
