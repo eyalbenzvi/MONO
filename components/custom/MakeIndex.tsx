@@ -10,7 +10,7 @@ import { drawPrint } from "@/components/custom/useCustom";
 import { STAGE_BG } from "@/components/stage";
 import { assetUrl, getShirtById } from "@/lib/catalog";
 import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "@/lib/custom/makeCards";
-import { MADE, MAKE_GROUPS, madeBySlug, type MakeGroup, type MadeProduct } from "@/lib/custom/products";
+import { GROUP_COUNTS as COUNTS, MADE, MAKE_GROUPS, groupsFrom, madeBySlug, type MakeGroup, type MadeProduct } from "@/lib/custom/products";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { updateQuery } from "@/lib/url";
 import { SIZES } from "@/lib/images";
@@ -25,18 +25,10 @@ const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
  * takes. From yours (your own photo or drawing) is the other track, behind the
  * switch (/make/yours/).
  */
-const COUNTS = Object.fromEntries(MAKE_GROUPS.map((g) => [g.id, MADE.filter((m) => m.group === g.id).length])) as Record<MakeGroup, number>;
 /** A card's name: the product's, without its leading "Your" (the product page and the bag keep it). */
 const cardName = (name: string) => name.replace(/^Your /, "");
 /** For two's card: our example couple's initials, woven (lib/custom/makeCards). */
 const MONOGRAM = madeBySlug("monogram") as MadeProduct;
-const GROUP_IDS = MAKE_GROUPS.map((g) => g.id);
-/** The groups the address asks for (`?g=date.name`), known ones only, in their order. */
-const groupsFrom = (search: string): MakeGroup[] => {
-  const want = (new URLSearchParams(search).get("g") ?? "").split(".");
-  return GROUP_IDS.filter((g) => want.includes(g));
-};
-
 export function MakeIndex() {
   // The filter: every group until some are chosen; kept in the address (replaced, so Back leaves Make).
   const [groups, setGroups] = useState<MakeGroup[]>([]);

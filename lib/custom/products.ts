@@ -39,12 +39,14 @@ const DATED: PrintHints = { dense: "Try another date.", faint: "Try another date
 /** London's GeoNames id (data/cities): the example sky's place, and the fallback when the visitor's zone has no city. */
 export const FALLBACK_CITY = 2643743;
 
-export type MakeGroup = "date" | "name" | "place" | "people" | "you";
-/** The Make index's groups, in order: by what the visitor has (a date, a name, a place, their people, themselves). */
+export type MakeGroup = "date" | "name" | "place" | "travels" | "form" | "people" | "you";
+/** The Make index's groups, in order: by what the visitor has (a date, a name, a place, their travels, a form they know, their people, themselves). */
 export const MAKE_GROUPS: { id: MakeGroup; label: string }[] = [
   { id: "date", label: "From a date" },
   { id: "name", label: "From a name" },
   { id: "place", label: "From a place" },
+  { id: "travels", label: "From your travels" },
+  { id: "form", label: "In a form you know" },
   { id: "people", label: "From your people" },
   { id: "you", label: "From you" },
 ];
@@ -232,6 +234,14 @@ for (const t of SHIPPED) {
 const rank = (slug: string) => (ORDER.includes(slug) ? ORDER.indexOf(slug) : ORDER.length + SHIPPED.indexOf(slug as ExtraId));
 export const MADE: MadeProduct[] = MAKE_GROUPS.flatMap((g) => LIST.filter((m) => m.group === g.id).sort((a, b) => rank(a.slug) - rank(b.slug)));
 
+
+/** How many products each group holds (an empty group isn't shown, nor offered in the filter). */
+export const GROUP_COUNTS = Object.fromEntries(MAKE_GROUPS.map((g) => [g.id, MADE.filter((m) => m.group === g.id).length])) as Record<MakeGroup, number>;
+/** The groups the address asks for (`?g=date.name`), known ones only, in their order. */
+export function groupsFrom(search: string): MakeGroup[] {
+  const want = (new URLSearchParams(search).get("g") ?? "").split(".");
+  return MAKE_GROUPS.map((g) => g.id).filter((g) => want.includes(g));
+}
 
 export const madeById = (id: string) => MADE.find((m) => m.id === id);
 export const madeBySlug = (slug: string) => MADE.find((m) => m.slug === slug);
