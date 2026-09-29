@@ -13,8 +13,6 @@ export interface RenderData {
   city?: City;
   /** The place list (data/cities): Your Place draws its cities as the globe's only land. */
   places?: City[];
-  /** What a later template loaded for itself (its `prepare`): elevation profiles, streets. */
-  extra?: unknown;
 }
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 
@@ -51,8 +49,6 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   metro: () => import("./templates/metro"),
   route: () => import("./templates/route"),
   island: () => import("./templates/island"),
-  ridge: () => import("./templates/ridge"),
-  streets: () => import("./templates/streets"),
   qr: () => import("./templates/qr"),
 };
 
