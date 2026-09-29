@@ -4,10 +4,12 @@
 
 ````text
 You are working in the MONO repository (Next.js, static export). Build all of the
-work below, end to end, without stopping between waves. Commit after every
-product (and every infrastructure step) with a clear message, keep the branch
-green at every commit, and push as you go. Only stop early for something you
-truly cannot do (for example the network policy blocks a data source); then
+work below, end to end, without stopping between waves. Commit locally after
+every product (and every infrastructure step) with a clear message, and keep the
+branch green at every commit. Do NOT push anything to the remote while you work:
+no git push of any kind until everything below is finished, checked and
+reported. Push once, at the very end (section 5). Only stop early for something
+you truly cannot do (for example the network policy blocks a data source); then
 say exactly what is blocked and carry on with everything else.
 
 ============================================================
@@ -305,7 +307,13 @@ tests in tests/forTwo.test.ts.
 After every commit, run the project's checks: typecheck, lint, vitest (all of
 tests/, especially tests/make and tests/forTwo), npm run generate staying
 byte-identical, the Make e2e specs, and `npm run build` at the end of each wave.
-Before each push, re-read your diff adversarially.
+Commits stay local.
+
+At the very end, after the last product: run the full checks once more
+(typecheck, lint, all of vitest, all e2e, npm run build), re-read the whole diff
+against the starting point adversarially and fix what you find, and only then
+push the branch, once (git push -u origin <branch>). Never push before this
+point, not even to save work in progress.
 
 Update README.md (the Make table with every new row, groups, fonts, data
 sources and licences, `cap`), the product count everywhere it is stated
@@ -313,7 +321,7 @@ sources and licences, `cap`), the product count everywhere it is stated
 docs/content/waves.md for the artwork waves. Do not change prices, policy or
 the catalogue.
 
-When everything is done, report:
+When everything is done and pushed, report:
 - every product shipped and its longest ?make= length;
 - what the gate refused on the way and how each template was changed;
 - the caption change: which products had fixed or computed lines and now accept
