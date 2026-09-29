@@ -83,6 +83,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   route: lazy(() => import("@/components/custom/editors/RouteEditor")),
   island: lazy(() => import("@/components/custom/editors/IslandEditor")),
   qr: lazy(() => import("@/components/custom/editors/QrEditor")),
+  telegram: lazy(() => import("@/components/custom/editors/TelegramEditor")),
 };
 
 /** The data a print is drawn from, credited where it's used (the place list's licence asks for it). */

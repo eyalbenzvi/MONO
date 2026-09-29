@@ -23,8 +23,9 @@ import * as metro from "./metro";
 import * as route from "./route";
 import * as island from "./island";
 import * as qr from "./qr";
+import * as telegram from "./telegram";
 
-export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr };
+export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram };
 export type ExtraId = keyof typeof EXTRA;
 export type ExtraParams = { [K in ExtraId]: (typeof EXTRA)[K] extends SpecModule<infer P> ? P : never };
 export type ExtraSpec = { [K in ExtraId]: { t: K; v: 1; p: ExtraParams[K] } }[ExtraId];

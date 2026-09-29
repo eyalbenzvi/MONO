@@ -56,6 +56,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   route: () => import("./templates/route"),
   island: () => import("./templates/island"),
   qr: () => import("./templates/qr"),
+  telegram: () => import("./templates/telegram"),
 };
 
 /** What a template needs loaded before it draws a spec ({} for most). */
