@@ -13,14 +13,10 @@
  * Every input passes what a customer's would have to: the size gate, the
  * quality bar, and no near-duplicate of a catalogue design (the dHash index).
  *
- * The tile images: each pair is 3:4 at 360 × 480 (twice the desktop tile),
- * the before and the after cut from the same relative rectangle of the
- * picture (its box in the source, its placed box on the print), so the two
- * show the same thing at the same size. Framing only: the hash is of the whole
- * print. The after is area-averaged from the 1500 × 2000 print in its tee's
- * inks. Writes public/make/yours/<kind>-before.webp and -after.webp and
+ * They are the converter's regression check (the page no longer shows them:
+ * its empty stage is the tee with the print area marked). Writes
  * data/upload/examples.json (mode, tee, quality, the ink's hash, the credit);
- * tests/upload/examples.test.ts checks them.
+ * tests/upload/examples.test.ts regenerates and compares.
  *
  *   npx tsx scripts/tools/buildYoursExamples.ts
  */
@@ -34,9 +30,6 @@ import { chooseTee } from "../../lib/upload/teeRule";
 import { mulberry32 } from "../gen/core";
 
 const ROOT = path.join(__dirname, "..", "..");
-const OUT = path.join(ROOT, "public", "make", "yours");
-/** The tile images, px: 3:4, twice the desktop tile's half. */
-const [TW, TH] = [360, 480];
 
 export interface Example {
   kind: "photo" | "drawing";
@@ -54,17 +47,13 @@ interface Box {
   h: number;
 }
 
-/** How a pair is framed: `cover` crops in to 3:4 (zoom < 1 closer, centred at cx, cy of the box); `contain` fits the box with a margin. */
-type Framing = { fit: "cover"; zoom: number; cx: number; cy: number } | { fit: "contain"; margin: number };
-
 interface Input {
   kind: Example["kind"];
   /** What the converter is given. */
   pixels: Pixels;
-  /** What the tile shows as the before, and the subject's box in it (null: the before is its own picture, not framed with the print). */
+  /** The picture as given, and the subject's box in it (null: the whole picture). */
   before: Buffer;
   box: Box | null;
-  framing: Framing;
   credit?: string;
 }
 
@@ -277,8 +266,8 @@ async function inputs(): Promise<Input[]> {
   const pm = await sharp(ph).metadata();
   const sk = await sketch();
   return [
-    { kind: "photo", pixels: await pixels(ph), before: ph, box: { x: 0, y: 0, w: pm.width!, h: pm.height! }, framing: { fit: "cover", zoom: 0.78, cx: 0.58, cy: 0.48 }, credit: PHOTO.credit },
-    { kind: "drawing", pixels: await pixels(sk.png), before: sk.png, box: sk.box, framing: { fit: "contain", margin: 0.04 } },
+    { kind: "photo", pixels: await pixels(ph), before: ph, box: { x: 0, y: 0, w: pm.width!, h: pm.height! }, credit: PHOTO.credit },
+    { kind: "drawing", pixels: await pixels(sk.png), before: sk.png, box: sk.box },
   ];
 }
 
@@ -308,83 +297,9 @@ export async function examples(): Promise<Made[]> {
   return out;
 }
 
-/* ------------------------------------------------------------------ */
-/* The tile images                                                      */
-/* ------------------------------------------------------------------ */
-
-function bboxOf(on: (i: number) => boolean, w: number, h: number): Box {
-  let [x0, y0, x1, y1] = [w, h, -1, -1];
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) if (on(y * w + x)) (x0 = Math.min(x0, x)), (x1 = Math.max(x1, x)), (y0 = Math.min(y0, y)), (y1 = Math.max(y1, y));
-  if (x1 < 0) throw new Error("nothing printed");
-  return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
-}
-
-/** The 3:4 frame around a box, px: cropped in (cover) or fitted with a margin (contain). */
-function frame(box: Box, f: Framing): Box {
-  const want = TW / TH;
-  if (f.fit === "cover") {
-    // The largest 3:4 inside the box, scaled by zoom, centred at (cx, cy) of the box and kept inside it.
-    const [w, h] = box.w / box.h > want ? [box.h * want * f.zoom, box.h * f.zoom] : [box.w * f.zoom, (box.w / want) * f.zoom];
-    const x = Math.min(box.x + box.w - w, Math.max(box.x, box.x + f.cx * box.w - w / 2));
-    const y = Math.min(box.y + box.h - h, Math.max(box.y, box.y + f.cy * box.h - h / 2));
-    return { x, y, w, h };
-  }
-  // The smallest 3:4 around the box and an even margin, centred.
-  const m = f.margin * Math.max(box.w, box.h);
-  let [w, h] = [box.w + 2 * m, box.h + 2 * m];
-  if (w / h > want) h = w / want;
-  else w = h * want;
-  return { x: box.x + box.w / 2 - w / 2, y: box.y + box.h / 2 - h / 2, w, h };
-}
-
-/** The before, cut to the frame (what's outside the picture is its own edge colour, repeated). */
-async function beforeImage(m: Made): Promise<Buffer> {
-  const { before, box, framing } = m.input;
-  if (!box) return sharp(before).resize(TW, TH, { fit: "cover" }).webp({ quality: 82 }).toBuffer();
-  const meta = await sharp(before).metadata();
-  const f = frame(box, framing);
-  const pad = Math.ceil(Math.max(0, -f.x, -f.y, f.x + f.w - meta.width!, f.y + f.h - meta.height!)) + 1;
-  const padded = await sharp(before).extend({ top: pad, bottom: pad, left: pad, right: pad, extendWith: "copy" }).png().toBuffer();
-  return sharp(padded)
-    .extract({ left: Math.round(f.x + pad), top: Math.round(f.y + pad), width: Math.round(f.w), height: Math.round(f.h) })
-    .resize(TW, TH, { kernel: "lanczos3" })
-    .webp({ quality: 82 })
-    .toBuffer();
-}
-
-/** The after: the same frame on the print (the photograph's placed box, or the ink's), area-averaged, in the tee's inks. */
-function afterImage(m: Made): Promise<Buffer> {
-  const { conv, ink, input, ex } = m;
-  const W = conv.w;
-  const box = conv.tone ? bboxOf((i) => conv.tone!.alpha[i] > 0.5, W, conv.h) : bboxOf((i) => ink[i] === 1, W, conv.h);
-  if (input.box && Math.abs(box.w / box.h - input.box.w / input.box.h) > 0.02) throw new Error(`${ex.kind}: the print's box doesn't match the source's`);
-  const f = frame(box, input.framing);
-  const out = Buffer.alloc(TW * TH);
-  const [kx, ky] = [f.w / TW, f.h / TH];
-  for (let y = 0; y < TH; y++) {
-    const [sy0, sy1] = [Math.floor(f.y + y * ky), Math.floor(f.y + (y + 1) * ky)];
-    for (let x = 0; x < TW; x++) {
-      const [sx0, sx1] = [Math.floor(f.x + x * kx), Math.floor(f.x + (x + 1) * kx)];
-      let [s, n] = [0, 0];
-      for (let sy = sy0; sy < Math.max(sy1, sy0 + 1); sy++)
-        for (let sx = sx0; sx < Math.max(sx1, sx0 + 1); sx++) {
-          n++;
-          if (sx >= 0 && sy >= 0 && sx < W && sy < conv.h) s += ink[sy * W + sx];
-        }
-      const a = s / n;
-      out[y * TW + x] = Math.round(255 * (ex.tee === "black" ? a : 1 - a));
-    }
-  }
-  return sharp(out, { raw: { width: TW, height: TH, channels: 1 } }).webp({ quality: 86 }).toBuffer();
-}
-
 async function main() {
-  fs.mkdirSync(OUT, { recursive: true });
   const list = await examples();
   for (const m of list) {
-    fs.writeFileSync(path.join(OUT, `${m.ex.kind}-before.webp`), await beforeImage(m));
-    fs.writeFileSync(path.join(OUT, `${m.ex.kind}-after.webp`), await afterImage(m));
     console.log(`${m.ex.kind}: ${m.conv.cls} → ${m.ex.mode} on ${m.ex.tee}, quality ${m.ex.quality}, coverage ${m.measures.coverage.toFixed(3)}, nearest catalogue design ${m.dup}, ${m.ex.hash}`);
   }
   fs.mkdirSync(path.join(ROOT, "data", "upload"), { recursive: true });

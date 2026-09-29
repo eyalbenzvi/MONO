@@ -24,7 +24,8 @@ async function uploadToBag(page: Page, name: string, buffer: Buffer, query = "")
 
 async function checkoutFromMiniBag(page: Page) {
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
-  await page.waitForURL(/\/cart\/$/);
+  // Checkout opens on the delivery form, a step in the history (#details).
+  await page.waitForURL(/\/cart\/(#details)?$/);
   for (const [label, value] of [
     ["Full name", "Ada Lovelace"],
     ["Email", "ada@example.com"],
@@ -47,10 +48,13 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
   await expect(page).toHaveURL(/\/make\/yours\/$/);
-  // One thing to do, no choice to make: the converter's own before and after, and the button that opens a file.
+  // One thing to do: the tee with the print area marked, which opens the chooser, as the button does.
   await expect(page.locator('[data-step="start"]')).toHaveText("Your print");
-  await expect(page.locator('[data-upload-preview="empty"] img')).toHaveCount(2);
-  await expect(page.locator("[data-primary]")).toHaveText("Choose a photo or drawing");
+  await expect(page.locator('[data-upload-preview="empty"] img')).toHaveCount(1);
+  await expect(page.locator('[data-upload-preview="empty"]')).toContainText("Your print here");
+  await expect(page.locator("[data-primary]")).toHaveText("Choose a picture");
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: /^Your print here/ }).tap()]);
+  expect(chooser.isMultiple()).toBe(false);
   await expect(page.locator("[data-tile]")).toHaveCount(0);
   await expect(page.getByText("Words", { exact: true })).toHaveCount(0);
   await page.goBack();
@@ -158,7 +162,8 @@ test("From yours: Edit from the bag opens the same file at Your print; rights ar
   await expect(page).toHaveURL(/#size$/);
   await expect(primary(page)).toHaveText(/^Save changes · M · \$75$/);
   await primary(page).tap();
-  await page.waitForURL(/\/cart\/$/);
+  // Checkout opens on the delivery form, a step in the history (#details).
+  await page.waitForURL(/\/cart\/(#details)?$/);
   await expect(page.getByText(/^Your file ·/)).toHaveCount(1);
 });
 

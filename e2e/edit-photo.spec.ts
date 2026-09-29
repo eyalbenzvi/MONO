@@ -105,7 +105,7 @@ test("one tile for a photo or a drawing; a pencil sketch read as a photograph ca
   await page.goto("make/yours/");
   await hydrated(page);
   await expect(page.locator("[data-tile]")).toHaveCount(0);
-  await expect(page.locator("[data-primary]")).toHaveText("Choose a photo or drawing");
+  await expect(page.locator("[data-primary]")).toHaveText("Choose a picture");
   await open(page, "sketch.png", await pencilSketch());
   const style = page.getByRole("radiogroup", { name: "Style" });
   await expect(style.getByRole("radio")).toHaveText([/^Dots/, /^Lines/, /^Drawing/]);

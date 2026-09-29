@@ -39,9 +39,9 @@ const fixNote = (f: Fix) =>
   f.id === "stronger" ? "We’ve made it stronger." : f.id === "bolder" ? "We’ve made the lines bolder." : `We’ve set ${f.label.replace(/^Use /, "")}.`;
 
 /**
- * From yours (/make/yours/): your photo or drawing, in one ink. Two
+ * From yours (/make/yours/): your picture, in one ink. Two
  * screens, one white button each, the picture always in view: Your print
- * (before a file, the converter's example and "Choose a photo or drawing";
+ * (before a file, the tee with "Your print here" on it, which opens the chooser;
  * then the style, the print size, the tee — a first print that fails takes
  * the first fix that passes, and says so) and Size (adding confirms the
  * rights). The step is in the address's hash ("" before a file, #print,
@@ -385,7 +385,7 @@ function Yours() {
   const firstFix = fixes?.[0];
   const primary: { label: string; onClick?: () => void; href?: string; disabled?: boolean } | null =
     step === "start"
-      ? { label: opening ? "Opening…" : "Choose a photo or drawing", onClick: pickFile, disabled: opening }
+      ? { label: opening ? "Opening…" : "Choose a picture", onClick: pickFile, disabled: opening }
       : step === "print"
       ? ok && !busy
         ? { label: `Next · ${formatPrice(price)}`, onClick: toSize }
@@ -424,11 +424,12 @@ function Yours() {
         }}
       />
       <div
-        className={`mx-auto max-w-5xl px-4 pb-28 md:pb-12 2xl:max-w-6xl ${step === "start" ? "pt-4" : "pt-1"} ${drag ? "ring-2 ring-inset ring-white" : ""}`}
+        className={`mx-auto max-w-5xl px-4 pb-28 md:pb-12 2xl:max-w-6xl ${step === "start" ? "pt-4" : "pt-1"}`}
         {...(step === "start"
           ? {
               onDragOver: (e: React.DragEvent) => (e.preventDefault(), setDrag(true)),
-              onDragLeave: () => setDrag(false),
+              // Leaving for a child (the tee, the button) isn't leaving the page.
+              onDragLeave: (e: React.DragEvent) => !e.currentTarget.contains(e.relatedTarget as Node) && setDrag(false),
               onDrop: (e: React.DragEvent) => {
                 e.preventDefault();
                 setDrag(false);
@@ -443,26 +444,26 @@ function Yours() {
             <MakeHeader track="yours" />
           </div>
         )}
-        <div className="mb-2 flex h-11 items-center justify-between">
-          {step === "size" ? (
+        {/* Only the size step has a way back, on the left as every page's (MakeView's "← Make"). */}
+        {step === "size" && (
+          <div className="mb-2 flex h-11 items-center">
             <button type="button" onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
               <Icon name="arrow-left" className="h-4 w-4" /> Your print
             </button>
-          ) : (
-            <span />
-          )}
-          <h2 ref={heading} tabIndex={-1} className="text-sm text-neutral-400 outline-none" data-step={step}>
-            {titles[step]}
-          </h2>
-        </div>
+          </div>
+        )}
         <div className="grid gap-6 md:grid-cols-2 md:gap-10">
           <div className="min-w-0 md:sticky md:top-4 md:self-start">
-            <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} />
+            <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} onPick={pickFile} drag={drag} opening={opening} />
             <p aria-live="polite" className="sr-only" data-upload-status>
               {status}
             </p>
           </div>
           <div className="min-w-0 space-y-6">
+            {/* The step's heading, as a product page's title: at the top of the column beside the picture (under it on a phone). */}
+            <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none md:text-3xl" data-step={step}>
+              {titles[step]}
+            </h2>
             {step === "start" && (
               <StartPanel error={startError} draftName={draftName} onCarryOn={carryOn} replacing={replacing} />
             )}
@@ -524,25 +525,24 @@ function Yours() {
 
 /* ================================================================== */
 
-/** Before a file: what it takes, the draft to carry on with, the order a replacement is for, and why a file was refused. */
+/** Before a file: what it takes, why a file was refused, the order a replacement is for, and the draft to carry on with. */
 function StartPanel({ error, draftName, onCarryOn, replacing }: { error: string | null; draftName: string | null; onCarryOn: () => void; replacing?: { order: string } }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-base font-bold">A photo or drawing</p>
-        <p className="mt-1 text-sm text-neutral-400">Dots, lines or a drawing. JPG, PNG, WebP or SVG.</p>
-      </div>
+    <div className="-mt-3 space-y-3">
+      <p id="yours-hint" className="text-sm text-neutral-400">
+        Any picture, printed in one ink. JPG, PNG, WebP or SVG.
+      </p>
+      {error && (
+        <p role="alert" className="text-sm text-neutral-200" data-upload-error>
+          {error}
+        </p>
+      )}
       {replacing && <p className="rounded-2xl bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
       {draftName && (
         <button type="button" onClick={onCarryOn} className="flex h-12 w-full items-center justify-between rounded-2xl px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
           <span className="truncate">Carry on with {draftName}</span>
           <Icon name="arrow-right" className="h-4 w-4 shrink-0" />
         </button>
-      )}
-      {error && (
-        <p role="alert" className="text-sm text-neutral-200" data-upload-error>
-          {error}
-        </p>
       )}
     </div>
   );
