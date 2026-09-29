@@ -19,7 +19,7 @@
  *   strongest of 18 orientations, a coarse stand-in for a Hough transform:
  *   ruled lines and grids pile up there, organic shapes spread out) with
  *   mirror symmetry, where circles and rosettes score;
- * - typography: 1 for words, else the ink share of letter-like marks
+ * - typography: the ink share of letter-like marks
  *   (letter-sized and shaped components standing in rows).
  */
 import { FEATURE_KEYS, type FeatureKey, type FeatureVector, type ShirtCategory } from "@/types/shirt";
@@ -200,7 +200,7 @@ export function measured(conv: Converted, m: Measures, priors: Priors = PRIORS a
     line_art: conv.mode === "dots" ? clamp(0.3 * (e.on ? e.edge / e.on : 0)) : clamp(0.7 * (e.on ? e.edge / e.on : 0) + 0.3 * (1 - Math.min(1, spread / 2))),
     clean_minimal: clamp((1 - Math.min(1, m.coverage / 0.45)) * (1 - Math.min(1, e.flips / (r.w * r.h) / 0.15))),
     geometric: clamp(0.6 * straight + 0.4 * Math.max(0, (symmetry - 0.5) / 0.5)),
-    typography: conv.cls === "words" ? 1 : clamp(textLike(conv.ink, conv.w, conv.h) * 1.2),
+    typography: clamp(textLike(conv.ink, conv.w, conv.h) * 1.2),
     photographic: conv.cls === "photo" ? 0.95 : 0,
   };
 }

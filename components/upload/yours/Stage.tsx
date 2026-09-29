@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { STAGE_BG } from "@/components/stage";
 import { track } from "@/lib/analytics";
-import { sourcePixels, type Settings, type Source, type Tee } from "@/lib/upload/client";
+import { assetUrl } from "@/lib/catalog";
+import type { Settings, Source, Tee } from "@/lib/upload/client";
+import { sourcePixels } from "@/lib/upload/pixels";
 import type { ShirtProduct } from "@/types/shirt";
 
 /** The Full box on the 300 × 400 print (top 3%, the whole width, as lib/upload/convert BOXES). */
@@ -32,39 +34,32 @@ export function placeholder(src: Source, s: Settings, tee: Tee): HTMLCanvasEleme
   return c;
 }
 
-/** A blank print with the Full box dashed: where words will go. */
-export function wordsPlaceholder(tee: Tee): HTMLCanvasElement {
-  const c = document.createElement("canvas");
-  c.width = 300;
-  c.height = 400;
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = tee === "black" ? "#000" : "#fff";
-  ctx.fillRect(0, 0, 300, 400);
-  ctx.strokeStyle = tee === "black" ? "rgba(255,255,255,.55)" : "rgba(0,0,0,.55)";
-  ctx.setLineDash([8, 6]);
-  ctx.lineWidth = 2;
-  ctx.strokeRect(24, 40, 252, 160);
-  return c;
-}
-
-export type StageState = { kind: "empty-words" } | { kind: "converting"; canvas: HTMLCanvasElement } | { kind: "ready"; canvas: HTMLCanvasElement } | { kind: "failed"; canvas: HTMLCanvasElement | null };
+export type StageState = { kind: "empty" } | { kind: "converting" | "ready" | "failed"; canvas: HTMLCanvasElement | null };
 
 /**
- * The picture, always in view and never blank: the print on its tee; while
+ * The picture, always in view and never blank: before a file, the
+ * converter's own example (a photograph and the print it made); the print on its tee; while
  * converting, the last print (or the source, grey and faded) under a
  * status pill; a failed print as it is. "Original" (press and hold, or hold
  * Space) shows the source instead.
  */
 export function Stage({ shirt, tee, state, source, pill, label }: { shirt: ShirtProduct; tee: Tee; state: StageState; source: Source | null; pill?: string; label: string }) {
   const [holding, setHolding] = useState(false);
-  const url = useMemo(() => (source?.file && source.kind !== "words" ? URL.createObjectURL(source.file) : null), [source]);
-  useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
+  // The original, for "Original": an object URL made and revoked with the file (an effect, not a memo, so it never leaks).
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!source?.file) return setUrl(null);
+    const u = URL.createObjectURL(source.file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [source]);
   const tracked = useRef(false);
   const hold = (on: boolean) => {
     setHolding(on);
     if (on && !tracked.current) (tracked.current = true), track("upload_hold_original");
   };
-  const canvas = state.kind === "empty-words" ? wordsPlaceholder(tee) : state.canvas;
+  if (state.kind === "empty") return <Example />;
+  const canvas = state.canvas;
   return (
     <div className={`relative overflow-hidden rounded-3xl ${STAGE_BG}`} data-upload-preview={state.kind === "converting" ? "busy" : state.kind === "ready" ? "ready" : state.kind === "failed" ? "failed" : "empty"}>
       {canvas ? <CustomMockup shirt={shirt} svg={canvas} color={tee} className={`w-full transition-opacity ${state.kind === "converting" ? "opacity-60" : ""}`} label={label} /> : <div className="aspect-[512/704] w-full" />}
@@ -79,7 +74,6 @@ export function Stage({ shirt, tee, state, source, pill, label }: { shirt: Shirt
           {pill}
         </p>
       )}
-      {state.kind === "empty-words" && <p className="absolute inset-x-0 top-[30%] text-center text-sm text-neutral-400">Your words go here</p>}
       {url && state.kind !== "converting" && (
         <button
           type="button"
@@ -99,6 +93,20 @@ export function Stage({ shirt, tee, state, source, pill, label }: { shirt: Shirt
           Original
         </button>
       )}
+    </div>
+  );
+}
+
+/** Before a file: a photograph and the print the converter made of it (scripts/tools/buildYoursExamples.ts), framed alike, in the stage's frame. */
+function Example() {
+  return (
+    <div className={`relative flex aspect-[512/704] w-full items-center overflow-hidden rounded-3xl ${STAGE_BG}`} data-upload-preview="empty">
+      <div className="grid w-full grid-cols-2 gap-px" aria-hidden>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={assetUrl("/make/yours/photo-before.webp")} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={assetUrl("/make/yours/photo-after.webp")} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
+      </div>
     </div>
   );
 }

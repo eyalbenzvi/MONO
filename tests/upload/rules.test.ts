@@ -87,10 +87,6 @@ describe("uploads: titles (brief 6.6)", () => {
       expect(t.length).toBeLessThanOrEqual(40);
     }
   });
-
-  it("words are their own title", () => {
-    expect(cleanTitle("MIND  THE GAP", "words")).toBe("MIND THE GAP");
-  });
 });
 
 describe("uploads: features and category (brief 6.6)", () => {
@@ -100,12 +96,11 @@ describe("uploads: features and category (brief 6.6)", () => {
       ["logo", convert({ pixels: logo() }, { size: "full" })],
       ["photo", convert({ pixels: photo() }, { size: "full" })],
       ["lines", convert({ pixels: photo() }, { size: "full", mode: "lines" })],
-      ["words", convert({ pixels: logo(), words: ["A"] }, { size: "small" })],
     ];
     return out;
   };
 
-  it("every axis in [0, 1], 17 of them; photographic 0.95 for a photograph, else 0; typography 1 for words", () => {
+  it("every axis in [0, 1], 17 of them; photographic 0.95 for a photograph, else 0", () => {
     for (const [name, c] of cases()) {
       const m = measure(c.ink, OUT_W, OUT_H, "white", { screened: c.mode === "dots" });
       const f = features(c, m);
@@ -115,7 +110,6 @@ describe("uploads: features and category (brief 6.6)", () => {
         expect(f[k], `${name} ${k}`).toBeLessThanOrEqual(1);
       }
       expect(f.photographic, name).toBe(c.cls === "photo" ? 0.95 : 0);
-      if (c.cls === "words") expect(f.typography).toBe(1);
       if (c.mode === "dots") expect(f.halftone_raster).toBe(1);
     }
   }, 60_000);
@@ -174,6 +168,5 @@ describe("uploads: the main-thread fallback", () => {
     expect(r.ok && r.converted.cls).toBe("line");
     const small = await convertInWorker({ pixels: fromGrey(new Float32Array(900 * 900).fill(1), 900, 900), size: "full" });
     expect(small).toEqual({ ok: false, reason: REASONS.smallForFull });
-    expect(await convertInWorker({ words: ["  "], size: "full" })).toEqual({ ok: false, reason: REASONS.noWords });
   });
 });

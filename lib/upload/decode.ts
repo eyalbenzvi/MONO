@@ -1,5 +1,5 @@
 /**
- * From what the page hands over (a file, words, or pixels already drawn) to
+ * From what the page hands over (a file, or pixels already drawn) to
  * convert's pixels, with the browser's own decoders: createImageBitmap
  * (EXIF orientation applied, so a phone photo is the right way up and its
  * metadata never reaches the pixels) and an OffscreenCanvas. Runs in the
@@ -8,16 +8,11 @@
  */
 import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
 import { MAX_BYTES, REASONS } from "./reasons";
-import { FACES, WORDS_DEFAULT, WORD_LINES, familyOf, layoutWords, type Face, type WordsType } from "./words";
 
 export type UploadRequest =
   | { file: Blob; type: string; mode?: Ask; size: PrintSize }
-  | { words: string[]; size: PrintSize; type?: WordsType; span?: WordsSpan }
   | { svgRaster: Pixels; size: PrintSize }
   | { pixels: Pixels; mode?: Ask; size: PrintSize; checked?: boolean };
-
-/** How wide words print at Full: the whole 28 cm, or 18 cm. */
-export type WordsSpan = "full" | "medium";
 
 export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number } } | { ok: false; reason: string };
 
@@ -67,55 +62,6 @@ export function sizedSvg(svg: string, long = SVG_LONG): string {
   return svg.replace(root, bare.replace(/<svg\b/i, `<svg width="${Math.round(w * k)}" height="${Math.round(h * k)}"`));
 }
 
-const faces = new Map<Face, Promise<string>>();
-/**
- * A face of "Your words" (public/fonts/words), loaded once and only when
- * chosen. Mono, the default, falls back to a system monospace if it won't
- * load (as words always could); any other face refuses rather than print in
- * a type that wasn't chosen.
- */
-function wordsFont(face: Face): Promise<string> {
-  let p = faces.get(face);
-  if (!p) {
-    const family = familyOf(face);
-    const fonts = (self as unknown as { fonts?: FontFaceSet }).fonts;
-    p = fetch(`${self.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/fonts/words/${FACES[face].file}`)
-      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("font"))))
-      .then((buf) => new FontFace(family, buf).load())
-      .then((f) => (fonts?.add(f), `"${family}"${face === "mono" ? ", monospace" : ""}`));
-    if (face === "mono") p = p.catch(() => "monospace");
-    // A face that failed is tried afresh next time.
-    p.catch(() => faces.delete(face));
-    faces.set(face, p);
-  }
-  return p;
-}
-
-/** Words set in their face (lib/upload/words layoutWords), black on white; capPx, the capital height of the largest line, for the print's letter cap. */
-export async function wordsPixels(words: string[], t: WordsType = WORDS_DEFAULT): Promise<Pixels & { capPx: number }> {
-  const lines = words.slice(0, WORD_LINES);
-  const family = await wordsFont(t.face);
-  const probe = canvas(8, 8).getContext("2d")!;
-  const measure = (text: string, px: number) => {
-    probe.font = `${px}px ${family}`;
-    const m = probe.measureText(text);
-    return { w: Math.max(m.width, m.actualBoundingBoxLeft + m.actualBoundingBoxRight), asc: m.actualBoundingBoxAscent, desc: m.actualBoundingBoxDescent };
-  };
-  const { w, h, capPx, runs } = layoutWords(lines, t, measure);
-  const c = canvas(w, h);
-  const ctx = c.getContext("2d", { willReadFrequently: true })!;
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = "#000";
-  ctx.textBaseline = "alphabetic";
-  for (const r of runs) {
-    ctx.font = `${r.px}px ${family}`;
-    ctx.textAlign = r.align;
-    ctx.fillText(r.text, r.x, r.y);
-  }
-  return { w, h, capPx, data: ctx.getImageData(0, 0, w, h).data };
-}
-
 /** A sanitised SVG decoded and drawn here (a worker usually can't; the caller then draws it where there's a document). */
 async function svgPixels(text: string): Promise<Pixels> {
   const bmp = await createImageBitmap(new Blob([sizedSvg(text)], { type: "image/svg+xml" }));
@@ -131,18 +77,6 @@ const ok = (converted: Converted, w: number, h: number): UploadResult => ({ ok: 
 /** One request, start to finish. Refusals come back as reasons, never as thrown errors. */
 export async function handle(req: UploadRequest): Promise<UploadResult> {
   try {
-    if ("words" in req) {
-      const words = req.words.map((l) => l.trim()).filter(Boolean);
-      if (!words.length) return { ok: false, reason: REASONS.noWords };
-      const t = req.type ?? WORDS_DEFAULT;
-      let p: Awaited<ReturnType<typeof wordsPixels>>;
-      try {
-        p = await wordsPixels(words, t);
-      } catch {
-        return { ok: false, reason: REASONS.typeLoad };
-      }
-      return ok(convert({ pixels: p, words, capPx: p.capPx, maxCapCm: FACES[t.face].maxCapCm }, { size: req.size, span: req.span }), p.w, p.h);
-    }
     if ("svgRaster" in req) return ok(convert({ svgRaster: req.svgRaster }, { size: req.size }), req.svgRaster.w, req.svgRaster.h);
     if ("pixels" in req) {
       // `checked`: the page measured the source before scaling it down (lib/upload/client), so the pixels' own size says nothing.

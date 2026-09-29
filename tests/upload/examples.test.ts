@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import saved from "../../data/upload/examples.json";
-import { WORDS, examples } from "../../scripts/tools/buildYoursExamples";
-import { wordsProblem } from "@/lib/custom/lexicon";
+import { examples } from "../../scripts/tools/buildYoursExamples";
 import { tooSmall } from "@/lib/upload/convert";
 import { BAR, tier } from "@/lib/upload/measure";
 
@@ -12,7 +11,6 @@ describe("the From yours examples are the converter's own output", () => {
     expect(now.map((e) => [e.ex.kind, e.ex.mode])).toEqual([
       ["photo", "dots"],
       ["drawing", "line"],
-      ["words", "words"],
     ]);
     for (const e of now) {
       // The print bar and the rest of the tier's checks, a near-copy of a catalogue design included.
@@ -20,12 +18,9 @@ describe("the From yours examples are the converter's own output", () => {
       expect(e.dup).toBeGreaterThan(BAR.duplicate);
       expect(tier(e.measures, e.ex.tee, e.dup).tier).not.toBe("refuse");
     }
-    // The photograph is big enough for Full, as a customer's file must be; the words pass the page's rules.
+    // The photograph is big enough for Full, as a customer's file must be.
     const photo = now.find((e) => e.ex.kind === "photo")!.input.pixels;
     expect(tooSmall(photo.w, photo.h, "full")).toBe(false);
-    expect(WORDS.length).toBeLessThanOrEqual(3);
-    for (const l of WORDS) expect(l.length).toBeLessThanOrEqual(24);
-    expect(wordsProblem(WORDS.join(" "))).toBeNull();
     // The credit stays with the data, though the tiles no longer show it.
     expect(now.find((e) => e.ex.kind === "photo")!.ex.credit).toMatch(/CC0/);
   }, 120_000);

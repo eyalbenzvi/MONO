@@ -1,6 +1,6 @@
 /**
  * "From yours" examples, made honestly: the real converter (lib/upload
- * convert, measure, teeRule) run on three inputs a customer could bring, the
+ * convert, measure, teeRule) run on two inputs a customer could bring, the
  * outputs written as they come out, never retouched.
  * - A photograph: Miniature Mediterranean Donkey, Smithsonian's National Zoo
  *   (nzp_NZP-20050528-363AB, Smithsonian Open Access, CC0), the master
@@ -10,12 +10,6 @@
  * - A drawing: an olive sprig in pen, drawn here (seeded strokes), on a
  *   sketchbook page photographed on a table: warm paper, a shadow across a
  *   corner, grain, ink that isn't quite black.
- * - Words: "MODERATE / BECOMING / GOOD" (the Shipping Forecast's visibility,
- *   deadpan), set as the worker sets words (lib/upload/decode wordsPixels: the
- *   print font, bold, 160 px, centred line by line). Lines of eight letters
- *   keep the type small enough to pass at Full; lines of three or four print
- *   so big that the checks refuse them as a slab of ink. The tile's before is
- *   the words as typed in the field; the converter's input is the words as set.
  * Every input passes what a customer's would have to: the size gate, the
  * quality bar, and no near-duplicate of a catalogue design (the dHash index).
  *
@@ -47,7 +41,7 @@ const fontFiles = (names: string[]) => names.map((f) => path.join(FONT_DIR, f)).
 const [TW, TH] = [360, 480];
 
 export interface Example {
-  kind: "photo" | "drawing" | "words";
+  kind: "photo" | "drawing";
   mode: string;
   tee: Tee;
   quality: number;
@@ -73,7 +67,6 @@ interface Input {
   before: Buffer;
   box: Box | null;
   framing: Framing;
-  words?: string[];
   credit?: string;
 }
 
@@ -253,35 +246,6 @@ export async function sketch(): Promise<{ png: Buffer; box: Box }> {
 }
 
 /* ------------------------------------------------------------------ */
-/* The words                                                            */
-/* ------------------------------------------------------------------ */
-
-export const WORDS = ["MODERATE", "BECOMING", "GOOD"];
-
-/** The words as the worker sets them (lib/upload/decode wordsPixels): the print font, bold, 160 px, black on white, centred line by line. */
-export function words(lines: string[] = WORDS): Buffer {
-  const size = 160;
-  const cols = Math.max(1, ...lines.map((l) => l.length));
-  const [w, h] = [Math.ceil(cols * size * 0.62 + size), Math.ceil(lines.length * size * 1.25 + size * 0.5)];
-  const text = lines.map((l, i) => `<text x="${w / 2}" y="${size * 0.25 + (i + 0.5) * size * 1.25}" dominant-baseline="central">${l}</text>`).join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="#fff"/><g font-family="DejaVu Sans Mono" font-weight="bold" font-size="${size}" text-anchor="middle" fill="#000">${text}</g></svg>`;
-  return Buffer.from(new Resvg(svg, { font: { fontFiles: fontFiles(["DejaVuSansMono-Bold.ttf", "DejaVuSansMono.ttf"]), loadSystemFonts: false, defaultFontFamily: "DejaVu Sans Mono" } }).render().asPng());
-}
-
-/** The before for words: what the customer does, the lines typed in the page's field (the site's dark field, its text face, a caret). */
-export function typed(lines: string[] = WORDS): Buffer {
-  const [size, lead, x, y] = [44, 60, 40, 88];
-  const font = { fontFiles: fontFiles(["DejaVuSans.ttf"]), loadSystemFonts: false, defaultFontFamily: "DejaVu Sans" };
-  const svgOf = (body: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="${TW}" height="${TH}">${body}</svg>`;
-  const line = (l: string, i: number) => `<text x="${x}" y="${y + i * lead}" font-family="DejaVu Sans" font-size="${size}" fill="#f5f5f5">${l}</text>`;
-  // The caret just after the last line, where it was measured to end.
-  const last = new Resvg(svgOf(line(lines[lines.length - 1], lines.length - 1)), { font }).getBBox();
-  const caretX = last ? last.x + last.width + 7 : x;
-  const body = `<rect width="${TW}" height="${TH}" fill="#111111"/><rect x="12" y="12" width="${TW - 24}" height="${TH - 24}" rx="22" fill="#0b0b0b" stroke="#4a4a4a" stroke-width="3"/>${lines.map(line).join("")}<rect x="${caretX.toFixed(1)}" y="${y + (lines.length - 1) * lead - size * 0.8}" width="4" height="${size * 0.96}" fill="#ffffff"/>`;
-  return Buffer.from(new Resvg(svgOf(body), { font }).render().asPng());
-}
-
-/* ------------------------------------------------------------------ */
 /* Converting                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -314,11 +278,9 @@ async function inputs(): Promise<Input[]> {
   const ph = await photo();
   const pm = await sharp(ph).metadata();
   const sk = await sketch();
-  const wd = words();
   return [
     { kind: "photo", pixels: await pixels(ph), before: ph, box: { x: 0, y: 0, w: pm.width!, h: pm.height! }, framing: { fit: "cover", zoom: 0.78, cx: 0.58, cy: 0.48 }, credit: PHOTO.credit },
     { kind: "drawing", pixels: await pixels(sk.png), before: sk.png, box: sk.box, framing: { fit: "contain", margin: 0.04 } },
-    { kind: "words", pixels: await pixels(wd), before: typed(), box: null, framing: { fit: "contain", margin: 0.08 }, words: WORDS },
   ];
 }
 
@@ -332,12 +294,12 @@ export interface Made {
   dup: number;
 }
 
-/** The three conversions (the test runs this too). */
+/** The two conversions (the test runs this too). */
 export async function examples(): Promise<Made[]> {
   const hashes = catalogueHashes();
   const out: Made[] = [];
   for (const input of await inputs()) {
-    const conv = convert(input.words ? { pixels: input.pixels, words: input.words } : { pixels: input.pixels }, { mode: "dots", size: "full" });
+    const conv = convert({ pixels: input.pixels }, { mode: "dots", size: "full" });
     const on = (t: Tee) => measure(inkFor(conv, t), conv.w, conv.h, t, { screened: conv.mode === "dots", size: conv.size });
     const { tee } = chooseTee(conv, on);
     const ink = inkFor(conv, tee);

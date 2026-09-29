@@ -1,5 +1,5 @@
 /**
- * An upload's first title (brief 6.6): for words, the words; for a file,
+ * An upload's first title (brief 6.6): for a file,
  * its name cleaned of the extension, digits and what cameras, phones and
  * apps put there (IMG_, DSC, PXL_, "Screenshot … at …", "WhatsApp Image"),
  * separators to spaces, each word capitalised. Nothing left, or under three
@@ -33,7 +33,6 @@ function clip(s: string): string {
 }
 
 export function cleanTitle(name: string, cls: UploadClass): string {
-  if (cls === "words") return clip(name.replace(/\s+/g, " ").trim());
   let s = name.replace(/\.[a-z0-9]{2,5}$/i, "");
   const screen = /^(?:screen\s*shot|screenshot|whatsapp\s*image)/i.test(s);
   // Strip any run of device prefixes ("IMG_PXL_…").

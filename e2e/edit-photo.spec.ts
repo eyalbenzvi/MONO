@@ -104,9 +104,8 @@ test("Edit photo: dragging a corner crops, and Save prints the crop", async ({ p
 test("one tile for a photo or a drawing; a pencil sketch read as a photograph can be printed as a Drawing", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
-  await expect(page.locator("[data-tile]")).toHaveCount(2);
-  await expect(page.locator('[data-tile="drawing"]')).toHaveCount(0);
-  await expect(page.locator('[data-tile="photo"]')).toContainText("A photo or drawing");
+  await expect(page.locator("[data-tile]")).toHaveCount(0);
+  await expect(page.locator("[data-primary]")).toHaveText("Choose a photo or drawing");
   await open(page, "sketch.png", await pencilSketch());
   const style = page.getByRole("radiogroup", { name: "Style" });
   await expect(style.getByRole("radio")).toHaveText([/^Dots/, /^Lines/, /^Drawing/]);

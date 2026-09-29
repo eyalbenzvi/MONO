@@ -5,15 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MakeHeader } from "@/components/custom/MakeHeader";
 import { Icon } from "@/components/Icon";
-import { SizeSelector, STAGE_BG } from "@/components/ui";
+import { SizeSelector } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { track } from "@/lib/analytics";
-import { assetUrl, getShirtById, productHref } from "@/lib/catalog";
+import { getShirtById, productHref } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
-import { FACES, WORD_CHARS_MAX, WORD_LINES, cased, letters } from "@/lib/upload/words";
 import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source } from "@/lib/upload/client";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
@@ -22,11 +21,12 @@ import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
 const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
-import { WordsType } from "./yours/WordsType";
 
 type Step = "start" | "print" | "size";
 const STEPS: Step[] = ["start", "print", "size"];
 const loadClient = () => import("@/lib/upload/client");
+/** The draft is saved this long after the last change. */
+const DRAFT_SAVE_MS = 500;
 const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
 const stepOf = (hash: string): Step => (STEPS.includes(hash.slice(1) as Step) ? (hash.slice(1) as Step) : "start");
 
@@ -35,14 +35,15 @@ const fixNote = (f: Fix) =>
   f.id === "stronger" ? "We’ve made it stronger." : f.id === "bolder" ? "We’ve made the lines bolder." : `We’ve set ${f.label.replace(/^Use /, "")}.`;
 
 /**
- * From yours (/make/yours/): your picture, drawing or words, in one ink.
- * Three steps, one white button each, the picture always in view: Start
- * (what do you have?), Your print (the style, the print size, the tee; a
- * first print that fails takes the first fix that passes, and says so),
- * Size (adding confirms the rights). The step is in the address's hash, so a
- * phone's Back walks back through them; the file in hand is kept on the
- * device as a draft, so a reload comes back to it. Everything is converted
- * and checked on this device.
+ * From yours (/make/yours/): your photo or drawing, in one ink. Two
+ * screens, one white button each, the picture always in view: Your print
+ * (before a file, the converter's example and "Choose a photo or drawing";
+ * then the style, the print size, the tee — a first print that fails takes
+ * the first fix that passes, and says so) and Size (adding confirms the
+ * rights). The step is in the address's hash ("" before a file, #print,
+ * #size), so a phone's Back walks back through them; the file in hand is
+ * kept on the device as a draft, so a reload comes back to it. Everything
+ * is converted and checked on this device.
  */
 export function YoursView() {
   return (
@@ -72,10 +73,8 @@ function Yours() {
   const [rightsFor, setRightsFor] = useState<string | null>(null);
   const [teeSize, setTeeSize] = useState<ShirtSize | undefined>(undefined);
   const [startError, setStartError] = useState<string | null>(null);
-  const [opening, setOpening] = useState<string | null>(null);
-  const [wordsMode, setWordsMode] = useState(false);
-  const [words, setWords] = useState("");
-  const [wordsError, setWordsError] = useState<string | null>(null);
+  const [opening, setOpening] = useState(false);
+  const [drag, setDrag] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState<string | null>(null);
   const [status, setStatus] = useState("");
@@ -124,6 +123,26 @@ function Yours() {
     }
   }, [params]);
 
+  /** A kept upload or the draft, opened again: its file and settings in hand. */
+  const applyReopened = (r: { source: Source; settings: Settings }) => {
+    setSource(r.source);
+    setSettings(r.settings);
+  };
+  /** A new file: nothing of the last one's print, title or rights carries over. */
+  const resetForNewSource = () => {
+    setPreview(null);
+    setLast(null);
+    setTitle("");
+    setRightsFor(null);
+  };
+  // The file replaced gives its decoded picture back (a 12 MP photo is ~48 MB until closed); a ref, so a remount's cleanup never closes the one in use.
+  const shownSource = useRef<Source | null>(null);
+  useEffect(() => {
+    const prev = shownSource.current;
+    if (prev && prev !== source && prev.bitmap && prev.bitmap !== source?.bitmap) prev.bitmap.close();
+    shownSource.current = source;
+  }, [source]);
+
   /* ---------------- arrival: edit, draft ---------------- */
   useEffect(() => {
     if (!hydrated) return;
@@ -134,9 +153,7 @@ function Yours() {
         const r = await c.reopen(editId);
         if (r) {
           const meta = useMakeStore.getState().uploads[editId];
-          setSource(r.source);
-          setSettings(r.settings);
-          if (r.source.kind === "words") (setWordsMode(true), setWords(r.source.words!.join("\n")));
+          applyReopened(r);
           // The tee as it is in the bag: both colours when the line was the pair.
           const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
           if (meta) setTitle(meta.title);
@@ -150,9 +167,7 @@ function Yours() {
       if (d) {
         setDraftName(d.name);
         if (want !== "start") {
-          setSource(d.source);
-          setSettings(d.settings);
-          if (d.source.kind === "words") (setWordsMode(true), setWords(d.source.words!.join("\n")));
+          applyReopened(d);
           // Back where it was.
           setStep(want);
           return;
@@ -168,83 +183,42 @@ function Yours() {
     const c = await loadClient();
     const d = await c.reopen(c.DRAFT);
     if (!d) return setDraftName(null);
-    setSource(d.source);
-    setSettings(d.settings);
-    if (d.source.kind === "words") (setWordsMode(true), setWords(d.source.words!.join("\n")));
+    applyReopened(d);
     go("print");
   };
 
-  /* ---------------- opening a file or words ---------------- */
+  /* ---------------- opening a file ---------------- */
+  // Two files picked quickly: only the last one opened counts.
+  const opened = useRef(0);
   const choose = useCallback(
-    async (file: File, kind: string) => {
+    async (file: File) => {
+      const n = ++opened.current;
       setStartError(null);
-      setOpening(kind);
+      setOpening(true);
       const c = await loadClient();
       const r = await c.openFile(file);
-      setOpening(null);
+      if (n !== opened.current) return;
+      setOpening(false);
       if (!r.ok) {
         setStartError(r.reason);
         track("upload_refused", { reason: r.code });
         return;
       }
-      track("upload_start", { kind: r.source.kind === "svg" ? "svg" : kind });
-      setWordsMode(false);
+      track("upload_start", { kind: r.source.kind === "svg" ? "svg" : "photo" });
       setSource(r.source);
       setSettings({ ...c.DEFAULTS });
-      setPreview(null);
-      setLast(null);
-      setTitle("");
-      setRightsFor(null);
+      resetForNewSource();
       void c.saveDraft(r.source, c.DEFAULTS);
       go("print");
     },
+    // resetForNewSource only sets state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [go],
   );
-  const [tile, setTile] = useState("photo");
-  const pick = (kind: string) => {
-    setTile(kind);
-    track("yours_start_tile", { kind });
-    if (kind === "words") {
-      setWordsMode(true);
-      setSource(null);
-      setPreview(null);
-      setLast(null);
-      setTitle("");
-      setRightsFor(null);
-      void loadClient().then((c) => setSettings({ ...c.DEFAULTS }));
-      go("print");
-      return;
-    }
+  const pickFile = () => {
+    track("yours_start_tile", { kind: "photo" });
     fileInput.current?.click();
   };
-
-  // Words: set as you type (a pause of 300 ms), no button.
-  useEffect(() => {
-    if (!wordsMode) return;
-    const lines = words.split("\n").map((l) => l.trimEnd()).filter((l) => l.trim());
-    if (!lines.length) {
-      setSource(null);
-      setPreview(null);
-      setWordsError(null);
-      return;
-    }
-    const t = setTimeout(async () => {
-      const c = await loadClient();
-      const id = `w${[...lines.join("\n")].reduce((h, ch) => (Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0), 2166136261).toString(36)}`;
-      const r = await c.openWords(lines, id, { face: settings?.face ?? "mono", caps: settings?.caps ?? false });
-      if (!r.ok) {
-        setWordsError(r.reason);
-        return;
-      }
-      setWordsError(null);
-      setSource(r.source);
-      if (!rightsFor) track("upload_start", { kind: "words" });
-      void c.saveDraft(r.source, settings ?? c.DEFAULTS);
-    }, 300);
-    return () => clearTimeout(t);
-    // Of the settings, only the type and Capitals reopen the words (a line's limit is the type's, counted in capitals).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [words, wordsMode, settings?.face, settings?.caps]);
 
   /* ---------------- converting ---------------- */
   useEffect(() => {
@@ -283,8 +257,9 @@ function Yours() {
       setFixes(found);
       track("upload_fix_offered", { reason: p.code, n: found.length });
     });
-    // The draft follows every change (words too: their type and size are settings).
-    void loadClient().then((c) => c.saveDraft(source, settings));
+    // The draft follows every change, half a second after the last (a slider dragged doesn't store the file again at every step).
+    const save = setTimeout(() => void loadClient().then((c) => c.saveDraft(source, settings)), DRAFT_SAVE_MS);
+    return () => clearTimeout(save);
     // `last` is only read for the status.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, settings]);
@@ -304,16 +279,20 @@ function Yours() {
   const ok = preview?.ok ? preview : null;
   const failed = preview && !preview.ok ? preview : null;
   const tee = choice === "both" ? (ok?.tee ?? last?.tee ?? "white") : choice;
+  // The file, faded, while it converts: drawn once per file, turn, crop and tee (not on every render).
+  const fade = useMemo(
+    () => (source && settings && source.bitmap ? placeholder(source, settings, tee) : null),
+    // The fade ignores the print's own settings (style, size, Stronger): only what changes the picture.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [source, settings?.crop, settings?.rot, settings?.flip, settings?.light, settings?.contrast, tee],
+  );
   const stageState: StageState = useMemo(() => {
-    if (wordsMode && !source) return { kind: "empty-words" };
-    if (busy) {
-      const c = last?.canvas(last.tees.includes(tee) ? tee : last.tee) ?? (source && settings && source.bitmap ? placeholder(source, settings, tee) : null);
-      return c ? { kind: "converting", canvas: c } : { kind: "empty-words" };
-    }
-    if (ok) return { kind: "ready", canvas: ok.canvas(ok.tees.includes(tee) ? tee : ok.tee)! };
-    if (failed) return { kind: "failed", canvas: failed.tee ? failed.canvas(failed.tee) : source && settings && source.bitmap ? placeholder(source, settings, tee) : null };
-    return source && settings && source.bitmap ? { kind: "converting", canvas: placeholder(source, settings, tee) } : { kind: "empty-words" };
-  }, [wordsMode, source, busy, last, tee, settings, ok, failed]);
+    if (!source) return { kind: "empty" };
+    if (busy) return { kind: "converting", canvas: last?.canvas(last.tees.includes(tee) ? tee : last.tee) ?? fade };
+    if (ok) return { kind: "ready", canvas: ok.canvas(ok.tees.includes(tee) ? tee : ok.tee) };
+    if (failed) return { kind: "failed", canvas: failed.tee ? failed.canvas(failed.tee) : fade };
+    return { kind: "converting", canvas: fade };
+  }, [source, busy, last, tee, ok, failed, fade]);
   const pill = busy ? (last ? "Checking it prints…" : "Converting…") : undefined;
   const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
   const size$ = teeSize ?? selected;
@@ -381,7 +360,9 @@ function Yours() {
 
   const firstFix = fixes?.[0];
   const primary: { label: string; onClick?: () => void; href?: string; disabled?: boolean } | null =
-    step === "print"
+    step === "start"
+      ? { label: opening ? "Opening…" : "Choose a photo or drawing", onClick: pickFile, disabled: opening }
+      : step === "print"
       ? ok && !busy
         ? { label: `Next · ${formatPrice(price)}`, onClick: toSize }
         : failed && !busy
@@ -401,8 +382,7 @@ function Yours() {
             : { label: size$ ? `${editId ? "Save changes" : "Add to bag"} · ${SIZE_LABELS[size$]} · ${formatPrice(price)}` : "Choose size", onClick: () => void add() }
         : null;
 
-  const back: Record<Step, string> = { start: "", print: "Start", size: "Your print" };
-  const titles: Record<Step, string> = { start: "What do you have?", print: "Your print", size: "Size" };
+  const titles: Record<Step, string> = { start: "Your print", print: "Your print", size: "Size" };
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
@@ -415,81 +395,89 @@ function Yours() {
         tabIndex={-1}
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) void choose(f, tile);
+          if (f) void choose(f);
           e.target.value = "";
         }}
       />
-      {step === "start" ? (
-        <Start
-          heading={heading}
-          onPick={pick}
-          opening={opening}
-          error={startError}
-          draftName={draftName}
-          onCarryOn={carryOn}
-          replacing={replaceId ? useMakeStore.getState().reviews[replaceId] : undefined}
-          onDrop={(f) => void choose(f, "photo")}
-        />
-      ) : (
-        <div className="mx-auto max-w-5xl px-4 pb-28 pt-1 md:pb-12 2xl:max-w-6xl">
-          <div className="mb-2 flex h-11 items-center justify-between">
-            <button type="button" onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <Icon name="arrow-left" className="h-4 w-4" /> {back[step]}
-            </button>
-            <h2 ref={heading} tabIndex={-1} className="text-sm text-neutral-400 outline-none" data-step={step}>
-              {titles[step]}
-            </h2>
+      <div
+        className={`mx-auto max-w-5xl px-4 pb-28 md:pb-12 2xl:max-w-6xl ${step === "start" ? "pt-4" : "pt-1"} ${drag ? "ring-2 ring-inset ring-white" : ""}`}
+        {...(step === "start"
+          ? {
+              onDragOver: (e: React.DragEvent) => (e.preventDefault(), setDrag(true)),
+              onDragLeave: () => setDrag(false),
+              onDrop: (e: React.DragEvent) => {
+                e.preventDefault();
+                setDrag(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) void choose(f);
+              },
+            }
+          : {})}
+      >
+        {step === "start" && (
+          <div className="mb-4">
+            <MakeHeader track="yours" />
           </div>
-          <div className="grid gap-6 md:grid-cols-2 md:gap-10">
-            <div className="md:sticky md:top-4 md:self-start">
-              <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} />
-              <p aria-live="polite" className="sr-only" data-upload-status>
-                {status}
-              </p>
-            </div>
-            <div className="space-y-6">
-              {step === "print" && settings && (
-                <PrintStep
-                  wordsMode={wordsMode}
-                  words={words}
-                  setWords={setWords}
-                  wordsError={wordsError}
-                  source={source}
-                  settings={settings}
-                  preview={preview}
-                  ok={ok}
-                  failed={failed}
-                  busy={busy}
-                  fixes={fixes}
-                  choice={choice}
-                  setChoice={setChoice}
-                  patch={patch}
-                  shirt={shirt}
-                  status={status}
-                  onFix={applyFix}
-                  onEdit={() => setEditing(true)}
-                  autoNote={autoNote}
-                  onAnother={() => fileInput.current?.click()}
-                />
-              )}
-              {step === "size" && ok && settings && (
-                <SizeStep
-                  title={title}
-                  setTitle={setTitle}
-                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? `Words · ${FACES[settings.face].label}` : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "small" ? "Small" : ok.cls === "words" && settings.span === "medium" ? "Medium" : "Full"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
-                  onChange={() => go("print")}
-                  size={size$}
-                  setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
-                  nudge={nudge}
-                  sizeRef={sizeRow}
-                  replacing={!!replaceId}
-                />
-              )}
-              {primary && <PrimaryBar {...primary} />}
-            </div>
+        )}
+        <div className="mb-2 flex h-11 items-center justify-between">
+          {step === "size" ? (
+            <button type="button" onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+              <Icon name="arrow-left" className="h-4 w-4" /> Your print
+            </button>
+          ) : (
+            <span />
+          )}
+          <h2 ref={heading} tabIndex={-1} className="text-sm text-neutral-400 outline-none" data-step={step}>
+            {titles[step]}
+          </h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+          <div className="min-w-0 md:sticky md:top-4 md:self-start">
+            <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} />
+            <p aria-live="polite" className="sr-only" data-upload-status>
+              {status}
+            </p>
+          </div>
+          <div className="min-w-0 space-y-6">
+            {step === "start" && (
+              <StartPanel error={startError} draftName={draftName} onCarryOn={carryOn} replacing={replaceId ? useMakeStore.getState().reviews[replaceId] : undefined} />
+            )}
+            {step === "print" && settings && (
+              <PrintStep
+                source={source}
+                settings={settings}
+                preview={preview}
+                ok={ok}
+                failed={failed}
+                busy={busy}
+                fixes={fixes}
+                choice={choice}
+                setChoice={setChoice}
+                patch={patch}
+                status={status}
+                onFix={applyFix}
+                onEdit={() => setEditing(true)}
+                autoNote={autoNote}
+                onAnother={() => fileInput.current?.click()}
+              />
+            )}
+            {step === "size" && ok && settings && (
+              <SizeStep
+                title={title}
+                setTitle={setTitle}
+                summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "small" ? "Small" : "Full"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
+                onChange={() => go("print")}
+                size={size$}
+                setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
+                nudge={nudge}
+                sizeRef={sizeRow}
+                replacing={!!replaceId}
+              />
+            )}
+            {primary && <PrimaryBar {...primary} />}
           </div>
         </div>
-      )}
+      </div>
       {editing && source && settings && (
         <Suspense fallback={null}>
           <EditPhoto
@@ -512,83 +500,23 @@ function Yours() {
 
 /* ================================================================== */
 
-function Start({
-  heading,
-  onPick,
-  opening,
-  error,
-  draftName,
-  onCarryOn,
-  replacing,
-  onDrop,
-}: {
-  heading: React.RefObject<HTMLHeadingElement>;
-  onPick: (kind: string) => void;
-  opening: string | null;
-  error: string | null;
-  draftName: string | null;
-  onCarryOn: () => void;
-  replacing?: { order: string };
-  onDrop: (f: File) => void;
-}) {
-  const [drag, setDrag] = useState(false);
-  const TILES = [
-    // One tile for a photo or a drawing: the converter tells them apart by itself, and a drawing shot on paper has its own style (Drawing).
-    { kind: "photo", label: "A photo or drawing", line: "Dots, lines or a drawing. JPG, PNG, WebP or SVG." },
-    { kind: "words", label: "Words", line: "Up to three lines, in one of six types." },
-  ];
+/** Before a file: what it takes, the draft to carry on with, the order a replacement is for, and why a file was refused. */
+function StartPanel({ error, draftName, onCarryOn, replacing }: { error: string | null; draftName: string | null; onCarryOn: () => void; replacing?: { order: string } }) {
   return (
-    <div
-      className={`mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl ${drag ? "ring-2 ring-inset ring-white" : ""}`}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDrag(true);
-      }}
-      onDragLeave={() => setDrag(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDrag(false);
-        const f = e.dataTransfer.files?.[0];
-        if (f) onDrop(f);
-      }}
-    >
-      <MakeHeader track="yours" />
-      {replacing && <p className="mt-6 rounded-2xl bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
+    <div className="space-y-4">
+      <div>
+        <p className="text-base font-bold">A photo or drawing</p>
+        <p className="mt-1 text-sm text-neutral-400">Dots, lines or a drawing. JPG, PNG, WebP or SVG.</p>
+      </div>
+      {replacing && <p className="rounded-2xl bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
       {draftName && (
-        <button type="button" onClick={onCarryOn} className="mt-6 flex h-12 w-full items-center justify-between rounded-2xl px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
+        <button type="button" onClick={onCarryOn} className="flex h-12 w-full items-center justify-between rounded-2xl px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
           <span className="truncate">Carry on with {draftName}</span>
           <Icon name="arrow-right" className="h-4 w-4 shrink-0" />
         </button>
       )}
-      <h2 ref={heading} tabIndex={-1} className="mt-8 text-lg font-bold outline-none">
-        What do you have?
-      </h2>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2">
-        {TILES.map((t) => (
-          <li key={t.kind}>
-            <button
-              type="button"
-              onClick={() => onPick(t.kind)}
-              data-tile={t.kind}
-              className="group flex w-full items-stretch gap-4 overflow-hidden rounded-2xl text-left ring-1 ring-white/10 transition hover:ring-white/30 focus-visible:ring-2 focus-visible:ring-white md:flex-col md:gap-0"
-            >
-              {/* The real converter's work: the input, and the print it made, framed alike (3:4, the same crop) and never stretched with the text. */}
-              <div className={`grid w-40 shrink-0 grid-cols-2 gap-px self-start md:w-full ${STAGE_BG}`} aria-hidden>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={assetUrl(`/make/yours/${t.kind}-before.webp`)} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={assetUrl(`/make/yours/${t.kind}-after.webp`)} alt="" width={360} height={480} className="block aspect-[3/4] w-full object-cover" />
-              </div>
-              <div className="flex flex-col justify-center py-3 pr-3 md:p-4">
-                <span className="text-base font-bold">{opening === t.kind ? "Opening…" : t.label}</span>
-                <span className="mt-1 text-sm text-neutral-400">{t.line}</span>
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
       {error && (
-        <p role="alert" className="mt-4 text-sm text-neutral-200" data-upload-error>
+        <p role="alert" className="text-sm text-neutral-200" data-upload-error>
           {error}
         </p>
       )}
@@ -597,10 +525,6 @@ function Start({
 }
 
 function PrintStep({
-  wordsMode,
-  words,
-  setWords,
-  wordsError,
   source,
   settings,
   preview,
@@ -611,17 +535,12 @@ function PrintStep({
   choice,
   setChoice,
   patch,
-  shirt,
   status,
   onFix,
   onEdit,
   onAnother,
   autoNote,
 }: {
-  wordsMode: boolean;
-  words: string;
-  setWords: (w: string) => void;
-  wordsError: string | null;
   source: Source | null;
   settings: Settings;
   preview: Preview | null;
@@ -632,7 +551,6 @@ function PrintStep({
   choice: Choice;
   setChoice: (c: Choice) => void;
   patch: (p: Partial<Settings>) => void;
-  shirt: NonNullable<ReturnType<typeof getShirtById>>;
   status: string;
   onFix: (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => void;
   onEdit: () => void;
@@ -648,38 +566,8 @@ function PrintStep({
       setCropFix(c.fixesFor(failed, settings, source).some((f) => f.id === "crop"));
     });
   }, [failed, source, settings]);
-  const caretLine = words.split("\n").at(-1) ?? "";
-  const limit = FACES[settings.face].chars;
-  const counted = letters(cased(caretLine.trim(), settings.caps));
   return (
     <>
-      {wordsMode && (
-        <div>
-          <div className="mb-1 flex items-baseline justify-between text-xs font-medium text-neutral-400">
-            <label htmlFor="upload-words">Your words</label>
-            <span className={counted >= limit ? "text-white" : ""} data-words-count>
-              {counted} / {limit}
-            </span>
-          </div>
-          <textarea
-            id="upload-words"
-            value={words}
-            rows={3}
-            autoFocus={!words}
-            placeholder={"MODERATE\nBECOMING\nGOOD"}
-            onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORD_LINES).map((l) => [...l].slice(0, WORD_CHARS_MAX).join("")).join("\n"))}
-            className="w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-base text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
-          />
-          {wordsError && (
-            <p role="status" className="mt-1 text-xs text-neutral-300" data-words-error>
-              {wordsError}
-            </p>
-          )}
-          <div className="mt-4">
-            <WordsType settings={settings} lines={words.split("\n")} onSettings={patch} />
-          </div>
-        </div>
-      )}
       {ok?.autoSmall ? (
         <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>
       ) : (
@@ -711,18 +599,16 @@ function PrintStep({
           </div>
         </div>
       )}
-      {preview === null && !wordsMode && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
+      {preview === null && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {source && source.kind === "file" && (
           <button type="button" onClick={onEdit} className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/10" data-edit-photo>
             <Icon name="pencil" className="h-4 w-4" /> Edit photo
           </button>
         )}
-        {!wordsMode && (
-          <button type="button" onClick={onAnother} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
-            Choose another file
-          </button>
-        )}
+        <button type="button" onClick={onAnother} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+          Choose another file
+        </button>
       </div>
     </>
   );

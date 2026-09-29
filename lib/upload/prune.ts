@@ -8,6 +8,9 @@ import { expired } from "./retention";
 import { stateAt, REVIEW_MS } from "./review";
 import { acceptedDesigns } from "./designs";
 
+/** The draft's slot (lib/upload/client DRAFT; repeated here so pruning doesn't load the engine). */
+const DRAFT = "draft";
+
 export const CLEARED_LINE = "A file was cleared from this device, so it left the bag.";
 
 /**
@@ -35,7 +38,8 @@ export async function pruneUploads(now = Date.now()) {
   const inBag = new Set(useCartStore.getState().cart.flatMap((l) => (l.upload ? [l.upload.id] : [])));
   const accepted = new Set(acceptedDesigns(make.offers, now).map((d) => d.uploadId));
   const tickets = Object.values(make.reviews);
-  const lives = [...ids].map((id) => {
+  // The draft (the file in hand, not yet kept) isn't an upload: it goes when it's added or replaced, never here.
+  const lives = [...ids].filter((id) => id !== DRAFT).map((id) => {
     const t = tickets.filter((x) => x.uploadId === id).sort((a, b) => b.submittedAt - a.submittedAt)[0];
     const cleared = t && stateAt(t, now) === "cleared" ? t.submittedAt + (t.near || t.force?.state === "person" ? 2 : 1) * REVIEW_MS : undefined;
     return { id, createdAt: make.uploads[id]?.createdAt ?? 0, inBag: inBag.has(id), ordered: !!t || !!make.uploads[id]?.ordered, clearedAt: cleared, accepted: accepted.has(id) };

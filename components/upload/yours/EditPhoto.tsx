@@ -5,7 +5,8 @@ import { Icon } from "@/components/Icon";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import type { IconName } from "@/lib/icons";
 import { MIN_SHORT, type Pixels } from "@/lib/upload/convert";
-import { TONE_MAX, cropPixels, sourcePixels, strengthen, tone, type Crop, type Rot, type Settings, type Source } from "@/lib/upload/client";
+import type { Crop, Rot, Settings, Source } from "@/lib/upload/client";
+import { TONE_MAX, cropPixels, sourcePixels, strengthen, tone } from "@/lib/upload/pixels";
 
 export type PhotoEdits = Pick<Settings, "crop" | "rot" | "flip" | "light" | "contrast" | "stronger">;
 

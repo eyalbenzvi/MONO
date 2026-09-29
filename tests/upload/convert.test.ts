@@ -97,12 +97,6 @@ describe("uploads: classification", () => {
     expect(b.y0).toBe(TOP);
   });
 
-  it("words are words: a plain threshold, whatever the midtones", () => {
-    const p = logo();
-    const c = convert({ pixels: p, words: ["HELLO"] }, { size: "small" });
-    expect(c).toMatchObject({ cls: "words", mode: "words" });
-  });
-
   it("a photograph as Lines: edges of print width, trimmed and fitted", () => {
     const c = convert({ pixels: photo() }, { size: "full", mode: "lines" });
     expect(c).toMatchObject({ cls: "photo", mode: "lines", tone: null, darkOnLight: true });

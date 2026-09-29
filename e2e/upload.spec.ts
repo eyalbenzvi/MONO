@@ -47,11 +47,12 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
   await expect(page).toHaveURL(/\/make\/yours\/$/);
-  await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
-  // Every tile shows the converter's own before and after, never an empty box.
-  for (const kind of ["photo", "words"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
-  // No link tile: Your Link lives in From ours.
-  await expect(page.locator('[data-tile="link"]')).toHaveCount(0);
+  // One thing to do, no choice to make: the converter's own before and after, and the button that opens a file.
+  await expect(page.locator('[data-step="start"]')).toHaveText("Your print");
+  await expect(page.locator('[data-upload-preview="empty"] img')).toHaveCount(2);
+  await expect(page.locator("[data-primary]")).toHaveText("Choose a photo or drawing");
+  await expect(page.locator("[data-tile]")).toHaveCount(0);
+  await expect(page.getByText("Words", { exact: true })).toHaveCount(0);
   await page.goBack();
   await expect(page).toHaveURL(/\/shop\/$/);
 });
@@ -99,7 +100,7 @@ test("From yours: Back walks back through the steps, and the draft comes back af
   await page.goBack();
   await expect(page.locator('[data-step="print"]')).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
   await expect(page.locator("[data-draft]")).toContainText("Carry on with rings.png");
 });
 
@@ -129,17 +130,37 @@ test("From yours: big enough for Small, not Full — it goes to Small and says s
   await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Full/ })).toHaveCount(0, { timeout: 25_000 });
 });
 
-test("From yours: words set as you type, no button; a brand is refused as typed", async ({ page }) => {
-  await page.goto("make/yours/");
+test("From yours: an old address (#start) opens Your print; a file dropped on it opens as one picked", async ({ page }) => {
+  await page.goto("make/yours/#start");
   await hydrated(page);
-  await page.locator('[data-tile="words"]').tap();
-  await expect(page).toHaveURL(/#print$/);
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
   await expect(page.locator('[data-upload-preview="empty"]')).toBeVisible();
-  await page.locator("#upload-words").fill("SLOW\nMORNINGS");
+  const buffer = (await drawing()).toString("base64");
+  const dt = await page.evaluateHandle(async (b64) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const t = new DataTransfer();
+    t.items.add(new File([bytes], "dropped.png", { type: "image/png" }));
+    return t;
+  }, buffer);
+  await page.locator('[data-step="start"]').dispatchEvent("drop", { dataTransfer: dt });
+  await expect(page).toHaveURL(/#print$/);
   await ready(page);
-  await expect(primary(page)).toHaveText(/^Next/);
-  await page.locator("#upload-words").fill("NIKE");
-  await expect(page.locator("[data-words-error]")).toHaveText("Those words name a brand.");
+});
+
+test("From yours: a Words line from before stays in the bag and checks out, with no Edit", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  // As a bag from before Words were taken out: the same kept print, marked as words.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("mono-cart")!);
+    s.state.cart = s.state.cart.map((l: { upload: { mode: string } }) => ({ ...l, upload: { ...l.upload, mode: "words" } }));
+    localStorage.setItem("mono-cart", JSON.stringify(s));
+  });
+  await page.goto("cart/");
+  await hydrated(page);
+  await expect(page.getByText(/^Your words ·/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Edit" })).toHaveCount(0);
+  await page.getByRole("button", { name: /^Checkout/ }).tap();
+  await expect(page.getByRole("list", { name: "Items" }).locator("li")).toHaveCount(1);
 });
 
 test("From yours: Edit from the bag opens the same file at Your print; rights aren't asked again; Save changes replaces the line", async ({ page }) => {

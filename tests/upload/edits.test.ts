@@ -34,6 +34,9 @@ describe("uploads: Edit photo's light and contrast", () => {
 describe("uploads: the settings a picture's edits add", () => {
   it("an unedited picture keys as it did before the edits existed (its cached results and drafts stay valid)", () => {
     expect(settingsKey(DEFAULTS)).toBe(JSON.stringify([null, 0, false, false, "dots", "full"]));
+    // Pinned, edits and all: keys name cached prints, drafts and bag lines, so taking Words out mustn't move a photo's.
+    const edits = { ...DEFAULTS, crop: { x: 0.1, y: 0.2, w: 0.5, h: 0.6 }, rot: 90 as const, flip: true, light: 10, contrast: -5, mode: "lines" as const, size: "small" as const };
+    expect(settingsKey(edits)).toBe(JSON.stringify([["0.100", "0.200", "0.500", "0.600"], 90, false, false, "lines", "small", true, 10, -5]));
     expect(settingsKey({ ...DEFAULTS, flip: true })).not.toBe(settingsKey(DEFAULTS));
     expect(settingsKey({ ...DEFAULTS, light: 10 })).not.toBe(settingsKey({ ...DEFAULTS, contrast: 10 }));
     expect(edited(DEFAULTS)).toBe(false);

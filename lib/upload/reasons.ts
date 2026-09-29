@@ -14,8 +14,6 @@ export const REASONS = {
   smallForFull: "Too small for Full. Try Small, or a larger file.",
   // The short side's minimum (convert MIN_SHORT.small), said as a number.
   smallForSmall: "Too small to print: it needs 800 px on its short side.",
-  noWords: "Nothing to print. Write a word or two.",
-  typeLoad: "This type didn’t load. Try again, or another type.",
   /** The print (measure.ts tier). */
   solidDots: "Too much ink to print. Try Lines.",
   solid: "Too much ink to print.",

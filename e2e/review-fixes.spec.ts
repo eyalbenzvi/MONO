@@ -96,11 +96,10 @@ test("A tap on Add before the print is ready (a slow phone) is kept, and adds on
   await expect(page.getByText(/^Up to/)).toHaveCount(0);
 });
 
-test("M1 + B3: From yours is Start, Your print, Size; the rights are one line above the button; Change goes back to Your print", async ({ page }) => {
+test("M1 + B3: From yours is Your print, then Size; the rights are one line above the button; Change goes back to Your print", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
-  await page.locator('[data-tile="words"]').tap();
-  await page.locator("#upload-words").fill("SLOW\nMORNINGS");
+  await page.locator("#upload-file").setInputFiles({ name: "rings.png", mimeType: "image/png", buffer: await drawing() });
   await expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 45_000 });
   await expect(page.locator("[data-primary]")).toHaveText(/^Next · \$75$/);
   await page.locator("[data-primary]").tap();

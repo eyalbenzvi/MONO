@@ -1,5 +1,5 @@
 /**
- * "From yours": a customer's picture, drawing, SVG or words turned into a
+ * "From yours": a customer's picture, drawing or SVG turned into a
  * one-ink print on the catalogue's 1500 × 2000 grid (brief 6.2). Pure: typed
  * arrays in, typed arrays out, no DOM and no Node, so the same code runs in
  * the upload worker (lib/upload/worker.ts), on the main thread as a fallback
@@ -18,10 +18,11 @@
  *   its darks, two different screens of the same tone (inkFor).
  * - photo, Lines: the tone placed on the grid, Canny edges at print scale,
  *   widened to 0.6 mm, trimmed, fitted and cleaned.
- * - vector (a sanitised SVG, rasterised by the worker) and words (set by the
- *   worker in the print font): a plain threshold, trimmed and fitted.
+ * - vector (a sanitised SVG, rasterised by the worker): a plain threshold,
+ *   trimmed and fitted.
  */
 import { REASONS } from "./reasons";
+import { MAX_LONG } from "./pixels";
 
 export interface Pixels {
   w: number;
@@ -30,8 +31,8 @@ export interface Pixels {
   data: Uint8ClampedArray;
 }
 
-export type UploadClass = "line" | "photo" | "vector" | "words";
-export type Mode = "dots" | "lines" | "line" | "vector" | "words";
+export type UploadClass = "line" | "photo" | "vector";
+export type Mode = "dots" | "lines" | "line" | "vector";
 /** What the page may ask of a picture: its class's own mode, Dots or Lines (a photograph), or Drawing (a photograph read as line work: a sketch shot on paper). */
 export type Ask = Mode | "drawing";
 export type PrintSize = "full" | "small";
@@ -57,8 +58,6 @@ export interface Converted {
   midtones: number;
   /** The upload's polarity: dark marks on a light ground (line work), or a dark picture (a photograph). */
   darkOnLight: boolean;
-  /** Words: how tall their capitals print, mm. */
-  capMm?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -81,8 +80,8 @@ export const BOXES: Record<PrintSize, { x: number; y: number; w: number; h: numb
   full: { x: 0, y: TOP, w: OUT_W, h: Math.min(OUT_H - TOP, Math.round(370 * PX_PER_MM)) },
   small: { x: Math.round((OUT_W - 120 * PX_PER_MM) / 2), y: TOP, w: Math.round(120 * PX_PER_MM), h: Math.round(120 * PX_PER_MM) },
 };
-/** The worker's decode cap (brief 6.2): the long side, px. */
-export const MAX_LONG = 3000;
+/** The worker's decode cap (brief 6.2): the long side, px (lib/upload/pixels, which has no converter to load). */
+export { MAX_LONG } from "./pixels";
 /**
  * convert works at the size the picture would print at Full (fitted into
  * the 1500 × 1940 area, never enlarged): the print grid can't show more,
@@ -503,15 +502,10 @@ function bbox(m: Uint8Array | Float32Array, w: number, h: number, on = 0.5): Box
   return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-/** What may hold a fit back: a largest scale, a narrower width (px on the grid). */
-export interface FitLimits {
-  maxK?: number;
-  maxW?: number;
-}
-/** Where a box of bw × bh lands, fitted whole into the size's area (or less, when limited): scaled to fit, top at the area's top, centred across. */
-export function fit(bw: number, bh: number, size: PrintSize, lim: FitLimits = {}): Box {
+/** Where a box of bw × bh lands, fitted whole into the size's area: scaled to fit, top at the area's top, centred across. */
+export function fit(bw: number, bh: number, size: PrintSize): Box {
   const B = BOXES[size];
-  const k = Math.min(B.w / bw, B.h / bh, lim.maxK ?? Infinity, (lim.maxW ?? Infinity) / bw);
+  const k = Math.min(B.w / bw, B.h / bh);
   const [w, h] = [Math.max(1, Math.round(bw * k)), Math.max(1, Math.round(bh * k))];
   return { x: B.x + Math.round((B.w - w) / 2), y: B.y, w, h };
 }
@@ -585,11 +579,11 @@ function paste<T extends Uint8Array | Float32Array>(out: T, part: ArrayLike<numb
  * on the 1500 × 2000 grid (fit): resampled with Lanczos and cut at half,
  * so edges stay smooth when a small file is scaled up.
  */
-export function place(mask: Uint8Array, w: number, h: number, size: PrintSize, lim: FitLimits = {}): Uint8Array {
+export function place(mask: Uint8Array, w: number, h: number, size: PrintSize): Uint8Array {
   const out = new Uint8Array(OUT_W * OUT_H);
   const b = bbox(mask, w, h);
   if (!b) return out;
-  const at = fit(b.w, b.h, size, lim);
+  const at = fit(b.w, b.h, size);
   const src = new Float32Array(mask.length);
   for (let i = 0; i < mask.length; i++) src[i] = mask[i];
   const r = lanczos(src, w, h, at.w, at.h, b);
@@ -925,23 +919,15 @@ const pxPerMmFor = (w: number, h: number, size: PrintSize) => w / (fit(w, h, siz
 export interface ConvertInput {
   pixels?: Pixels;
   svgRaster?: Pixels;
-  /** Words, already set by the worker in their face and passed as pixels; this marks them as words. */
-  words?: string[];
-  /** Words: the capital height as set (px of the pixels given), and the tallest it may print (cm). */
-  capPx?: number;
-  maxCapCm?: number;
 }
 
-/** Words at Medium: 18 cm across (Full's box, narrower). */
-export const MEDIUM_W = Math.round(180 * PX_PER_MM);
-
 /**
- * An upload to a print: the class (vector for an SVG, words for words,
- * otherwise line or photo by its midtones), the mode (the class's own
+ * An upload to a print: the class (vector for an SVG, otherwise line or
+ * photo by its midtones), the mode (the class's own
  * unless Dots or Lines is asked of a photograph, or Drawing, which reads
  * it as line work), and the ink on the 1500 × 2000 grid for Full or Small.
  */
-export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize; span?: "full" | "medium" }): Converted {
+export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize }): Converted {
   const { size } = opts;
   const src = input.svgRaster ?? input.pixels;
   if (!src) throw new Error("convert: nothing to convert");
@@ -950,7 +936,7 @@ export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize
   const { w, h } = p;
   const midtones = midtonesOf(p);
   // Drawing: a photograph of paper (its shading reads as midtones) taken as the line work it is.
-  const cls: UploadClass = input.svgRaster ? "vector" : input.words ? "words" : midtones < LINE_MIDTONES || opts.mode === "drawing" ? "line" : "photo";
+  const cls: UploadClass = input.svgRaster ? "vector" : midtones < LINE_MIDTONES || opts.mode === "drawing" ? "line" : "photo";
   const base = { cls, size, w: OUT_W, h: OUT_H, midtones } as const;
   if (cls === "photo") {
     const mode: Mode = opts.mode === "lines" ? "lines" : "dots";
@@ -976,14 +962,5 @@ export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize
   if (!darkOnLight) g = invert(g);
   const mode: Mode = cls;
   const mask = cls === "line" ? toLine(levels(g), w, h, pxPerMmFor(w, h, size)) : threshold(g);
-  if (cls !== "words") return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size), OUT_W, OUT_H, PX_PER_MM) };
-  // Words: capitals no taller than the face prints (bold letters past ~10 cm are a slab of ink), and Medium narrower than Full.
-  const capPx = (input.capPx ?? 0) * (w / src.w);
-  const lim: FitLimits = {
-    ...(capPx > 0 && input.maxCapCm ? { maxK: (input.maxCapCm * 10 * PX_PER_MM) / capPx } : {}),
-    ...(size === "full" && opts.span === "medium" ? { maxW: MEDIUM_W } : {}),
-  };
-  const b = bbox(mask, w, h);
-  const k = b ? fit(b.w, b.h, size, lim).w / b.w : 0;
-  return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size, lim), OUT_W, OUT_H, PX_PER_MM), ...(capPx > 0 ? { capMm: Math.round(capPx * k * MM_PER_PX) } : {}) };
+  return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size), OUT_W, OUT_H, PX_PER_MM) };
 }

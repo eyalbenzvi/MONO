@@ -32,9 +32,11 @@ const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup
 /** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
 const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec; upload?: UploadRef }) =>
   l.upload ? (useMakeStore.getState().uploads[l.upload.id]?.title ?? "Your file") : l.custom ? customTitle(l.custom) : l.shirt.title;
+/** A print of words (From yours had them once): it prints as kept, but can't be opened again to change. */
+const editable = (l: CartLine) => !!l.custom || (!!l.upload && l.upload.mode !== "words");
 /** Where a line leads: its product page, a made-for-you one with its print in the address and the line it edits. */
 const lineHref = (l: CartLine) =>
-  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : productHref(l.id);
+  l.upload ? (editable(l) ? `/make/yours/?edit=${l.upload.id}` : "/make/yours/") : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : productHref(l.id);
 
 const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
@@ -184,7 +186,7 @@ export function CartView() {
                           {/* The colour, in words (change it on the product page); the size is the control below. */}
                           <p className="text-xs text-neutral-400">
                             {line.upload ? `${line.upload.mode === "words" ? "Your words" : "Your file"} · ${COLOR_LABELS[line.color]}` : `${COLOR_LABELS[line.color]} tee`}
-                            {(line.custom || line.upload) && (
+                            {editable(line) && (
                               <>
                                 {" · "}
                                 <Link href={lineHref(line)} className="text-neutral-300 underline underline-offset-2 hover:text-white">
