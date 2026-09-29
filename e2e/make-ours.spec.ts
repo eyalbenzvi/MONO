@@ -73,7 +73,8 @@ test("the designs a product is drawn like lead to it (Make your own →)", async
     const s = shirts.find((x) => x.variant === variant)!;
     await page.goto(`shop/${s.id}/`);
     await hydrated(page);
-    await page.locator("[data-make-your-own]").tap();
+    // A design several products are drawn like names each of them (up to three); the one expected is among them.
+    await page.locator(`[data-make-your-own][href$="/make/${slug}/"], [data-make-your-own-list] a[href$="/make/${slug}/"]`).first().tap();
     await expect(page).toHaveURL(new RegExp(`/make/${slug}/`));
   }
 });
