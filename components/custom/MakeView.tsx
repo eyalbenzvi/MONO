@@ -69,6 +69,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   island: lazy(() => import("@/components/custom/editors/IslandEditor")),
   ridge: lazy(() => import("@/components/custom/editors/RidgeEditor")),
   streets: lazy(() => import("@/components/custom/editors/StreetsEditor")),
+  qr: lazy(() => import("@/components/custom/editors/QrEditor")),
 };
 
 /** The data a print is drawn from, credited where it's used (the place list's licence asks for it). */

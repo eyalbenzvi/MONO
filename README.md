@@ -184,6 +184,7 @@ One ink, for one person, in two tracks. **From ours**: our designs (32 of them),
 | Your Monogram | `/make/monogram/` | two or three initials, a style (interlaced, stacked, seal), a year | the rosettes and guilloche: ribbon letters woven over and under |
 | Your Route | `/make/route/` | a GPX file (read on the device, start and end hidden) or a drawn line, a title, a day, the distance | Topographic Contours: the route bold, echoed like contours, its elevation underneath |
 | Your Island | `/make/island/` | an island name and up to six place names (your people) | Topographic Contours: a seeded island, contours, a hatched sea, a compass rose |
+| Your Link | `/make/qr/` | a web address (nothing is looked up) | the Terminal designs: a QR code in dots that scans, the address under it |
 
 - **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
 - **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."

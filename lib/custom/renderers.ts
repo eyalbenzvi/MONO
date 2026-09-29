@@ -53,6 +53,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   island: () => import("./templates/island"),
   ridge: () => import("./templates/ridge"),
   streets: () => import("./templates/streets"),
+  qr: () => import("./templates/qr"),
 };
 
 /** What a template needs loaded before it draws a spec ({} for most). */
