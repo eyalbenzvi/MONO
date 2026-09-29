@@ -216,14 +216,14 @@ test("Your Voice: hold to record (by keyboard), the hum's pitch reaches the prin
   await page.goto("make/voice/");
   await hydrated(page);
   await drawn(page);
-  await expect(page.getByText("Only the pitch and the fade are kept. Nothing is recorded.")).toBeVisible();
+  await expect(page.getByText("Only the pitch and the fade are kept.")).toBeVisible();
   const before = page.url();
   await page.locator("[data-record]").focus();
   await page.keyboard.down(" ");
   await expect(page.locator("[data-record]")).toHaveText("Listening…");
   await page.waitForTimeout(1600);
   await page.keyboard.up(" ");
-  await expect(page.locator("[data-record]")).toHaveText("Hold to record");
+  await expect(page.locator("[data-record]")).toHaveText("Hold and hum");
   await expect.poll(() => page.url()).not.toBe(before);
   const spec = JSON.parse(Buffer.from(new URL(page.url()).searchParams.get("make")!.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString());
   expect(spec.p.f).toBeGreaterThan(210);

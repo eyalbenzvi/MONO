@@ -142,9 +142,9 @@ export default function VoiceEditor({ made, arrival, onChange }: EditorProps) {
           onContextMenu={(e) => e.preventDefault()}
           className={`h-12 w-full select-none rounded-full text-sm font-semibold ring-1 transition [touch-action:none] ${listening ? "bg-white text-black ring-white" : "text-white ring-white/30 hover:bg-white/10"}`}
         >
-          {listening ? "Listening…" : "Hold to record"}
+          {listening ? "Listening…" : "Hold and hum"}
         </button>
-        <p className="mt-2 text-xs text-neutral-400">Only the pitch and the fade are kept. Nothing is recorded.</p>
+        <p className="mt-2 text-xs text-neutral-400">Only the pitch and the fade are kept.</p>
         {take === "off" && (
           <p role="status" className="mt-2 text-xs text-neutral-300">
             The microphone is off. Allow it, or try{" "}

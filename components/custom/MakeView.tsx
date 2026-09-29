@@ -13,12 +13,11 @@ import { CustomPrint } from "@/components/custom/CustomPrint";
 import type { EditorProps, EditorState } from "@/components/custom/editors/types";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
-import { pairPrice, pairStatus, unitPrice } from "@/lib/cart";
+import { lineKey, pairPrice, pairStatus, unitPrice } from "@/lib/cart";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
 import { checkPrint, type PrintCheck } from "@/lib/custom/printCheck";
 import { MADE, MAKE_GROUPS, madeBySlug, type MadeProduct } from "@/lib/custom/products";
-import { carry } from "@/lib/custom/carry";
-import { FROM_KEY, markFrom } from "@/lib/custom/makeFrom";
+import { FROM_KEY } from "@/lib/custom/makeFrom";
 import { inkFromCanvas } from "@/lib/custom/raster";
 import { loadRenderer, type Renderer } from "@/lib/custom/renderers";
 import { decodeMake, encodeMake, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
@@ -27,7 +26,7 @@ import { SIZES } from "@/lib/images";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
-import { useHydrated, useUiStore } from "@/store/useUiStore";
+import { scrollIntoViewQuietly, useHydrated, useUiStore } from "@/store/useUiStore";
 import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt";
 
 /** The preview waits this long after a change (longer on a device where a render is slow). */
@@ -84,6 +83,8 @@ interface Shown {
   check: PrintCheck;
   /** Whether the other tee prints this spec too (the pair is offered only then); null until checked. */
   other: boolean | null;
+  /** The print on the other tee, once checked (shown beside this one when both are chosen). */
+  otherSvg?: string;
 }
 
 /**
@@ -93,29 +94,14 @@ interface Shown {
  * it as it was. Every print passes the catalogue's gate before it can be
  * bought; a pair only when both tees pass.
  */
-/**
- * "Also from a date: Your Moon · Your Planets": the other products of this one's group, each link carrying
- * what's typed here that it can use (the date, the city, the words, the name), so it needn't be typed again.
- */
-function Siblings({ made, spec }: { made: MadeProduct; spec: CustomSpec | null }) {
+/** "More from a date →": this product's group on the index. */
+function MoreFrom({ made }: { made: MadeProduct }) {
   const group = MAKE_GROUPS.find((g) => g.id === made.group)!;
-  const others = MADE.filter((m) => m.group === made.group && m.slug !== made.slug);
-  if (!others.length) return null;
+  if (!MADE.some((m) => m.group === made.group && m.slug !== made.slug)) return null;
   return (
-    <p className="text-xs text-neutral-500" data-siblings>
-      Also {group.label.toLowerCase()}:{" "}
-      {others.map((m, i) => {
-        const carried = spec ? carry(spec, m) : null;
-        return (
-          <span key={m.slug}>
-            {i > 0 && " · "}
-            <Link href={`/make/${m.slug}/${carried ? `?make=${encodeMake(carried)}` : ""}`} onClick={() => markFrom("sibling")} className="text-neutral-300 underline underline-offset-2 hover:text-white">
-              {m.name}
-            </Link>
-          </span>
-        );
-      })}
-    </p>
+    <Link href={`/make/#${made.group}`} className="text-xs text-neutral-300 underline underline-offset-2 hover:text-white" data-siblings>
+      More {group.label.toLowerCase()} →
+    </Link>
   );
 }
 
@@ -136,9 +122,12 @@ export function MakeView({ slug }: { slug: string }) {
   const [arrival, setArrival] = useState<CustomSpec | null | undefined>(undefined);
   useEffect(() => {
     if (!hydrated || arrival !== undefined) return;
-    const spec = decodeMake(new URLSearchParams(window.location.search).get("make"));
+    const q = new URLSearchParams(window.location.search);
+    const spec = decodeMake(q.get("make"));
     setArrival(spec && spec.t === made.template ? spec : null);
-    // Where this visit came from (the index card or a sibling link set it on the way here), for Back and analytics.
+    // "Edit" from the bag names the line it edits: saving replaces that line.
+    setEditKey(q.get("edit"));
+    // Where this visit came from (the index card or For two set it on the way here), for Back and analytics.
     let from = "";
     try {
       from = sessionStorage.getItem(FROM_KEY) ?? "";
@@ -146,16 +135,20 @@ export function MakeView({ slug }: { slug: string }) {
     } catch {
       /* storage unavailable */
     }
-    const source = from === "index" || from === "sibling" || from === "two" ? from : "design";
+    const source = from === "index" || from === "two" ? from : "design";
     setCameFrom(source);
     track("make_open", { product: made.slug, group: made.group, source });
   }, [hydrated, arrival, made]);
 
-  const [cameFrom, setCameFrom] = useState<"index" | "sibling" | "two" | "design">("design");
+  const [cameFrom, setCameFrom] = useState<"index" | "two" | "design">("design");
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const editing = editKey ? cart.find((l) => lineKey(l) === editKey) : undefined;
   // What the editor makes of its fields.
   const [state, setState] = useState<EditorState>({ spec: null });
   const onEditor = useCallback((s: EditorState) => setState(s), []);
-  const spec = state.blocked ? made.example : state.spec;
+  // Until the fields make a print (empty, or not yet valid), the stage shows the product's example.
+  const example = state.blocked || !state.spec;
+  const spec = example ? made.example : state.spec;
 
   // The picture: debounced, checked (a print that won't print well isn't offered), and the address kept in step.
   const [shown, setShown] = useState<Shown | null>(null);
@@ -179,14 +172,14 @@ export function MakeView({ slug }: { slug: string }) {
       if (performance.now() - start > 100) slow.current = true;
       const next = { spec, svg, color, check, other: null };
       setShown(next);
-      if (check.ok && !state.blocked) {
+      if (check.ok && spec === state.spec && !state.blocked) {
         const q = new URLSearchParams(window.location.search);
         q.set("make", encodeMake(spec));
         window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
       }
       return next;
     },
-    [renderer, state.data, state.blocked, made.hints],
+    [renderer, state.data, state.blocked, state.spec, made.hints],
   );
   useEffect(() => {
     if (!spec || !renderer) return;
@@ -198,13 +191,14 @@ export function MakeView({ slug }: { slug: string }) {
     if (!shown || shown.other !== null || !shown.check.ok || !renderer || !shirt || shirt.colors.length < 2) return;
     const t = setTimeout(() => {
       const c = otherColor(shown.color);
-      const ok = checkPrint(inkFromCanvas(renderer(shown.spec, c, state.data ?? {}), c), made.hints).ok;
-      setShown((s) => (s === shown ? { ...s, other: ok } : s));
+      const otherSvg = renderer(shown.spec, c, state.data ?? {});
+      const ok = checkPrint(inkFromCanvas(otherSvg, c), made.hints).ok;
+      setShown((s) => (s === shown ? { ...s, other: ok, otherSvg } : s));
     }, 250);
     return () => clearTimeout(t);
   }, [shown, renderer, shirt, state.data, made.hints]);
   const current = shown && shown.spec === spec && shown.color === color ? shown : null;
-  const ready = !!current?.check.ok && !state.blocked;
+  const ready = !!current?.check.ok && !example;
   const pairOk = current?.other === true;
   useEffect(() => {
     if (both && current && current.other === false) setBoth(false);
@@ -215,6 +209,12 @@ export function MakeView({ slug }: { slug: string }) {
   const addPair = useCartStore((s) => s.addPair);
   const [added, setAdded] = useState(false);
   const [nudge, setNudge] = useState(0);
+  const sizeRow = useRef<HTMLDivElement>(null);
+  // Without a size, the sizes come into view (the bar at the foot of a phone is far from them).
+  const needSize = () => {
+    scrollIntoViewQuietly(sizeRow.current);
+    setNudge((n) => n + 1);
+  };
   const [tried, setTried] = useState(false);
   const unit = shirt ? unitPrice({ custom: true }, shirt) : 0;
   const pairTotal = pairPrice(spec ?? undefined);
@@ -224,8 +224,13 @@ export function MakeView({ slug }: { slug: string }) {
     // A tap right after a change doesn't wait for the preview: the print is drawn and checked now.
     const now = ready ? current : draw(state.spec, color);
     if (!now?.check.ok) return;
-    if (!size) return setNudge((n) => n + 1);
-    if (added) return router.push("/cart/");
+    if (!size) return needSize();
+    if (editing) {
+      // Saving an edit replaces its line (its quantity kept), then back to the bag.
+      useCartStore.getState().changeCartItem(editing, { custom: state.spec, color, size });
+      track("customize_apply", { template: made.template });
+      return router.push("/cart/");
+    }
     const ok = both && pairOk ? addPair(made.id, size, { source: "product", custom: state.spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;
     setAdded(true);
@@ -235,8 +240,11 @@ export function MakeView({ slug }: { slug: string }) {
     if (base) useTasteStore.getState().likeCustom(base.id);
     track("customize_apply", { template: made.template });
   };
-  const priceLabel = both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both · ${formatPrice(pairTotal)}`) : `Add to bag · ${formatPrice(unit)}`;
-  const buyLabel = !size ? "Choose size" : added ? "Added · View bag" : `${priceLabel.replace("Add to bag", `Add to bag · ${SIZE_LABELS[size]}`)}`;
+  // The size in every label that adds, the price as it was.
+  const sized = size ? ` · ${SIZE_LABELS[size]}` : "";
+  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : `Add to bag${sized} · ${formatPrice(unit)}`;
+  // The mini bag confirms an add; the button says so for a moment, then is itself again.
+  const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
 
   const [zoom, setZoom] = useState(false);
   const [view, setView] = useState<"tee" | "print">("tee");
@@ -253,8 +261,8 @@ export function MakeView({ slug }: { slug: string }) {
           <Link
             href={`/make/#${made.group}`}
             onClick={(e) => {
-              // From the index: back in history, so its scroll is kept.
-              if (cameFrom === "index" && window.history.length > 1) {
+              // From the index or For two: back where it came from (and its scroll).
+              if ((cameFrom === "index" || cameFrom === "two") && window.history.length > 1) {
                 e.preventDefault();
                 router.back();
               }
@@ -263,10 +271,10 @@ export function MakeView({ slug }: { slug: string }) {
           >
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
-          {!state.blocked && (
+          {ready && current && (
             <button
               type="button"
-              onClick={() => ready && current && useUiStore.getState().openShare(made.id, color, encodeMake(current.spec))}
+              onClick={() => useUiStore.getState().openShare(made.id, color, encodeMake(current.spec))}
               aria-label="Share"
               className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
             >
@@ -281,6 +289,12 @@ export function MakeView({ slug }: { slug: string }) {
                 <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
                   <CustomPrint svg={svg} />
                 </div>
+              ) : svg && both && current?.otherSvg ? (
+                // Both tees, side by side (the one chosen first).
+                <div className="flex h-full w-full items-center justify-center gap-2" data-both>
+                  <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.product} className="max-h-full min-w-0 flex-1" />
+                  <CustomMockup shirt={shirt} svg={current.otherSvg} color={otherColor(color)} sizes={SIZES.product} className="max-h-full min-w-0 flex-1" />
+                </div>
               ) : svg ? (
                 <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.product} className="h-full max-h-full" />
               ) : (
@@ -293,7 +307,7 @@ export function MakeView({ slug }: { slug: string }) {
                   value={both ? "both" : color}
                   original={shirt.baseColor}
                   colors={shirt.colors}
-                  noBoth={!pairOk}
+                  noBoth={!pairOk || !!editing}
                   onChange={(c) => {
                     setBoth(c === "both");
                     if (c !== "both") setColor(made.id, c);
@@ -317,8 +331,9 @@ export function MakeView({ slug }: { slug: string }) {
             <form
               className="mt-5 grid gap-4"
               onSubmit={(e) => {
+                // Enter (a phone's Go) closes the keyboard; it never buys.
                 e.preventDefault();
-                onBuy();
+                (document.activeElement as HTMLElement | null)?.blur();
               }}
               noValidate
             >
@@ -334,17 +349,19 @@ export function MakeView({ slug }: { slug: string }) {
               )}
               {!state.blocked && (
                 <>
-                  <div className="mt-1">
+                  <div className="mt-1 scroll-mb-28" ref={sizeRow}>
                     <SizeSelector key={nudge} value={size} onChange={(s) => setSize(made.id, s)} highlight={nudge > 0 && !size} />
                   </div>
-                  <button type="submit" disabled={!hydrated} className="hidden h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40 md:flex" aria-live="polite">
+                  <button type="button" onClick={onBuy} disabled={!hydrated} className="hidden h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40 md:flex" aria-live="polite">
                     <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
                     {buyLabel}
                   </button>
                   <p className="text-xs text-neutral-500">
-                    {STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.{CREDITS[made.template] ? ` ${CREDITS[made.template]}` : ""}
+                    {STORE_POLICY.customReturns}.{CREDITS[made.template] ? ` ${CREDITS[made.template]}` : ""}
                   </p>
-                  <Siblings made={made} spec={current?.spec ?? state.spec} />
+                  <div>
+                    <MoreFrom made={made} />
+                  </div>
                 </>
               )}
             </form>

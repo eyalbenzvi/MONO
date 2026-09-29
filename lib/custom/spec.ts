@@ -510,8 +510,20 @@ function customDetail(spec: CustomSpec): string {
   }
 }
 
-/** A made-for-you tee's title, in the bag and the confirmation: the product and its day (or year). */
-export const customTitle = (spec: CustomSpec) => [PRODUCT_NAMES[spec.t], customDetail(spec)].filter(Boolean).join(" · ");
+/** Words longer than this are cut (with an ellipsis) where a title adds them. */
+const NOTE_MAX = 22;
+const cut = (s: string) => (s.length > NOTE_MAX ? `${s.slice(0, NOTE_MAX - 1).trimEnd()}…` : s);
+/**
+ * A made-for-you tee's title, in the bag and the confirmation: the product,
+ * its day (or year, or what sets it apart), and its words when it has some
+ * and they aren't already said (so two night skies of one date tell apart).
+ */
+export function customTitle(spec: CustomSpec): string {
+  const detail = customDetail(spec);
+  const w = (spec.p as { w?: unknown }).w;
+  const note = typeof w === "string" && w && !detail.includes(w) ? cut(w) : "";
+  return [PRODUCT_NAMES[spec.t], detail && cut(detail), note].filter(Boolean).join(" · ");
+}
 
 /** Degrees and minutes, hemispheres named: "32°05′N 34°47′E". */
 export function coords(la: number, lo: number): string {

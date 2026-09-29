@@ -21,7 +21,7 @@ import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type 
 import { formatPrice } from "@/lib/format";
 import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
-import { customKey } from "@/lib/cart";
+import { customKey, lineKey } from "@/lib/cart";
 import { ReviewStatus, useOrderTickets } from "@/components/upload/ReviewStatus";
 import { useMakeStore } from "@/store/makeStore";
 import { customTitle, encodeMake, type CustomSpec } from "@/lib/custom/spec";
@@ -32,11 +32,9 @@ const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup
 /** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
 const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec; upload?: UploadRef }) =>
   l.upload ? (useMakeStore.getState().uploads[l.upload.id]?.title ?? "Your file") : l.custom ? customTitle(l.custom) : l.shirt.title;
-/** A line's key (a made-for-you print's spec makes it a line of its own). */
-const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec; upload?: UploadRef }) => `${l.id}-${l.size}-${l.color}-${customKey(l.custom, l.upload)}`;
-/** Where a line leads: its product page, a made-for-you one with its print in the address. */
-const lineHref = (l: { id: string; custom?: CustomSpec; upload?: UploadRef }) =>
-  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}` : productHref(l.id);
+/** Where a line leads: its product page, a made-for-you one with its print in the address and the line it edits. */
+const lineHref = (l: CartLine) =>
+  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : productHref(l.id);
 
 const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
@@ -188,7 +186,7 @@ export function CartView() {
                           <p className="truncate text-sm font-semibold">{lineTitle(line)}</p>
                           {/* The colour, in words (change it on the product page); the size is the control below. */}
                           <p className="text-xs text-neutral-400">
-                            {line.upload ? `Your file · ${COLOR_LABELS[line.color]}` : `${COLOR_LABELS[line.color]} tee`}
+                            {line.upload ? `${line.upload.mode === "words" ? "Your words" : "Your file"} · ${COLOR_LABELS[line.color]}` : `${COLOR_LABELS[line.color]} tee`}
                             {(line.custom || line.upload) && (
                               <>
                                 {" · "}
@@ -285,12 +283,15 @@ export function CartView() {
 }
 
 
-/** Bag lines as GA4 items, each design's pair saving spread over its units. */
-function ecomItems(lines: CartLine[], pairs: { id: string; saving: number }[]) {
-  const saving = new Map(pairs.map((p) => [p.id, p.saving]));
+/** Bag lines as GA4 items, each print's pair saving spread over its units (a print: a design and a personalised one's spec, as `purchase` counts them). */
+function ecomItems(lines: CartLine[], pairs: { id: string; key?: string; saving: number }[]) {
+  const printOf = (l: CartLine) => `${l.id}|${customKey(l.custom, l.upload)}`;
+  const saving = new Map(pairs.map((p) => [`${p.id}|${p.key ?? ""}`, p.saving]));
   const units = new Map<string, number>();
-  for (const l of lines) units.set(l.id, (units.get(l.id) ?? 0) + l.qty);
-  return lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, discount: saving.has(l.id) ? saving.get(l.id)! / units.get(l.id)! : undefined }));
+  for (const l of lines) units.set(printOf(l), (units.get(printOf(l)) ?? 0) + l.qty);
+  return lines.map((l) =>
+    itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, custom: l.custom, upload: l.upload, discount: saving.has(printOf(l)) ? saving.get(printOf(l))! / units.get(printOf(l))! : undefined }),
+  );
 }
 
 
@@ -513,8 +514,8 @@ function DetailsForm({
       {/* pt-2: room for the quantity badges, which sit above the thumbnails. */}
       <ul className="mt-3 flex gap-2 overflow-x-auto pr-1 pt-2" aria-label="Items">
         {lines.map((l) => (
-          <li key={`${l.id}-${l.size}-${l.color}`} className={`relative w-14 shrink-0 rounded-lg p-1 ${STAGE_BG}`}>
-            <TeeMockup shirt={l.shirt} color={l.color} sizes={SIZES.thumb} className="w-full" />
+          <li key={lineKey(l)} className={`relative w-14 shrink-0 rounded-lg p-1 ${STAGE_BG}`}>
+            <LineMockup line={l} className="w-full" />
             {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
             <span className="sr-only">
               {l.qty} × {lineTitle(l)}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}

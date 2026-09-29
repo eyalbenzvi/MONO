@@ -17,7 +17,7 @@ import { FACES, WORD_CHARS_MAX, WORD_LINES, cased, letters } from "@/lib/upload/
 import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source } from "@/lib/upload/client";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
-import { useHydrated } from "@/store/useUiStore";
+import { scrollIntoViewQuietly, useHydrated } from "@/store/useUiStore";
 import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
 const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
@@ -79,6 +79,7 @@ function Yours() {
   const [added, setAdded] = useState(false);
   const selected = useCartStore((s) => sizeFor(s, YOURS_ID));
   const fileInput = useRef<HTMLInputElement>(null);
+  const sizeRow = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const run = useRef(0);
   const entered = useRef(Date.now());
@@ -95,8 +96,11 @@ function Yours() {
     window.addEventListener("popstate", on);
     return () => window.removeEventListener("popstate", on);
   }, []);
+  const firstStep = useRef(true);
   useEffect(() => {
-    heading.current?.focus();
+    // A new step puts focus on its heading; the page's first load doesn't (no ring around the first question).
+    if (firstStep.current) firstStep.current = false;
+    else heading.current?.focus();
     const secs = Math.round((Date.now() - entered.current) / 1000);
     entered.current = Date.now();
     track("yours_step", { n: STEPS.indexOf(step) + 1, secs_bucket: secs < 10 ? "<10" : secs < 30 ? "<30" : secs < 90 ? "<90" : "90+" });
@@ -130,7 +134,7 @@ function Yours() {
           const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
           if (meta) setTitle(meta.title);
           setChoice(lines.length >= 2 ? "both" : (lines[0]?.color ?? meta?.tees[0] ?? "white"));
-          setRightsFor(`${r.source.id}|${JSON.stringify([r.settings.crop, r.settings.rot, ...(r.settings.flip ? [true] : [])])}`);
+          setRightsFor(r.source.id);
           go("print", true);
           return;
         }
@@ -295,8 +299,8 @@ function Yours() {
   const pill = busy ? (last ? "Checking it prints…" : "Converting…") : undefined;
   const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
   const size$ = teeSize ?? selected;
-  // The rights are asked of the picture as it will print: a new crop, turn or mirror asks again (light and contrast don't change what's in it).
-  const rightsKey = source && settings ? `${source.id}|${JSON.stringify([settings.crop, settings.rot, ...(settings.flip ? [true] : [])])}` : null;
+  // The rights are the file's (a crop or a turn doesn't change whose it is).
+  const rightsKey = source ? source.id : null;
 
   /* ---------------- the primary button of each step ---------------- */
   const toRights = () => {
@@ -311,12 +315,30 @@ function Yours() {
   };
   const add = async () => {
     if (!ok || !source || !settings) return;
-    if (!size$) return setNudge((x) => x + 1);
+    if (!size$) {
+      // The sizes come into view, clear of the bar at the foot of a phone.
+      scrollIntoViewQuietly(sizeRow.current);
+      return setNudge((x) => x + 1);
+    }
     const c = await loadClient();
     const tees = choice === "both" ? ok.tees : [choice as "black" | "white", ...ok.tees.filter((t) => t !== choice)];
     const id = await c.keep(source, ok, { title, tees, settings: { ...settings, size: ok.size } });
     const ref = { id, mode: ok.mode, size: ok.size, hash: ok.hash };
-    if (editId) useCartStore.setState((s) => ({ cart: s.cart.filter((l) => l.upload?.id !== editId) }));
+    if (editId) {
+      // Saving an edit swaps the print in the lines it was in, each keeping its size and quantity (and its tee, where the print still prints on it).
+      const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
+      const one = lines.length === 1;
+      useCartStore.setState((s) => ({
+        cart: s.cart.map((l) => {
+          if (l.upload?.id !== editId) return l;
+          // A single line takes the size and tee chosen here; several keep theirs.
+          const want = one && choice !== "both" ? choice : l.color;
+          return { ...l, upload: ref, size: one ? size$ : l.size, color: ok.tees.includes(want) ? want : ok.tee };
+        }),
+      }));
+      void c.clearDraft();
+      return router.push("/cart/");
+    }
     const store = useCartStore.getState();
     const done = choice === "both" ? store.addPair(YOURS_ID, size$, { upload: ref, source: "product" }) : store.addToCart(YOURS_ID, size$, choice, 1, { upload: ref, source: "product" });
     if (!done) return;
@@ -324,7 +346,6 @@ function Yours() {
     void c.clearDraft();
     setDraftName(null);
     setAdded(true);
-    if (editId) router.push("/cart/");
   };
   // "Upload another" for a refused file: once this one passes, it takes the refused one's place in the order.
   const resubmit = async () => {
@@ -437,10 +458,11 @@ function Yours() {
                   title={title}
                   setTitle={setTitle}
                   summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? `Words · ${FACES[settings.face].label}` : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "small" ? "Small" : ok.cls === "words" && settings.span === "medium" ? "Medium" : "Full"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
-                  onChange={() => window.history.go(-2)}
+                  onChange={() => go("print")}
                   size={size$}
                   setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
                   nudge={nudge}
+                  sizeRef={sizeRow}
                 />
               )}
               {primary && <PrimaryBar {...primary} />}
@@ -722,7 +744,25 @@ function WontPrint({ onClose }: { onClose: () => void }) {
   );
 }
 
-function SizeStep({ title, setTitle, summary, onChange, size, setSize, nudge }: { title: string; setTitle: (t: string) => void; summary: string; onChange: () => void; size?: ShirtSize; setSize: (s: ShirtSize) => void; nudge: number }) {
+function SizeStep({
+  title,
+  setTitle,
+  summary,
+  onChange,
+  size,
+  setSize,
+  nudge,
+  sizeRef,
+}: {
+  title: string;
+  setTitle: (t: string) => void;
+  summary: string;
+  onChange: () => void;
+  size?: ShirtSize;
+  setSize: (s: ShirtSize) => void;
+  nudge: number;
+  sizeRef: React.RefObject<HTMLDivElement>;
+}) {
   const [draft, setDraft] = useState(title);
   const [error, setError] = useState<string | null>(null);
   const save = async (v: string) => {
@@ -756,7 +796,9 @@ function SizeStep({ title, setTitle, summary, onChange, size, setSize, nudge }: 
           Change
         </button>
       </p>
-      <SizeSelector key={nudge} value={size} onChange={setSize} highlight={nudge > 0 && !size} />
+      <div ref={sizeRef} className="scroll-mb-32">
+        <SizeSelector key={nudge} value={size} onChange={setSize} highlight={nudge > 0 && !size} />
+      </div>
       <p className="text-sm text-neutral-400">Checked by a person before printing. Up to 2 days. Nothing charged if we can&rsquo;t print it.</p>
       <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}</p>
     </div>

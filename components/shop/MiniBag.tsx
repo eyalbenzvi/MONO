@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 
 const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
+// A made-for-you print draws itself, as in the bag.
+const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup"));
 import { SIZES } from "@/lib/images";
 import { STAGE_BG } from "@/components/ui";
 import { getShirtById } from "@/lib/catalog";
@@ -71,6 +73,10 @@ export function MiniBag() {
             {note.upload ? (
               <Suspense fallback={null}>
                 <UploadMockup shirt={shirt} uploadId={note.upload.id} color={note.color} className="w-full" />
+              </Suspense>
+            ) : note.custom ? (
+              <Suspense fallback={null}>
+                <CustomLineMockup shirt={shirt} color={note.color} spec={note.custom} sizes={SIZES.thumb} className="w-full" />
               </Suspense>
             ) : (
               <TeeMockup shirt={shirt} color={note.color} sizes={SIZES.thumb} className="w-full" />

@@ -22,6 +22,8 @@ export const unitPrice = (line: { custom?: unknown; upload?: unknown }, shirt: P
  */
 export const customKey = (custom?: CustomSpec, upload?: UploadRef) => (upload ? `u${upload.hash}` : custom ? specHash(custom) : "");
 const keyOf = (l: { custom?: CustomSpec; upload?: UploadRef }) => customKey(l.custom, l.upload);
+/** A bag line's key: design, size, colour and a personalised print's spec (React keys, and "Edit" from the bag naming its line). */
+export const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec; upload?: UploadRef }) => `${l.id}-${l.size}-${l.color}-${keyOf(l)}`;
 
 export function cartLines(items: CartItem[]): CartLine[] {
   return items.flatMap((item) => {
