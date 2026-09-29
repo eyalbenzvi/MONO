@@ -75,6 +75,15 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
 /** A print to lay on the tee: an SVG, or a picture already in the tee colour's inks (an upload's raster, lib/upload/bitmap). */
 export type PrintSource = string | CanvasImageSource;
 const printOf = (p: PrintSource, w: number, h: number): CanvasImageSource => (typeof p === "string" ? printCanvas(p, w, h) : p);
+/**
+ * Gives a canvas's pixels back at once (a zero-size canvas holds none): a
+ * page drawing many prints (the Make index, a filter changing its groups)
+ * otherwise waits on the garbage collector for each, and a phone's canvas
+ * memory runs out first (Safari has a hard cap; a tab can crash).
+ */
+export const release = (c: CanvasImageSource | null | undefined) => {
+  if (typeof HTMLCanvasElement !== "undefined" && c instanceof HTMLCanvasElement) (c.width = 0), (c.height = 0);
+};
 
 export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, photo: CanvasImageSource, svg: PrintSource, box: readonly number[], color: BaseColor) {
   ctx.save();
@@ -84,7 +93,9 @@ export function drawMockup(ctx: CanvasRenderingContext2D, w: number, h: number, 
   ctx.drawImage(photo, 0, 0, w, h);
   const [bx, by, bw, bh] = [Math.round(box[0] * w), Math.round(box[1] * h), Math.round(box[2] * w), Math.round(box[3] * h)];
   ctx.globalCompositeOperation = color === "black" ? "screen" : "multiply";
-  ctx.drawImage(printOf(svg, bw, bh), bx, by, bw, bh);
+  const print = printOf(svg, bw, bh);
+  ctx.drawImage(print, bx, by, bw, bh);
+  if (print !== svg) release(print);
   ctx.restore();
 }
 
@@ -99,7 +110,9 @@ export function drawDetail(ctx: CanvasRenderingContext2D, w: number, h: number, 
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(photo, Math.round(box[0] * W), Math.round(box[1] * H), Math.round(box[2] * W), Math.round(box[3] * H), 0, 0, w, h);
   ctx.globalCompositeOperation = color === "black" ? "screen" : "multiply";
-  ctx.drawImage(printOf(svg, w, h), 0, 0, w, h);
+  const print = printOf(svg, w, h);
+  ctx.drawImage(print, 0, 0, w, h);
+  if (print !== svg) release(print);
   ctx.restore();
 }
 
@@ -120,5 +133,6 @@ export function inkFromCanvas(svg: string, baseColor: BaseColor): InkRaster {
   const px = ctx.getImageData(0, 0, CHECK_W, CHECK_H).data;
   const ink = new Float32Array(CHECK_W * CHECK_H);
   for (let i = 0; i < ink.length; i++) ink[i] = baseColor === "black" ? px[i * 4] / 255 : 1 - px[i * 4] / 255;
+  release(c);
   return { w: CHECK_W, h: CHECK_H, ink };
 }

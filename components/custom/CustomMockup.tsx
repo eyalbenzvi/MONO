@@ -5,7 +5,7 @@ import { assetUrl } from "@/lib/catalog";
 import { MODEL_ASPECT, mockupImage } from "@/lib/images";
 import { modelFor } from "@/lib/models";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
-import { drawDetail, drawMockup, loadImage, type PrintSource } from "@/lib/custom/raster";
+import { drawDetail, drawMockup, loadImage, release, type PrintSource } from "@/lib/custom/raster";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 interface CustomMockupProps {
@@ -52,6 +52,14 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
   useEffect(() => {
     loadCanvasFonts().then(() => setFontsIn(true));
   }, []);
+  // Leaving the page (or a filter hiding the card): the canvases give their pixels back now, not at the next collection.
+  useEffect(() => {
+    const [a, b] = [canvasRef.current, detailRef];
+    return () => {
+      release(a);
+      release(b.current);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,7 +69,8 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
       .then((photo) => {
         if (!live) return;
         const t = performance.now();
-        const dpr = Math.min(3, window.devicePixelRatio || 1);
+        // A small card (a grid of them) at 2× at most: sharp enough, and a page of thirty stays inside a phone's canvas memory.
+        const dpr = Math.min(width < 300 ? 2 : 3, window.devicePixelRatio || 1);
         const w = Math.round(width * dpr);
         const h = Math.round(w / MODEL_ASPECT);
         canvas.width = w;

@@ -9,40 +9,22 @@ const LATER = MADE.filter((m) => Object.hasOwn(EXTRA, m.template));
 test("every later product is on the Make index, in its group", async ({ page }) => {
   await page.goto("make/");
   await hydrated(page);
-  test("the Make index's filter shows only the groups chosen, keeps them in the address, and All brings the rest back", async ({ page }) => {
-  await page.goto("make/");
-  await hydrated(page);
-  await page.getByRole("button", { name: "Categories" }).tap();
-  await page.getByRole("checkbox", { name: /^From a name/ }).tap();
-  await expect(page).toHaveURL(/[?&]g=name$/);
-  await expect(page.locator("ul[data-group]")).toHaveCount(1);
-  await expect(page.locator('ul[data-group="name"]')).toHaveCount(1);
-  await page.getByRole("checkbox", { name: /^From a place/ }).tap();
-  await expect(page).toHaveURL(/[?&]g=name\.place$/);
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Categories, 2 selected" })).toBeVisible();
-  // A reload (or a shared link) opens with the same groups.
-  await page.reload();
-  await hydrated(page);
-  await expect(page.locator("ul[data-group]")).toHaveCount(2);
-  await page.getByRole("button", { name: "Categories, 2 selected" }).tap();
-  await page.getByRole("checkbox", { name: /^All/ }).tap();
-  await expect(page).toHaveURL(/\/make\/$/);
-  await expect(page.locator("ul[data-group]")).toHaveCount(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).length);
-});
-
-for (const m of LATER) await expect(page.locator(`ul[data-group="${m.group}"] [data-made="${m.slug}"]`), m.slug).toHaveCount(1);
+  for (const m of LATER) await expect(page.locator(`ul[data-group="${m.group}"] [data-made="${m.slug}"]`), m.slug).toHaveCount(1);
 });
 
 test("the Make index's filter shows only the groups chosen, keeps them in the address, and All brings the rest back", async ({ page }) => {
+  let crashed = false;
+  page.on("crash", () => (crashed = true));
   await page.goto("make/");
   await hydrated(page);
   await page.getByRole("button", { name: "Categories" }).tap();
   await page.getByRole("checkbox", { name: /^From a name/ }).tap();
+  await expect(page.getByRole("checkbox", { name: /^From a name/ })).toBeChecked();
   await expect(page).toHaveURL(/[?&]g=name$/);
   await expect(page.locator("ul[data-group]")).toHaveCount(1);
   await expect(page.locator('ul[data-group="name"]')).toHaveCount(1);
   await page.getByRole("checkbox", { name: /^From a place/ }).tap();
+  await expect(page.getByRole("checkbox", { name: /^From a place/ })).toBeChecked();
   await expect(page).toHaveURL(/[?&]g=name\.place$/);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Categories, 2 selected" })).toBeVisible();
@@ -54,6 +36,22 @@ test("the Make index's filter shows only the groups chosen, keeps them in the ad
   await page.getByRole("checkbox", { name: /^All/ }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
   await expect(page.locator("ul[data-group]")).toHaveCount(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).length);
+  expect(crashed).toBe(false);
+});
+
+test("the Make index survives a filter changed again and again (each card's canvases give their memory back when hidden)", async ({ page }) => {
+  let crashed = false;
+  page.on("crash", () => (crashed = true));
+  await page.goto("make/?g=date");
+  await hydrated(page);
+  await page.getByRole("button", { name: /^Categories/ }).tap();
+  // Eight cards appear and go, twenty times: before the fix, the tab ran out of canvas memory within a few.
+  for (let i = 0; i < 20; i++) {
+    await page.getByRole("checkbox", { name: /^From a name/ }).tap();
+    await page.waitForTimeout(150);
+  }
+  expect(crashed).toBe(false);
+  await expect(page.getByRole("checkbox", { name: /^From a date/ })).toBeChecked();
 });
 
 for (const m of LATER)
