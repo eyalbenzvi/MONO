@@ -8,12 +8,16 @@
  */
 import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
 import { MAX_BYTES, REASONS } from "./reasons";
+import { FACES, WORDS_DEFAULT, WORD_LINES, familyOf, layoutWords, type Face, type WordsType } from "./words";
 
 export type UploadRequest =
   | { file: Blob; type: string; mode?: Ask; size: PrintSize }
-  | { words: string[]; size: PrintSize }
+  | { words: string[]; size: PrintSize; type?: WordsType; span?: WordsSpan }
   | { svgRaster: Pixels; size: PrintSize }
   | { pixels: Pixels; mode?: Ask; size: PrintSize; checked?: boolean };
+
+/** How wide words print at Full: the whole 28 cm, or 18 cm. */
+export type WordsSpan = "full" | "medium";
 
 export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number } } | { ok: false; reason: string };
 
@@ -21,9 +25,6 @@ export type UploadResult = { ok: true; converted: Converted; source: { w: number
 export const TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"] as const;
 /** An SVG is rasterised this big on its long side (brief 6.2). */
 export const SVG_LONG = 1500;
-/** Words: at most this many lines of this many characters (brief 6.1). */
-export const WORD_LINES = 3;
-export const WORD_CHARS = 24;
 /**
  * The reason a worker gives when it can't decode an SVG itself (most
  * browsers only decode SVG where there's a document): run.ts then draws it
@@ -66,35 +67,53 @@ export function sizedSvg(svg: string, long = SVG_LONG): string {
   return svg.replace(root, bare.replace(/<svg\b/i, `<svg width="${Math.round(w * k)}" height="${Math.round(h * k)}"`));
 }
 
-let fontReady: Promise<string> | null = null;
-/** The print font, bold, for words (public/fonts, the subset the canvas prints use); a system monospace if it won't load. */
-function printFont(): Promise<string> {
-  const family = "MONO DejaVu Sans Mono";
-  const fonts = (self as unknown as { fonts?: FontFaceSet }).fonts;
-  fontReady ??= fetch(`${self.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/fonts/dejavu-sans-mono-bold.woff2`)
-    .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("font"))))
-    .then((buf) => new FontFace(family, buf, { weight: "bold" }).load())
-    .then((face) => (fonts?.add(face), `"${family}", monospace`))
-    .catch(() => "monospace");
-  return fontReady;
+const faces = new Map<Face, Promise<string>>();
+/**
+ * A face of "Your words" (public/fonts/words), loaded once and only when
+ * chosen. Mono, the default, falls back to a system monospace if it won't
+ * load (as words always could); any other face refuses rather than print in
+ * a type that wasn't chosen.
+ */
+function wordsFont(face: Face): Promise<string> {
+  let p = faces.get(face);
+  if (!p) {
+    const family = familyOf(face);
+    const fonts = (self as unknown as { fonts?: FontFaceSet }).fonts;
+    p = fetch(`${self.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/fonts/words/${FACES[face].file}`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("font"))))
+      .then((buf) => new FontFace(family, buf).load())
+      .then((f) => (fonts?.add(f), `"${family}"${face === "mono" ? ", monospace" : ""}`));
+    if (face === "mono") p = p.catch(() => "monospace");
+    // A face that failed is tried afresh next time.
+    p.catch(() => faces.delete(face));
+    faces.set(face, p);
+  }
+  return p;
 }
 
-/** Words set in the print font, black on white, centred line by line. */
-export async function wordsPixels(words: string[]): Promise<Pixels> {
-  const lines = words.map((l) => l.slice(0, WORD_CHARS)).slice(0, WORD_LINES);
-  const size = 160;
-  const cols = Math.max(1, ...lines.map((l) => l.length));
-  const [w, h] = [Math.ceil(cols * size * 0.62 + size), Math.ceil(lines.length * size * 1.25 + size * 0.5)];
+/** Words set in their face (lib/upload/words layoutWords), black on white; capPx, the capital height of the largest line, for the print's letter cap. */
+export async function wordsPixels(words: string[], t: WordsType = WORDS_DEFAULT): Promise<Pixels & { capPx: number }> {
+  const lines = words.slice(0, WORD_LINES);
+  const family = await wordsFont(t.face);
+  const probe = canvas(8, 8).getContext("2d")!;
+  const measure = (text: string, px: number) => {
+    probe.font = `${px}px ${family}`;
+    const m = probe.measureText(text);
+    return { w: Math.max(m.width, m.actualBoundingBoxLeft + m.actualBoundingBoxRight), asc: m.actualBoundingBoxAscent, desc: m.actualBoundingBoxDescent };
+  };
+  const { w, h, capPx, runs } = layoutWords(lines, t, measure);
   const c = canvas(w, h);
   const ctx = c.getContext("2d", { willReadFrequently: true })!;
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = "#000";
-  ctx.font = `bold ${size}px ${await printFont()}`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  lines.forEach((l, i) => ctx.fillText(l, w / 2, size * 0.25 + (i + 0.5) * size * 1.25));
-  return { w, h, data: ctx.getImageData(0, 0, w, h).data };
+  ctx.textBaseline = "alphabetic";
+  for (const r of runs) {
+    ctx.font = `${r.px}px ${family}`;
+    ctx.textAlign = r.align;
+    ctx.fillText(r.text, r.x, r.y);
+  }
+  return { w, h, capPx, data: ctx.getImageData(0, 0, w, h).data };
 }
 
 /** A sanitised SVG decoded and drawn here (a worker usually can't; the caller then draws it where there's a document). */
@@ -115,8 +134,14 @@ export async function handle(req: UploadRequest): Promise<UploadResult> {
     if ("words" in req) {
       const words = req.words.map((l) => l.trim()).filter(Boolean);
       if (!words.length) return { ok: false, reason: REASONS.noWords };
-      const p = await wordsPixels(words);
-      return ok(convert({ pixels: p, words }, { size: req.size }), p.w, p.h);
+      const t = req.type ?? WORDS_DEFAULT;
+      let p: Awaited<ReturnType<typeof wordsPixels>>;
+      try {
+        p = await wordsPixels(words, t);
+      } catch {
+        return { ok: false, reason: REASONS.typeLoad };
+      }
+      return ok(convert({ pixels: p, words, capPx: p.capPx, maxCapCm: FACES[t.face].maxCapCm }, { size: req.size, span: req.span }), p.w, p.h);
     }
     if ("svgRaster" in req) return ok(convert({ svgRaster: req.svgRaster }, { size: req.size }), req.svgRaster.w, req.svgRaster.h);
     if ("pixels" in req) {

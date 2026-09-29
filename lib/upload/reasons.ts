@@ -14,6 +14,7 @@ export const REASONS = {
   smallForFull: "Too small for Full. Try Small, or a larger file.",
   smallForSmall: "Too small to print. Try a larger file.",
   noWords: "Nothing to print. Write a word or two.",
+  typeLoad: "This type didn't load. Try again, or another type.",
   /** The print (measure.ts tier). */
   solidDots: "Too much ink in one place. Try Lines.",
   solid: "Too much ink in one place.",

@@ -14,7 +14,8 @@
  */
 import { convertInWorker, type UploadRequest } from "./run";
 import { MAX_LONG, MIN_SHORT, inkFor, type Converted, type Mode, type Pixels, type PrintSize, type Tee, type UploadClass } from "./convert";
-import { TYPES, WORD_CHARS, WORD_LINES } from "./decode";
+import { TYPES, type WordsSpan } from "./decode";
+import { FACES, PRINTABLE, WORD_LINES, cased, letters, type Face, type WordsAlign, type WordsLayout, type WordsType } from "./words";
 import { designHash, measure, nearestIndex, tier, type Measures } from "./measure";
 import { chooseTee } from "./teeRule";
 import { cleanTitle } from "./title";
@@ -52,8 +53,18 @@ export interface Settings {
   /** A photograph's style; Drawing reads it as line work (a sketch photographed on paper). */
   mode: "dots" | "lines" | "drawing";
   size: PrintSize;
+  /** Words: the type, the lines' layout and alignment, capitals, and how wide Full prints (28 cm, or 18 at Medium). */
+  face: Face;
+  layout: WordsLayout;
+  align: WordsAlign;
+  caps: boolean;
+  span: WordsSpan;
 }
-export const DEFAULTS: Settings = { crop: null, rot: 0, flip: false, light: 0, contrast: 0, stronger: false, bolder: false, mode: "dots", size: "full" };
+export const DEFAULTS: Settings = { crop: null, rot: 0, flip: false, light: 0, contrast: 0, stronger: false, bolder: false, mode: "dots", size: "full", face: "mono", layout: "even", align: "centre", caps: false, span: "full" };
+/** The words' type from the settings. */
+export const wordsType = (s: Pick<Settings, "face" | "layout" | "align" | "caps">): WordsType => ({ face: s.face, layout: s.layout, align: s.align, caps: s.caps });
+const WORDS_KEY = (s: Settings) => [s.face, s.layout, s.align, s.caps, s.span];
+const wordsDefault = (s: Settings) => WORDS_KEY(s).join() === WORDS_KEY(DEFAULTS).join();
 /** The settings as a cache key; the edits added later join it only when used, so the earlier keys (and results) stay the same. */
 export const settingsKey = (s: Settings) =>
   JSON.stringify([
@@ -64,6 +75,7 @@ export const settingsKey = (s: Settings) =>
     s.mode,
     s.size,
     ...(s.flip || s.light || s.contrast ? [s.flip, s.light, s.contrast] : []),
+    ...(wordsDefault(s) ? [] : WORDS_KEY(s)),
   ]);
 /** Whether a picture has been edited (anything the edit sheet sets). */
 export const edited = (s: Settings) => !!(s.crop || s.rot || s.flip || s.light || s.contrast || s.stronger);
@@ -92,6 +104,8 @@ interface Common {
   cls?: UploadClass;
   mode?: Mode;
   size: PrintSize;
+  /** Words: how tall their capitals print, mm. */
+  capMm?: number;
   /** Too small for Full, so it went to Small. */
   autoSmall?: boolean;
   /** The print in a tee's inks, for the mockup (a failed print too). */
@@ -157,13 +171,17 @@ export async function openFile(file: File | Blob, name = (file as File).name ?? 
   return { ok: true, source: { id: newId(), kind: "file", name, file, type, bitmap, w: bitmap.width, h: bitmap.height } };
 }
 
-/** Printable in the print font: Latin letters (with accents), figures and plain punctuation. */
-const PRINTABLE = /^[\x20-\x7E -ſ]*$/;
-/** Words as a source: up to three lines of 24, printable, past the lexicon. */
-export async function openWords(lines: string[], keepId?: string): Promise<{ ok: true; source: Source } | Refusal> {
-  const words = lines.map((l) => l.trim()).filter(Boolean).slice(0, WORD_LINES);
+/**
+ * Words as a source: up to three lines, each within its type's letters (a
+ * condensed type holds more; counted as it prints, so in capitals when
+ * Capitals is on), in characters every type can set, past the lexicon.
+ */
+export async function openWords(lines: string[], keepId?: string, t: Pick<WordsType, "face" | "caps"> = { face: "mono", caps: false }): Promise<{ ok: true; source: Source } | Refusal> {
+  const words = lines.map((l) => l.trim().normalize("NFC")).filter(Boolean).slice(0, WORD_LINES);
   if (!words.length) return { ok: false, reason: REASONS.noWords, code: "empty" };
-  if (words.some((l) => l.length > WORD_CHARS || !PRINTABLE.test(l))) return { ok: false, reason: "Letters, figures and plain punctuation only.", code: "chars" };
+  if (words.some((l) => !PRINTABLE.test(l))) return { ok: false, reason: "Letters, figures and punctuation only.", code: "chars" };
+  const f = FACES[t.face];
+  if (words.some((l) => letters(cased(l, t.caps)) > f.chars)) return { ok: false, reason: `Lines of up to ${f.chars} letters in ${f.label}.`, code: "long" };
   const problem = (await lexicon()).wordsProblem(words.join(" "));
   if (problem) return { ok: false, reason: problem, code: "words" };
   return { ok: true, source: { id: keepId ?? newId(), kind: "words", words, name: words.join(" "), w: 1500, h: 1000 } };
@@ -302,7 +320,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   let size = s.size;
   let autoSmall = false;
   let req: UploadRequest;
-  if (src.kind === "words") req = { words: src.words!, size };
+  if (src.kind === "words") req = { words: src.words!, size, type: wordsType(s), span: s.span };
   else if (src.kind === "svg") req = { file: src.file!, type: src.type!, size };
   else {
     const { short } = cropPixels(src, s);
@@ -319,7 +337,8 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   const ms: Partial<Record<Tee, Measures>> = {};
   const on = (t: Tee) => (ms[t] ??= measure(inks[t], conv.w, conv.h, t, { screened: conv.mode === "dots", size: conv.size }));
   const index = await catalogueHashes();
-  const near = index ? nearestIndex(designHash(inks.white, conv.w, conv.h), index) : { index: -1, distance: 64 };
+  // Words typed in our types aren't a copy of anything: every block of text hashes alike, so the near-copy check would refuse them by their shape.
+  const near = index && conv.cls !== "words" ? nearestIndex(designHash(inks.white, conv.w, conv.h), index) : { index: -1, distance: 64 };
   const perTee = {} as Record<Tee, TeeResult>;
   for (const t of ["black", "white"] as const) {
     const r = tier(on(t), t, near.distance);
@@ -338,7 +357,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   if (t.tier === "refuse") {
     const reason = t.reason ?? REASONS.weak;
     const duplicateOf = reason === REASONS.duplicate && near.index >= 0 ? (await import("@/lib/catalog")).SHIRTS[near.index]?.id : undefined;
-    return { ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, autoSmall, tee, perTee, canvas, ...(duplicateOf ? { duplicateOf } : {}) };
+    return { ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, capMm: conv.capMm, autoSmall, tee, perTee, canvas, ...(duplicateOf ? { duplicateOf } : {}) };
   }
   const other = flip(tee);
   const tees: Tee[] = perTee[other].ok && (tee === choice.tee ? choice.other : true) ? [tee, other] : [tee];
@@ -349,6 +368,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     cls: conv.cls,
     mode: conv.mode,
     size,
+    capMm: conv.capMm,
     autoSmall,
     tees,
     tee,
@@ -377,7 +397,7 @@ function fail(reason: string, size: PrintSize): PreviewFail {
 /* ------------------------------------------------------------------ */
 
 export interface Fix {
-  id: "stronger" | "lines" | "dots" | "small" | "full" | "bolder" | "crop";
+  id: "stronger" | "lines" | "dots" | "small" | "full" | "bolder" | "crop" | "medium" | "face";
   label: string;
   /** The settings it changes (none: it opens Edit photo). */
   patch?: Partial<Settings>;
@@ -395,6 +415,7 @@ export const MEANING: Record<string, string> = {
   stroke: "Lines too fine for this tee. They'd break up in the print.",
   gap: "Gaps too narrow. They'd fill in with ink.",
   duplicate: "This is already one of ours.",
+  long: "Too many letters on a line for this type.",
 };
 
 /** The fixes worth trying for a failure, in order (the PM's table), before any is tried. */
@@ -411,6 +432,16 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
   const full: Fix = { id: "full", label: "Use Full", patch: { size: "full" } };
   const bolder: Fix = { id: "bolder", label: "Bolder", patch: { bolder: true } };
   const crop: Fix = { id: "crop", label: "Crop tighter" };
+  if (src.kind === "words") {
+    // Words: a narrower print, a smaller one, or a type that carries them (Condensed fills a line at Small; Grotesk's strokes are the sturdiest).
+    const face = (id: Face): Fix => ({ id: "face", label: `Use ${FACES[id].label}`, patch: { face: id } });
+    const medium: Fix = { id: "medium", label: "Use Medium", patch: { size: "full", span: "medium" } };
+    if (["solid", "solidDots", "dense", "denseDots"].includes(f.code)) (add(medium, f.size === "full" && s.span === "full"), add(small, f.size === "full"));
+    if (f.code === "faint" || f.code === "plain") (add(full, f.size === "small"), add(face("condensed"), s.face !== "condensed"));
+    if (f.code === "stroke" || f.code === "gap") (add(full, f.size === "small"), add(face("grotesk"), s.face !== "grotesk"));
+    if (f.code === "typeLoad") add(face("mono"), s.face !== "mono");
+    return out;
+  }
   switch (f.code) {
     case "faint":
     case "weak":
@@ -493,7 +524,7 @@ export async function reopen(id: string): Promise<{ source: Source; settings: Se
   const settings = { ...DEFAULTS, ...(u.settings as Partial<Settings> | undefined) };
   const name = u.name ?? useMakeStore.getState().uploads[id]?.title ?? "file";
   if (u.words) {
-    const r = await openWords(u.words);
+    const r = await openWords(u.words, undefined, settings);
     return r.ok ? { source: r.source, settings, name } : null;
   }
   if (!u.source) return null;

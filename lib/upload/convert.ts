@@ -57,6 +57,8 @@ export interface Converted {
   midtones: number;
   /** The upload's polarity: dark marks on a light ground (line work), or a dark picture (a photograph). */
   darkOnLight: boolean;
+  /** Words: how tall their capitals print, mm. */
+  capMm?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -501,10 +503,15 @@ function bbox(m: Uint8Array | Float32Array, w: number, h: number, on = 0.5): Box
   return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-/** Where a box of bw × bh lands, fitted whole into the size's area: scaled to fit, top at the area's top, centred across. */
-export function fit(bw: number, bh: number, size: PrintSize): Box {
+/** What may hold a fit back: a largest scale, a narrower width (px on the grid). */
+export interface FitLimits {
+  maxK?: number;
+  maxW?: number;
+}
+/** Where a box of bw × bh lands, fitted whole into the size's area (or less, when limited): scaled to fit, top at the area's top, centred across. */
+export function fit(bw: number, bh: number, size: PrintSize, lim: FitLimits = {}): Box {
   const B = BOXES[size];
-  const k = Math.min(B.w / bw, B.h / bh);
+  const k = Math.min(B.w / bw, B.h / bh, lim.maxK ?? Infinity, (lim.maxW ?? Infinity) / bw);
   const [w, h] = [Math.max(1, Math.round(bw * k)), Math.max(1, Math.round(bh * k))];
   return { x: B.x + Math.round((B.w - w) / 2), y: B.y, w, h };
 }
@@ -578,11 +585,11 @@ function paste<T extends Uint8Array | Float32Array>(out: T, part: ArrayLike<numb
  * on the 1500 × 2000 grid (fit): resampled with Lanczos and cut at half,
  * so edges stay smooth when a small file is scaled up.
  */
-export function place(mask: Uint8Array, w: number, h: number, size: PrintSize): Uint8Array {
+export function place(mask: Uint8Array, w: number, h: number, size: PrintSize, lim: FitLimits = {}): Uint8Array {
   const out = new Uint8Array(OUT_W * OUT_H);
   const b = bbox(mask, w, h);
   if (!b) return out;
-  const at = fit(b.w, b.h, size);
+  const at = fit(b.w, b.h, size, lim);
   const src = new Float32Array(mask.length);
   for (let i = 0; i < mask.length; i++) src[i] = mask[i];
   const r = lanczos(src, w, h, at.w, at.h, b);
@@ -918,9 +925,15 @@ const pxPerMmFor = (w: number, h: number, size: PrintSize) => w / (fit(w, h, siz
 export interface ConvertInput {
   pixels?: Pixels;
   svgRaster?: Pixels;
-  /** Words, already set by the worker in the print font and passed as pixels; this only marks them as words. */
+  /** Words, already set by the worker in their face and passed as pixels; this marks them as words. */
   words?: string[];
+  /** Words: the capital height as set (px of the pixels given), and the tallest it may print (cm). */
+  capPx?: number;
+  maxCapCm?: number;
 }
+
+/** Words at Medium: 18 cm across (Full's box, narrower). */
+export const MEDIUM_W = Math.round(180 * PX_PER_MM);
 
 /**
  * An upload to a print: the class (vector for an SVG, words for words,
@@ -928,7 +941,7 @@ export interface ConvertInput {
  * unless Dots or Lines is asked of a photograph, or Drawing, which reads
  * it as line work), and the ink on the 1500 × 2000 grid for Full or Small.
  */
-export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize }): Converted {
+export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize; span?: "full" | "medium" }): Converted {
   const { size } = opts;
   const src = input.svgRaster ?? input.pixels;
   if (!src) throw new Error("convert: nothing to convert");
@@ -963,5 +976,14 @@ export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize
   if (!darkOnLight) g = invert(g);
   const mode: Mode = cls;
   const mask = cls === "line" ? toLine(levels(g), w, h, pxPerMmFor(w, h, size)) : threshold(g);
-  return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size), OUT_W, OUT_H, PX_PER_MM) };
+  if (cls !== "words") return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size), OUT_W, OUT_H, PX_PER_MM) };
+  // Words: capitals no taller than the face prints (bold letters past ~10 cm are a slab of ink), and Medium narrower than Full.
+  const capPx = (input.capPx ?? 0) * (w / src.w);
+  const lim: FitLimits = {
+    ...(capPx > 0 && input.maxCapCm ? { maxK: (input.maxCapCm * 10 * PX_PER_MM) / capPx } : {}),
+    ...(size === "full" && opts.span === "medium" ? { maxW: MEDIUM_W } : {}),
+  };
+  const b = bbox(mask, w, h);
+  const k = b ? fit(b.w, b.h, size, lim).w / b.w : 0;
+  return { ...base, mode, darkOnLight, tone: null, ink: clean(place(mask, w, h, size, lim), OUT_W, OUT_H, PX_PER_MM), ...(capPx > 0 ? { capMm: Math.round(capPx * k * MM_PER_PX) } : {}) };
 }

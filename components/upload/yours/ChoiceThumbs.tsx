@@ -116,6 +116,11 @@ export type Choice = Tee | "both";
 /** A photograph's styles: its tone in dots, its edges as lines, or read as a drawing (a sketch shot on paper, cleaned to its strokes). */
 const STYLES = ["dots", "lines", "drawing"] as const;
 const STYLE_LABEL: Record<Settings["mode"], string> = { dots: "Dots", lines: "Lines", drawing: "Drawing" };
+/** Words' widths, and the settings each is. */
+type WordsWidth = "full" | "medium" | "small";
+const WIDTHS: WordsWidth[] = ["full", "medium", "small"];
+const WIDTH_LABEL: Record<WordsWidth, string> = { full: "Full · 28 cm", medium: "Medium · 18 cm", small: "Small · 12 cm" };
+const WIDTH_PATCH: Record<WordsWidth, Partial<Settings>> = { full: { size: "full", span: "full" }, medium: { size: "full", span: "medium" }, small: { size: "small" } };
 
 /**
  * Style (a photograph only), Size and Tee, each as small pictures of the
@@ -128,10 +133,17 @@ export function ChoiceThumbs({ shirt, source, settings, preview, choice, onSetti
   const photo = preview.cls === "photo" || settings.mode === "drawing";
   const [modeA, modeB] = STYLES.filter((m) => m !== settings.mode);
   const otherSize = preview.size === "full" ? "small" : "full";
+  // Words have three widths: Full (28 cm), Medium (Full's box at 18 cm) and Small (12 cm).
+  const words = preview.cls === "words";
+  const width: WordsWidth = preview.size === "small" ? "small" : settings.span === "medium" ? "medium" : "full";
+  const [widthA, widthB] = WIDTHS.filter((v) => v !== width);
+  const altWidthA = useAlt(source, { ...settings, ...WIDTH_PATCH[widthA] }, words ? 300 : 1e9);
+  const altWidthB = useAlt(source, { ...settings, ...WIDTH_PATCH[widthB] }, words ? 700 : 1e9);
+  const altWidth = (v: WordsWidth) => (v === widthA ? altWidthA : altWidthB);
   const altA = useAlt(source, { ...settings, mode: modeA, size: preview.size }, photo ? 150 : 1e9);
   const altB = useAlt(source, { ...settings, mode: modeB, size: preview.size }, photo ? 600 : 1e9);
   const altMode = (m: Settings["mode"]) => (m === modeA ? altA : altB);
-  const altSize = useAlt(source, { ...settings, size: otherSize }, photo ? 1200 : 300);
+  const altSize = useAlt(source, { ...settings, size: otherSize }, words ? 1e9 : photo ? 1200 : 300);
   const off = (p: Preview | null) => (p && !p.ok ? shortReason(p.code) : p && p.ok && p.autoSmall && otherSize === "full" ? "File too small" : undefined);
   const current = { canvas: preview.canvas(tee), tee };
   const bothOk = preview.tees.length === 2;
@@ -146,13 +158,30 @@ export function ChoiceThumbs({ shirt, source, settings, preview, choice, onSetti
           options={STYLES.map((v) => ({ value: v, label: STYLE_LABEL[v], picture: v === settings.mode ? current : pictureOf(altMode(v), tee), off: v === settings.mode ? undefined : off(altMode(v)) }))}
         />
       )}
-      <Row
-        label="Size"
-        shirt={shirt}
-        value={preview.size}
-        onChange={(v) => onSettings({ size: v })}
-        options={(["full", "small"] as const).map((v) => ({ value: v, label: v === "full" ? "Full" : "Small", picture: v === preview.size ? current : pictureOf(altSize, tee), off: v === preview.size ? undefined : off(altSize) }))}
-      />
+      {words ? (
+        <div>
+          <Row
+            label="Size"
+            shirt={shirt}
+            value={width}
+            onChange={(v) => onSettings(WIDTH_PATCH[v])}
+            options={WIDTHS.map((v) => ({ value: v, label: WIDTH_LABEL[v], picture: v === width ? current : pictureOf(altWidth(v), tee), off: v === width ? undefined : off(altWidth(v)) }))}
+          />
+          {preview.capMm ? (
+            <p className="mt-1.5 text-xs text-neutral-400" data-cap-readout>
+              Letters {(preview.capMm / 10).toFixed(1)} cm tall{settings.layout === "fill" ? ", the largest" : ""}.
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <Row
+          label="Size"
+          shirt={shirt}
+          value={preview.size}
+          onChange={(v) => onSettings({ size: v })}
+          options={(["full", "small"] as const).map((v) => ({ value: v, label: v === "full" ? "Full" : "Small", picture: v === preview.size ? current : pictureOf(altSize, tee), off: v === preview.size ? undefined : off(altSize) }))}
+        />
+      )}
       <Row
         label="Tee"
         shirt={shirt}

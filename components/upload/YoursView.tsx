@@ -13,6 +13,7 @@ import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
+import { FACES, WORD_CHARS_MAX, WORD_LINES, cased, letters } from "@/lib/upload/words";
 import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source } from "@/lib/upload/client";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
@@ -21,14 +22,13 @@ import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
 const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
+import { WordsType } from "./yours/WordsType";
 
 type Step = "start" | "print" | "rights" | "size";
 const STEPS: Step[] = ["start", "print", "rights", "size"];
 const loadClient = () => import("@/lib/upload/client");
 const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
 const stepOf = (hash: string): Step => (STEPS.includes(hash.slice(1) as Step) ? (hash.slice(1) as Step) : "start");
-const WORDS_LINES = 3;
-const WORDS_CHARS = 24;
 
 /**
  * From yours (/make/yours/): your picture, drawing or words, in one ink.
@@ -223,7 +223,7 @@ function Yours() {
     const t = setTimeout(async () => {
       const c = await loadClient();
       const id = `w${[...lines.join("\n")].reduce((h, ch) => (Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0), 2166136261).toString(36)}`;
-      const r = await c.openWords(lines, id);
+      const r = await c.openWords(lines, id, { face: settings?.face ?? "mono", caps: settings?.caps ?? false });
       if (!r.ok) {
         setWordsError(r.reason);
         return;
@@ -234,9 +234,9 @@ function Yours() {
       void c.saveDraft(r.source, settings ?? c.DEFAULTS);
     }, 300);
     return () => clearTimeout(t);
-    // Settings don't reopen the words.
+    // Of the settings, only the type and Capitals reopen the words (a line's limit is the type's, counted in capitals).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [words, wordsMode]);
+  }, [words, wordsMode, settings?.face, settings?.caps]);
 
   /* ---------------- converting ---------------- */
   useEffect(() => {
@@ -265,7 +265,8 @@ function Yours() {
       setFixes(found);
       track("upload_fix_offered", { reason: p.code, n: found.length });
     });
-    if (source.kind !== "words") void loadClient().then((c) => c.saveDraft(source, settings));
+    // The draft follows every change (words too: their type and size are settings).
+    void loadClient().then((c) => c.saveDraft(source, settings));
     // `last` is only read for the status.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, settings]);
@@ -435,7 +436,7 @@ function Yours() {
                 <SizeStep
                   title={title}
                   setTitle={setTitle}
-                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? "Words" : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "full" ? "Full" : "Small"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
+                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? `Words · ${FACES[settings.face].label}` : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "small" ? "Small" : ok.cls === "words" && settings.span === "medium" ? "Medium" : "Full"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
                   onChange={() => window.history.go(-2)}
                   size={size$}
                   setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
@@ -492,7 +493,7 @@ function Start({
   const TILES = [
     // One tile for a photo or a drawing: the converter tells them apart by itself, and a drawing shot on paper has its own style (Drawing).
     { kind: "photo", label: "A photo or drawing", line: "A pet, a place, a sketch on paper. JPG, PNG, WebP or SVG." },
-    { kind: "words", label: "Words", line: "Up to three lines, in our type." },
+    { kind: "words", label: "Words", line: "Up to three lines, in one of six types." },
     { kind: "link", label: "A link", line: "A web address, as a QR code that scans." },
   ];
   return (
@@ -605,14 +606,16 @@ function PrintStep({
     });
   }, [failed, source, settings]);
   const caretLine = words.split("\n").at(-1) ?? "";
+  const limit = FACES[settings.face].chars;
+  const counted = letters(cased(caretLine.trim(), settings.caps));
   return (
     <>
       {wordsMode && (
         <div>
           <div className="mb-1 flex items-baseline justify-between text-xs font-medium text-neutral-400">
             <label htmlFor="upload-words">Your words</label>
-            <span className={caretLine.length >= WORDS_CHARS ? "text-white" : ""}>
-              {caretLine.length} / {WORDS_CHARS}
+            <span className={counted >= limit ? "text-white" : ""} data-words-count>
+              {counted} / {limit}
             </span>
           </div>
           <textarea
@@ -621,7 +624,7 @@ function PrintStep({
             rows={3}
             autoFocus={!words}
             placeholder={"MODERATE\nBECOMING\nGOOD"}
-            onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORDS_LINES).map((l) => l.slice(0, WORDS_CHARS)).join("\n"))}
+            onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORD_LINES).map((l) => [...l].slice(0, WORD_CHARS_MAX).join("")).join("\n"))}
             className="w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-base text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
           />
           {wordsError && (
@@ -629,6 +632,9 @@ function PrintStep({
               {wordsError}
             </p>
           )}
+          <div className="mt-4">
+            <WordsType settings={settings} lines={words.split("\n")} onSettings={patch} />
+          </div>
         </div>
       )}
       {ok?.autoSmall && <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>}
