@@ -8,10 +8,15 @@
  * that "printed" it above, and your words as the output line below. On the
  * monospace grid of the print font; each row is one text run, so columns
  * line up in the canvas preview as in the print.
+ *
+ * Or a picture: the customer's photo as tones (made on their device,
+ * lib/custom/draw/asciiPicture), each cell a character of a ramp by ink,
+ * in the same frame, printed by `$ cat picture.txt`.
  */
 import { INK, caption, text } from "../kit";
 import { pixelTextRows } from "../draw/pixelFont";
-import type { AsciiParams, CustomSpec } from "../spec";
+import { asciiUnpack, type AsciiParams, type CustomSpec } from "../spec";
+import { pictureRows } from "../draw/asciiPicture";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
@@ -23,7 +28,8 @@ const FRAME = { x: 14, y: 20, w: 272, h: 290, fs: 10 };
 
 /** The character grid of the banner. */
 export function asciiRows(p: AsciiParams): string[] {
-  const phrase = p.f === "phrase" ? [...(p.p ?? "").replace(/\s+/g, "")] : [];
+  const f = p.f ?? "self";
+  const phrase = f === "phrase" ? [...(p.p ?? "").replace(/\s+/g, "")] : [];
   let k = 0;
   const out: string[] = [];
   p.x.forEach((word, wi) => {
@@ -32,7 +38,7 @@ export function asciiRows(p: AsciiParams): string[] {
     const grid = Array.from({ length: 7 + (p.s ? 1 : 0) }, () => Array<string>(width).fill(" "));
     rows.forEach((row, r) =>
       [...row].forEach((cell, c) => {
-        if (cell === "X") grid[r][c] = p.f === "self" ? word[Math.floor(c / 6)] : p.f === "phrase" ? phrase[k++ % phrase.length] : p.f;
+        if (cell === "X") grid[r][c] = f === "self" ? word[Math.floor(c / 6)] : f === "phrase" ? phrase[k++ % phrase.length] : f;
       }),
     );
     // The shadow: down and to the right of every lit pixel that doesn't cover another.
@@ -72,6 +78,16 @@ function glow(rows: string[]): string[] {
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+/** The terminal's frame, and where its shell line starts. */
+function frame(): { s: string; fx: number } {
+  const fc = Math.floor(FRAME.w / (FRAME.fs * CELL)), fr = Math.floor(FRAME.h / FRAME.fs);
+  const fx = 150 - (fc * FRAME.fs * CELL) / 2;
+  const row = (r: number, str: string) => `<text x="${fx.toFixed(1)}" y="${(FRAME.y + (r + 0.8) * FRAME.fs).toFixed(1)}" fill="${INK}" font-size="${FRAME.fs}" font-family="DejaVu Sans Mono, monospace" xml:space="preserve">${esc(str)}</text>`;
+  let s = row(0, `+${"-".repeat(fc - 2)}+`) + row(fr - 1, `+${"-".repeat(fc - 2)}+`);
+  for (let r = 1; r < fr - 1; r++) s += row(r, `|${" ".repeat(fc - 2)}|`);
+  return { s, fx };
+}
+
 export function asciiBody(p: AsciiParams): string {
   const rows = asciiRows(p);
   const cols = Math.max(...rows.map((r) => r.length));
@@ -85,14 +101,40 @@ export function asciiBody(p: AsciiParams): string {
     if (r.trim())
       s += `<text x="${(x0 + lead * fs * CELL).toFixed(1)}" y="${(y0 + (i + 0.8) * lh).toFixed(1)}" fill="${INK}" font-size="${fs.toFixed(2)}" font-family="DejaVu Sans Mono, monospace" font-weight="bold" xml:space="preserve">${esc(r.slice(lead))}</text>`;
   });
-  const fc = Math.floor(FRAME.w / (FRAME.fs * CELL)), fr = Math.floor(FRAME.h / FRAME.fs);
-  const fx = 150 - (fc * FRAME.fs * CELL) / 2;
-  const frame = (r: number, str: string) => `<text x="${fx.toFixed(1)}" y="${(FRAME.y + (r + 0.8) * FRAME.fs).toFixed(1)}" fill="${INK}" font-size="${FRAME.fs}" font-family="DejaVu Sans Mono, monospace" xml:space="preserve">${esc(str)}</text>`;
-  s += frame(0, `+${"-".repeat(fc - 2)}+`) + frame(fr - 1, `+${"-".repeat(fc - 2)}+`);
-  for (let r = 1; r < fr - 1; r++) s += frame(r, `|${" ".repeat(fc - 2)}|`);
+  const { s: box, fx } = frame();
+  s += box;
   const cmd = `$ banner "${p.x.join(" ").toLowerCase()}"`;
   s += text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, cmd, Math.min(9, 230 / (0.602 * cmd.length)), { anchor: "start" });
-  return s + caption(338, p.w ?? p.x.join(" "), p.f === "phrase" ? `typed in "${p.p}"` : p.f === "self" ? "typed in its own letters" : `typed in ${p.f}`);
+  const f = p.f ?? "self";
+  return s + caption(338, p.w ?? p.x.join(" "), f === "phrase" ? `typed in "${p.p}"` : f === "self" ? "typed in its own letters" : `typed in ${f}`);
 }
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(asciiBody((spec as { p: AsciiParams }).p), color);
+/**
+ * A picture (`g`): its tones as characters on the same monospace grid, in the same frame, the grid
+ * filling the area (the rows follow from the width: ASCII_ROWS). The ink is the characters, so the
+ * tee decides the ramp's direction (pictureRows). Regular weight: bold dense characters block up.
+ */
+export function asciiPictureBody(p: AsciiParams, color: BaseColor): string {
+  const cols = p.c!;
+  const levels = asciiUnpack(p.g, cols)!;
+  const rows = pictureRows(levels, cols, color);
+  const fs = Math.min(AREA.w / (cols * CELL), AREA.h / (rows.length * 1.02));
+  const lh = fs * 1.02;
+  const x0 = 150 - (cols * fs * CELL) / 2, y0 = AREA.y + (AREA.h - rows.length * lh) / 2;
+  let s = "";
+  rows.forEach((row, i) => {
+    const r = row.replace(/\s+$/, "");
+    const lead = r.length - r.trimStart().length;
+    if (r.trim())
+      s += `<text x="${(x0 + lead * fs * CELL).toFixed(1)}" y="${(y0 + (i + 0.8) * lh).toFixed(1)}" fill="${INK}" font-size="${fs.toFixed(2)}" font-family="DejaVu Sans Mono, monospace" xml:space="preserve">${esc(r.slice(lead))}</text>`;
+  });
+  const { s: box, fx } = frame();
+  s += box + text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, "$ cat picture.txt", 9, { anchor: "start" });
+  const sub = `a picture in ${cols * rows.length} characters`;
+  return s + (p.w ? caption(338, p.w, sub) : text(150, 338, sub, 8));
+}
+
+export const render = (spec: CustomSpec, color: BaseColor) => {
+  const p = (spec as { p: AsciiParams }).p;
+  return wrap(p.g ? asciiPictureBody(p, color) : asciiBody(p), color);
+};

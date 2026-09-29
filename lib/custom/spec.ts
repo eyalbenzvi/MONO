@@ -96,13 +96,21 @@ export interface PlaceParams extends Words {
 }
 export const ASCII_FILLS = ["self", "#", "@", "%", "8", "$", "phrase"] as const;
 export type AsciiFill = (typeof ASCII_FILLS)[number];
-/** Your ASCII: one or two lines of big letters (the pixel font's characters), what they're typed in, a drop shadow. */
+/**
+ * Your ASCII: one or two lines of big letters (the pixel font's characters), what they're typed in, a drop shadow;
+ * or a picture: `x: []` (no letters), its width in characters `c` and its tones `g` (asciiPack), and no f/p/s.
+ */
 export interface AsciiParams extends Words {
   x: string[];
-  f: AsciiFill;
+  /** What the letters are typed in (always with letters, never with a picture). */
+  f?: AsciiFill;
   /** The phrase the letters are typed in (f: "phrase"). */
   p?: string;
   s?: 1;
+  /** A picture's width in characters (ASCII_COLS); its rows are ASCII_ROWS[c]. */
+  c?: AsciiCols;
+  /** A picture's tones, 0 (darkest) to 7, row by row (asciiPack). */
+  g?: string;
 }
 /** Your ASCII: up to this many characters a line, two lines. */
 export const ASCII_MAX = 8;
@@ -112,6 +120,52 @@ export const ASCII_CHARS = /^[A-Z0-9?!.:\-+/ ]$/;
 export const ASCII_PHRASE = /^[\x21-\x7E ]{1,24}$/;
 /** The first character the pixel font can't draw, or null. */
 export const asciiProblem = (line: string) => [...line.toUpperCase()].find((ch) => !ASCII_CHARS.test(ch)) ?? null;
+/** A picture's widths in characters (the Detail choice), and the rows each makes (the print's nearly square area). */
+export const ASCII_COLS = [32, 40, 48] as const;
+export type AsciiCols = (typeof ASCII_COLS)[number];
+export const ASCII_ROWS: Record<AsciiCols, number> = { 32: 18, 40: 22, 48: 27 };
+/** A picture's tones: 0 (darkest) to ASCII_LEVELS − 1 (lightest), three bits a cell. */
+export const ASCII_LEVELS = 8;
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+/** A picture's tones as base64url, two cells a character (the first in the high three bits); rows × cols is always even. */
+export const asciiPack = (levels: readonly number[]) => Array.from({ length: Math.ceil(levels.length / 2) }, (_, i) => B64[(levels[2 * i] << 3) | (levels[2 * i + 1] ?? 0)]).join("");
+/** asciiPack read back for a width: the tones, or null when it isn't exactly that grid's one spelling. */
+export function asciiUnpack(g: unknown, c: unknown): number[] | null {
+  if (!(ASCII_COLS as readonly unknown[]).includes(c) || typeof g !== "string") return null;
+  const n = (c as AsciiCols) * ASCII_ROWS[c as AsciiCols];
+  if (g.length !== n / 2) return null;
+  const out: number[] = [];
+  for (const ch of g) {
+    const v = B64.indexOf(ch);
+    if (v < 0) return null;
+    out.push(v >> 3, v & 7);
+  }
+  return out;
+}
+/** The ink a cell of each tone carries on a black tee (the template's ramp " .:*=%#@", measured); a white tee reads it backwards. */
+const ASCII_TONE_INK = [0, 0.03, 0.06, 0.11, 0.15, 0.21, 0.28, 0.31];
+/**
+ * Why a picture's tones won't print, or null (the gate's verdict, foreseen; thresholds from the fuzz in
+ * tests/make/ascii.test.ts): nearly one tone (or two neighbouring ones), or too little ink on one of the tees (the ink is the characters:
+ * light tones on a black tee, dark ones on a white one), or little ink in big even areas (a flat print).
+ */
+export function asciiPictureProblem(levels: readonly number[], cols: number): string | null {
+  const n = levels.length, top = ASCII_LEVELS - 1;
+  const count = Array<number>(ASCII_LEVELS).fill(0);
+  let onBlack = 0, onWhite = 0, change = 0;
+  levels.forEach((l, i) => {
+    count[l]++;
+    onBlack += ASCII_TONE_INK[l];
+    onWhite += ASCII_TONE_INK[top - l];
+    if (i % cols < cols - 1 && l !== levels[i + 1]) change++;
+    if (i + cols < n && l !== levels[i + cols]) change++;
+  });
+  const ink = Math.min(onBlack, onWhite) / n;
+  // One tone, or a haze of two neighbouring ones (a fog, a blank wall).
+  if (Math.max(...count) > 0.8 * n || count.some((k, l) => k + (count[l + 1] ?? 0) > 0.92 * n)) return "The picture is nearly one tone. Try one with more light and shade.";
+  if (ink < 0.06 || (ink < 0.09 && change < 0.16 * n)) return `The picture is nearly all ${onBlack < onWhite ? "dark" : "light"}. Try a closer crop, or another picture.`;
+  return null;
+}
 
 export type CustomSpec =
   | { t: "sky"; v: 1; p: SkyParams }
@@ -259,6 +313,13 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     return { t: "place", v: 1, p: { la: p.la as number, lo: p.lo as number, ...(p.d !== undefined ? { d: p.d as string } : {}), ...(p.c !== undefined ? { c: p.c as number } : {}), ...words } };
   }
   if (spec.t === "ascii") {
+    // A picture: no letters (x: [] exactly), a width and its tones; nothing that belongs to letters.
+    if (p.g !== undefined || p.c !== undefined) {
+      if (!Array.isArray(p.x) || p.x.length || p.f !== undefined || p.p !== undefined || p.s !== undefined) return null;
+      const levels = asciiUnpack(p.g, p.c);
+      if (!levels || asciiPictureProblem(levels, p.c as AsciiCols)) return null;
+      return { t: "ascii", v: 1, p: { x: [], c: p.c as AsciiCols, g: p.g as string, ...words } };
+    }
     if (!Array.isArray(p.x) || p.x.length < 1 || p.x.length > 2) return null;
     const lines = p.x.map((l) => (typeof l === "string" ? l.toUpperCase().trim() : ""));
     if (lines.some((l) => !l || l.length > ASCII_MAX || asciiProblem(l)) || !lines.some((l) => /[A-Z0-9]/.test(l))) return null;
@@ -437,7 +498,7 @@ function customDetail(spec: CustomSpec): string {
     case "place":
       return spec.p.w ?? coords(spec.p.la, spec.p.lo);
     case "ascii":
-      return spec.p.x.join(" ");
+      return spec.p.g ? (spec.p.w ?? "A picture") : spec.p.x.join(" ");
     case "sky":
     case "moon":
     case "night":
