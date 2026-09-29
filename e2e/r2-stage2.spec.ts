@@ -41,7 +41,7 @@ test.describe("Discover stays minimal (R01, R03, R14, R16, I02, I06, F01)", () =
     await page.goto("");
     await hydrated(page);
     await tenSwipes(page);
-    const dialog = page.getByRole("dialog", { name: /You're/ });
+    const dialog = page.getByRole("dialog", { name: /You’re/ });
     await expect(dialog).toBeVisible();
     await page.waitForTimeout(900);
     const fits = await dialog.evaluate((d) => d.scrollHeight <= d.clientHeight + 1 && d.getBoundingClientRect().top >= 0 && d.getBoundingClientRect().bottom <= innerHeight + 1);

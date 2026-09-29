@@ -6,7 +6,7 @@ import { drawing } from "./fixtures/uploads";
 // Make and From yours draw and convert on the device: slow when the suite runs four at once.
 test.describe.configure({ timeout: 120_000 });
 
-const night = (d: string) => `make/night/?make=${make({ t: "night", v: 1, p: { d } })}`;
+const night = (d: string) => `make/moon/?make=${make({ t: "night", v: 1, p: { d } })}`;
 /** The phone's buy bar on a Make page. */
 const buy = (page: Page) => page.locator("div.sticky button").filter({ hasText: /Add|Save|Choose|Added/ });
 const cartItems = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("mono-cart") ?? "{}").state?.cart ?? []) as { size: string; qty: number; color: string; upload?: { id: string } }[]);
@@ -28,7 +28,7 @@ test("B1: Edit from the bag replaces the Make line and keeps its quantity", asyn
   await page.goto("cart/");
   await hydrated(page);
   await page.getByRole("link", { name: "Edit" }).first().tap();
-  await expect(page).toHaveURL(/\/make\/night\/\?make=.*&edit=/);
+  await expect(page).toHaveURL(/\/make\/moon\/\?make=.*&edit=/);
   await expect(buy(page)).toHaveText(/^Save changes · M · \$75$/, { timeout: 20_000 });
   await page.getByRole("radio", { name: /^L\b/ }).first().tap();
   await expect(buy(page)).toHaveText(/^Save changes · L · \$75$/);
@@ -41,12 +41,12 @@ test("B1: Edit from the bag replaces the Make line and keeps its quantity", asyn
 test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout shows each one's own picture", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await page.goto(`make/night/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "First" } })}`);
+  await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "First" } })}`);
   await hydrated(page);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   await buy(page).tap();
-  await page.goto(`make/night/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Second" } })}`);
+  await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Second" } })}`);
   await hydrated(page);
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   await buy(page).tap();

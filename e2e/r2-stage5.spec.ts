@@ -82,7 +82,7 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
     await seed(page, { likedIds: [B9, B1, B2, B3], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
-    const section = page.locator("section", { has: page.getByRole("heading", { name: "From your Saved" }) });
+    const section = page.locator("section", { has: page.getByRole("heading", { name: "Picked for you" }) });
     await expect(section).toBeVisible();
     await expect(section.locator('a[href*="/shop/mono-"]')).toHaveCount(3);
     await expect(section.getByRole("button", { name: /^Quick add|^Add / })).toHaveCount(3);

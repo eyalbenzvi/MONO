@@ -36,7 +36,7 @@ test("R12 / T1: with a mouse, a card's heart shows on hover only; no quick add",
 test("R30: on a product 404 the Shop tab is readable (black on the white pill)", async ({ page }) => {
   await page.goto("shop/mono-9999/");
   await page.waitForTimeout(1500);
-  await expect(page.getByRole("heading", { name: /isn't in the drop/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /isn’t in the drop/ })).toBeVisible();
   const color = await page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "Shop" }).evaluate((a) => getComputedStyle(a).color);
   expect(color).toBe("rgb(0, 0, 0)");
 });

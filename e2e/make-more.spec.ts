@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import { hydrated } from "./helpers";
 import { MADE, MAKE_GROUPS } from "../lib/custom/products";
 import { EXTRA } from "../lib/custom/specs";
+import { make } from "./fixtures/custom";
+
+/** Products whose fields start empty (M12): the stage shows the example until something is typed. */
+const EMPTY = new Set(["family", "metro", "orbits", "weeks", "island", "rings", "crossword", "snowflake", "qr"]);
 
 /** The later products that ship (lib/custom/products SHIPPED): each is its own template. */
 const LATER = MADE.filter((m) => Object.hasOwn(EXTRA, m.template));
@@ -61,6 +65,15 @@ for (const m of LATER)
     await page.goto(`make/${m.slug}/`);
     await hydrated(page);
     await expect(page.locator("h1")).toHaveText(m.name);
+    // The example is on the stage from the start.
+    await expect(page.locator("canvas[data-custom]").first()).toBeVisible();
+    if (EMPTY.has(m.slug)) {
+      // Empty fields: the example only shows (the address carries nothing, and nothing is on offer yet); a link with the print fills them.
+      await page.waitForTimeout(1000);
+      await expect(page).not.toHaveURL(/[?&]make=/);
+      await page.goto(`make/${m.slug}/?make=${make(m.example)}`);
+      await hydrated(page);
+    }
     // Drawn, checked (the address carries the print only once it passes), no problem line.
     await expect(page.locator("canvas[data-custom]").first()).toBeVisible();
     await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });

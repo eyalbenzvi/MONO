@@ -49,12 +49,9 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page).toHaveURL(/\/make\/yours\/$/);
   await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
   // Every tile shows the converter's own before and after, never an empty box.
-  for (const kind of ["photo", "words", "link"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
-  // A link opens Your Link (a QR code drawn from the address, not a file); Back returns here.
-  await page.locator('[data-tile="link"]').tap();
-  await expect(page).toHaveURL(/\/make\/qr\/$/);
-  await page.goBack();
-  await expect(page).toHaveURL(/\/make\/yours\/$/);
+  for (const kind of ["photo", "words"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
+  // No link tile: Your Link lives in From ours.
+  await expect(page.locator('[data-tile="link"]')).toHaveCount(0);
   await page.goBack();
   await expect(page).toHaveURL(/\/shop\/$/);
 });
@@ -127,7 +124,7 @@ test("From yours: big enough for Small, not Full — it goes to Small and says s
   await hydrated(page);
   await choose(page, "medium.png", await mediumPhoto());
   await ready(page);
-  await expect(page.getByText("Big enough for Small, not Full. We’ve set Small.")).toBeVisible();
+  await expect(page.locator("p:not(.sr-only)", { hasText: "Big enough for Small, not Full. We’ve set Small." })).toBeVisible();
   await expect(page.getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Full/ })).toHaveCount(0, { timeout: 25_000 });
 });

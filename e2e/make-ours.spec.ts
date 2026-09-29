@@ -134,7 +134,7 @@ test("Your Taste Plant: a friend's taste that came with the visit can be grown i
   await hydrated(page);
   await drawn(page);
   const mine = new URL(page.url()).searchParams.get("make");
-  await page.getByRole("button", { name: "Grow your friend's instead" }).tap();
+  await page.getByRole("button", { name: "Grow your friend’s instead" }).tap();
   await expect(page.getByText("Grown from your friend's taste.")).toBeVisible();
   await expect.poll(() => new URL(page.url()).searchParams.get("make")).not.toBe(mine);
   await page.getByRole("button", { name: "Grow yours instead" }).tap();

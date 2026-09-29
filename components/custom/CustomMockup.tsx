@@ -86,9 +86,21 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
         const dpr = Math.min(width < 300 ? 2 : 3, window.devicePixelRatio || 1);
         const w = Math.round(width * dpr);
         const h = Math.round(w / MODEL_ASPECT);
-        canvas.width = w;
-        canvas.height = h;
-        drawMockup(canvas.getContext("2d")!, w, h, photo, svg, model.box, color);
+        const ctx = canvas.getContext("2d")!;
+        if (crop) {
+          // The chest crop: the canvas is only the window (so a grid of cards costs what it did uncropped); the picture is drawn larger behind it.
+          const c = chestCrop(model.box);
+          const [W, H] = [w / c.w, w / c.w / MODEL_ASPECT];
+          canvas.width = w;
+          canvas.height = Math.round((w * 4) / 3);
+          ctx.setTransform(1, 0, 0, 1, -c.x * W, -c.y * H);
+          drawMockup(ctx, W, H, photo, svg, model.box, color);
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else {
+          canvas.width = w;
+          canvas.height = h;
+          drawMockup(ctx, w, h, photo, svg, model.box, color);
+        }
         setDrawn(true);
         onRender?.(performance.now() - t);
       })
@@ -98,7 +110,7 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
     };
     // onRender is a report, not an input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [svg, fontsIn, width, model, color]);
+  }, [svg, fontsIn, width, model, color, crop]);
 
   useEffect(() => {
     const canvas = detailRef.current;
@@ -117,16 +129,14 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
 
   const base = mockupImage(shirt, color);
   const box = model?.box;
-  // Cropped: the whole picture drawn larger inside a 3:4 window on the chest (the canvas is the picture's, measured from its own box).
+  // Cropped: a 3:4 window on the chest. The baked stand-in is the whole picture, larger, behind it; the canvas draws only the window.
   const c = crop && box ? chestCrop(box) : null;
   const picture = (
     <div
-      ref={wrapRef}
       className="absolute"
       style={c ? { left: `${(-c.x / c.w) * 100}%`, top: `${(-c.y / c.h) * 100}%`, width: `${100 / c.w}%`, height: `${100 / c.h}%` } : { inset: 0 }}
     >
       {!drawn && <img src={base.src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />}
-      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" data-mockup data-custom />
       {zoomed && box && (
         <canvas
           ref={detailRef}
@@ -139,6 +149,7 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
   );
   return (
     <div
+      ref={wrapRef}
       className={`relative select-none overflow-hidden ${className}`}
       style={{ aspectRatio: c ? "3 / 4" : `${MODEL_ASPECT}`, ...style }}
       role="img"
@@ -146,6 +157,7 @@ export function CustomMockup({ shirt, svg, color: wanted, className = "", style,
       {...(c ? { "data-crop": "chest" } : {})}
     >
       {picture}
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" data-mockup data-custom />
     </div>
   );
 }

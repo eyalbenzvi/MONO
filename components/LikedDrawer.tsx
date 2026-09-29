@@ -269,6 +269,8 @@ function SavedRow({
   const tier = vector ? tierOf(vector, matchScore(vector, shirt.features)) : null;
   // Which way the row is going, and whether far enough to act.
   const x = useMotionValue(0);
+  // A drag that ends over a link isn't a tap on it.
+  const dragged = useRef(false);
   const [pull, setPull] = useState<{ dir: "add" | "remove" | null; armed: boolean }>({ dir: null, armed: false });
   useMotionValueEvent(x, "change", (v) => {
     const dir = v > 4 ? "add" : v < -4 ? "remove" : null;
@@ -312,18 +314,28 @@ function SavedRow({
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.7}
         dragDirectionLock
+        onDragStart={() => (dragged.current = true)}
+        onClickCapture={(e) => {
+          if (!dragged.current) return;
+          dragged.current = false;
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         onDragEnd={(_, info) => {
+          // The click (if any) comes right after; forget the drag once it has passed.
+          setTimeout(() => (dragged.current = false), 300);
           if (info.offset.x < -SWIPE_AT || info.velocity.x < -FLICK) onRemove();
           else if (info.offset.x > SWIPE_AT || info.velocity.x > FLICK) add();
         }}
         className="relative flex items-center gap-3 rounded-2xl bg-ink-850 p-2 ring-1 ring-white/10"
       >
-        <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
-          <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="w-full" />
+        {/* The links never start the browser's own drag (a mouse swipe would become a link being dragged). */}
+        <Link tabIndex={-1} aria-hidden href={productHref(shirt.id)} onClick={onNavigate} draggable={false} className={`w-14 shrink-0 rounded-xl p-1 ${STAGE_BG}`}>
+          <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="pointer-events-none w-full" />
         </Link>
         {/* Name and match, then remove (swipe left works too; swipe right adds to the bag). */}
         <div className="min-w-0 flex-1">
-          <Link href={productHref(shirt.id)} onClick={onNavigate} className="block py-0.5">
+          <Link href={productHref(shirt.id)} onClick={onNavigate} draggable={false} className="block py-0.5">
             <p className="truncate text-sm font-semibold max-[339px]:line-clamp-2 max-[339px]:whitespace-normal">{shirt.title}</p>
             <p className="truncate text-xs text-neutral-400">{tier ? TIER_LABEL[tier] : CATEGORY_LABELS[shirt.category]}</p>
           </Link>

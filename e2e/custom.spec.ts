@@ -23,7 +23,7 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(cards);
   // Each card says what it takes (Your Taste's, what the swipes have made of it).
   const lines = await page.locator('[data-from="ours"] li:not(:has([data-for-two])) p').allTextContents();
-  MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
+  MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Ten swipes first$|^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);
   await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);

@@ -35,7 +35,7 @@ test("Your Night Sky by keyboard: words, date, time, the place combobox (arrows,
   await expect(page).toHaveURL(/[?&]make=/);
   await page.getByRole("radio", { name: /^L\b/ }).first().click();
   await page.getByRole("button", { name: /^Add to bag · L · \$75$/ }).click();
-  await expect(page.getByRole("button", { name: "Added · View bag" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   expect([...problems, ...(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? []))]).toEqual([]);
 });
 

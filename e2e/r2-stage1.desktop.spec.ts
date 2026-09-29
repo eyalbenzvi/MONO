@@ -10,7 +10,7 @@ async function swipeTen(page: Page) {
     await page.keyboard.press(i % 2 ? "ArrowLeft" : "ArrowRight");
     await page.waitForTimeout(420);
   }
-  await expect(page.getByRole("dialog", { name: /You're/ })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /You’re/ })).toBeVisible();
 }
 
 test.describe("R24: keys right after the taste-test screen closes", () => {
@@ -32,7 +32,7 @@ test.describe("R24: keys right after the taste-test screen closes", () => {
     const s = await storedTaste(page);
     expect(s.seen.length).toBe(10);
     expect(s.calibrationAcknowledged).toBe(true);
-    await expect(page.getByRole("dialog", { name: /You're/ })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: /You’re/ })).toHaveCount(0);
   });
 });
 
