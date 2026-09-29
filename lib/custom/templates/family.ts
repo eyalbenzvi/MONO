@@ -9,7 +9,7 @@
  * smaller line. A ring shares one size, the largest its longest name allows.
  * Blank slots are hatched. A double rule and a ring of ticks close it.
  */
-import { INK, caption, circle, f1, text } from "../kit";
+import { INK, arcText as arcTextKit, caption, circle, f1, text } from "../kit";
 import type { CustomSpec } from "../spec";
 import { familyYears, yearsText, type Params } from "../specs/family";
 import { wrap } from "../svg";
@@ -22,32 +22,14 @@ const DEG = Math.PI / 180;
 const HATCH_GAP = 2.7, HATCH_W = 0.5;
 
 const pt = (r: number, a: number): [number, number] => [CX + r * Math.sin(a * DEG), CY - r * Math.cos(a * DEG)];
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Ring edges from the centre out: the middle disc, then one ring a generation (the outer rings deeper, they carry two lines on shorter arcs). */
 function radii(gens: number): number[] {
   return gens === 4 ? [0, 31, 60, 90, R] : [0, 36, 76, R];
 }
 
-/**
- * Letters along a circle of radius r, centred on angle `mid`: each glyph a
- * rotated group. `up`: the letters' tops face outwards (the upper half); else
- * inwards, set the other way round, so the lower half reads left to right too.
- */
-function arcText(s: string, r: number, mid: number, size: number, up: boolean, bold = false): string {
-  const chars = [...s];
-  const step = ((ADV + TRACK) * size) / r / DEG;
-  let out = "";
-  chars.forEach((ch, i) => {
-    if (ch === " ") return;
-    const off = (i - (chars.length - 1) / 2) * step;
-    const a = up ? mid + off : mid - off;
-    const [x, y] = pt(r, a);
-    const rot = up ? a : a + 180;
-    out += `<g transform="rotate(${f1(rot)} ${f1(x)} ${f1(y)})"><text x="${f1(x)}" y="${f1(y + 0.35 * size)}" fill="${INK}" font-size="${f1(size)}" font-family="DejaVu Sans Mono, monospace" text-anchor="middle"${bold ? ` font-weight="bold"` : ""}>${esc(ch)}</text></g>`;
-  });
-  return out;
-}
+/** Letters along a ring of the chart (lib/custom/kit arcText, centred on the chart). */
+const arcText = (s: string, r: number, mid: number, size: number, up: boolean, bold = false) => arcTextKit(s, CX, CY, r, mid, size, up, { bold });
 
 /** The angle (degrees) a line of n letters takes at radius r. */
 const span = (n: number, size: number, r: number) => (n * (ADV + TRACK) * size) / r / DEG;

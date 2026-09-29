@@ -67,6 +67,46 @@ export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" |
   return em * size + chars.length * (opts.spacing ?? 0);
 }
 
+/** The air arcText adds between letters, em. */
+export const ARC_TRACK = 0.08;
+/**
+ * Letters along a circle (centre cx, cy; radius r) centred on angle `mid`
+ * (degrees, clockwise from the top): each glyph a rotated group, as the
+ * canvas preview draws no textPath. `up`: the letters' tops face outwards
+ * (the upper half); else inwards and set the other way round, so the lower
+ * half reads left to right too. Monospace letters step evenly; another
+ * family steps by each glyph's own advance.
+ */
+export function arcText(s: string, cx: number, cy: number, r: number, mid: number, size: number, up: boolean, opts: { bold?: boolean; family?: Family; track?: number } = {}): string {
+  const chars = [...s];
+  const track = opts.track ?? ARC_TRACK;
+  const family = opts.family ?? "mono";
+  // Each letter's centre along the arc, degrees from the line's middle.
+  let offs: number[];
+  if (family === "mono") {
+    const step = ((MONO_ADVANCE + track) * size) / r / DEG;
+    offs = chars.map((_, i) => (i - (chars.length - 1) / 2) * step);
+  } else {
+    const w = chars.map((ch) => textWidth(ch, size, { family, bold: opts.bold }) + track * size);
+    const total = w.reduce((a, b) => a + b, 0);
+    let at = -total / 2;
+    offs = w.map((wi) => {
+      const c = at + wi / 2;
+      at += wi;
+      return c / r / DEG;
+    });
+  }
+  let out = "";
+  chars.forEach((ch, i) => {
+    if (ch === " ") return;
+    const a = up ? mid + offs[i] : mid - offs[i];
+    const [x, y] = [cx + r * Math.sin(a * DEG), cy - r * Math.cos(a * DEG)];
+    const rot = up ? a : a + 180;
+    out += `<g transform="rotate(${f1(rot)} ${f1(x)} ${f1(y)})"><text x="${f1(x)}" y="${f1(y + 0.35 * size)}" fill="${INK}" font-size="${f1(size)}" font-family="${FONT_FAMILY[family]}" text-anchor="middle"${opts.bold ? ` font-weight="bold"` : ""}>${esc(ch)}</text></g>`;
+  });
+  return out;
+}
+
 /** A polyline as path data (one decimal). */
 export function polyline(points: [number, number][], close = false): string {
   let d = "";
