@@ -46,10 +46,13 @@ test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout s
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   await buy(page).tap();
+  // The add is confirmed before the page is left.
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Second" } })}`);
   await hydrated(page);
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   await buy(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   await page.goto("cart/");
   await hydrated(page);
   await expect(page.getByText("Your Moon · 19 November 2021 · First")).toBeVisible();
