@@ -167,7 +167,13 @@ export function MakeView({ slug }: { slug: string }) {
     (spec: CustomSpec, color: BaseColor): Shown | null => {
       if (!renderer) return null;
       const start = performance.now();
-      const svg = renderer(spec, color, state.data ?? {});
+      let svg: string;
+      try {
+        svg = renderer(spec, color, state.data ?? {});
+      } catch {
+        // Its data isn't in yet (the example sky before the editor has its place): drawn when it is.
+        return null;
+      }
       const check = checkPrint(inkFromCanvas(svg, color), made.hints);
       if (performance.now() - start > 100) slow.current = true;
       const next = { spec, svg, color, check, other: null };
@@ -191,7 +197,12 @@ export function MakeView({ slug }: { slug: string }) {
     if (!shown || shown.other !== null || !shown.check.ok || !renderer || !shirt || shirt.colors.length < 2) return;
     const t = setTimeout(() => {
       const c = otherColor(shown.color);
-      const otherSvg = renderer(shown.spec, c, state.data ?? {});
+      let otherSvg: string;
+      try {
+        otherSvg = renderer(shown.spec, c, state.data ?? {});
+      } catch {
+        return;
+      }
       const ok = checkPrint(inkFromCanvas(otherSvg, c), made.hints).ok;
       setShown((s) => (s === shown ? { ...s, other: ok, otherSvg } : s));
     }, 250);
