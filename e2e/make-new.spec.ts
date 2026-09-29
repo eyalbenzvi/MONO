@@ -22,6 +22,22 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-telegram-message")).toHaveValue("Landed. All well. Bring the good umbrella."),
   },
+  {
+    slug: "editions",
+    fill: async (page) => {
+      await page.locator("#make-editions-n0").fill("Dana");
+      await page.locator("#make-editions-y0").fill("1978");
+      await page.locator("#make-editions-n1").fill("Avi");
+      await page.getByRole("button", { name: "Add an edition" }).tap();
+      await page.locator("#make-editions-n2").fill("Maya");
+      await page.locator("#make-editions-role").fill("Grandpa");
+      await page.locator("#make-editions-est").fill("1952");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-editions-n2")).toHaveValue("Maya");
+      await expect(page.locator("#make-editions-est")).toHaveValue("1952");
+    },
+  },
 ];
 
 for (const c of CASES)

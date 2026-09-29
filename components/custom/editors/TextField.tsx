@@ -39,3 +39,12 @@ export function TextField({ id, label, hint, state, max, placeholder, rows }: { 
 
 /** Whether a set of text states can print (each fine, and the lexicon here when any has words). */
 export const allOk = (lex: Lexicon | null, ...states: TextState[]) => states.every((s) => s.ok) && (!!lex || states.every((s) => !s.text.trim()));
+
+/** One printed text (a cell in a row), checked as useText checks a field: the text to print (undefined empty, null bad) and why. */
+export function checkText(text: string, max: number, lex: Lexicon | null): { value: string | null | undefined; error: string | null } {
+  if (!text.trim()) return { value: undefined, error: null };
+  const clean = cleanWords(text, max);
+  const refused = clean && lex ? lex.wordsProblem(clean) : null;
+  const bad = unprintable(text);
+  return { value: clean && lex && !refused ? clean : null, error: refused ?? (bad ? charLine(bad) : !clean ? upTo(max) : null) };
+}

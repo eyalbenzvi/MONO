@@ -57,7 +57,7 @@ const ORDER = ["sky", "moon", "planets", "year", "code", "ascii", "place", "hous
  * template, its entry in its spec module, lib/custom/specs). A product
  * built but not listed here has no page.
  */
-const SHIPPED: ExtraId[] = ["family", "musicbox", "elements", "automaton", "weeks", "maze", "rings", "tartan", "journey", "chess", "snowflake", "metro", "crossword", "orbits", "julia", "monogram", "route", "island", "qr", "telegram"];
+const SHIPPED: ExtraId[] = ["family", "musicbox", "elements", "automaton", "weeks", "maze", "rings", "tartan", "journey", "chess", "snowflake", "metro", "crossword", "orbits", "julia", "monogram", "route", "island", "qr", "telegram", "editions"];
 
 const LIST: MadeProduct[] = [
   {

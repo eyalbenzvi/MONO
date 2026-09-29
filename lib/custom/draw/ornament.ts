@@ -85,3 +85,49 @@ export function rosette(o: Rosette): string {
   }
   return body + `<circle cx="${cx}" cy="${cy}" r="4" fill="${INK}"/>`;
 }
+
+/** A point on a rounded rectangle's centre line at arc length s, and its outward normal. */
+function roundRectAt(x0: number, y0: number, x1: number, y1: number, r: number, s: number): [number, number, number, number] {
+  const w = x1 - x0 - 2 * r, h = y1 - y0 - 2 * r, q = (Math.PI / 2) * r;
+  const segs: ((t: number) => [number, number, number, number])[] = [
+    (t) => [x0 + r + t, y0, 0, -1],
+    (t) => { const a = -Math.PI / 2 + t / r; return [x1 - r + r * Math.cos(a), y0 + r + r * Math.sin(a), Math.cos(a), Math.sin(a)]; },
+    (t) => [x1, y0 + r + t, 1, 0],
+    (t) => { const a = t / r; return [x1 - r + r * Math.cos(a), y1 - r + r * Math.sin(a), Math.cos(a), Math.sin(a)]; },
+    (t) => [x1 - r - t, y1, 0, 1],
+    (t) => { const a = Math.PI / 2 + t / r; return [x0 + r + r * Math.cos(a), y1 - r + r * Math.sin(a), Math.cos(a), Math.sin(a)]; },
+    (t) => [x0, y1 - r - t, -1, 0],
+    (t) => { const a = Math.PI + t / r; return [x0 + r + r * Math.cos(a), y0 + r + r * Math.sin(a), Math.cos(a), Math.sin(a)]; },
+  ];
+  const lens = [w, q, h, q, w, q, h, q];
+  for (let i = 0; i < 8; i++) {
+    if (s <= lens[i] || i === 7) return segs[i](Math.min(s, lens[i]));
+    s -= lens[i];
+  }
+  return segs[0](0);
+}
+
+/**
+ * A guilloche border: phase-shifted waves run round a rounded rectangle (the
+ * band's centre line), as a banknote's or a certificate's frame is cut, a
+ * whole number of waves round so the ends meet. One hairline path.
+ */
+export function guillocheFrame(o: { x0: number; y0: number; x1: number; y1: number; r: number; band: number; wave: number; strands: number; width?: number }): string {
+  const { x0, y0, x1, y1, r, band, strands } = o;
+  const per = 2 * (x1 - x0 - 2 * r) + 2 * (y1 - y0 - 2 * r) + 2 * Math.PI * r;
+  const waves = Math.max(8, Math.round(per / o.wave));
+  const steps = waves * 12;
+  let d = "";
+  for (let k = 0; k < strands; k++) {
+    const ph = (k / strands) * Math.PI * 2;
+    const pts: Point[] = [];
+    for (let i = 0; i < steps; i++) {
+      const s = (i / steps) * per;
+      const [x, y, nx, ny] = roundRectAt(x0, y0, x1, y1, r, s);
+      const off = (band / 2) * Math.sin((s / per) * waves * Math.PI * 2 + ph);
+      pts.push([x + nx * off, y + ny * off]);
+    }
+    d += polyline(pts) + "Z";
+  }
+  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${o.width ?? 0.5}"/>`;
+}
