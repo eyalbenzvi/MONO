@@ -2,21 +2,15 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { formatPrice } from "@/lib/format";
-import { STORE_POLICY } from "@/lib/store-policy";
 
 /**
  * The top of both Make pages: the switch between the two tracks (links
  * that replace the history entry, so Back leaves Make rather than
- * toggling), then the track's line and its filter. The H1 is for screen
+ * toggling), with the track's filter beside it. The H1 is for screen
  * readers only: the header's Make tab already says where this is. From
  * ours is /make/, from yours /make/yours/.
  */
 export function MakeHeader({ track, filter }: { track: "ours" | "yours"; filter?: ReactNode }) {
-  const line =
-    track === "ours"
-      ? `Our designs, from one thing of yours. ${formatPrice(STORE_POLICY.customPrice)}, or ${formatPrice(STORE_POLICY.customPairPrice)} the pair.`
-      : `Your picture, drawing or words, in one ink. ${formatPrice(STORE_POLICY.customPrice)}.`;
   const tab = (t: "ours" | "yours", label: string, href: string) => (
     <Link
       href={href}
@@ -30,13 +24,12 @@ export function MakeHeader({ track, filter }: { track: "ours" | "yours"; filter?
   return (
     <div>
       <h1 className="sr-only">Make</h1>
-      <nav aria-label="Make" className="flex w-full gap-1 rounded-full bg-white/[0.06] p-1 ring-1 ring-white/10 sm:max-w-xs" data-make-switch>
-        {tab("ours", "From ours", "/make/")}
-        {tab("yours", "From yours", "/make/yours/")}
-      </nav>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="max-w-xl text-sm text-neutral-400">{line}</p>
-        {filter}
+      <div className="flex items-center gap-3">
+        <nav aria-label="Make" className="flex min-w-0 flex-1 gap-1 rounded-full bg-white/[0.06] p-1 ring-1 ring-white/10 sm:max-w-xs sm:flex-none sm:basis-80" data-make-switch>
+          {tab("ours", "From ours", "/make/")}
+          {tab("yours", "From yours", "/make/yours/")}
+        </nav>
+        {filter && <div className="ml-auto">{filter}</div>}
       </div>
     </div>
   );
