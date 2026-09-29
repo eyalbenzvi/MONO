@@ -142,12 +142,18 @@ test("the later products: the canvas draws each example as the browser draws its
         const pb = b.getContext("2d")!.getImageData(0, 0, W, H).data;
         let sum = 0;
         for (let i = 0; i < pa.length; i += 4) sum += Math.abs(pa[i] - pb[i]);
-        out.push([`${m.slug}-${color}`, sum / ((pa.length / 4) * 255), svg.length]);
+        let ink = 0;
+        for (let i = 0; i < pb.length; i += 4) ink += color === "black" ? pb[i] : 255 - pb[i];
+        out.push([`${m.slug}-${color}`, sum / ((pa.length / 4) * 255), ink / ((pb.length / 4) * 255)]);
       }
     return out;
   });
   console.log(`later products, canvas vs SVG image: ${diffs.map(([n, d]) => `${n} ${(d * 100).toFixed(2)}%`).join(", ")}`);
-  for (const [n, d] of diffs) expect(d, n).toBeLessThan(0.02);
+  for (const [n, d, ink] of diffs) {
+    expect(d, n).toBeLessThan(0.02);
+    // The print was drawn (not an empty ground on both sides).
+    expect(ink, n).toBeGreaterThan(0.01);
+  }
 });
 
 test("M4: a sky print renders (SVG and picture) in well under 100 ms at 4× CPU throttling", async ({ page }) => {
