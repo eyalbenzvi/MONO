@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { UNITS, WORDS_MAX, cleanWords, parseClock, type CustomSpec, type Face } from "@/lib/custom/spec";
 import { Field, nameLine, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const OTHER = "other";
@@ -39,12 +40,7 @@ export default function NumberEditor({ arrival, touched, onChange }: EditorProps
   const f: Face = isTime ? face : "dial";
   const spec: CustomSpec | null = v !== null && lex && !unitError && !labelError && l !== null ? { t: "number", v: 1, p: { v, u, ...(l ? { l } : {}), face: f } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

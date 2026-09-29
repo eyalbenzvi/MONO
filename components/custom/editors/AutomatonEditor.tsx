@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { AUTOMATON_MAX, AUTOMATON_RULES, PRODUCT, automatonWordProblem, type Params } from "@/lib/custom/specs/automaton";
 import { Field, useLexicon } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Automaton: the word (its ASCII bits are the first row), the rule, dots or squares. */
@@ -22,12 +23,7 @@ export default function AutomatonEditor({ made, arrival, touched, onChange }: Ed
   const error = !x ? (touched ? "Type a name or a word" : null) : (problem ?? refused);
   const spec: CustomSpec | null = x && !error && lex ? { t: "automaton", v: 1, p: { x, r: rule, ...(squares ? { s: 1 as const } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

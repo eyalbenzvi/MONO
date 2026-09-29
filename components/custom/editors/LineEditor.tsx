@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import { LINE_REPEATS, decodeStroke, type CustomSpec, type LineParams } from "@/lib/custom/spec";
 import { EXAMPLE_LINES, exampleStroke, strokeSpec } from "@/lib/custom/stroke";
 import { WordsField, useWords } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import type { EditorProps } from "./types";
 
 /** How many points a drawn line had, in bands (analytics: how people draw, never what). */
@@ -28,12 +29,7 @@ export default function LineEditor({ made, arrival, onChange }: EditorProps) {
 
   const w = words.value;
   const spec: CustomSpec | null = s && w !== null ? { t: "line", v: 1, p: { s, n, ...(mirror ? { m: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const at = (e: React.PointerEvent): [number, number] => {
     const r = pad.current!.getBoundingClientRect();

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { ELEMENTS_LEN, PRODUCT, elementsWordProblem } from "@/lib/custom/specs/elements";
 import { missing, nearestSpellable, spellable } from "@/lib/custom/draw/elementsSpell";
 import { Field, useLexicon } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const cap = (s: string) => s[0] + s.slice(1).toLowerCase();
@@ -30,12 +31,7 @@ export default function ElementsEditor({ made, arrival, touched, onChange }: Edi
   const error = !x ? (touched ? "Type a name or a word" : null) : (problem ?? refused ?? unspelt);
   const spec: CustomSpec | null = x && !error && lex ? { t: "elements", v: 1, p: { x } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <Field label="Your name" hint={`${ELEMENTS_LEN[0]} to ${ELEMENTS_LEN[1]} letters, one word`} error={error} htmlFor="make-elements-name">

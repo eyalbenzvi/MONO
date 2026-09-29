@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { LINE_MAX, METRO_LINES, METRO_STATIONS, PRODUCT, STATION_MAX, metroProblem } from "@/lib/custom/specs/metro";
 import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
@@ -44,12 +45,7 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
       ? { t: "metro", v: 1, p: { l: lines.map((l) => cleanWords(l, LINE_MAX)!), s: stations.map((s) => cleanWords(s.name, STATION_MAX)!), k: masks, ...(w ? { w } : {}) } }
       : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const setStation = (j: number, s: Partial<Station>) => setStations((xs) => xs.map((x, i) => (i === j ? { ...x, ...s } : x)));
   const removeLine = (i: number) => {

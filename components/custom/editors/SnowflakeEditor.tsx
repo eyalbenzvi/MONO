@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { SNOWFLAKE_MAX } from "@/lib/custom/specs/snowflake";
 import { Field, nameLine, useLexicon } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Snowflake: the name the crystal grows from (and is printed under it). */
@@ -16,12 +17,7 @@ export default function SnowflakeEditor({ made, arrival, touched, onChange }: Ed
   const error = !name.trim() ? (touched ? "Type a name" : null) : !n ? nameLine(name, SNOWFLAKE_MAX) : refused;
   const spec: CustomSpec | null = n && lex && !refused ? { t: "snowflake", v: 1, p: { n } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <Field label="A name" error={error} htmlFor="make-snowflake-name">

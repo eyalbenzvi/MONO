@@ -12,6 +12,7 @@ import { assetUrl, getShirtById } from "@/lib/catalog";
 import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "@/lib/custom/makeCards";
 import { MADE, MAKE_GROUPS, madeBySlug, type MakeGroup, type MadeProduct } from "@/lib/custom/products";
 import type { CustomSpec } from "@/lib/custom/spec";
+import { updateQuery } from "@/lib/url";
 import { SIZES } from "@/lib/images";
 
 /** Your Taste's card, drawn from the visitor's own taste once it's known (its store loads apart from this page). */
@@ -42,11 +43,7 @@ export function MakeIndex() {
   useEffect(() => setGroups(groupsFrom(window.location.search)), []);
   const choose = (next: MakeGroup[]) => {
     setGroups(next);
-    const q = new URLSearchParams(window.location.search);
-    if (next.length) q.set("g", next.join("."));
-    else q.delete("g");
-    const qs = q.toString();
-    window.history.replaceState(window.history.state, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`);
+    updateQuery((q) => (next.length ? q.set("g", next.join(".")) : q.delete("g")));
   };
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">

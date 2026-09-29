@@ -16,6 +16,7 @@ import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
 import { catalogReady, isCatalogFailed, isCatalogReady } from "@/lib/catalog";
+import { updateQuery } from "@/lib/url";
 import { captureLanding, track } from "@/lib/analytics";
 
 /** Suspends (keeping the server HTML) until the catalog index has loaded; says so, with a reload, if it can't. */
@@ -116,11 +117,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem("mono-friend-taste", code);
         useUiStore.setState({ friendTaste: friend });
       }
-      if (q.has("taste")) {
-        q.delete("taste");
-        const rest = q.toString();
-        window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
-      }
+      if (q.has("taste")) updateQuery((p) => p.delete("taste"));
     } catch {
       /* storage unavailable */
     }

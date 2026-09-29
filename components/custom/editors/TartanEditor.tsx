@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { deriveSett } from "@/lib/custom/draw/tartan";
 import { COUNT_MAX, PRODUCT, SETT_MAX, STRIPES_MAX, STRIPES_MIN, TARTAN_NAME_MAX, TONES, parseSett, settText, type Params, type Tone } from "@/lib/custom/specs/tartan";
 import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented, Stepper, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const TONE_LABEL: Record<Tone, string> = { K: "Densest", D: "Dense", L: "Sparse", W: "Blank" };
@@ -38,12 +39,7 @@ export default function TartanEditor({ made, arrival, touched, onChange }: Edito
   const ok = n && !nameError && lex && !settError && (!edit || parseSett(t)) && w !== null;
   const spec: CustomSpec | null = ok ? { t: "tartan", v: 1, p: { n, ...(edit ? { t } : {}), ...(w ? { w } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   // Turning editing on starts from the name's own sett.
   const toggle = (on: boolean) => {

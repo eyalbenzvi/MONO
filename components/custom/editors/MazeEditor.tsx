@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { MAZE_LEVELS, MAZE_LEVEL_NAMES, MAZE_MAX, PRODUCT, dotted, mazeInitials, mazeProblem, type MazeLevel, type Params } from "@/lib/custom/specs/maze";
 import { Field, WordsField, useLexicon, useWords } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Maze: the initials, how hard, whether the way through is drawn, the words. */
@@ -24,12 +25,7 @@ export default function MazeEditor({ made, arrival, touched, onChange }: EditorP
   const w = words.value;
   const spec: CustomSpec | null = x && !error && lex && w !== null ? { t: "maze", v: 1, p: { x, d, ...(solved ? { s: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

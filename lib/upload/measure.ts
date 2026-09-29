@@ -7,7 +7,7 @@
  * the score on the print averaged down to 300 × 400 (about 1 mm a pixel),
  * the block check at the print's own size, so a mesh of dots stays dots.
  */
-import { assessPrint, CHECK_H, CHECK_W, solidBlock, type Assessment, type InkRaster } from "@/lib/custom/quality";
+import { assessPrint, CHECK_H, CHECK_W, densityDetail, solidBlock, type Assessment, type InkRaster } from "@/lib/custom/quality";
 import { MM_PER_PX, type PrintSize, type Tee } from "./convert";
 import { REASONS, strokeReason, gapReason } from "./reasons";
 
@@ -47,8 +47,9 @@ export function checkRaster(ink: Uint8Array, w: number, h: number): InkRaster {
 /**
  * assessPrint's detail term before it's scored (lib/custom/quality keeps
  * it inside the score): the change in ink density between neighbouring
- * 4 × 4 cells, per cell of the ink's own box. Mirrors that code line for
- * line; the tests check the score rebuilt from it matches assessPrint's.
+ * 4 × 4 cells, per cell of the ink's own box (lib/custom/quality
+ * densityDetail, the same code); the tests check the score rebuilt from it
+ * matches assessPrint's.
  */
 export function detailOf({ w, h, ink }: InkRaster): number {
   let [x0, y0, x1, y1] = [w, h, -1, -1];
@@ -61,18 +62,7 @@ export function detailOf({ w, h, ink }: InkRaster): number {
         if (y > y1) y1 = y;
       }
   const extent = x1 < 0 ? 0 : ((x1 - x0 + 1) / w) * ((y1 - y0 + 1) / h);
-  const C = 4;
-  const cw = Math.floor(w / C);
-  const ch = Math.floor(h / C);
-  const dens = new Float32Array(cw * ch);
-  for (let y = 0; y < ch * C; y++) for (let x = 0; x < cw * C; x++) dens[Math.floor(y / C) * cw + Math.floor(x / C)] += ink[y * w + x] / (C * C);
-  let grad = 0;
-  for (let y = 0; y < ch - 1; y++)
-    for (let x = 0; x < cw - 1; x++) {
-      const d = dens[y * cw + x];
-      grad += Math.abs(dens[y * cw + x + 1] - d) + Math.abs(dens[(y + 1) * cw + x] - d);
-    }
-  return grad / Math.max(1, extent * cw * ch);
+  return densityDetail(ink, w, h, extent);
 }
 
 /* ------------------------------------------------------------------ */

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { DOORS, ROOFS, type CustomSpec, type Door, type Roof } from "@/lib/custom/spec";
 import { Field, WordsField, useWords } from "./Field";
 import { Segmented, Stepper } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const ROOF_LABEL: Record<Roof, string> = { flat: "Flat", pitched: "Pitched", stepped: "Stepped", dome: "Dome" };
@@ -23,12 +24,7 @@ export default function HouseEditor({ made, arrival, onChange }: EditorProps) {
   const number = n === "" ? undefined : /^\d{1,4}$/.test(n) ? Number(n) : null;
   const w = words.value;
   const spec: CustomSpec | null = number !== null && w !== null ? { t: "house", v: 1, p: { fl, wn, r, dr, ...(number !== undefined ? { no: number } : {}), ...(w ? { w } : {}) } } : null;
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

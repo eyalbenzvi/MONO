@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { ORBIT_MAX, ORBIT_MIN, ORBIT_NAME, PRODUCT, dateOf, dayOf, eldest, packDays, unpackDays } from "@/lib/custom/specs/orbits";
 import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const LINK = "h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
@@ -56,12 +57,7 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
       ? { t: "orbits", v: 1, p: { n: names as string[], b: packDays(dates as string[]), ...(sun >= 0 && sun !== eldest(days) ? { s: sun } : {}), ...(w ? { w } : {}) } }
       : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const set = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const remove = (i: number) => {

@@ -1,3 +1,4 @@
+import { fnv1aUnits } from "@/lib/hash";
 import {
   FEATURE_KEYS,
   type FeatureKey,
@@ -272,9 +273,7 @@ export const SEEN_PENALTY = 0.3;
 
 /** A stable pseudo-random number in [0, 1) for a string (FNV-1a). */
 export function hash01(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return (h >>> 0) / 2 ** 32;
+  return fnv1aUnits(s) / 2 ** 32;
 }
 
 /** Today's rotation seed (changes at local midnight), personal to this browser: everyone gets their own order. */

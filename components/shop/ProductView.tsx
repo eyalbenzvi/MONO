@@ -30,6 +30,8 @@ import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
 import { madeAllFor } from "@/lib/custom/products";
 import { acceptedDesigns, creditLine } from "@/lib/upload/designs";
+import { useFlash } from "@/hooks/useFlash";
+import { updateQuery } from "@/lib/url";
 import { isUploadDesign } from "@/lib/upload/keys";
 
 type View = "tee" | "print";
@@ -122,7 +124,8 @@ export function ProductView({
   const cart = useCartStore((s) => s.cart);
   // After adding: "✓ Added" for a moment, then the button leads to the bag
   // (until the size or colour changes).
-  const [added, setAdded] = useState<{ key: string; phase: "added" | "view" } | null>(null);
+  // Which choice was just added (size and colour, or both): its button says Added for a moment.
+  const [added, flashAdded] = useFlash<string>();
   const productOrigin = useUiStore((s) => s.productOrigin);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const clearOrigin = useCallback(() => setProductOrigin(null), [setProductOrigin]);
@@ -151,12 +154,7 @@ export function ProductView({
     if (c) setColor(shirt.id, c);
     if (ref) setSharedVia(ref);
     // Clean the URL so a reload or a re-share doesn't carry the tag along.
-    if (c || ref) {
-      const q = new URLSearchParams(window.location.search);
-      for (const k of SHARE_PARAMS) q.delete(k);
-      const rest = q.toString();
-      window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
-    }
+    if (c || ref) updateQuery((q) => SHARE_PARAMS.forEach((k) => q.delete(k)));
   }, [hydrated, shirt, setColor]);
 
   useEffect(() => {
@@ -199,13 +197,12 @@ export function ProductView({
     .slice(0, 4);
 
   const addedKey = `${size}-${both ? "both" : color}`;
-  const phase = added?.key === addedKey ? added.phase : null;
+  const phase = added === addedKey ? "added" : null;
   const confirmAdded = (key: string) => {
-    setAdded({ key, phase: "added" });
+    // The mini bag is the confirmation: the button says Added for a moment, then is itself again.
+    flashAdded(key);
     // The header comes back so the bag (and its count) is in view.
     useUiStore.getState().setHeaderHidden(false);
-    // The mini bag is the confirmation: the button says Added for a moment, then is itself again.
-    setTimeout(() => setAdded((a) => (a?.key === key ? null : a)), 2500);
   };
   const needSize = () => {
     scrollIntoViewQuietly(sizeRow.current);
@@ -218,13 +215,13 @@ export function ProductView({
   // Never a dead, disabled button: without a size it guides you to the sizes.
   const onBuy = () => {
     if (!size) return needSize();
-    if (phase === "view" || pairComplete) return router.push("/cart/");
+    if (pairComplete) return router.push("/cart/");
     if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) confirmAdded(addedKey);
   };
-  // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
+  // "Add to bag · M" → "✓ Added" for a moment.
   // The price shows here only — where money changes hands (plus the bag).
   const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${formatPrice(PAIR_PRICE)}` : pairLabel(pair, shirt.price)) : `Add to bag · ${formatPrice(shirt.price)}`;
-  const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
+  const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : idleLabel;
   const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${formatPrice(PAIR_PRICE)}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${formatPrice(shirt.price)}`;
 
   const goBack = () => {
@@ -576,12 +573,12 @@ function BuyButton({
   label: string;
   /** Narrow phones (< 400 px): a shorter label. */
   short?: string;
-  phase: "added" | "view" | null;
+  phase: "added" | null;
   onClick: () => void;
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const icon: IconName = phase === "added" ? "check" : phase === "view" ? "arrow-right" : "shopping-bag";
+  const icon: IconName = phase === "added" ? "check" : "shopping-bag";
   return (
     <button
       type="button"

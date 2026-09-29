@@ -10,13 +10,10 @@
  * ever reads as a slab.
  */
 import { mulberry32 } from "../rng";
+import { fnv1aChars } from "@/lib/hash";
 import { STRIPES_MAX, STRIPES_MIN, SETT_MAX, type Tone } from "../specs/tartan";
 
-const fnv = (s: string) => {
-  let h = 0x811c9dc5;
-  for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return h;
-};
+const fnv = fnv1aChars;
 const COUNTS = [2, 2, 4, 4, 4, 6, 6, 8, 8, 12, 16];
 
 export function deriveSett(name: string): [Tone, number][] {

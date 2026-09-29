@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import type { CustomSpec, VoiceParams } from "@/lib/custom/spec";
 import { WordsField, useWords } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import type { EditorProps } from "./types";
 
 /** The longest take: three seconds, then it stops on its own. */
@@ -69,12 +70,7 @@ export default function VoiceEditor({ made, arrival, onChange }: EditorProps) {
 
   const w = words.value;
   const spec: CustomSpec | null = w !== null ? { t: "voice", v: 1, p: { ...n, ...(w ? { w } : {}) } } : null;
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const begin = () => {
     if (rec.current) return;

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { LINK_MAX, PRODUCT, linkOk, linkProblem, linkUrl, tidyLink, type Params } from "@/lib/custom/specs/qr";
 import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /**
@@ -26,12 +27,7 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
   const spec: CustomSpec | null =
     addr && !error && linkOk(addr) && lex && w !== null ? { t: "qr", v: 1, p: { a: addr, ...(http ? { h: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

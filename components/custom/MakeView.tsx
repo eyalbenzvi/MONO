@@ -28,6 +28,8 @@ import { STORE_POLICY } from "@/lib/store-policy";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { scrollIntoViewQuietly, useHydrated, useUiStore } from "@/store/useUiStore";
+import { useFlash } from "@/hooks/useFlash";
+import { updateQuery } from "@/lib/url";
 import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt";
 
 // Prints on this page are drawn, never saved: no minifying (lib/custom/svg).
@@ -193,9 +195,7 @@ export function MakeView({ slug }: { slug: string }) {
         if (performance.now() - start > SLOW_MS) slow.current = true;
         // The address carries a print once it's known to print.
         if (check.ok && real) {
-          const q = new URLSearchParams(window.location.search);
-          q.set("make", encodeMake(spec));
-          window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}${window.location.hash}`);
+          updateQuery((q) => q.set("make", encodeMake(spec)));
         }
         return check;
       };
@@ -245,7 +245,7 @@ export function MakeView({ slug }: { slug: string }) {
   // The bag.
   const addToCart = useCartStore((s) => s.addToCart);
   const addPair = useCartStore((s) => s.addPair);
-  const [added, setAdded] = useState(false);
+  const [added, flashAdded] = useFlash();
   const [nudge, setNudge] = useState(0);
   const sizeRow = useRef<HTMLDivElement>(null);
   // Without a size, the sizes come into view (the bar at the foot of a phone is far from them).
@@ -286,8 +286,7 @@ export function MakeView({ slug }: { slug: string }) {
     }
     const ok = both && pairOk ? addPair(made.id, size, { source: "product", custom: state.spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
+    flashAdded(true);
     // A small like of the design it's drawn like (its taste, never the inputs; once per design).
     const base = SHIRTS.find((s) => s.variant === made.base);
     if (base) useTasteStore.getState().likeCustom(base.id);

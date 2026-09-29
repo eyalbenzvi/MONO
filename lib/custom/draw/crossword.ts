@@ -8,6 +8,7 @@
  * nothing sits on its own, an island a cell clear of the rest. Pure and
  * deterministic: the same words, the same grid, on every device.
  */
+import { fnv1aChars } from "@/lib/hash";
 import { mulberry32 } from "../rng";
 
 export interface Placed {
@@ -32,9 +33,7 @@ export interface Crossword {
 
 /** FNV-1a of the words in order: the builder's seed. */
 export function wordsSeed(words: readonly string[]): number {
-  let h = 0x811c9dc5;
-  for (const ch of words.join(" ")) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return h;
+  return fnv1aChars(words.join(" "));
 }
 
 type Cell = { ch: string; a: boolean; d: boolean };

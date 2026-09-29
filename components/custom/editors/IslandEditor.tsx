@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { ISLAND_NAME_MAX, ISLAND_PLACES, ISLAND_PLACE_MAX, ISLAND_REDRAWS, type Params } from "@/lib/custom/specs/island";
 import { Field, nameLine, useLexicon } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 type Lexicon = NonNullable<ReturnType<typeof useLexicon>>;
@@ -36,12 +37,7 @@ export default function IslandEditor({ made, arrival, touched, onChange }: Edito
   const spec: CustomSpec | null =
     n.value && placesOk ? { t: "island", v: 1, p: { n: n.value, ...(typed.length ? { x: typed } : {}), ...(redraw ? { s: redraw } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const link = "h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
   return (

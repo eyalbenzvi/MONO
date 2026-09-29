@@ -19,6 +19,7 @@ import type { CustomSpec } from "../spec";
 import type { Params } from "../specs/rings";
 import { mulberry32 } from "../rng";
 import { GROUND, wrap } from "../svg";
+import { fnv1aChars } from "@/lib/hash";
 import type { BaseColor } from "@/types/shirt";
 
 /** The disc's box, bark included: its centre and size. */
@@ -35,11 +36,7 @@ const PER_RING = 0.06;
 const HEAL = 7;
 const FACTOR: Record<string, number> = { "0": 0.45, "1": 1, "2": 1.7 };
 
-const fnv = (s: string) => {
-  let h = 0x811c9dc5;
-  for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return h;
-};
+const fnv = fnv1aChars;
 const TAU = Math.PI * 2;
 const angDist = (a: number, b: number) => Math.abs(((((a - b) % TAU) + TAU + Math.PI) % TAU) - Math.PI);
 

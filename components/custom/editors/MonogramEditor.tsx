@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { MONO_STYLES, PRODUCT, initialsProblem, type MonoStyle } from "@/lib/custom/specs/monogram";
 import { Field, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const STYLE_LABEL: Record<MonoStyle, string> = { lace: "Interlaced", stack: "Stacked", seal: "Seal" };
@@ -24,12 +25,7 @@ export default function MonogramEditor({ arrival, touched, onChange }: EditorPro
   const y = year.trim() === "" ? undefined : /^\d{4}$/.test(year.trim()) && +year >= 1900 && +year <= 2100 ? +year : null;
   const spec: CustomSpec | null = x && !problem && lex && !refused && y !== null ? { t: "monogram", v: 1, p: { x, s: style, ...(y !== undefined ? { y } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

@@ -21,6 +21,7 @@ import { mulberry32 } from "../rng";
 import type { CustomSpec } from "../spec";
 import type { Params as SnowflakeParams } from "../specs/snowflake";
 import { GROUND, wrap } from "../svg";
+import { fnv1aCodePoints } from "@/lib/hash";
 import type { BaseColor } from "@/types/shirt";
 
 /** Grid radius in cells: fine enough for the arms' side branches, small enough to grow in a live preview. */
@@ -29,11 +30,7 @@ const CX = 150, CY = 164, RADIUS = 124;
 const SQ3 = Math.sqrt(3) / 2;
 
 /** FNV-1a of the name, as printed. */
-const fnv = (s: string) => {
-  let h = 0x811c9dc5;
-  for (const ch of s) h = Math.imul(h ^ ch.codePointAt(0)!, 0x01000193) >>> 0;
-  return h;
-};
+const fnv = fnv1aCodePoints;
 
 /**
  * The model's range: high β (the regime of plates, sectored plates and

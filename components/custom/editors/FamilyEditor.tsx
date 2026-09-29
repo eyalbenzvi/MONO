@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { packInts } from "@/lib/custom/specKit";
 import { FAMILY_NAME_MAX, PRODUCT, familyYears, packYears, parseYears, yearsProblem, yearsText, type Params, type Years } from "@/lib/custom/specs/family";
 import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Who each slot is, in pedigree order (0 you, a person's parents at 2i + 1 and 2i + 2). */
@@ -45,12 +46,7 @@ export default function FamilyEditor({ made, arrival, touched, onChange }: Edito
   const anyYears = ys.some(([b, d]) => b !== null || d !== null);
   const spec: CustomSpec | null = ok ? { t: "family", v: 1, p: { n: rows.map((r) => r.nm), ...(anyYears ? { y: packInts(packYears(ys)) } : {}), ...(w ? { w } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const set = (i: number, v: string, which: "n" | "y") => (which === "n" ? setNames : setYears)((xs) => xs.map((x, j) => (j === i ? v : x)));
   /** One person: the name (the example's as its placeholder), and the years beside it (no label of their own: the placeholder says what they are). */

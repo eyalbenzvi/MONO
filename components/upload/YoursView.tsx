@@ -18,9 +18,11 @@ import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
 import { scrollIntoViewQuietly, useHydrated } from "@/store/useUiStore";
 import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
-const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
+import { useFlash } from "@/hooks/useFlash";
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
+
+const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
 
 type Step = "start" | "print" | "size";
 const STEPS: Step[] = ["start", "print", "size"];
@@ -79,7 +81,7 @@ function Yours() {
   const [draftName, setDraftName] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [nudge, setNudge] = useState(0);
-  const [added, setAdded] = useState(false);
+  const [added, flashAdded] = useFlash();
   const selected = useCartStore((s) => sizeFor(s, YOURS_ID));
   const fileInput = useRef<HTMLInputElement>(null);
   const sizeRow = useRef<HTMLDivElement>(null);
@@ -341,8 +343,7 @@ function Yours() {
     void c.clearDraft();
     setDraftName(null);
     // The mini bag confirms; the button says so for a moment, then is itself again.
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
+    flashAdded(true);
   };
   // "Upload another" for a refused file: once this one passes, it takes the refused one's place in the order.
   const resubmit = async () => {

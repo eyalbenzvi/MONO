@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { cropBox, luminance, toneGrid } from "@/lib/custom/draw/asciiPicture";
 import { ASCII_CHARS, ASCII_COLS, ASCII_FILLS, ASCII_MAX, ASCII_PHRASE, ASCII_ROWS, asciiPack, asciiPictureProblem, asciiUnpack, type AsciiCols, type AsciiFill, type CustomSpec } from "@/lib/custom/spec";
 import { Field, WordsField, useLexicon, useWords } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** The big letters as lines: one line up to ASCII_MAX, else split at the space nearest the middle into two that fit, else null. */
@@ -123,12 +124,7 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
         ? { t: "ascii", v: 1, p: { x: lines!, f: fill, ...(fill === "phrase" ? { p } : {}), ...(shadow ? { s: 1 as const } : {}), ...(w ? { w } : {}) } }
         : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const wide = source ? source.width / source.height > (cols * 0.602) / (ASCII_ROWS[cols] * 1.02) : true;
   const picture = (

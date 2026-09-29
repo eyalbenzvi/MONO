@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { encodeMoves, readPgn, type Game } from "@/lib/custom/draw/chess";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { packInts } from "@/lib/custom/specKit";
@@ -8,6 +8,7 @@ import { CHESS_MAX_PLIES, PLAYER_MAX, PRODUCT, RESULTS, type ChessResult, type P
 import { replay } from "@/lib/custom/templates/chess";
 import { Field, nameLine, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const TEXTAREA = "w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white";
@@ -74,12 +75,7 @@ export default function ChessEditor({ arrival, touched, onChange }: EditorProps)
     };
   }
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const moves = game ? Math.ceil(game.moves.length / 2) : 0;
   return (

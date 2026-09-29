@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { PRODUCT } from "@/lib/custom/specs/julia";
 import { Field, WordsField, useWords } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Fractal: the date (it picks the set) and your words. */
@@ -16,12 +17,7 @@ export default function JuliaEditor({ made, arrival, touched, onChange }: Editor
   const dateOk = !!parseDate(date);
   const w = words.value;
   const spec: CustomSpec | null = dateOk && w !== null ? { t: "julia", v: 1, p: { d: date, ...(w ? { w } : {}) } } : null;
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { fnv1aUnits } from "@/lib/hash";
 /**
  * The search index file (public/data/search.<hash>.json, written by
  * scripts/tools/searchIndex.ts from lib/search/build) and its decoder. Designs
@@ -44,12 +45,7 @@ export const VISUAL_KEYS = ["symmetry", "detail", "coverage", "extent", "aspect"
 
 /** FNV-1a over the id list: cheap to check in the browser, enough to catch a stale file. */
 export function idsHash(ids: readonly string[]): string {
-  let h = 0x811c9dc5;
-  const s = ids.join(",");
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
+  const h = fnv1aUnits(ids.join(","));
   return h.toString(16);
 }
 

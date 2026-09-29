@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CODE_CHARS, CODE_MAX, CODE_NAMES, codeProblem, codeText, type CodeKind, type CustomSpec } from "@/lib/custom/spec";
 import { Field, useLexicon } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const KINDS: readonly CodeKind[] = ["card", "tape", "morse", "braille", "binary"];
@@ -40,12 +41,7 @@ export default function CodeEditor({ made, arrival, touched, onChange }: EditorP
       : refused;
   const spec: CustomSpec | null = x && !problem && lex && !refused ? { t: "code", v: 1, p: { x, k: kind, ...(secret ? { h: 1 as const } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   return (
     <>

@@ -6,6 +6,7 @@ import { FIRST_YEAR, LAST_YEAR, parseDate, type CustomSpec } from "@/lib/custom/
 import { ROUTE_MAX_KM, routePoints, type Params } from "@/lib/custom/specs/route";
 import { Field, WordsField, useWords } from "./Field";
 import { Segmented, Switch } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /**
@@ -85,12 +86,7 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
     shape && k !== null && dateOk && w !== null
       ? { t: "route", v: 1, p: { r: shape.r, ...(shape.m !== undefined ? { m: shape.m } : {}), ...(k !== undefined ? { k } : {}), ...(shape.e ? { e: shape.e } : {}), ...(date ? { d: date } : {}), ...(w ? { w } : {}) } }
       : null;
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const at = (e: React.PointerEvent): [number, number] => {
     const r = pad.current!.getBoundingClientRect();

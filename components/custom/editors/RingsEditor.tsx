@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, type CustomSpec } from "@/lib/custom/spec";
 import { MARK_DIGIT, PRODUCT, SCARS_MAX, spanProblem, type Params } from "@/lib/custom/specs/rings";
 import { Field, WordsField, useWords } from "./Field";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Years as typed ("1995, 2004–2006"): the list, or a one-line reason. Ranges with a hyphen or a dash. */
@@ -65,12 +66,7 @@ export default function RingsEditor({ made, arrival, touched, onChange }: Editor
     spec = { t: "rings", v: 1, p: { b, c, m, ...(s.length ? { s } : {}), ...(w ? { w } : {}) } };
   }
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const year = (id: string, value: string, set: (v: string) => void, invalid: boolean, placeholder: string) => (
     <input id={id} inputMode="numeric" maxLength={4} autoComplete="off" placeholder={placeholder} value={value} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} aria-invalid={invalid} className={`${INPUT} font-mono`} />

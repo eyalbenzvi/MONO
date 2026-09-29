@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { getShirtById } from "@/lib/catalog";
+import { updateQuery } from "@/lib/url";
 import type { ShirtProduct } from "@/types/shirt";
 
 function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct[]; onClose?: () => void }) {
@@ -38,9 +39,7 @@ export function SharedList() {
       .map((n) => (/^\d{1,4}$/.test(n) ? getShirtById(`mono-${n.padStart(4, "0")}`) : undefined))
       .filter((s): s is ShirtProduct => !!s);
     setShirts([...new Map(found.map((s) => [s.id, s])).values()]);
-    for (const k of ["list", "utm_source", "utm_medium", "utm_campaign"]) q.delete(k);
-    const rest = q.toString();
-    window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : ""));
+    updateQuery((p) => ["list", "utm_source", "utm_medium", "utm_campaign"].forEach((k) => p.delete(k)), { keepHash: false });
   }, []);
   if (shirts.length === 0) return null;
   return <Strip title={`A shared list · ${shirts.length} tee${shirts.length === 1 ? "" : "s"}`} shirts={shirts} onClose={() => setShirts([])} />;

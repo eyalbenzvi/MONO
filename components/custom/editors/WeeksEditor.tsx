@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { MILESTONES_MAX, MILESTONE_LABEL_MAX, PRODUCT, WEEKS_YEARS, weeksDateProblem, type Milestone, type Params } from "@/lib/custom/specs/weeks";
 import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented } from "./Segmented";
+import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -45,12 +46,7 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
   const ok = bOk && !asError && !twice && rows.every((r) => !r.error) && (!kept.length || lex) && w !== null;
   const spec: CustomSpec | null = ok ? { t: "weeks", v: 1, p: { b, a: asOf, n, ...(m.length ? { m } : {}), ...(w ? { w } : {}) } } : null;
 
-  const report = useRef(onChange);
-  report.current = onChange;
-  const key = spec ? JSON.stringify(spec) : "";
-  useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+  useReportSpec(spec, onChange);
 
   const setMark = (i: number, v: Partial<{ d: string; l: string }>) => setMarks((xs) => xs.map((x, j) => (j === i ? { ...x, ...v } : x)));
   const dateInput = (id: string, value: string, set: (v: string) => void, invalid: boolean) => (

@@ -13,6 +13,7 @@
  * short turnings), so the path stays the only way through.
  */
 import { FONT } from "./pixelFont";
+import { fnv1aChars } from "@/lib/hash";
 import { mulberry32 } from "../rng";
 
 export const N = 1, E = 2, S = 4, Wd = 8;
@@ -63,11 +64,7 @@ export function mazeLayout(k: number, d: 1 | 2 | 3) {
   return { cell, cols: Math.floor(AREA.w / cell), rows: Math.floor(AREA.h / cell), m, P };
 }
 
-const fnv = (s: string) => {
-  let h = 0x811c9dc5;
-  for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return h;
-};
+const fnv = fnv1aChars;
 
 export function buildMaze(x: string, d: 1 | 2 | 3): Maze {
   for (let attempt = 0; ; attempt++) {

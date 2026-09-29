@@ -7,6 +7,7 @@
  */
 import type { ShirtProduct } from "@/types/shirt";
 import { FIRST_YEAR, LAST_YEAR, WORDS_MAX, b64url, cleanWords, int, isObj, num, parseDate, parseTime } from "./specKit";
+import { fnv1aChars } from "@/lib/hash";
 import { EXTRA, type ExtraId, type ExtraSpec } from "./specs";
 
 export { FIRST_YEAR, LAST_YEAR, WORDS_MAX, cleanWords, parseDate, parseTime };
@@ -439,9 +440,7 @@ export const canonical = (spec: CustomSpec) => JSON.stringify(validate(spec));
 
 /** A short stable hash of the spec (bag line keys). FNV-1a, 32 bits, base 36. */
 export function specHash(spec: CustomSpec): string {
-  let h = 0x811c9dc5;
-  for (const ch of canonical(spec)) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return h.toString(36);
+  return fnv1aChars(canonical(spec)).toString(36);
 }
 
 /** The spec for a link (`?make=`): base64url of its canonical JSON. */
