@@ -21,7 +21,6 @@ import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
 const AdjustDialog = lazy(() => import("./yours/AdjustDialog").then((m) => ({ default: m.AdjustDialog })));
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
-import examples from "@/data/upload/examples.json";
 
 type Step = "start" | "print" | "rights" | "size";
 const STEPS: Step[] = ["start", "print", "rights", "size"];
@@ -490,7 +489,6 @@ function Start({
     { kind: "drawing", label: "A drawing", line: "Your lines, cleaned up. A scan, a photo of paper, or SVG." },
     { kind: "words", label: "Words", line: "Up to three lines, in our type." },
   ];
-  const credit = (examples as { kind: string; credit?: string }[]).find((e) => e.kind === "photo")?.credit;
   return (
     <div
       className={`mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl ${drag ? "ring-2 ring-inset ring-white" : ""}`}
@@ -546,8 +544,6 @@ function Start({
           {error}
         </p>
       )}
-      <p className="mt-6 text-xs text-neutral-500">Converted on this device. The file stays here.</p>
-      {credit && <p className="mt-1 text-[11px] text-neutral-600">Photo: {credit}</p>}
     </div>
   );
 }
