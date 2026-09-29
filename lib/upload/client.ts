@@ -118,8 +118,6 @@ export interface PreviewOk extends Common {
   /** The tees it prints on, the suggested one first. */
   tees: Tee[];
   tee: Tee;
-  /** The one line saying why this tee. */
-  line: string;
   perTee: Record<Tee, TeeResult>;
   tier: "print" | "catalogue";
   near: boolean;
@@ -372,7 +370,6 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     autoSmall,
     tees,
     tee,
-    line: tee === choice.tee ? choice.line : `It prints on ${tee}, not on ${other}.`,
     perTee,
     tier: t.tier,
     near: t.near,
@@ -403,19 +400,15 @@ export interface Fix {
   patch?: Partial<Settings>;
 }
 
-/** What a failure means, in one line (the fix card). */
+/** What a failure means, under its reason in the fix card: only what the reason doesn't already say. */
 export const MEANING: Record<string, string> = {
-  faint: "Too little contrast to print. It would come out as a grey haze.",
-  solid: "Too much ink in one place. It would print as a patch.",
-  solidDots: "Too much ink in one place. It would print as a patch.",
-  dense: "Too much ink to print. The tee would be mostly ink.",
-  denseDots: "Too much ink to print. The tee would be mostly ink.",
-  plain: "Too little going on to print well.",
-  weak: "This one wouldn't print well as it is.",
-  stroke: "Lines too fine for this tee. They'd break up in the print.",
-  gap: "Gaps too narrow. They'd fill in with ink.",
-  duplicate: "This is already one of ours.",
-  long: "Too many letters on a line for this type.",
+  faint: "It would come out as a grey haze.",
+  solid: "It would print as a patch.",
+  solidDots: "It would print as a patch.",
+  dense: "The tee would be mostly ink.",
+  denseDots: "The tee would be mostly ink.",
+  stroke: "They’d break up in the print.",
+  gap: "They’d fill in with ink.",
 };
 
 /** The fixes worth trying for a failure, in order (the PM's table), before any is tried. */

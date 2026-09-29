@@ -8,7 +8,7 @@ import { category, features, measured, regularity, geometry, textLike, MEASURED 
 import { checkRaster, measure, type Measures } from "@/lib/upload/measure";
 import { convertInWorker } from "@/lib/upload/run";
 import { REASONS } from "@/lib/upload/reasons";
-import { chooseTee, TEE_LINES } from "@/lib/upload/teeRule";
+import { chooseTee } from "@/lib/upload/teeRule";
 import { cleanTitle } from "@/lib/upload/title";
 import { currentPriors } from "../../scripts/tools/uploadPriors";
 import { fromGrey, logo, photo, rings, scan } from "./fixtures";
@@ -19,9 +19,9 @@ const TONE = { lum: new Float32Array(0), alpha: new Float32Array(0) };
 
 describe("uploads: the tee rule (brief 6.3)", () => {
   it("line work keeps its polarity: dark on light is white, and black is offered when it prints there", () => {
-    expect(chooseTee(conv({}), () => M({}))).toEqual({ tee: "white", other: true, line: "Drawn in dark on light, so white. Black swaps the inks." });
+    expect(chooseTee(conv({}), () => M({}))).toEqual({ tee: "white", other: true });
     expect(chooseTee(conv({ cls: "vector", mode: "vector" }), () => M({})).tee).toBe("white");
-    expect(chooseTee(conv({ darkOnLight: false }), () => M({}))).toEqual({ tee: "black", other: true, line: TEE_LINES.lightOnDark });
+    expect(chooseTee(conv({ darkOnLight: false }), () => M({}))).toEqual({ tee: "black", other: true });
   });
 
   it("line work: the other tee is disabled when it can't print there (a black tee wants 0.5 mm lines)", () => {
@@ -29,10 +29,10 @@ describe("uploads: the tee rule (brief 6.3)", () => {
     expect(chooseTee(conv({}), scoreOn)).toMatchObject({ tee: "white", other: false });
   });
 
-  it("a photograph goes on the tee that scores higher, never inverted, with its line", () => {
+  it("a photograph goes on the tee that scores higher, never inverted", () => {
     const c = conv({ cls: "photo", mode: "dots", tone: TONE });
-    expect(chooseTee(c, (t) => M({ quality: t === "black" ? 75 : 60 }))).toEqual({ tee: "black", other: false, line: "A light picture, so black: the ink draws its lights." });
-    expect(chooseTee(c, (t) => M({ quality: t === "black" ? 60 : 75 }))).toEqual({ tee: "white", other: false, line: "A dark picture, so white: the ink draws its darks." });
+    expect(chooseTee(c, (t) => M({ quality: t === "black" ? 75 : 60 }))).toEqual({ tee: "black", other: false });
+    expect(chooseTee(c, (t) => M({ quality: t === "black" ? 60 : 75 }))).toEqual({ tee: "white", other: false });
   });
 
   it("a photograph's other tee: offered at ≥ 53, no flags, within 12 points", () => {

@@ -24,18 +24,22 @@ import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
 import { WordsType } from "./yours/WordsType";
 
-type Step = "start" | "print" | "rights" | "size";
-const STEPS: Step[] = ["start", "print", "rights", "size"];
+type Step = "start" | "print" | "size";
+const STEPS: Step[] = ["start", "print", "size"];
 const loadClient = () => import("@/lib/upload/client");
 const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
 const stepOf = (hash: string): Step => (STEPS.includes(hash.slice(1) as Step) ? (hash.slice(1) as Step) : "start");
 
+/** The quiet line for a fix applied on its own: "We've set Small." */
+const fixNote = (f: Fix) =>
+  f.id === "stronger" ? "We\u2019ve made it stronger." : f.id === "bolder" ? "We\u2019ve made the lines bolder." : `We\u2019ve set ${f.label.replace(/^Use /, "")}.`;
+
 /**
  * From yours (/make/yours/): your picture, drawing or words, in one ink.
- * Four steps, one white button each, the picture always in view: Start
- * (what do you have?), Your print (Dots or Lines, Full or Small, the tee,
- * each shown as the real result; a print that fails shows itself and the
- * fixes that pass), Rights, Size. The step is in the address's hash, so a
+ * Three steps, one white button each, the picture always in view: Start
+ * (what do you have?), Your print (the style, the print size, the tee; a
+ * first print that fails takes the first fix that passes, and says so),
+ * Size (adding confirms the rights). The step is in the address's hash, so a
  * phone's Back walks back through them; the file in hand is kept on the
  * device as a draft, so a reload comes back to it. Everything is converted
  * and checked on this device.
@@ -82,6 +86,9 @@ function Yours() {
   const sizeRow = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const run = useRef(0);
+  // The source whose first print has been seen: a first print that fails takes the first fix that passes (once, never over a choice made).
+  const firstSeen = useRef<string | null>(null);
+  const [autoNote, setAutoNote] = useState<string | null>(null);
   const entered = useRef(Date.now());
 
   /* ---------------- steps and history ---------------- */
@@ -146,9 +153,8 @@ function Yours() {
           setSource(d.source);
           setSettings(d.settings);
           if (d.source.kind === "words") (setWordsMode(true), setWords(d.source.words!.join("\n")));
-          // Back where it was (Size asks the rights again: they aren't kept with the draft).
-          if (want === "size") go("rights", true);
-          else setStep(want);
+          // Back where it was.
+          setStep(want);
           return;
         }
       }
@@ -198,8 +204,6 @@ function Yours() {
   const pick = (kind: string) => {
     setTile(kind);
     track("yours_start_tile", { kind });
-    // A link is Your Link's own page (a QR code drawn from the address, not a file).
-    if (kind === "link") return router.push("/make/qr/");
     if (kind === "words") {
       setWordsMode(true);
       setSource(null);
@@ -252,6 +256,9 @@ function Yours() {
     void loadClient().then(async (c) => {
       const p = await c.convertWith(source, settings);
       if (n !== run.current) return;
+      const first = firstSeen.current !== source.id;
+      firstSeen.current = source.id;
+      if (first) setAutoNote(null);
       setPreview(p);
       setBusy(false);
       if (p.ok) {
@@ -266,6 +273,13 @@ function Yours() {
       track("upload_refused", { reason: p.code });
       const found = p.duplicateOf ? [] : await c.passingFixes(source, settings, p);
       if (n !== run.current) return;
+      if (first && found[0]) {
+        // As a file too small for Full goes to Small: the first fix that passes, applied, in one quiet line.
+        setAutoNote(fixNote(found[0].fix));
+        setSettings(found[0].settings);
+        track("upload_fix_applied", { reason: p.code, fix: found[0].fix.id, passed: true, auto: true });
+        return;
+      }
       setFixes(found);
       track("upload_fix_offered", { reason: p.code, n: found.length });
     });
@@ -275,7 +289,11 @@ function Yours() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, settings]);
 
-  const patch = (p: Partial<Settings>) => settings && setSettings({ ...settings, ...p });
+  const patch = (p: Partial<Settings>) => {
+    if (!settings) return;
+    setAutoNote(null);
+    setSettings({ ...settings, ...p });
+  };
   const applyFix = (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => {
     setSettings(f.settings);
     track("upload_fix_applied", { reason: (preview as PreviewFail | null)?.code ?? "", fix: f.fix.id, passed: true });
@@ -303,15 +321,12 @@ function Yours() {
   const rightsKey = source ? source.id : null;
 
   /* ---------------- the primary button of each step ---------------- */
-  const toRights = () => {
-    if (!ok) return;
-    go(rightsFor === rightsKey ? "size" : "rights");
-  };
-  const confirm = () => {
+  const toSize = () => ok && go("size");
+  // Adding (or sending a replacement) is the rights confirmation: "you made it or have permission", said above the button.
+  const confirmRights = () => {
+    if (rightsFor === rightsKey) return;
     setRightsFor(rightsKey);
     track("upload_rights_confirm");
-    if (replaceId) void resubmit();
-    else go("size");
   };
   const add = async () => {
     if (!ok || !source || !settings) return;
@@ -320,6 +335,7 @@ function Yours() {
       scrollIntoViewQuietly(sizeRow.current);
       return setNudge((x) => x + 1);
     }
+    confirmRights();
     const c = await loadClient();
     const tees = choice === "both" ? ok.tees : [choice as "black" | "white", ...ok.tees.filter((t) => t !== choice)];
     const id = await c.keep(source, ok, { title, tees, settings: { ...settings, size: ok.size } });
@@ -345,13 +361,16 @@ function Yours() {
     void import("@/store/tasteStore").then((m) => m.useTasteStore.getState().likeUpload(id, ok.measured));
     void c.clearDraft();
     setDraftName(null);
+    // The mini bag confirms; the button says so for a moment, then is itself again.
     setAdded(true);
+    setTimeout(() => setAdded(false), 2500);
   };
   // "Upload another" for a refused file: once this one passes, it takes the refused one's place in the order.
   const resubmit = async () => {
     if (!ok || !source || !settings || !replaceId) return;
     const old = useMakeStore.getState().reviews[replaceId];
     if (!old) return;
+    confirmRights();
     const c = await loadClient();
     const id = await c.keep(source, ok, { title, tees: [tee], settings: { ...settings, size: ok.size } });
     useMakeStore.getState().submitReviews(old.order, [id], { [id]: replaceId });
@@ -364,7 +383,7 @@ function Yours() {
   const primary: { label: string; onClick?: () => void; href?: string; disabled?: boolean } | null =
     step === "print"
       ? ok && !busy
-        ? { label: `Looks good · ${formatPrice(price)}`, onClick: toRights }
+        ? { label: `Next · ${formatPrice(price)}`, onClick: toSize }
         : failed && !busy
           ? failed.duplicateOf
             ? { label: "See it in the shop", href: productHref(failed.duplicateOf) }
@@ -373,17 +392,17 @@ function Yours() {
               : firstFix
                 ? { label: firstFix.fix.label, onClick: () => applyFix(firstFix) }
                 : { label: "Choose another file", onClick: () => fileInput.current?.click() }
-          : { label: `Looks good · ${formatPrice(price)}`, disabled: true }
-      : step === "rights"
-        ? { label: replaceId ? "Send it for checking" : "I confirm", onClick: confirm }
-        : step === "size"
-          ? added
-            ? { label: "Added · View bag", href: "/cart/" }
+          : { label: `Next · ${formatPrice(price)}`, disabled: true }
+      : step === "size"
+        ? replaceId
+          ? { label: "Send it for checking", onClick: () => void resubmit() }
+          : added
+            ? { label: "Added", disabled: true }
             : { label: size$ ? `${editId ? "Save changes" : "Add to bag"} · ${SIZE_LABELS[size$]} · ${formatPrice(price)}` : "Choose size", onClick: () => void add() }
-          : null;
+        : null;
 
-  const back: Record<Step, string> = { start: "", print: "Start", rights: "Your print", size: "Rights" };
-  const titles: Record<Step, string> = { start: "What do you have?", print: "Your print", rights: "Rights", size: "Size" };
+  const back: Record<Step, string> = { start: "", print: "Start", size: "Your print" };
+  const titles: Record<Step, string> = { start: "What do you have?", print: "Your print", size: "Size" };
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
@@ -449,10 +468,10 @@ function Yours() {
                   status={status}
                   onFix={applyFix}
                   onEdit={() => setEditing(true)}
+                  autoNote={autoNote}
                   onAnother={() => fileInput.current?.click()}
                 />
               )}
-              {step === "rights" && <RightsStep />}
               {step === "size" && ok && settings && (
                 <SizeStep
                   title={title}
@@ -463,6 +482,7 @@ function Yours() {
                   setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
                   nudge={nudge}
                   sizeRef={sizeRow}
+                  replacing={!!replaceId}
                 />
               )}
               {primary && <PrimaryBar {...primary} />}
@@ -514,9 +534,8 @@ function Start({
   const [drag, setDrag] = useState(false);
   const TILES = [
     // One tile for a photo or a drawing: the converter tells them apart by itself, and a drawing shot on paper has its own style (Drawing).
-    { kind: "photo", label: "A photo or drawing", line: "A pet, a place, a sketch on paper. JPG, PNG, WebP or SVG." },
+    { kind: "photo", label: "A photo or drawing", line: "Dots, lines or a drawing. JPG, PNG, WebP or SVG." },
     { kind: "words", label: "Words", line: "Up to three lines, in one of six types." },
-    { kind: "link", label: "A link", line: "A web address, as a QR code that scans." },
   ];
   return (
     <div
@@ -544,7 +563,7 @@ function Start({
       <h2 ref={heading} tabIndex={-1} className="mt-8 text-lg font-bold outline-none">
         What do you have?
       </h2>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-4 grid gap-3 md:grid-cols-2">
         {TILES.map((t) => (
           <li key={t.kind}>
             <button
@@ -597,6 +616,7 @@ function PrintStep({
   onFix,
   onEdit,
   onAnother,
+  autoNote,
 }: {
   wordsMode: boolean;
   words: string;
@@ -617,6 +637,7 @@ function PrintStep({
   onFix: (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => void;
   onEdit: () => void;
   onAnother: () => void;
+  autoNote: string | null;
 }) {
   const [meaning, setMeaning] = useState<Record<string, string>>({});
   const [cropFix, setCropFix] = useState(false);
@@ -659,13 +680,16 @@ function PrintStep({
           </div>
         </div>
       )}
-      {ok?.autoSmall && <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>}
-      {source && (ok ?? null) && <ChoiceThumbs shirt={shirt} source={source} settings={settings} preview={ok!} choice={choice} onSettings={patch} onChoice={setChoice} />}
-      {ok && (
-        <p className="text-sm text-neutral-300" data-upload-line>
-          {ok.line}
-        </p>
+      {ok?.autoSmall ? (
+        <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>
+      ) : (
+        autoNote && (
+          <p className="text-sm text-neutral-300" data-auto-fix>
+            {autoNote}
+          </p>
+        )
       )}
+      {source && (ok ?? null) && <ChoiceThumbs source={source} settings={settings} preview={ok!} choice={choice} onSettings={patch} onChoice={setChoice} />}
       {failed && !busy && (
         <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10" data-fix-card>
           <p className="text-sm font-semibold text-white" data-upload-line>
@@ -685,11 +709,6 @@ function PrintStep({
               </button>
             )}
           </div>
-          {fixes?.[0] && (
-            <p className="mt-2 text-xs text-neutral-500" data-first-fix={fixes[0].fix.id}>
-              {fixes[0].fix.label} fixes it (the button below).
-            </p>
-          )}
         </div>
       )}
       {preview === null && !wordsMode && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
@@ -706,19 +725,6 @@ function PrintStep({
         )}
       </div>
     </>
-  );
-}
-
-function RightsStep() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="space-y-3">
-      <p className="text-base text-neutral-100">I made this, or I have permission. Anyone in it has agreed.</p>
-      <button type="button" onClick={() => setOpen(true)} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
-        What we won&rsquo;t print
-      </button>
-      {open && <WontPrint onClose={() => setOpen(false)} />}
-    </div>
   );
 }
 
@@ -753,6 +759,7 @@ function SizeStep({
   setSize,
   nudge,
   sizeRef,
+  replacing,
 }: {
   title: string;
   setTitle: (t: string) => void;
@@ -762,33 +769,48 @@ function SizeStep({
   setSize: (s: ShirtSize) => void;
   nudge: number;
   sizeRef: React.RefObject<HTMLDivElement>;
+  replacing: boolean;
 }) {
+  // The title is the one made from the file; a tap on it (or the pencil) edits it.
+  const [editingTitle, setEditingTitle] = useState(false);
   const [draft, setDraft] = useState(title);
   const [error, setError] = useState<string | null>(null);
+  const [wont, setWont] = useState(false);
   const save = async (v: string) => {
     const t = v.trim();
     const lex = await import("@/lib/custom/lexicon");
     const problem = t.length < 3 || t.length > 40 ? "A title of 3 to 40 characters." : lex.wordsProblem(t);
     setError(problem);
-    if (!problem) setTitle(t);
+    if (!problem) (setTitle(t), setEditingTitle(false));
   };
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="upload-title" className="mb-1 flex items-center gap-1.5 text-xs font-medium text-neutral-400">
-          <Icon name="pencil" className="h-3.5 w-3.5" /> Title
-        </label>
-        <input
-          id="upload-title"
-          value={draft}
-          maxLength={40}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={(e) => void save(e.target.value)}
-          aria-invalid={!!error}
-          className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
-          data-title
-        />
-        {error && <p className="mt-1 text-xs text-neutral-300">{error}</p>}
+        {editingTitle ? (
+          <>
+            <label htmlFor="upload-title" className="sr-only">
+              Title
+            </label>
+            <input
+              id="upload-title"
+              value={draft}
+              maxLength={40}
+              autoFocus
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={(e) => void save(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), void save(draft))}
+              aria-invalid={!!error}
+              className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-base font-semibold text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+              data-title
+            />
+            {error && <p className="mt-1 text-xs text-neutral-300">{error}</p>}
+          </>
+        ) : (
+          <button type="button" onClick={() => (setDraft(title), setEditingTitle(true))} className="flex min-h-11 max-w-full items-center gap-2 text-left text-base font-semibold text-white" aria-label={`Title: ${title}. Edit`} data-title-text>
+            <span className="truncate">{title}</span>
+            <Icon name="pencil" className="h-4 w-4 shrink-0 text-neutral-400" />
+          </button>
+        )}
       </div>
       <p className="flex flex-wrap items-center gap-x-2 text-sm text-neutral-300" data-summary>
         {summary}
@@ -796,11 +818,21 @@ function SizeStep({
           Change
         </button>
       </p>
-      <div ref={sizeRef} className="scroll-mb-32">
-        <SizeSelector key={nudge} value={size} onChange={setSize} highlight={nudge > 0 && !size} />
-      </div>
+      {!replacing && (
+        <div ref={sizeRef} className="scroll-mb-32">
+          <SizeSelector key={nudge} value={size} onChange={setSize} highlight={nudge > 0 && !size} />
+        </div>
+      )}
       <p className="text-sm text-neutral-400">Checked by a person before printing. Up to 2 days. Nothing charged if we can&rsquo;t print it.</p>
       <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}</p>
+      {/* The rights, confirmed by adding: one line above the button. */}
+      <p className="text-xs text-neutral-400" data-rights>
+        {replacing ? "Sending it" : "Adding it"} confirms you made it or have permission, and anyone in it has agreed.{" "}
+        <button type="button" onClick={() => setWont(true)} className="text-neutral-300 underline underline-offset-4 hover:text-white">
+          What we won&rsquo;t print
+        </button>
+      </p>
+      {wont && <WontPrint onClose={() => setWont(false)} />}
     </div>
   );
 }
