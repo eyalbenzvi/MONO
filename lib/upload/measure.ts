@@ -382,6 +382,17 @@ export function designHash(ink: Uint8Array, w: number, h: number): string {
   return dhash(crop, bw, bh);
 }
 
+/** The nearest catalogue design: its position in the hashes (the catalogue's order) and the distance. */
+export function nearestIndex(hash: string, hashes: Uint32Array): { index: number; distance: number } {
+  const [a, b] = [parseInt(hash.slice(0, 8), 16), parseInt(hash.slice(8, 16), 16)];
+  let best = { index: -1, distance: 64 };
+  for (let i = 0; i + 1 < hashes.length; i += 2) {
+    const d = popcount((a ^ hashes[i]) >>> 0) + popcount((b ^ hashes[i + 1]) >>> 0);
+    if (d < best.distance) best = { index: i / 2, distance: d };
+  }
+  return best;
+}
+
 export function nearestCatalogue(hash: string, hashes: Uint32Array): number {
   const [a, b] = [parseInt(hash.slice(0, 8), 16), parseInt(hash.slice(8, 16), 16)];
   let best = 64;

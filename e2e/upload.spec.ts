@@ -1,56 +1,29 @@
 import { expect, test, type Page } from "@playwright/test";
 import { CALIBRATION_IDS, hydrated } from "./helpers";
-import { drawing, engraving, photo, tiny } from "./fixtures/uploads";
+import { bands, drawing, engraving, mediumPhoto, photo } from "./fixtures/uploads";
 
 async function choose(page: Page, name: string, buffer: Buffer, mimeType = "image/png") {
   await page.locator("#upload-file").setInputFiles({ name, mimeType, buffer });
 }
-const ready = (page: Page) => expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 20_000 });
+const ready = (page: Page) => expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 25_000 });
+const primary = (page: Page) => page.locator("[data-primary]");
 
-test("From yours: a photograph → Dots and Lines → Small → the other tee → rights → size → bag", async ({ page }) => {
-  await page.goto("make/yours/");
+/** From Start to the bag: a file, Looks good, I confirm, M, Add to bag. */
+async function uploadToBag(page: Page, name: string, buffer: Buffer, query = "") {
+  await page.goto(`make/yours/${query}`);
   await hydrated(page);
-  await choose(page, "IMG_2041 heron at dusk.png", await photo());
+  await choose(page, name, buffer);
   await ready(page);
-  await expect(page.locator("[data-title]")).toHaveText("Heron At Dusk");
-  await expect(page.locator("[data-upload-line]")).toHaveText(/^A (light|dark) picture, so (black|white): the ink draws its (lights|darks)\.$/);
-  await page.getByRole("radio", { name: "Lines" }).tap();
-  await ready(page);
-  await page.getByRole("radio", { name: "Dots" }).tap();
-  await page.getByRole("radio", { name: "Small" }).tap();
-  await ready(page);
-  await page.getByRole("button", { name: "Continue" }).tap();
-  const cont = page.getByRole("button", { name: "Continue" });
-  await expect(cont).toBeDisabled();
-  await page.getByText("I made this, or I have permission to print it.").tap();
-  await cont.tap();
+  await primary(page).tap();
+  await expect(page.locator('[data-step="rights"]')).toBeVisible();
+  await primary(page).tap();
+  await expect(page.locator('[data-step="size"]')).toBeVisible();
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-  await page.getByRole("button", { name: /^Add to bag · M · \$75$/ }).tap();
+  await expect(primary(page)).toHaveText(/^Add to bag · M · \$75$/);
+  await primary(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
-  await page.goto("cart/");
-  await hydrated(page);
-  await expect(page.getByText("Heron At Dusk")).toBeVisible();
-  await expect(page.getByText(/^Your file · (Black|White)/)).toBeVisible();
-});
+}
 
-test("From yours: a drawing keeps its polarity and offers both tees", async ({ page }) => {
-  await page.goto("make/yours/");
-  await hydrated(page);
-  await choose(page, "rings.png", await drawing());
-  await ready(page);
-  await expect(page.locator("[data-upload-line]")).toHaveText("Drawn in dark on light, so white. Black swaps the inks.");
-  await expect(page.getByRole("radio", { name: "White" })).toHaveAttribute("aria-checked", "true");
-});
-
-test("From yours: a file too small for Full says so and stops there", async ({ page }) => {
-  await page.goto("make/yours/");
-  await hydrated(page);
-  await choose(page, "small.png", await tiny());
-  await expect(page.locator("[data-upload-line]")).toHaveText("Too small for Full. Try Small, or a larger file.", { timeout: 20_000 });
-  await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
-});
-
-/** From the mini bag's Checkout to "Order placed". */
 async function checkoutFromMiniBag(page: Page) {
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
   await page.waitForURL(/\/cart\/$/);
@@ -66,25 +39,134 @@ async function checkoutFromMiniBag(page: Page) {
   await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
 }
 
-async function uploadToBag(page: Page, name: string, buffer: Buffer, query = "") {
-  await page.goto(`make/yours/${query}`);
+test("Make: From ours and From yours are two pages behind one switch; Back leaves Make", async ({ page }) => {
+  await page.goto("shop/");
   await hydrated(page);
-  await choose(page, name, buffer);
+  await page.goto("make/");
+  await hydrated(page);
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
+  await expect(page.getByRole("heading", { name: "From a date" })).toBeVisible();
+  await expect(page.getByText("Start with a file")).toHaveCount(0);
+  await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
+  await expect(page).toHaveURL(/\/make\/yours\/$/);
+  await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
+  // Every tile shows the converter's own before and after, never an empty box.
+  for (const kind of ["photo", "drawing", "words"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/shop\/$/);
+});
+
+test("From yours, a photo: the print shows while converting, then Style, Size and Tee as real results; Lines; rights; size; the bag", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "IMG_2041 heron at dusk.png", await photo());
+  await expect(page).toHaveURL(/#print$/);
   await ready(page);
-  await page.getByRole("button", { name: "Continue" }).tap();
-  await page.getByText("I made this, or I have permission to print it.").tap();
-  await page.getByRole("button", { name: "Continue" }).tap();
+  await expect(page.locator("[data-upload-line]")).toHaveText(/^A (light|dark) picture, so (black|white): the ink draws its (lights|darks)\.$/);
+  await expect(page.getByRole("radiogroup", { name: "Style" }).getByRole("radio")).toHaveCount(2);
+  await expect(page.getByRole("radiogroup", { name: "Tee" }).getByText("Suggested")).toBeVisible();
+  await page.getByRole("radio", { name: /^Lines/ }).tap();
+  await ready(page);
+  await expect(primary(page)).toHaveText(/^Looks good · \$(75|130)$/);
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#rights$/);
+  await page.getByRole("button", { name: "What we won’t print" }).tap();
+  await expect(page.getByRole("dialog", { name: "What we won’t print" })).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).tap();
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await expect(page.locator("[data-title]")).toHaveValue("Heron At Dusk");
+  await expect(page.locator("[data-summary]")).toContainText("Lines · Full ·");
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-  await page.getByRole("button", { name: /^Add to bag · M/ }).tap();
+  await primary(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
-}
+  await page.goto("cart/");
+  await hydrated(page);
+  await expect(page.getByText("Heron At Dusk")).toBeVisible();
+  await expect(page.getByText(/^Your file · (Black|White)/)).toBeVisible();
+});
+
+test("From yours: Back walks back through the steps, and the draft comes back after a reload", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await primary(page).tap();
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await page.goBack();
+  await expect(page.locator('[data-step="rights"]')).toBeVisible();
+  await page.reload();
+  await hydrated(page);
+  // A reload opens the file in hand again, where it was.
+  await expect(page.locator('[data-step="rights"]')).toBeVisible();
+  await ready(page);
+  await page.goBack();
+  await expect(page.locator('[data-step="print"]')).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
+  await expect(page.locator("[data-draft]")).toContainText("Carry on with rings.png");
+});
+
+test("From yours: a print that fails shows itself, says why, and offers the fix that passes", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "bands.png", await bands());
+  await ready(page);
+  await page.getByRole("radio", { name: /^Lines/ }).tap();
+  await expect(page.locator('[data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText(/^Gaps under 0\.6 mm\./);
+  await expect(page.locator("[data-fix-card]")).toContainText("Gaps too narrow.");
+  await expect(primary(page)).toHaveText("Use Dots", { timeout: 25_000 });
+  await primary(page).tap();
+  await ready(page);
+  await expect(page.getByRole("radio", { name: /^Dots/ })).toHaveAttribute("aria-checked", "true");
+  await expect(primary(page)).toHaveText(/^Looks good/);
+});
+
+test("From yours: big enough for Small, not Full — it goes to Small and says so; Full is greyed with why", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "medium.png", await mediumPhoto());
+  await ready(page);
+  await expect(page.getByText("Big enough for Small, not Full. We’ve set Small.")).toBeVisible();
+  await expect(page.getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: /^Full: File too small/ })).toHaveAttribute("aria-disabled", "true");
+});
+
+test("From yours: words set as you type, no button; a brand is refused as typed", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await page.locator('[data-tile="words"]').tap();
+  await expect(page).toHaveURL(/#print$/);
+  await expect(page.locator('[data-upload-preview="empty"]')).toBeVisible();
+  await page.locator("#upload-words").fill("SLOW\nMORNINGS");
+  await ready(page);
+  await expect(primary(page)).toHaveText(/^Looks good/);
+  await page.locator("#upload-words").fill("NIKE");
+  await expect(page.locator("[data-words-error]")).toHaveText("Those words name a brand.");
+});
+
+test("From yours: Edit from the bag opens the same file at Your print; rights aren't asked again; Save changes replaces the line", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "Edit" }).first().tap();
+  await expect(page).toHaveURL(/\/make\/yours\/\?edit=.*#print$/);
+  await ready(page);
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$75$/);
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  await expect(page.getByText(/^Your file ·/)).toHaveCount(1);
+});
 
 test("From yours, after the order: checking → cleared; offered → accepted; in the shop with its credit, and in Your offers", async ({ page }) => {
   await page.clock.install();
   await uploadToBag(page, "rings.png", await engraving());
   await checkoutFromMiniBag(page);
-  const status = page.locator("[data-upload-reviews] [data-review]");
-  await expect(status).toHaveAttribute("data-review", "queued");
+  await expect(page.locator("[data-upload-reviews] [data-review]")).toHaveAttribute("data-review", "queued");
   await expect(page.getByText("Checking your file. Up to 2 days.")).toBeVisible();
   await expect(page.getByText("Reviews are simulated in this demo.")).toBeVisible();
   await page.clock.fastForward(21_000);
@@ -108,8 +190,6 @@ test("From yours, after the order: checking → cleared; offered → accepted; i
   await expect(page).toHaveURL(/\/shop\/p\/\?id=mono-u-/);
   await expect(page.getByRole("heading", { name: "Rings and Bars" })).toBeVisible();
   await expect(page.locator("[data-credit]")).toHaveText("By Noa L. · Open Call 01");
-  // Ranked by taste like any design: a taste that is this design's own features puts it near the top.
-  // (A known taste, so the shop sorts by it: the taste test done, three likes and three passes.)
   await page.evaluate((ids) => {
     const make = JSON.parse(localStorage.getItem("mono-make")!);
     const features = Object.values(make.state.offers as Record<string, { features: object }>)[0].features;
@@ -143,16 +223,6 @@ for (const [force, line] of [
     }
   });
 
-test("From yours: words only, set in the print font, into the bag", async ({ page }) => {
-  await page.goto("make/yours/");
-  await hydrated(page);
-  await page.getByRole("button", { name: "Write words instead" }).tap();
-  await page.locator("#upload-words").fill("SLOW\nMORNINGS");
-  await page.getByRole("button", { name: "Set these words" }).tap();
-  await ready(page);
-  await expect(page.locator("[data-title]")).toHaveText(/slow mornings/i);
-});
-
 test("From yours: a brand in the file name is refused before anything is converted", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
@@ -164,7 +234,7 @@ test("No CSP violation on the Make pages, the upload worker and an SVG included"
   await page.addInitScript(() => document.addEventListener("securitypolicyviolation", (e) => ((window as unknown as { __csp: string[] }).__csp ??= []).push(`${e.violatedDirective} ${e.blockedURI}`)));
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  for (const path of ["make/", "make/taste/", "make/code/", "make/line/", "make/voice/", "make/house/", "make/number/", "make/sky/"]) {
+  for (const path of ["make/", "make/taste/", "make/code/", "make/line/", "make/voice/", "make/house/", "make/number/", "make/place/", "make/ascii/", "make/sky/"]) {
     await page.goto(path);
     await hydrated(page);
     expect(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? []), path).toEqual([]);
@@ -173,9 +243,11 @@ test("No CSP violation on the Make pages, the upload worker and an SVG included"
   await hydrated(page);
   await choose(page, "rings.png", await drawing());
   await ready(page);
+  await page.goto("make/yours/");
+  await hydrated(page);
   const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="#fff"/><g fill="none" stroke="#000" stroke-width="10"><circle cx="150" cy="170" r="110"/><circle cx="150" cy="170" r="70"/><path d="M40 360h220M60 330h180"/></g></svg>');
   await choose(page, "circles.svg", svg, "image/svg+xml");
-  await expect(page.locator("[data-upload-line]")).toHaveText(/Drawn in dark on light|Too|won't/, { timeout: 20_000 });
+  await expect(page.locator('[data-upload-preview="ready"], [data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
   expect(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? [])).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -184,7 +256,8 @@ test("From yours: an SVG with a script is refused", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "bad.svg", Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="10" height="10"/></svg>'), "image/svg+xml");
-  await expect(page.locator("[data-upload-line]")).toHaveText("This SVG has parts we can't print.", { timeout: 20_000 });
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can't print.", { timeout: 25_000 });
+  await expect(primary(page)).toHaveText("Choose another file");
 });
 
 test("A bag line whose file is gone from this device leaves the bag, said once", async ({ page }) => {
@@ -202,31 +275,27 @@ test("A bag line whose file is gone from this device leaves the bag, said once",
 test("Analytics carry the kind and the tier, never the file's name, title or pixels", async ({ page }) => {
   await uploadToBag(page, "grandma's garden 1987.png", await drawing());
   const layer = await page.evaluate(() => JSON.stringify(window.dataLayer ?? []));
-  expect(layer).toContain('"upload_start"');
-  expect(layer).toContain('"upload_preview"');
+  for (const e of ["upload_start", "upload_preview", "yours_step", "upload_rights_confirm"]) expect(layer).toContain(`"${e}"`);
   expect(layer).toContain("white-upload");
   expect(layer.toLowerCase()).not.toMatch(/grandma|garden|1987|data:image/);
 });
 
-test("From yours by keyboard: after the file, every step is reachable and operable without a pointer", async ({ page }) => {
+test("From yours by keyboard: tiles, choices, rights and size without a pointer", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "rings.png", await drawing());
   await ready(page);
-  await page.getByRole("radio", { name: "Small" }).focus();
+  await page.getByRole("radio", { name: /^Small/ }).focus();
   await page.keyboard.press("Enter");
   await ready(page);
-  await page.getByRole("button", { name: "Continue" }).focus();
+  await primary(page).focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("checkbox").focus();
-  await page.keyboard.press("Space");
-  await page.keyboard.press("Tab");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: "Continue" })).toBeFocused();
+  await expect(page.locator('[data-step="rights"]')).toBeFocused();
+  await primary(page).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("radio", { name: /^M\b/ }).first().focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: /^Add to bag · M/ }).focus();
+  await primary(page).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
 });

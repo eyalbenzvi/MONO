@@ -1,0 +1,24 @@
+[
+  {
+    "kind": "photo",
+    "mode": "dots",
+    "tee": "black",
+    "quality": 77,
+    "hash": "3d8f4405",
+    "credit": "Fennec Fox · Clyde Nishimura, FONZ Photo Club, Smithsonian's National Zoo · CC0"
+  },
+  {
+    "kind": "drawing",
+    "mode": "line",
+    "tee": "white",
+    "quality": 70,
+    "hash": "20516cfc"
+  },
+  {
+    "kind": "words",
+    "mode": "words",
+    "tee": "white",
+    "quality": 85,
+    "hash": "e2e837e1"
+  }
+]

@@ -16,7 +16,9 @@ import { track } from "@/lib/analytics";
 import { pairPrice, pairStatus, unitPrice } from "@/lib/cart";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
 import { checkPrint, type PrintCheck } from "@/lib/custom/printCheck";
-import { madeBySlug, type MadeProduct } from "@/lib/custom/products";
+import { MADE, MAKE_GROUPS, madeBySlug, type MadeProduct } from "@/lib/custom/products";
+import { carry } from "@/lib/custom/carry";
+import { FROM_KEY, markFrom } from "@/lib/custom/makeFrom";
 import { inkFromCanvas } from "@/lib/custom/raster";
 import { loadRenderer, type Renderer } from "@/lib/custom/renderers";
 import { decodeMake, encodeMake, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
@@ -65,6 +67,32 @@ interface Shown {
  * it as it was. Every print passes the catalogue's gate before it can be
  * bought; a pair only when both tees pass.
  */
+/**
+ * "Also from a date: Your Moon · Your Planets": the other products of this one's group, each link carrying
+ * what's typed here that it can use (the date, the city, the words, the name), so it needn't be typed again.
+ */
+function Siblings({ made, spec }: { made: MadeProduct; spec: CustomSpec | null }) {
+  const group = MAKE_GROUPS.find((g) => g.id === made.group)!;
+  const others = MADE.filter((m) => m.group === made.group && m.slug !== made.slug);
+  if (!others.length) return null;
+  return (
+    <p className="text-xs text-neutral-500" data-siblings>
+      Also {group.label.toLowerCase()}:{" "}
+      {others.map((m, i) => {
+        const carried = spec ? carry(spec, m) : null;
+        return (
+          <span key={m.slug}>
+            {i > 0 && " · "}
+            <Link href={`/make/${m.slug}/${carried ? `?make=${encodeMake(carried)}` : ""}`} onClick={() => markFrom("sibling")} className="text-neutral-300 underline underline-offset-2 hover:text-white">
+              {m.name}
+            </Link>
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
 export function MakeView({ slug }: { slug: string }) {
   const made = madeBySlug(slug) as MadeProduct;
   const router = useRouter();
@@ -84,9 +112,19 @@ export function MakeView({ slug }: { slug: string }) {
     if (!hydrated || arrival !== undefined) return;
     const spec = decodeMake(new URLSearchParams(window.location.search).get("make"));
     setArrival(spec && spec.t === made.template ? spec : null);
-    track("make_open", { product: made.slug });
+    // Where this visit came from (the index card or a sibling link set it on the way here), for Back and analytics.
+    let from = "";
+    try {
+      from = sessionStorage.getItem(FROM_KEY) ?? "";
+      sessionStorage.removeItem(FROM_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    setCameFrom(from === "index" || from === "sibling" ? from : "design");
+    track("make_open", { product: made.slug, group: made.group, source: from === "index" || from === "sibling" ? from : "design" });
   }, [hydrated, arrival, made]);
 
+  const [cameFrom, setCameFrom] = useState<"index" | "sibling" | "design">("design");
   // What the editor makes of its fields.
   const [state, setState] = useState<EditorState>({ spec: null });
   const onEditor = useCallback((s: EditorState) => setState(s), []);
@@ -185,7 +223,17 @@ export function MakeView({ slug }: { slug: string }) {
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
         <div className="mb-2 flex items-center justify-between">
-          <Link href="/make/" className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+          <Link
+            href={`/make/#${made.group}`}
+            onClick={(e) => {
+              // From the index: back in history, so its scroll is kept.
+              if (cameFrom === "index" && window.history.length > 1) {
+                e.preventDefault();
+                router.back();
+              }
+            }}
+            className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white"
+          >
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
           {!state.blocked && (
@@ -267,6 +315,7 @@ export function MakeView({ slug }: { slug: string }) {
                     {buyLabel}
                   </button>
                   <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}. Printed to order in one ink, up to 28 × 37 cm.</p>
+                  <Siblings made={made} spec={current?.spec ?? state.spec} />
                 </>
               )}
             </form>

@@ -13,6 +13,10 @@ export interface StoredUpload {
   /** The picture to convert again (Edit), until the order is placed. Words keep their lines instead. */
   source?: Blob;
   words?: string[];
+  /** The page's settings for it (crop, turn, Stronger, style, size), so Edit and the draft open as they were. */
+  settings?: unknown;
+  /** The file's name (the draft's "Carry on with …"). */
+  name?: string;
   createdAt: number;
 }
 

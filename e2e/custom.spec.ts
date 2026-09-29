@@ -11,17 +11,19 @@ test("Make is in plain sight: a header tab, the shop's first card, and a way in 
   await page.getByRole("link", { name: "Make", exact: true }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
   await expect(page.locator("h1")).toHaveText("Make");
-  await expect(page.getByRole("heading", { name: "From ours" })).toBeVisible();
-  // Each card says what it is made from.
+  // The two tracks behind one switch; From ours grouped by what you arrive with.
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
+  const groups = await page.locator("section h2").allTextContents();
+  expect(groups.map((g) => g.trim())).toEqual(["From a date", "From a name", "From a place", "From you"]);
+  const names = ["Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons", "Your Name", "Your ASCII", "Your Place", "Your House", "Your Voice", "Your Line", "Your Number", "Your Taste"];
+  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(names);
+  // Each card says what it takes.
   const lines = await page.locator('[data-from="ours"] li p').allTextContents();
-  expect(lines).toEqual(["From your swipes", "From your name", "From your words", "From a line you draw", "From your voice", "From your house", "From a number", "From where you were", "From a night", "From a moon", "From a day", "From a year"]);
-  const names = ["Your Taste", "Your Name", "Your ASCII", "Your Line", "Your Voice", "Your House", "Your Number", "Your Place", "Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"];
-  expect((await page.locator('[data-from="ours"] li h3').allTextContents()).map((t) => t.trim())).toEqual(names);
-  // From yours: one card, to the upload page.
-  await expect(page.getByRole("heading", { name: "From yours" })).toBeVisible();
-  await expect(page.getByText("Your picture or words, in one ink.")).toBeVisible();
-  await expect(page.locator('[data-from="yours"] a')).toHaveAttribute("href", /\/make\/yours\/$/);
-  await expect(page.locator('[data-from="yours"] a')).toContainText("Start with a file");
+  expect(lines.slice(0, 11)).toEqual(["A night and a place", "A night", "A day", "A year", "A name, in an old code", "A word or two", "A place and a day", "Floors, windows, a door", "Three seconds of humming", "A line you draw", "A number and what it was"]);
+  expect(lines[11]).toMatch(/^Your swipes/);
+  // From yours is the other page, not further down this one.
+  await expect(page.getByText("Start with a file")).toHaveCount(0);
+  await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);
   // Each card is a real print, drawn in the browser.
   await expect(page.locator("canvas[data-custom]")).toHaveCount(lines.length);
 

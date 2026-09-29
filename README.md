@@ -150,7 +150,7 @@ State read back from `localStorage` goes through a guard (`sanitizeTaste` / `san
 
 ## Make: from ours, from yours (`/make/`)
 
-One ink, for one person, in two tracks. **From ours**: twelve of our designs, each adapted from one thing of yours and drawn in the browser with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). **From yours**: your own picture, drawing or words, converted to one ink on your device (`lib/upload`). A **Make** tab in the header, the shop's first card ("Make one yours →") and a "Make your own →" link on the designs they're drawn like lead to them.
+One ink, for one person, in two tracks. **From ours**: twelve of our designs, each adapted from one thing of yours and drawn in the browser with the catalogue's code (`lib/custom`, shared with the generator: the computed designs come out of it byte for byte). **From yours**: your own picture, drawing or words, converted to one ink on your device (`lib/upload`). A **Make** tab in the header, the shop's first card ("Make one yours →") and a "Make your own →" link on the designs they're drawn like lead to them. The two tracks are two pages behind one switch under the H1 ("From ours" · "From yours", links that replace the history entry, so Back leaves Make): `/make/` groups ours by what you arrive with — From a date, From a name, From a place, From you — as shop-style cards (the example print on its tee, the name, what it takes); each product page links its siblings in the group, carrying what's typed (the date, the city, the words, a name) so it needn't be typed again.
 
 | Product | Page | From | Drawn like |
 | --- | --- | --- | --- |
@@ -176,7 +176,12 @@ One ink, for one person, in two tracks. **From ours**: twelve of our designs, ea
 
 ### From yours (`/make/yours/`)
 
-Four steps on one page, the picture always at the top: **A** a file (PNG, JPG, WebP, SVG; 25 MB; short side 800 px for Small, 1,100 for Full) or words (3 lines of 24); **B** the preview (Dots · Lines for a photograph, Full · Small, the tee chosen by rule, one line saying why, or why not); **C** the rights box and "What we won't print"; **D** size and bag.
+Four steps, one white button each, the picture always in view and never blank (while converting it shows the last print, or the source faded and grey, under a status pill). The step is in the hash (`#print`, `#rights`, `#size`), so a phone's Back walks back through them; the file in hand is kept on the device as a draft, so a reload comes back to it.
+
+1. **Start**: "What do you have?" — A photo · A drawing · Words, each tile showing the converter's own before and after (`scripts/tools/buildYoursExamples.ts` runs the real conversion on a CC0 Smithsonian photo, a sketch drawn in code, and "SUNDAY / BEST"; `tests/upload/examples.test.ts` regenerates them and checks nothing was retouched).
+2. **Your print**: Style (Dots · Lines, a photograph only), Size (Full · Small) and Tee (Black · White · Both) as small pictures of the real result, the tee rule's pick marked "Suggested", a failing option dimmed with its reason. "Adjust" crops and turns the source and has "Stronger"; "Hold: original" shows the source. A print that fails shows itself, says why and what it means, and offers only the fixes that pass once tried (Stronger, Use Lines / Use Dots, Use Small / Use Full, Bolder; Crop tighter opens Adjust); a file too small for Full goes to Small and says so. Words are set as you type.
+3. **Rights**: one sentence and "I confirm"; "What we won't print" in a dialog.
+4. **Size**: the title (editable), the summary with "Change", the size, "Add to bag · L · $75" (Edit from the bag: "Save changes").
 
 - **Conversion** runs in a same-origin module worker (`lib/upload/worker.ts`; no blob workers, the CSP unchanged): SVGs are sanitised and rasterised, drawings get a Sauvola threshold and clean-up, photographs a port of `scripts/photos/halftone.py` (AM round dot, 30 lpi, 45°, 8–80%) or Canny lines. The result is a 1500 × 2000 one-bit raster, EXIF dropped.
 - **The quality bar** (`lib/upload/measure.ts`) is the catalogue's: `solidBlock`, `assessPrint` ≥ 53, coverage 1–45%, detail, the thinnest line and gap (5th percentile of the skeleton's width), and no near-duplicate of a catalogue design (dHash). Reasons live in `lib/upload/reasons.ts`.

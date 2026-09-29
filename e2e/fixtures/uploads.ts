@@ -51,3 +51,21 @@ export function engraving(): Promise<Buffer> {
     return z > 0.08 && (z * 10) % 1 < 0.3 ? 10 : 245;
   });
 }
+
+/** A drawing in hairlines (2 px on 1400): too fine to print as it is, fine made bolder. */
+export function hairlines(): Promise<Buffer> {
+  return png(1400, 1400, (x, y) => {
+    const d = Math.hypot(x - 700, y - 700);
+    return d < 600 && Math.abs((d % 50) - 25) < 0.6 ? 15 : 245;
+  });
+}
+
+/** A photograph big enough for Small but not Full (short side 900 px). */
+export async function mediumPhoto(): Promise<Buffer> {
+  return sharp(await photo()).resize(1200, 900).png().toBuffer();
+}
+
+/** Soft bands of mid-grey: prints in dots, but as lines its edges crowd (gaps too narrow). */
+export function bands(): Promise<Buffer> {
+  return png(1600, 1200, (x, y) => 128 + 70 * Math.sin(x / 40) * Math.sin(y / 55));
+}

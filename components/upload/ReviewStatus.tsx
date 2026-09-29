@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { REFUSAL_FALLBACK, REFUSAL_LINE, STATUS_LINE, nextChange, stateAt, type ReviewTicket } from "@/lib/upload/review";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { REFUSAL_FALLBACK, REFUSAL_LINE, STATUS_LINE, nextChange, stateAt, type ReviewState, type ReviewTicket } from "@/lib/upload/review";
+import { getShirtById } from "@/lib/catalog";
+import { YOURS_ID } from "@/lib/upload/keys";
 import { useMakeStore } from "@/store/makeStore";
+
+const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
 /** The clock the review states are read from, ticking only when a state is due to change. */
 function useReviewState(t: ReviewTicket) {
@@ -19,34 +23,56 @@ function useReviewState(t: ReviewTicket) {
 
 /**
  * One uploaded print's review, as the order confirmation and /me show it:
- * its title and one status line; a refusal says why and offers "Upload
- * another" (bound to the same order line); a cleared file of the catalogue
- * tier offers the Open Call (`offer`, when given).
+ * its title, a short timeline of dots (checking, a person when its checks
+ * came close, cleared) and one status line; a refusal shows the print, says
+ * why and offers "Upload another" (bound to the same order line); a
+ * cleared file of the catalogue tier offers the Open Call.
  */
 export function ReviewStatus({ ticket, offer }: { ticket: ReviewTicket; offer?: (uploadId: string) => void }) {
   const state = useReviewState(ticket);
   const meta = useMakeStore((s) => s.uploads[ticket.uploadId]);
   const offered = useMakeStore((s) => !!s.offers[ticket.uploadId]);
   const reason = ticket.force?.state === "refused" ? REFUSAL_LINE[ticket.force.reason] : REFUSAL_FALLBACK;
+  // The stages this file goes through: a person only when its checks came close.
+  const stages: ReviewState[] = ticket.near || ticket.force?.state === "person" ? ["queued", "person", "cleared"] : ["queued", "cleared"];
+  const at = state === "refused" ? 0 : stages.indexOf(state);
   return (
-    <div data-review={state} className="rounded-xl bg-white/[0.04] px-3 py-2.5 text-left text-sm ring-1 ring-white/10">
-      <p className="font-semibold text-white">{meta?.title ?? "Your file"}</p>
-      <p role="status" className="mt-0.5 text-xs text-neutral-300">
-        {STATUS_LINE[state]}
-      </p>
-      {state === "refused" && (
-        <p className="mt-1 text-xs text-neutral-400">
-          {reason}{" "}
-          <Link href={`/make/yours/?replace=${ticket.id}`} className="text-neutral-200 underline underline-offset-2 hover:text-white">
-            Upload another
-          </Link>
-        </p>
-      )}
-      {state === "cleared" && offer && meta?.tier === "catalogue" && !offered && (
-        <button type="button" onClick={() => offer(ticket.uploadId)} className="mt-1 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
-          Offer it to the catalogue ›
-        </button>
-      )}
+    <div data-review={state} className="rounded-xl bg-white/[0.04] px-3 py-3 text-left text-sm ring-1 ring-white/10">
+      <div className="flex gap-3">
+        {state === "refused" && meta && (
+          <Suspense fallback={null}>
+            <div className="w-14 shrink-0 overflow-hidden rounded-lg">
+              <UploadMockup shirt={getShirtById(YOURS_ID)!} uploadId={ticket.uploadId} color={meta.tees[0]} className="w-full" label={meta.title} />
+            </div>
+          </Suspense>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-white">{meta?.title ?? "Your file"}</p>
+          {state !== "refused" && (
+            <ol className="mt-2 flex items-center gap-1.5" aria-label={`Step ${at + 1} of ${stages.length}`}>
+              {stages.map((st, i) => (
+                <li key={st} aria-current={i === at ? "step" : undefined} className={`h-2 w-2 rounded-full ${i === at ? "bg-white" : i < at ? "bg-neutral-500" : "bg-white/15"}`} />
+              ))}
+            </ol>
+          )}
+          <p role="status" className="mt-1.5 text-xs text-neutral-300">
+            {STATUS_LINE[state]}
+          </p>
+          {state === "refused" && (
+            <>
+              <p className="mt-1 text-xs text-neutral-400">{reason}</p>
+              <Link href={`/make/yours/?replace=${ticket.id}`} className="mt-2 inline-flex h-10 items-center rounded-full bg-white px-4 text-xs font-bold text-black">
+                Upload another
+              </Link>
+            </>
+          )}
+          {state === "cleared" && offer && meta?.tier === "catalogue" && !offered && (
+            <button type="button" onClick={() => offer(ticket.uploadId)} className="mt-1 h-9 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
+              Offer it to the catalogue ›
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

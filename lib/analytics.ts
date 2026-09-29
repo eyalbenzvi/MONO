@@ -50,7 +50,17 @@ export type AnalyticsEvent =
   | "upload_preview"
   | "upload_refused"
   | "offer_submit"
-  | "offer_result";
+  | "offer_result"
+  | "yours_view"
+  | "yours_start_tile"
+  | "yours_step"
+  | "upload_fix_offered"
+  | "upload_fix_applied"
+  | "upload_adjust"
+  | "upload_compare"
+  | "upload_hold_original"
+  | "upload_rights_confirm"
+  | "upload_another";
 
 export type AnalyticsProps = Record<string, unknown>;
 

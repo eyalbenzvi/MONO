@@ -251,7 +251,7 @@ test("Your Voice: the microphone refused leaves the example and a way to Your Li
   await page.keyboard.down(" ");
   await page.keyboard.up(" ");
   await expect(page.getByText("The microphone is off. Allow it, or try Your Line.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Your Line" })).toHaveAttribute("href", /\/make\/line\/$/);
+  await expect(page.getByRole("status").getByRole("link", { name: "Your Line" })).toHaveAttribute("href", /\/make\/line\/$/);
   expect(page.url()).toBe(example);
   await expect(page.getByRole("button", { name: /^Add to bag|Choose size/ }).first()).toBeVisible();
 
@@ -325,4 +325,20 @@ test("Your Place: 'Where I am now' fills the place from this device, rounded to 
   await expect(page.locator("#make-lat")).toHaveValue("51.51");
   await expect(page.locator("#make-lon")).toHaveValue("-0.13");
   await ctx.close();
+});
+
+test("A product page's siblings carry what's typed: a name to Your ASCII; Back returns to the index", async ({ page }) => {
+  await page.goto("make/");
+  await hydrated(page);
+  await page.locator('[data-made="code"]').tap();
+  await expect(page).toHaveURL(/\/make\/code\/$/);
+  await page.locator("#make-name").fill("Maya");
+  await drawn(page);
+  const sib = page.locator("[data-siblings]");
+  await expect(sib).toContainText("Also from a name:");
+  await expect(sib.getByRole("link", { name: "Your ASCII" })).toHaveAttribute("href", new RegExp(`make=${make({ t: "ascii", v: 1, p: { x: ["MAYA"], f: "self", s: 1 } })}$`));
+  await sib.getByRole("link", { name: "Your ASCII" }).tap();
+  await expect(page).toHaveURL(/\/make\/ascii\//);
+  await hydrated(page);
+  await expect(page.locator("#make-big")).toHaveValue("MAYA");
 });

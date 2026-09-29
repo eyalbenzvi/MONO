@@ -2,37 +2,44 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MakeHeader } from "@/components/custom/MakeHeader";
 import { Icon } from "@/components/Icon";
-import { CustomMockup } from "@/components/custom/CustomMockup";
 import { SizeSelector, STAGE_BG } from "@/components/ui";
-import { useHydrated } from "@/store/useUiStore";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { track } from "@/lib/analytics";
-import { getShirtById } from "@/lib/catalog";
+import { assetUrl, getShirtById, productHref } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
-import { YOURS_ID } from "@/lib/upload/designs";
+import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
-import type { Prepared, Preview } from "@/lib/upload/client";
+import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source } from "@/lib/upload/client";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
-import { useTasteStore } from "@/store/tasteStore";
-import { SIZE_LABELS, type BaseColor, type ShirtSize } from "@/types/shirt";
+import { useHydrated } from "@/store/useUiStore";
+import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
+const AdjustDialog = lazy(() => import("./yours/AdjustDialog").then((m) => ({ default: m.AdjustDialog })));
+import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
+import { Stage, placeholder, type StageState } from "./yours/Stage";
+import examples from "@/data/upload/examples.json";
 
-type Choice = BaseColor | "both";
+type Step = "start" | "print" | "rights" | "size";
+const STEPS: Step[] = ["start", "print", "rights", "size"];
+const loadClient = () => import("@/lib/upload/client");
+const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
+const stepOf = (hash: string): Step => (STEPS.includes(hash.slice(1) as Step) ? (hash.slice(1) as Step) : "start");
 const WORDS_LINES = 3;
 const WORDS_CHARS = 24;
-const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
-
-const loadClient = () => import("@/lib/upload/client");
 
 /**
- * From yours (/make/yours/): your picture, drawing or words in one ink.
- * Four steps on one page, the picture always at the top: A start (a file,
- * or words), B preview (Dots · Lines for a photograph, Full · Small, the
- * tee; a failing check says why and stops there), C rights, D size and bag.
- * Everything is converted and checked on this device (lib/upload); the
- * file never leaves it.
+ * From yours (/make/yours/): your picture, drawing or words, in one ink.
+ * Four steps, one white button each, the picture always in view: Start
+ * (what do you have?), Your print (Dots or Lines, Full or Small, the tee,
+ * each shown as the real result; a print that fails shows itself and the
+ * fixes that pass), Rights, Size. The step is in the address's hash, so a
+ * phone's Back walks back through them; the file in hand is kept on the
+ * device as a draft, so a reload comes back to it. Everything is converted
+ * and checked on this device.
  */
 export function YoursView() {
   return (
@@ -50,27 +57,51 @@ function Yours() {
   const replaceId = params.get("replace");
   const shirt = getShirtById(YOURS_ID)!;
 
-  const [source, setSource] = useState<Prepared | null>(null);
-  const [writing, setWriting] = useState(false);
-  const [words, setWords] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"dots" | "lines">("dots");
-  const [size, setPrintSize] = useState<"full" | "small">("full");
+  const [step, setStep] = useState<Step>("start");
+  const [source, setSource] = useState<Source | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [last, setLast] = useState<PreviewOk | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [fixes, setFixes] = useState<{ fix: Fix; settings: Settings; preview: PreviewOk }[] | null>(null);
   const [choice, setChoice] = useState<Choice>("white");
   const [title, setTitle] = useState("");
-  const [titleEdit, setTitleEdit] = useState(false);
-  const [titleError, setTitleError] = useState<string | null>(null);
-  const [step, setStep] = useState<"b" | "c" | "d">("b");
-  const [rights, setRights] = useState(false);
-  const [open, setOpen] = useState(false);
-  const selected = useCartStore((s) => sizeFor(s, YOURS_ID));
+  const [rightsFor, setRightsFor] = useState<string | null>(null);
   const [teeSize, setTeeSize] = useState<ShirtSize | undefined>(undefined);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+  const [wordsMode, setWordsMode] = useState(false);
+  const [words, setWords] = useState("");
+  const [wordsError, setWordsError] = useState<string | null>(null);
+  const [adjusting, setAdjusting] = useState(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const [status, setStatus] = useState("");
   const [nudge, setNudge] = useState(0);
+  const [added, setAdded] = useState(false);
+  const selected = useCartStore((s) => sizeFor(s, YOURS_ID));
   const fileInput = useRef<HTMLInputElement>(null);
-  const [drag, setDrag] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
   const run = useRef(0);
+  const entered = useRef(Date.now());
+
+  /* ---------------- steps and history ---------------- */
+  const go = useCallback((next: Step, replace = false) => {
+    const url = `${window.location.pathname}${window.location.search}${next === "start" ? "" : `#${next}`}`;
+    if (replace) window.history.replaceState(window.history.state, "", url);
+    else window.history.pushState(window.history.state, "", url);
+    setStep(next);
+  }, []);
+  useEffect(() => {
+    const on = () => setStep(stepOf(window.location.hash));
+    window.addEventListener("popstate", on);
+    return () => window.removeEventListener("popstate", on);
+  }, []);
+  useEffect(() => {
+    heading.current?.focus();
+    const secs = Math.round((Date.now() - entered.current) / 1000);
+    entered.current = Date.now();
+    track("yours_step", { n: STEPS.indexOf(step) + 1, secs_bucket: secs < 10 ? "<10" : secs < 30 ? "<30" : secs < 90 ? "<90" : "90+" });
+  }, [step]);
 
   // ?review= for demos: remembered for the tab, so the order placed later carries it.
   useEffect(() => {
@@ -83,357 +114,658 @@ function Yours() {
     }
   }, [params]);
 
-  // Edit (from the bag): the same file, converted again with its choices.
+  /* ---------------- arrival: edit, draft ---------------- */
   useEffect(() => {
-    if (!hydrated || !editId) return;
-    const meta = useMakeStore.getState().uploads[editId];
+    if (!hydrated) return;
+    track("yours_view", { from: editId ? "edit" : replaceId ? "replace" : "make" });
+    const want = stepOf(window.location.hash);
     void loadClient().then(async (c) => {
-      const p = await c.reopen(editId);
-      if (!p) return;
-      if (meta) {
-        setTitle(meta.title);
-        setPrintSize(meta.size);
-        if (meta.mode === "dots" || meta.mode === "lines") setMode(meta.mode);
-        setChoice(meta.tees[0]);
+      if (editId) {
+        const r = await c.reopen(editId);
+        if (r) {
+          const meta = useMakeStore.getState().uploads[editId];
+          setSource(r.source);
+          setSettings(r.settings);
+          if (r.source.kind === "words") (setWordsMode(true), setWords(r.source.words!.join("\n")));
+          // The tee as it is in the bag: both colours when the line was the pair.
+          const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
+          if (meta) setTitle(meta.title);
+          setChoice(lines.length >= 2 ? "both" : (lines[0]?.color ?? meta?.tees[0] ?? "white"));
+          setRightsFor(`${r.source.id}|${JSON.stringify([r.settings.crop, r.settings.rot])}`);
+          go("print", true);
+          return;
+        }
       }
-      setSource(p);
+      const d = await c.reopen(c.DRAFT);
+      if (d) {
+        setDraftName(d.name);
+        if (want !== "start") {
+          setSource(d.source);
+          setSettings(d.settings);
+          if (d.source.kind === "words") (setWordsMode(true), setWords(d.source.words!.join("\n")));
+          // Back where it was (Size asks the rights again: they aren't kept with the draft).
+          if (want === "size") go("rights", true);
+          else setStep(want);
+          return;
+        }
+      }
+      if (want !== "start") go("start", true);
     });
-  }, [hydrated, editId]);
+    // Once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
-  // Convert whenever the source or a control changes (in the worker; stale results are dropped).
-  useEffect(() => {
-    if (!source) return;
-    const n = ++run.current;
-    setBusy(true);
-    void loadClient()
-      .then((c) => c.convert(source, { mode, size }))
-      .then((p) => {
-        if (n !== run.current) return;
-        setPreview(p);
-        setBusy(false);
-        if (p.ok) {
-          setChoice((c) => (c !== "both" && p.tees.includes(c) ? c : p.tee));
-          setTitle((t) => t || p.title);
-          track("upload_preview", { class: p.cls, tier: p.tier });
-        } else track("upload_refused", { reason: p.code });
-      });
-  }, [source, mode, size]);
-
-  const choose = useCallback(async (file: File) => {
-    setStartError(null);
-    setPreview(null);
-    setStep("b");
-    setRights(false);
-    setTitle("");
+  const carryOn = async () => {
     const c = await loadClient();
-    const p = await c.prepare(file);
-    if (!p.ok) {
-      setStartError(p.reason);
-      track("upload_refused", { reason: p.code });
+    const d = await c.reopen(c.DRAFT);
+    if (!d) return setDraftName(null);
+    setSource(d.source);
+    setSettings(d.settings);
+    if (d.source.kind === "words") (setWordsMode(true), setWords(d.source.words!.join("\n")));
+    go("print");
+  };
+
+  /* ---------------- opening a file or words ---------------- */
+  const choose = useCallback(
+    async (file: File, kind: string) => {
+      setStartError(null);
+      setOpening(kind);
+      const c = await loadClient();
+      const r = await c.openFile(file);
+      setOpening(null);
+      if (!r.ok) {
+        setStartError(r.reason);
+        track("upload_refused", { reason: r.code });
+        return;
+      }
+      track("upload_start", { kind: r.source.kind === "svg" ? "svg" : kind });
+      setWordsMode(false);
+      setSource(r.source);
+      setSettings({ ...c.DEFAULTS });
+      setPreview(null);
+      setLast(null);
+      setTitle("");
+      setRightsFor(null);
+      void c.saveDraft(r.source, c.DEFAULTS);
+      go("print");
+    },
+    [go],
+  );
+  const [tile, setTile] = useState("photo");
+  const pick = (kind: string) => {
+    setTile(kind);
+    track("yours_start_tile", { kind });
+    if (kind === "words") {
+      setWordsMode(true);
+      setSource(null);
+      setPreview(null);
+      setLast(null);
+      setTitle("");
+      setRightsFor(null);
+      void loadClient().then((c) => setSettings({ ...c.DEFAULTS }));
+      go("print");
       return;
     }
-    track("upload_start", { kind: p.value.kind });
-    setSource(p.value);
-  }, []);
+    fileInput.current?.click();
+  };
 
-  const setWordsSource = async () => {
+  // Words: set as you type (a pause of 300 ms), no button.
+  useEffect(() => {
+    if (!wordsMode) return;
     const lines = words.split("\n").map((l) => l.trimEnd()).filter((l) => l.trim());
-    const c = await loadClient();
-    const p = await c.prepareWords(lines);
-    if (!p.ok) return setStartError(p.reason);
-    setStartError(null);
-    setTitle("");
-    track("upload_start", { kind: "words" });
-    setSource(p.value);
-  };
-
-  const ok = preview?.ok ? preview : null;
-  const shown: BaseColor = choice === "both" ? (ok?.tee ?? "white") : choice;
-  const canvas = useMemo(() => (ok ? ok.canvas(shown) : null), [ok, shown]);
-  const blank = useMemo(() => (hydrated ? emptyCanvas(shown) : null), [hydrated, shown]);
-  const both = !!ok && ok.tees.length === 2;
-  const size$ = teeSize ?? selected;
-  const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
-
-  const saveTitle = async (t: string) => {
-    const v = t.trim();
-    const lex = await import("@/lib/custom/lexicon");
-    const problem = v.length < 3 || v.length > 40 ? "A title of 3 to 40 characters." : lex.wordsProblem(v);
-    setTitleError(problem);
-    if (!problem) {
-      setTitle(v);
-      setTitleEdit(false);
+    if (!lines.length) {
+      setSource(null);
+      setPreview(null);
+      setWordsError(null);
+      return;
     }
+    const t = setTimeout(async () => {
+      const c = await loadClient();
+      const id = `w${[...lines.join("\n")].reduce((h, ch) => (Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0), 2166136261).toString(36)}`;
+      const r = await c.openWords(lines, id);
+      if (!r.ok) {
+        setWordsError(r.reason);
+        return;
+      }
+      setWordsError(null);
+      setSource(r.source);
+      if (!rightsFor) track("upload_start", { kind: "words" });
+      void c.saveDraft(r.source, settings ?? c.DEFAULTS);
+    }, 300);
+    return () => clearTimeout(t);
+    // Settings don't reopen the words.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words, wordsMode]);
+
+  /* ---------------- converting ---------------- */
+  useEffect(() => {
+    if (!source || !settings) return;
+    const n = ++run.current;
+    setBusy(true);
+    setFixes(null);
+    setStatus(last ? "" : "Converting");
+    void loadClient().then(async (c) => {
+      const p = await c.convertWith(source, settings);
+      if (n !== run.current) return;
+      setPreview(p);
+      setBusy(false);
+      if (p.ok) {
+        setLast(p);
+        setChoice((ch) => (ch === "both" ? (p.tees.length === 2 ? "both" : p.tee) : p.tees.includes(ch) ? ch : p.tee));
+        setTitle((t) => t || p.title);
+        setStatus(p.autoSmall ? "Big enough for Small, not Full. We've set Small." : `It prints on ${p.tee}.`);
+        track("upload_preview", { class: p.cls, tier: p.tier });
+        return;
+      }
+      setStatus(p.reason);
+      track("upload_refused", { reason: p.code });
+      const found = p.duplicateOf ? [] : await c.passingFixes(source, settings, p);
+      if (n !== run.current) return;
+      setFixes(found);
+      track("upload_fix_offered", { reason: p.code, n: found.length });
+    });
+    if (source.kind !== "words") void loadClient().then((c) => c.saveDraft(source, settings));
+    // `last` is only read for the status.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, settings]);
+
+  const patch = (p: Partial<Settings>) => settings && setSettings({ ...settings, ...p });
+  const applyFix = (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => {
+    setSettings(f.settings);
+    track("upload_fix_applied", { reason: (preview as PreviewFail | null)?.code ?? "", fix: f.fix.id, passed: true });
+    setStatus(`${f.fix.label.replace(/^Use /, "Now ")}. It prints.`);
   };
 
+  /* ---------------- what the stage shows ---------------- */
+  const ok = preview?.ok ? preview : null;
+  const failed = preview && !preview.ok ? preview : null;
+  const tee = choice === "both" ? (ok?.tee ?? last?.tee ?? "white") : choice;
+  const stageState: StageState = useMemo(() => {
+    if (wordsMode && !source) return { kind: "empty-words" };
+    if (busy) {
+      const c = last?.canvas(last.tees.includes(tee) ? tee : last.tee) ?? (source && settings && source.bitmap ? placeholder(source, settings, tee) : null);
+      return c ? { kind: "converting", canvas: c } : { kind: "empty-words" };
+    }
+    if (ok) return { kind: "ready", canvas: ok.canvas(ok.tees.includes(tee) ? tee : ok.tee)! };
+    if (failed) return { kind: "failed", canvas: failed.tee ? failed.canvas(failed.tee) : source && settings && source.bitmap ? placeholder(source, settings, tee) : null };
+    return source && settings && source.bitmap ? { kind: "converting", canvas: placeholder(source, settings, tee) } : { kind: "empty-words" };
+  }, [wordsMode, source, busy, last, tee, settings, ok, failed]);
+  const pill = busy ? (last ? "Checking it prints…" : "Converting…") : undefined;
+  const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
+  const size$ = teeSize ?? selected;
+  const rightsKey = source && settings ? `${source.id}|${JSON.stringify([settings.crop, settings.rot])}` : null;
+
+  /* ---------------- the primary button of each step ---------------- */
+  const toRights = () => {
+    if (!ok) return;
+    go(rightsFor === rightsKey ? "size" : "rights");
+  };
+  const confirm = () => {
+    setRightsFor(rightsKey);
+    track("upload_rights_confirm");
+    if (replaceId) void resubmit();
+    else go("size");
+  };
   const add = async () => {
-    if (!ok || !source) return;
+    if (!ok || !source || !settings) return;
     if (!size$) return setNudge((x) => x + 1);
     const c = await loadClient();
-    const id = await c.keep(source, ok, { title, size, tees: choice === "both" ? ok.tees : [choice, ...ok.tees.filter((t) => t !== choice)] });
-    const ref = { id, mode: ok.mode, size, hash: ok.hash };
-    // Edit replaces the line it came from.
-    if (editId) {
-      const cart = useCartStore.getState().cart;
-      useCartStore.setState({ cart: cart.filter((l) => l.upload?.id !== editId) });
-    }
+    const tees = choice === "both" ? ok.tees : [choice as "black" | "white", ...ok.tees.filter((t) => t !== choice)];
+    const id = await c.keep(source, ok, { title, tees, settings: { ...settings, size: ok.size } });
+    const ref = { id, mode: ok.mode, size: ok.size, hash: ok.hash };
+    if (editId) useCartStore.setState((s) => ({ cart: s.cart.filter((l) => l.upload?.id !== editId) }));
     const store = useCartStore.getState();
     const done = choice === "both" ? store.addPair(YOURS_ID, size$, { upload: ref, source: "product" }) : store.addToCart(YOURS_ID, size$, choice, 1, { upload: ref, source: "product" });
-    if (done) {
-      useTasteStore.getState().likeUpload(id, ok.measured);
-      if (editId) router.push("/cart/");
-    }
+    if (!done) return;
+    void import("@/store/tasteStore").then((m) => m.useTasteStore.getState().likeUpload(id, ok.measured));
+    void c.clearDraft();
+    setDraftName(null);
+    setAdded(true);
+    if (editId) router.push("/cart/");
   };
-
   // "Upload another" for a refused file: once this one passes, it takes the refused one's place in the order.
   const resubmit = async () => {
-    if (!ok || !source || !replaceId) return;
+    if (!ok || !source || !settings || !replaceId) return;
     const old = useMakeStore.getState().reviews[replaceId];
     if (!old) return;
     const c = await loadClient();
-    const id = await c.keep(source, ok, { title, size, tees: [shown] });
+    const id = await c.keep(source, ok, { title, tees: [tee], settings: { ...settings, size: ok.size } });
     useMakeStore.getState().submitReviews(old.order, [id], { [id]: replaceId });
+    void c.clearDraft();
+    track("upload_another");
     router.push("/me/");
   };
 
+  const firstFix = fixes?.[0];
+  const primary: { label: string; onClick?: () => void; href?: string; disabled?: boolean } | null =
+    step === "print"
+      ? ok && !busy
+        ? { label: `Looks good · ${formatPrice(price)}`, onClick: toRights }
+        : failed && !busy
+          ? failed.duplicateOf
+            ? { label: "See it in the shop", href: productHref(failed.duplicateOf) }
+            : fixes === null
+              ? { label: "Finding a fix…", disabled: true }
+              : firstFix
+                ? { label: firstFix.fix.label, onClick: () => applyFix(firstFix) }
+                : { label: "Choose another file", onClick: () => fileInput.current?.click() }
+          : { label: `Looks good · ${formatPrice(price)}`, disabled: true }
+      : step === "rights"
+        ? { label: replaceId ? "Send it for checking" : "I confirm", onClick: confirm }
+        : step === "size"
+          ? added
+            ? { label: "Added · View bag", href: "/cart/" }
+            : { label: size$ ? `${editId ? "Save changes" : "Add to bag"} · ${SIZE_LABELS[size$]} · ${formatPrice(price)}` : "Choose size", onClick: () => void add() }
+          : null;
+
+  const back: Record<Step, string> = { start: "", print: "Start", rights: "Your print", size: "Rights" };
+  const titles: Record<Step, string> = { start: "What do you have?", print: "Your print", rights: "Rights", size: "Size" };
+
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
-      <div className="mx-auto grid max-w-5xl gap-6 px-4 pb-16 pt-4 md:grid-cols-2 md:gap-10">
-        {/* The picture, always at the top. */}
-        <div className="md:sticky md:top-4 md:self-start">
-          {ok && (
-            <div className="mb-2 flex min-h-8 items-center">
-              {titleEdit ? (
-                <form
-                  className="w-full"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void saveTitle(new FormData(e.currentTarget).get("title") as string);
-                  }}
-                >
-                  <input name="title" defaultValue={title} maxLength={40} autoFocus aria-label="Title" onBlur={(e) => void saveTitle(e.target.value)} className="h-9 w-full rounded-lg bg-white/[0.06] px-2 text-lg font-bold text-white ring-1 ring-white/20 focus:outline-none focus:ring-2 focus:ring-white" />
-                  {titleError && <p className="mt-1 text-xs text-neutral-300">{titleError}</p>}
-                </form>
-              ) : (
-                <button type="button" onClick={() => setTitleEdit(true)} className="truncate text-left text-lg font-bold" aria-label={`Title: ${title}. Edit`} data-title>
-                  {title}
-                </button>
-              )}
-            </div>
-          )}
-          <div className={`relative overflow-hidden rounded-3xl ${STAGE_BG}`} data-upload-preview={busy ? "busy" : ok ? "ready" : "empty"}>
-            {canvas ? (
-              <CustomMockup shirt={shirt} svg={canvas} color={shown} className="w-full" label={title || "Your file"} />
-            ) : blank ? (
-              <CustomMockup shirt={shirt} svg={blank} color={shown} className="w-full" label="A blank tee" />
-            ) : (
-              <div className="aspect-[512/704] w-full" />
-            )}
-            {busy && <p className="absolute inset-x-0 bottom-3 text-center text-xs text-neutral-300">Converting…</p>}
+      <input
+        ref={fileInput}
+        id="upload-file"
+        type="file"
+        accept={ACCEPT}
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void choose(f, tile);
+          e.target.value = "";
+        }}
+      />
+      {step === "start" ? (
+        <Start
+          heading={heading}
+          onPick={pick}
+          opening={opening}
+          error={startError}
+          draftName={draftName}
+          onCarryOn={carryOn}
+          replacing={replaceId ? useMakeStore.getState().reviews[replaceId] : undefined}
+          onDrop={(f) => void choose(f, "photo")}
+        />
+      ) : (
+        <div className="mx-auto max-w-5xl px-4 pb-28 pt-1 md:pb-12 2xl:max-w-6xl">
+          <div className="mb-2 flex h-11 items-center justify-between">
+            <button type="button" onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+              <Icon name="arrow-left" className="h-4 w-4" /> {back[step]}
+            </button>
+            <h2 ref={heading} tabIndex={-1} className="text-sm text-neutral-400 outline-none" data-step={step}>
+              {titles[step]}
+            </h2>
           </div>
-        </div>
-
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">From yours</h1>
-            <p className="mt-1 text-sm text-neutral-400">Your picture or words, in one ink.</p>
-          </div>
-
-          {/* A · Start */}
-          <section aria-label="Start" className="space-y-3">
-            <p className="text-sm text-neutral-300">A picture, a drawing or words. PNG, JPG, WebP or SVG.</p>
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDrag(true);
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDrag(false);
-                const f = e.dataTransfer.files?.[0];
-                if (f) void choose(f);
-              }}
-              className={`rounded-2xl p-1 transition ${drag ? "ring-2 ring-white" : ""}`}
-            >
-              <input
-                ref={fileInput}
-                id="upload-file"
-                type="file"
-                accept={ACCEPT}
-                className="sr-only"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void choose(f);
-                  e.target.value = "";
-                }}
-              />
-              <label htmlFor="upload-file" className="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-white text-sm font-bold text-black focus-within:ring-2 focus-within:ring-white">
-                {source && source.kind !== "words" ? "Choose another file" : "Choose a file"}
-              </label>
+          <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+            <div className="md:sticky md:top-4 md:self-start">
+              <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} />
+              <p aria-live="polite" className="sr-only" data-upload-status>
+                {status}
+              </p>
             </div>
-            {!writing ? (
-              <button type="button" onClick={() => setWriting(true)} className="text-sm text-neutral-400 underline underline-offset-2 hover:text-white">
-                Write words instead
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <label htmlFor="upload-words" className="text-xs font-medium text-neutral-400">
-                  Your words <span className="text-neutral-500">up to 3 lines of 24</span>
-                </label>
-                <textarea
-                  id="upload-words"
-                  value={words}
-                  rows={3}
-                  onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORDS_LINES).map((l) => l.slice(0, WORDS_CHARS)).join("\n"))}
-                  className="w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-sm text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+            <div className="space-y-6">
+              {step === "print" && settings && (
+                <PrintStep
+                  wordsMode={wordsMode}
+                  words={words}
+                  setWords={setWords}
+                  wordsError={wordsError}
+                  source={source}
+                  settings={settings}
+                  preview={preview}
+                  ok={ok}
+                  failed={failed}
+                  busy={busy}
+                  fixes={fixes}
+                  choice={choice}
+                  setChoice={setChoice}
+                  patch={patch}
+                  shirt={shirt}
+                  status={status}
+                  onFix={applyFix}
+                  onAdjust={() => setAdjusting(true)}
+                  onAnother={() => fileInput.current?.click()}
                 />
-                <button type="button" onClick={() => void setWordsSource()} disabled={!words.trim()} className="h-10 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 disabled:opacity-40">
-                  Set these words
-                </button>
-              </div>
-            )}
-            {startError && (
-              <p role="alert" className="text-sm text-neutral-200" data-upload-error>
-                {startError}
-              </p>
-            )}
-          </section>
-
-          {/* B · Preview */}
-          {preview && (
-            <section aria-label="Preview" className="space-y-4">
-              {preview.cls === "photo" && <Segment label="Style" options={["dots", "lines"] as const} value={mode} onChange={setMode} format={(x) => (x === "dots" ? "Dots" : "Lines")} />}
-              <Segment label="Print size" options={["full", "small"] as const} value={size} onChange={setPrintSize} format={(x) => (x === "full" ? "Full" : "Small")} />
-              {ok && <TeeRadio value={choice} tees={ok.tees} both={both} onChange={setChoice} />}
-              <p className="text-sm text-neutral-300" data-upload-line>
-                {preview.ok ? preview.line : preview.reason}
-              </p>
-              {step === "b" && (
-                <button type="button" disabled={!ok || busy} onClick={() => setStep("c")} className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black disabled:opacity-40">
-                  Continue
-                </button>
               )}
-            </section>
-          )}
-
-          {/* C · Rights */}
-          {ok && step !== "b" && (
-            <section aria-label="Rights" className="space-y-3">
-              <label className="flex cursor-pointer items-start gap-3 text-sm text-neutral-200">
-                <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-white" />I made this, or I have permission to print it. Anyone shown in it has agreed.
-              </label>
-              <details open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)} className="text-sm">
-                <summary className="cursor-pointer text-neutral-400 hover:text-white">What we won&rsquo;t print ›</summary>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-neutral-400">
-                  {WONT_PRINT.map((l) => (
-                    <li key={l}>{l}</li>
-                  ))}
-                </ul>
-              </details>
-              {step === "c" && (
-                <button type="button" disabled={!rights} onClick={() => setStep("d")} className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black disabled:opacity-40">
-                  Continue
-                </button>
+              {step === "rights" && <RightsStep />}
+              {step === "size" && ok && settings && (
+                <SizeStep
+                  title={title}
+                  setTitle={setTitle}
+                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? "Words" : "Line"} · ${ok.size === "full" ? "Full" : "Small"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
+                  onChange={() => window.history.go(-2)}
+                  size={size$}
+                  setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
+                  nudge={nudge}
+                />
               )}
-            </section>
-          )}
-
-          {/* D · Size → bag (or, for a refused file's replacement, straight to the check) */}
-          {ok && step === "d" && rights && (
-            <section aria-label="Size" className="space-y-3">
-              {replaceId ? (
-                <button type="button" onClick={() => void resubmit()} className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black">
-                  Send it for checking
-                </button>
-              ) : (
-                <>
-                  <SizeSelector key={nudge} value={size$} onChange={setTeeSize} highlight={nudge > 0 && !size$} />
-                  <p className="text-sm text-neutral-400">Checked before printing. Up to 2 days.</p>
-                  <button type="button" onClick={() => void add()} className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black">
-                    {size$ ? `Add to bag · ${SIZE_LABELS[size$]} · ${formatPrice(price)}` : "Choose size"}
-                  </button>
-                  <p className="text-center text-xs text-neutral-500">{STORE_POLICY.customReturns}</p>
-                </>
-              )}
-            </section>
-          )}
-
-          <p className="text-xs text-neutral-500">
-            Converted on this device; the file stays here.{" "}
-            <Link href="/make/" className="underline underline-offset-2 hover:text-white">
-              Or make one of ours
-            </Link>
-            <Icon name="arrow-right" className="ml-0.5 inline h-3 w-3" />
-          </p>
+              {primary && <PrimaryBar {...primary} />}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+      {adjusting && source && settings && (
+        <Suspense fallback={null}>
+        <AdjustDialog
+          source={source}
+          settings={settings}
+          onClose={() => setAdjusting(false)}
+          onDone={(p) => {
+            setAdjusting(false);
+            track("upload_adjust", { what: p.stronger !== settings.stronger ? "stronger" : p.rot !== settings.rot ? "rotate" : p.crop ? "crop" : "reset" });
+            patch(p);
+          }}
+        />
+        </Suspense>
+      )}
     </div>
   );
 }
 
-/** A plain tee's print: nothing inked. */
-function emptyCanvas(tee: BaseColor): HTMLCanvasElement {
-  const c = document.createElement("canvas");
-  c.width = 30;
-  c.height = 40;
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = tee === "black" ? "#000" : "#fff";
-  ctx.fillRect(0, 0, 30, 40);
-  return c;
-}
+/* ================================================================== */
 
-function Segment<T extends string>({ label, options, value, onChange, format }: { label: string; options: readonly T[]; value: T; onChange: (v: T) => void; format: (v: T) => string }) {
-  return (
-    <div>
-      <p className="mb-1 text-xs font-medium text-neutral-400" id={`seg-${label}`}>
-        {label}
-      </p>
-      <div role="radiogroup" aria-labelledby={`seg-${label}`} className="flex gap-1.5">
-        {options.map((o) => (
-          <button
-            key={o}
-            type="button"
-            role="radio"
-            aria-checked={o === value}
-            onClick={() => onChange(o)}
-            className={`h-10 rounded-full px-4 text-sm font-semibold ring-1 transition ${o === value ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15 hover:bg-white/10"}`}
-          >
-            {format(o)}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** The tee: pre-chosen by the tee rule; a tee the print can't carry is disabled, and Both only when both pass. */
-function TeeRadio({ value, tees, both, onChange }: { value: Choice; tees: BaseColor[]; both: boolean; onChange: (c: Choice) => void }) {
-  const opts: { c: Choice; label: string; off: boolean }[] = [
-    { c: "black", label: "Black", off: !tees.includes("black") },
-    { c: "white", label: "White", off: !tees.includes("white") },
-    { c: "both", label: `Both · ${formatPrice(STORE_POLICY.customPairPrice)}`, off: !both },
+function Start({
+  heading,
+  onPick,
+  opening,
+  error,
+  draftName,
+  onCarryOn,
+  replacing,
+  onDrop,
+}: {
+  heading: React.RefObject<HTMLHeadingElement>;
+  onPick: (kind: string) => void;
+  opening: string | null;
+  error: string | null;
+  draftName: string | null;
+  onCarryOn: () => void;
+  replacing?: { order: string };
+  onDrop: (f: File) => void;
+}) {
+  const [drag, setDrag] = useState(false);
+  const TILES = [
+    { kind: "photo", label: "A photo", line: "Printed in dots. JPG, PNG or WebP." },
+    { kind: "drawing", label: "A drawing", line: "Your lines, cleaned up. A scan, a photo of paper, or SVG." },
+    { kind: "words", label: "Words", line: "Up to three lines, in our type." },
   ];
+  const credit = (examples as { kind: string; credit?: string }[]).find((e) => e.kind === "photo")?.credit;
   return (
-    <div>
-      <p className="mb-1 text-xs font-medium text-neutral-400" id="seg-tee">
-        Tee
-      </p>
-      <div role="radiogroup" aria-labelledby="seg-tee" className="flex flex-wrap gap-1.5">
-        {opts.map(({ c, label, off }) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={value === c}
-            disabled={off}
-            onClick={() => onChange(c)}
-            className={`h-10 rounded-full px-4 text-sm font-semibold ring-1 transition disabled:opacity-30 ${value === c ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15 hover:bg-white/10"}`}
-          >
-            {label}
-          </button>
+    <div
+      className={`mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl ${drag ? "ring-2 ring-inset ring-white" : ""}`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDrag(true);
+      }}
+      onDragLeave={() => setDrag(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDrag(false);
+        const f = e.dataTransfer.files?.[0];
+        if (f) onDrop(f);
+      }}
+    >
+      <MakeHeader track="yours" />
+      {replacing && <p className="mt-6 rounded-2xl bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
+      {draftName && (
+        <button type="button" onClick={onCarryOn} className="mt-6 flex h-12 w-full items-center justify-between rounded-2xl px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
+          <span className="truncate">Carry on with {draftName}</span>
+          <Icon name="arrow-right" className="h-4 w-4 shrink-0" />
+        </button>
+      )}
+      <h2 ref={heading} tabIndex={-1} className="mt-8 text-lg font-bold outline-none">
+        What do you have?
+      </h2>
+      <ul className="mt-4 grid gap-3 md:grid-cols-3">
+        {TILES.map((t) => (
+          <li key={t.kind}>
+            <button
+              type="button"
+              onClick={() => onPick(t.kind)}
+              data-tile={t.kind}
+              className="group flex w-full items-stretch gap-4 overflow-hidden rounded-2xl text-left ring-1 ring-white/10 transition hover:ring-white/30 focus-visible:ring-2 focus-visible:ring-white md:flex-col md:gap-0"
+            >
+              <div className={`grid w-36 shrink-0 grid-cols-2 md:w-full ${STAGE_BG}`} aria-hidden>
+                {/* The real converter's work: the input, and the print it made. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={assetUrl(`/make/yours/${t.kind}-before.webp`)} alt="" className="aspect-[3/4] h-full w-full object-cover opacity-90" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={assetUrl(`/make/yours/${t.kind}-after.webp`)} alt="" className="aspect-[3/4] h-full w-full object-cover" />
+              </div>
+              <div className="flex flex-col justify-center py-3 pr-3 md:p-4">
+                <span className="text-base font-bold">{opening === t.kind ? "Opening…" : t.label}</span>
+                <span className="mt-1 text-sm text-neutral-400">{t.line}</span>
+              </div>
+            </button>
+          </li>
         ))}
+      </ul>
+      {error && (
+        <p role="alert" className="mt-4 text-sm text-neutral-200" data-upload-error>
+          {error}
+        </p>
+      )}
+      <p className="mt-6 text-xs text-neutral-500">Converted on this device. The file stays here.</p>
+      {credit && <p className="mt-1 text-[11px] text-neutral-600">Photo: {credit}</p>}
+    </div>
+  );
+}
+
+function PrintStep({
+  wordsMode,
+  words,
+  setWords,
+  wordsError,
+  source,
+  settings,
+  preview,
+  ok,
+  failed,
+  busy,
+  fixes,
+  choice,
+  setChoice,
+  patch,
+  shirt,
+  status,
+  onFix,
+  onAdjust,
+  onAnother,
+}: {
+  wordsMode: boolean;
+  words: string;
+  setWords: (w: string) => void;
+  wordsError: string | null;
+  source: Source | null;
+  settings: Settings;
+  preview: Preview | null;
+  ok: PreviewOk | null;
+  failed: PreviewFail | null;
+  busy: boolean;
+  fixes: { fix: Fix; settings: Settings; preview: PreviewOk }[] | null;
+  choice: Choice;
+  setChoice: (c: Choice) => void;
+  patch: (p: Partial<Settings>) => void;
+  shirt: NonNullable<ReturnType<typeof getShirtById>>;
+  status: string;
+  onFix: (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => void;
+  onAdjust: () => void;
+  onAnother: () => void;
+}) {
+  const [meaning, setMeaning] = useState<Record<string, string>>({});
+  const [cropFix, setCropFix] = useState(false);
+  useEffect(() => {
+    if (!failed || !source) return setCropFix(false);
+    void loadClient().then((c) => {
+      setMeaning(c.MEANING);
+      setCropFix(c.fixesFor(failed, settings, source).some((f) => f.id === "crop"));
+    });
+  }, [failed, source, settings]);
+  const caretLine = words.split("\n").at(-1) ?? "";
+  return (
+    <>
+      {wordsMode && (
+        <div>
+          <div className="mb-1 flex items-baseline justify-between text-xs font-medium text-neutral-400">
+            <label htmlFor="upload-words">Your words</label>
+            <span className={caretLine.length >= WORDS_CHARS ? "text-white" : ""}>
+              {caretLine.length} / {WORDS_CHARS}
+            </span>
+          </div>
+          <textarea
+            id="upload-words"
+            value={words}
+            rows={3}
+            autoFocus={!words}
+            placeholder={"SUNDAY\nBEST"}
+            onChange={(e) => setWords(e.target.value.split("\n").slice(0, WORDS_LINES).map((l) => l.slice(0, WORDS_CHARS)).join("\n"))}
+            className="w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-base text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          {wordsError && (
+            <p role="status" className="mt-1 text-xs text-neutral-300" data-words-error>
+              {wordsError}
+            </p>
+          )}
+        </div>
+      )}
+      {ok?.autoSmall && <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>}
+      {source && (ok ?? null) && <ChoiceThumbs shirt={shirt} source={source} settings={settings} preview={ok!} choice={choice} onSettings={patch} onChoice={setChoice} />}
+      {ok && (
+        <p className="text-sm text-neutral-300" data-upload-line>
+          {ok.line}
+        </p>
+      )}
+      {failed && !busy && (
+        <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10" data-fix-card>
+          <p className="text-sm font-semibold text-white" data-upload-line>
+            {failed.reason}
+          </p>
+          {meaning[failed.code] && <p className="mt-1 text-sm text-neutral-400">{meaning[failed.code]}</p>}
+          {fixes === null && !failed.duplicateOf && <p className="mt-3 text-xs text-neutral-400">Finding a fix…</p>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(fixes ?? []).slice(1).map((f) => (
+              <button key={f.fix.id} type="button" onClick={() => onFix(f)} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix={f.fix.id}>
+                {f.fix.label}
+              </button>
+            ))}
+            {cropFix && (
+              <button type="button" onClick={onAdjust} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix="crop">
+                Crop tighter
+              </button>
+            )}
+          </div>
+          {fixes?.[0] && (
+            <p className="mt-2 text-xs text-neutral-500" data-first-fix={fixes[0].fix.id}>
+              {fixes[0].fix.label} fixes it (the button below).
+            </p>
+          )}
+        </div>
+      )}
+      {preview === null && !wordsMode && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
+      <div className="flex flex-wrap gap-x-4">
+        {source && source.kind === "file" && (
+          <button type="button" onClick={onAdjust} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+            Adjust
+          </button>
+        )}
+        {!wordsMode && (
+          <button type="button" onClick={onAnother} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+            Choose another file
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
+function RightsStep() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="space-y-3">
+      <p className="text-base text-neutral-100">I made this, or I have permission. Anyone in it has agreed.</p>
+      <button type="button" onClick={() => setOpen(true)} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+        What we won&rsquo;t print
+      </button>
+      {open && <WontPrint onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+function WontPrint({ onClose }: { onClose: () => void }) {
+  const panel = useRef<HTMLDivElement>(null);
+  useFocusTrap(panel, true, onClose);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:items-center" onClick={onClose}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="wont-title" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-ink-900 p-5 ring-1 ring-white/10 md:rounded-3xl">
+        <h2 id="wont-title" className="text-base font-bold">
+          What we won&rsquo;t print
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-neutral-300">
+          {WONT_PRINT.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+        <button type="button" data-autofocus onClick={onClose} className="mt-5 flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white ring-1 ring-white/30">
+          Close
+        </button>
       </div>
     </div>
   );
+}
+
+function SizeStep({ title, setTitle, summary, onChange, size, setSize, nudge }: { title: string; setTitle: (t: string) => void; summary: string; onChange: () => void; size?: ShirtSize; setSize: (s: ShirtSize) => void; nudge: number }) {
+  const [draft, setDraft] = useState(title);
+  const [error, setError] = useState<string | null>(null);
+  const save = async (v: string) => {
+    const t = v.trim();
+    const lex = await import("@/lib/custom/lexicon");
+    const problem = t.length < 3 || t.length > 40 ? "A title of 3 to 40 characters." : lex.wordsProblem(t);
+    setError(problem);
+    if (!problem) setTitle(t);
+  };
+  return (
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="upload-title" className="mb-1 flex items-center gap-1.5 text-xs font-medium text-neutral-400">
+          <Icon name="pencil" className="h-3.5 w-3.5" /> Title
+        </label>
+        <input
+          id="upload-title"
+          value={draft}
+          maxLength={40}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={(e) => void save(e.target.value)}
+          aria-invalid={!!error}
+          className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+          data-title
+        />
+        {error && <p className="mt-1 text-xs text-neutral-300">{error}</p>}
+      </div>
+      <p className="flex flex-wrap items-center gap-x-2 text-sm text-neutral-300" data-summary>
+        {summary}
+        <button type="button" onClick={onChange} className="h-10 text-neutral-400 underline underline-offset-4 hover:text-white">
+          Change
+        </button>
+      </p>
+      <SizeSelector key={nudge} value={size} onChange={setSize} highlight={nudge > 0 && !size} />
+      <p className="text-sm text-neutral-400">Checked by a person before printing. Up to 2 days. Nothing charged if we can&rsquo;t print it.</p>
+      <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}</p>
+    </div>
+  );
+}
+
+/** The step's one white button: in the flow on desktop, a bar at the foot of the screen on a phone. */
+function PrimaryBar({ label, onClick, href, disabled }: { label: string; onClick?: () => void; href?: string; disabled?: boolean }) {
+  const cls = "flex h-12 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40";
+  const button = href ? (
+    <Link href={href} className={cls} data-primary>
+      {label}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} disabled={disabled} className={cls} data-primary>
+      {label}
+    </button>
+  );
+  return <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">{button}</div>;
 }

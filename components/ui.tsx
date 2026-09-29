@@ -8,9 +8,7 @@ import { useUiStore } from "@/store/useUiStore";
 import { TIER_LABEL, type MatchTier } from "@/lib/match";
 import { ADULT_SIZES, COLOR_LABELS, FEATURE_LABELS, KID_SIZES, SIZE_LABELS, SIZE_SHORT, isKidSize, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
 
-/** Studio backdrop behind garment mockups. */
-export const STAGE_BG =
-  "bg-[radial-gradient(ellipse_at_50%_38%,#5a5a57_0%,#3a3a38_45%,#1d1d1c_100%)]";
+export { STAGE_BG } from "@/components/stage";
 
 /** Section label: sentence case, readable (not tiny tracked caps). */
 export const LABEL = "mb-2 text-xs font-medium text-neutral-400";

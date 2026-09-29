@@ -13,7 +13,7 @@ export type UploadRequest =
   | { file: Blob; type: string; mode?: Mode; size: PrintSize }
   | { words: string[]; size: PrintSize }
   | { svgRaster: Pixels; size: PrintSize }
-  | { pixels: Pixels; mode?: Mode; size: PrintSize };
+  | { pixels: Pixels; mode?: Mode; size: PrintSize; checked?: boolean };
 
 export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number } } | { ok: false; reason: string };
 
@@ -120,7 +120,8 @@ export async function handle(req: UploadRequest): Promise<UploadResult> {
     }
     if ("svgRaster" in req) return ok(convert({ svgRaster: req.svgRaster }, { size: req.size }), req.svgRaster.w, req.svgRaster.h);
     if ("pixels" in req) {
-      if (tooSmall(req.pixels.w, req.pixels.h, req.size)) return { ok: false, reason: req.size === "full" ? REASONS.smallForFull : REASONS.smallForSmall };
+      // `checked`: the page measured the source before scaling it down (lib/upload/client), so the pixels' own size says nothing.
+      if (!req.checked && tooSmall(req.pixels.w, req.pixels.h, req.size)) return { ok: false, reason: req.size === "full" ? REASONS.smallForFull : REASONS.smallForSmall };
       return ok(convert({ pixels: req.pixels }, { mode: req.mode, size: req.size }), req.pixels.w, req.pixels.h);
     }
     const { file, type, mode, size } = req;

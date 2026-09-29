@@ -16,8 +16,10 @@ export interface MadeProduct {
   name: string;
   /** What it is, in one line (the product page). */
   line: string;
-  /** What it is made from ("From a night"): the Make index's line, so the grid says what each one takes. */
+  /** What it takes, concretely ("A night and a place"): the Make index's line under the card. */
   from: string;
+  /** The Make index's group: what the visitor arrives with (MAKE_GROUPS). */
+  group: MakeGroup;
   /** The catalogue design (by variant) it is drawn like. */
   base: string;
   /** What the words (or name) field suggests. */
@@ -36,14 +38,26 @@ const DATED: PrintHints = { dense: "Try another date.", faint: "Try another date
 /** London's GeoNames id (data/cities): the example sky's place, and the fallback when the visitor's zone has no city. */
 export const FALLBACK_CITY = 2643743;
 
-export const MADE: MadeProduct[] = [
+export type MakeGroup = "date" | "name" | "place" | "you";
+/** The Make index's groups, in order: by what the visitor has (a date, a name, a place, themselves). */
+export const MAKE_GROUPS: { id: MakeGroup; label: string }[] = [
+  { id: "date", label: "From a date" },
+  { id: "name", label: "From a name" },
+  { id: "place", label: "From a place" },
+  { id: "you", label: "From you" },
+];
+/** The order on the index and everywhere products are listed: grouped, then as the groups read. */
+const ORDER = ["sky", "moon", "planets", "year", "code", "ascii", "place", "house", "voice", "line", "number", "taste"];
+
+const LIST: MadeProduct[] = [
   {
     slug: "taste",
     id: "make-taste",
     template: "taste",
     name: "Your Taste",
     line: "A plant grown from everything you swiped.",
-    from: "From your swipes",
+    from: "Your swipes",
+    group: "you",
     base: "phyllotaxis",
     bases: ["phyllotaxis", "lsystem-*"],
     // A taste that leans to nature, line and geometry (lib/custom/tasteCode, written out).
@@ -56,7 +70,8 @@ export const MADE: MadeProduct[] = [
     template: "code",
     name: "Your Name",
     line: "Your name, punched, tapped or dotted in one of the old codes.",
-    from: "From your name",
+    from: "A name, in an old code",
+    group: "name",
     base: "terminal-data",
     bases: ["terminal-data", "type-data"],
     wordsHint: "Noa",
@@ -69,7 +84,8 @@ export const MADE: MadeProduct[] = [
     template: "ascii",
     name: "Your ASCII",
     line: "Your words as big letters, typed out of characters.",
-    from: "From your words",
+    from: "A word or two",
+    group: "name",
     base: "ascii-shade",
     bases: ["ascii-*"],
     wordsHint: "For Maya",
@@ -82,7 +98,8 @@ export const MADE: MadeProduct[] = [
     template: "line",
     name: "Your Line",
     line: "One line you draw, turned into an ornament.",
-    from: "From a line you draw",
+    from: "A line you draw",
+    group: "you",
     base: "rosette",
     bases: ["rosette", "guilloche"],
     wordsHint: "For Maya",
@@ -96,7 +113,8 @@ export const MADE: MadeProduct[] = [
     template: "voice",
     name: "Your Voice",
     line: "Three seconds of your voice, drawn by two pendulums.",
-    from: "From your voice",
+    from: "Three seconds of humming",
+    group: "you",
     base: "harmonograph",
     bases: ["harmonograph", "lissajous"],
     wordsHint: "Maya, humming",
@@ -110,7 +128,8 @@ export const MADE: MadeProduct[] = [
     template: "house",
     name: "Your House",
     line: "Your house as an architect's elevation, brick by brick.",
-    from: "From your house",
+    from: "Floors, windows, a door",
+    group: "place",
     base: "facade",
     bases: ["facade", "brick-bond", "orders"],
     wordsHint: "The Old Bakery",
@@ -123,7 +142,8 @@ export const MADE: MadeProduct[] = [
     template: "number",
     name: "Your Number",
     line: "A number that matters, on an instrument's dial.",
-    from: "From a number",
+    from: "A number and what it was",
+    group: "you",
     base: "dial",
     bases: ["dial", "slide-rule"],
     example: { t: "number", v: 1, p: { v: 3.4, u: "kg", l: "Birth weight", face: "dial" } },
@@ -135,7 +155,8 @@ export const MADE: MadeProduct[] = [
     template: "place",
     name: "Your Place",
     line: "Where you were when it happened, at the centre of the globe.",
-    from: "From where you were",
+    from: "A place and a day",
+    group: "place",
     base: "daylight",
     bases: ["daylight", "analemma"],
     wordsHint: "Where I heard the news",
@@ -149,7 +170,8 @@ export const MADE: MadeProduct[] = [
     template: "sky",
     name: "Your Night Sky",
     line: "The stars over you, on the night you choose.",
-    from: "From a night",
+    from: "A night and a place",
+    group: "date",
     hints: DATED,
     base: "sky-night",
     wordsHint: "The night we met",
@@ -161,7 +183,8 @@ export const MADE: MadeProduct[] = [
     template: "night",
     name: "Your Moon",
     line: "The moon as it was, the night it mattered.",
-    from: "From a moon",
+    from: "A night",
+    group: "date",
     hints: DATED,
     base: "moon-year",
     wordsHint: "Noa, welcome",
@@ -173,7 +196,8 @@ export const MADE: MadeProduct[] = [
     template: "planets",
     name: "Your Planets",
     line: "Where the planets stood on your day.",
-    from: "From a day",
+    from: "A day",
+    group: "date",
     hints: DATED,
     base: "planets-date",
     wordsHint: "Our wedding day",
@@ -185,13 +209,16 @@ export const MADE: MadeProduct[] = [
     template: "moon",
     name: "Your Year of Moons",
     line: "Every moon of the year you choose.",
-    from: "From a year",
+    from: "A year",
+    group: "date",
     hints: DATED,
     base: "moon-year",
     wordsHint: "The year we moved",
     example: { t: "moon", v: 1, p: { y: 2020, w: "The year we moved" } },
   },
 ];
+export const MADE: MadeProduct[] = [...LIST].sort((a, b) => ORDER.indexOf(a.slug) - ORDER.indexOf(b.slug));
+
 
 export const madeById = (id: string) => MADE.find((m) => m.id === id);
 export const madeBySlug = (slug: string) => MADE.find((m) => m.slug === slug);
