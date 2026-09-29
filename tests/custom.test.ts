@@ -203,12 +203,14 @@ describe("personalised prints: the data", () => {
   const gz = (s: string) => gzipSync(s).length / 1024;
   const published = publishedCustom();
 
-  it("fits its budgets: cities ≤ 80 KB and the sky ≤ 30 KB gzipped, published under their content hashes", () => {
+  it("fits its budgets: cities ≤ 80 KB, the sky ≤ 30 KB, the countries ≤ 40 KB and the airports ≤ 80 KB gzipped, published under their content hashes", () => {
     expect(gz(published.cities.json)).toBeLessThanOrEqual(80);
     expect(gz(published.sky.json)).toBeLessThanOrEqual(30);
+    expect(gz(published.countries.json)).toBeLessThanOrEqual(40);
+    expect(gz(published.airports.json)).toBeLessThanOrEqual(80);
     const m = readJson("data/custom.manifest.json");
-    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file });
-    expect(readFileSync(path.join(ROOT, "public", "data", m.cities), "utf8")).toBe(published.cities.json);
+    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file, countries: published.countries.file, airports: published.airports.file });
+    for (const k of ["cities", "sky", "countries", "airports"] as const) expect(readFileSync(path.join(ROOT, "public", "data", m[k]), "utf8")).toBe(published[k].json);
   });
 
   it("the place list is sorted by id, credits its source, and every zone is one this runtime knows", () => {
