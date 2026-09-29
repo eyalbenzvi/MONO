@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import type { CustomSpec, VoiceParams } from "@/lib/custom/spec";
-import { WordsField, useWords } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import type { EditorProps } from "./types";
 
@@ -64,12 +63,10 @@ export default function VoiceEditor({ made, arrival, onChange }: EditorProps) {
   const start = (arrival?.t === "voice" ? arrival.p : null) ?? (made.example.p as VoiceParams);
   const [n, setN] = useState<Omit<VoiceParams, "w">>({ a: start.a, b: start.b, d: start.d, ph: start.ph, f: start.f });
   const [take, setTake] = useState<Take>("idle");
-  const words = useWords(arrival?.t === "voice" ? (arrival.p.w ?? "") : (start.w ?? ""));
   const rec = useRef<Promise<Recorder> | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>();
 
-  const w = words.value;
-  const spec: CustomSpec | null = w !== null ? { t: "voice", v: 1, p: { ...n, ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec = { t: "voice", v: 1, p: n };
   useReportSpec(spec, onChange);
 
   const begin = () => {
@@ -156,7 +153,6 @@ export default function VoiceEditor({ made, arrival, onChange }: EditorProps) {
           </p>
         )}
       </div>
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
     </>
   );
 }

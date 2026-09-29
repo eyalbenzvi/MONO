@@ -8,7 +8,8 @@
  * that year at that latitude (the catalogue's Daylight charts, NOAA's
  * solar declination), the day itself drawn bold.
  */
-import { INK, caption, circle, f1, line, longDate, shortMonth, text } from "../kit";
+import { INK, caption, captionLines, circle, f1, line, longDate, shortMonth, text, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { coords, parseDate, type City, type CustomSpec, type PlaceParams } from "../spec";
 import { wrap } from "../svg";
 import type { RenderData } from "../renderers";
@@ -82,21 +83,27 @@ export function placeBody(p: PlaceParams, places: City[] = [], city?: City): str
   s += `<path d="${bars}" fill="none" stroke="${INK}" stroke-width=".6"/>` + line(X0 - 4, Y0, X0 + XW + 4, Y0, 0.9);
   for (const h of [12, 24]) s += line(X0 - 4, Y0 - (h / 24) * YH, X0 - 1, Y0 - (h / 24) * YH, 0.8) + text(X0 - 7, Y0 - (h / 24) * YH + 2, `${h}h`, 5, { anchor: "end" });
   MONTH_START.forEach((doy, m) => (s += text(X0 + ((doy + 14) / (days - 1)) * XW, Y0 + 9, shortMonth(m + 1)[0], 5)));
-  let sub2: string | undefined;
   if (date) {
     const doy = dayOfYear(...date);
-    const h = daylight(p.la, doy);
     const x = X0 + ((doy - 1) / (days - 1)) * XW;
     s += line(x, Y0 + 2, x, Y0 - YH - 4, 2) + circle(x, Y0 - YH - 7, 2.4, 1);
-    sub2 = `${longDate(...date)} · ${hm(h)} of daylight`;
   }
-  const where = coords(p.la, p.lo);
-  const title = p.w ?? city?.name ?? where;
-  return s + caption(342, title, title === where ? (city ? `${city.name}, ${city.country}` : "Where I was") : where, sub2);
+  return s + caption(342, ...captionLines(placeCaption(p, city), p.cap));
 }
+
+/** The caption's lines (ours): the words (the visitor's title), else the city or the coordinates; the place; the day and its daylight. */
+export function placeCaption(p: PlaceParams, city?: City): Lines {
+  const date = p.d ? parseDate(p.d) : null;
+  const sub2 = date ? `${longDate(...date)} · ${hm(daylight(p.la, dayOfYear(...date)))} of daylight` : undefined;
+  const where = coords(p.la, p.lo);
+  const title = titleWords(p) ?? city?.name ?? where;
+  return [title, title === where ? (city ? `${city.name}, ${city.country}` : "Where I was") : where, sub2];
+}
+
+const cityOf = (p: PlaceParams, data: RenderData) => (p.c !== undefined ? (data.places?.find((c) => c.id === p.c) ?? data.city) : undefined);
+export const captionOf = (spec: CustomSpec, data: RenderData = {}) => placeCaption((spec as { p: PlaceParams }).p, cityOf((spec as { p: PlaceParams }).p, data));
 
 export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => {
   const p = (spec as { p: PlaceParams }).p;
-  const city = p.c !== undefined ? (data.places?.find((c) => c.id === p.c) ?? data.city) : undefined;
-  return wrap(placeBody(p, data.places ?? [], city), color);
+  return wrap(placeBody(p, data.places ?? [], cityOf(p, data)), color);
 };

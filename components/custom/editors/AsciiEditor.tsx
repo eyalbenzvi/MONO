@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { cropBox, luminance, toneGrid } from "@/lib/custom/draw/asciiPicture";
 import { ASCII_CHARS, ASCII_COLS, ASCII_FILLS, ASCII_MAX, ASCII_PHRASE, ASCII_ROWS, asciiPack, asciiPictureProblem, asciiUnpack, type AsciiCols, type AsciiFill, type CustomSpec } from "@/lib/custom/spec";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, useLexicon } from "./Field";
 import { Segmented, Switch } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
@@ -63,7 +63,7 @@ function tones(src: HTMLCanvasElement, cols: AsciiCols, place: number, zoom: num
 const FILL_LABEL: Record<AsciiFill, string> = { self: "Its letters", "#": "#", "@": "@", "%": "%", "8": "8", $: "$", phrase: "A phrase" };
 
 /**
- * Your ASCII: the big letters (one or two lines), what they're typed in, a drop shadow, your words; or a
+ * Your ASCII: the big letters (one or two lines), what they're typed in, a drop shadow; or a
  * picture from the device (never uploaded: only its tones go in the spec), its detail, crop and edges.
  */
 export default function AsciiEditor({ made, arrival, touched, onChange }: EditorProps) {
@@ -92,7 +92,6 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
   const [fill, setFill] = useState<AsciiFill>(a?.f ?? "self");
   const [phrase, setPhrase] = useState(a?.p ?? "");
   const [shadow, setShadow] = useState((a ?? ex)?.s === 1);
-  const words = useWords(a?.w ?? "");
   const lex = useLexicon(!!big.trim() || !!phrase.trim());
 
   const bad = [...big].find((ch) => !/\s/.test(ch) && !ASCII_CHARS.test(ch.toUpperCase()));
@@ -113,15 +112,14 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
             : null;
   const p = phrase.trim();
   const phraseError = fill === "phrase" && p ? (!ASCII_PHRASE.test(p) ? "Plain letters, figures and punctuation, up to 24" : lex ? lex.wordsProblem(p) : null) : fill === "phrase" && touched ? "Type the phrase the letters are typed in" : null;
-  const w = words.value;
-  const ok = lines && !bigError && lex && w !== null && (fill !== "phrase" || (p && !phraseError));
+  const ok = lines && !bigError && lex && (fill !== "phrase" || (p && !phraseError));
   const spec: CustomSpec | null =
     mode === "picture"
-      ? levels && !pictureError && w !== null
-        ? { t: "ascii", v: 1, p: { x: [], c: cols, g: asciiPack(levels), ...(w ? { w } : {}) } }
+      ? levels && !pictureError
+        ? { t: "ascii", v: 1, p: { x: [], c: cols, g: asciiPack(levels) } }
         : null
       : ok
-        ? { t: "ascii", v: 1, p: { x: lines!, f: fill, ...(fill === "phrase" ? { p } : {}), ...(shadow ? { s: 1 as const } : {}), ...(w ? { w } : {}) } }
+        ? { t: "ascii", v: 1, p: { x: lines!, f: fill, ...(fill === "phrase" ? { p } : {}), ...(shadow ? { s: 1 as const } : {}) } }
         : null;
 
   useReportSpec(spec, onChange);
@@ -167,7 +165,6 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
           <Switch label="Drop shadow" checked={shadow} onChange={setShadow} />
         </>
       )}
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
     </>
   );
 }

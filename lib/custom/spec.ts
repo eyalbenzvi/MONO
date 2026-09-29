@@ -223,7 +223,9 @@ const TEMPLATES: Record<string, TemplateId> = {
 export const templateFor = (shirt: Pick<ShirtProduct, "variant">): TemplateId | null => TEMPLATES[shirt.variant] ?? null;
 
 /** Each original product's caption rule: which lines may be hidden (tests/make/captions.test.ts checks each against the gate). */
-export const BASE_CAP: Partial<Record<BaseId, CapRule>> = {};
+export const BASE_CAP: Partial<Record<BaseId, CapRule>> = Object.fromEntries(
+  (["sky", "moon", "night", "planets", "taste", "code", "ascii", "line", "voice", "house", "number", "place"] as const).map((t) => [t, { hide: [true, true, true] }]),
+);
 
 /** A product's caption rule (the original twelve here, the later ones in their spec modules). */
 export const capRuleFor = (t: TemplateId): CapRule => (t in EXTRA ? ((EXTRA[t as ExtraId] as { CAP?: CapRule }).CAP ?? {}) : (BASE_CAP[t as BaseId] ?? {}));
@@ -233,7 +235,7 @@ export const capRuleFor = (t: TemplateId): CapRule => (t in EXTRA ? ((EXTRA[t as
  * cap[0] instead, and a link that arrives with `w` opens with it as the
  * visitor's title (the validator still reads `w`, so the link prints as it did).
  */
-const BASE_WORDS_TITLE: readonly BaseId[] = ["sky", "moon", "night", "planets"];
+const BASE_WORDS_TITLE: readonly BaseId[] = ["sky", "moon", "night", "planets", "line", "voice", "place", "ascii"];
 export const wordsTitle = (t: TemplateId): boolean => (t in EXTRA ? (EXTRA[t as ExtraId] as { WORDS_TITLE?: boolean }).WORDS_TITLE === true : BASE_WORDS_TITLE.includes(t as BaseId));
 
 /** The planets' orbital elements hold to 2050 (JPL, Standish). */

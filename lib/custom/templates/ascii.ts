@@ -13,9 +13,10 @@
  * lib/custom/draw/asciiPicture), each cell a character of a ramp by ink,
  * in the same frame, printed by `$ cat picture.txt`.
  */
-import { INK, caption, text } from "../kit";
+import { INK, caption, captionLines, text, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { pixelTextRows } from "../draw/pixelFont";
-import { asciiUnpack, type AsciiParams, type CustomSpec } from "../spec";
+import { ASCII_ROWS, asciiUnpack, type AsciiParams, type CustomSpec } from "../spec";
 import { pictureRows } from "../draw/asciiPicture";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
@@ -105,9 +106,18 @@ export function asciiBody(p: AsciiParams): string {
   s += box;
   const cmd = `$ banner "${p.x.join(" ").toLowerCase()}"`;
   s += text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, cmd, Math.min(9, 230 / (0.602 * cmd.length)), { anchor: "start" });
-  const f = p.f ?? "self";
-  return s + caption(338, p.w ?? p.x.join(" "), f === "phrase" ? `typed in "${p.p}"` : f === "self" ? "typed in its own letters" : `typed in ${f}`);
+  return s + caption(338, ...captionLines(asciiCaption(p), p.cap));
 }
+
+/** The caption's lines (ours): the words (the visitor's title, else the letters) and what they're typed in; a picture's title only when given. */
+export function asciiCaption(p: AsciiParams): Lines {
+  const w = titleWords(p);
+  if (p.g) return [w, `a picture in ${p.c! * ASCII_ROWS[p.c!]} characters`];
+  const f = p.f ?? "self";
+  return [w ?? p.x.join(" "), f === "phrase" ? `typed in "${p.p}"` : f === "self" ? "typed in its own letters" : `typed in ${f}`];
+}
+
+export const captionOf = (spec: CustomSpec) => asciiCaption((spec as { p: AsciiParams }).p);
 
 /**
  * A picture (`g`): its tones as characters on the same monospace grid, in the same frame, the grid
@@ -130,8 +140,10 @@ export function asciiPictureBody(p: AsciiParams, color: BaseColor): string {
   });
   const { s: box, fx } = frame();
   s += box + text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, "$ cat picture.txt", 9, { anchor: "start" });
-  const sub = `a picture in ${cols * rows.length} characters`;
-  return s + (p.w ? caption(338, p.w, sub) : text(150, 338, sub, 8));
+  // Without a title the line is set alone, smaller (as it always was); the visitor may add one, or more lines.
+  const [title, sub, sub2] = captionLines(asciiCaption(p), p.cap);
+  if (title) return s + caption(338, title, sub, sub2);
+  return s + (sub ? text(150, 338, sub, 8) : "") + (sub2 ? text(150, 350, sub2, Math.min(7, 264 / (0.6 * sub2.length))) : "");
 }
 
 export const render = (spec: CustomSpec, color: BaseColor) => {

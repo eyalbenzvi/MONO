@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import { LINE_REPEATS, decodeStroke, type CustomSpec, type LineParams } from "@/lib/custom/spec";
 import { EXAMPLE_LINES, exampleStroke, strokeSpec } from "@/lib/custom/stroke";
-import { WordsField, useWords } from "./Field";
 import { Segmented, Switch } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import type { EditorProps } from "./types";
@@ -15,7 +14,7 @@ const bucket = (n: number) => (n < 10 ? "<10" : n < 50 ? "10-49" : n < 200 ? "50
 /**
  * Your Line: a square pad (touch, pen or mouse, one stroke at a time;
  * drawing again replaces it), "Clear", and "Example lines" for a page
- * without a pointer; the repeat and the mirror; the words.
+ * without a pointer; the repeat and the mirror. The words are the caption's title (CaptionField, cap[0]).
  */
 export default function LineEditor({ made, arrival, onChange }: EditorProps) {
   const a = arrival?.t === "line" ? arrival.p : null;
@@ -23,12 +22,10 @@ export default function LineEditor({ made, arrival, onChange }: EditorProps) {
   const [n, setN] = useState<LineParams["n"]>(a?.n ?? 12);
   const [mirror, setMirror] = useState(a?.m === 1);
   const [example, setExample] = useState(0);
-  const words = useWords(a?.w ?? "");
   const pad = useRef<HTMLDivElement>(null);
   const [drawing, setDrawing] = useState<[number, number][] | null>(null);
 
-  const w = words.value;
-  const spec: CustomSpec | null = s && w !== null ? { t: "line", v: 1, p: { s, n, ...(mirror ? { m: 1 as const } : {}), ...(w ? { w } : {}) } } : null;
+  const spec: CustomSpec | null = s ? { t: "line", v: 1, p: { s, n, ...(mirror ? { m: 1 as const } : {}) } } : null;
   useReportSpec(spec, onChange);
 
   const at = (e: React.PointerEvent): [number, number] => {
@@ -89,7 +86,6 @@ export default function LineEditor({ made, arrival, onChange }: EditorProps) {
       </div>
       <Segmented label="Repeats" options={LINE_REPEATS} value={n} onChange={setN} />
       <Switch label="Mirror" checked={mirror} onChange={setMirror} />
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
     </>
   );
 }

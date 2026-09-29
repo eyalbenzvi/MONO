@@ -9,7 +9,7 @@
  * fitted to the print; past eight floors the hatching takes a coarser
  * module, so its lines never crowd under the smallest stroke that prints.
  */
-import { INK, caption, f1, line, rect, text } from "../kit";
+import { INK, caption, captionLines, f1, line, rect, text, type Lines } from "../kit";
 import { ORDERS } from "../draw/architecture";
 import type { CustomSpec, HouseParams } from "../spec";
 import { wrap } from "../svg";
@@ -168,9 +168,16 @@ export function houseBody(p: HouseParams): string {
   for (let i = 0; i < 2; i++) s += rect(sx + i * m(unit), sy, m(unit), 3, 0.7);
   s += text(sx, sy + 10, "0", 5) + text(sx + m(unit), sy + 10, String(unit), 5) + text(sx + m(unit * 2), sy + 10, `${unit * 2} m`, 5);
 
+  return s + caption(348, ...captionLines(houseCaption(p), p.cap));
+}
+
+/** The caption's lines (ours): the number (or the house's words, or "Elevation"), then the words and the floors. */
+export function houseCaption(p: HouseParams): Lines {
   const title = p.no !== undefined ? `No. ${p.no}` : (p.w ?? "Elevation");
   const floors = `${p.fl} ${p.fl === 1 ? "floor" : "floors"} · ${ROOF_NAME[p.r]}`;
-  return s + caption(348, title, p.no !== undefined && p.w ? p.w : floors, p.no !== undefined && p.w ? floors : undefined);
+  return [title, p.no !== undefined && p.w ? p.w : floors, p.no !== undefined && p.w ? floors : undefined];
 }
+
+export const captionOf = (spec: CustomSpec) => houseCaption((spec as { p: HouseParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(houseBody((spec as { p: HouseParams }).p), color);

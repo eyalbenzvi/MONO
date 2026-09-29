@@ -14,7 +14,8 @@
  * rings first, then thins (never under the catalogue's hairline); a line that
  * never moved becomes a ring of beads.
  */
-import { caption, f1, INK } from "../kit";
+import { caption, captionLines, f1, INK, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { decodeStroke, type CustomSpec, type LineParams } from "../spec";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
@@ -115,8 +116,15 @@ export function lineBody(p: LineParams): string {
   }
   body += `<circle cx="${CX}" cy="${CY}" r="${R + 10}" fill="none" stroke="${INK}" stroke-width="${WEIGHT}"/>`;
   body += `<circle cx="${CX}" cy="${CY}" r="${R + 14}" fill="none" stroke="${INK}" stroke-width="${HAIR}"/>`;
-  const title = p.w ?? `${p.n}-fold`;
-  return body + caption(338, title, p.w ? `${p.n}-fold${mirror ? ", mirrored" : ""} · one line, turned` : `One line, turned${mirror ? " and mirrored" : ""}`);
+  return body + caption(338, ...captionLines(lineCaption(p), p.cap));
 }
+
+/** The caption's lines (ours): the words (the visitor's title) or the repeat, and how it was made. */
+export function lineCaption(p: LineParams): Lines {
+  const w = titleWords(p), mirror = p.m === 1;
+  return [w ?? `${p.n}-fold`, w ? `${p.n}-fold${mirror ? ", mirrored" : ""} · one line, turned` : `One line, turned${mirror ? " and mirrored" : ""}`];
+}
+
+export const captionOf = (spec: CustomSpec) => lineCaption((spec as { p: LineParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(lineBody((spec as { p: LineParams }).p), color);

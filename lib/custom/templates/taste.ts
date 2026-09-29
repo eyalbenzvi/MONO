@@ -22,7 +22,7 @@
  * | contrast                      | the seeds filled (else open)                             |
  * | figurative                    | the seeds grow outwards (else shrink)                    |
  */
-import { DEG, INK, caption, circle, f1, line, text } from "../kit";
+import { DEG, INK, caption, captionLines, circle, f1, line, text, type Lines } from "../kit";
 import { lsystem, turtle } from "../draw/botany";
 import { fit, polyline, type Point } from "../draw/paths";
 import { tasteFromQ } from "../tasteCode";
@@ -118,12 +118,22 @@ export function tasteBody(p: TasteParams): string {
     body += circle(HEAD.x, HEAD.y, R + 5, w);
   }
 
-  // The caption: the taste's name and its three strongest traits; typography sets it larger.
-  const { name, traits } = archetypeOf(v);
-  const sub = traits.length ? traits.map((k: FeatureKey) => FEATURE_LABELS[k]).join(" · ") : "Still finding its way";
-  if (v.typography >= 0.6) body += text(150, 336, name.toUpperCase(), name.length > 18 ? 13 : 16, { bold: true, spacing: 2 }) + text(150, 352, sub, Math.min(8, 264 / (0.6 * sub.length)));
-  else body += caption(336, name, sub);
+  // The caption: the taste's name and its three strongest traits (or the visitor's lines); typography sets it larger.
+  const [name, sub, sub2] = captionLines(tasteCaption(p), p.cap);
+  if (v.typography >= 0.6) {
+    if (name) body += text(150, 336, name.toUpperCase(), name.length > 18 ? 13 : 16, { bold: true, spacing: 2 });
+    if (sub) body += text(150, 352, sub, Math.min(8, 264 / (0.6 * sub.length)));
+    if (sub2) body += text(150, 364, sub2, Math.min(7, 264 / (0.6 * sub2.length)));
+  } else body += caption(336, name, sub, sub2);
   return body;
 }
+
+/** The caption's lines (ours): the taste's name and its strongest traits. */
+export function tasteCaption(p: TasteParams): Lines {
+  const { name, traits } = archetypeOf(tasteFromQ(p.q));
+  return [name, traits.length ? traits.map((k: FeatureKey) => FEATURE_LABELS[k]).join(" · ") : "Still finding its way"];
+}
+
+export const captionOf = (spec: CustomSpec) => tasteCaption((spec as { p: TasteParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(tasteBody((spec as { p: TasteParams }).p), color);

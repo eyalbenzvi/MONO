@@ -6,7 +6,7 @@
  * stopwatch instead: seconds round the face, the minute hand, and the hours
  * on a sub-dial.
  */
-import { DEG, caption, circle, dot, line, rect, text } from "../kit";
+import { DEG, caption, captionLines, circle, dot, line, rect, text, type Lines } from "../kit";
 import { dial } from "../draw/instruments";
 import { parseClock, type CustomSpec, type NumberParams } from "../spec";
 import { wrap } from "../svg";
@@ -113,9 +113,23 @@ export function numberBody(p: NumberParams): string {
     shown = [label(p.v as number), p.u].filter(Boolean).join(" ");
     face = numberFace(p.v as number, p.u);
   }
-  const title = p.l ?? shown;
-  const sub = p.l ? shown : p.face === "stopwatch" ? "Stopwatch" : p.u ? `Dial · ${p.u}` : "Dial";
-  return knurl() + face + caption(338, title, sub);
+  return knurl() + face + caption(338, ...captionLines(numberCaption(p), p.cap));
 }
+
+/** The number as its window shows it ("3.4 kg", "1:23:45"). */
+function shownOf(p: NumberParams): string {
+  const secs = typeof p.v === "string" ? parseClock(p.v) : null;
+  if (secs === null) return [label(p.v as number), p.u].filter(Boolean).join(" ");
+  const [h, m, s] = [Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60];
+  return `${h}:${pad(m)}:${pad(s)}`;
+}
+
+/** The caption's lines (ours): the label (or the number) and what it's shown on. */
+export function numberCaption(p: NumberParams): Lines {
+  const shown = shownOf(p);
+  return [p.l ?? shown, p.l ? shown : p.face === "stopwatch" ? "Stopwatch" : p.u ? `Dial · ${p.u}` : "Dial"];
+}
+
+export const captionOf = (spec: CustomSpec) => numberCaption((spec as { p: NumberParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(numberBody((spec as { p: NumberParams }).p), color);

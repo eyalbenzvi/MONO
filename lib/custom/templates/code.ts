@@ -7,7 +7,7 @@
  * plain letters sit small in the caption; "Keep it secret" leaves them out
  * everywhere (the code alone, and the code's own name as the title).
  */
-import { caption, circle, dot, f1, line, text } from "../kit";
+import { caption, captionLines, circle, dot, f1, line, text, type Lines } from "../kit";
 import { ITA2, binaryText, brailleCell, brailleEncode, morseEncode, morseMarks, punchCard } from "../draw/code";
 import { CODE_NAMES, type CodeKind, type CodeParams } from "../spec";
 import { wrap } from "../svg";
@@ -138,9 +138,15 @@ export function codeBody(p: CodeParams): string {
   const printed = p.h !== 1;
   const art =
     p.k === "card" ? punchCard(loop(p.x, 80).slice(0, 80), { printed, flat: true }) : p.k === "tape" ? tape(p.x, printed) : p.k === "morse" ? morse(p.x) : p.k === "braille" ? braille(p.x, printed) : binary(p.x, printed);
-  const title = printed ? p.x : CODE_NAMES[p.k];
-  const sub = printed ? `${CODE_NAMES[p.k]} · ${STANDARD[p.k]}` : STANDARD[p.k];
-  return art + caption(338, title, sub);
+  return art + caption(338, ...captionLines(codeCaption(p), p.cap));
 }
+
+/** The caption's lines (ours): the name (or the code's, when it's kept secret) and the code. */
+export function codeCaption(p: CodeParams): Lines {
+  const printed = p.h !== 1;
+  return [printed ? p.x : CODE_NAMES[p.k], printed ? `${CODE_NAMES[p.k]} · ${STANDARD[p.k]}` : STANDARD[p.k]];
+}
+
+export const captionOf = (spec: CustomSpec) => codeCaption((spec as { p: CodeParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(codeBody((spec as { p: CodeParams }).p), color);

@@ -11,7 +11,8 @@
  * Pendulums in step can draw a flat ellipse or a line; the y pendulums
  * start wherever the figure comes out roundest, so every voice draws an area.
  */
-import { caption } from "../kit";
+import { caption, captionLines, type Lines } from "../kit";
+import { titleWords } from "../specKit";
 import { harmonographPoints, tracePath } from "../draw/curves";
 import type { CustomSpec, VoiceParams } from "../spec";
 import { wrap } from "../svg";
@@ -38,8 +39,15 @@ export function voiceBody(p: VoiceParams): string {
   };
   const pts = [0, Math.PI / 2, Math.PI / 4].map(trace).reduce((best, t) => (aspect(t) < aspect(best) - 0.05 ? t : best));
   // A low ratio draws fewer lines, so a heavier pen; a high one a finer pen, so its turning points don't close up.
-  const words = p.w;
-  return tracePath(pts, BOX, m <= 3 ? ".7" : m <= 5 ? ".6" : ".5") + caption(348, words ?? "Your voice", words ? `Your voice · ${f} Hz` : `${f} Hz · ${a}:${b}`);
+  return tracePath(pts, BOX, m <= 3 ? ".7" : m <= 5 ? ".6" : ".5") + caption(348, ...captionLines(voiceCaption(p), p.cap));
 }
+
+/** The caption's lines (ours): the words (the visitor's title) or "Your voice", and the pitch. */
+export function voiceCaption(p: VoiceParams): Lines {
+  const words = titleWords(p);
+  return [words ?? "Your voice", words ? `Your voice · ${p.f} Hz` : `${p.f} Hz · ${p.a}:${p.b}`];
+}
+
+export const captionOf = (spec: CustomSpec) => voiceCaption((spec as { p: VoiceParams }).p);
 
 export const render = (spec: CustomSpec, color: BaseColor) => wrap(voiceBody((spec as { p: VoiceParams }).p), color);

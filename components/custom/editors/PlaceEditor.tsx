@@ -5,7 +5,7 @@ import { CityField } from "@/components/custom/CityField";
 import { loadCities, type Places } from "@/lib/custom/data";
 import { FIRST_YEAR, LAST_YEAR, coords, parseDate, type City, type CustomSpec } from "@/lib/custom/spec";
 import { autoCity } from "./DateEditor";
-import { Field, WordsField, useWords } from "./Field";
+import { Field } from "./Field";
 import { Segmented } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -23,7 +23,7 @@ function parseCoord(raw: string, max: number, pos: string, neg: string): number 
 /**
  * Your Place: a city (from your time zone, searchable) or the exact place
  * (latitude and longitude, typed or from this device's location, rounded to
- * about a kilometre), the day it happened (optional), your words.
+ * about a kilometre), the day it happened (optional). The words are the caption's title (CaptionField, cap[0]).
  */
 export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
   const a = arrival?.t === "place" ? arrival.p : null;
@@ -43,19 +43,17 @@ export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
   const [lon, setLon] = useState(a ? String(a.lo) : "");
   const [date, setDate] = useState(a?.d ?? "");
   const [locating, setLocating] = useState<"" | "busy" | "off">("");
-  const words = useWords(a?.w ?? "");
 
   const here = useMemo(() => (places ? autoCity(places) : undefined), [places]);
   const city: City | undefined = (cityId && places ? places.byId(cityId) : undefined) ?? here;
   const la = parseCoord(lat, 90, "N", "S"), lo = parseCoord(lon, 180, "E", "W");
   const dateOk = !date || (!!parseDate(date) && Number(date.slice(0, 4)) >= FIRST_YEAR && Number(date.slice(0, 4)) <= LAST_YEAR);
-  const w = words.value;
   const spec: CustomSpec | null = useMemo(() => {
-    if (!places || w === null || !dateOk) return null;
-    const rest = { ...(date ? { d: date } : {}), ...(w ? { w } : {}) };
+    if (!places || !dateOk) return null;
+    const rest = { ...(date ? { d: date } : {}) };
     if (mode === "city") return city ? { t: "place", v: 1, p: { la: round2(city.lat), lo: round2(city.lon), c: city.id, ...rest } } : null;
     return la !== null && lo !== null ? { t: "place", v: 1, p: { la, lo, ...rest } } : null;
-  }, [places, w, dateOk, date, mode, city, la, lo]);
+  }, [places, dateOk, date, mode, city, la, lo]);
 
   const report = useRef(onChange);
   report.current = onChange;
@@ -104,7 +102,6 @@ export default function PlaceEditor({ made, arrival, onChange }: EditorProps) {
       <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-date">
         <input id="make-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
       </Field>
-      <WordsField words={words} hint={made.wordsHint ?? ""} />
     </>
   );
 }
