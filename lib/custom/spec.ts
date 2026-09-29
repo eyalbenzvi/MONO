@@ -544,9 +544,9 @@ const cut = (s: string) => (s.length > NOTE_MAX ? `${s.slice(0, NOTE_MAX - 1).tr
  * one date tell apart).
  */
 export function customTitle(spec: CustomSpec): string {
-  const detail = customDetail(spec);
-  // The visitor's title line (cap[0]) when set, else a link's words from before captions.
+  // The visitor's title line (cap[0]) when set, else a link's words from before captions; the products whose words were the title show it as their words.
   const w = titleWords(spec.p as { w?: string; cap?: Cap });
+  const detail = customDetail(wordsTitle(spec.t) ? ({ ...spec, p: { ...spec.p, w } } as CustomSpec) : spec);
   const note = typeof w === "string" && w && !detail.includes(w) ? cut(w) : "";
   return [PRODUCT_NAMES[spec.t], detail && cut(detail), note].filter(Boolean).join(" · ");
 }

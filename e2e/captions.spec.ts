@@ -4,7 +4,7 @@ import { captionLine, hydrated } from "./helpers";
 // The text under the print, on three products of different kinds: a line edited
 // shows in the link, a fresh visitor opening it sees the same line, and Reset
 // brings ours back (and takes it out of the link).
-for (const slug of ["snowflake", "maze", "place"]) {
+for (const slug of ["house", "maze", "place"]) {
   test(`Your caption on ${slug}: edit a line, reopen the link elsewhere, reset it`, async ({ page, browser }) => {
     await page.goto(`make/${slug}/`);
     await hydrated(page);
