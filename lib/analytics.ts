@@ -57,7 +57,7 @@ export type AnalyticsEvent =
   | "yours_step"
   | "upload_fix_offered"
   | "upload_fix_applied"
-  | "upload_adjust"
+  | "upload_edit"
   | "upload_compare"
   | "upload_hold_original"
   | "upload_rights_confirm"

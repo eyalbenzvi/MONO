@@ -51,7 +51,7 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await expect(page).toHaveURL(/\/make\/yours\/$/);
   await expect(page.getByRole("heading", { name: "What do you have?" })).toBeVisible();
   // Every tile shows the converter's own before and after, never an empty box.
-  for (const kind of ["photo", "drawing", "words", "link"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
+  for (const kind of ["photo", "words", "link"]) await expect(page.locator(`[data-tile="${kind}"] img`)).toHaveCount(2);
   // A link opens Your Link (a QR code drawn from the address, not a file); Back returns here.
   await page.locator('[data-tile="link"]').tap();
   await expect(page).toHaveURL(/\/make\/qr\/$/);
@@ -68,7 +68,7 @@ test("From yours, a photo: the print shows while converting, then Style, Size an
   await expect(page).toHaveURL(/#print$/);
   await ready(page);
   await expect(page.locator("[data-upload-line]")).toHaveText(/^A (light|dark) picture, so (black|white): the ink draws its (lights|darks)\.$/);
-  await expect(page.getByRole("radiogroup", { name: "Style" }).getByRole("radio")).toHaveCount(2);
+  await expect(page.getByRole("radiogroup", { name: "Style" }).getByRole("radio")).toHaveCount(3);
   await expect(page.getByRole("radiogroup", { name: "Tee" }).getByText("Suggested")).toBeVisible();
   await page.getByRole("radio", { name: /^Lines/ }).tap();
   await ready(page);

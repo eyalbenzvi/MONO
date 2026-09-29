@@ -113,6 +113,10 @@ const pictureOf = (p: Preview | null, tee: Tee): Option<string>["picture"] => (!
 
 export type Choice = Tee | "both";
 
+/** A photograph's styles: its tone in dots, its edges as lines, or read as a drawing (a sketch shot on paper, cleaned to its strokes). */
+const STYLES = ["dots", "lines", "drawing"] as const;
+const STYLE_LABEL: Record<Settings["mode"], string> = { dots: "Dots", lines: "Lines", drawing: "Drawing" };
+
 /**
  * Style (a photograph only), Size and Tee, each as small pictures of the
  * real result. The current setting uses the current print; the other Style
@@ -120,11 +124,14 @@ export type Choice = Tee | "both";
  */
 export function ChoiceThumbs({ shirt, source, settings, preview, choice, onSettings, onChoice }: { shirt: ShirtProduct; source: Source; settings: Settings; preview: PreviewOk; choice: Choice; onSettings: (patch: Partial<Settings>) => void; onChoice: (c: Choice) => void }) {
   const tee: Tee = choice === "both" ? preview.tee : choice;
-  const photo = preview.cls === "photo";
-  const otherMode = settings.mode === "dots" ? "lines" : "dots";
+  // A photograph has a style; so does one read as a Drawing (its class is then line work).
+  const photo = preview.cls === "photo" || settings.mode === "drawing";
+  const [modeA, modeB] = STYLES.filter((m) => m !== settings.mode);
   const otherSize = preview.size === "full" ? "small" : "full";
-  const altMode = useAlt(source, { ...settings, mode: otherMode, size: preview.size }, photo ? 150 : 1e9);
-  const altSize = useAlt(source, { ...settings, size: otherSize }, photo ? 900 : 300);
+  const altA = useAlt(source, { ...settings, mode: modeA, size: preview.size }, photo ? 150 : 1e9);
+  const altB = useAlt(source, { ...settings, mode: modeB, size: preview.size }, photo ? 600 : 1e9);
+  const altMode = (m: Settings["mode"]) => (m === modeA ? altA : altB);
+  const altSize = useAlt(source, { ...settings, size: otherSize }, photo ? 1200 : 300);
   const off = (p: Preview | null) => (p && !p.ok ? shortReason(p.code) : p && p.ok && p.autoSmall && otherSize === "full" ? "File too small" : undefined);
   const current = { canvas: preview.canvas(tee), tee };
   const bothOk = preview.tees.length === 2;
@@ -136,7 +143,7 @@ export function ChoiceThumbs({ shirt, source, settings, preview, choice, onSetti
           shirt={shirt}
           value={settings.mode}
           onChange={(v) => onSettings({ mode: v })}
-          options={(["dots", "lines"] as const).map((v) => ({ value: v, label: v === "dots" ? "Dots" : "Lines", picture: v === settings.mode ? current : pictureOf(altMode, tee), off: v === settings.mode ? undefined : off(altMode) }))}
+          options={STYLES.map((v) => ({ value: v, label: STYLE_LABEL[v], picture: v === settings.mode ? current : pictureOf(altMode(v), tee), off: v === settings.mode ? undefined : off(altMode(v)) }))}
         />
       )}
       <Row

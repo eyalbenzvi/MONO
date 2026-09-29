@@ -1,8 +1,9 @@
 /**
  * The upload page's engine (browser only). A file or words is opened once
  * (checked: format, size, the lexicon on its name), then converted for a
- * set of settings — the crop, a quarter turn, "Stronger" (levels and a
- * gamma boost on the source), Dots or Lines, Full or Small, "Bolder" (one
+ * set of settings — the crop, a quarter turn, a mirror, light and contrast,
+ * "Stronger" (levels and a gamma boost on the source), Dots, Lines or
+ * Drawing, Full or Small, "Bolder" (one
  * step thicker, line work only) — in the worker (lib/upload/run), measured
  * on both tees, the tee chosen by rule (teeRule) and the tier set
  * (measure). Every result is cached by its settings, so going back, the
@@ -35,16 +36,37 @@ export interface Crop {
   h: number;
 }
 export type Rot = 0 | 90 | 180 | 270;
+/** Light and contrast run from -TONE_MAX to TONE_MAX (0: as taken). */
+export const TONE_MAX = 50;
 export interface Settings {
   crop: Crop | null;
   rot: Rot;
+  /** Mirrored left to right (after the turn). */
+  flip: boolean;
+  /** Brighter (+) or darker (-), in percent. */
+  light: number;
+  /** More (+) or less (-) contrast, in percent. */
+  contrast: number;
   stronger: boolean;
   bolder: boolean;
-  mode: "dots" | "lines";
+  /** A photograph's style; Drawing reads it as line work (a sketch photographed on paper). */
+  mode: "dots" | "lines" | "drawing";
   size: PrintSize;
 }
-export const DEFAULTS: Settings = { crop: null, rot: 0, stronger: false, bolder: false, mode: "dots", size: "full" };
-export const settingsKey = (s: Settings) => JSON.stringify([s.crop && [s.crop.x, s.crop.y, s.crop.w, s.crop.h].map((v) => v.toFixed(3)), s.rot, s.stronger, s.bolder, s.mode, s.size]);
+export const DEFAULTS: Settings = { crop: null, rot: 0, flip: false, light: 0, contrast: 0, stronger: false, bolder: false, mode: "dots", size: "full" };
+/** The settings as a cache key; the edits added later join it only when used, so the earlier keys (and results) stay the same. */
+export const settingsKey = (s: Settings) =>
+  JSON.stringify([
+    s.crop && [s.crop.x, s.crop.y, s.crop.w, s.crop.h].map((v) => v.toFixed(3)),
+    s.rot,
+    s.stronger,
+    s.bolder,
+    s.mode,
+    s.size,
+    ...(s.flip || s.light || s.contrast ? [s.flip, s.light, s.contrast] : []),
+  ]);
+/** Whether a picture has been edited (anything the edit sheet sets). */
+export const edited = (s: Settings) => !!(s.crop || s.rot || s.flip || s.light || s.contrast || s.stronger);
 
 /** What the page converts: a picture (decoded once), an SVG, or words. */
 export interface Source {
@@ -164,8 +186,8 @@ function canvas2d(w: number, h: number) {
   return { c, ctx: c.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D };
 }
 
-/** The picture turned, cropped and scaled to at most `long` on its long side (and made stronger when asked). */
-export function sourcePixels(src: Source, s: Pick<Settings, "crop" | "rot" | "stronger">, long = MAX_LONG): Pixels {
+/** The picture turned, mirrored, cropped and scaled to at most `long` on its long side, then its light and contrast set (and made stronger when asked). */
+export function sourcePixels(src: Source, s: Pick<Settings, "crop" | "rot" | "stronger"> & Partial<Pick<Settings, "flip" | "light" | "contrast">>, long = MAX_LONG): Pixels {
   const { box, tw, th } = cropPixels(src, s);
   const k = Math.min(1, long / Math.max(box.w, box.h));
   const [w, h] = [Math.max(1, Math.round(box.w * k)), Math.max(1, Math.round(box.h * k))];
@@ -179,12 +201,27 @@ export function sourcePixels(src: Source, s: Pick<Settings, "crop" | "rot" | "st
   ctx.translate(-box.x, -box.y);
   // The turn about the turned image's own frame.
   ctx.translate(tw / 2, th / 2);
+  // The mirror in the turned frame: turned first, then flipped left to right, as the edit sheet shows it.
+  if (s.flip) ctx.scale(-1, 1);
   ctx.rotate((s.rot * Math.PI) / 180);
   ctx.drawImage(src.bitmap!, -src.w / 2, -src.h / 2);
   ctx.restore();
   const data = ctx.getImageData(0, 0, w, h).data;
+  if (s.light || s.contrast) tone(data, s.light ?? 0, s.contrast ?? 0);
   if (s.stronger) strengthen(data);
   return { w, h, data };
+}
+
+/**
+ * Light and contrast, as the edit sheet's sliders set them: each channel
+ * scaled by 1 + light/100, then spread about the middle grey by
+ * 1 + contrast/100 (the order CSS's brightness() and contrast() filters use).
+ */
+export function tone(data: Uint8ClampedArray, light: number, contrast: number) {
+  const [b, c] = [1 + light / 100, 1 + contrast / 100];
+  const lut = new Uint8ClampedArray(256);
+  for (let v = 0; v < 256; v++) lut[v] = Math.round(((v / 255) * b - 0.5) * c * 255 + 127.5);
+  for (let i = 0; i < data.length; i += 4) for (let k = 0; k < 3; k++) data[i + k] = lut[data[i + k]];
 }
 
 /**
@@ -271,7 +308,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     const { short } = cropPixels(src, s);
     if (short < MIN_SHORT.small) return fail(REASONS.smallForSmall, size);
     if (size === "full" && short < MIN_SHORT.full) (size = "small"), (autoSmall = true);
-    req = { pixels: sourcePixels(src, s), mode: s.mode as Mode, size, checked: true };
+    req = { pixels: sourcePixels(src, s), mode: s.mode, size, checked: true };
   }
   const res = await convertInWorker(req);
   if (!res.ok) return fail(res.reason, size);
@@ -342,7 +379,7 @@ function fail(reason: string, size: PrintSize): PreviewFail {
 export interface Fix {
   id: "stronger" | "lines" | "dots" | "small" | "full" | "bolder" | "crop";
   label: string;
-  /** The settings it changes (none: it opens Adjust). */
+  /** The settings it changes (none: it opens Edit photo). */
   patch?: Partial<Settings>;
 }
 
@@ -386,7 +423,7 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
     case "dense":
     case "denseDots":
       add(lines, photo && s.mode === "dots");
-      add(dots, photo && s.mode === "lines");
+      add(dots, (photo && s.mode === "lines") || s.mode === "drawing");
       add(small, f.size === "full" && !f.autoSmall);
       add(crop, picture);
       break;
@@ -394,6 +431,7 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
     case "gap":
       add(full, f.size === "small");
       add(dots, photo && s.mode === "lines");
+      add(bolder, f.code === "stroke" && s.mode === "drawing" && !s.bolder);
       add(bolder, f.code === "stroke" && !photo && !s.bolder);
       add(bolder, f.code === "stroke" && photo && s.mode === "lines" && !s.bolder);
       break;

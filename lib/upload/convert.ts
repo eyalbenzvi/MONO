@@ -32,6 +32,8 @@ export interface Pixels {
 
 export type UploadClass = "line" | "photo" | "vector" | "words";
 export type Mode = "dots" | "lines" | "line" | "vector" | "words";
+/** What the page may ask of a picture: its class's own mode, Dots or Lines (a photograph), or Drawing (a photograph read as line work: a sketch shot on paper). */
+export type Ask = Mode | "drawing";
 export type PrintSize = "full" | "small";
 export type Tee = "black" | "white";
 
@@ -923,10 +925,10 @@ export interface ConvertInput {
 /**
  * An upload to a print: the class (vector for an SVG, words for words,
  * otherwise line or photo by its midtones), the mode (the class's own
- * unless Dots or Lines is asked of a photograph), and the ink on the
- * 1500 × 2000 grid for Full or Small.
+ * unless Dots or Lines is asked of a photograph, or Drawing, which reads
+ * it as line work), and the ink on the 1500 × 2000 grid for Full or Small.
  */
-export function convert(input: ConvertInput, opts: { mode?: Mode; size: PrintSize }): Converted {
+export function convert(input: ConvertInput, opts: { mode?: Ask; size: PrintSize }): Converted {
   const { size } = opts;
   const src = input.svgRaster ?? input.pixels;
   if (!src) throw new Error("convert: nothing to convert");
@@ -934,7 +936,8 @@ export function convert(input: ConvertInput, opts: { mode?: Mode; size: PrintSiz
   let g = grey(p);
   const { w, h } = p;
   const midtones = midtonesOf(p);
-  const cls: UploadClass = input.svgRaster ? "vector" : input.words ? "words" : midtones < LINE_MIDTONES ? "line" : "photo";
+  // Drawing: a photograph of paper (its shading reads as midtones) taken as the line work it is.
+  const cls: UploadClass = input.svgRaster ? "vector" : input.words ? "words" : midtones < LINE_MIDTONES || opts.mode === "drawing" ? "line" : "photo";
   const base = { cls, size, w: OUT_W, h: OUT_H, midtones } as const;
   if (cls === "photo") {
     const mode: Mode = opts.mode === "lines" ? "lines" : "dots";

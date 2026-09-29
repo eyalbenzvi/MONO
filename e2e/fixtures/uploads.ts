@@ -37,6 +37,20 @@ export function drawing(): Promise<Buffer> {
   });
 }
 
+/** A pencil sketch photographed: soft graphite strokes (rings, grey not black) and a smudge of shading on paper, 1400 × 1400. Its greys read as a photograph; Drawing takes it as the line work it is. */
+export function pencilSketch(): Promise<Buffer> {
+  const r = rng(11);
+  return png(1400, 1400, (x, y) => {
+    const d = Math.hypot(x - 700, y - 700);
+    const off = Math.abs((d % 140) - 70);
+    let v = 236 - 10 * (y / 1400) + 6 * (r() - 0.5);
+    if (d < 560) v -= 120 * Math.exp(-(off * off) / 60);
+    // Shading: a band of light graphite across the lower right.
+    if (x + y > 1700 && x + y < 2100 && d < 600) v -= 55 + 12 * Math.sin(x / 3);
+    return v;
+  });
+}
+
 /** Too small for either size (short side under 800 px). */
 export function tiny(): Promise<Buffer> {
   return png(600, 500, (x, y) => (Math.hypot(x - 300, y - 250) < 150 ? 20 : 240));

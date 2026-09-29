@@ -18,7 +18,7 @@ import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
 import { useHydrated } from "@/store/useUiStore";
 import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
-const AdjustDialog = lazy(() => import("./yours/AdjustDialog").then((m) => ({ default: m.AdjustDialog })));
+const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default: m.EditPhoto })));
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
 
@@ -72,7 +72,7 @@ function Yours() {
   const [wordsMode, setWordsMode] = useState(false);
   const [words, setWords] = useState("");
   const [wordsError, setWordsError] = useState<string | null>(null);
-  const [adjusting, setAdjusting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [nudge, setNudge] = useState(0);
@@ -130,7 +130,7 @@ function Yours() {
           const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
           if (meta) setTitle(meta.title);
           setChoice(lines.length >= 2 ? "both" : (lines[0]?.color ?? meta?.tees[0] ?? "white"));
-          setRightsFor(`${r.source.id}|${JSON.stringify([r.settings.crop, r.settings.rot])}`);
+          setRightsFor(`${r.source.id}|${JSON.stringify([r.settings.crop, r.settings.rot, ...(r.settings.flip ? [true] : [])])}`);
           go("print", true);
           return;
         }
@@ -294,7 +294,8 @@ function Yours() {
   const pill = busy ? (last ? "Checking it prints…" : "Converting…") : undefined;
   const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
   const size$ = teeSize ?? selected;
-  const rightsKey = source && settings ? `${source.id}|${JSON.stringify([settings.crop, settings.rot])}` : null;
+  // The rights are asked of the picture as it will print: a new crop, turn or mirror asks again (light and contrast don't change what's in it).
+  const rightsKey = source && settings ? `${source.id}|${JSON.stringify([settings.crop, settings.rot, ...(settings.flip ? [true] : [])])}` : null;
 
   /* ---------------- the primary button of each step ---------------- */
   const toRights = () => {
@@ -425,7 +426,7 @@ function Yours() {
                   shirt={shirt}
                   status={status}
                   onFix={applyFix}
-                  onAdjust={() => setAdjusting(true)}
+                  onEdit={() => setEditing(true)}
                   onAnother={() => fileInput.current?.click()}
                 />
               )}
@@ -434,7 +435,7 @@ function Yours() {
                 <SizeStep
                   title={title}
                   setTitle={setTitle}
-                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? "Words" : "Line"} · ${ok.size === "full" ? "Full" : "Small"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
+                  summary={`${ok.mode === "dots" ? "Dots" : ok.mode === "lines" ? "Lines" : ok.cls === "words" ? "Words" : ok.cls === "vector" ? "Line" : "Drawing"} · ${ok.size === "full" ? "Full" : "Small"} · ${choice === "both" ? "Both tees" : `${choice === "black" ? "Black" : "White"} tee`}`}
                   onChange={() => window.history.go(-2)}
                   size={size$}
                   setSize={(s) => (setTeeSize(s), useCartStore.getState().setSize(YOURS_ID, s))}
@@ -446,18 +447,20 @@ function Yours() {
           </div>
         </div>
       )}
-      {adjusting && source && settings && (
+      {editing && source && settings && (
         <Suspense fallback={null}>
-        <AdjustDialog
-          source={source}
-          settings={settings}
-          onClose={() => setAdjusting(false)}
-          onDone={(p) => {
-            setAdjusting(false);
-            track("upload_adjust", { what: p.stronger !== settings.stronger ? "stronger" : p.rot !== settings.rot ? "rotate" : p.crop ? "crop" : "reset" });
-            patch(p);
-          }}
-        />
+          <EditPhoto
+            source={source}
+            settings={settings}
+            onClose={() => setEditing(false)}
+            onSave={(p) => {
+              setEditing(false);
+              // Which edits the saved picture carries (never the picture), for what gets used.
+              const what = (["crop", "rot", "flip", "light", "contrast", "stronger"] as const).filter((k) => !!p[k]);
+              track("upload_edit", { what: what.join(".") || "reset" });
+              patch(p);
+            }}
+          />
         </Suspense>
       )}
     </div>
@@ -487,8 +490,8 @@ function Start({
 }) {
   const [drag, setDrag] = useState(false);
   const TILES = [
-    { kind: "photo", label: "A photo", line: "A pet, a place, a day out. Printed in dots. JPG, PNG or WebP." },
-    { kind: "drawing", label: "A drawing", line: "Your lines, cleaned up. A scan, a photo of paper, or SVG." },
+    // One tile for a photo or a drawing: the converter tells them apart by itself, and a drawing shot on paper has its own style (Drawing).
+    { kind: "photo", label: "A photo or drawing", line: "A pet, a place, a sketch on paper. JPG, PNG, WebP or SVG." },
     { kind: "words", label: "Words", line: "Up to three lines, in our type." },
     { kind: "link", label: "A link", line: "A web address, as a QR code that scans." },
   ];
@@ -518,7 +521,7 @@ function Start({
       <h2 ref={heading} tabIndex={-1} className="mt-8 text-lg font-bold outline-none">
         What do you have?
       </h2>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {TILES.map((t) => (
           <li key={t.kind}>
             <button
@@ -569,7 +572,7 @@ function PrintStep({
   shirt,
   status,
   onFix,
-  onAdjust,
+  onEdit,
   onAnother,
 }: {
   wordsMode: boolean;
@@ -589,7 +592,7 @@ function PrintStep({
   shirt: NonNullable<ReturnType<typeof getShirtById>>;
   status: string;
   onFix: (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => void;
-  onAdjust: () => void;
+  onEdit: () => void;
   onAnother: () => void;
 }) {
   const [meaning, setMeaning] = useState<Record<string, string>>({});
@@ -649,7 +652,7 @@ function PrintStep({
               </button>
             ))}
             {cropFix && (
-              <button type="button" onClick={onAdjust} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix="crop">
+              <button type="button" onClick={onEdit} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix="crop">
                 Crop tighter
               </button>
             )}
@@ -662,10 +665,10 @@ function PrintStep({
         </div>
       )}
       {preview === null && !wordsMode && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
-      <div className="flex flex-wrap gap-x-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {source && source.kind === "file" && (
-          <button type="button" onClick={onAdjust} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
-            Adjust
+          <button type="button" onClick={onEdit} className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/10" data-edit-photo>
+            <Icon name="pencil" className="h-4 w-4" /> Edit photo
           </button>
         )}
         {!wordsMode && (

@@ -6,14 +6,14 @@
  * upload worker (lib/upload/worker.ts), or on the main thread where there
  * is no worker (lib/upload/run.ts). The conversion itself is convert.ts.
  */
-import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Converted, type Mode, type Pixels, type PrintSize } from "./convert";
+import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
 import { MAX_BYTES, REASONS } from "./reasons";
 
 export type UploadRequest =
-  | { file: Blob; type: string; mode?: Mode; size: PrintSize }
+  | { file: Blob; type: string; mode?: Ask; size: PrintSize }
   | { words: string[]; size: PrintSize }
   | { svgRaster: Pixels; size: PrintSize }
-  | { pixels: Pixels; mode?: Mode; size: PrintSize; checked?: boolean };
+  | { pixels: Pixels; mode?: Ask; size: PrintSize; checked?: boolean };
 
 export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number } } | { ok: false; reason: string };
 
