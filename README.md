@@ -176,6 +176,7 @@ One ink, for one person, in two tracks. **From ours**: twelve of our designs, ea
 | Your Tartan | `/make/tartan/` | a family name, and a sett derived from it or set stripe by stripe | Truchet Tiles (the nearest textile): a 2/2 twill in hatched tones |
 | Your Journey | `/make/journey/` | two to eight places, in order | Daylight: a globe centred on the journey, great-circle legs, numbered stops |
 | Your Game | `/make/chess/` | a game's moves (PGN, replayed on the device, up to 120 plies), the players, the day, the result | Truchet Tiles (the nearest grid): every piece's path across a hatched board |
+| Your Snowflake | `/make/snowflake/` | a name (it seeds the crystal) | the rosettes: a six-fold crystal grown by Reiter's model from a hexagonal plate |
 
 - **The page is the editor**: each product's editor shows only the fields its design needs; the picture is redrawn as you type (a canvas renderer of the templates' SVG subset), and a print that would fail the catalogue's own checks (solid-ink block, quality under 53) says why in one line and can't be bought. Every template has its own chunk and is fuzzed over its whole range (`tests/make/*.test.ts`); the fix goes in the template, never the fuzz.
 - **Words**: every printed text field goes through the lexicon (`lib/custom/lexicon.ts`, `data/lexicon/refuse.json`): "Those words name a brand." / "We don't print that."
