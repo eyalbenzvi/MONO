@@ -56,7 +56,7 @@ export function WhyPanel({ id, open, children }: { id: string; open: boolean; ch
         <motion.div
           id={id}
           role="region"
-          aria-label="Why it's for you"
+          aria-label="Why it’s for you"
           initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
           animate={reduce ? { opacity: 1 } : { opacity: 1, height: "auto" }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}

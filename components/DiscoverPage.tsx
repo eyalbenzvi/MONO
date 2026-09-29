@@ -62,7 +62,7 @@ function HowItWorks() {
     <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-22rem))] top-1/3 hidden w-72 lg:block">
       <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
       <ul className="mt-3 space-y-2 text-sm text-neutral-300">
-        <li>→ Like what you&apos;d wear, ← pass on the rest.</li>
+        <li>→ Like what you&rsquo;d wear, ← pass on the rest.</li>
         <li>Then the shop ranks all {SHIRTS.length.toLocaleString("en-US")} designs for you.</li>
       </ul>
     </aside>

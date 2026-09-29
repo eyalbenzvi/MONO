@@ -175,7 +175,7 @@ export function ProductView({
   if (!shirt) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-400">
-        This tee doesn&apos;t exist.
+        This tee doesn&rsquo;t exist.
         <Link href="/shop/" className="font-semibold text-white underline">Back to shop</Link>
       </div>
     );

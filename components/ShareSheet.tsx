@@ -97,7 +97,7 @@ function makeNote(make: string) {
     code: "your name",
     line: "your line",
     voice: "the numbers from your voice (never the sound)",
-    house: "your house's floors, windows and number",
+    house: "your house’s floors, windows and number",
     number: "your number and its label",
     place: "the place (to about a kilometre) and the day",
     ascii: "your letters",
@@ -157,7 +157,7 @@ function Sheet({ shirt, initialColor, make, upload, onClose }: { shirt: ShirtPro
       track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
       return true;
     } catch (e) {
-      if ((e as Error)?.name !== "AbortError") showToast("Couldn't open the share menu");
+      if ((e as Error)?.name !== "AbortError") showToast("Couldn’t open the share menu");
       return false;
     }
   };
@@ -168,7 +168,7 @@ function Sheet({ shirt, initialColor, make, upload, onClose }: { shirt: ShirtPro
     const url = productShareUrl(shirt, color, ch, undefined, make);
     if (ch === "copy") {
       const copied = await copyText(url);
-      showToast(copied ? "Link copied" : "Couldn't copy the link");
+      showToast(copied ? "Link copied" : "Couldn’t copy the link");
       if (copied) done("copied");
       return;
     }

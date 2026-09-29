@@ -62,7 +62,7 @@ export function CalibrationComplete() {
                   <Burst /> Taste test complete
                 </p>
                 <h2 id="calib-title" className="mt-1 text-2xl font-bold tracking-tight">
-                  You&apos;re {archetype.name}
+                  You&rsquo;re {archetype.name}
                 </h2>
               </div>
             </div>

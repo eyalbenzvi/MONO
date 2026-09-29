@@ -69,7 +69,7 @@ export function CardStack() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
           <Icon name="refresh-cw" className="h-7 w-7 text-neutral-400" />
         </div>
-        <h2 className="text-lg font-semibold">You&apos;ve seen the whole drop</h2>
+        <h2 className="text-lg font-semibold">You&rsquo;ve seen the whole drop</h2>
         <p className="max-w-xs text-sm text-neutral-400">
           {likedCount > 0
             ? `${likedCount} tee${likedCount === 1 ? "" : "s"} saved. Your shop is ranked by everything you swiped.`

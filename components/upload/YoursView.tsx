@@ -30,9 +30,9 @@ const loadClient = () => import("@/lib/upload/client");
 const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,.svg";
 const stepOf = (hash: string): Step => (STEPS.includes(hash.slice(1) as Step) ? (hash.slice(1) as Step) : "start");
 
-/** The quiet line for a fix applied on its own: "We've set Small." */
+/** The quiet line for a fix applied on its own: "We’ve set Small." */
 const fixNote = (f: Fix) =>
-  f.id === "stronger" ? "We\u2019ve made it stronger." : f.id === "bolder" ? "We\u2019ve made the lines bolder." : `We\u2019ve set ${f.label.replace(/^Use /, "")}.`;
+  f.id === "stronger" ? "We’ve made it stronger." : f.id === "bolder" ? "We’ve made the lines bolder." : `We’ve set ${f.label.replace(/^Use /, "")}.`;
 
 /**
  * From yours (/make/yours/): your picture, drawing or words, in one ink.
@@ -265,7 +265,7 @@ function Yours() {
         setLast(p);
         setChoice((ch) => (ch === "both" ? (p.tees.length === 2 ? "both" : p.tee) : p.tees.includes(ch) ? ch : p.tee));
         setTitle((t) => t || p.title);
-        setStatus(p.autoSmall ? "Big enough for Small, not Full. We've set Small." : `It prints on ${p.tee}.`);
+        setStatus(p.autoSmall ? "Big enough for Small, not Full. We’ve set Small." : `It prints on ${p.tee}.`);
         track("upload_preview", { class: p.cls, tier: p.tier });
         return;
       }

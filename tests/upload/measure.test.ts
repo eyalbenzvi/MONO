@@ -90,7 +90,7 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
 
   it("solidBlock: any refusal refuses", () => {
     expect(t({ solid: "slab" })).toMatchObject({ tier: "refuse", reason: REASONS.solid });
-    expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: "Too much ink in one place. Try Lines." });
+    expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: "Too much ink to print. Try Lines." });
   });
 
   it("quality: refused under 53, prints from 53, catalogue from 68", () => {

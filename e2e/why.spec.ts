@@ -14,7 +14,7 @@ test.describe("V4: a personal line opens why", () => {
     const line = page.getByRole("button", { name: /^(Top pick for you|A strong match for you)$/ });
     await expect(line).toHaveAttribute("aria-expanded", "false");
     await line.click();
-    const panel = page.getByRole("region", { name: "Why it's for you" });
+    const panel = page.getByRole("region", { name: "Why it’s for you" });
     await expect(panel).toBeVisible();
     // One quiet line: the traits in common and the rank, and an arrow to the whole taste.
     await expect(panel.getByText(/ · Top \d+%$/)).toBeVisible();
@@ -30,7 +30,7 @@ test.describe("V4: a personal line opens why", () => {
     await page.goto("shop/");
     await hydrated(page);
     await expect(page.getByText(/^For you · /)).toHaveCount(0);
-    await expect(page.getByRole("region", { name: "Why it's for you" })).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "Why it’s for you" })).toHaveCount(0);
   });
 
   test("a taste with no leanings gets no personal line (a percentile alone is no reason)", async ({ page }) => {

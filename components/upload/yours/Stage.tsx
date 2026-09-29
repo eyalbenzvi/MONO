@@ -96,7 +96,7 @@ export function Stage({ shirt, tee, state, source, pill, label }: { shirt: Shirt
           onContextMenu={(e) => e.preventDefault()}
           className="absolute bottom-3 right-3 h-10 select-none rounded-full bg-black/60 px-3.5 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur-md [touch-action:none]"
         >
-          Hold: original
+          Original
         </button>
       )}
     </div>

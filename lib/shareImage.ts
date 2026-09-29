@@ -198,7 +198,7 @@ export async function renderTasteImage(name: string, traits: string[], picks: Sh
     ctx.fillText(s.title, x0 + i * (teeW + colGap) + teeW / 2, 1250);
   });
 
-  const cta = "What's yours? Swipe 10 tees →";
+  const cta = "What’s yours? Swipe 10 tees →";
   ctx.fillStyle = "#ffffff";
   fitFont(ctx, cta, w - 280, 44, 700);
   const cw = ctx.measureText(cta).width + 110;

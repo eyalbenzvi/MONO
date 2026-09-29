@@ -212,7 +212,7 @@ test("From yours, after the order: checking → cleared; offered → accepted; i
 });
 
 for (const [force, line] of [
-  ["refuse:logo", "It has someone else's logo."],
+  ["refuse:logo", "It has someone else’s logo."],
   ["refuse:hate", "It targets people."],
   ["person", "A person is looking at this one."],
 ] as const)
@@ -223,7 +223,7 @@ for (const [force, line] of [
     await page.clock.fastForward(21_000);
     await expect(page.getByText(line)).toBeVisible();
     if (force.startsWith("refuse")) {
-      await expect(page.getByText("We can't print this one. Nothing was charged.")).toBeVisible();
+      await expect(page.getByText("We can’t print this one. Nothing was charged.")).toBeVisible();
       await expect(page.getByRole("link", { name: "Upload another" })).toHaveAttribute("href", /\/make\/yours\/\?replace=/);
     }
   });
@@ -261,7 +261,7 @@ test("From yours: an SVG with a script is refused", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "bad.svg", Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="10" height="10"/></svg>'), "image/svg+xml");
-  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can't print.", { timeout: 25_000 });
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can’t print.", { timeout: 25_000 });
   await expect(primary(page)).toHaveText("Choose another file");
 });
 

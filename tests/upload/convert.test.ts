@@ -138,7 +138,7 @@ describe("uploads: SVG sanitising", () => {
   };
   for (const [name, svg] of Object.entries(bad))
     it(`refuses ${name}`, () => {
-      expect(sanitiseSvg(svg)).toEqual({ ok: false, reason: "This SVG has parts we can't print." });
+      expect(sanitiseSvg(svg)).toEqual({ ok: false, reason: "This SVG has parts we can’t print." });
     });
 
   it("passes a plain drawing with in-file references (gradients, <use href='#…'>, url(#…))", () => {
@@ -148,7 +148,7 @@ describe("uploads: SVG sanitising", () => {
   });
 
   it("the refusal line is the reasons file's", () => {
-    expect(REASONS.svg).toBe("This SVG has parts we can't print.");
+    expect(REASONS.svg).toBe("This SVG has parts we can’t print.");
   });
 });
 

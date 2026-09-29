@@ -258,7 +258,7 @@ export function readPgn(text: string, maxPlies: number): { game: Game } | { erro
     moves.push(m);
     pos = play(pos, m);
   }
-  if (!moves.length) return { error: "No moves found. Paste the game's moves (PGN)." };
+  if (!moves.length) return { error: "No moves found. Paste the game’s moves (PGN)." };
   const tagResult = tags.Result === "1-0" || tags.Result === "0-1" ? tags.Result : tags.Result === "1/2-1/2" ? "1/2" : undefined;
   const d = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(tags.Date ?? "");
   const name = (s: string | undefined) => (s && s !== "?" && s !== "" ? s : undefined);

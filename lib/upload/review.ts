@@ -63,26 +63,26 @@ export const STATUS_LINE: Record<ReviewState, string> = {
   queued: "Checking your file. Up to 2 days.",
   person: "A person is looking at this one.",
   cleared: "Cleared. Printing next.",
-  refused: "We can't print this one. Nothing was charged.",
+  refused: "We can’t print this one. Nothing was charged.",
 };
 
 export const REFUSAL_LINE: Record<RefuseReason, string> = {
-  logo: "It has someone else's logo.",
-  artwork: "It looks like someone else's artwork.",
-  person: "It shows someone who hasn't agreed.",
-  explicit: "It's explicit.",
+  logo: "It has someone else’s logo.",
+  artwork: "It looks like someone else’s artwork.",
+  person: "It shows someone who hasn’t agreed.",
+  explicit: "It’s explicit.",
   hate: "It targets people.",
   words: "The words name a brand.",
-  quality: "It didn't pass our print check.",
+  quality: "It didn’t pass our print check.",
 };
 /** Any refusal without a known reason. */
 export const REFUSAL_FALLBACK = REFUSAL_LINE.quality;
 
-/** "What we won't print": the seven lines, as the rights step shows them. */
+/** "What we won’t print": the seven lines, as the rights step shows them. */
 export const WONT_PRINT = [
-  "Someone else's logo, brand or character.",
-  "Someone else's artwork, photograph, screenshot or album cover.",
-  "Famous people, or anyone who hasn't agreed.",
+  "Someone else’s logo, brand or character.",
+  "Someone else’s artwork, photograph, screenshot or album cover.",
+  "Famous people, or anyone who hasn’t agreed.",
   "Anything sexual.",
   "Anything that targets people.",
   "Symbols of hate or terror.",
