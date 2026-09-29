@@ -6,8 +6,15 @@
  * drawing the print lives in lib/custom (index), loaded when one is shown.
  */
 import type { ShirtProduct } from "@/types/shirt";
+import { FIRST_YEAR, LAST_YEAR, WORDS_MAX, b64url, cleanWords, int, isObj, num, parseDate, parseTime } from "./specKit";
+import { EXTRA, type ExtraId, type ExtraSpec } from "./specs";
 
-export type TemplateId = "sky" | "moon" | "night" | "planets" | "taste" | "code" | "line" | "voice" | "house" | "number" | "place" | "ascii";
+export { FIRST_YEAR, LAST_YEAR, WORDS_MAX, cleanWords, parseDate, parseTime };
+export type { ExtraId };
+
+/** The first twelve templates (their params below); the later products each keep theirs in a module of their own (lib/custom/specs). */
+type BaseId = "sky" | "moon" | "night" | "planets" | "taste" | "code" | "line" | "voice" | "house" | "number" | "place" | "ascii";
+export type TemplateId = BaseId | ExtraId;
 /** The customer's own words, the print's first line (optional, WORDS_MAX characters of the print font's script). */
 interface Words {
   w?: string;
@@ -118,7 +125,8 @@ export type CustomSpec =
   | { t: "house"; v: 1; p: HouseParams }
   | { t: "number"; v: 1; p: NumberParams }
   | { t: "place"; v: 1; p: PlaceParams }
-  | { t: "ascii"; v: 1; p: AsciiParams };
+  | { t: "ascii"; v: 1; p: AsciiParams }
+  | ExtraSpec;
 
 /** A city of the place list (data/cities). */
 export interface City {
@@ -150,42 +158,15 @@ const TEMPLATES: Record<string, TemplateId> = {
   "make-number": "number",
   "make-place": "place",
   "make-ascii": "ascii",
+  ...Object.fromEntries(Object.keys(EXTRA).map((t) => [`make-${t}`, t as ExtraId])),
 };
 /** The template a product is made with (by its variant), or null. */
 export const templateFor = (shirt: Pick<ShirtProduct, "variant">): TemplateId | null => TEMPLATES[shirt.variant] ?? null;
 
-export const FIRST_YEAR = 1900;
-export const LAST_YEAR = 2100;
 /** The planets' orbital elements hold to 2050 (JPL, Standish). */
 export const PLANETS_LAST_YEAR = 2050;
-export const WORDS_MAX = 28;
-/** Letters of the print font's script, digits, and a few marks. */
-const WORDS = /^[\p{Script=Latin}0-9 .,'’&:!?·()-]+$/u;
-/** The words as they print: spaces collapsed, trimmed; null when there's nothing, too much, or a character the print can't set. */
-export function cleanWords(s: unknown): string | null {
-  if (typeof s !== "string") return null;
-  const w = s.replace(/\s+/g, " ").trim();
-  return w && w.length <= WORDS_MAX && WORDS.test(w) ? w : null;
-}
 /** No time given: the evening of that day. */
 export const DEFAULT_TIME = "22:00";
-
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
-const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-/** A real calendar date in range, as [y, mo, d]. */
-export function parseDate(s: unknown): [number, number, number] | null {
-  const m = typeof s === "string" ? DATE.exec(s) : null;
-  if (!m) return null;
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  if (y < FIRST_YEAR || y > LAST_YEAR || mo < 1 || mo > 12 || d < 1 || d > new Date(Date.UTC(y, mo, 0)).getUTCDate()) return null;
-  return [y, mo, d];
-}
-export const parseTime = (s: unknown): [number, number] | null => {
-  const m = typeof s === "string" ? TIME.exec(s) : null;
-  return m ? [Number(m[1]), Number(m[2])] : null;
-};
 
 /**
  * A spec, strictly: known template and version, every field's type and range,
@@ -195,6 +176,11 @@ export const parseTime = (s: unknown): [number, number] | null => {
 export function validate(spec: unknown, cityById?: (id: number) => City | undefined): CustomSpec | null {
   if (!isObj(spec) || spec.v !== 1 || !isObj(spec.p)) return null;
   const p = spec.p;
+  if (typeof spec.t === "string" && Object.hasOwn(EXTRA, spec.t)) {
+    const t = spec.t as ExtraId;
+    const q = (EXTRA[t].check as (p: Record<string, unknown>, ctx: { cityById?: typeof cityById }) => unknown)(p, { cityById });
+    return q ? ({ t, v: 1, p: q } as CustomSpec) : null;
+  }
   let words: Words = {};
   if (p.w !== undefined) {
     const w = cleanWords(p.w);
@@ -222,7 +208,6 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     if (!d || d[0] > PLANETS_LAST_YEAR) return null;
     return { t: "planets", v: 1, p: { d: p.d as string, ...words } };
   }
-  const int = (v: unknown, lo: number, hi: number): v is number => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
   if (spec.t === "taste") {
     if (typeof p.q !== "string" || !TASTE_Q.test(p.q)) return null;
     return { t: "taste", v: 1, p: { q: p.q } };
@@ -287,8 +272,6 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
 }
 
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
-/** A finite number in range with at most `dp` decimals. */
-const num = (v: unknown, lo: number, hi: number, dp: number) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi && Math.abs(Math.round(v * 10 ** dp) - v * 10 ** dp) < 1e-6;
 
 /** Your Taste's vector: 17 axes, each 0–10 as one base-36 digit (0–9, a). */
 const TASTE_Q = /^[0-9a]{17}$/;
@@ -400,8 +383,6 @@ export function specHash(spec: CustomSpec): string {
   return h.toString(36);
 }
 
-// UTF-8 inside base64 (words may carry accents): btoa takes one byte per character. `raw`: the string is bytes already.
-const b64url = (s: string, raw = false) => btoa(raw ? s : unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 /** The spec for a link (`?make=`): base64url of its canonical JSON. */
 export const encodeMake = (spec: CustomSpec) => b64url(canonical(spec));
 /** A link's spec, validated; anything malformed is null. */
@@ -437,6 +418,7 @@ export const PRODUCT_NAMES: Record<TemplateId, string> = {
   number: "Your Number",
   place: "Your Place",
   ascii: "Your ASCII",
+  ...(Object.fromEntries(Object.entries(EXTRA).map(([t, m]) => [t, m.NAME])) as Record<ExtraId, string>),
 };
 
 /** What a product that isn't dated puts after its name in the bag ("Your Name · NOA", "Your Voice · 196 Hz"). */
@@ -456,8 +438,14 @@ function customDetail(spec: CustomSpec): string {
       return spec.p.w ?? coords(spec.p.la, spec.p.lo);
     case "ascii":
       return spec.p.x.join(" ");
-    default:
+    case "sky":
+    case "moon":
+    case "night":
+    case "planets":
+    case "taste":
       return customDay(spec);
+    default:
+      return (EXTRA[spec.t].detail as (p: unknown) => string)(spec.p);
   }
 }
 

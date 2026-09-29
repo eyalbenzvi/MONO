@@ -35,6 +35,8 @@ export async function drawPrint(spec: CustomSpec, color: BaseColor): Promise<Dra
     const places = await m.loadCities();
     Object.assign(data, { places: places.list, city: spec.p.c !== undefined ? places.byId(spec.p.c) : undefined });
   }
+  // A later template loads its own data (lib/custom/renderers prepareData).
+  Object.assign(data, await m.prepareData(spec));
   const render = await m.loadRenderer(spec.t);
   return { spec, color, svg: render(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };
 }

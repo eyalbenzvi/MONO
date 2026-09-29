@@ -32,8 +32,8 @@ export function loadCanvasFonts(): Promise<void> {
 }
 
 const ELEMENT = /<(rect|circle|line|path|text)\b([^>]*?)(?:\/>|>([^<]*)<\/text>)|<g\b([^>]*)>|<\/g>/g;
-/** A group's transform: translate(x y) and scale(k [k]), in that order or alone (all the templates write). */
-const TRANSFORM = /(translate|scale)\(\s*([-\d.e]+)(?:[\s,]+([-\d.e]+))?\s*\)/g;
+/** A group's transform: translate(x y), scale(k [k]) and rotate(a [cx cy]), in the order written (all the templates write). */
+const TRANSFORM = /(translate|scale|rotate)\(\s*([-\d.e]+)(?:[\s,]+([-\d.e]+))?(?:[\s,]+([-\d.e]+))?\s*\)/g;
 const ATTR = /([\w:-]+)="([^"]*)"/g;
 const entities = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
 
@@ -50,9 +50,16 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
       else {
         ctx.save();
         const t = /transform="([^"]*)"/.exec(groupAttrs ?? "")?.[1] ?? "";
-        for (const [, op, x, y] of t.matchAll(TRANSFORM)) {
+        for (const [, op, x, y, z] of t.matchAll(TRANSFORM)) {
           if (op === "translate") ctx.translate(Number(x), Number(y ?? 0));
-          else ctx.scale(Number(x), Number(y ?? x));
+          else if (op === "scale") ctx.scale(Number(x), Number(y ?? x));
+          else {
+            // rotate(a cx cy) turns about (cx, cy), as SVG's does.
+            const [cx, cy] = [Number(y ?? 0), Number(z ?? 0)];
+            ctx.translate(cx, cy);
+            ctx.rotate((Number(x) * Math.PI) / 180);
+            ctx.translate(-cx, -cy);
+          }
         }
       }
       continue;
@@ -65,6 +72,7 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
     ctx.lineWidth = n("stroke-width", 1);
     ctx.lineCap = (a["stroke-linecap"] as CanvasLineCap) ?? "butt";
     ctx.lineJoin = (a["stroke-linejoin"] as CanvasLineJoin) ?? "miter";
+    ctx.setLineDash(a["stroke-dasharray"] ? a["stroke-dasharray"].split(/[\s,]+/).map(Number) : []);
     if (tag === "text") {
       const size = n("font-size", 16);
       ctx.font = `${a["font-weight"] === "bold" ? "bold " : ""}${size}px "${FAMILY}", monospace`;

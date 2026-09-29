@@ -29,7 +29,7 @@ import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
 import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { itemOf, trackEcommerce } from "@/lib/analytics";
-import { madeFor } from "@/lib/custom/products";
+import { madeAllFor } from "@/lib/custom/products";
 import { acceptedDesigns, creditLine } from "@/lib/upload/designs";
 import { isUploadDesign } from "@/lib/upload/keys";
 
@@ -188,7 +188,8 @@ export function ProductView({
   const black = color === "black";
   const size = hydrated ? selected : undefined;
   const why = showMatch ? whyMatch(vector, shirt, likedIds) : null;
-  const made = madeFor(shirt.variant);
+  const makes = madeAllFor(shirt.variant);
+  const made = makes[0];
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
   // the variations above) and at most one per algorithm. Precomputed by the
@@ -348,10 +349,24 @@ export function ProductView({
                   </p>
                 )}
                 {/* The computed skies lead to their made-for-you tee (Your Night Sky, Your Planets, Your Year of Moons). */}
-                {made && (
+                {made && makes.length === 1 && (
                   <Link href={`/make/${made.slug}/`} className="-my-1.5 inline-flex h-10 items-center gap-1 text-sm text-neutral-400 transition-colors hover:text-white" data-make-your-own>
                     Make your own <Icon name="arrow-right" className="h-3.5 w-3.5" />
                   </Link>
+                )}
+                {/* A design several products are drawn like names each (Dot-Matrix: Your Life in Weeks · Your Maze). */}
+                {makes.length > 1 && (
+                  <p className="text-sm text-neutral-400" data-make-your-own-list>
+                    Make your own:{" "}
+                    {makes.map((m, i) => (
+                      <span key={m.slug}>
+                        {i > 0 && " · "}
+                        <Link href={`/make/${m.slug}/`} className="inline-flex h-10 items-center underline-offset-2 hover:text-white hover:underline" data-make-your-own={i === 0 ? "" : undefined}>
+                          {m.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </p>
                 )}
                 {/* The learning, felt: said only when it's true (a top or strong match, with traits in
                     common), and the line itself opens why. */}

@@ -8,9 +8,10 @@
  */
 import type { PrintHints } from "./printCheck";
 import type { CustomSpec, TemplateId } from "./spec";
+import { EXTRA, type ExtraId } from "./specs";
 
 export interface MadeProduct {
-  slug: "taste" | "code" | "ascii" | "line" | "voice" | "house" | "number" | "place" | "sky" | "moon" | "year" | "planets";
+  slug: "taste" | "code" | "ascii" | "line" | "voice" | "house" | "number" | "place" | "sky" | "moon" | "year" | "planets" | ExtraId;
   id: string;
   template: TemplateId;
   name: string;
@@ -38,16 +39,23 @@ const DATED: PrintHints = { dense: "Try another date.", faint: "Try another date
 /** London's GeoNames id (data/cities): the example sky's place, and the fallback when the visitor's zone has no city. */
 export const FALLBACK_CITY = 2643743;
 
-export type MakeGroup = "date" | "name" | "place" | "you";
-/** The Make index's groups, in order: by what the visitor has (a date, a name, a place, themselves). */
+export type MakeGroup = "date" | "name" | "place" | "people" | "you";
+/** The Make index's groups, in order: by what the visitor has (a date, a name, a place, their people, themselves). */
 export const MAKE_GROUPS: { id: MakeGroup; label: string }[] = [
   { id: "date", label: "From a date" },
   { id: "name", label: "From a name" },
   { id: "place", label: "From a place" },
+  { id: "people", label: "From your people" },
   { id: "you", label: "From you" },
 ];
 /** The order on the index and everywhere products are listed: grouped, then as the groups read. */
 const ORDER = ["sky", "moon", "planets", "year", "code", "ascii", "place", "house", "voice", "line", "number", "taste"];
+/**
+ * The later products that ship, in their place in each group (each is its own
+ * template, its entry in its spec module, lib/custom/specs). A product
+ * built but not listed here has no page.
+ */
+const SHIPPED: ExtraId[] = [];
 
 const LIST: MadeProduct[] = [
   {
@@ -217,7 +225,12 @@ const LIST: MadeProduct[] = [
     example: { t: "moon", v: 1, p: { y: 2020, w: "The year we moved" } },
   },
 ];
-export const MADE: MadeProduct[] = [...LIST].sort((a, b) => ORDER.indexOf(a.slug) - ORDER.indexOf(b.slug));
+for (const t of SHIPPED) {
+  const m = EXTRA[t];
+  LIST.push({ slug: t, id: `make-${t}`, template: t, name: m.NAME, ...m.PRODUCT, example: { t, v: 1, p: m.PRODUCT.example } as CustomSpec });
+}
+const rank = (slug: string) => (ORDER.includes(slug) ? ORDER.indexOf(slug) : ORDER.length + SHIPPED.indexOf(slug as ExtraId));
+export const MADE: MadeProduct[] = MAKE_GROUPS.flatMap((g) => LIST.filter((m) => m.group === g.id).sort((a, b) => rank(a.slug) - rank(b.slug)));
 
 
 export const madeById = (id: string) => MADE.find((m) => m.id === id);
@@ -225,4 +238,6 @@ export const madeBySlug = (slug: string) => MADE.find((m) => m.slug === slug);
 /** Whether a catalogue variant is one of these ("lsystem-*" matches every L-system plant). */
 const matches = (patterns: string[], variant: string) => patterns.some((p) => (p.endsWith("*") ? variant.startsWith(p.slice(0, -1)) : p === variant));
 /** The Make product a catalogue design leads to ("Make your own"): the one drawn like it (Your Moon has no catalogue twin; the moon designs lead to the year). */
-export const madeFor = (variant: string) => MADE.find((m) => m.slug !== "moon" && matches(m.bases ?? [m.base], variant));
+export const madeFor = (variant: string) => madeAllFor(variant)[0];
+/** Every Make product drawn like a catalogue design (a design several products are drawn like leads to each; at most three). */
+export const madeAllFor = (variant: string) => MADE.filter((m) => m.slug !== "moon" && matches(m.bases ?? [m.base], variant)).slice(0, 3);
