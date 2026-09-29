@@ -309,17 +309,17 @@ tests/, especially tests/make and tests/forTwo), npm run generate staying
 byte-identical, the Make e2e specs, and `npm run build` at the end of each wave.
 Commits stay local.
 
-At the very end, after the last product: run the full checks once more
-(typecheck, lint, all of vitest, all e2e, npm run build), re-read the whole diff
-against the starting point adversarially and fix what you find, and only then
-push the branch, once (git push -u origin <branch>). Never push before this
-point, not even to save work in progress.
-
 Update README.md (the Make table with every new row, groups, fonts, data
 sources and licences, `cap`), the product count everywhere it is stated
 (README, brand book facts table, about page if it names one) and
 docs/content/waves.md for the artwork waves. Do not change prices, policy or
 the catalogue.
+
+At the very end, after the last product: run the full checks once more
+(typecheck, lint, all of vitest, all e2e, npm run build), re-read the whole diff
+against the starting point adversarially and fix what you find, and only then
+push the branch, once (git push -u origin <branch>). Never push before this
+point, not even to save work in progress.
 
 When everything is done and pushed, report:
 - every product shipped and its longest ?make= length;
