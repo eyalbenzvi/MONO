@@ -13,16 +13,21 @@
  * `mono-make` store. Nothing leaves the device.
  */
 import { convertInWorker, type UploadRequest } from "./run";
-import { MIN_SHORT, inkFor, type Converted, type Mode, type Pixels, type PrintSize, type Tee, type UploadClass } from "./convert";
+import { MIN_SHORT, type Mode, type PrintSize, type Tee, type UploadClass } from "./convert";
 import { TYPES } from "./decode";
-import { designHash, measure, nearestIndex, tier, type Measures } from "./measure";
+import { nearestIndex, tier } from "./measure";
 import { chooseTee } from "./teeRule";
 import { cleanTitle } from "./title";
-import { category, features, measured } from "./features";
+import { category, measured } from "./features";
 import { MAX_BYTES, REASONS } from "./reasons";
-import { inkCanvas, inkHash, inkPng, W, H } from "./bitmap";
+import { inkCanvas, inkHash, inkPng } from "./bitmap";
 import { getUpload, putUpload, deleteUpload } from "./store";
 import { cropPixels, sourcePixels } from "./pixels";
+import { analyse } from "./analyse";
+import { tooManyPixels } from "./header";
+/** Enough of a file to find its size (a JPEG's frame header can follow a long EXIF block). */
+const HEADER_BYTES = 256 * 1024;
+import { release } from "@/lib/custom/raster";
 // The picture helpers live on their own (no converter), so the page can draw with them before the engine loads.
 export { TONE_MAX, cropPixels, sourcePixels, strengthen, tone } from "./pixels";
 import { useMakeStore, type UploadMeta } from "@/store/makeStore";
@@ -142,6 +147,8 @@ export async function openFile(file: File | Blob, name = (file as File).name ?? 
   const problem = (await lexicon()).wordsProblem(name.replace(/\.[a-z0-9]+$/i, "").replace(/[_\-.]+/g, " "));
   if (problem) return { ok: false, reason: problem, code: "words" };
   if (type === "image/svg+xml") return { ok: true, source: { id: newId(), kind: "svg", name, file, type, w: 1500, h: 1500 } };
+  // Its size from its header first: a small file can decode to gigabytes.
+  if (tooManyPixels(new Uint8Array(await file.slice(0, HEADER_BYTES).arrayBuffer()))) return { ok: false, reason: REASONS.huge, code: "huge" };
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -159,20 +166,7 @@ export async function openFile(file: File | Blob, name = (file as File).name ?? 
 /* The source, prepared for a setting                                  */
 /* ------------------------------------------------------------------ */
 
-/** "Bolder": line work one pixel thicker all round (about 0.2 mm each side). */
-export function bolden(ink: Uint8Array, w = W, h = H): Uint8Array {
-  const out = new Uint8Array(ink.length);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      if (!ink[y * w + x]) continue;
-      for (let dy = -1; dy <= 1; dy++)
-        for (let dx = -1; dx <= 1; dx++) {
-          const [nx, ny] = [x + dx, y + dy];
-          if (nx >= 0 && ny >= 0 && nx < w && ny < h) out[ny * w + nx] = 1;
-        }
-    }
-  return out;
-}
+export { bolden } from "./analyse";
 
 /* ------------------------------------------------------------------ */
 /* Converting and judging                                              */
@@ -198,17 +192,34 @@ export function codeOf(reason: string): string {
 const flip = (t: Tee): Tee => (t === "black" ? "white" : "black");
 
 /** Results by source and settings (the last few sources). */
+/**
+ * Results by source and settings, most recently used last. Each holds two
+ * 1500 × 2000 ink arrays and up to two canvases of that size (~30 MB), so
+ * the cache is kept small, and an evicted result gives its canvases back
+ * (Safari caps canvas memory per page). A failed conversion isn't kept.
+ */
 const cache = new Map<string, Promise<Preview>>();
-const CACHE_MAX = 24;
+const CACHE_MAX = 10;
+/** The canvases each result has drawn, to give back when it's evicted. */
+const drawnOf = new WeakMap<Preview, Map<Tee, HTMLCanvasElement>>();
 
 /** Converts a source for a setting, measured and judged; cached. */
 export function convertWith(src: Source, s: Settings): Promise<Preview> {
   const key = `${src.id}|${settingsKey(s)}`;
   let p = cache.get(key);
-  if (!p) {
-    p = run(src, s);
+  if (p) {
+    cache.delete(key);
     cache.set(key, p);
-    if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value!);
+    return p;
+  }
+  p = run(src, s);
+  cache.set(key, p);
+  p.catch(() => cache.delete(key));
+  if (cache.size > CACHE_MAX) {
+    const oldest = cache.keys().next().value!;
+    const gone = cache.get(oldest)!;
+    cache.delete(oldest);
+    void gone.then((r) => drawnOf.get(r)?.forEach(release)).catch(() => {});
   }
   return p;
 }
@@ -217,23 +228,23 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   let size = s.size;
   let autoSmall = false;
   let req: UploadRequest;
-  if (src.kind === "svg") req = { file: src.file!, type: src.type!, size };
+  const judge = { analyse: { bolder: s.bolder } };
+  if (src.kind === "svg") req = { file: src.file!, type: src.type!, size, ...judge };
   else {
     const { short } = cropPixels(src, s);
     if (short < MIN_SHORT.small) return fail(REASONS.smallForSmall, size);
     if (size === "full" && short < MIN_SHORT.full) (size = "small"), (autoSmall = true);
-    req = { pixels: sourcePixels(src, s), mode: s.mode, size, checked: true };
+    req = { pixels: sourcePixels(src, s), mode: s.mode, size, checked: true, ...judge };
   }
   const res = await convertInWorker(req);
   if (!res.ok) return fail(res.reason, size);
   const conv = res.converted;
-  const line = conv.mode !== "dots";
-  const inks: Record<Tee, Uint8Array> = { black: inkFor(conv, "black"), white: inkFor(conv, "white") };
-  if (s.bolder && line) (inks.black = bolden(inks.black)), (inks.white = inks.black === inks.white ? inks.black : bolden(inks.white));
-  const ms: Partial<Record<Tee, Measures>> = {};
-  const on = (t: Tee) => (ms[t] ??= measure(inks[t], conv.w, conv.h, t, { screened: conv.mode === "dots", size: conv.size }));
+  // Measured where it was converted (the worker): the inks per tee, their measures, the hash and the features.
+  const a = res.analysis ?? analyse(conv, judge.analyse);
+  const inks = a.inks;
+  const on = (t: Tee) => a.measures[t];
   const index = await catalogueHashes();
-  const near = index ? nearestIndex(designHash(inks.white, conv.w, conv.h), index) : { index: -1, distance: 64 };
+  const near = index ? nearestIndex(a.hash, index) : { index: -1, distance: 64 };
   const perTee = {} as Record<Tee, TeeResult>;
   for (const t of ["black", "white"] as const) {
     const r = tier(on(t), t, near.distance);
@@ -252,13 +263,13 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   if (t.tier === "refuse") {
     const reason = t.reason ?? REASONS.weak;
     const duplicateOf = reason === REASONS.duplicate && near.index >= 0 ? (await import("@/lib/catalog")).SHIRTS[near.index]?.id : undefined;
-    return { ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, autoSmall, tee, perTee, canvas, ...(duplicateOf ? { duplicateOf } : {}) };
+    return keepDrawn({ ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, autoSmall, tee, perTee, canvas, ...(duplicateOf ? { duplicateOf } : {}) }, drawn);
   }
   const other = flip(tee);
   const tees: Tee[] = perTee[other].ok && (tee === choice.tee ? choice.other : true) ? [tee, other] : [tee];
   const m = on(tee);
-  const f = features(conv, m);
-  return {
+  const f = a.features[tee];
+  return keepDrawn({
     ok: true,
     cls: conv.cls,
     mode: conv.mode,
@@ -278,7 +289,12 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     measured: measured(conv, m),
     inks: Object.fromEntries(tees.map((x) => [x, inks[x]])),
     canvas,
-  };
+  }, drawn);
+}
+
+function keepDrawn<P extends Preview>(p: P, drawn: Map<Tee, HTMLCanvasElement>): P {
+  drawnOf.set(p, drawn);
+  return p;
 }
 
 function fail(reason: string, size: PrintSize): PreviewFail {

@@ -6,7 +6,7 @@ import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@
 import { packInts } from "@/lib/custom/specKit";
 import { CHESS_MAX_PLIES, PLAYER_MAX, PRODUCT, RESULTS, type ChessResult, type Params } from "@/lib/custom/specs/chess";
 import { replay } from "@/lib/custom/templates/chess";
-import { Field, useLexicon } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { Segmented } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -25,7 +25,7 @@ function movesText(p: Params): string {
 function nameOf(text: string, lex: ReturnType<typeof useLexicon>) {
   const t = text.trim();
   const clean = t ? cleanWords(t, PLAYER_MAX) : undefined;
-  const error = t && clean === null ? `Up to ${PLAYER_MAX} letters and numbers.` : clean && lex ? lex.wordsProblem(clean) : null;
+  const error = t && clean === null ? nameLine(t, PLAYER_MAX) : clean && lex ? lex.wordsProblem(clean) : null;
   return { value: t ? (error || !lex ? null : clean) : undefined, error };
 }
 

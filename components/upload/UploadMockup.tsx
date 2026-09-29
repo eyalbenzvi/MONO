@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { MODEL_ASPECT } from "@/lib/images";
+import { release } from "@/lib/custom/raster";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 
-/** Rasters drawn once per page life (upload, tee). */
+/** Rasters drawn (upload, tee), the few most recent kept (each is 12 MB of canvas); an evicted one gives its memory back. */
 const cache = new Map<string, Promise<HTMLCanvasElement | null>>();
+const CACHE_MAX = 6;
 
 /** An upload's print for a tee, from IndexedDB, as a canvas in that tee's inks (null when it's gone from the device). */
 export function uploadCanvas(uploadId: string, color: BaseColor): Promise<HTMLCanvasElement | null> {
@@ -20,12 +22,21 @@ export function uploadCanvas(uploadId: string, color: BaseColor): Promise<HTMLCa
       return png ? inkCanvas(await pngInk(png), color) : null;
     })().catch(() => null);
     cache.set(key, p);
+    if (cache.size > CACHE_MAX) {
+      const oldest = cache.keys().next().value!;
+      void cache.get(oldest)!.then(release);
+      cache.delete(oldest);
+    }
   }
   return cache.get(key)!;
 }
 /** Forget a drawn raster (the upload was edited or deleted). */
 export const forgetUploadCanvas = (uploadId: string) => {
-  for (const k of cache.keys()) if (k.startsWith(`${uploadId}|`)) cache.delete(k);
+  for (const k of [...cache.keys()])
+    if (k.startsWith(`${uploadId}|`)) {
+      void cache.get(k)!.then(release);
+      cache.delete(k);
+    }
 };
 
 /** An uploaded print worn: the model photo with the raster laid in the print box; an empty stage until it's read. */

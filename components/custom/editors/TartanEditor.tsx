@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { deriveSett } from "@/lib/custom/draw/tartan";
 import { COUNT_MAX, PRODUCT, SETT_MAX, STRIPES_MAX, STRIPES_MIN, TARTAN_NAME_MAX, TONES, parseSett, settText, type Params, type Tone } from "@/lib/custom/specs/tartan";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented, Stepper, Switch } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -26,7 +26,7 @@ export default function TartanEditor({ made, arrival, touched, onChange }: Edito
       ? "Type a family name"
       : null
     : cleanWords(n, TARTAN_NAME_MAX) !== n
-      ? `Up to ${TARTAN_NAME_MAX} letters and numbers.`
+      ? nameLine(n, TARTAN_NAME_MAX)
       : lex
         ? lex.wordsProblem(n)
         : null;

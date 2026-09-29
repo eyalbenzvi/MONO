@@ -43,6 +43,9 @@ test.describe("R17: ← Shop after moving between products", () => {
     const sheet = page.getByRole("region", { name: "Added to bag" });
     await expect(sheet).toBeVisible();
     await sheet.getByRole("link", { name: "Checkout" }).tap();
+    // Checkout lands on the delivery form, a step of its own: Back goes to the bag, then to the product.
+    await page.waitForURL(/\/cart\/#details$/);
+    await page.goBack();
     await page.waitForURL(/\/cart\/$/);
     await page.goBack();
     await page.waitForURL(new RegExp(`/shop/${a}/$`));

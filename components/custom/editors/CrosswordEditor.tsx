@@ -60,7 +60,7 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
   return (
     <>
       <Field label="Names" hint={`${CROSS_MIN} to ${CROSS_MAX}, one word each`} error={namesError ?? note} htmlFor="make-crossword-names">
-        <input id="make-crossword-names" value={text} placeholder={crossNames(ex.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ")} autoComplete="off" autoCapitalize="words" onChange={(e) => setText(e.target.value)} aria-invalid={!!namesError} className={INPUT} />
+        <input id="make-crossword-names" maxLength={CROSS_MAX * 14} value={text} placeholder={crossNames(ex.x).map((n) => n[0] + n.slice(1).toLowerCase()).join(", ")} autoComplete="off" autoCapitalize="words" onChange={(e) => setText(e.target.value)} aria-invalid={!!namesError} className={INPUT} />
       </Field>
       <Field label="Title" hint="optional" error={title.error} htmlFor="make-crossword-title">
         <input id="make-crossword-title" value={title.text} maxLength={WORDS_INPUT_MAX} placeholder={PRODUCT.wordsHint} autoComplete="off" onChange={(e) => title.setText(e.target.value)} onBlur={title.touch} aria-invalid={!!title.error} className={INPUT} />

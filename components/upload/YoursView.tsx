@@ -710,7 +710,7 @@ function SizeStep({
         </div>
       )}
       <p className="text-sm text-neutral-400">Checked by a person before printing. Up to 2 days. Nothing charged if we can&rsquo;t print it.</p>
-      <p className="text-xs text-neutral-500">{STORE_POLICY.customReturns}</p>
+      <p className="text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>
       {/* The rights, confirmed by adding: one line above the button. */}
       <p className="text-xs text-neutral-400" data-rights>
         {replacing ? "Sending it" : "Adding it"} confirms you made it or have permission, and anyone in it has agreed.{" "}

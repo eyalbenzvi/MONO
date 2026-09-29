@@ -15,13 +15,25 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
-import { catalogReady, isCatalogReady } from "@/lib/catalog";
+import { catalogReady, isCatalogFailed, isCatalogReady } from "@/lib/catalog";
 import { captureLanding, track } from "@/lib/analytics";
 
-/** Suspends (keeping the server HTML) until the catalog index has loaded. */
+/** Suspends (keeping the server HTML) until the catalog index has loaded; says so, with a reload, if it can't. */
 function CatalogGate({ children }: { children: React.ReactNode }) {
+  if (isCatalogFailed()) return <LoadFailed />;
   if (!isCatalogReady()) throw catalogReady();
   return <>{children}</>;
+}
+
+function LoadFailed() {
+  return (
+    <div role="alert" className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center" data-load-failed>
+      <p className="text-base text-neutral-200">That didn&rsquo;t load. Try again.</p>
+      <button type="button" onClick={() => window.location.reload()} className="h-11 rounded-full bg-white px-6 text-sm font-bold text-black">
+        Reload
+      </button>
+    </div>
+  );
 }
 
 /** The Open Call sheet loads only when it's opened (from an upload's review status). */
@@ -63,16 +75,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
     // Stored state is checked against the catalog, so it loads after it.
-    void catalogReady().then(async () => {
-      migrateLegacySession();
-      removeRetiredKeys();
-      // "From yours" (the mono-make store) loads apart, so its code isn't on every page.
-      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), import("@/store/makeStore").then((m) => m.useMakeStore.persist.rehydrate())]);
-      useTasteStore.getState().fillDeck();
-      useUiStore.getState().setHydrated();
-      // Uploads: a bag line whose file is gone from this device leaves the bag; old rasters go.
-      void import("@/lib/upload/prune").then((m) => m.pruneUploads());
-    });
+    void catalogReady()
+      .then(async () => {
+        try {
+          migrateLegacySession();
+          removeRetiredKeys();
+          // "From yours" (the mono-make store) loads apart, so its code isn't on every page.
+          await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), import("@/store/makeStore").then((m) => m.useMakeStore.persist.rehydrate())]);
+          useTasteStore.getState().fillDeck();
+        } catch (e) {
+          // One bad stored value mustn't leave every button disabled: the page carries on with what did load.
+          track("app_error", { where: "rehydrate", message: String(e).slice(0, 120) });
+        } finally {
+          useUiStore.getState().setHydrated();
+        }
+        // Uploads: a bag line whose file is gone from this device leaves the bag; old rasters go.
+        void import("@/lib/upload/prune").then((m) => m.pruneUploads()).catch(() => {});
+      })
+      .catch(() => {
+        /* the index didn't load: CatalogGate says so */
+      });
 
     // A friend's taste link (/?taste=…): kept for this session so the taste
     // test can end with "Compare with a friend"; removed from the address bar.

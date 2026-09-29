@@ -70,8 +70,8 @@ test("Your Moon: words and a night, drawn as you go; into the bag as its own lin
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.getByRole("button", { name: /^Add to bag · M · \$75$/ }).tap();
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
-  await expect(page).toHaveURL(/\/cart\/$/);
-  // Checkout opens on the delivery form; the bag is one step back.
+  // Checkout opens on the delivery form (a step in the history); the bag is one step back.
+  await expect(page).toHaveURL(/\/cart\/#details$/);
   await page.getByRole("button", { name: "Bag", exact: true }).tap();
   await expect(page.getByText("Your Moon · 19 November 2021")).toBeVisible();
   await expect(page.getByText("Made for you: size exchanges only")).toBeVisible();

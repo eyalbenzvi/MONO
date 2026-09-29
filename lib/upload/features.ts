@@ -100,7 +100,12 @@ export function geometry(r: { w: number; h: number; ink: Float32Array }): { stra
   for (let y = 1; y < h - 1; y++)
     for (let x = 1; x < w - 1; x++) {
       const i = y * w + x;
-      if (ink[i] > 0.35) [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+      if (ink[i] > 0.35) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
       const gx = ink[i - w + 1] + 2 * ink[i + 1] + ink[i + w + 1] - ink[i - w - 1] - 2 * ink[i - 1] - ink[i + w - 1];
       const gy = ink[i + w - 1] + 2 * ink[i + w] + ink[i + w + 1] - ink[i - w - 1] - 2 * ink[i - w] - ink[i - w + 1];
       const m = Math.hypot(gx, gy);

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { ORBIT_MAX, ORBIT_MIN, ORBIT_NAME, PRODUCT, dateOf, dayOf, eldest, packDays, unpackDays } from "@/lib/custom/specs/orbits";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -43,7 +43,7 @@ export default function OrbitsEditor({ made, arrival, touched, onChange }: Edito
   const nameError = (i: number) => {
     const r = rows[i];
     if (!r.name.trim()) return touched || left[i] ? "Type a name" : null;
-    if (!names[i]) return `Up to ${ORBIT_NAME} letters and numbers.`;
+    if (!names[i]) return nameLine(r.name, ORBIT_NAME);
     return lex ? lex.wordsProblem(names[i]!) : null;
   };
   const dateError = (i: number) => (!dates[i] && (touched || left[i]) ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null);

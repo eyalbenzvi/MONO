@@ -10,6 +10,8 @@ export const REASONS = {
   format: "PNG, JPG, WebP or SVG only.",
   heavy: "Over 25 MB. Try a smaller file.",
   unreadable: "This file won’t open. Try another.",
+  // More pixels than a picture needs (lib/upload/header MAX_PIXELS): refused before it's opened.
+  huge: "Too big to open: up to 100 megapixels.",
   svg: "This SVG has parts we can’t print.",
   smallForFull: "Too small for Full. Try Small, or a larger file.",
   // The short side's minimum (convert MIN_SHORT.small), said as a number.

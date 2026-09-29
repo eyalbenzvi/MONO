@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { LINE_MAX, METRO_LINES, METRO_STATIONS, PRODUCT, STATION_MAX, metroProblem } from "@/lib/custom/specs/metro";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { INPUT, type EditorProps } from "./types";
 
 const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
@@ -29,7 +29,7 @@ export default function MetroEditor({ made, arrival, touched, onChange }: Editor
     const t = text.trim();
     if (!t) return touched ? "Type a name" : "";
     const c = cleanWords(t, max);
-    if (!c) return `Up to ${max} letters and numbers.`;
+    if (!c) return nameLine(t, max);
     return lex ? lex.wordsProblem(c) : null;
   };
   const lineErrors = lines.map((l) => problem(l, LINE_MAX));

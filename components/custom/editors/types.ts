@@ -20,4 +20,4 @@ export interface EditorProps {
 }
 
 export const INPUT =
-  "h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white [color-scheme:dark]";
+  "h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-white [color-scheme:dark]";

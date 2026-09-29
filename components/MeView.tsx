@@ -48,7 +48,7 @@ function YourOffers() {
                 </button>
               </div>
               <p className="mt-0.5 text-xs text-neutral-400">{OFFER_STATE_LINE[state]}</p>
-              {state === "accepted" && <p className="text-xs text-neutral-500">{SALES_LINE}</p>}
+              {state === "accepted" && <p className="text-xs text-neutral-400">{SALES_LINE}</p>}
             </li>
           );
         })}
@@ -161,7 +161,7 @@ export function MeView() {
               ) : undefined
             }
           >
-            {saved.length ? <ShirtStrip shirts={saved.slice(0, 12)} label="Saved" quickAdd source="saved" /> : <p className="text-sm text-neutral-500">Nothing saved yet.</p>}
+            {saved.length ? <ShirtStrip shirts={saved.slice(0, 12)} label="Saved" quickAdd source="saved" /> : <p className="text-sm text-neutral-400">Nothing saved yet.</p>}
           </Section>
         )}
 
@@ -202,16 +202,17 @@ export function MeView() {
             {confirmClear ? "Tap again" : "Clear data"}
           </button>
         </div>
-        <p className="mt-3 text-xs text-neutral-600">Saved in this browser only.</p>
+        <p className="mt-3 text-xs text-neutral-400">Saved in this browser only.</p>
       </div>
     </div>
   );
 }
 
 
-const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500";
+const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400";
 const ACTION = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 hover:text-white";
-const QUIET = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500 underline-offset-4 hover:text-white hover:underline";
+/** Small text actions: the words stay small, the tap area around them doesn't (at least 24 × 24 px, WCAG 2.5.8). */
+const QUIET = "relative text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 underline-offset-4 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-[''] hover:text-white hover:underline";
 const CTA =
   "mt-8 flex h-14 w-full items-center justify-center rounded-full bg-white text-sm font-black uppercase tracking-[0.2em] text-black disabled:opacity-60";
 /** The same action, second to Checkout when the bag holds something. */
@@ -242,7 +243,7 @@ function Row({ label, value, href }: { label: string; value?: string; href?: str
   const inner = (
     <>
       <span className="text-sm text-white">{label}</span>
-      <span className="flex items-center gap-2 font-mono text-sm tabular-nums text-neutral-500">
+      <span className="flex items-center gap-2 font-mono text-sm tabular-nums text-neutral-400">
         {value}
         {href && <Icon name="arrow-right" className="h-4 w-4 text-neutral-500" />}
       </span>

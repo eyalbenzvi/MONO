@@ -164,7 +164,8 @@ export default function SearchPanel(p: SearchBoxProps) {
       }}
     >
       <div className="flex items-center gap-2">
-        {p.leading}
+        {/* Phones: the field takes the row while searching (the tee dots come back with Cancel), so what's typed is never cut off. */}
+        <div className="shrink-0 max-sm:hidden">{p.leading}</div>
         <div className="flex h-10 min-w-0 flex-1 animate-[fade-in_0.2s_ease-out] items-center gap-1.5 rounded-full bg-white/[0.06] pl-3 pr-1 ring-1 ring-white/10 transition-shadow duration-200 focus-within:ring-white/40">
           <Icon name="search" className="h-4 w-4 shrink-0 text-neutral-400" />
           <div ref={pills} className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
@@ -195,7 +196,7 @@ export default function SearchPanel(p: SearchBoxProps) {
               onKeyDown={onKeyDown}
               onFocus={() => setPanelOpen(true)}
               onClick={() => setPanelOpen(true)}
-              className="h-9 min-w-[7rem] flex-1 bg-transparent text-base text-white sm:text-sm outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden"
+              className="h-9 min-w-[5rem] flex-1 bg-transparent text-base text-white sm:text-sm outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden"
             />
           </div>
           {/* × clears (words and pills); with nothing to clear it closes (desktop — phones have Cancel). */}
@@ -232,7 +233,7 @@ export default function SearchPanel(p: SearchBoxProps) {
               className={it.kind ? chip(i === active) : word(i === active)}
             >
               {it.label}
-              {it.kind && <span className={i === active ? "text-neutral-600" : "text-neutral-500"}>· {it.kind}</span>}
+              {it.kind && <span className={i === active ? "text-neutral-600" : "text-neutral-400"}>· {it.kind}</span>}
             </button>
           ))}
         </div>

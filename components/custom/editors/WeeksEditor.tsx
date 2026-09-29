@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FIRST_YEAR, LAST_YEAR, cleanWords, parseDate, type CustomSpec } from "@/lib/custom/spec";
 import { MILESTONES_MAX, MILESTONE_LABEL_MAX, PRODUCT, WEEKS_YEARS, weeksDateProblem, type Milestone, type Params } from "@/lib/custom/specs/weeks";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Segmented } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -34,7 +34,7 @@ export default function WeeksEditor({ made, arrival, touched, onChange }: Editor
     const d = m.d, l = m.l.replace(/\s+/g, " ").trim();
     if (!d && !l) return { skip: true, error: null, d, l };
     const dErr = !bOk ? null : d ? weeksDateProblem(b, n, d) : "Pick its date";
-    const lErr = !l ? "Name it" : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? `Up to ${MILESTONE_LABEL_MAX} letters and numbers.` : lex ? lex.wordsProblem(l) : null;
+    const lErr = !l ? "Name it" : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? nameLine(l, MILESTONE_LABEL_MAX) : lex ? lex.wordsProblem(l) : null;
     return { skip: false, error: dErr ?? lErr, d, l };
   });
   const kept = rows.filter((r) => !r.skip);

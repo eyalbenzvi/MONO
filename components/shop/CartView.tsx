@@ -66,7 +66,7 @@ function UploadReviews({ order }: { order: string }) {
       {tickets.map((t) => (
         <ReviewStatus key={t.id} ticket={t} offer={(id) => useUiStore.getState().openOffer(id)} />
       ))}
-      <p className="text-xs text-neutral-500">Reviews are simulated in this demo.</p>
+      <p className="text-xs text-neutral-400">Reviews are simulated in this demo.</p>
     </div>
   );
 }
@@ -94,15 +94,34 @@ export function CartView() {
   }, [step]);
   // Adding from the empty bag's suggestions swaps the page for the bag: the
   // control that had focus is gone, so focus goes to the bag's heading.
-  const wasEmpty = useRef(cart.length === 0);
+  // Known only once the bag has loaded (before that it reads as empty, and loading isn't an add).
+  const wasEmpty = useRef<boolean | null>(null);
   useEffect(() => {
+    if (!hydrated) return;
     if (wasEmpty.current && cart.length > 0 && (!document.activeElement || document.activeElement === document.body)) heading.current?.focus({ preventScroll: true });
     wasEmpty.current = cart.length === 0;
-  }, [cart.length]);
+  }, [cart.length, hydrated]);
+  // The delivery form is a step in the history (#details), so a phone's Back returns to the bag, keeping what was typed.
   const go = (next: Step) => {
     moved.current = true;
+    const here = window.location.hash === "#details";
+    if (next === "details" && !here) window.history.pushState(window.history.state, "", `${window.location.pathname}${window.location.search}#details`);
+    else if (next === "bag" && here) return window.history.back();
+    else if (next === "done" && here) window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
     setStep(next);
   };
+  useEffect(() => {
+    const on = () => {
+      moved.current = true;
+      setStep((s) => (s === "done" ? s : window.location.hash === "#details" && useCartStore.getState().cart.length ? "details" : "bag"));
+    };
+    window.addEventListener("popstate", on);
+    return () => window.removeEventListener("popstate", on);
+  }, []);
+  // Arriving at #details (a reload, or Forward): the form is memory-only, so it opens at the bag.
+  useEffect(() => {
+    if (window.location.hash === "#details") window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+  }, []);
 
   const { lines, count, subtotal, discount, pairs, shipping, total } = cartTotals(cart);
 
@@ -592,7 +611,7 @@ function Confirmation({ order }: { order: Order }) {
         <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight outline-none">
           Order placed
         </h1>
-        <p className="mt-1 text-sm text-neutral-400">
+        <p className="mt-1 break-words text-sm text-neutral-400 [overflow-wrap:anywhere]">
           Thanks, {order.customer.name.split(" ")[0]}. Demo order <span className="whitespace-nowrap font-mono text-white">{order.number}</span> — a confirmation would go to{" "}
           {order.customer.email}.
         </p>
@@ -600,7 +619,7 @@ function Confirmation({ order }: { order: Order }) {
         <p className="mt-2 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-neutral-300">
           <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden />
           <span>Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })}</span>
-          <span className="whitespace-nowrap">in {order.customer.city}</span>
+          <span className="max-w-full break-words [overflow-wrap:anywhere]">in {order.customer.city}</span>
         </p>
         <div className="mt-6 flex w-full justify-center -space-x-3">
           {lines.slice(0, 4).map((l) => (

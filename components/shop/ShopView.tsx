@@ -425,7 +425,7 @@ export function ShopView() {
                       >
                         <Icon name="search" className="h-4 w-4" />
                         <span className="flex-1 text-left">Search</span>
-                        <kbd className="font-sans text-[11px] uppercase tracking-[0.2em] text-neutral-600">/</kbd>
+                        <kbd className="font-sans text-[11px] uppercase tracking-[0.2em] text-neutral-500">/</kbd>
                       </button>
                       <button
                         type="button"

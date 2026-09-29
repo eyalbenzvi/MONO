@@ -309,3 +309,16 @@ describe("uploads: speed", () => {
     expect(ms).toBeLessThan(3000);
   }, 60_000);
 });
+
+describe("uploads: an SVG built to hang or to reach out is refused", () => {
+  const wrap = (body: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">${body}</svg>`;
+  it("nested <use> past the limit (ten million shapes from a few lines), and CSS escapes", () => {
+    let body = '<g id="l0"><rect width="1" height="1"/></g>';
+    for (let i = 1; i <= 7; i++) body += `<g id="l${i}">${Array.from({ length: 10 }, () => `<use href="#l${i - 1}"/>`).join("")}</g>`;
+    expect(sanitiseSvg(wrap(body)).ok).toBe(false);
+    expect(sanitiseSvg(wrap('<style>rect{fill:u\\72l(https://evil.example/x.svg#a)}</style><rect width="1" height="1"/>')).ok).toBe(false);
+    expect(sanitiseSvg(wrap('<rect style="fill:u\\72l(#a)" width="1" height="1"/>')).ok).toBe(false);
+    // An ordinary drawing with a few reused shapes still passes.
+    expect(sanitiseSvg(wrap('<defs><circle id="c" r="1"/></defs><use href="#c"/><use href="#c" x="3"/>')).ok).toBe(true);
+  });
+});

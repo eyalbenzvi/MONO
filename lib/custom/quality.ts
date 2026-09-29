@@ -98,7 +98,11 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
     for (let x = 0; x < w; x++)
       if (ink[y * w + x] > ON) {
         on[y * w + x] = 1;
-        [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+        // Plain comparisons: this runs for every ink pixel (a destructured array here was a new array each time).
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
       }
   const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0, slab: 0 };
   if (x1 < 0) return none;
@@ -239,7 +243,12 @@ export function assessPrint({ w, h, ink }: InkRaster): Assessment {
     for (let x = 0; x < w; x++) {
       const a = ink[y * w + x];
       sum += a;
-      if (a > ON) [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+      if (a > ON) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
     }
   const cover = sum / (w * h);
   const bw = x1 < 0 ? 0 : (x1 - x0 + 1) / w;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { ISLAND_NAME_MAX, ISLAND_PLACES, ISLAND_PLACE_MAX, ISLAND_REDRAWS, type Params } from "@/lib/custom/specs/island";
-import { Field, useLexicon } from "./Field";
+import { Field, nameLine, useLexicon } from "./Field";
 import { INPUT, type EditorProps } from "./types";
 
 type Lexicon = NonNullable<ReturnType<typeof useLexicon>>;
@@ -12,7 +12,7 @@ function nameOf(raw: string, max: number, lex: Lexicon | null): { value: string 
   const t = raw.replace(/\s+/g, " ").trim();
   if (!t) return { value: null, error: null };
   const clean = cleanWords(t, max);
-  if (!clean) return { value: null, error: `Up to ${max} letters and numbers.` };
+  if (!clean) return { value: null, error: nameLine(t, max) };
   if (!lex) return { value: null, error: null };
   const refused = lex.wordsProblem(clean);
   return refused ? { value: null, error: refused } : { value: clean, error: null };

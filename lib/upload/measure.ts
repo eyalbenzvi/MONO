@@ -53,7 +53,13 @@ export function checkRaster(ink: Uint8Array, w: number, h: number): InkRaster {
 export function detailOf({ w, h, ink }: InkRaster): number {
   let [x0, y0, x1, y1] = [w, h, -1, -1];
   for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) if (ink[y * w + x] > 0.35) [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+    for (let x = 0; x < w; x++)
+      if (ink[y * w + x] > 0.35) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
   const extent = x1 < 0 ? 0 : ((x1 - x0 + 1) / w) * ((y1 - y0 + 1) / h);
   const C = 4;
   const cw = Math.floor(w / C);

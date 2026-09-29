@@ -8,13 +8,18 @@
  */
 import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
 import { MAX_BYTES, REASONS } from "./reasons";
+import { analyse, type Analysis } from "./analyse";
 
-export type UploadRequest =
+/** `analyse`: also judge the print here (lib/upload/analyse), so the page's main thread doesn't. */
+type Analyse = { analyse?: { bolder: boolean } };
+export type UploadRequest = (
   | { file: Blob; type: string; mode?: Ask; size: PrintSize }
   | { svgRaster: Pixels; size: PrintSize }
-  | { pixels: Pixels; mode?: Ask; size: PrintSize; checked?: boolean };
+  | { pixels: Pixels; mode?: Ask; size: PrintSize; checked?: boolean }
+) &
+  Analyse;
 
-export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number } } | { ok: false; reason: string };
+export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number }; analysis?: Analysis } | { ok: false; reason: string };
 
 /** The formats the page takes. */
 export const TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"] as const;
@@ -72,10 +77,9 @@ async function svgPixels(text: string): Promise<Pixels> {
   }
 }
 
-const ok = (converted: Converted, w: number, h: number): UploadResult => ({ ok: true, converted, source: { w, h } });
-
 /** One request, start to finish. Refusals come back as reasons, never as thrown errors. */
 export async function handle(req: UploadRequest): Promise<UploadResult> {
+  const ok = (converted: Converted, w: number, h: number): UploadResult => ({ ok: true, converted, source: { w, h }, ...(req.analyse ? { analysis: analyse(converted, req.analyse) } : {}) });
   try {
     if ("svgRaster" in req) return ok(convert({ svgRaster: req.svgRaster }, { size: req.size }), req.svgRaster.w, req.svgRaster.h);
     if ("pixels" in req) {
@@ -117,5 +121,7 @@ export async function handle(req: UploadRequest): Promise<UploadResult> {
 export function transferables(r: UploadResult): ArrayBuffer[] {
   if (!r.ok) return [];
   const c = r.converted;
-  return [c.ink.buffer, ...(c.tone ? [c.tone.lum.buffer, c.tone.alpha.buffer] : [])] as ArrayBuffer[];
+  const a = r.analysis;
+  // Each buffer once (a tee's ink can be the converted ink itself).
+  return [...new Set([c.ink.buffer, ...(c.tone ? [c.tone.lum.buffer, c.tone.alpha.buffer] : []), ...(a ? [a.inks.black.buffer, a.inks.white.buffer] : [])])] as ArrayBuffer[];
 }

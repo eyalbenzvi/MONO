@@ -37,6 +37,14 @@ body {
   outline-offset: 2px;
 }
 
+/* A field brought into view (focus, an error) clears the fixed header above and a phone's sticky button bar below. */
+input,
+textarea,
+select {
+  scroll-margin-top: calc(var(--header-h, 64px) + 16px);
+  scroll-margin-bottom: 112px;
+}
+
 /* No double-tap-zoom delay on controls; pinch-zoom stays available. */
 button,
 a,

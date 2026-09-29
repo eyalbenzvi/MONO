@@ -38,10 +38,24 @@ function start(): Worker | null {
   return worker;
 }
 
+/** A conversion that takes longer than this is stuck (a file built to hang the decoder): the worker is stopped and the file refused. */
+const WORKER_TIMEOUT_MS = 45_000;
+
 function post(w: Worker, req: UploadRequest): Promise<UploadResult> {
   return new Promise((resolve) => {
     const id = ++seq;
-    pending.set(id, resolve);
+    const timer = setTimeout(() => {
+      if (!pending.has(id)) return;
+      // Everything waiting on this worker fails; the next request starts a fresh one.
+      for (const done of pending.values()) done({ ok: false, reason: REASONS.unreadable });
+      pending.clear();
+      w.terminate();
+      if (worker === w) worker = null;
+    }, WORKER_TIMEOUT_MS);
+    pending.set(id, (r) => {
+      clearTimeout(timer);
+      resolve(r);
+    });
     w.postMessage({ id, req });
   });
 }

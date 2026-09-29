@@ -158,8 +158,11 @@ export function MakeView({ slug }: { slug: string }) {
   const [state, setState] = useState<EditorState>({ spec: null });
   const onEditor = useCallback((s: EditorState) => setState(s), []);
   // Until the fields make a print (empty, or not yet valid), the stage shows the product's example.
-  const example = state.blocked || !state.spec;
-  const spec = example ? made.example : state.spec;
+  // A field gone invalid keeps the last print that was (never a jump back to the example, as if the input were ignored).
+  const lastGood = useRef<CustomSpec | null>(null);
+  if (state.spec && !state.blocked) lastGood.current = state.spec;
+  const example = state.blocked || (!state.spec && !lastGood.current);
+  const spec = example ? made.example : (state.spec ?? lastGood.current);
 
   // The picture: debounced, checked (a print that won't print well isn't offered), and the address kept in step.
   const [shown, setShown] = useState<Shown | null>(null);
@@ -233,7 +236,7 @@ export function MakeView({ slug }: { slug: string }) {
     return () => clearTimeout(t);
   }, [shown, renderer, shirt, state.data, made.hints]);
   const current = shown && shown.spec === spec && shown.color === color ? shown : null;
-  const ready = !!current?.check?.ok && !example;
+  const ready = !!current?.check?.ok && !example && !!state.spec && current.spec === state.spec;
   const pairOk = current?.other === true;
   useEffect(() => {
     if (both && current && current.other === false) setBoth(false);
@@ -259,7 +262,16 @@ export function MakeView({ slug }: { slug: string }) {
   const onBuy = () => {
     if (!state.spec) {
       setTried(true);
-      return setWaiting(Date.now());
+      setWaiting(Date.now());
+      // Once the errors show: a field that can't print comes into view with the focus (its reason under it), and the tap isn't kept. Else it's still loading, and the tap waits.
+      requestAnimationFrame(() => {
+        const bad = document.querySelector<HTMLElement>("form [aria-invalid='true']");
+        if (!bad) return;
+        setWaiting(0);
+        scrollIntoViewQuietly(bad);
+        bad.focus({ preventScroll: true });
+      });
+      return;
     }
     if (!renderer) return setWaiting(Date.now());
     // A tap right after a change doesn't wait for the preview: the print is drawn and checked now.
@@ -339,7 +351,8 @@ export function MakeView({ slug }: { slug: string }) {
             </button>
           )}
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* min-w-0 on both columns: a long unbroken word in a field or a message wraps, never widens the page. */}
+        <div className="grid gap-6 md:grid-cols-2 [&>*]:min-w-0">
           <div className={`relative flex aspect-square max-h-[56dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:sticky md:top-4 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
             <button type="button" onClick={() => setZoom(true)} aria-label="Zoom in on the print" className="flex h-full w-full cursor-zoom-in items-center justify-center p-5 pb-14">
               {view === "print" && svg ? (
@@ -413,7 +426,7 @@ export function MakeView({ slug }: { slug: string }) {
                     <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
                     {buyLabel}
                   </button>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-400">
                     {STORE_POLICY.customReturns}.{CREDITS[made.template] ? ` ${CREDITS[made.template]}` : ""}
                   </p>
                   <div>

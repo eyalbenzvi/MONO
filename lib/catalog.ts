@@ -111,13 +111,21 @@ function init(index: CatalogIndex) {
 }
 
 let ready = false;
+let failed = false;
 const loading = (() => {
   const src = loadIndex();
   if (src instanceof Promise)
-    return src.then((index) => {
-      init(index);
-      ready = true;
-    });
+    return src.then(
+      (index) => {
+        init(index);
+        ready = true;
+      },
+      (e) => {
+        // Offline, or an index renamed by a newer deploy: the page says so and offers a reload (AppShell).
+        failed = true;
+        throw e;
+      },
+    );
   init(src);
   ready = true;
   return Promise.resolve();
@@ -126,6 +134,8 @@ const loading = (() => {
 /** Resolves once the catalog is filled in (at once on the server). */
 export const catalogReady = () => loading;
 export const isCatalogReady = () => ready;
+/** The index couldn't be loaded. */
+export const isCatalogFailed = () => failed;
 
 /**
  * Made-for-you tees (lib/custom/products): not in SHIRTS, but resolved by id,

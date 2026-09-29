@@ -53,7 +53,7 @@ export default function QrEditor({ made, arrival, touched, onChange }: EditorPro
         />
       </Field>
       {spec && (
-        <p id="make-qr-note" className="text-xs text-neutral-500">
+        <p id="make-qr-note" className="break-all text-xs text-neutral-400">
           Scans as {linkUrl({ a: addr, h: http ? 1 : undefined })}.
         </p>
       )}

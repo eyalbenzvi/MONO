@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { cleanWords, type CustomSpec } from "@/lib/custom/spec";
 import { packInts } from "@/lib/custom/specKit";
 import { FAMILY_NAME_MAX, PRODUCT, familyYears, packYears, parseYears, yearsProblem, yearsText, type Params, type Years } from "@/lib/custom/specs/family";
-import { Field, WordsField, useLexicon, useWords } from "./Field";
+import { Field, nameLine, useLexicon, useWords, WordsField } from "./Field";
 import { Switch } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
 
@@ -32,7 +32,7 @@ export default function FamilyEditor({ made, arrival, touched, onChange }: Edito
         ? "Type your name"
         : null
       : cleanWords(nm, FAMILY_NAME_MAX) !== nm
-        ? `Up to ${FAMILY_NAME_MAX} letters and numbers.`
+        ? nameLine(nm, FAMILY_NAME_MAX)
         : lex
           ? lex.wordsProblem(nm)
           : null;

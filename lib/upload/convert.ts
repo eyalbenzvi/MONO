@@ -900,12 +900,64 @@ const BAD_REFS = [
  * whitespace-insensitive, and deliberately strict (a forbidden word inside
  * a comment refuses too).
  */
+/** The most shapes an uploaded SVG may draw, every <use> expanded. */
+const SVG_MAX_SHAPES = 100_000;
+
+/**
+ * How many elements an SVG draws once every <use> is expanded: each element
+ * counts in the scope of its nearest ancestor with an id, a <use> adds its
+ * target's count, and a scope inside another counts in it too. A <use>
+ * cycle counts as infinite.
+ */
+export function shapesOf(svg: string): number {
+  const own = new Map<string, number>();
+  const refs = new Map<string, string[]>();
+  const stack: { name: string; id?: string }[] = [];
+  const scope = () => [...stack].reverse().find((e) => e.id)?.id ?? "#root";
+  const add = (m: Map<string, string[]>, k: string, v: string) => m.set(k, [...(m.get(k) ?? []), v]);
+  for (const [tag] of svg.matchAll(/<[^>!?][^>]*>/g)) {
+    const close = /^<\s*\//.exec(tag);
+    const name = /^<\s*\/?\s*([\w:-]+)/.exec(tag)?.[1]?.toLowerCase() ?? "";
+    if (close) {
+      const at = stack.map((e) => e.name).lastIndexOf(name);
+      if (at >= 0) stack.length = at;
+      continue;
+    }
+    const here = scope();
+    own.set(here, (own.get(here) ?? 0) + 1);
+    const id = /\sid\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1];
+    if (name === "use") {
+      const target = /href\s*=\s*["']\s*#([^"']+)["']/i.exec(tag)?.[1];
+      if (target) add(refs, here, target);
+    }
+    if (id) add(refs, here, id);
+    if (!/\/\s*>$/.test(tag)) stack.push({ name, id });
+  }
+  const memo = new Map<string, number>();
+  const busy = new Set<string>();
+  const weight = (k: string): number => {
+    if (memo.has(k)) return memo.get(k)!;
+    if (busy.has(k)) return Infinity;
+    busy.add(k);
+    let n = own.get(k) ?? 0;
+    for (const r of refs.get(k) ?? []) n += weight(r);
+    busy.delete(k);
+    memo.set(k, n);
+    return n;
+  };
+  return weight("#root");
+}
+
 export function sanitiseSvg(text: string): { ok: true; svg: string } | { ok: false; reason: typeof SVG_REFUSED } {
   const no = { ok: false, reason: SVG_REFUSED } as const;
   const svg = text.replace(/^﻿/, "").trim();
   if (!/<\s*svg\b/i.test(svg) || BAD_TAGS.test(svg) || BAD_REFS.some((r) => r.test(svg))) return no;
   // Event attributes inside any tag: onload=, onclick = …, also after a newline or a slash.
   for (const [tag] of svg.matchAll(/<[^>]*>/g)) if (/[\s/"']on[a-z]+\s*=/i.test(tag)) return no;
+  // Size: nested <use> multiplies (7 levels of ten is ten million shapes); no artwork needs that many.
+  if (shapesOf(svg) > SVG_MAX_SHAPES) return no;
+  // CSS escapes (u\72l(…), @\69mport) would slip past the checks above; artwork doesn't need them.
+  if (/<style[\s\S]*?\\|style\s*=\s*["'][^"']*\\/i.test(svg)) return no;
   return { ok: true, svg };
 }
 

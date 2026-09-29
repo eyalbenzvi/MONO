@@ -61,7 +61,9 @@ export type AnalyticsEvent =
   | "upload_compare"
   | "upload_hold_original"
   | "upload_rights_confirm"
-  | "upload_another";
+  | "upload_another"
+  // Something failed that the page recovered from (where, and a short message; never user data).
+  | "app_error";
 
 export type AnalyticsProps = Record<string, unknown>;
 
