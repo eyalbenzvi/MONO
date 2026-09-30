@@ -49,5 +49,36 @@
    "people": 5
   },
   "final": 81
+ },
+ "loc": {
+  "found": 0,
+  "licensed": 0,
+  "filtered": 0,
+  "refusedLicense": {},
+  "removed": {},
+  "final": 0
+ },
+ "wikimedia": {
+  "found": 9605,
+  "licensed": 7098,
+  "filtered": 1173,
+  "refusedLicense": {
+   "CC BY (needs the owner's approval)": 604,
+   "share-alike": 1878,
+   "unclear licence": 23,
+   "in copyright": 2
+  },
+  "removed": {
+   "low-res": 674,
+   "off-world": 3503,
+   "people": 412,
+   "brand": 17,
+   "unsuitable": 100,
+   "narrative": 79,
+   "strip": 152,
+   "text": 2168,
+   "no-image": 6
+  },
+  "final": 400
  }
 }
