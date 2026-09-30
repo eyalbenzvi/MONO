@@ -17,7 +17,7 @@ const REDIRECT = productRedirectScript(process.env.NEXT_PUBLIC_BASE_PATH ?? "", 
 
 export default function NotFound() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+    <div className="flex flex-1 flex-col items-center justify-end gap-3 px-8 pb-16 text-center">
       <script dangerouslySetInnerHTML={{ __html: REDIRECT }} />
       <p className="text-xs text-muted">404</p>
       <h1 className="text-balance text-[20px] font-medium">This page isn&rsquo;t in the drop</h1>

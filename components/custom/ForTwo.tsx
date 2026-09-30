@@ -125,7 +125,7 @@ export function ForTwo() {
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
         </div>
-        <h1 className="text-balance text-3xl font-medium tracking-tight md:text-5xl">For two</h1>
+        <h1 className="text-balance text-[28px] font-medium">For two</h1>
         <p className="mt-3 max-w-xl text-sm text-neutral-400">One date of you two, and every print it makes.</p>
 
         <form className="mt-6 grid max-w-xl gap-4" onSubmit={(e) => e.preventDefault()} data-two-form>

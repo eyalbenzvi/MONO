@@ -271,7 +271,8 @@ function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct;
         {canShare && (
           <button
             type="button"
-            data-autofocus
+            // Only once it can be pressed: a disabled button takes no focus (the first control does instead).
+            data-autofocus={file || failed ? "" : undefined}
             disabled={!file && !failed}
             onClick={() => nativeShare("native", canShareFiles)}
             className={`mt-5 w-full ${BUTTON_PRIMARY}`}

@@ -334,7 +334,7 @@ function Prepared({ runtime, facets, tasteKnown, recent, more, setMore, add, onQ
         // Phones: one sideways row per group, LOOK and SUBJECT first and the rest behind "More filters".
         <section key={g.name} className={`mb-3 ${i >= 2 && !more ? "hidden sm:block" : ""}`}>
           <h3 className={`mb-2 ${LABEL}`}>{g.name}</h3>
-          <div className="no-scrollbar -mx-5 flex gap-1.5 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">{g.body}</div>
+          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">{g.body}</div>
         </section>
       ))}
       </div>

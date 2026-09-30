@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { NeedLine } from "@/components/NeedLine";
@@ -86,39 +86,38 @@ export function MeView() {
   const lastOrder = useCartStore((s) => s.lastOrder);
   const preferred = useCartStore((s) => s.preferredSize);
   const [confirmClear, setConfirmClear] = useState(false);
+  // Reset takes its own button away: focus goes to the section's heading, not the body.
+  const tasteHeading = useRef<HTMLHeadingElement>(null);
+  const reset = () => {
+    startOverWithUndo();
+    requestAnimationFrame(() => tasteHeading.current?.focus());
+  };
 
   const saved = useMemo(() => [...likedIds].reverse().map(getShirtById).filter((s): s is ShirtProduct => !!s), [likedIds]);
 
   if (!hydrated) return <div className="flex-1" />;
 
   return (
+    <div className="flex min-h-0 flex-1 flex-col">
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-clip">
       <div className="mx-auto max-w-[560px] px-5 pb-16 pt-6">
         <h1 className="text-[28px] font-medium leading-tight">You</h1>
 
-        <Section title="Your taste">
+        <Section title="Your taste" headingRef={tasteHeading}>
           {calibrated ? (
-            <TasteSummary vector={vector} heading="h2">
-              <button type="button" onClick={() => startOverWithUndo()} className={`${TEXT_ACTION} justify-start`}>
+            <TasteSummary vector={vector} heading="h3" eyebrow={false}>
+              <button type="button" onClick={reset} className={`${TEXT_ACTION} justify-start`}>
                 Reset taste
               </button>
             </TasteSummary>
           ) : phase === "more" ? (
-            <>
-              <NeedLine />
-              <Link href="/" className={`mt-4 ${BUTTON_PRIMARY}`}>
-                Keep swiping
-              </Link>
-            </>
+            <NeedLine />
           ) : (
             <>
               <p className="text-[20px] font-medium">Not yet.</p>
               <p className="mt-1 text-sm text-muted">Swipe ten tees and we&rsquo;ll learn it.</p>
-              <Link href="/" className={`mt-4 ${BUTTON_PRIMARY}`}>
-                Start the taste test
-              </Link>
               {seen > 0 && (
-                <button type="button" onClick={() => startOverWithUndo()} className={`${TEXT_ACTION} mt-2 justify-start`}>
+                <button type="button" onClick={reset} className={`${TEXT_ACTION} mt-2 justify-start`}>
                   Reset taste
                 </button>
               )}
@@ -162,13 +161,24 @@ export function MeView() {
         </Section>
       </div>
     </div>
+      {/* Until the taste is known, the page's one action, within the thumb (above the tab bar). */}
+      {!calibrated && (
+        <div className="shrink-0 border-t border-white/10 px-4 py-3">
+          <Link href="/" className={`mx-auto w-full max-w-[560px] ${BUTTON_PRIMARY}`}>
+            {phase === "more" ? "Keep swiping" : "Start the taste test"}
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, headingRef, children }: { title: string; headingRef?: React.Ref<HTMLHeadingElement>; children: React.ReactNode }) {
   return (
     <section className="mt-10">
-      <h2 className="mb-4 text-xs text-muted">{title}</h2>
+      <h2 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="mb-4 text-xs text-muted outline-none">
+        {title}
+      </h2>
       {children}
     </section>
   );

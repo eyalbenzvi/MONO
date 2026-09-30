@@ -59,7 +59,7 @@ export function MiniBag() {
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) setHeld(false);
           }}
-          className="fixed inset-x-3 bottom-[calc(var(--dock,0px)+8px)] z-toast mx-auto flex h-14 max-w-lg items-center justify-between gap-3 rounded-control bg-white pl-4 pr-1.5 text-black shadow-2xl shadow-black"
+          className="fixed inset-x-3 bottom-[max(calc(var(--dock-bag,0px)+8px),calc(env(safe-area-inset-bottom)+8px))] z-toast mx-auto flex h-14 max-w-lg items-center justify-between gap-3 rounded-control bg-white pl-4 pr-1.5 text-black shadow-2xl shadow-black"
         >
           <p className="min-w-0 truncate text-sm font-medium" aria-live="polite">
             ✓ {note.pair ? "Added the pair" : "Added"} · {SIZE_LABELS[note.size]}

@@ -30,6 +30,7 @@ const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
 const cardName = (name: string) => name.replace(/^Your /, "");
 /** For two's card: our example couple's initials, woven (lib/custom/makeCards). */
 const MONOGRAM = madeBySlug("monogram") as MadeProduct;
+const writeGroups = (next: MakeGroup[]) => updateQuery((q) => (next.length ? q.set("g", next.join(".")) : q.delete("g")));
 export function MakeIndex() {
   // The filter: every group until some are chosen; kept in the address (replaced, so Back leaves Make).
   const [groups, setGroups] = useState<MakeGroup[] | null>(null);
@@ -37,8 +38,19 @@ export function MakeIndex() {
   const choose = (next: MakeGroup[]) => {
     setGroups(next);
     makeScroll.top = 0;
-    updateQuery((q) => (next.length ? q.set("g", next.join(".")) : q.delete("g")));
+    writeGroups(next);
   };
+  // The filter sheet's own history step (#filter) is what `choose` rewrites; closing it
+  // steps back to the entry underneath, so that one takes the chosen groups too.
+  const chosen = useRef(groups);
+  chosen.current = groups;
+  useEffect(() => {
+    const index = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/make/`;
+    // Only while the address is still the index (a Back that leaves Make is left alone).
+    const onPop = () => chosen.current && window.location.pathname.replace(/\/?$/, "/") === index && writeGroups(chosen.current);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   // Coming back (Back, the header's Make tab, a product's own link): the list where it was left, once its filter is read.
   const scroller = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {

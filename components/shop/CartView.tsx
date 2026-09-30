@@ -149,7 +149,7 @@ export function CartView() {
   }, [hydrated, step, checkoutRequested]);
 
   const bar = useRef<HTMLDivElement>(null);
-  useDock(bar, hydrated && count > 0 && step !== "done");
+  useDock(bar, hydrated && step !== "done");
 
   if (!hydrated) return <div className="flex-1" />;
 
@@ -180,12 +180,7 @@ export function CartView() {
           </h1>
 
           {count === 0 ? (
-            <div className="py-12">
-              <p className="text-base text-neutral-200">Your bag is empty.</p>
-              <Link href={known ? "/shop/" : "/"} className={`mt-6 ${BUTTON_PRIMARY}`}>
-                {known ? "See your edit" : "Start the taste test"}
-              </Link>
-            </div>
+            <p className="py-12 text-base text-neutral-200">Your bag is empty.</p>
           ) : step === "bag" ? (
             <>
               <ul className="border-t border-white/10">
@@ -289,16 +284,20 @@ export function CartView() {
       </div>
 
       {/* The step's one action, pinned within the thumb (the tab bar gives way to it). */}
-      {count > 0 && (
-        <div ref={bar} className="shrink-0 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3">
+      <div ref={bar} className="shrink-0 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3">
           <div className="mx-auto max-w-3xl">
-            {step === "bag" ? (
-              <button type="button" onClick={toCheckout} className={`w-full ${BUTTON_PRIMARY}`}>
+            {count === 0 ? (
+              <Link href={known ? "/shop/" : "/"} className={`w-full ${BUTTON_PRIMARY}`}>
+                {known ? "See your edit" : "Start the taste test"}
+              </Link>
+            ) : step === "bag" ? (
+              // Keyed apart from the submit button: the same element changing type under the tap would submit the form.
+              <button key="checkout" type="button" onClick={toCheckout} className={`w-full ${BUTTON_PRIMARY}`}>
                 <span className="tabular-nums">Checkout · {formatPrice(total)}</span>
               </button>
             ) : (
               <>
-                <button type="submit" form="checkout-form" className={`w-full ${BUTTON_PRIMARY}`}>
+                <button key="place" type="submit" form="checkout-form" className={`w-full ${BUTTON_PRIMARY}`}>
                   <span className="tabular-nums">Place order · {formatPrice(total)}</span>
                 </button>
                 <p className="mt-2 text-center text-xs text-muted">{PREVIEW_LINE}</p>
@@ -306,7 +305,6 @@ export function CartView() {
             )}
           </div>
         </div>
-      )}
     </div>
   );
 }

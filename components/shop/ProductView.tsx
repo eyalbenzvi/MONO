@@ -508,7 +508,7 @@ function Gallery({ shirt, color, view, setView, onZoom, alt }: { shirt: ShirtPro
 /** Phones: the page's own bottom bar (the tab bar gives way to it), counted in the dock so a toast sits above it. */
 function StickyBar({ children }: { children: React.ReactNode }) {
   const bar = useRef<HTMLDivElement>(null);
-  useDock(bar);
+  useDock(bar, true, true);
   return (
     <div ref={bar} className="z-header flex shrink-0 items-center gap-2 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:hidden">
       {children}

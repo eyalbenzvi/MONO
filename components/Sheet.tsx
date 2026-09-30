@@ -63,7 +63,8 @@ export function Sheet({
   useEffect(() => setMounted(true), []);
   const nav = useHistorySheet(historyKey, open, onClose);
   const panel = useRef<HTMLDivElement>(null);
-  useFocusTrap(panel, open, nav.close, returnTo);
+  // Once mounted: a sheet first rendered already open has no panel on its first pass.
+  useFocusTrap(panel, open && mounted, nav.close, returnTo);
   const drag = useDragControls();
   const titleId = useRef(`sheet-${Math.random().toString(36).slice(2, 8)}`).current;
   if (!mounted) return null;
@@ -103,7 +104,7 @@ export function Sheet({
                 <div className="flex justify-center pb-1 pt-2" aria-hidden>
                   <span className="h-1 w-10 rounded-full bg-white/25" />
                 </div>
-                <div className="flex min-h-11 items-start justify-between gap-3 pl-5 pr-2">
+                <div className="flex min-h-11 items-start justify-between gap-3 pl-4 pr-2">
                   {title ? (
                     <h2 id={titleId} className="min-w-0 flex-1 pt-2.5 text-base font-medium">
                       {title}
@@ -116,8 +117,8 @@ export function Sheet({
                   </button>
                 </div>
               </div>
-              <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-4">{children}</div>
-              {footer && <div className="shrink-0 border-t border-white/10 px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3">{footer}</div>}
+              <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-4">{children}</div>
+              {footer && <div className="shrink-0 border-t border-white/10 px-4 pb-[max(env(safe-area-inset-bottom),16px)] pt-3">{footer}</div>}
               {!footer && <div className="shrink-0 pb-[env(safe-area-inset-bottom)]" />}
             </motion.div>
           </>

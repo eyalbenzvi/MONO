@@ -50,12 +50,14 @@ export function TabBar() {
   const hidden = tabBarHidden(pathname) || (onDiscover && !(hydrated && acknowledged));
   const nav = useRef<HTMLElement>(null);
   useDock(nav, !hidden);
-  if (hidden) return null;
 
+  // Hidden, not left out: the markup stays the same shape whichever path it was
+  // built for, so 404.html served at a product address still hydrates.
   return (
     <nav
       ref={nav}
       key={mounted ? "client" : "server"}
+      hidden={hidden}
       aria-label="Main"
       className="relative z-header shrink-0 border-t border-white/10 bg-[#0a0a0a] pb-[env(safe-area-inset-bottom)]"
     >

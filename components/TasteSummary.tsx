@@ -12,13 +12,13 @@ import type { UserProfileVector } from "@/types/shirt";
  * "Share your taste" as a text link. The same in the sheet opened from the
  * Discover strip and on You; each host adds its own actions.
  */
-export function TasteSummary({ vector, heading = "h2", children }: { vector: UserProfileVector; heading?: "h1" | "h2"; children?: React.ReactNode }) {
+export function TasteSummary({ vector, heading = "h2", eyebrow = true, children }: { vector: UserProfileVector; heading?: "h1" | "h2" | "h3"; eyebrow?: boolean; children?: React.ReactNode }) {
   const [sharing, setSharing] = useState(false);
   const H = heading;
   const traits = topTraits(vector, 5);
   return (
     <div>
-      <p className="text-xs text-muted">Your taste</p>
+      {eyebrow && <p className="text-xs text-muted">Your taste</p>}
       <H className="mt-1 text-[28px] font-medium leading-tight">{archetypeOf(vector).name}</H>
       <p className="mt-2 text-base text-neutral-200">{tasteSentence(vector)}</p>
       {traits.length > 0 && <p className="mt-2 text-sm text-muted">{traitWords(traits, " · ")}</p>}

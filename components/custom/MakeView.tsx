@@ -516,7 +516,7 @@ function Maker({ made }: { made: MadeProduct }) {
           </div>
 
           <div>
-            <h1 className="text-2xl font-medium tracking-tight md:text-3xl">{made.name}</h1>
+            <h1 className="text-xl font-medium md:text-[28px]">{made.name}</h1>
             <p className="mt-1 text-sm text-neutral-400">{made.line}</p>
             <form
               className="mt-5 grid gap-4"
@@ -573,7 +573,7 @@ function Maker({ made }: { made: MadeProduct }) {
 /** Phones: the editor's own bottom bar (the tab bar gives way to it), counted in the dock so a toast sits above it. */
 function MakeBar({ children }: { children: React.ReactNode }) {
   const bar = useRef<HTMLDivElement>(null);
-  useDock(bar);
+  useDock(bar, true, true);
   return (
     <div ref={bar} className="sticky bottom-0 z-header flex items-center gap-3 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:hidden">
       {children}

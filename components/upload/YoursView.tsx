@@ -487,7 +487,7 @@ function Yours() {
           </div>
           <div className="min-w-0 space-y-6">
             {/* The step's heading, as a product page's title: at the top of the column beside the picture (under it on a phone). */}
-            <h2 ref={heading} tabIndex={-1} className="text-2xl font-medium tracking-tight outline-none md:text-3xl" data-step={step}>
+            <h2 ref={heading} tabIndex={-1} className="text-xl font-medium outline-none md:text-[28px]" data-step={step}>
               {titles[step]}
             </h2>
             {step === "start" && (
@@ -801,7 +801,7 @@ function SizeStep({
 function PrimaryBar({ label, onClick, href, disabled }: { label: string; onClick?: () => void; href?: string; disabled?: boolean }) {
   const cls = `w-full ${BUTTON_PRIMARY}`;
   const bar = useRef<HTMLDivElement>(null);
-  useDock(bar);
+  useDock(bar, true, true);
   const button = href ? (
     <Link href={href} onClick={onClick} className={cls} data-primary>
       {label}

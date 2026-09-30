@@ -26,6 +26,8 @@ A short log of the overhaul: the decisions given, the ones made along the way, a
   - Icon-only round controls stay circles: Discover's Pass / Save / Buy, the zoom's ± and dots.
 - The tab bar sits in the layout's flow, at the foot of the 100dvh column, not over the page. It never covers content, so no page needs bottom padding.
   - A shared `--dock` variable (lib/dock, hooks/useDock) tells the toast and the mini bag the height of whatever is at the bottom: the tab bar, a sticky buy bar, or the shop's control row.
+  - The mini bag sits over a page's own buy bar rather than above it (`--dock-bag`). Above it, it covered the sizes the shopper had just chosen, and the bar under it already reads "In your bag · Checkout", so for its 5 s it stands in for the bar.
+- The screens whose one action was mid-page moved it into a bottom bar: You before the test ("Start the taste test"), the empty bag, and the 404 and error pages (content aligned to the foot of the screen).
 - Icons and text controls: the shop's control row, the Make index row and the tab bar are words only ("Black · White | Search | Filter"), so there is one icon style by having no icons there.
 - The Buy sheet, taste sheet, filters, search, share, reveal and zoom all go through `components/Sheet.tsx` and `hooks/useHistorySheet.ts`.
   - An overlay that navigates away replaces its own history entry (router.replace), so Back never lands on a stale `#sheet`.
