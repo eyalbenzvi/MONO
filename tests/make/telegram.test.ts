@@ -26,8 +26,14 @@ describe("Your Telegram: the spec", () => {
     expect(telegramWords("3.5 kg")).toBe("3.5 KG");
   });
   it("the longest link fits", () => {
-    const n = encodeMake(spec({ to: "Ã".repeat(TELEGRAM_NAME_MAX), fr: "Ã".repeat(TELEGRAM_NAME_MAX), d: "2019-06-02", m: "Ã".repeat(TELEGRAM_MAX) })!).length;
-    expect(n).toBeLessThan(300);
+    // The message in two-byte letters, as words (one 160-letter word can't be set on the strips, so no link carries one).
+    const longest = spec({ to: "Ã".repeat(TELEGRAM_NAME_MAX), fr: "Ã".repeat(TELEGRAM_NAME_MAX), d: "2019-06-02", m: "ÃÃÃÃÃÃÃ ".repeat(20).slice(0, TELEGRAM_MAX).trim() });
+    expect(longest).not.toBeNull();
+    const n = encodeMake(longest!).length;
+    // 596 at its longest, over the 300 a product keeps to: a telegram is its 160-character message (and a letter
+    // outside ASCII takes two bytes in the link). Bounded at 640; with the caption's 160 more, within the 1,200 ?make= reads.
+    expect(n).toBeLessThan(640);
+    expect(n + 160).toBeLessThanOrEqual(1200);
     console.log(`telegram: longest ?make= ${n} characters`);
   });
 });
