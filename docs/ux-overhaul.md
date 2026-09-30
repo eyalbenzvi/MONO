@@ -4,8 +4,7 @@ A short log of the overhaul: the decisions given, the ones made along the way, a
 
 ## Decisions given (applied, not reopened)
 
-- Navigation is a quiet text tab bar at the bottom: **Discover · Shop · Make · Bag · You**. Only the wordmark sits at the top.
-  - The bar is hidden during the taste test, on product pages, on the Make editors that have their own buy bar, and on the bag and checkout.
+- Navigation is a quiet text tab bar at the bottom: **Discover · Shop · Make · Bag · You**. Only the wordmark sits at the top. It is always there but for the first taste test (a later decision: hidden on product pages, the editors and the bag, it left no way back to the shop); a page's own buy bar sits just above it.
 - Make stays a main tab. Its sub-tabs are **Personalise** and **Upload** (same URLs).
 - "Your taste" is the profile; "Your edit" is the personalised shop and the shop's heading after the test.
 - The archetype names stay as the reveal heading, without "You’re", plus one sentence.

@@ -22,7 +22,7 @@ export function ActionButtons() {
   const [buying, setBuying] = useState<ShirtProduct | null>(null);
 
   return (
-    <div className="relative z-20 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
+    <div className="relative z-20 shrink-0 px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
       {/* Pass and Save, and between them (once the taste is known) a small Buy: colour, size and
           "Buy now" in a sheet, without leaving the deck. Sideways phones: one column beside the card. */}
       <div className="mx-auto flex max-w-[420px] items-center justify-center sideways:flex-col sideways:gap-3">

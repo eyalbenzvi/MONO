@@ -837,7 +837,7 @@ function PrimaryBar({ label, onClick, href, disabled }: { label: string; onClick
     </button>
   );
   return (
-    <div ref={bar} className="fixed inset-x-0 bottom-0 z-header border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:static md:border-0 md:bg-transparent md:p-0">
+    <div ref={bar} className="fixed inset-x-0 bottom-[var(--tabbar,0px)] z-header border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),12px)] pt-3 md:static md:border-0 md:bg-transparent md:p-0">
       {button}
     </div>
   );

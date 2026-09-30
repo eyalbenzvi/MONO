@@ -35,7 +35,8 @@ test("B1: Edit from the bag replaces the Make line and keeps its quantity", asyn
   await page.getByRole("radio", { name: /^L\b/ }).first().tap();
   await expect(buy(page)).toHaveText(/^Save changes · L · \$75$/);
   await buy(page).tap();
-  await page.waitForURL(/\/cart\/$/);
+  // A client-side step (router.push): polled, not waited for as a page load.
+  await expect(page).toHaveURL(/\/cart\/$/);
   // One line, not two: the same print in L, still two of it.
   expect(await cartItems(page)).toEqual([expect.objectContaining({ size: "L", qty: 2 })]);
 });

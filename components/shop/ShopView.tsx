@@ -30,7 +30,7 @@ const WARM_CARDS = { desktop: 10, phone: 6 };
 /** A restored `?page=` is held to this many pages (a hand-typed 10000 can't render the whole shop at once). */
 const MAX_RESTORED_PAGES = 200;
 /** The next page loads when the end of the grid is this close (px). */
-const LOAD_AHEAD_PX = 600;
+const LOAD_AHEAD_PX = 1600;
 
 const SearchPanel = dynamic(() => import("@/components/shop/SearchPanel"), {
   ssr: false,
@@ -258,7 +258,8 @@ export function ShopView() {
     if (!el) return;
     const io = new IntersectionObserver(
       (entries) => entries[0]?.isIntersecting && setShop({ limit: useUiStore.getState().shop.limit + SHOP_PAGE_SIZE }),
-      { rootMargin: `${LOAD_AHEAD_PX}px 0px` },
+      // Rooted at the grid's own scroller: rooted at the viewport, the scroller clips it and the margin never looks ahead.
+      { root: scroller.current, rootMargin: `${LOAD_AHEAD_PX}px 0px` },
     );
     io.observe(el);
     return () => io.disconnect();

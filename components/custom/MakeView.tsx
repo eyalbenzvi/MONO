@@ -587,7 +587,7 @@ function MakeBar({ children }: { children: React.ReactNode }) {
   const bar = useRef<HTMLDivElement>(null);
   useDock(bar, true, true);
   return (
-    <div ref={bar} className="sticky bottom-0 z-header flex items-center gap-3 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:hidden">
+    <div ref={bar} className="sticky bottom-0 z-header flex items-center gap-3 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),12px)] pt-3 md:hidden">
       {children}
     </div>
   );

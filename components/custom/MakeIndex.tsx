@@ -5,6 +5,7 @@ import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from "re
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { MAKE_LINE, MakeSwitch } from "@/components/custom/MakeHeader";
 import { useDock } from "@/hooks/useDock";
+import { useNear } from "@/hooks/useNear";
 import { MakeFilter } from "@/components/custom/MakeFilter";
 import { markFrom } from "@/lib/custom/makeFrom";
 import { drawPrint } from "@/components/custom/useCustom";
@@ -133,9 +134,11 @@ export function MakeCard({
   const live = !baked || failed;
   // A picture that failed before the page woke up (it's in the served HTML) fires no onError here: checked once mounted.
   const img = useRef<HTMLImageElement>(null);
+  // Loaded ahead of the index's scroller view (hooks/useNear).
+  const near = useNear(img);
   useEffect(() => {
     const el = img.current;
-    if (el?.complete && el.naturalWidth === 0) setFailed(true);
+    if (el?.complete && el.naturalWidth === 0 && el.currentSrc) setFailed(true);
   }, []);
   const [svg, setSvg] = useState<string | null>(null);
   useEffect(() => {
@@ -155,12 +158,11 @@ export function MakeCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             ref={img}
-            src={assetUrl(cardPath(baked!, CARD_WIDTHS[0]))}
-            srcSet={CARD_WIDTHS.map((w) => `${assetUrl(cardPath(baked!, w))} ${w}w`).join(", ")}
+            src={near ? assetUrl(cardPath(baked!, CARD_WIDTHS[0])) : undefined}
+            srcSet={near ? CARD_WIDTHS.map((w) => `${assetUrl(cardPath(baked!, w))} ${w}w`).join(", ") : undefined}
             sizes={SIZES.grid}
             width={CARD_WIDTHS[0]}
             height={(CARD_WIDTHS[0] * 4) / 3}
-            loading="lazy"
             decoding="async"
             alt={`${made.name}, personalised, printed on the back of a ${color} tee`}
             onError={() => setFailed(true)}

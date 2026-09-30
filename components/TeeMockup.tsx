@@ -4,6 +4,7 @@ import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { acceptedDesigns } from "@/lib/upload/designs";
 import { isUploadDesign } from "@/lib/upload/keys";
 import { Sharper } from "@/components/Sharper";
+import { useNear } from "@/hooks/useNear";
 import { usePageZoom } from "@/hooks/usePageZoom";
 import { MODEL_ASPECT, detailBox, detailPath, mockupImage } from "@/lib/images";
 import { assetUrl } from "@/lib/catalog";
@@ -61,6 +62,9 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
   const [attempt, setAttempt] = useState(0);
   const [failed, setFailed] = useState(false);
   const img = useRef<HTMLImageElement>(null);
+  // Loaded well ahead of the scroller's view (hooks/useNear): the browser's loading="lazy" only starts on screen here.
+  const frame = useRef<HTMLDivElement>(null);
+  const near = useNear(frame, !priority);
   useEffect(() => {
     // One that failed before the page woke up fires no onError here.
     const el = img.current;
@@ -92,18 +96,17 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
       </div>
     );
   return (
-    <div className={`relative select-none overflow-hidden ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} role="img" aria-label={label}>
+    <div ref={frame} className={`relative select-none overflow-hidden ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} role="img" aria-label={label}>
       <img
         key={attempt}
         ref={img}
         onError={() => setFailed(true)}
-        src={src}
-        srcSet={srcSet}
+        src={near ? src : undefined}
+        srcSet={near ? srcSet : undefined}
         sizes={sizes}
         alt=""
         draggable={false}
         decoding="async"
-        loading={priority ? "eager" : "lazy"}
         // React 18 doesn't know fetchPriority yet; the lowercase attribute passes through.
         {...{ fetchpriority: priority ? "high" : "auto" }}
         className="pointer-events-none absolute inset-0 h-full w-full"

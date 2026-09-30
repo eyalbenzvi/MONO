@@ -284,7 +284,7 @@ export function CartView() {
       </div>
 
       {/* The step's one action, pinned within the thumb (the tab bar gives way to it). */}
-      <div ref={bar} className="shrink-0 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3">
+      <div ref={bar} className="shrink-0 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),12px)] pt-3">
           <div className="mx-auto max-w-3xl">
             {count === 0 ? (
               <Link href={known ? "/shop/" : "/"} className={`w-full ${BUTTON_PRIMARY}`}>
