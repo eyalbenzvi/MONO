@@ -8,6 +8,7 @@ import {
   addItem,
   cartTotals,
   changeItem,
+  editUpload,
   setItemQty,
 } from "@/lib/cart";
 import { SHIRTS } from "@/lib/catalog";
@@ -167,5 +168,33 @@ describe("the price list: tee, pair, made-for-you tee and its pair", () => {
     expect(both.subtotal).toBe(150);
     expect(both.discount).toBe(20);
     expect(both.total).toBe(130);
+  });
+});
+
+describe("editUpload: an uploaded print's lines after Edit → Save changes", () => {
+  const Y = "make-yours";
+  const old = { id: "old", mode: "dots", size: "full", hash: "aaaa" } as const;
+  const neu = { id: "new", mode: "lines", size: "full", hash: "bbbb" } as const;
+  const other = { id: "mono-1", size: "M", color: "black", qty: 1 } as const;
+  const line = (color: "black" | "white", size: "M" | "L", qty = 1) => ({ id: Y, size, color, qty, upload: old });
+  const show = (items: ReturnType<typeof editUpload>) => items.map((i) => `${i.id === Y ? (i.upload?.id ?? "?") : i.id} ${i.color} ${i.size} ×${i.qty}`);
+  it("one tee → both: the other colour joins it, in the size chosen", () => {
+    expect(show(editUpload([other, line("white", "M")], Y, "old", neu, ["white", "black"], "L"))).toEqual(["mono-1 black M ×1", "new white L ×1", "new black L ×1"]);
+  });
+  it("the pair → one tee: the other colour goes (its partner is there); quantities kept", () => {
+    expect(show(editUpload([line("black", "L", 2), line("white", "L"), other], Y, "old", neu, ["black"], "L"))).toEqual(["new black L ×2", "mono-1 black M ×1"]);
+  });
+  it("one tee → the other tee: the line moves, size and quantity kept", () => {
+    expect(show(editUpload([line("white", "M", 3)], Y, "old", neu, ["black"], "M"))).toEqual(["new black M ×3"]);
+  });
+  it("several lines keep their sizes; lines that end up the same merge (up to the cap)", () => {
+    expect(show(editUpload([line("white", "M", 3), line("white", "L")], Y, "old", neu, ["white"], "S" as never))).toEqual(["new white M ×3", "new white L ×1"]);
+    // Black L has no white partner: it moves (and joins nothing); black M's partner is there: it goes.
+    expect(show(editUpload([line("white", "M", 6), line("black", "L", 1), line("black", "M", 5)], Y, "old", neu, ["white"], "M"))).toEqual(["new white M ×6", "new white L ×1"]);
+    expect(show(editUpload([line("white", "M", 6), line("white", "L", 5)], Y, "old", neu, ["white", "black"], "M"))).toEqual(["new white M ×6", "new white L ×5", "new black M ×1", "new black L ×1"]);
+    expect(show(editUpload([line("black", "M", 6), line("black", "M", 5)], Y, "old", neu, ["black"], "M"))).toEqual([`new black M ×${MAX_QTY}`]);
+  });
+  it("lines removed meanwhile: the print is added anew, never lost", () => {
+    expect(show(editUpload([other], Y, "old", neu, ["white", "black"], "M"))).toEqual(["mono-1 black M ×1", "new white M ×1", "new black M ×1"]);
   });
 });

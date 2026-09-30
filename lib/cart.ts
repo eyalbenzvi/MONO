@@ -148,3 +148,33 @@ export function changeItem(items: CartItem[], key: LineKey, to: Partial<Pick<Car
   // Otherwise edit in place so the line keeps its position in the bag.
   return { items: items.map((i) => (i === line ? next : i)), capped: false };
 }
+
+/**
+ * An uploaded print's lines after an edit ("Edit" from the bag, "Save
+ * changes"): the new print in every line the old one was in, each keeping
+ * its size and quantity; a single line takes the size chosen. The tees chosen
+ * decide the colours. With one tee chosen, a line in the other colour moves
+ * to it (or goes, when its partner in that size is already there: the pair
+ * becomes the one tee asked for). With both chosen, each size gets the colour
+ * it's missing. Lines that end up the same are merged (up to MAX_QTY). Lines
+ * gone meanwhile (removed from the bag in between): the print is added anew.
+ */
+export function editUpload(items: CartItem[], id: string, oldUpload: string, upload: UploadRef, tees: BaseColor[], size: ShirtSize): CartItem[] {
+  const mine = items.filter((i) => i.id === id && i.upload?.id === oldUpload);
+  const others = items.filter((i) => !mine.includes(i));
+  const want = tees.length ? tees : ["white" as BaseColor];
+  let lines: CartItem[] = mine.length ? mine.map((l) => ({ ...l, upload, size: mine.length === 1 ? size : l.size })) : [{ id, size, color: want[0], qty: 1, upload }];
+  if (want.length === 1) {
+    const [only] = want;
+    lines = lines.filter((l) => l.color === only || !lines.some((o) => o.color === only && o.size === l.size)).map((l) => ({ ...l, color: only }));
+  } else for (const s of [...new Set(lines.map((l) => l.size))]) for (const c of want) if (!lines.some((l) => l.size === s && l.color === c)) lines.push({ id, size: s, color: c, qty: 1, upload });
+  const merged: CartItem[] = [];
+  for (const l of lines) {
+    const same = merged.find((m) => m.size === l.size && m.color === l.color);
+    if (same) same.qty = Math.min(MAX_QTY, same.qty + l.qty);
+    else merged.push({ ...l });
+  }
+  // In the bag where the first of them was (the rest after it).
+  const at = mine.length ? items.indexOf(mine[0]) - items.slice(0, items.indexOf(mine[0])).filter((i) => mine.includes(i)).length : others.length;
+  return [...others.slice(0, at), ...merged, ...others.slice(at)];
+}

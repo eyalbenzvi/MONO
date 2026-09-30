@@ -32,9 +32,9 @@ const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup
 /** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
 const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec; upload?: UploadRef }) =>
   l.upload ? (useMakeStore.getState().uploads[l.upload.id]?.title ?? "Your file") : l.custom ? customTitle(l.custom) : l.shirt.title;
-/** Where a line leads: its product page, a made-for-you one with its print in the address and the line it edits. */
+/** Where a line leads: its product page in the line's colour, a made-for-you one with its print in the address and the line it edits, an upload its editor. */
 const lineHref = (l: CartLine) =>
-  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : productHref(l.id);
+  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : `${productHref(l.id)}?c=${l.color}`;
 
 const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 

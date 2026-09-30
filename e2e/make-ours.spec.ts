@@ -361,3 +361,33 @@ test("Back on the index from a product (the header's Make tab or Back): the list
   await expect(page).toHaveURL(/\/make\/$/);
   await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(top - 40);
 });
+
+test("From ours, Edit from the bag opens the line as it is (its colour and size), and Both adds the other colour", async ({ page }) => {
+  await page.goto("make/code/");
+  await hydrated(page);
+  await page.locator("#make-name").fill("ADA");
+  const colours = page.getByRole("radiogroup", { name: "Tee colour" }).getByRole("radio");
+  const buy = page.locator(".sticky.bottom-0 button").last();
+  await colours.nth(0).tap();
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await expect(buy).toHaveText(/^Add to bag · M/);
+  await buy.tap();
+  await colours.nth(1).tap();
+  await page.getByRole("radio", { name: /^XL\b/ }).first().tap();
+  await expect(buy).toHaveText(/^Add to bag · XL/);
+  await buy.tap();
+  const bag = () => page.evaluate(() => (JSON.parse(localStorage.getItem("mono-cart")!).state.cart as { color: string; size: string }[]).map((l) => `${l.color} ${l.size}`));
+  const [first] = await bag();
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "Edit" }).first().tap();
+  await expect(page).toHaveURL(/edit=/);
+  await expect(buy).toHaveText(/^Save changes · M · \$75$/);
+  await expect(colours.nth(0)).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radiogroup", { name: "Tee colour" }).getByRole("radio", { name: /Both/ }).tap();
+  await expect(buy).toHaveText(/^Save changes · M · \$130$/);
+  await buy.tap();
+  await page.waitForURL(/\/cart\/$/);
+  const other = first.startsWith("black") ? "white" : "black";
+  expect((await bag()).sort()).toEqual([first, `${other} M`, `${other} XL`].sort());
+});

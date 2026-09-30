@@ -195,6 +195,14 @@ function Maker({ made }: { made: MadeProduct }) {
   const [cameFrom, setCameFrom] = useState<"index" | "two" | "design">("design");
   const [editKey, setEditKey] = useState<string | null>(null);
   const editing = editKey ? cart.find((l) => lineKey(l) === editKey) : undefined;
+  // "Edit" from the bag opens the line as it is: its colour and size (not the ones last picked for this design).
+  const editedLine = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editing || editedLine.current === editKey) return;
+    editedLine.current = editKey;
+    useCartStore.getState().setColor(editing.id, editing.color);
+    useCartStore.getState().setSize(editing.id, editing.size);
+  }, [editing, editKey]);
   // What the editor makes of its fields.
   const [edited, setEdited] = useState<EditorState>({ spec: null });
   const onEditor = useCallback((s: EditorState) => setEdited(s), []);
@@ -340,6 +348,8 @@ function Maker({ made }: { made: MadeProduct }) {
     if (editing) {
       // Saving an edit replaces its line (its quantity kept), then back to the bag.
       useCartStore.getState().changeCartItem(editing, { custom: state.spec, color, size });
+      // Both tees chosen: the other colour joins it, as the pair.
+      if (both && pairOk) addPair(made.id, size, { source: "product", custom: state.spec, silent: true });
       track("customize_apply", { template: made.template, caption_edited: capEdited });
       return router.push("/cart/");
     }
@@ -367,7 +377,7 @@ function Maker({ made }: { made: MadeProduct }) {
   }, [waiting, renderer, state.spec]);
   // The size in every label that adds, the price as it was.
   const sized = size ? ` · ${SIZE_LABELS[size]}` : "";
-  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : state.batch?.length ? `Add ${state.batch.length} to bag${sized} · ${formatPrice(unit * state.batch.length)}` : `Add to bag${sized} · ${formatPrice(unit)}`;
+  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(both ? pairTotal : unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : state.batch?.length ? `Add ${state.batch.length} to bag${sized} · ${formatPrice(unit * state.batch.length)}` : `Add to bag${sized} · ${formatPrice(unit)}`;
   // The mini bag confirms an add; the button says so for a moment, then is itself again.
   const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
 
@@ -471,7 +481,7 @@ function Maker({ made }: { made: MadeProduct }) {
                   value={both ? "both" : color}
                   original={shirt.baseColor}
                   colors={shirt.colors}
-                  noBoth={!pairOk || !!editing}
+                  noBoth={!pairOk}
                   onChange={(c) => {
                     setBoth(c === "both");
                     if (c !== "both") setColor(made.id, c);

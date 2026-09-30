@@ -166,6 +166,93 @@ test("From yours: Edit from the bag opens the same file at Your print; rights ar
   await expect(page.getByText(/^Your file ·/)).toHaveCount(1);
 });
 
+const bagLines = (page: Page) => page.evaluate(() => ((JSON.parse(localStorage.getItem("mono-cart") ?? "{}").state?.cart ?? []) as { size: string; qty: number; color: string; upload?: { id: string } }[]).map((l) => `${l.color} ${l.size} ×${l.qty}`));
+const editFromBag = async (page: Page) => {
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "Edit" }).first().tap();
+  await ready(page);
+};
+const tee = (page: Page, name: RegExp) => page.getByRole("radiogroup", { name: "Tee" }).getByRole("radio", { name });
+
+test("From yours, Edit from the bag: Both adds the other colour; one tee makes the pair that tee; the line's own size is kept", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  expect(await bagLines(page)).toEqual(["white M ×1"]);
+  // Another size picked elsewhere since: the edit still opens at the line's.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("mono-cart")!);
+    s.state.preferredSize = "S";
+    s.state.selectedSizes = {};
+    localStorage.setItem("mono-cart", JSON.stringify(s));
+  });
+  await editFromBag(page);
+  await tee(page, /^Both/).tap();
+  await primary(page).tap();
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$130$/);
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["white M ×1", "black M ×1"]);
+  await editFromBag(page);
+  await expect(tee(page, /^Both/)).toHaveAttribute("aria-checked", "true");
+  await tee(page, /^Black/).tap();
+  await primary(page).tap();
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$75$/);
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["black M ×1"]);
+});
+
+test("From yours, Edit from the bag of a line removed meanwhile: saving adds it again, never loses it", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  await editFromBag(page);
+  const edit = page.url();
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("button", { name: /^Remove/ }).tap();
+  await page.goto(edit);
+  await hydrated(page);
+  await ready(page);
+  await primary(page).tap();
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["white M ×1"]);
+});
+
+test("From yours: left for the shop mid-way and back, the picture is there as it was (no draft left by an edit)", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ }).tap();
+  await ready(page);
+  await page.getByRole("link", { name: "Shop", exact: true }).first().tap();
+  await page.waitForURL(/\/shop\//);
+  await page.getByRole("link", { name: "Make", exact: true }).first().tap();
+  await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
+  await expect(page).toHaveURL(/\/make\/yours\/#print$/);
+  await ready(page);
+  await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
+  // Added: nothing in hand any more, so the next visit starts afresh.
+  await primary(page).tap();
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await primary(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
+  await expect(page.locator("[data-draft]")).toHaveCount(0);
+});
+
+test("From yours: another file picked on Your print and refused says why there; the picture in hand stays", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await choose(page, "notes.jpg", Buffer.from("not a picture"), "image/jpeg");
+  await expect(page.locator("[data-upload-error]")).toHaveText("This file won’t open. Try a JPG or PNG.");
+  await expect(page.locator('[data-upload-preview="ready"]')).toBeVisible();
+});
+
 test("From yours, after the order: checking → cleared; offered → accepted; in the shop with its credit, and in Your offers", async ({ page }) => {
   await page.clock.install();
   await uploadToBag(page, "rings.png", await engraving());

@@ -14,6 +14,7 @@ import { STORE_POLICY } from "@/lib/store-policy";
 import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
 import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source, Tee } from "@/lib/upload/client";
+import { editUpload } from "@/lib/cart";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
 import { scrollIntoViewQuietly, useHydrated } from "@/store/useUiStore";
@@ -27,6 +28,26 @@ const EditPhoto = lazy(() => import("./yours/EditPhoto").then((m) => ({ default:
 type Step = "start" | "print" | "size";
 const STEPS: Step[] = ["start", "print", "size"];
 const loadClient = () => import("@/lib/upload/client");
+type Client = Awaited<ReturnType<typeof loadClient>>;
+/** This tab has a picture in hand (the draft, saved from here): back on From yours from another page, it opens again where it was. */
+const LIVE_KEY = "mono-yours-live";
+const isLive = () => {
+  try {
+    return sessionStorage.getItem(LIVE_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+const live = (on: boolean) => {
+  try {
+    if (on) sessionStorage.setItem(LIVE_KEY, "1");
+    else sessionStorage.removeItem(LIVE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+};
+const saveLive = (c: Client, src: Source, s: Settings) => (live(true), c.saveDraft(src, s));
+const clearLive = (c: Client) => (live(false), c.clearDraft());
 /** The status when the converter's code can't be loaded. */
 const LOAD_FAILED = "Couldn’t load. Check your connection and try again.";
 /** The draft is saved this long after the last change. */
@@ -132,6 +153,8 @@ function Yours() {
 
   /** A kept upload or the draft, opened again: its file and settings in hand. */
   const applyReopened = (r: { source: Source; settings: Settings }) => {
+    // Its settings were chosen (a kept print, a draft): never changed for it by the first-print fix.
+    firstSeen.current = r.source.id;
     setSource(r.source);
     setSettings(r.settings);
   };
@@ -164,7 +187,10 @@ function Yours() {
           // The tee as it is in the bag: both colours when the line was the pair.
           const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
           if (meta) setTitle(meta.title);
-          setChoice(lines.length >= 2 ? "both" : (lines[0]?.color ?? meta?.tees[0] ?? "white"));
+          const colours = new Set(lines.map((l) => l.color));
+          setChoice(colours.size === 2 ? "both" : (lines[0]?.color ?? meta?.tees[0] ?? "white"));
+          // The size is the line's (not the size last picked elsewhere); several lines keep theirs.
+          if (lines[0]) setTeeSize(lines[0].size);
           setRightsFor(r.source.id);
           go("print", true);
           return;
@@ -173,8 +199,10 @@ function Yours() {
       const d = await c.reopen(c.DRAFT);
       if (d) {
         setDraftName(d.name);
-        if (want !== "start") {
+        // Left for another page of the site and back (this tab, the draft still in hand): straight back to it.
+        if (want !== "start" || isLive()) {
           applyReopened(d);
+          if (want === "start") return go("print", true);
           // Back where it was.
           setStep(want);
           return;
@@ -230,7 +258,7 @@ function Yours() {
       setSource(r.source);
       setSettings({ ...c.DEFAULTS });
       resetForNewSource();
-      void c.saveDraft(r.source, c.DEFAULTS);
+      if (!editId) saveLive(c, r.source, c.DEFAULTS);
       go("print");
     },
     // resetForNewSource only sets state.
@@ -286,7 +314,8 @@ function Yours() {
       setStatus(LOAD_FAILED);
     });
     // The draft follows every change, half a second after the last (a slider dragged doesn't store the file again at every step).
-    const save = setTimeout(() => void loadClient().then((c) => c.saveDraft(source, settings)), DRAFT_SAVE_MS);
+    // An edit from the bag keeps no draft: the bag has the print, and an edit left unsaved is simply not saved.
+    const save = editId ? undefined : setTimeout(() => void loadClient().then((c) => saveLive(c, source, settings)), DRAFT_SAVE_MS);
     return () => clearTimeout(save);
     // `last` is only read for the status.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,6 +324,7 @@ function Yours() {
   const patch = (p: Partial<Settings>) => {
     if (!settings) return;
     setAutoNote(null);
+    setStartError(null);
     setSettings({ ...settings, ...p });
   };
   const applyFix = (f: { fix: Fix; settings: Settings; preview: PreviewOk }) => {
@@ -350,25 +380,17 @@ function Yours() {
     const id = await c.keep(source, ok, { title, tees, settings: { ...settings, size: ok.size } });
     const ref = { id, mode: ok.mode, size: ok.size, hash: ok.hash };
     if (editId) {
-      // Saving an edit swaps the print in the lines it was in, each keeping its size and quantity (and its tee, where the print still prints on it).
-      const lines = useCartStore.getState().cart.filter((l) => l.upload?.id === editId);
-      const one = lines.length === 1;
-      useCartStore.setState((s) => ({
-        cart: s.cart.map((l) => {
-          if (l.upload?.id !== editId) return l;
-          // A single line takes the size and tee chosen here; several keep theirs.
-          const want = one && choice !== "both" ? choice : l.color;
-          return { ...l, upload: ref, size: one ? size$ : l.size, color: ok.tees.includes(want) ? want : ok.tee };
-        }),
-      }));
-      void c.clearDraft();
+      // Saving an edit swaps the print in the lines it was in (each keeping its size and quantity), in the tees chosen now: "Both" adds the other colour, one tee makes the pair that tee (lib/cart editUpload).
+      const want = choice === "both" ? ok.tees : [ok.tees.includes(choice) ? choice : ok.tee];
+      // The draft (another picture in hand, if any) is left as it was: an edit never made or used one.
+      useCartStore.setState((s) => ({ cart: editUpload(s.cart, YOURS_ID, editId, ref, want, size$) }));
       return router.push("/cart/");
     }
     const store = useCartStore.getState();
     const done = choice === "both" ? store.addPair(YOURS_ID, size$, { upload: ref, source: "product" }) : store.addToCart(YOURS_ID, size$, choice, 1, { upload: ref, source: "product" });
     if (!done) return;
     void import("@/store/tasteStore").then((m) => m.useTasteStore.getState().likeUpload(id, ok.measured));
-    void c.clearDraft();
+    void clearLive(c);
     setDraftName(null);
     // The mini bag confirms; the button says so for a moment, then is itself again.
     flashAdded(true);
@@ -382,7 +404,7 @@ function Yours() {
     const c = await loadClient();
     const id = await c.keep(source, ok, { title, tees: [tee], settings: { ...settings, size: ok.size } });
     useMakeStore.getState().submitReviews(old.order, [id], { [id]: replaceId });
-    void c.clearDraft();
+    void clearLive(c);
     track("upload_another");
     router.push("/me/");
   };
@@ -488,6 +510,7 @@ function Yours() {
                 onEdit={() => setEditing(true)}
                 autoNote={autoNote}
                 onAnother={() => fileInput.current?.click()}
+                error={startError}
               />
             )}
             {step === "size" && ok && settings && (
@@ -569,6 +592,7 @@ function PrintStep({
   onEdit,
   onAnother,
   autoNote,
+  error,
 }: {
   source: Source | null;
   settings: Settings;
@@ -586,6 +610,8 @@ function PrintStep({
   onEdit: () => void;
   onAnother: () => void;
   autoNote: string | null;
+  /** Another file picked here and refused: why (the picture in hand stays). */
+  error: string | null;
 }) {
   const [meaning, setMeaning] = useState<Record<string, string>>({});
   const [cropFix, setCropFix] = useState(false);
@@ -605,6 +631,11 @@ function PrintStep({
   }, [failed, source, settings]);
   return (
     <>
+      {error && (
+        <p role="alert" className="text-sm text-neutral-200" data-upload-error>
+          {error}
+        </p>
+      )}
       {ok?.autoSmall ? (
         <p className="text-sm text-neutral-300">Big enough for Small, not Full. We&rsquo;ve set Small.</p>
       ) : (
