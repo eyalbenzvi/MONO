@@ -6,6 +6,7 @@
 import type { BaseColor } from "@/types/shirt";
 import type { Lines } from "./kit";
 import type { City, CustomSpec, TemplateId } from "./spec";
+import type { Countries } from "./data";
 import type { SkyData } from "./templates/sky";
 
 /** What a template may need besides its spec: the sky's stars and the place (Your Night Sky). */
@@ -14,6 +15,8 @@ export interface RenderData {
   city?: City;
   /** The place list (data/cities): Your Place draws its cities as the globe's only land. */
   places?: City[];
+  /** The countries (data/countries): Your Countries' map. */
+  countries?: Countries;
 }
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 
@@ -70,6 +73,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   lineup: () => import("./templates/lineup"),
   patch: () => import("./templates/patch"),
   sampler: () => import("./templates/sampler"),
+  countries: () => import("./templates/countries"),
   telegram: () => import("./templates/telegram"),
 };
 

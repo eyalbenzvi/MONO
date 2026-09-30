@@ -99,6 +99,11 @@ async function main() {
     const [x, y] = equalEarth(lo, la);
     rows.push({ a2, a3, name: String(f.properties.NAME_EN || f.properties.NAME), rings: [], point: [Math.round(x * Q), Math.round(-y * Q)], area: 0 });
   }
+  // Natural Earth leaves Cabo Verde out of both the 1:110m countries and the tiny countries: a United Nations member, it goes in as a point at Praia.
+  if (!seen.has("CV")) {
+    const [x, y] = equalEarth(-23.51, 14.93);
+    rows.push({ a2: "CV", a3: "CPV", name: "Cabo Verde", rings: [], point: [Math.round(x * Q), Math.round(-y * Q)], area: 0 });
+  }
   rows.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   const out = {
     source: "Natural Earth, Admin 0 countries 1:110m and tiny countries 1:50m (naturalearthdata.com, via github.com/nvkelso/natural-earth-vector)",

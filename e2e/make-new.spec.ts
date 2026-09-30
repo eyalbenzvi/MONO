@@ -181,6 +181,20 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-sampler-border")).toHaveValue("zigzag"),
   },
+  {
+    slug: "countries",
+    fill: async (page) => {
+      await page.locator("#make-countries-name").fill("Noa");
+      await page.locator("#make-countries-filter").fill("japan");
+      await page.getByRole("checkbox", { name: "Japan" }).check();
+      await page.locator("#make-countries-filter").fill("portugal");
+      await page.getByRole("checkbox", { name: "Portugal" }).check();
+    },
+    again: async (page) => {
+      await page.locator("#make-countries-filter").fill("japan");
+      await expect(page.getByRole("checkbox", { name: "Japan" })).toBeChecked();
+    },
+  },
 ];
 
 for (const c of CASES)
