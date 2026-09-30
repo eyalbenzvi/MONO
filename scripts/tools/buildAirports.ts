@@ -37,8 +37,14 @@ function fields(line: string): string[] {
 }
 
 /** A name as the print sets it: spaces tidied, and only when the words' rule allows it. */
+/** A name as the print can set it: dashes and quotes made plain ("Rome–Fiumicino" was dropped for its dash), else "" when a character still can't print. */
 const printable = (s: string) => {
-  const t = s.replace(/\s+/g, " ").trim();
+  const t = s
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/[\u2018\u2019\u02bc]/g, "'")
+    .replace(/[\u201c\u201d"]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   return t && WORDS.test(t) ? t : "";
 };
 

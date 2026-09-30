@@ -195,6 +195,15 @@ const CASES: Case[] = [
       await expect(page.getByRole("checkbox", { name: "Japan" })).toBeChecked();
     },
   },
+  {
+    slug: "flights",
+    fill: async (page) => {
+      await page.getByRole("combobox", { name: "Add an airport" }).fill("nrt");
+      await page.getByRole("option").first().tap();
+      await page.locator("#make-flights-y0").fill("2019");
+    },
+    again: async (page) => expect(page.locator("#make-flights-y0")).toHaveValue("2019"),
+  },
 ];
 
 for (const c of CASES)
