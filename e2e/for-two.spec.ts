@@ -93,7 +93,7 @@ test("For two: where you live now adds a signpost from there to the place, since
   await expect(card(page, "signpost")).toHaveCount(0);
   await page.getByRole("button", { name: "Add it" }).tap();
   await page.getByRole("combobox", { name: "Where you live now" }).fill("London");
-  await page.getByRole("option", { name: /London, United Kingdom/ }).first().tap();
+  await page.getByRole("option", { name: /^London\s*, United Kingdom/ }).first().tap();
   await expect(card(page, "signpost").getByText("London to Tel Aviv, since 2016")).toBeVisible();
   await expect(page).toHaveURL(/[?&]h=\d+/);
   await page.getByRole("button", { name: "Leave it out" }).tap();
