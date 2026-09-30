@@ -52,10 +52,10 @@ export function AirportField({ airports, value, onChange, label, id, error }: { 
           else if (e.key === "Enter" && open && matches[active]) (e.preventDefault(), choose(matches[active]));
           else if (e.key === "Escape" && open) (e.preventDefault(), e.stopPropagation(), setOpen(false));
         }}
-        className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white"
+        className="h-11 w-full rounded-control bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-white"
       />
       {open && text.trim() && !value && airports && (
-        <ul id={listId} role="listbox" aria-label="Airports" className="mt-1 overflow-hidden rounded-xl bg-ink-850 ring-1 ring-white/10">
+        <ul id={listId} role="listbox" aria-label="Airports" className="mt-1 overflow-hidden rounded-control bg-ink-850 ring-1 ring-white/10">
           {matches.length ? (
             matches.map((a, i) => (
               <li
@@ -65,16 +65,16 @@ export function AirportField({ airports, value, onChange, label, id, error }: { 
                 aria-selected={i === active}
                 onPointerDown={(e) => (e.preventDefault(), choose(a))}
                 onPointerEnter={() => setActive(i)}
-                className={`flex h-10 cursor-pointer items-center gap-2 truncate px-3 text-sm ${i === active ? "bg-white/10 text-white" : "text-neutral-300"}`}
+                className={`flex h-11 cursor-pointer items-center gap-2 truncate px-3 text-sm ${i === active ? "bg-white/10 text-white" : "text-neutral-300"}`}
               >
-                <span className="font-mono font-semibold">{a.iata}</span>
+                <span className="font-mono font-medium">{a.iata}</span>
                 <span className="truncate">{a.city}</span>
-                <span className="truncate text-neutral-500">{a.name}</span>
+                <span className="truncate text-muted">{a.name}</span>
               </li>
             ))
           ) : (
             <li role="option" aria-selected={false} aria-disabled className="flex h-10 items-center px-3 text-sm text-neutral-400">
-              No airport by that name. Try its city or its code
+              No airport by that name. Try its city or its code.
             </li>
           )}
         </ul>

@@ -45,7 +45,7 @@ describe("Your Crossword: the spec", () => {
   });
   it("says what's wrong with a name in one line", () => {
     expect(crossWordProblem("Zoë")).toBe('Letters A to Z only. Try "E".');
-    expect(crossWordProblem("Al")).toBe("3 to 12 letters");
+    expect(crossWordProblem("Al")).toBe("3 to 12 letters.");
     expect(crossWordProblem("Noa")).toBeNull();
   });
   it("fits the largest spec in a link", () => {

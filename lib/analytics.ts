@@ -10,7 +10,7 @@
  * Commerce events follow GA4's shape (currency, value, items[]); the rest
  * are product events. Nothing personal is sent (no name, email or address).
  */
-import { STORE_POLICY } from "@/lib/store-policy";
+import { MAKE_PRICE } from "@/lib/prices";
 import type { BaseColor, ShirtProduct, ShirtSize } from "@/types/shirt";
 import { CATEGORY_LABELS } from "@/types/shirt";
 
@@ -22,6 +22,7 @@ export type CommerceEvent =
   | "remove_from_cart"
   | "view_cart"
   | "begin_checkout"
+  | "add_shipping_info"
   | "purchase";
 
 export type AnalyticsEvent =
@@ -41,6 +42,16 @@ export type AnalyticsEvent =
   | "save"
   | "share"
   | "share_taste"
+  // Buying: the steps between a tee and the bag (no personal data; a form error names the field and rule only).
+  | "buy_sheet_open"
+  | "buy_sheet_dismiss"
+  | "size_required"
+  | "size_guide_open"
+  | "pair_select"
+  | "minibag_checkout"
+  | "sticky_checkout_click"
+  | "form_error"
+  | "share_banner_action"
   // Make: the product or template only, never what was typed, drawn or said.
   | "make_open"
   | "make_filter"
@@ -116,7 +127,7 @@ export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, qua
     item_category: CATEGORY_LABELS[shirt.category],
     item_variant: upload ? `${color}-upload` : custom ? `${color}-custom` : color,
     ...(size ? { size } : {}),
-    price: custom || upload ? STORE_POLICY.customPrice : shirt.price,
+    price: custom || upload ? MAKE_PRICE : shirt.price,
     quantity,
     ...(discount ? { discount } : {}),
     ...(index !== undefined ? { index } : {}),

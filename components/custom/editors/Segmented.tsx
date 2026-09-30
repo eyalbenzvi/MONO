@@ -19,7 +19,7 @@ export function Segmented<T extends string | number>({ label, options, value, on
             aria-checked={o === value}
             onClick={() => onChange(o)}
             {...keys(i)}
-            className={`h-10 rounded-full px-3.5 text-sm font-semibold ring-1 transition ${o === value ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15 hover:bg-white/10"}`}
+            className={`h-11 rounded-control px-3.5 text-sm font-medium ring-1 transition ${o === value ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15 hover:bg-white/10"}`}
           >
             {format(o)}
           </button>
@@ -43,7 +43,7 @@ export function Switch({ label, checked, onChange }: { label: string; checked: b
 /** A whole number in a small range, as − value + (a spinbutton: arrow keys step, Home and End jump). */
 export function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
   const set = (v: number) => onChange(Math.min(max, Math.max(min, v)));
-  const step = "grid h-10 w-10 place-items-center rounded-full text-lg text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
+  const step = "grid h-11 w-11 place-items-center rounded-full text-lg text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
   return (
     <div>
       <p className="mb-1 text-xs font-medium text-neutral-400" id={`step-${label.replace(/\W+/g, "-")}`}>

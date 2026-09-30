@@ -1,10 +1,10 @@
 "use client";
 
+import { MAKE_PAIR_PRICE } from "@/lib/prices";
 import { useEffect, useState } from "react";
 import { radioKeys } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { formatPrice } from "@/lib/format";
-import { STORE_POLICY } from "@/lib/store-policy";
 import type { Preview, Settings, Source, Tee } from "@/lib/upload/client";
 
 export type Choice = Tee | "both";
@@ -29,7 +29,7 @@ function Segments<T extends string>({ label, options, value, onChange }: { label
       <p id={id} className="mb-1.5 text-xs font-medium text-neutral-400">
         {label}
       </p>
-      <div role="radiogroup" aria-labelledby={id} className="inline-flex max-w-full flex-wrap gap-1 rounded-3xl bg-white/[0.06] p-1 ring-1 ring-white/10">
+      <div role="radiogroup" aria-labelledby={id} className="inline-flex max-w-full flex-wrap gap-1 rounded-control bg-white/[0.06] p-1 ring-1 ring-white/10">
         {options.map((o, i) => (
           <button
             key={o.value}
@@ -39,11 +39,11 @@ function Segments<T extends string>({ label, options, value, onChange }: { label
             aria-label={`${o.label}${o.tag ? `, ${o.tag}` : ""}`}
             onClick={() => set(o.value)}
             {...keys(i)}
-            className={`flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition ${o.value === value ? "bg-white text-black" : "text-neutral-300 hover:text-white"}`}
+            className={`flex h-11 items-center gap-1.5 rounded-control px-3.5 text-sm font-medium transition ${o.value === value ? "bg-white text-black" : "text-neutral-300 hover:text-white"}`}
             data-choice={o.value}
           >
             {o.label}
-            {o.tag && <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">{o.tag}</span>}
+            {o.tag && <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{o.tag}</span>}
           </button>
         ))}
       </div>
@@ -115,7 +115,7 @@ export function ChoiceThumbs({ source, settings, preview, photo, choice, onSetti
           onChange={onChoice}
           options={(["black", "white", "both"] as const)
             .filter((v) => v === choice || (v === "both" ? preview.tees.length === 2 : preview.tees.includes(v)))
-            .map((v) => ({ value: v, label: v === "both" ? `Both · ${formatPrice(STORE_POLICY.customPairPrice)}` : v === "black" ? "Black" : "White", tag: v === preview.tee ? "Suggested" : undefined }))}
+            .map((v) => ({ value: v, label: v === "both" ? `Both · ${formatPrice(MAKE_PAIR_PRICE)}` : v === "black" ? "Black" : "White", tag: v === preview.tee ? "Suggested" : undefined }))}
         />
       )}
     </div>

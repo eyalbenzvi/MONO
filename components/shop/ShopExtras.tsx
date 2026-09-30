@@ -11,9 +11,9 @@ function Strip({ title, shirts, onClose }: { title: string; shirts: ShirtProduct
   return (
     <section className="mb-4" aria-label={title}>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">{title}</h2>
+        <h2 className="text-sm font-medium">{title}</h2>
         {onClose && (
-          <button type="button" onClick={onClose} aria-label={`Hide ${title}`} className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:text-white">
+          <button type="button" onClick={onClose} aria-label={`Hide ${title}`} className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 hover:text-white">
             <Icon name="x" className="h-4 w-4" />
           </button>
         )}

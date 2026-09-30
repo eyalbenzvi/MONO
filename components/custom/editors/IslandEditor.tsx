@@ -30,7 +30,7 @@ export default function IslandEditor({ made, arrival, touched, onChange }: Edito
   const lex = useLexicon(true);
 
   const n = nameOf(name, ISLAND_NAME_MAX, lex);
-  const nameError = n.error ?? (!name.trim() && touched ? "Name the island" : null);
+  const nameError = n.error ?? (!name.trim() && touched ? "Add the island’s name." : null);
   const each = places.map((x) => nameOf(x, ISLAND_PLACE_MAX, lex));
   const typed = each.filter((e, i) => places[i].trim() && e.value).map((e) => e.value!);
   const placesOk = lex && each.every((e) => !e.error);
@@ -39,7 +39,7 @@ export default function IslandEditor({ made, arrival, touched, onChange }: Edito
 
   useReportSpec(spec, onChange);
 
-  const link = "h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
+  const link = "h-11 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
   return (
     <>
       <Field label="The island’s name" error={nameError} htmlFor="make-island">

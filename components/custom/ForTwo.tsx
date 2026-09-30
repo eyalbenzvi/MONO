@@ -9,7 +9,6 @@ import { autoCity } from "@/components/custom/editors/DateEditor";
 import { Field, WORDS_INPUT_MAX, useLexicon, useWords } from "@/components/custom/editors/Field";
 import { INPUT } from "@/components/custom/editors/types";
 import { drawPrint } from "@/components/custom/useCustom";
-import { STAGE_BG } from "@/components/stage";
 import { getShirtById } from "@/lib/catalog";
 import { loadCities, type Places } from "@/lib/custom/data";
 import { TWO_EXAMPLE, TWO_NAME_MAX, cleanName, forTwo, readTwo, writeTwo, type TwoCard, type TwoQuery } from "@/lib/custom/forTwo";
@@ -31,7 +30,7 @@ function useName(initial = "") {
   const clean = text.trim() ? cleanName(text) : undefined;
   const refused = clean && lex ? lex.wordsProblem(clean) : null;
   const value = clean === undefined ? undefined : clean && lex && !refused ? clean : null;
-  const error = refused ?? (clean === null ? `Up to ${TWO_NAME_MAX} letters` : null);
+  const error = refused ?? (clean === null ? `Up to ${TWO_NAME_MAX} letters.` : null);
   return { text, setText, value, error };
 }
 
@@ -116,17 +115,17 @@ export function ForTwo() {
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${s ? `?${s}` : ""}${window.location.hash}`);
   }, [ready, own, date, words.value, nameA.value, nameB.value, choice, chosen, here, home]);
 
-  const dateError = touchedDate && date && !own ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : "";
+  const dateError = touchedDate && date && !own ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : "";
 
   return (
     <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl">
         <div className="mb-2">
-          <Link href="/make/" className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+          <Link href="/make/" className="inline-flex h-11 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
         </div>
-        <h1 className="text-balance text-3xl font-black tracking-tight md:text-5xl">For two</h1>
+        <h1 className="text-balance text-3xl font-medium tracking-tight md:text-5xl">For two</h1>
         <p className="mt-3 max-w-xl text-sm text-neutral-400">One date of you two, and every print it makes.</p>
 
         <form className="mt-6 grid max-w-xl gap-4" onSubmit={(e) => e.preventDefault()} data-two-form>
@@ -177,7 +176,7 @@ export function ForTwo() {
                 error=""
                 onBlur={() => {}}
               />
-              <button type="button" onClick={() => (setChoice("none"), setChanging(false))} className="mt-1 h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+              <button type="button" onClick={() => (setChoice("none"), setChanging(false))} className="mt-1 h-11 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
                 Leave the place out
               </button>
             </div>
@@ -190,7 +189,7 @@ export function ForTwo() {
               ) : (
                 <span>{choice === "none" || noPlaces ? "No place: no sky, no globe" : "Finding your place…"}</span>
               )}
-              <button type="button" onClick={() => setChanging(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+              <button type="button" onClick={() => setChanging(true)} className="-my-2 h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
                 {choice === "none" ? "Add one" : "Change"}
               </button>
             </p>
@@ -218,11 +217,11 @@ export function ForTwo() {
               ) : (
                 <span>Where you live now: optional, for a signpost</span>
               )}
-              <button type="button" onClick={() => setAddingHome(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+              <button type="button" onClick={() => setAddingHome(true)} className="-my-2 h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
                 {home ? "Change" : "Add it"}
               </button>
               {home && (
-                <button type="button" onClick={() => setHomeId(undefined)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+                <button type="button" onClick={() => setHomeId(undefined)} className="-my-2 h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
                   Leave it out
                 </button>
               )}
@@ -231,10 +230,10 @@ export function ForTwo() {
         </form>
 
         <section className="mt-10" aria-labelledby="two-prints">
-          <h2 id="two-prints" className={own ? "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400" : "sr-only"}>
+          <h2 id="two-prints" className={own ? "text-xs text-muted" : "sr-only"}>
             {own ? `From ${customDay({ t: "night", v: 1, p: { d: date } })}` : "Shown with our example"}
           </h2>
-          {!own && <p className="text-xs text-neutral-500">Put in your date.</p>}
+          {!own && <p className="text-xs text-muted">Put in your date.</p>}
           <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4" data-two={own ? "yours" : "example"}>
             {cards.length
               ? cards.map((c) => (
@@ -244,8 +243,8 @@ export function ForTwo() {
                 ))
               : Array.from({ length: 4 }, (_, i) => (
                   <li key={i} aria-hidden>
-                    <div className={`rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
-                      <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" />
+                    <div>
+                      <div className="aspect-[3/4] w-full rounded-control bg-white/[0.03]" />
                     </div>
                   </li>
                 ))}
@@ -276,11 +275,11 @@ function TwoCardView({ made, card }: { made: MadeProduct; card: TwoCard }) {
   }, [make, color]);
   return (
     <div className="group relative isolate" data-card={made.slug}>
-      <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
+      <div className="relative overflow-hidden">
         {shirt && svg ? (
-          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} crop className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+          <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.grid} crop className="w-full" />
         ) : (
-          <div className="aspect-[3/4] w-full animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />
+          <div className="aspect-[3/4] w-full rounded-control bg-white/[0.03]" aria-hidden />
         )}
       </div>
       <div className="mt-2 px-0.5">
@@ -288,7 +287,7 @@ function TwoCardView({ made, card }: { made: MadeProduct; card: TwoCard }) {
           href={`/make/${made.slug}/?make=${make}`}
           data-made={made.slug}
           onClick={() => markFrom("two")}
-          className="block truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
+          className="line-clamp-2 text-[13px] leading-snug text-neutral-100 outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-white"
         >
           {made.name}
         </Link>

@@ -20,7 +20,7 @@ export type Refusal = "brand" | "refused";
 /** The one line shown when words are refused (brand voice: plain, no lecture). */
 export const REFUSAL_LINE: Record<Refusal, string> = {
   brand: "Those words name a brand.",
-  refused: "We don't print that.",
+  refused: "We don’t print that.",
 };
 
 /** Cyrillic and Greek letters that look like Latin ones (lower case; upper case is lowered first). */

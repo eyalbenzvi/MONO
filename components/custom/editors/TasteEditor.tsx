@@ -43,12 +43,12 @@ export default function TasteEditor({ arrival, onChange }: EditorProps) {
     <div className="grid gap-1 text-sm text-neutral-400">
       {source !== "yours" && <p>{source === "friend" ? "Grown from your friend’s taste." : "Grown from the taste this link carries."}</p>}
       {source !== "friend" && friend && (
-        <button type="button" onClick={() => setSource("friend")} className="h-10 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={() => setSource("friend")} className="h-11 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
           Grow your friend’s instead
         </button>
       )}
       {source !== "yours" && complete && (
-        <button type="button" onClick={() => setSource("yours")} className="h-10 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={() => setSource("yours")} className="h-11 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
           Grow yours instead
         </button>
       )}

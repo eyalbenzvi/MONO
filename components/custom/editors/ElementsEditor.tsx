@@ -28,7 +28,7 @@ export default function ElementsEditor({ made, arrival, touched, onChange }: Edi
   const problem = x ? elementsWordProblem(text) : null;
   const unspelt = x && !problem && !spellable(x) ? spellProblem(x) : null;
   const refused = x && !problem && lex ? lex.wordsProblem(x) : null;
-  const error = !x ? (touched ? "Type a name or a word" : null) : (problem ?? refused ?? unspelt);
+  const error = !x ? (touched ? "Add a name or a word." : null) : (problem ?? refused ?? unspelt);
   const spec: CustomSpec | null = x && !error && lex ? { t: "elements", v: 1, p: { x } } : null;
 
   useReportSpec(spec, onChange);

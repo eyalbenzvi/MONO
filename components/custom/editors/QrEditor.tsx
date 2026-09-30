@@ -18,7 +18,7 @@ export default function QrEditor({ arrival, touched, onChange }: EditorProps) {
   const lex = useLexicon(!!typed.trim());
 
   const { a: addr, http } = tidyLink(typed);
-  const problem = addr ? linkProblem(typed) : touched ? "Type a web address" : null;
+  const problem = addr ? linkProblem(typed) : touched ? "Add a web address." : null;
   // The address prints, so its words go through the lexicon too ("n1ke.com" names a brand).
   const refused = addr && !problem && lex ? lex.wordsProblem(addr) : null;
   const error = problem ?? refused;

@@ -72,8 +72,8 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => `${p.x.length} landmarks`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "A page of a travel journal: every landmark you've stood in front of, drawn.",
-  from: "The landmarks you've seen",
+  line: "A page of a travel journal: every landmark you’ve stood in front of, drawn.",
+  from: "The landmarks you’ve seen",
   group: "travels",
   base: "contours",
   bases: ["contours", "type-data"],

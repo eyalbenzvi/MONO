@@ -102,7 +102,7 @@ export function RowsField({ id, noun, columns, rows, setRows, min = 1, max, erro
           ),
       )}
       {rows.length < max && (
-        <button type="button" onClick={() => setRows([...rows, blank])} className="h-10 w-fit text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={() => setRows([...rows, blank])} className="h-11 w-fit text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
           Add {article} {noun}
         </button>
       )}

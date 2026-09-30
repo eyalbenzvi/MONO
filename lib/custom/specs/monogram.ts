@@ -28,9 +28,9 @@ export function initialsProblem(raw: string): string | null {
   const bad = [...t].find((c) => !/[A-Z]/.test(c));
   if (bad) {
     const plain = bad.normalize("NFKD").replace(/\p{M}/gu, "");
-    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only";
+    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only.";
   }
-  return t.length < 2 || t.length > 3 ? "Two or three letters" : null;
+  return t.length < 2 || t.length > 3 ? "Two or three letters." : null;
 }
 
 /** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */

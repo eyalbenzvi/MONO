@@ -11,7 +11,7 @@ import { useUiStore } from "@/store/useUiStore";
 import { CATEGORY_LABELS, SHIRT_CATEGORIES, type ShirtCategory } from "@/types/shirt";
 
 const INPUT =
-  "h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white [color-scheme:dark]";
+  "h-11 w-full rounded-control bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-white [color-scheme:dark]";
 
 /** Offer a cleared upload to the catalogue (the Open Call, simulated): opened from a review status's quiet link. */
 export function OfferSheet() {
@@ -73,15 +73,15 @@ function Sheet({ uploadId, onClose }: { uploadId: string; onClose: () => void })
         ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label="Offer it to the catalogue"
+        aria-label="Offer to the catalogue"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 380, damping: 36 }}
-        className="no-scrollbar fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] max-w-lg space-y-4 overflow-y-auto rounded-t-3xl bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-4 ring-1 ring-white/10"
+        className="no-scrollbar fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] max-w-lg space-y-4 overflow-y-auto rounded-t-sheet bg-ink-900 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-4 ring-1 ring-white/10"
       >
         <div className="flex items-start justify-between">
-          <h2 className="pt-2 text-base font-bold">Offer it to the catalogue</h2>
+          <h2 className="pt-2 text-base font-medium">Offer to the catalogue</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
             <Icon name="x" className="h-5 w-5" />
           </button>
@@ -101,7 +101,7 @@ function Sheet({ uploadId, onClose }: { uploadId: string; onClose: () => void })
           </select>
         </label>
         <label className="block text-xs font-medium text-neutral-400">
-          Credit <span className="text-neutral-500">optional</span>
+          Credit <span className="text-muted">optional</span>
           <input value={credit} maxLength={28} placeholder="Anonymous" onChange={(e) => setCredit(e.target.value)} className={`${INPUT} mt-1`} />
         </label>
         <p className="text-sm text-neutral-300">{OFFER_LINE}</p>
@@ -110,7 +110,7 @@ function Sheet({ uploadId, onClose }: { uploadId: string; onClose: () => void })
           It&rsquo;s my own work, and I allow MONO to sell it.
         </label>
         {error && <p className="text-xs text-neutral-300">{error}</p>}
-        <button type="button" disabled={!own} onClick={offer} className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black disabled:opacity-40">
+        <button type="button" disabled={!own} onClick={offer} className="flex h-12 w-full items-center justify-center rounded-control bg-white text-sm font-medium text-black disabled:opacity-40">
           Offer it
         </button>
       </motion.div>

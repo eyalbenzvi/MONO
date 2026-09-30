@@ -26,8 +26,8 @@ describe("Your Name in Elements: the spec", () => {
     const { elementsWordProblem } = await import("@/lib/custom/specs/elements");
     expect(elementsWordProblem("Alice")).toBeNull();
     expect(elementsWordProblem("Zoë")).toBe('Letters A to Z only. Try "E".');
-    expect(elementsWordProblem("A")).toBe("2 to 12 letters");
-    expect(elementsWordProblem("Al ice")).toBe("Letters A to Z only, one word");
+    expect(elementsWordProblem("A")).toBe("2 to 12 letters.");
+    expect(elementsWordProblem("Al ice")).toBe("Letters A to Z only, one word.");
     expect(wordsProblem("N1KE")).not.toBeNull();
     expect(wordsProblem(ex.x)).toBeNull();
   });

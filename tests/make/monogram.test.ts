@@ -22,7 +22,7 @@ describe("Your Monogram: the spec", () => {
   it("says what's wrong with the initials in one line", () => {
     expect(initialsProblem("n.d.")).toBeNull();
     expect(initialsProblem("É")).toBe('Letters A to Z only. Try "E".');
-    expect(initialsProblem("ABCD")).toBe("Two or three letters");
+    expect(initialsProblem("ABCD")).toBe("Two or three letters.");
   });
   it("fits a link", () => {
     const big = spec({ x: "WMW", s: "stack", y: 2100 })!;

@@ -32,7 +32,7 @@ export function automatonWordProblem(raw: string): string | null {
     const plain = bad.normalize("NFKD").replace(/\p{M}/gu, "");
     return /^[A-Za-z]$/.test(plain) ? `ASCII letters only. Try "${plain}".` : "Letters and numbers.";
   }
-  return t.length > AUTOMATON_MAX ? `Up to ${AUTOMATON_MAX} characters` : null;
+  return t.length > AUTOMATON_MAX ? `Up to ${AUTOMATON_MAX} characters.` : null;
 }
 
 /** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */

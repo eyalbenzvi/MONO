@@ -6,7 +6,7 @@ import type { Places } from "@/lib/custom/data";
 import { FIRST_YEAR, LAST_YEAR, type PlaceRow } from "@/lib/custom/specKit";
 import { INPUT } from "./types";
 
-const LINK = "h-10 px-1 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
+const LINK = "h-11 px-1 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
 
 /** A row as typed: the city, and its year as text (a year being typed isn't a year yet). */
 export interface PlaceDraft {
@@ -41,7 +41,7 @@ export function PlacesField({ places, value, onChange, max, label, years = true,
   return (
     <div>
       <p className="mb-1 text-xs font-medium text-neutral-400" id="make-places-list">
-        {label} <span className="text-neutral-500">up to {max}</span>
+        {label} <span className="text-muted">up to {max}</span>
       </p>
       <ol aria-labelledby="make-places-list" className="space-y-1" data-places>
         {value.map((row, i) => {
@@ -61,7 +61,7 @@ export function PlacesField({ places, value, onChange, max, label, years = true,
                   aria-label={`${c?.name ?? "Place"}: year`}
                   aria-invalid={badYear}
                   onChange={(e) => onChange(value.map((r, j) => (j === i ? { ...r, year: e.target.value.replace(/\D/g, "").slice(0, 4) } : r)))}
-                  className={`${INPUT} h-10 w-[4.5rem] shrink-0 px-2 text-center font-mono`}
+                  className={`${INPUT} h-11 w-[4.5rem] shrink-0 px-2 text-center font-mono`}
                 />
               )}
               <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${c?.name ?? "place"} up`} className={LINK}>

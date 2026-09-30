@@ -28,16 +28,16 @@ export default function CrosswordEditor({ arrival, touched, onChange }: EditorPr
   const dup = names.find((n, i) => names.indexOf(n) !== i);
   const namesError = !names.length
     ? touched
-      ? `Type ${CROSS_MIN} to ${CROSS_MAX} names`
+      ? `Add ${CROSS_MIN} to ${CROSS_MAX} names.`
       : null
     : bad
       ? `${bad[0]}: ${bad[1]}`
       : dup
         ? `${dup} is there twice. Each name once.`
         : names.length < CROSS_MIN
-          ? `At least ${CROSS_MIN} names`
+          ? `At least ${CROSS_MIN} names.`
           : names.length > CROSS_MAX
-            ? `Up to ${CROSS_MAX} names`
+            ? `Up to ${CROSS_MAX} names.`
             : lex
               ? lex.wordsProblem(names.join(" "))
               : null;

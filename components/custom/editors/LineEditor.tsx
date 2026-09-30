@@ -47,11 +47,11 @@ export default function LineEditor({ arrival, onChange }: EditorProps) {
                 setExample(next);
                 setS(exampleStroke(next));
               }}
-              className="h-8 text-neutral-300 underline underline-offset-4 hover:text-white"
+              className="h-11 text-neutral-300 underline underline-offset-4 hover:text-white"
             >
               Example lines
             </button>
-            <button type="button" onClick={() => setS(null)} className="h-8 text-neutral-300 underline underline-offset-4 hover:text-white">
+            <button type="button" onClick={() => setS(null)} className="h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
               Clear
             </button>
           </span>
@@ -61,7 +61,7 @@ export default function LineEditor({ arrival, onChange }: EditorProps) {
           role="img"
           aria-labelledby="make-pad"
           data-pad
-          className="relative aspect-square w-full touch-none select-none rounded-2xl bg-white/[0.04] ring-1 ring-white/10"
+          className="relative aspect-square w-full touch-none select-none rounded-control bg-white/[0.04] ring-1 ring-white/10"
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
             setDrawing([at(e)]);
@@ -81,7 +81,7 @@ export default function LineEditor({ arrival, onChange }: EditorProps) {
           <svg viewBox="0 0 1000 1000" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
             {shown.length > 1 && <polyline points={shown.map(([x, y]) => `${x.toFixed(0)},${y.toFixed(0)}`).join(" ")} fill="none" stroke="white" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />}
           </svg>
-          {!s && !drawing && <p className="absolute inset-0 flex items-center justify-center text-sm text-neutral-500">Draw here</p>}
+          {!s && !drawing && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">Draw here</p>}
         </div>
       </div>
       <Segmented label="Repeats" options={LINE_REPEATS} value={n} onChange={setN} />

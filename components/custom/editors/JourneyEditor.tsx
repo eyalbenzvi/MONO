@@ -8,7 +8,7 @@ import { JOURNEY_MAX, PRODUCT, journeyProblem } from "@/lib/custom/specs/journey
 
 import type { EditorProps } from "./types";
 
-const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
+const LINK = "h-11 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
 
 /**
  * Your Journey: the places in the order you went (one place field adds the
@@ -50,7 +50,7 @@ export default function JourneyEditor({ arrival, touched, onChange }: EditorProp
     <>
       <div>
         <p className="mb-1 text-xs font-medium text-neutral-400" id="make-journey-stops">
-          The places, in order <span className="text-neutral-500">up to {JOURNEY_MAX}</span>
+          The places, in order <span className="text-muted">up to {JOURNEY_MAX}</span>
         </p>
         <ol aria-labelledby="make-journey-stops" className="space-y-0.5">
           {ids.map((id, i) => {

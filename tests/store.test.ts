@@ -158,17 +158,16 @@ describe("taste store", () => {
   });
 });
 
-describe("taste store v2 (F10)", () => {
-  it("migrates v1 → v2 with an empty Daily 5 and counts Discover swipes after the taste test", async () => {
+describe("taste store migration (F10, v6)", () => {
+  it("migrates v1 → v6 and keeps swiping after the taste test", async () => {
     storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: [W1], onboardingSeen: true, calibrationAcknowledged: true }, version: 1 }));
     const { useTasteStore } = await fresh();
     await useTasteStore.persist.rehydrate();
     expect(useTasteStore.getState().likedIds).toEqual([W1]);
-    expect(useTasteStore.getState().daily).toMatchObject({ count: 0, streak: 0, last: null });
     useTasteStore.getState().fillDeck(); // as AppShell does after hydration
     useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "like");
-    expect(useTasteStore.getState().daily.count).toBe(1);
-    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(5);
+    expect(useTasteStore.getState().likedIds).toHaveLength(2);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(6);
   });
 });
 

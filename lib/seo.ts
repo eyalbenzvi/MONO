@@ -33,7 +33,7 @@ export function productTitle(s: Pick<SeoFields, "title" | "subject" | "style">) 
   const kind = s.subject.toLowerCase().includes(styleWord) || SAYS_ITS_KIND.test(s.subject) ? s.subject : `${s.subject} ${s.style}`;
   // Photographs are named after their subject: "Gray Seal Photo Tee", not "Gray Seal — Gray Seal Photo Tee".
   if (s.title === s.subject) return `${kind} Tee | MONO`;
-  return `${s.title} — ${kind} Tee | MONO`;
+  return `${s.title} · ${kind} Tee | MONO`;
 }
 
 /**
@@ -72,3 +72,6 @@ export function pageMeta({ path, title, description, image = OG_DEFAULT, index =
     ...(index ? {} : { robots: { index: false } }),
   };
 }
+
+/** The client product route's title before its design is known (the page then names the design). */
+export const PRODUCT_FALLBACK_TITLE = "Tee | MONO";

@@ -1,39 +1,26 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Icon } from "@/components/Icon";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { MonoLogo } from "@/components/MonoLogo";
-import { useCartCount } from "@/store/cartStore";
 import { useUiStore } from "@/store/useUiStore";
 
-const TABS = [
-  { href: "/", label: "Discover", match: (p: string) => p === "/" },
-  { href: "/shop/", label: "Shop", match: (p: string) => p.startsWith("/shop") },
-  // Make: one ink, for one person (lib/custom/products).
-  { href: "/make/", label: "Make", match: (p: string) => p.startsWith("/make") },
-];
-
+/**
+ * The top of every page: only the wordmark, which leads home (Discover).
+ * Navigation is at the bottom (TabBar), within the thumb.
+ */
 export function Header() {
   const pathname = usePathname() ?? "/";
-  const activeTab = TABS.findIndex((t) => t.match(pathname));
-  const hydrated = useUiStore((s) => s.hydrated);
-  const cartCount = useCartCount();
   const hidden = useUiStore((s) => s.headerHidden);
   const setHeaderHidden = useUiStore((s) => s.setHeaderHidden);
-  const debug = useUiStore((s) => s.debug);
-  const setDebug = useUiStore((s) => s.setDebug);
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   // Always show the header again when the route changes.
   useEffect(() => setHeaderHidden(false), [pathname, setHeaderHidden]);
 
-  // Publish the header's height (--header-h): main reserves it, and the
-  // shop's sticky filter bar sits right under the header while it shows.
+  // Publish the header's height (--header-h): main reserves it, and pages
+  // that scroll under it start below it.
   const ref = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     if (!ref.current) return;
@@ -44,146 +31,23 @@ export function Header() {
     return () => ro.disconnect();
   }, []);
 
-  // Hidden debug switch: tap the logo 5 times within 2 s.
-  const taps = useRef<number[]>([]);
-  const onLogoClick = () => {
-    const now = Date.now();
-    taps.current = [...taps.current.filter((t) => now - t < 2000), now];
-    if (taps.current.length >= 5) {
-      taps.current = [];
-      setDebug(!debug);
-      useUiStore.getState().showToast(debug ? "Debug off" : "Debug on");
-    }
-  };
-
   return (
     // Over the content, solid, and moved only by a transform: hiding and
     // showing never changes the layout, so nothing under the finger jumps.
     <motion.header
       ref={ref}
-      className="app-backdrop absolute inset-x-0 top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)] max-[339px]:px-3"
+      className="absolute inset-x-0 top-0 z-header bg-[#0a0a0a] px-4 pt-[env(safe-area-inset-top)]"
       initial={false}
       animate={{ y: hidden ? "-100%" : "0%" }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
       // Tabbing into it while it's slid away brings it back.
       onFocusCapture={() => hidden && setHeaderHidden(false)}
     >
-      {/* Narrow phones: everything must stay on screen (the bag above all).
-          Below 400 px the tabs and icons tighten, below 340 the logo gives
-          way. The Daily 5 streak lives in "Your taste" only. */}
-      <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[1fr_auto_1fr] 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        {/* The logo tells the brand story (Discover is the home tab). */}
-        <Link href="/about/" onClick={onLogoClick} className="flex items-center gap-3 justify-self-start rounded-md transition active:scale-95 max-[339px]:hidden" aria-label="About MONO">
-          <MonoLogo size="sm" />
+      <div className="mx-auto flex h-12 max-w-5xl items-center justify-center 2xl:max-w-[1400px]">
+        <Link href="/" aria-label="MONO, home" className="flex min-h-11 min-w-11 items-center justify-center px-2">
+          <MonoLogo />
         </Link>
-
-        {/* Rendered afresh once mounted: a page served at another address
-            (404.html at /shop/…) hydrates with the markup built for the 404,
-            and hydration never patches class names — the active tab's text
-            would stay grey on the white pill. */}
-        <nav key={mounted ? "client" : "server"} aria-label="Sections" className="justify-self-center">
-          <div className="relative grid w-60 grid-cols-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 max-[399px]:w-52 max-[339px]:w-[11.5rem]">
-            {/* One pill, always rendered, moved under the active tab: the
-                markup never depends on the URL, so a page served at another
-                address (404.html) still hydrates cleanly. */}
-            {/* Moved by a CSS transition (on the compositor), so it slides even while a page is busy loading. */}
-            <span
-              aria-hidden
-              className="absolute inset-y-1 left-1 w-[calc((100%-8px)/3)] rounded-full bg-white transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.3,1.25,0.5,1)] motion-reduce:transition-none"
-              style={{ transform: `translateX(${Math.max(0, activeTab) * 100}%)`, opacity: activeTab === -1 ? 0 : 1 }}
-            />
-            {TABS.map((tab) => {
-              const active = tab.match(pathname);
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`relative z-10 flex h-9 items-center justify-center rounded-full px-1 text-sm font-semibold transition-colors max-[399px]:text-[13px] max-[399px]:tracking-tight max-[339px]:text-xs ${
-                    active ? "text-black" : "text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Room for the bag kept even while it's hidden, so the tabs never shift when it appears. */}
-        <div className="flex min-w-[5.5rem] shrink-0 items-center justify-end gap-2 justify-self-end max-[399px]:gap-2.5">
-          {/* Minimal: the bag shows only once it holds something; Saved,
-              taste and the rest live in the personal area (the heart flies here). */}
-          <AnimatePresence initial={false}>
-            {hydrated && (cartCount > 0 || pathname.startsWith("/cart")) && (
-              <motion.span key="bag" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }}>
-                <IconButton label={`Bag (${cartCount})`} count={cartCount} href="/cart/" active={pathname.startsWith("/cart")}>
-                  <Icon name="shopping-bag" className="h-5 w-5" />
-                </IconButton>
-              </motion.span>
-            )}
-          </AnimatePresence>
-          <IconButton label="You: taste, saved, orders" count={0} href="/me/" active={pathname.startsWith("/me")} savedTarget>
-            <Icon name="user" className="h-5 w-5" />
-          </IconButton>
-        </div>
       </div>
     </motion.header>
-  );
-}
-
-function IconButton({
-  label,
-  count,
-  onClick,
-  href,
-  savedTarget,
-  active = false,
-  children,
-}: {
-  label: string;
-  count: number;
-  onClick?: () => void;
-  href?: string;
-  /** Where the "liked" heart flies to. */
-  savedTarget?: boolean;
-  /** The page this icon leads to is open: filled, and aria-current. */
-  active?: boolean;
-  children: React.ReactNode;
-}) {
-  // Quiet icons: no filled circles, just the glyph (white pill when its page is open).
-  const className = `relative flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${
-    active ? "bg-white text-black" : "text-neutral-200 hover:bg-white/10"
-  }`;
-  const badge = (
-    <AnimatePresence>
-      {count > 0 && (
-        <motion.span
-          key={count}
-          initial={{ scale: 0.4, opacity: 0 }}
-          // Pop on every change: 0.4 → 1.35 → 1.
-          animate={{ scale: [0.4, 1.35, 1], opacity: 1 }}
-          exit={{ scale: 0.4, opacity: 0 }}
-          transition={{ duration: 0.35, delay: savedTarget ? 0.4 : 0 }}
-          className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 font-mono text-xs font-bold ${
-            active ? "bg-black text-white ring-1 ring-white" : "bg-white text-black"
-          }`}
-        >
-          {count}
-        </motion.span>
-      )}
-    </AnimatePresence>
-  );
-  const target = savedTarget ? { "data-saved-target": "" } : {};
-  return href ? (
-    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className} {...target}>
-      {children}
-      {badge}
-    </Link>
-  ) : (
-    <button type="button" onClick={onClick} aria-label={label} className={className} {...target}>
-      {children}
-      {badge}
-    </button>
   );
 }

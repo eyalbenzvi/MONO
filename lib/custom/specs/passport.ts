@@ -55,7 +55,7 @@ export const detail = (p: Params) => `${p.x.length} ${p.x.length === 1 ? "stamp"
 
 export const PRODUCT: ProductMeta<Params> = {
   line: "A page of entry stamps, one for every border that let you in.",
-  from: "The countries you've been stamped into",
+  from: "The countries you’ve been stamped into",
   group: "travels",
   base: "guilloche",
   bases: ["guilloche", "terminal-data"],

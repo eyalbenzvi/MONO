@@ -36,7 +36,7 @@ export default function BirthEditor({ arrival, touched, onChange }: EditorProps)
     };
   }, []);
   const [hello, setHello] = useState<Hello>(a?.h ?? "girl");
-  const name = useText(a?.n ?? "", BABY_NAME_MAX, lex, { required: "Type the name", touched });
+  const name = useText(a?.n ?? "", BABY_NAME_MAX, lex, { required: "Add the name.", touched });
   const [date, setDate] = useState(a?.d ?? "");
   const [time, setTime] = useState(a?.t ?? "");
   const [imperial, setImperial] = useState(a?.u === "i");
@@ -57,7 +57,7 @@ export default function BirthEditor({ arrival, touched, onChange }: EditorProps)
   const ln = scaled(len, 10);
   const wtOk = wt === undefined || (wt !== null && wt >= WEIGHT[sys][0] && wt <= WEIGHT[sys][1] && (!imperial || (ounces ?? 0) < 16));
   const lnOk = ln === undefined || (ln !== null && ln >= LENGTH[sys][0] && ln <= LENGTH[sys][1]);
-  const shortName = name.value && name.value.length < BABY_NAME_MIN ? `At least ${BABY_NAME_MIN} letters` : null;
+  const shortName = name.value && name.value.length < BABY_NAME_MIN ? `At least ${BABY_NAME_MIN} letters.` : null;
   const dateOk = !!parseDate(date);
   const timeOk = !time || !!parseTime(time);
   const ok = !!lex && !!name.value && !shortName && dateOk && timeOk && wtOk && lnOk;
@@ -77,18 +77,18 @@ export default function BirthEditor({ arrival, touched, onChange }: EditorProps)
   }, [key, city]);
 
   const w = WEIGHT[sys], l = LENGTH[sys];
-  const weightError = wtOk ? null : imperial ? `Between ${Math.floor(w[0] / 16)} lb ${w[0] % 16} oz and ${Math.floor(w[1] / 16)} lb ${w[1] % 16} oz` : `Between ${w[0] / 1000} and ${w[1] / 1000} kg`;
-  const lengthError = lnOk ? null : `Between ${l[0] / 10} and ${l[1] / 10} ${imperial ? "in" : "cm"}`;
+  const weightError = wtOk ? null : imperial ? `Between ${Math.floor(w[0] / 16)} lb ${w[0] % 16} oz and ${Math.floor(w[1] / 16)} lb ${w[1] % 16} oz.` : `Between ${w[0] / 1000} and ${w[1] / 1000} kg.`;
+  const lengthError = lnOk ? null : `Between ${l[0] / 10} and ${l[1] / 10} ${imperial ? "in" : "cm"}.`;
 
   return (
     <>
       <Segmented label="Across the top" options={HELLOS} value={hello} onChange={setHello} format={(h) => HELLO_NAMES[h]} />
       <TextField id="make-birth-name" label="Name" state={{ ...name, error: name.error ?? shortName }} max={BABY_NAME_MAX} placeholder={ex.n} />
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Born" error={!dateOk && (touched || date) ? "A day between 1900 and 2100" : null} htmlFor="make-birth-date">
+        <Field label="Born" error={!dateOk && (touched || date) ? "Between 1900 and 2100." : null} htmlFor="make-birth-date">
           <input id="make-birth-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
         </Field>
-        <Field label="At" hint="optional" error={timeOk ? null : "A time as 04:12"} htmlFor="make-birth-time">
+        <Field label="At" hint="optional" error={timeOk ? null : "A time as 04:12."} htmlFor="make-birth-time">
           <input id="make-birth-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} className={INPUT} />
         </Field>
       </div>

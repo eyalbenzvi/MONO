@@ -1,36 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 /**
- * The top of both Make pages: the switch between the two tracks (links
- * that replace the history entry, so Back leaves Make rather than
- * toggling), with the track's filter beside it. The H1 is for screen
- * readers only: the header's Make tab already says where this is. From
- * ours is /make/, from yours /make/yours/.
+ * Make's two tracks, in words: Personalise (/make/) and Upload
+ * (/make/yours/). Links that replace the history entry, so Back leaves Make
+ * rather than toggling. `row`: in a bottom control row (the Make index);
+ * otherwise at the top of the page (the upload flow, whose bottom is its
+ * buy bar).
  */
-export function MakeHeader({ track, filter }: { track: "ours" | "yours"; filter?: ReactNode }) {
+export function MakeSwitch({ track }: { track: "ours" | "yours" }) {
   const tab = (t: "ours" | "yours", label: string, href: string) => (
     <Link
       href={href}
       replace
       aria-current={track === t ? "page" : undefined}
-      className={`flex h-10 flex-1 items-center justify-center rounded-full text-sm font-semibold transition ${track === t ? "bg-white text-black" : "text-neutral-300 hover:text-white"}`}
+      className={`flex h-11 min-w-11 items-center justify-center whitespace-nowrap px-2 text-[13px] font-medium transition-colors duration-150 ${track === t ? "text-white underline underline-offset-4" : "text-muted hover:text-white"}`}
     >
       {label}
     </Link>
   );
   return (
-    <div>
-      <h1 className="sr-only">Make</h1>
-      <div className="flex items-center gap-3">
-        <nav aria-label="Make" className="flex min-w-0 flex-1 gap-1 rounded-full bg-white/[0.06] p-1 ring-1 ring-white/10 sm:max-w-xs sm:flex-none sm:basis-80" data-make-switch>
-          {tab("ours", "From ours", "/make/")}
-          {tab("yours", "From yours", "/make/yours/")}
-        </nav>
-        {filter && <div className="ml-auto">{filter}</div>}
-      </div>
+    <nav aria-label="Make" className="flex items-center" data-make-switch>
+      {tab("ours", "Personalise", "/make/")}
+      <span aria-hidden className="text-muted">
+        ·
+      </span>
+      {tab("yours", "Upload", "/make/yours/")}
+    </nav>
+  );
+}
+
+/** What Make is, in one quiet line (the page's heading). */
+export const MAKE_LINE = "Our prints, made yours. Or print your own.";
+
+/** The top of the upload flow: the heading line and the two tracks. */
+export function MakeHeader({ track }: { track: "ours" | "yours" }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-3">
+      <h1 className="py-2 text-[13px] text-muted">{MAKE_LINE}</h1>
+      <MakeSwitch track={track} />
     </div>
   );
 }

@@ -24,9 +24,9 @@ export function elementsWordProblem(raw: string): string | null {
   const bad = [...t].find((c) => !/[A-Z]/.test(c));
   if (bad) {
     const plain = bad.normalize("NFKD").replace(/\p{M}/gu, "");
-    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only, one word";
+    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only, one word.";
   }
-  return t.length < ELEMENTS_LEN[0] || t.length > ELEMENTS_LEN[1] ? `${ELEMENTS_LEN[0]} to ${ELEMENTS_LEN[1]} letters` : null;
+  return t.length < ELEMENTS_LEN[0] || t.length > ELEMENTS_LEN[1] ? `${ELEMENTS_LEN[0]} to ${ELEMENTS_LEN[1]} letters.` : null;
 }
 
 /** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */

@@ -60,10 +60,10 @@ export function CityField({ places, value, onChange, error, onBlur, label = "Pla
           else if (e.key === "Enter" && open && matches[active]) (e.preventDefault(), choose(matches[active]));
           else if (e.key === "Escape" && open) (e.preventDefault(), e.stopPropagation(), setOpen(false));
         }}
-        className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white"
+        className="h-11 w-full rounded-control bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-white"
       />
       {open && text.trim() && !(value && text === cityLabel(value)) && places && (
-        <ul id={listId} role="listbox" aria-label="Places" className="mt-1 overflow-hidden rounded-xl bg-ink-850 ring-1 ring-white/10">
+        <ul id={listId} role="listbox" aria-label="Places" className="mt-1 overflow-hidden rounded-control bg-ink-850 ring-1 ring-white/10">
           {matches.length ? (
             matches.map((c, i) => (
               <li
@@ -74,15 +74,15 @@ export function CityField({ places, value, onChange, error, onBlur, label = "Pla
                 // Chosen before the input's blur closes the list.
                 onPointerDown={(e) => (e.preventDefault(), choose(c))}
                 onPointerEnter={() => setActive(i)}
-                className={`flex h-10 cursor-pointer items-center gap-1 truncate px-3 text-sm ${i === active ? "bg-white/10 text-white" : "text-neutral-300"}`}
+                className={`flex h-11 cursor-pointer items-center gap-1 truncate px-3 text-sm ${i === active ? "bg-white/10 text-white" : "text-neutral-300"}`}
               >
                 <span className="truncate">{c.name}</span>
-                <span className="truncate text-neutral-500">, {c.country}</span>
+                <span className="truncate text-muted">, {c.country}</span>
               </li>
             ))
           ) : (
             <li role="option" aria-selected={false} aria-disabled className="flex h-10 items-center px-3 text-sm text-neutral-400">
-              No match. Try the nearest city
+              No match. Try the nearest city.
             </li>
           )}
         </ul>

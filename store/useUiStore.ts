@@ -32,6 +32,8 @@ interface UiState {
   swipeQueue: { action: SwipeAction; nonce: number }[];
   /** Set by undo so the restored card flies back in from where it left. */
   undoFx: { id: string; action: SwipeAction; nonce: number } | null;
+  /** The last Discover swipe, for a moment: the strip above the card says it, with Undo. */
+  swiped: { id: string; action: SwipeAction; nonce: number } | null;
   toast: ToastState | null;
   /** Open dialogs (zoom, share, sheets, the taste-test screen): while any is, the page's shortcuts stand down. */
   dialogs: number;
@@ -43,8 +45,6 @@ interface UiState {
   lastCity: number | null;
   /** The Discover card's picture is zoomed in place (swipe keys wait). */
   cardZoomed: boolean;
-  /** The Saved drawer is open (opened from the personal area). */
-  savedOpen: boolean;
 
   debug: boolean;
   headerHidden: boolean;
@@ -87,7 +87,6 @@ interface UiState {
   setCustom: (id: string, spec: CustomSpec | null) => void;
   setLastCity: (id: number) => void;
   setCardZoomed: (on: boolean) => void;
-  setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
@@ -137,11 +136,11 @@ export const useUiStore = create<UiState>()((set) => ({
   isFlipped: false,
   swipeQueue: [],
   undoFx: null,
+  swiped: null,
   toast: null,
   dialogs: 0,
   zoomId: null,
   cardZoomed: false,
-  savedOpen: false,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
   showToast: (message, action) => set({ toast: { message, action, nonce: nonce() } }),
@@ -155,7 +154,6 @@ export const useUiStore = create<UiState>()((set) => ({
     }),
   setLastCity: (lastCity) => set({ lastCity }),
   setCardZoomed: (cardZoomed) => set({ cardZoomed }),
-  setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
   shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE, query: "", facets: [] },

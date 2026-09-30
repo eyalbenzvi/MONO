@@ -54,16 +54,16 @@ export default function SignpostEditor({ arrival, touched, onChange }: EditorPro
   return (
     <>
       <Segmented label="Make" options={["post", "since"] as const} value={mode} onChange={setMode} format={(m) => (m === "since" ? "Two places, since" : "Home and places")} />
-      <CityField places={places} value={home} onChange={(c) => setHomeId(c ? c.id : null)} error={touched && !home ? "Choose a city" : ""} onBlur={() => {}} label={since ? "One place" : "Home"} />
+      <CityField places={places} value={home} onChange={(c) => setHomeId(c ? c.id : null)} error={touched && !home ? "Choose a city." : ""} onBlur={() => {}} label={since ? "One place" : "Home"} />
       {since ? (
         <>
-          <CityField id="custom-place-other" places={places} value={other} onChange={(c) => setOtherId(c ? c.id : null)} error={touched && !other ? "Choose a city" : clash ? "Two different places" : ""} onBlur={() => {}} label="The other place" />
-          <Field label="Since" error={y === null || (touched && !y) ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-signpost-year">
+          <CityField id="custom-place-other" places={places} value={other} onChange={(c) => setOtherId(c ? c.id : null)} error={touched && !other ? "Choose a city." : clash ? "Two different places." : ""} onBlur={() => {}} label="The other place" />
+          <Field label="Since" error={y === null || (touched && !y) ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-signpost-year">
             <input id="make-signpost-year" value={year} inputMode="numeric" maxLength={4} placeholder="2016" onChange={(e) => setYear(e.target.value)} className={INPUT} />
           </Field>
         </>
       ) : (
-        <PlacesField places={places} value={drafts} onChange={setDrafts} max={SIGNPOST_MAX} label="Places" years={false} error={clash ? "Each place once, and not home" : touched && !drafts.length ? "Add a place" : null} />
+        <PlacesField places={places} value={drafts} onChange={setDrafts} max={SIGNPOST_MAX} label="Places" years={false} error={clash ? "Each place once, and not home." : touched && !drafts.length ? "Add a place." : null} />
       )}
       <Switch label="Miles" checked={miles} onChange={setMiles} />
     </>

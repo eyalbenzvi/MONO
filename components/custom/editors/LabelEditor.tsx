@@ -19,10 +19,10 @@ export default function LabelEditor({ arrival, touched, onChange }: EditorProps)
   const a = arrival?.t === "label" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const name = useText(a?.n ?? "", LABEL_NAME_MAX, lex, { required: "Type a name", touched });
+  const name = useText(a?.n ?? "", LABEL_NAME_MAX, lex, { required: "Add a name.", touched });
   const [born, setBorn] = useState(a?.b ? String(a.b) : "");
   const place = useText(a?.pl ?? "", LABEL_PLACE_MAX, lex);
-  const medium = useText(a?.md ?? LABEL_MEDIUMS[0], LABEL_LINE_MAX, lex, { required: "Type a medium, or pick one of ours", touched });
+  const medium = useText(a?.md ?? LABEL_MEDIUMS[0], LABEL_LINE_MAX, lex, { required: "Add a medium, or pick one of ours.", touched });
   const credit = useText(a ? (a.cr ?? "") : LABEL_CREDITS[0], LABEL_LINE_MAX, lex);
   const [date, setDate] = useState(a?.d ?? "");
   const b = yearOf(born, FIRST_YEAR, LAST_YEAR);
@@ -46,7 +46,7 @@ export default function LabelEditor({ arrival, touched, onChange }: EditorProps)
     <>
       <TextField id="make-label-name" label="Name" state={name} max={LABEL_NAME_MAX} placeholder={ex.n} />
       <div className="grid grid-cols-[6rem_1fr] gap-3">
-        <Field label="Born" hint="optional" error={b === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-label-born">
+        <Field label="Born" hint="optional" error={b === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-label-born">
           <input id="make-label-born" value={born} inputMode="numeric" maxLength={4} placeholder={String(ex.b)} onChange={(e) => setBorn(e.target.value)} className={INPUT} />
         </Field>
         <TextField id="make-label-place" label="Where" hint="optional" state={place} max={LABEL_PLACE_MAX} placeholder={ex.pl} />
@@ -59,7 +59,7 @@ export default function LabelEditor({ arrival, touched, onChange }: EditorProps)
         <TextField id="make-label-credit" label="Credit line" hint="optional" state={{ ...credit, error: credit.error ?? crLong }} max={LABEL_LINE_MAX} suggestions={LABEL_CREDITS} />
         {another(credit, LABEL_CREDITS)}
       </div>
-      <Field label="Acquired" hint="optional: the accession number" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-label-date">
+      <Field label="Acquired" hint="optional: the accession number" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-label-date">
         <input id="make-label-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
       </Field>
     </>

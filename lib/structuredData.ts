@@ -3,6 +3,7 @@
  * the exported HTML by scripts/tools/postbuild.ts — not rendered by React,
  * so it isn't repeated in each page's React payload.
  */
+import { MAKE_PRICE } from "@/lib/prices";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/cart";
 import { mockupPath } from "@/lib/images";
 import { SITE_URL, ogImage } from "@/lib/seo";
@@ -48,7 +49,7 @@ const POLICIES = [
     "@id": `${SITE_URL}/#returns`,
     applicableCountry: COUNTRIES,
     returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-    merchantReturnDays: 30,
+    merchantReturnDays: STORE_POLICY.returnDays,
     returnMethod: "https://schema.org/ReturnByMail",
     returnFees: "https://schema.org/FreeReturn",
   },
@@ -141,7 +142,7 @@ export function makeJsonLd(m: { slug: string; name: string; line: string }) {
         offers: {
           "@type": "Offer",
           url,
-          price: STORE_POLICY.customPrice.toFixed(2),
+          price: MAKE_PRICE.toFixed(2),
           priceCurrency: "USD",
           priceValidUntil: PRICE_VALID_UNTIL,
           availability: "https://schema.org/InStock",

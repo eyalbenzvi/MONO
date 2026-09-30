@@ -89,9 +89,9 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
 
   const all = tried || false;
   const errors = {
-    date: (touched.date || all) && !dateOk ? `A date from ${FIRST_YEAR} to ${lastYear}.` : "",
-    time: (touched.time || all) && time && !parseTime(time) ? "Pick a time, or leave it empty" : "",
-    year: (touched.year || all) && t === "moon" && !spec ? `A year from ${FIRST_YEAR} to ${LAST_YEAR}.` : "",
+    date: (touched.date || all) && !dateOk ? `Between ${FIRST_YEAR} and ${lastYear}.` : "",
+    time: (touched.time || all) && time && !parseTime(time) ? "Pick a time, or leave it empty." : "",
+    year: (touched.year || all) && t === "moon" && !spec ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : "",
   };
 
   return (
@@ -150,7 +150,7 @@ export default function DateEditor({ made, arrival, touched: tried, onChange }: 
               Seen from <span className="text-neutral-200">{city ? cityLabel(city) : "…"}</span>
               {!linked && city ? " (your time zone)" : ""}
             </span>
-            <button type="button" onClick={() => setChangingPlace(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+            <button type="button" onClick={() => setChangingPlace(true)} className="-my-2 h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
               Change
             </button>
           </p>

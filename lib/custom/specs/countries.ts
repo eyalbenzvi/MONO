@@ -115,8 +115,8 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => `${unpackCountries(p.x)!.length} countries`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Every country you've been to, hatched on a map of the world.",
-  from: "The countries you've been to",
+  line: "Every country you’ve been to, hatched on a map of the world.",
+  from: "The countries you’ve been to",
   group: "travels",
   base: "contours",
   bases: ["contours", "celestial"],

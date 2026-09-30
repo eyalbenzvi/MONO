@@ -33,9 +33,9 @@ export const shopId = (submittedAt: number) => `mono-u-${submittedAt.toString(36
 
 export const OFFER_LINE = "$6 a tee, $10 a pair. You keep the rights. We review it again.";
 export const OFFER_STATE_LINE: Record<OfferState, string> = {
-  offered: "Offered. We look at it again.",
+  offered: "Submitted. We’ll review it.",
   accepted: "Accepted. In the shop now.",
   declined: "Not this time.",
   withdrawn: "Withdrawn.",
 };
-export const SALES_LINE = "Sales: none yet (this is a demo)";
+export const SALES_LINE = "No sales yet.";

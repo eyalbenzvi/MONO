@@ -19,7 +19,7 @@ export default function SamplerEditor({ arrival, touched, onChange }: EditorProp
   const a = arrival?.t === "sampler" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const name = useText(a?.n ?? "", SAMPLER_NAME_MAX, lex, { required: "Type a name", touched });
+  const name = useText(a?.n ?? "", SAMPLER_NAME_MAX, lex, { required: "Add a name.", touched });
   const words = useText(a?.w ?? "", SAMPLER_WORDS_MAX, lex);
   const [year, setYear] = useState(a?.y ? String(a.y) : "");
   const [b, setB] = useState<Border>(a?.b ?? "diamonds");
@@ -38,7 +38,7 @@ export default function SamplerEditor({ arrival, touched, onChange }: EditorProp
     <>
       <div className="grid grid-cols-[1fr_6rem] gap-3">
         <TextField id="make-sampler-name" label="Name" state={{ ...name, error: name.error ?? nameBad }} max={SAMPLER_NAME_MAX} placeholder={ex.n} />
-        <Field label="Year" hint="optional" error={y === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-sampler-year">
+        <Field label="Year" hint="optional" error={y === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-sampler-year">
           <input id="make-sampler-year" value={year} inputMode="numeric" maxLength={4} placeholder={String(ex.y)} onChange={(e) => setYear(e.target.value)} className={INPUT} />
         </Field>
       </div>
@@ -54,7 +54,7 @@ export default function SamplerEditor({ arrival, touched, onChange }: EditorProp
       </Field>
       <div className="grid grid-cols-3 gap-2">
         {mo.map((m, i) => (
-          <Field key={i} label={["Left", "Middle", "Right"][i]} hint={i ? "optional" : undefined} error={i === 0 && touched && !motifs.length ? "Choose a motif" : null} htmlFor={`make-sampler-motif${i}`}>
+          <Field key={i} label={["Left", "Middle", "Right"][i]} hint={i ? "optional" : undefined} error={i === 0 && touched && !motifs.length ? "Choose a motif." : null} htmlFor={`make-sampler-motif${i}`}>
             <select id={`make-sampler-motif${i}`} value={m} onChange={(e) => setMo(mo.map((x, j) => (j === i ? (e.target.value as Motif | "") : x)))} className={INPUT}>
               <option value="">None</option>
               {MOTIFS.map((v) => (

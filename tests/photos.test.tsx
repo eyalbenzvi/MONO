@@ -179,8 +179,8 @@ describe("taste store v4: the new dimension, for people who already have a profi
     expect(s.preferenceVector).toEqual({ ...v3, photographic: 0.5 });
     expect(s.likedIds).toEqual([W1]);
     s.toggleSaved(B4);
-    // Stored at the current version (v5: see the content overhaul's migration in tests/overhaul).
-    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(5);
+    // Stored at the current version (v6: the gamification removal; see tests/r2-stage1).
+    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(6);
   });
 
   it("someone who finished the taste test before the photographs isn't sent back into it; the photos are dealt next", async () => {

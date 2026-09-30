@@ -7,7 +7,7 @@ import { Field, nameLine, unprintable, useLexicon } from "./Field";
 import { INPUT } from "./types";
 
 const LABELS = ["The title", "The line under it", "The line under that"];
-const LINK = "h-8 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
+const LINK = "h-11 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
 /** A caption line as typed: null (ours), or the visitor's text (maybe half typed, or "" to hide the line). */
 export type CapDraft = (string | null)[];
@@ -18,7 +18,7 @@ export type CapDraft = (string | null)[];
  * can't be hidden. `lex` null: still loading (no verdict yet on the words).
  */
 export function capLineProblem(text: string, i: number, rule: CapRule, lex: { wordsProblem: (s: string) => string | null } | null): string | null {
-  if (text === "") return rule.hide?.[i] ? null : "This line can't be left empty. Reset it, or type a line.";
+  if (text === "") return rule.hide?.[i] ? null : "This line can’t be left empty. Reset it, or type a line.";
   const max = (rule.max ?? CAP_MAX)[i];
   const clean = cleanWords(text, max);
   if (!clean || clean !== text.replace(/\s+/g, " ").trim()) return unprintable(text) ? nameLine(text, max) : `Up to ${max} letters and numbers.`;
@@ -59,7 +59,7 @@ export function CaptionField({ ours, value, onChange, rule, follows }: { ours: L
   };
   const edited = value.filter((v) => v !== null).length;
   return (
-    <div className="rounded-2xl ring-1 ring-white/10" data-caption>
+    <div className="rounded-control ring-1 ring-white/10" data-caption>
       <button type="button" aria-expanded={open} aria-controls={`${id}-lines`} onClick={() => setOpen((o) => !o)} className="flex h-11 w-full items-center justify-between px-3 text-left text-sm text-neutral-200">
         <span>Edit the text under the print{edited ? <span className="text-neutral-400"> · {edited} yours</span> : null}</span>
         <span aria-hidden className="text-neutral-400">

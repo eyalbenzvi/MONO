@@ -37,7 +37,7 @@ export function Field({ label, hint, error, note, htmlFor, children }: { label: 
       {control}
       {error && (
         <p id={errId} role="alert" className="mt-1.5 flex items-start gap-1.5 break-words text-xs font-medium text-white [overflow-wrap:anywhere]">
-          <span aria-hidden className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-black text-black">
+          <span aria-hidden className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-medium text-black">
             !
           </span>
           {error}

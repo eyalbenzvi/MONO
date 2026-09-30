@@ -29,9 +29,9 @@ export function crossWordProblem(raw: string): string | null {
   const bad = [...t].find((c) => !/[A-Z]/.test(c));
   if (bad) {
     const plain = bad.normalize("NFKD").replace(/\p{M}/gu, "");
-    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only, one word each";
+    return /^[A-Z]$/.test(plain) ? `Letters A to Z only. Try "${plain}".` : "Letters A to Z only, one word each.";
   }
-  return t.length < CROSS_LEN[0] || t.length > CROSS_LEN[1] ? `${CROSS_LEN[0]} to ${CROSS_LEN[1]} letters` : null;
+  return t.length < CROSS_LEN[0] || t.length > CROSS_LEN[1] ? `${CROSS_LEN[0]} to ${CROSS_LEN[1]} letters.` : null;
 }
 
 /** The names of a spec's `x`. */

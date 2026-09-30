@@ -4,7 +4,7 @@ import { pageMeta } from "@/lib/seo";
 
 export const metadata: Metadata = pageMeta({
   path: "/make/yours/",
-  title: "From yours — Make | MONO",
+  title: "Upload · Make | MONO",
   description: "Your photo or drawing, printed in one ink on a black or white tee. Converted and checked on your device.",
 });
 

@@ -55,16 +55,16 @@ export function tidyLink(typed: string): { a: string; http: boolean } {
 /** What's wrong with a typed address, in one line, or null. */
 export function linkProblem(typed: string): string | null {
   const { a } = tidyLink(typed);
-  if (!a) return "Type a web address";
-  if (/\s/.test(a)) return "No spaces in a web address";
+  if (!a) return "Add a web address.";
+  if (/\s/.test(a)) return "No spaces in a web address.";
   const bad = [...a].find((c) => !SAFE.test(c));
-  if (bad) return `A web address can’t hold "${bad}"`;
-  if (a.length > LINK_MAX) return `Up to ${LINK_MAX} characters`;
+  if (bad) return `A web address can’t hold "${bad}".`;
+  if (a.length > LINK_MAX) return `Up to ${LINK_MAX} characters.`;
   const [host, rest] = split(a);
   if (host.includes(":")) return host.split(":")[0].includes(".") ? "No port numbers" : "Only web addresses (https://)";
-  if (host.includes("@")) return "No names or passwords in the address";
-  if (!HOST.test(host)) return host.includes(".") ? "That domain doesn’t look right" : "Add the domain, like example.org";
-  if (!REST.test(rest)) return "A % must be followed by two hex digits";
+  if (host.includes("@")) return "No names or passwords in the address.";
+  if (!HOST.test(host)) return host.includes(".") ? "That domain doesn’t look right" : "Add the domain, like example.org.";
+  if (!REST.test(rest)) return "A % must be followed by two hex digits.";
   return linkOk(a) ? null : "That address doesn’t look right";
 }
 

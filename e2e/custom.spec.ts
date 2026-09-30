@@ -11,9 +11,9 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   await hydrated(page);
   await page.getByRole("link", { name: "Make", exact: true }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
-  await expect(page.locator("h1")).toHaveText("Make");
+  await expect(page.locator("h1")).toHaveText("Our prints, made yours. Or print your own.");
   // The two tracks behind one switch; From ours grouped by what you arrive with.
-  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("Personalise");
   const groups = await page.locator("section h2").allTextContents();
   expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label));
   // For two is a card among the dated prints, to its page.
@@ -26,7 +26,7 @@ test("Make is in plain sight: a header tab and a way in from the designs it's dr
   MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Ten swipes first$|^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
   // From yours is the other page, not further down this one.
   await expect(page.getByText("Start with a file")).toHaveCount(0);
-  await expect(page.locator("[data-make-switch]").getByRole("link", { name: "From yours" })).toHaveAttribute("href", /\/make\/yours\/$/);
+  await expect(page.locator("[data-make-switch]").getByRole("link", { name: "Upload" })).toHaveAttribute("href", /\/make\/yours\/$/);
   // Each card is a real print (For two's too), baked at build time: the index draws nothing itself.
   await expect(page.locator("img[data-card-baked]")).toHaveCount(lines.length + 1);
   await expect(page.locator("canvas[data-custom]")).toHaveCount(0);
@@ -174,7 +174,7 @@ test("Your words go through the lexicon: a brand or a slur is refused in one lin
   await title.fill("n1k3");
   await expect(page.getByText("Those words name a brand.")).toBeVisible();
   await title.fill("1 4 8 8");
-  await expect(page.getByText("We don't print that.")).toBeVisible();
+  await expect(page.getByText("We don’t print that.")).toBeVisible();
   // The address keeps the last printable print.
   await page.waitForTimeout(400);
   expect(page.url()).toBe(url);

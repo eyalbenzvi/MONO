@@ -23,13 +23,13 @@ export default function ReceiptEditor({ arrival, touched, onChange }: EditorProp
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
   const [kind, setKind] = useState<ReceiptKind>(a?.k ?? "receipt");
-  const head = useText(a?.h ?? "", HEAD_MAX, lex, { required: kind === "terms" ? "Type a heading" : "Type a name for the top", touched });
+  const head = useText(a?.h ?? "", HEAD_MAX, lex, { required: kind === "terms" ? "Add a heading." : "Add a name for the top.", touched });
   const [date, setDate] = useState(a?.d ?? "");
   const [items, setItems] = useState<Row[]>(a?.k === "receipt" ? a.x!.map((v) => ({ v })) : RECEIPT_ITEMS.slice(0, 4).map((v) => ({ v })));
   const [clauses, setClauses] = useState<Row[]>(a?.k === "terms" ? a.x!.map((v) => ({ v })) : TERMS_CLAUSES.slice(0, 4).map((v) => ({ v })));
   const [stars, setStars] = useState<number>(a?.n ?? 5);
-  const quote = useText(a?.q ?? REVIEW_QUOTES[0], QUOTE_MAX, lex, { required: "Type the review", touched });
-  const by = useText(a?.by ?? "", REVIEWER_MAX, lex, { required: "Who wrote it?", touched });
+  const quote = useText(a?.q ?? REVIEW_QUOTES[0], QUOTE_MAX, lex, { required: "Add the review.", touched });
+  const by = useText(a?.by ?? "", REVIEWER_MAX, lex, { required: "Add who wrote it.", touched });
   const [since, setSince] = useState(a?.y ? String(a.y) : "");
 
   const rows = kind === "terms" ? clauses : items;
@@ -37,7 +37,7 @@ export default function ReceiptEditor({ arrival, touched, onChange }: EditorProp
   const cells = rows.map((r) => checkText(r.v, max, lex));
   const lines = cells.flatMap((c) => (c.value ? [c.value] : []));
   const few = kind === "terms" ? lines.length < CLAUSES_MIN : lines.length < 1;
-  const errors = cells.map((c, i) => ({ v: c.error ?? (touched && few && !c.value && i < (kind === "terms" ? CLAUSES_MIN : 1) ? (kind === "terms" ? `At least ${CLAUSES_MIN} clauses` : "Add an item") : null) }));
+  const errors = cells.map((c, i) => ({ v: c.error ?? (touched && few && !c.value && i < (kind === "terms" ? CLAUSES_MIN : 1) ? (kind === "terms" ? `At least ${CLAUSES_MIN} clauses.` : "Add an item.") : null) }));
   const termsLong = kind === "terms" && !few && !termsFit(lines) ? TOO_LONG : null;
   const quoteLong = quote.value && !quoteFit(quote.value) ? TOO_LONG : null;
   const dateOk = kind === "receipt" ? !!parseDate(date) : !date || !!parseDate(date);
@@ -62,7 +62,7 @@ export default function ReceiptEditor({ arrival, touched, onChange }: EditorProp
           <TextField id="make-receipt-quote" label="The review" state={{ ...quote, error: quote.error ?? quoteLong }} max={QUOTE_MAX} suggestions={REVIEW_QUOTES} rows={2} />
           <div className="grid grid-cols-[1fr_7rem] gap-3">
             <TextField id="make-receipt-by" label="Reviewed by" state={by} max={REVIEWER_MAX} placeholder="Noa" />
-            <Field label="Partner since" hint="optional" error={y === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-receipt-since">
+            <Field label="Partner since" hint="optional" error={y === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-receipt-since">
               <input id="make-receipt-since" value={since} inputMode="numeric" maxLength={4} placeholder="2016" onChange={(e) => setSince(e.target.value)} className={INPUT} />
             </Field>
           </div>
@@ -70,7 +70,7 @@ export default function ReceiptEditor({ arrival, touched, onChange }: EditorProp
       ) : (
         <>
           <TextField id="make-receipt-head" label={kind === "terms" ? "Heading" : "At the top"} state={head} max={HEAD_MAX} placeholder={kind === "terms" ? "The Terms of Us" : ex.h} />
-          <Field label={kind === "terms" ? "In effect from" : "The day"} hint={kind === "terms" ? "optional" : "its barcode"} error={dateOk || !touched ? null : "A day between 1900 and 2100"} htmlFor="make-receipt-date">
+          <Field label={kind === "terms" ? "In effect from" : "The day"} hint={kind === "terms" ? "optional" : "its barcode"} error={dateOk || !touched ? null : "Between 1900 and 2100."} htmlFor="make-receipt-date">
             <input id="make-receipt-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
           </Field>
           <RowsField

@@ -18,13 +18,13 @@ export default function SignEditor({ arrival, touched, onChange }: EditorProps) 
   const a = arrival?.t === "sign" ? arrival.p : null;
   const lex = useLexicon(true);
   const [style, setStyle] = useState<SignStyle>(a?.s ?? "warning");
-  const street = useText(a?.s === "street" ? a.n! : "", STREET_MAX, lex, { required: "Type the street's name", touched });
+  const street = useText(a?.s === "street" ? a.n! : "", STREET_MAX, lex, { required: "Add the street’s name.", touched });
   const under = useText(a?.s === "street" ? (a.l ?? "") : "", SIGN_LINE_MAX, lex);
-  const arc = useText(a?.s === "plaque" ? a.n! : "", ARC_MAX, lex, { required: "Type the words round the top", touched });
+  const arc = useText(a?.s === "plaque" ? a.n! : "", ARC_MAX, lex, { required: "Add the words round the top.", touched });
   const [rows, setRows] = useState<Row[]>(a?.s === "plaque" ? a.x!.map((v) => ({ v })) : [{ v: "" }]);
   const [pc, setPc] = useState<Pictogram>(a?.pc ?? "mug");
   const [panel, setPanel] = useState(a ? a.pn === 1 : true);
-  const warn = useText(a?.s === "warning" ? a.l! : "", SIGN_LINE_MAX, lex, { required: "Type the warning", touched });
+  const warn = useText(a?.s === "warning" ? a.l! : "", SIGN_LINE_MAX, lex, { required: "Add the warning.", touched });
 
   const cells = rows.map((r) => checkText(r.v, PLAQUE_LINE_MAX, lex));
   const lines = cells.flatMap((c) => (c.value ? [c.value] : []));
@@ -49,7 +49,7 @@ export default function SignEditor({ arrival, touched, onChange }: EditorProps) 
       {style === "plaque" && (
         <>
           <TextField id="make-sign-arc" label="Round the top" state={arc} max={ARC_MAX} placeholder="Maya Cohen lived here" />
-          <RowsField id="make-sign" noun="line" columns={[{ key: "v", label: "Line", max: PLAQUE_LINE_MAX }]} rows={rows} setRows={setRows} max={PLAQUE_LINES} errors={cells.map((c, i) => ({ v: c.error ?? (touched && i === 0 && !lines.length ? "Type a line" : null) }))} placeholders={[{ v: "Reader of maps" }, { v: "and eater of toast" }, { v: "1990 to date" }]} />
+          <RowsField id="make-sign" noun="line" columns={[{ key: "v", label: "Line", max: PLAQUE_LINE_MAX }]} rows={rows} setRows={setRows} max={PLAQUE_LINES} errors={cells.map((c, i) => ({ v: c.error ?? (touched && i === 0 && !lines.length ? "Add a line." : null) }))} placeholders={[{ v: "Reader of maps" }, { v: "and eater of toast" }, { v: "1990 to date" }]} />
         </>
       )}
       {style === "warning" && (

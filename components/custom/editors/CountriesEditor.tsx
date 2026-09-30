@@ -59,21 +59,21 @@ export default function CountriesEditor({ arrival, touched, onChange }: EditorPr
     <>
       <div className="grid grid-cols-[1fr_6rem] gap-3">
         <TextField id="make-countries-name" label="Whose" hint="optional" state={name} max={COUNTRIES_NAME_MAX} placeholder={ex.n} />
-        <Field label="Since" hint="optional" error={y === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-countries-since">
+        <Field label="Since" hint="optional" error={y === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-countries-since">
           <input id="make-countries-since" value={since} inputMode="numeric" maxLength={4} placeholder={String(ex.y)} onChange={(e) => setSince(e.target.value)} className={INPUT} />
         </Field>
       </div>
-      <Field label="Countries" hint={`${counted([...picked])} of ${OF}${picked.size ? "" : " · tick the ones you've been to"}`} error={touched && !picked.size ? "Tick a country" : null} htmlFor="make-countries-filter">
+      <Field label="Countries" hint={`${counted([...picked])} of ${OF}${picked.size ? "" : " · tick the ones you’ve been to"}`} error={touched && !picked.size ? "Tick a country." : null} htmlFor="make-countries-filter">
         <input id="make-countries-filter" type="search" value={filter} placeholder="Find a country" autoComplete="off" onChange={(e) => setFilter(e.target.value)} className={INPUT} />
       </Field>
-      <ul className="max-h-72 overflow-y-auto rounded-xl ring-1 ring-white/10" aria-label="Countries">
+      <ul className="max-h-72 overflow-y-auto rounded-control ring-1 ring-white/10" aria-label="Countries">
         {!countries && <li className="px-3 py-2 text-sm text-neutral-400">Loading the map…</li>}
         {shown.map((c) => (
           <li key={c.a3}>
             <label className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm text-neutral-200 hover:bg-white/5">
               <input type="checkbox" checked={picked.has(c.a3)} onChange={() => toggle(c.a3)} className="h-4 w-4 accent-white" />
               <span className="flex-1">{c.name}</span>
-              {NOT_COUNTED.includes(c.a3) && <span className="text-xs text-neutral-500">drawn, not counted</span>}
+              {NOT_COUNTED.includes(c.a3) && <span className="text-xs text-muted">drawn, not counted</span>}
             </label>
           </li>
         ))}

@@ -1,7 +1,6 @@
 import { fnv1aUnits } from "@/lib/hash";
 import {
   FEATURE_KEYS,
-  type FeatureKey,
   type FeatureVector,
   type ShirtProduct,
   type SwipeAction,
@@ -320,18 +319,3 @@ export function profileSharpness(userVec: UserProfileVector): number {
   return clamp01(spread / (FEATURE_KEYS.length * 0.25));
 }
 
-/** The feature a swipe moved most — used for the "learning" chip after each swipe. */
-export function biggestShift(before: UserProfileVector, after: UserProfileVector, action: SwipeAction) {
-  let best: FeatureKey | null = null;
-  let bestDelta = 0;
-  for (const k of FEATURE_KEYS) {
-    const d = after[k] - before[k];
-    // like → largest increase; pass → largest decrease
-    const signed = action === "like" ? d : -d;
-    if (signed > bestDelta) {
-      bestDelta = signed;
-      best = k;
-    }
-  }
-  return best;
-}

@@ -14,7 +14,7 @@ export default function SnowflakeEditor({ made, arrival, touched, onChange }: Ed
   const lex = useLexicon(!!name.trim());
   const n = cleanWords(name, SNOWFLAKE_MAX);
   const refused = n && lex ? lex.wordsProblem(n) : null;
-  const error = !name.trim() ? (touched ? "Type a name" : null) : !n ? nameLine(name, SNOWFLAKE_MAX) : refused;
+  const error = !name.trim() ? (touched ? "Add a name." : null) : !n ? nameLine(name, SNOWFLAKE_MAX) : refused;
   const spec: CustomSpec | null = n && lex && !refused ? { t: "snowflake", v: 1, p: { n } } : null;
 
   useReportSpec(spec, onChange);

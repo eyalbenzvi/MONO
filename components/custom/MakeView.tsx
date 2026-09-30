@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { Icon } from "@/components/Icon";
-import { SizeSelector, STAGE_BG } from "@/components/ui";
-import { TeeChoice } from "@/components/shop/ProductView";
+import { BUTTON_PRIMARY, SizeSelector, STAGE_BG, TeeChoice, TrustLine, useSizeRequired } from "@/components/ui";
+import { useDock } from "@/hooks/useDock";
 import { ZoomViewer } from "@/components/ZoomViewer";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { CustomPrint } from "@/components/custom/CustomPrint";
@@ -15,7 +15,7 @@ import { CaptionField, capFromDrafts, type CapDraft } from "@/components/custom/
 import { useLexicon } from "@/components/custom/editors/Field";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
-import { lineKey, pairPrice, pairStatus, unitPrice } from "@/lib/cart";
+import { ctaLabel, lineKey, pairPrice, pairStatus, unitPrice } from "@/lib/cart";
 import { loadCanvasFonts } from "@/lib/custom/canvasSvg";
 import { checkPrint, type PrintCheck } from "@/lib/custom/printCheck";
 import { MADE, MAKE_GROUPS, madeBySlug, type MadeProduct } from "@/lib/custom/products";
@@ -26,15 +26,12 @@ import type { Lines } from "@/lib/custom/kit";
 import type { Cap } from "@/lib/custom/specKit";
 import { drawOnly } from "@/lib/custom/svg";
 import { capRuleFor, wordsTitle, decodeMake, encodeMake, validate, type CustomSpec, type TemplateId } from "@/lib/custom/spec";
-import { formatPrice } from "@/lib/format";
 import { SIZES } from "@/lib/images";
-import { STORE_POLICY } from "@/lib/store-policy";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { scrollIntoViewQuietly, useHydrated, useUiStore } from "@/store/useUiStore";
-import { useFlash } from "@/hooks/useFlash";
 import { updateQuery } from "@/lib/url";
-import { SIZE_LABELS, otherColor, teeColor, type BaseColor } from "@/types/shirt";
+import { otherColor, teeColor, type BaseColor } from "@/types/shirt";
 
 // Prints on this page are drawn, never saved: no minifying (lib/custom/svg).
 drawOnly();
@@ -312,14 +309,12 @@ function Maker({ made }: { made: MadeProduct }) {
   // The bag.
   const addToCart = useCartStore((s) => s.addToCart);
   const addPair = useCartStore((s) => s.addPair);
-  const [added, flashAdded] = useFlash();
-  const [nudge, setNudge] = useState(0);
-  const sizeRow = useRef<HTMLDivElement>(null);
-  // Without a size, the sizes come into view (the bar at the foot of a phone is far from them).
-  const needSize = () => {
-    scrollIntoViewQuietly(sizeRow.current);
-    setNudge((n) => n + 1);
-  };
+  // What was just added (this print, size and colour): the button then leads to the bag, until any of them changes.
+  const [addedKey, setAddedKey] = useState<string | null>(null);
+  const choiceKey = `${state.spec ? JSON.stringify(state.spec) : ""}|${size}|${both ? "both" : color}|${state.batch?.length ?? 0}`;
+  const inBag = !editing && addedKey === choiceKey;
+  // Without a size, the sizes come into view with the focus (the bar at the foot of a phone is far from them).
+  const { nudge, groupRef: sizeRow, require: needSize, status: sizeStatus } = useSizeRequired("make");
   const [tried, setTried] = useState(false);
   const unit = shirt ? unitPrice({ custom: true }, shirt) : 0;
   const pairTotal = pairPrice(spec ?? undefined);
@@ -327,6 +322,11 @@ function Maker({ made }: { made: MadeProduct }) {
   // A tap before the print is ready (a slow phone: the drawing code or the word list still loading) is kept, and done once it is, if that's soon.
   const [waiting, setWaiting] = useState(0);
   const onBuy = () => {
+    if (inBag) {
+      track("sticky_checkout_click", { from: "make" });
+      useUiStore.getState().requestCheckout();
+      return router.push("/cart/");
+    }
     if (!state.spec) {
       setTried(true);
       setWaiting(Date.now());
@@ -374,7 +374,7 @@ function Maker({ made }: { made: MadeProduct }) {
         ? addPair(made.id, size, { source: "product", custom: state.spec })
         : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;
-    flashAdded(true);
+    setAddedKey(choiceKey);
     // A small like of the design it's drawn like (its taste, never the inputs; once per design).
     const base = SHIRTS.find((s) => s.variant === made.base);
     if (base) useTasteStore.getState().likeCustom(base.id);
@@ -387,11 +387,14 @@ function Maker({ made }: { made: MadeProduct }) {
     setWaiting(0);
     if (Date.now() - waiting < WAIT_MS) void loadCanvasFonts().then(() => onBuyRef.current());
   }, [waiting, renderer, state.spec]);
-  // The size in every label that adds, the price as it was.
-  const sized = size ? ` · ${SIZE_LABELS[size]}` : "";
-  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(both ? pairTotal : unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : state.batch?.length ? `Add ${state.batch.length} to bag${sized} · ${formatPrice(unit * state.batch.length)}` : `Add to bag${sized} · ${formatPrice(unit)}`;
-  // The mini bag confirms an add; the button says so for a moment, then is itself again.
-  const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
+  // One pattern everywhere: "[verb] · [size] · [price]", the price always in it (made for you: MAKE_PRICE, the pair MAKE_PAIR_PRICE).
+  const buyLabel = inBag
+    ? "In your bag · Checkout"
+    : editing
+      ? ctaLabel({ verb: "Save changes", size, price: unit, both, pair: pairTotal })
+      : state.batch?.length
+        ? ctaLabel({ verb: `Add ${state.batch.length} to bag`, size, price: unit * state.batch.length })
+        : ctaLabel({ size, price: unit, both, pair: pairTotal, status: pair });
 
   // How many caption lines are the visitor's (analytics counts them, never the words).
   const capEdited = (state.spec ? ((state.spec.p as { cap?: Cap }).cap ?? []) : []).filter((c) => c !== null).length;
@@ -452,7 +455,7 @@ function Maker({ made }: { made: MadeProduct }) {
                 router.back();
               }
             }}
-            className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white"
+            className="inline-flex h-11 items-center gap-1.5 text-sm text-neutral-400 hover:text-white"
           >
             <Icon name="arrow-left" className="h-4 w-4" /> Make
           </Link>
@@ -461,7 +464,7 @@ function Maker({ made }: { made: MadeProduct }) {
               type="button"
               onClick={() => useUiStore.getState().openShare(made.id, color, encodeMake(current.spec))}
               aria-label="Share"
-              className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
+              className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:bg-white/10 hover:text-white"
             >
               <Icon name="share-2" className="h-5 w-5" />
             </button>
@@ -484,7 +487,7 @@ function Maker({ made }: { made: MadeProduct }) {
               ) : svg ? (
                 <CustomMockup shirt={shirt} svg={svg} color={color} sizes={SIZES.product} crop={narrow} className="h-full max-h-full" />
               ) : (
-                <div className="aspect-[512/704] h-full animate-pulse rounded-2xl bg-white/[0.03]" aria-hidden />
+                <div className="aspect-[512/704] h-full rounded-control bg-white/[0.03]" aria-hidden />
               )}
             </button>
             {!state.blocked && (
@@ -494,6 +497,7 @@ function Maker({ made }: { made: MadeProduct }) {
                   original={shirt.baseColor}
                   colors={shirt.colors}
                   noBoth={!pairOk}
+                  pairPrice={pairTotal}
                   onChange={(c) => {
                     setBoth(c === "both");
                     if (c !== "both") setColor(made.id, c);
@@ -504,7 +508,7 @@ function Maker({ made }: { made: MadeProduct }) {
             <button
               type="button"
               onClick={() => setView((v) => (v === "tee" ? "print" : "tee"))}
-              className="absolute bottom-3 right-3 flex h-10 items-center rounded-full bg-black/55 px-3 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-md"
+              className="absolute bottom-3 right-3 flex h-11 items-center rounded-control bg-black/55 px-3 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-md"
             >
               {view === "tee" ? "Print" : "On the tee"}
             </button>
@@ -512,7 +516,7 @@ function Maker({ made }: { made: MadeProduct }) {
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{made.name}</h1>
+            <h1 className="text-2xl font-medium tracking-tight md:text-3xl">{made.name}</h1>
             <p className="mt-1 text-sm text-neutral-400">{made.line}</p>
             <form
               className="mt-5 grid gap-4"
@@ -524,7 +528,7 @@ function Maker({ made }: { made: MadeProduct }) {
               noValidate
             >
               {Editor && arrival !== undefined && (
-                <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />}>
+                <Suspense fallback={<div className="h-24 rounded-control bg-white/[0.03]" aria-hidden />}>
                   <Editor made={made} arrival={arrival} touched={tried} onChange={onEditor} />
                 </Suspense>
               )}
@@ -536,16 +540,16 @@ function Maker({ made }: { made: MadeProduct }) {
               )}
               {!state.blocked && (
                 <>
-                  <div className="mt-1 scroll-mb-28" ref={sizeRow}>
-                    <SizeSelector key={nudge} value={size} onChange={(s) => setSize(made.id, s)} highlight={nudge > 0 && !size} />
+                  <div className="mt-1 scroll-mb-28">
+                    <SizeSelector key={nudge} value={size} onChange={(s) => setSize(made.id, s)} highlight={nudge > 0 && !size} groupRef={sizeRow} />
+                    {sizeStatus}
                   </div>
-                  <button type="button" onClick={onBuy} disabled={!hydrated} className="hidden h-12 items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40 md:flex" aria-live="polite">
-                    <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4" />
-                    {buyLabel}
+                  <button type="button" onClick={onBuy} disabled={!hydrated} className={`hidden md:flex ${BUTTON_PRIMARY}`} aria-live="polite">
+                    <span className="tabular-nums">{buyLabel}</span>
                   </button>
-                  <p className="text-xs text-neutral-400">
-                    {STORE_POLICY.customReturns}.{CREDITS[made.template] ? ` ${CREDITS[made.template]}` : ""}
-                  </p>
+                  {/* The promises, from the policy (made-for-you tees: the size-exchange exception). */}
+                  <TrustLine custom />
+                  {CREDITS[made.template] && <p className="text-xs text-muted">{CREDITS[made.template]}</p>}
                   <div>
                     <MoreFrom made={made} />
                   </div>
@@ -556,13 +560,23 @@ function Maker({ made }: { made: MadeProduct }) {
         </div>
       </div>
       {!state.blocked && (
-        <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:hidden">
-          <button type="button" onClick={onBuy} disabled={!hydrated} className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40">
-            <Icon name={added ? "check" : "shopping-bag"} className="h-4 w-4 shrink-0" />
-            <span className="truncate">{buyLabel}</span>
+        <MakeBar>
+          <button type="button" onClick={onBuy} disabled={!hydrated} className={`min-w-0 flex-1 whitespace-nowrap ${BUTTON_PRIMARY}`}>
+            <span className="truncate tabular-nums">{buyLabel}</span>
           </button>
-        </div>
+        </MakeBar>
       )}
+    </div>
+  );
+}
+
+/** Phones: the editor's own bottom bar (the tab bar gives way to it), counted in the dock so a toast sits above it. */
+function MakeBar({ children }: { children: React.ReactNode }) {
+  const bar = useRef<HTMLDivElement>(null);
+  useDock(bar);
+  return (
+    <div ref={bar} className="sticky bottom-0 z-header flex items-center gap-3 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:hidden">
+      {children}
     </div>
   );
 }

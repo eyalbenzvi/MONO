@@ -89,22 +89,22 @@ export default function PlaceEditor({ arrival, onChange }: EditorProps) {
       ) : (
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Latitude" hint="N or S" error={lat && la === null ? "−90 to 90" : null} htmlFor="make-lat">
+            <Field label="Latitude" hint="N or S" error={lat && la === null ? "−90 to 90." : null} htmlFor="make-lat">
               <input id="make-lat" value={lat} inputMode="decimal" autoComplete="off" placeholder="32.08" onChange={(e) => setLat(e.target.value)} aria-invalid={!!lat && la === null} className={`${INPUT} font-mono`} />
             </Field>
-            <Field label="Longitude" hint="E or W" error={lon && lo === null ? "−180 to 180" : null} htmlFor="make-lon">
+            <Field label="Longitude" hint="E or W" error={lon && lo === null ? "−180 to 180." : null} htmlFor="make-lon">
               <input id="make-lon" value={lon} inputMode="decimal" autoComplete="off" placeholder="34.78" onChange={(e) => setLon(e.target.value)} aria-invalid={!!lon && lo === null} className={`${INPUT} font-mono`} />
             </Field>
           </div>
           <p className="flex flex-wrap items-center gap-x-2 text-xs text-neutral-400">
-            <button type="button" onClick={locate} className="h-10 text-neutral-300 underline underline-offset-4 hover:text-white" data-locate>
+            <button type="button" onClick={locate} className="h-11 text-neutral-300 underline underline-offset-4 hover:text-white" data-locate>
               {locating === "busy" ? "Finding…" : "Where I am now"}
             </button>
             <span>{locating === "off" ? "Location is off. Type the place instead." : la !== null && lo !== null ? coords(la, lo) : "Rounded to about a kilometre."}</span>
           </p>
         </div>
       )}
-      <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-date">
+      <Field label="The day" hint="optional" error={dateOk ? null : `Between ${FIRST_YEAR} and ${LAST_YEAR}.`} htmlFor="make-date">
         <input id="make-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
       </Field>
     </>

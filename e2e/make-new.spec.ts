@@ -304,7 +304,7 @@ test("lineup: for the whole team, three shirts go into the bag in one step, each
   for (const [i, n] of ["Dad", "Ari", "Tom"].entries()) await page.locator(`#make-lineup-n${i}`).fill(n);
   await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });
   await page.getByText("For the whole team").tap();
-  const steps = page.getByRole("spinbutton", { name: "How many shirts" });
+  const steps = page.getByRole("spinbutton", { name: "How many tees" });
   await steps.focus();
   for (let i = 0; i < 8; i++) await page.keyboard.press("ArrowDown");
   await expect(steps).toHaveAttribute("aria-valuenow", "3");

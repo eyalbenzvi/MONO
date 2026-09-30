@@ -5,7 +5,6 @@ import { Icon } from "@/components/Icon";
 import { QuickAdd } from "@/components/QuickAdd";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
-import { STAGE_BG } from "@/components/ui";
 import { productHref } from "@/lib/catalog";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 import type { AddSource } from "@/lib/analytics";
@@ -26,6 +25,7 @@ export function ShirtStrip({
   currentId,
   replace = false,
   onOpen,
+  onNavigate,
   source,
 }: {
   shirts: ShirtProduct[];
@@ -41,6 +41,8 @@ export function ShirtStrip({
   /** Replace the current page in history (moving between variations). */
   replace?: boolean;
   onOpen?: (shirt: ShirtProduct) => void;
+  /** Opens the tee itself (e.g. through a sheet's history): the link only names the address. */
+  onNavigate?: (href: string) => void;
   /** Where its quick adds happen (analytics). */
   source?: AddSource;
 }) {
@@ -54,10 +56,16 @@ export function ShirtStrip({
             <Link
               href={productHref(s.id)}
               replace={replace}
-              onClick={() => onOpen?.(s)}
+              onClick={(e) => {
+                onOpen?.(s);
+                if (onNavigate && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
+                  e.preventDefault();
+                  onNavigate(productHref(s.id));
+                }
+              }}
               aria-current={current ? "page" : undefined}
               aria-label={`${s.title}${current ? " (showing)" : ""}`}
-              className={`relative block rounded-xl p-1.5 transition ${STAGE_BG} ${current ? "ring-2 ring-white" : currentId ? "ring-1 ring-white/10 hover:ring-white/40" : ""}`}
+              className={`relative block transition ${current ? "ring-2 ring-white" : currentId ? "ring-1 ring-white/10 hover:ring-white/40" : ""}`}
             >
               {current && (
                 <span className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-white text-black">

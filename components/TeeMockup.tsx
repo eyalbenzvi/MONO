@@ -24,6 +24,8 @@ interface TeeMockupProps {
   sizes: string;
   /** The picture is zoomed (in place or full screen): the print's close-up covers it. */
   zoomed?: boolean;
+  /** Its accessible name, when there's a better one than the title (the design's own description). */
+  alt?: string;
 }
 
 /**
@@ -51,7 +53,7 @@ export function TeeMockup(props: TeeMockupProps) {
   return <BakedMockup {...props} />;
 }
 
-function BakedMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false }: TeeMockupProps) {
+function BakedMockup({ shirt, color: wanted, className = "", style, priority, sizes, zoomed = false, alt }: TeeMockupProps) {
   const color = teeColor(shirt, wanted);
   const page = usePageZoom();
   const base = mockupImage(shirt, color);
@@ -68,7 +70,7 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
   const src = again(base.src);
   const srcSet = base.srcSet?.replace(/(\S+)(\s+\d+w)/g, (_, u: string, w: string) => `${again(u)}${w}`);
   const box = detailBox(shirt, color);
-  const label = `${shirt.title}, worn on a ${color === "black" ? "black" : "white"} tee`;
+  const label = alt ?? `${shirt.title}, printed on the back of a ${color === "black" ? "black" : "white"} tee`;
   if (failed)
     return (
       // z-10: above a card's full-size link even when a hover transform makes this box its own stacking context.
@@ -82,7 +84,7 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
             setFailed(false);
             setAttempt((n) => n + 1);
           }}
-          className="relative z-20 h-9 rounded-full px-4 text-xs font-semibold text-white ring-1 ring-white/30 hover:bg-white/10"
+          className="relative z-20 h-11 rounded-control px-4 text-xs font-medium text-white ring-1 ring-white/30 hover:bg-white/10"
           aria-label={`Try again: ${label}`}
         >
           Try again

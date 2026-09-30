@@ -12,10 +12,10 @@ function parseYears(text: string, b: number, c: number): number[] | string {
   const out = new Set<number>();
   for (const part of text.split(/[,;\s]+/).filter(Boolean)) {
     const m = /^(\d{4})(?:[-–](\d{4}))?$/.exec(part);
-    if (!m) return `Years like 1995, or 2004–2006`;
+    if (!m) return `Years like 1995, or 2004–2006.`;
     const [y0, y1] = [Number(m[1]), Number(m[2] ?? m[1])];
-    if (y1 < y0) return `${part}: the earlier year first`;
-    if (y0 < b || y1 > c) return `Years from ${b} to ${c}`;
+    if (y1 < y0) return `${part}: the earlier year first.`;
+    if (y0 < b || y1 > c) return `Between ${b} and ${c}.`;
     for (let y = y0; y <= y1; y++) out.add(y);
   }
   return [...out].sort((x, y) => x - y);
@@ -46,7 +46,7 @@ export default function RingsEditor({ arrival, touched, onChange }: EditorProps)
 
   const [b, c] = [Number(from), Number(to)];
   const yearOk = (s: string) => /^\d{4}$/.test(s);
-  const yearError = `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
+  const yearError = `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
   const fromError = !yearOk(from) ? (touched || from ? yearError : null) : spanProblem(b, b);
   const toError = fromError ? null : !yearOk(to) ? (touched || to ? yearError : null) : spanProblem(b, c);
   const spanOk = yearOk(from) && yearOk(to) && !fromError && !toError;
@@ -55,8 +55,8 @@ export default function RingsEditor({ arrival, touched, onChange }: EditorProps)
   const sc = spanOk ? parseYears(scars, b, c) : [];
   const both = Array.isArray(g) && Array.isArray(h) ? g.find((y) => h.includes(y)) : undefined;
   const goodError = typeof g === "string" ? g : null;
-  const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can’t be good and hard` : null;
-  const scarError = typeof sc === "string" ? sc : sc.length > SCARS_MAX ? `Up to ${SCARS_MAX} scars` : null;
+  const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can’t be good and hard.` : null;
+  const scarError = typeof sc === "string" ? sc : sc.length > SCARS_MAX ? `Up to ${SCARS_MAX} scars.` : null;
   let spec: CustomSpec | null = null;
   if (spanOk && !goodError && !hardError && !scarError) {
     const m = Array.from({ length: c - b + 1 }, (_, i) => ((g as number[]).includes(b + i) ? MARK_DIGIT.good : (h as number[]).includes(b + i) ? MARK_DIGIT.hard : MARK_DIGIT.normal)).join("");

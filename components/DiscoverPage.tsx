@@ -1,75 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
-import { profileSharpness } from "@/lib/recommendation";
-import { CALIBRATION_TOTAL } from "@/lib/deck";
-import { SHIRTS } from "@/lib/catalog";
-import { archetypeOf, tasteLevel } from "@/lib/taste";
+import { getShirtById } from "@/lib/catalog";
+import { archetypeOf, noteOf } from "@/lib/taste";
 import { TasteSheet } from "@/components/TasteSheet";
-import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
-import { NeedDots } from "@/components/NeedDots";
+import { canUndo, needLine, useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
+import { useHistorySheet } from "@/hooks/useHistorySheet";
 
-/**
- * Phones held sideways hide the strip above the card, so its essentials sit
- * atop the button column: the taste-test counter, then "Your taste".
- */
-function SidewaysStatus() {
-  const { done, total, complete, phase } = useCalibrationProgress();
-  const [sheet, setSheet] = useState(false);
-  return (
-    <div className="hidden justify-center pb-1 pr-[max(env(safe-area-inset-right),16px)] sideways:flex">
-      {phase === "more" ? (
-        <NeedDots />
-      ) : complete ? (
-        <>
-          <button
-            type="button"
-            onClick={() => setSheet(true)}
-            aria-haspopup="dialog"
-            aria-label="Your taste profile"
-            className="flex h-10 items-center rounded-full px-3 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:text-white"
-          >
-            Your taste
-          </button>
-          <TasteSheet open={sheet} onClose={() => setSheet(false)} />
-        </>
-      ) : (
-        <span className="font-mono text-xs text-neutral-300" aria-label={`Taste test: card ${Math.min(done + 1, total)} of ${total}`}>
-          {Math.min(done + 1, total)}/{total}
-        </span>
-      )}
-    </div>
-  );
-}
+/** How long "Saved · Undo" stays in the strip after a swipe. */
+const UNDO_MS = 4000;
+/** The card the one stylist note shows on, if the taste leans clearly by then. */
+const NOTE_CARD = 6;
 
-/**
- * Desktop (≥ 1024 px), until the taste test is done: a narrow column beside
- * the card saying what's going on. Phones get the one-line goal instead.
- */
-function HowItWorks() {
-  const { phase } = useCalibrationProgress();
-  if (phase !== "test") return null;
-  return (
-    <aside className="pointer-events-none absolute left-[max(2rem,calc(50%-210px-22rem))] top-1/3 hidden w-72 lg:block">
-      <h2 className="text-xl font-bold tracking-tight">{CALIBRATION_TOTAL} swipes → your shop.</h2>
-      <ul className="mt-3 space-y-2 text-sm text-neutral-300">
-        <li>→ Like what you&rsquo;d wear, ← pass on the rest.</li>
-        <li>Then the shop ranks all {SHIRTS.length.toLocaleString("en-US")} designs for you.</li>
-      </ul>
-    </aside>
-  );
-}
+/** The first line of the taste test: what the ten cards are for. */
+export const TEST_GOAL = "Ten tees. Keep or pass. We’ll edit the shop to your taste.";
+/** Once the taste is known: what Discover is from then on. */
+export const KNOWN_GOAL = "Discover: every swipe refines your edit.";
 
 /** The top strip keeps one fixed height across phases so the card never jumps. */
 const STRIP = "mx-auto flex h-11 w-full max-w-[420px] shrink-0 flex-col justify-center px-4 outline-none";
 
 export function DiscoverPage() {
   const hydrated = useHydrated();
+  const { complete } = useCalibrationProgress();
+  // The card's details face is a step in the history: Back turns the card back.
+  const isFlipped = useUiStore((s) => s.isFlipped);
+  useHistorySheet("details-card", isFlipped, () => useUiStore.getState().toggleFlip(false));
 
   // Keyboard shortcuts (desktop).
   useEffect(() => {
@@ -107,96 +67,97 @@ export function DiscoverPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Phones held sideways (the `sideways` variant): the strip hides and the
-  // buttons stand in a column beside the card, which keeps the height.
+  // Phones held sideways (the `sideways` variant): the strip moves atop the
+  // button column beside the card, which keeps the height.
   return (
     <div className="flex min-h-0 flex-1 flex-col sideways:flex-row">
+      {/* What the page is, for screen readers and crawlers: the same words as the strip. */}
+      <h1 className="sr-only">{hydrated && complete ? KNOWN_GOAL : TEST_GOAL}</h1>
       <div className="sideways:hidden">{hydrated ? <TopStrip /> : <div className={STRIP} />}</div>
-      {/* In the static HTML too (what the page is, for crawlers and a first paint). */}
-      <HowItWorks />
       <section className="relative min-h-0 flex-1 px-4 pb-1 pt-1 sideways:py-2">
         {hydrated ? <CardStack /> : <CardSkeleton />}
       </section>
       {/* `contents` in portrait (no box); sideways, a column: status + buttons. */}
       <div className="contents sideways:flex sideways:flex-col sideways:justify-center">
-        {hydrated && <SidewaysStatus />}
+        {hydrated && (
+          <div className="hidden w-56 pb-1 pr-[max(env(safe-area-inset-right),16px)] sideways:block">
+            <TopStrip />
+          </div>
+        )}
         <ActionButtons />
       </div>
+      {hydrated && <Announcer />}
       <CalibrationComplete />
     </div>
   );
 }
 
+/** The last swipe, while its Undo is still offered (UNDO_MS); null after. */
+function useRecentSwipe() {
+  const swiped = useUiStore((s) => s.swiped);
+  const undoable = useTasteStore(canUndo);
+  const [live, setLive] = useState<number | null>(null);
+  useEffect(() => {
+    if (!swiped) return setLive(null);
+    setLive(swiped.nonce);
+    const t = setTimeout(() => setLive(null), UNDO_MS);
+    return () => clearTimeout(t);
+  }, [swiped]);
+  return swiped && live === swiped.nonce && undoable ? swiped : null;
+}
+
+/**
+ * The one line above the card, never empty during the taste test. It
+ * replaces its own words: the goal on the first card, "Learning your taste ·
+ * N/10", "Last one."; one stylist note if the answers lean clearly; what's
+ * still missing; then "Your taste · The …". For a moment after each swipe it
+ * says what happened, with Undo.
+ */
 function TopStrip() {
-  const { done, total, complete, phase } = useCalibrationProgress();
+  const { done, total, complete, phase, likesNeeded, passesNeeded } = useCalibrationProgress();
   const onboardingSeen = useTasteStore((s) => s.onboardingSeen);
   const vector = useTasteStore((s) => s.preferenceVector);
   const friend = useUiStore((s) => s.friendTaste);
+  const recent = useRecentSwipe();
   const [sheet, setSheet] = useState(false);
+  const line = "block truncate text-center text-[13px] leading-5";
 
-  if (complete) {
-    const sharp = profileSharpness(vector);
-    // A new level is shown quietly: the word here changes (no toast).
-    const word = tasteLevel(vector);
-    return (
-      <div className={STRIP} data-strip tabIndex={-1}>
-        <div className="flex items-center justify-between gap-3 text-xs">
-          <button
-            type="button"
-            onClick={() => setSheet(true)}
-            aria-haspopup="dialog"
-            aria-label={`Your taste: ${word}. Open your taste profile`}
-            className="-ml-1 flex h-10 min-w-0 items-center gap-2 rounded-full px-1 text-neutral-400 hover:text-white"
-          >
-            <span className="max-[339px]:hidden">Your taste</span>
-            <span className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10" aria-hidden>
-              <motion.span
-                className="block h-full rounded-full bg-white"
-                initial={false}
-                animate={{ width: `${Math.max(8, sharp * 100)}%` }}
-                transition={{ type: "spring", stiffness: 200, damping: 28 }}
-              />
-            </span>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span key={word} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="truncate font-medium text-white">
-                {word}
-              </motion.span>
-            </AnimatePresence>
-          </button>
-          <TasteSheet open={sheet} onClose={() => setSheet(false)} />
-        </div>
-      </div>
+  let body: React.ReactNode;
+  if (recent)
+    body = (
+      <p className={`${line} text-neutral-200`}>
+        {recent.action === "like" ? "Saved" : "Passed"} ·{" "}
+        <button type="button" onClick={() => useTasteStore.getState().undoLast()} className="-my-3 inline-flex h-11 min-w-11 items-center justify-center px-1 font-medium text-white underline underline-offset-4">
+          Undo
+        </button>
+      </p>
     );
-  }
-
-  // After the test, until there are enough of both answers: what's still needed.
-  if (phase === "more")
-    return (
-      <div className={STRIP} data-strip tabIndex={-1}>
-        <NeedDots className="-ml-1" />
-      </div>
+  else if (complete) {
+    const { name } = archetypeOf(vector);
+    body = (
+      <button type="button" onClick={() => setSheet(true)} aria-haspopup="dialog" className={`${line} mx-auto flex h-11 min-w-11 items-center justify-center px-2 text-neutral-400 hover:text-white`}>
+        Your taste · <span className="ml-1 text-white">{name}</span>
+        <span aria-hidden className="ml-1">
+          ›
+        </span>
+      </button>
     );
-
-  // The one progress indicator: a thin bar (which card of the taste test is on screen).
-  const current = Math.min(done + 1, total);
-  return (
-    <div className={STRIP} data-strip tabIndex={-1}>
-      {/* Minimal: just the bar (a friend's link says whose taste this is, once). */}
-      {friend && !onboardingSeen ? (
-        <p className="h-4 truncate text-center text-[13px] font-medium leading-4 text-white">
-          Your friend is {archetypeOf(friend).name} — swipe {CALIBRATION_TOTAL} to compare
-        </p>
-      ) : (
-        done === 0 && (
-          // The first card only, on a phone (desktop has the column beside it): what the ten cards are for.
-          <p className="h-4 truncate text-center text-[13px] font-medium leading-4 text-neutral-300 lg:hidden" data-goal aria-hidden>
-            Swipe {CALIBRATION_TOTAL} tees. Get a shop ranked for you.
-          </p>
-        )
-      )}
-      <div className="mt-1 flex items-center">
+  } else if (phase === "more") body = <p className={`${line} text-neutral-200`}>{needLine({ likesNeeded, passesNeeded })}</p>;
+  else {
+    const current = Math.min(done + 1, total);
+    const note = current === NOTE_CARD ? noteOf(vector) : null;
+    const words =
+      done === 0
+        ? friend && !onboardingSeen
+          ? `Your friend is ${archetypeOf(friend).name}. Swipe ten to compare.`
+          : <SharedSeedLine />
+        : note ?? (current === total ? "Last one." : `Learning your taste · ${current}/${total}`);
+    body = (
+      <>
+        <p className={`${line} text-neutral-200`}>{words}</p>
+        {/* The one progress indicator: a thin line, as long as the answers so far. */}
         <div
-          className="flex flex-1 gap-1"
+          className="mt-1.5 h-0.5 w-full bg-white/15"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={total}
@@ -204,27 +165,68 @@ function TopStrip() {
           aria-valuetext={`Card ${current} of ${total}`}
           aria-label="Taste test progress"
         >
-          {Array.from({ length: total }, (_, i) => (
-            <motion.span
-              key={i}
-              className={`h-1.5 flex-1 rounded-full ${i < done ? "bg-white" : "bg-white/15"}`}
-              animate={i === done ? { opacity: [0.4, 1, 0.4] } : { opacity: 1 }}
-              transition={i === done ? { duration: 1.2, repeat: Infinity } : { duration: 0.2 }}
-              style={i === done ? { backgroundColor: "rgba(255,255,255,0.55)" } : undefined}
-            />
-          ))}
+          <div className="h-full bg-white transition-[width] duration-150 ease-out" style={{ width: `${(done / total) * 100}%` }} />
         </div>
+      </>
+    );
+  }
 
-      </div>
+  return (
+    <div className={STRIP} data-strip tabIndex={-1}>
+      {body}
+      <TasteSheet open={sheet} onClose={() => setSheet(false)} />
     </div>
   );
 }
 
+/**
+ * The first card's line. Arriving from a friend's shared tee that was saved
+ * (lib/share, the product page): that tee is where the taste starts.
+ */
+function SharedSeedLine() {
+  const likedIds = useTasteStore((s) => s.likedIds);
+  const [seed, setSeed] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      setSeed(sessionStorage.getItem(SHARED_SEED_KEY));
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+  const shirt = seed && likedIds.includes(seed) ? getShirtById(seed) : undefined;
+  // The saved tee isn't one of the ten test cards, so ten are still to come.
+  return <>{shirt ? `Saved ${shirt.title}. Ten more and your edit is ready.` : TEST_GOAL}</>;
+}
+
+/** The tee a shared link opened (this session): set by the product page. */
+export const SHARED_SEED_KEY = "mono-shared-seed";
+
+/** One polite live region: what each swipe did, and what's next. */
+function Announcer() {
+  const swiped = useUiStore((s) => s.swiped);
+  const topId = useTasteStore((s) => s.deck[0]?.id);
+  const { done, total, phase } = useCalibrationProgress();
+  const [text, setText] = useState("");
+  useEffect(() => {
+    if (!swiped) return;
+    const was = getShirtById(swiped.id);
+    const next = topId ? getShirtById(topId) : undefined;
+    const count = phase === "test" ? ` ${Math.min(done, total)} of ${total}.` : "";
+    setText(swiped.action === "like" ? `Saved ${was?.title ?? ""}.${count}` : `Passed.${next ? ` Next: ${next.title}.` : ""}${count}`);
+    // Once per swipe: the deck and counts it reads settle in the same update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swiped]);
+  return (
+    <p role="status" className="sr-only">
+      {text}
+    </p>
+  );
+}
 
 function CardSkeleton() {
   return (
     <div className="relative mx-auto h-full w-full max-w-[420px]">
-      <div className="absolute inset-0 animate-pulse rounded-[28px] bg-white/[0.04] ring-1 ring-white/10" />
+      <div className="absolute inset-0 bg-white/[0.04]" />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { yearOf } from "./RowsField";
 import { TextField, allOk, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
 
-const LINK = "h-10 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
+const LINK = "h-11 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
 /** Your Landmarks: whose journal, and three to nine landmarks (picked from their drawings), each with the year you were there. */
 export default function LandmarksEditor({ arrival, touched, onChange }: EditorProps) {
@@ -38,12 +38,12 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
   return (
     <>
       <TextField id="make-landmarks-name" label="Whose journal" hint="optional" state={name} max={JOURNAL_NAME_MAX} placeholder={ex.n} />
-      <Field label="Landmarks" hint={`${rows.length} of ${LANDMARKS_MIN} to ${LANDMARKS_MAX}`} error={touched && rows.length < LANDMARKS_MIN ? `Choose at least ${LANDMARKS_MIN}` : null} htmlFor="make-landmarks-pick">
+      <Field label="Landmarks" hint={`${rows.length} of ${LANDMARKS_MIN} to ${LANDMARKS_MAX}`} error={touched && rows.length < LANDMARKS_MIN ? `Choose at least ${LANDMARKS_MIN}.` : null} htmlFor="make-landmarks-pick">
         <div id="make-landmarks-pick" role="group" aria-label="Landmarks" className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {LANDMARK_IDS.map((id) => {
             const on = rows.some((r) => r.id === id);
             return (
-              <button key={id} type="button" aria-pressed={on} onClick={() => toggle(id)} disabled={!on && rows.length >= LANDMARKS_MAX} className={`flex flex-col items-center gap-1 rounded-xl p-2 text-center text-[11px] leading-tight ring-1 transition disabled:opacity-40 ${on ? "bg-white/15 text-white ring-white" : "text-neutral-300 ring-white/10 hover:bg-white/5"}`}>
+              <button key={id} type="button" aria-pressed={on} onClick={() => toggle(id)} disabled={!on && rows.length >= LANDMARKS_MAX} className={`flex flex-col items-center gap-1 rounded-control p-2 text-center text-[11px] leading-tight ring-1 transition disabled:opacity-40 ${on ? "bg-white/15 text-white ring-white" : "text-neutral-300 ring-white/10 hover:bg-white/5"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- a baked thumbnail (scripts/images/bakeMake.ts), the static export's own file */}
                 <img src={assetUrl(artThumbPath(`landmarks/${id}`))} alt="" width={64} height={64} loading="lazy" className="h-16 w-16 object-contain" />
                 <span>{LANDMARKS[id]}</span>
@@ -57,7 +57,7 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
           {rows.map((r, i) => (
             <div key={r.id} className="grid grid-cols-[1fr_5.5rem_auto] items-end gap-2">
               <p className="flex h-11 items-center truncate text-sm text-white">{LANDMARKS[r.id]}</p>
-              <Field label={`Year ${i + 1}`} hint="optional" error={years[i] === null ? `${FIRST_YEAR} to ${LAST_YEAR}` : null} htmlFor={`make-landmarks-y${i}`}>
+              <Field label={`Year ${i + 1}`} hint="optional" error={years[i] === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor={`make-landmarks-y${i}`}>
                 <input id={`make-landmarks-y${i}`} value={r.year} inputMode="numeric" maxLength={4} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, year: e.target.value } : x)))} className={INPUT} />
               </Field>
               <div className="flex">

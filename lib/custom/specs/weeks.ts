@@ -35,9 +35,9 @@ export const gridEnd = (b: string, n: number) => {
 /** Why a date can't go on this grid, in one line, or null. */
 export function weeksDateProblem(b: string, n: number, s: string): string | null {
   const d = parseDate(s);
-  if (!d) return `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`;
-  if (utc(d) < utc(parseDate(b)!)) return "On or after the birthday";
-  if (utc(d) >= gridEnd(b, n)) return `Within the ${n} years`;
+  if (!d) return `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
+  if (utc(d) < utc(parseDate(b)!)) return "On or after the birthday.";
+  if (utc(d) >= gridEnd(b, n)) return `Within the ${n} years.`;
   return null;
 }
 

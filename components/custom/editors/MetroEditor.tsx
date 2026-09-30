@@ -7,8 +7,8 @@ import { Field, nameLine, useLexicon } from "./Field";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
-const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
-const PILL = "h-10 rounded-full px-3.5 text-sm font-semibold ring-1 transition";
+const LINK = "h-11 text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
+const PILL = "h-11 rounded-control px-3.5 text-sm font-medium ring-1 transition";
 const STYLE_NAME = ["solid", "double", "dashed", "dotted"];
 
 interface Station {
@@ -27,7 +27,7 @@ export default function MetroEditor({ arrival, touched, onChange }: EditorProps)
 
   const problem = (text: string, max: number) => {
     const t = text.trim();
-    if (!t) return touched ? "Type a name" : "";
+    if (!t) return touched ? "Add a name." : "";
     const c = cleanWords(t, max);
     if (!c) return nameLine(t, max);
     return lex ? lex.wordsProblem(c) : null;

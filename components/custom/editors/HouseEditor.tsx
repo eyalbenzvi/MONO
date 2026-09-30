@@ -34,7 +34,7 @@ export default function HouseEditor({ made, arrival, onChange }: EditorProps) {
       </div>
       <Segmented label="Roof" options={ROOFS} value={r} onChange={setR} format={(x) => ROOF_LABEL[x]} />
       <Segmented label="Door" options={DOORS} value={dr} onChange={setDr} format={(x) => DOOR_LABEL[x]} />
-      <Field label="Number" hint="optional" error={number === null ? "Up to four digits" : null} htmlFor="make-house-no">
+      <Field label="Number" hint="optional" error={number === null ? "Up to four digits." : null} htmlFor="make-house-no">
         <input id="make-house-no" value={no} inputMode="numeric" maxLength={4} autoComplete="off" placeholder="14" onChange={(e) => setNo(e.target.value)} aria-invalid={number === null} className={`${INPUT} font-mono`} />
       </Field>
       <WordsField words={words} hint={made.wordsHint ?? ""} />

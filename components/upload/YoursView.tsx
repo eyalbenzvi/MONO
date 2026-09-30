@@ -1,24 +1,25 @@
 "use client";
 
+import { MAKE_PAIR_PRICE, MAKE_PRICE } from "@/lib/prices";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MakeHeader } from "@/components/custom/MakeHeader";
 import { Icon } from "@/components/Icon";
-import { SizeSelector } from "@/components/ui";
+import { BUTTON_PRIMARY, SizeSelector, TrustLine } from "@/components/ui";
+import { useDock } from "@/hooks/useDock";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { track } from "@/lib/analytics";
 import { getShirtById } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
-import { STORE_POLICY } from "@/lib/store-policy";
 import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
 import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source, Tee } from "@/lib/upload/client";
-import { editUpload } from "@/lib/cart";
+import { ctaLabel, editUpload } from "@/lib/cart";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
-import { scrollIntoViewQuietly, useHydrated } from "@/store/useUiStore";
-import { SIZE_LABELS, type ShirtSize } from "@/types/shirt";
+import { scrollIntoViewQuietly, useHydrated, useUiStore } from "@/store/useUiStore";
+import type { ShirtSize } from "@/types/shirt";
 import { useFlash } from "@/hooks/useFlash";
 import { ChoiceThumbs, type Choice } from "./yours/ChoiceThumbs";
 import { Stage, placeholder, type StageState } from "./yours/Stage";
@@ -354,7 +355,7 @@ function Yours() {
     return { kind: "converting", canvas: fade };
   }, [source, busy, last, tee, ok, failed, fade]);
   const pill = busy ? (last ? "Checking it prints…" : "Converting…") : undefined;
-  const price = choice === "both" ? STORE_POLICY.customPairPrice : STORE_POLICY.customPrice;
+  const price = choice === "both" ? MAKE_PAIR_PRICE : MAKE_PRICE;
   const size$ = teeSize ?? selected;
   // The rights are the file's (a crop or a turn doesn't change whose it is).
   const rightsKey = source ? source.id : null;
@@ -425,10 +426,10 @@ function Yours() {
           : { label: `Next · ${formatPrice(price)}`, disabled: true }
       : step === "size"
         ? replaceId
-          ? { label: "Send it for checking", onClick: () => void resubmit() }
+          ? { label: "Submit for review", onClick: () => void resubmit() }
           : added
-            ? { label: "Added", disabled: true }
-            : { label: size$ ? `${editId ? "Save changes" : "Add to bag"} · ${SIZE_LABELS[size$]} · ${formatPrice(price)}` : "Choose size", onClick: () => void add() }
+            ? { label: "In your bag · Checkout", href: "/cart/", onClick: () => useUiStore.getState().requestCheckout() }
+            : { label: ctaLabel({ verb: editId ? "Save changes" : "Add to bag", size: size$, price: MAKE_PRICE, both: choice === "both", pair: MAKE_PAIR_PRICE }), onClick: () => void add() }
         : null;
 
   const titles: Record<Step, string> = { start: "Your print", print: "Your print", size: "Size" };
@@ -472,7 +473,7 @@ function Yours() {
         {/* Only the size step has a way back, on the left as every page's (MakeView's "← Make"). */}
         {step === "size" && (
           <div className="mb-2 flex h-11 items-center">
-            <button type="button" onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
+            <button type="button" onClick={() => window.history.back()} className="inline-flex h-11 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
               <Icon name="arrow-left" className="h-4 w-4" /> Your print
             </button>
           </div>
@@ -486,7 +487,7 @@ function Yours() {
           </div>
           <div className="min-w-0 space-y-6">
             {/* The step's heading, as a product page's title: at the top of the column beside the picture (under it on a phone). */}
-            <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none md:text-3xl" data-step={step}>
+            <h2 ref={heading} tabIndex={-1} className="text-2xl font-medium tracking-tight outline-none md:text-3xl" data-step={step}>
               {titles[step]}
             </h2>
             {step === "start" && (
@@ -564,9 +565,9 @@ function StartPanel({ error, draftName, onCarryOn, replacing }: { error: string 
           {error}
         </p>
       )}
-      {replacing && <p className="rounded-2xl bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
+      {replacing && <p className="rounded-control bg-white/[0.05] p-3 text-sm text-neutral-200 ring-1 ring-white/10">Replacing a file from order {replacing.order}. Once this one passes, it takes that one&rsquo;s place.</p>}
       {draftName && (
-        <button type="button" onClick={onCarryOn} className="flex h-12 w-full items-center justify-between rounded-2xl px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
+        <button type="button" onClick={onCarryOn} className="flex h-12 w-full items-center justify-between rounded-control px-4 text-left text-sm text-neutral-200 ring-1 ring-white/15 hover:bg-white/[0.05]" data-draft>
           <span className="truncate">Carry on with {draftName}</span>
           <Icon name="arrow-right" className="h-4 w-4 shrink-0" />
         </button>
@@ -647,8 +648,8 @@ function PrintStep({
       )}
       {source && preview && <ChoiceThumbs source={source} settings={settings} preview={preview} photo={photo} choice={choice} onSettings={patch} onChoice={setChoice} />}
       {failed && !busy && (
-        <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10" data-fix-card>
-          <p className="text-sm font-semibold text-white" data-upload-line>
+        <div className="rounded-control bg-white/[0.04] p-4 ring-1 ring-white/10" data-fix-card>
+          <p className="text-sm font-medium text-white" data-upload-line>
             {failed.reason}
           </p>
           {meaning[failed.code] && <p className="mt-1 text-sm text-neutral-400">{meaning[failed.code]}</p>}
@@ -660,12 +661,12 @@ function PrintStep({
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             {(fixes ?? []).slice(1).map((f) => (
-              <button key={f.fix.id} type="button" onClick={() => onFix(f)} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix={f.fix.id}>
+              <button key={f.fix.id} type="button" onClick={() => onFix(f)} className="h-11 rounded-control px-4 text-sm font-medium text-white ring-1 ring-white/30 hover:bg-white/10" data-fix={f.fix.id}>
                 {f.fix.label}
               </button>
             ))}
             {cropFix && (
-              <button type="button" onClick={onEdit} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix="crop">
+              <button type="button" onClick={onEdit} className="h-11 rounded-control px-4 text-sm font-medium text-white ring-1 ring-white/30 hover:bg-white/10" data-fix="crop">
                 Crop tighter
               </button>
             )}
@@ -675,11 +676,11 @@ function PrintStep({
       {preview === null && <p className="text-sm text-neutral-400">{status || "Converting…"}</p>}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {source && source.kind === "file" && (
-          <button type="button" onClick={onEdit} className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/10" data-edit-photo>
+          <button type="button" onClick={onEdit} className="inline-flex h-11 items-center gap-2 rounded-control px-4 text-sm font-medium text-white ring-1 ring-white/25 hover:bg-white/10" data-edit-photo>
             <Icon name="pencil" className="h-4 w-4" /> Edit photo
           </button>
         )}
-        <button type="button" onClick={onAnother} className="h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={onAnother} className="h-11 text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
           Choose another file
         </button>
       </div>
@@ -692,8 +693,8 @@ function WontPrint({ onClose }: { onClose: () => void }) {
   useFocusTrap(panel, true, onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:items-center" onClick={onClose}>
-      <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="wont-title" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-ink-900 p-5 ring-1 ring-white/10 md:rounded-3xl">
-        <h2 id="wont-title" className="text-base font-bold">
+      <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="wont-title" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-sheet bg-ink-900 p-5 ring-1 ring-white/10 md:rounded-sheet">
+        <h2 id="wont-title" className="text-base font-medium">
           What we won&rsquo;t print
         </h2>
         <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-neutral-300">
@@ -701,7 +702,7 @@ function WontPrint({ onClose }: { onClose: () => void }) {
             <li key={l}>{l}</li>
           ))}
         </ul>
-        <button type="button" data-autofocus onClick={onClose} className="mt-5 flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white ring-1 ring-white/30">
+        <button type="button" data-autofocus onClick={onClose} className="mt-5 flex h-12 w-full items-center justify-center rounded-control text-sm font-medium text-white ring-1 ring-white/30">
           Close
         </button>
       </div>
@@ -759,13 +760,13 @@ function SizeStep({
               onBlur={(e) => void save(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), void save(draft))}
               aria-invalid={!!error}
-              className="h-11 w-full rounded-xl bg-white/[0.06] px-3 text-base font-semibold text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+              className="h-11 w-full rounded-control bg-white/[0.06] px-3 text-base font-medium text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white"
               data-title
             />
             {error && <p className="mt-1 text-xs text-neutral-300">{error}</p>}
           </>
         ) : (
-          <button type="button" onClick={() => (setDraft(title), setEditingTitle(true))} className="flex min-h-11 max-w-full items-center gap-2 text-left text-base font-semibold text-white" aria-label={`Title: ${title}. Edit`} data-title-text>
+          <button type="button" onClick={() => (setDraft(title), setEditingTitle(true))} className="flex min-h-11 max-w-full items-center gap-2 text-left text-base font-medium text-white" aria-label={`Title: ${title}. Edit`} data-title-text>
             <span className="truncate">{title}</span>
             <Icon name="pencil" className="h-4 w-4 shrink-0 text-neutral-400" />
           </button>
@@ -773,7 +774,7 @@ function SizeStep({
       </div>
       <p className="flex flex-wrap items-center gap-x-2 text-sm text-neutral-300" data-summary>
         {summary}
-        <button type="button" onClick={onChange} className="h-10 text-neutral-400 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={onChange} className="h-11 text-neutral-400 underline underline-offset-4 hover:text-white">
           Change
         </button>
       </p>
@@ -783,10 +784,10 @@ function SizeStep({
         </div>
       )}
       <p className="text-sm text-neutral-400">Checked by a person before printing. Up to 2 days. Nothing charged if we can&rsquo;t print it.</p>
-      <p className="text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>
+      <TrustLine custom review />
       {/* The rights, confirmed by adding: one line above the button. */}
       <p className="text-xs text-neutral-400" data-rights>
-        {replacing ? "Sending it" : "Adding it"} confirms you made it or have permission, and anyone in it has agreed.{" "}
+        {replacing ? "Submitting it" : "Adding it"} confirms you made it or have permission, and anyone in it has agreed.{" "}
         <button type="button" onClick={() => setWont(true)} className="text-neutral-300 underline underline-offset-4 hover:text-white">
           What we won&rsquo;t print
         </button>
@@ -798,9 +799,11 @@ function SizeStep({
 
 /** The step's one white button: in the flow on desktop, a bar at the foot of the screen on a phone. */
 function PrimaryBar({ label, onClick, href, disabled }: { label: string; onClick?: () => void; href?: string; disabled?: boolean }) {
-  const cls = "flex h-12 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-[0.98] disabled:opacity-40";
+  const cls = `w-full ${BUTTON_PRIMARY}`;
+  const bar = useRef<HTMLDivElement>(null);
+  useDock(bar);
   const button = href ? (
-    <Link href={href} className={cls} data-primary>
+    <Link href={href} onClick={onClick} className={cls} data-primary>
       {label}
     </Link>
   ) : (
@@ -808,5 +811,9 @@ function PrimaryBar({ label, onClick, href, disabled }: { label: string; onClick
       {label}
     </button>
   );
-  return <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">{button}</div>;
+  return (
+    <div ref={bar} className="fixed inset-x-0 bottom-0 z-header border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:static md:border-0 md:bg-transparent md:p-0">
+      {button}
+    </div>
+  );
 }

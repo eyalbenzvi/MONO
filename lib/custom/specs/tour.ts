@@ -37,7 +37,7 @@ export function check(p: Record<string, unknown>, ctx: CheckContext): Params | n
 export const detail = (p: Params) => `${p.n} · ${p.t}`;
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "The tour shirt for the places you've lived, with the dates on the back.",
+  line: "The tour tee for the places you’ve lived, with the dates on the back.",
   from: "Your places and years",
   group: "travels",
   base: "poster",

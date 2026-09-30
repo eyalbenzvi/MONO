@@ -3,8 +3,9 @@
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Icon } from "@/components/Icon";
-import { CategoryFilter, TeeSwatches } from "@/components/shop/ShopFilters";
+import { CategoryFilter, ROW_CONTROL, TeeSwatches } from "@/components/shop/ShopFilters";
+import { Sheet } from "@/components/Sheet";
+import { useDock } from "@/hooks/useDock";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SharedList } from "@/components/shop/ShopExtras";
 import { acceptedDesigns } from "@/lib/upload/designs";
@@ -13,11 +14,13 @@ import { decodeFacets, encodeFacets, type Facet } from "@/lib/search/facetCodec"
 import { useShopSearch } from "@/components/shop/useShopSearch";
 import { shopList } from "@/components/shop/shopList";
 import { rankShirts, type ShopSort, daySeed } from "@/lib/recommendation";
+import { topPicks } from "@/lib/match";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { SHOP_PAGE_SIZE, makeHeaderScrollHandler, useUiStore, useHydrated, shopScroll } from "@/store/useUiStore";
 import { COLORS, SHIRT_CATEGORIES, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { preloadMockups, saveData, whenIdle } from "@/lib/preload";
+import { BUTTON_SECONDARY } from "@/components/ui";
 
 type Filters = ShopFilters;
 
@@ -26,14 +29,12 @@ type Filters = ShopFilters;
 const WARM_CARDS = { desktop: 10, phone: 6 };
 /** A restored `?page=` is held to this many pages (a hand-typed 10000 can't render the whole shop at once). */
 const MAX_RESTORED_PAGES = 200;
-/** Scrolled this far (px), the filter bar counts as stuck under the header. */
-const STUCK_AFTER = 44;
 /** The next page loads when the end of the grid is this close (px). */
 const LOAD_AHEAD_PX = 600;
 
 const SearchPanel = dynamic(() => import("@/components/shop/SearchPanel"), {
   ssr: false,
-  loading: () => <div aria-hidden className="h-10 flex-1 rounded-full bg-white/[0.06] ring-1 ring-white/10" />,
+  loading: () => <div aria-hidden className="h-12 rounded-control ring-1 ring-inset ring-white/25" />,
 });
 
 /** The search in the address: /shop/?q=words&f=kind:value,…&like=<id>. */
@@ -140,7 +141,14 @@ export function ShopView() {
     const w = new URLSearchParams(window.location.search).get("wave");
     if (w && /^\d+$/.test(w)) setWave(Number(w));
   }, []);
-  const visible = useMemo(() => shopList({ ranked, tee, cats, sort, result, wave }), [result, ranked, tee, cats, sort, wave]);
+  const visible = useMemo(() => {
+    const list = shopList({ ranked, tee, cats, sort, result, wave });
+    // Your edit opens on the reveal's first pick (the same tee, where the taste test left off).
+    if (sort !== "match" || result || cats.length || wave !== null) return list;
+    const first = topPicks(rankVector, 1)[0];
+    const at = first ? list.findIndex((x) => x.shirt.family === first.family) : -1;
+    return at < 0 ? list : [{ ...list[at], shirt: first }, ...list.slice(0, at), ...list.slice(at + 1)];
+  }, [result, ranked, tee, cats, sort, wave, rankVector]);
   // First open: the current grid stays, dimmed, until the index is in (never an empty flash).
   const pending = searching && runtime === undefined;
   // How many designs each category holds on the chosen colour — within the search while one is on (the filter's rows; an empty one is disabled).
@@ -158,6 +166,8 @@ export function ShopView() {
     return { by, total };
   }, [ranked, tee, withinColour]);
   visibleRef.current = visible;
+  // The grid's own count, in the counts' unit (a card's variations are tees too): "Show 1,377 tees" matches "All 1,377".
+  const shownCount = useMemo(() => visible.reduce((n, x) => n + 1 + ("variations" in x ? (x.variations as number) : 0), 0), [visible]);
 
   // The first cards a filter would show (the current one with each change):
   // warmed while idle, and at once when a finger lands on it, so a switch
@@ -236,14 +246,9 @@ export function ShopView() {
     requestAnimationFrame(() => (restoring.current = false));
   }, [hydrated]);
   const onHeaderScroll = useMemo(() => makeHeaderScrollHandler(), []);
-  // The filter bar gets a hairline once it's stuck (content passes under it).
-  const [stuck, setStuck] = useState(false);
-  const headerHidden = useUiStore((s) => s.headerHidden);
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!restoring.current) onHeaderScroll(e);
     shopScroll.top = e.currentTarget.scrollTop;
-    const isStuck = e.currentTarget.scrollTop > STUCK_AFTER;
-    if (isStuck !== stuck) setStuck(isStuck);
   };
 
   // Infinite scroll in batches — thousands of mockups, rendered lazily.
@@ -271,12 +276,20 @@ export function ShopView() {
   };
   const setFacets = (next: Facet[]) => {
     setShop({ facets: next, limit: SHOP_PAGE_SIZE });
-    searchToUrl(useUiStore.getState().shop.query, next, true);
+    // While the sheet is open its #search step becomes the search's address (never a step on top of it).
+    searchToUrl(useUiStore.getState().shop.query, next, !open);
     toTop();
   };
-  const closeSearch = () => {
-    setOpen(false);
-    if (query) setQuery("");
+  const openSearch = () => {
+    warmSearch();
+    setOpen(true);
+    setFocusNonce((n) => n + 1);
+  };
+  const clearSearch = () => {
+    // The search only: the colour and categories chosen stay.
+    setShop({ query: "", facets: [], limit: SHOP_PAGE_SIZE });
+    searchToUrl("", [], true);
+    toTop();
   };
 
   // "search" once per settled search (Enter, a chip, or 1.5 s without typing), never twice for the same one.
@@ -311,15 +324,11 @@ export function ShopView() {
   useEffect(() => {
     if (!hydrated) return;
     const s = searchFromUrl();
-    if (s.query || s.facets.length) {
-      setShop({ query: s.query, facets: s.facets });
-      setOpen(true);
-    }
-    // Back and forward bring the search they left back.
+    if (s.query || s.facets.length) setShop({ query: s.query, facets: s.facets });
+    // Back and forward bring the search they left back (the sheet itself follows its own #search step).
     const onPop = () => {
       const s = searchFromUrl();
       setShop({ query: s.query, facets: s.facets, limit: SHOP_PAGE_SIZE });
-      setOpen(!!(s.query || s.facets.length));
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
@@ -342,6 +351,8 @@ export function ShopView() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [warmSearch]);
+  const controls = useRef<HTMLDivElement>(null);
+  useDock(controls);
 
   const setFilter = (patch: Partial<Filters>) => {
     if ("tee" in patch) track("shop_filter", { filter: "tee", value: patch.tee ?? null });
@@ -351,123 +362,37 @@ export function ShopView() {
     scroller.current?.scrollTo({ top: 0 });
   };
 
+  const heading = hydrated && complete ? "Your edit" : "Our pick";
+  const statusLine =
+    searching && result && !open ? (
+      result.relaxed ? (
+        <>No exact match for &ldquo;{query.trim() || facets.map((f) => (runtime ? runtime.mod.facetLabel(runtime.index, f) : f.value)).join(", ")}&rdquo;. Closest:</>
+      ) : result.corrected.length && !literal ? (
+        <>
+          Showing <span className="text-white">{result.corrected.map((c) => c.to).join(" ")}</span> ·{" "}
+          <button type="button" onClick={() => setLiteral(true)} className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-white">
+            Search for &ldquo;{result.corrected.map((c) => c.from).join(" ")}&rdquo;
+          </button>
+        </>
+      ) : null
+    ) : null;
+
   return (
-    // Reaches up under the floating header (a spacer keeps the content below
-    // it), so when the header slides away the grid fills the space.
-    <div ref={scroller} onScroll={onScroll} className="no-scrollbar -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto">
-      {/* A spacer, not padding: sticky offsets are measured inside the
-          scroller's padding, which would push the filter bar down. */}
-      <div aria-hidden className="h-[var(--header-h)]" />
-      <div className="mx-auto max-w-5xl px-4 pb-16 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
-        {/* No text above the grid: the filter row comes first. */}
-        <div className="h-3" />
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Reaches up under the floating header (a spacer keeps the content below it), so when the header slides away the grid fills the space. */}
+      <div ref={scroller} onScroll={onScroll} className="no-scrollbar -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto">
+        <div aria-hidden className="h-[var(--header-h)]" />
+        <div className="mx-auto max-w-5xl px-2 pb-6 2xl:max-w-[1400px] min-[1800px]:max-w-[1600px]">
+          {/* What the grid is, quietly: "Your edit" once the taste is known, else "Our pick". Nothing else above the grid. */}
+          <h1 className="px-1 pb-3 pt-2 text-[13px] text-muted">{heading}</h1>
+          {statusLine && <p className="px-1 pb-3 text-xs text-muted">{statusLine}</p>}
+          <SharedList />
 
-        {/* One sticky row: the tee colour (the product page's dots), and the
-            categories behind a filter icon. No sort — the order is "For you"
-            once the taste is known, else "Our pick". */}
-        {/* Solid, above every card control (cards isolate their own z-index),
-            right under the header while it shows and at the very top once it
-            has slid away — moving with it (same 200 ms). */}
-        <div
-          className={`app-backdrop sticky z-20 -mx-4 flex items-center justify-between gap-2 border-b py-2 pl-4 pr-4 transition-[top,border-color] duration-200 ease-out ${
-            stuck ? "border-white/10" : "border-transparent"
-          }`}
-          style={{ top: headerHidden ? 0 : "var(--header-h)" }}
-        >
-          {(() => {
-            const filter = (
-              <CategoryFilter
-                cats={cats}
-                counts={counts.by}
-                total={counts.total}
-                results={visible.length}
-                onChange={(next) => setFilter({ cats: next })}
-                onWarm={(next) => warm({ tee, cats: next })}
-                onOpen={warmCategories}
-              />
-            );
-            const dots = <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />;
-            // Open (or a search in effect): the field takes the middle of the row; the dots and the filter icon stay.
-            if ((open || searching) && runtime !== null)
-              return (
-                <SearchPanel
-                  runtime={runtime}
-                  query={query}
-                  facets={facets}
-                  result={result}
-                  count={visible.length}
-                  literal={literal}
-                  tasteKnown={complete}
-                  focusNonce={focusNonce}
-                  leading={dots}
-                  trailing={filter}
-                  onQuery={setQuery}
-                  onFacets={setFacets}
-                  onLiteral={() => setLiteral(true)}
-                  onCommit={() => {
-                    searchToUrl(query, facets, true);
-                    commitRef.current();
-                  }}
-                  onClose={closeSearch}
-                  onClear={() => {
-                    // The search only: the colour and categories chosen stay.
-                    setShop({ query: "", facets: [], limit: SHOP_PAGE_SIZE });
-                    searchToUrl("", [], true);
-                    toTop();
-                  }}
-                />
-              );
-            const openSearch = () => {
-              setOpen(true);
-              setFocusNonce((n) => n + 1);
-            };
-            return (
-              <>
-                {dots}
-                <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-                  {runtime !== null && (
-                    <>
-                      {/* Desktop: a quiet field-shaped trigger that names "/"; phones: a ringed icon (not a twin of the filter icon). */}
-                      <button
-                        type="button"
-                        onPointerDown={warmSearch}
-                        onFocus={warmSearch}
-                        onClick={openSearch}
-                        aria-label="Search"
-                        className="hidden h-10 w-full max-w-xs items-center gap-2 rounded-full pl-3 pr-4 text-sm text-neutral-500 ring-1 ring-white/10 transition-colors duration-200 hover:text-neutral-300 hover:ring-white/20 sm:flex"
-                      >
-                        <Icon name="search" className="h-4 w-4" />
-                        <span className="flex-1 text-left">Search</span>
-                        <kbd className="font-sans text-[11px] uppercase tracking-[0.2em] text-neutral-500">/</kbd>
-                      </button>
-                      <button
-                        type="button"
-                        onPointerDown={warmSearch}
-                        onFocus={warmSearch}
-                        onClick={openSearch}
-                        aria-label="Search"
-                        className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white sm:hidden"
-                      >
-                        <Icon name="search" className="h-[18px] w-[18px]" />
-                      </button>
-                    </>
-                  )}
-                  {filter}
-                </div>
-              </>
-            );
-          })()}
-        </div>
-        <div className="h-2" />
-        <SharedList />
-
-        {/* Rendered on the server too, in the default order ("Our pick" — no
-            personal data needed), so the page arrives with products. A
-            personal order after hydration swaps in with a short fade (same
-            card sizes, nothing moves). */}
-        {visible.length > 0 ? (
+          {/* Rendered on the server too, in the default order ("Our pick" — no
+              personal data needed), so the page arrives with products. */}
+          {visible.length > 0 ? (
             <>
-              <div key={sort} aria-busy={pending || undefined} className={`grid animate-[fade-in_0.25s_ease-out] transition-opacity duration-200 ${pending ? "opacity-40" : ""} grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6`}>
+              <div key={sort} aria-busy={pending || undefined} className={`grid grid-cols-2 gap-x-2 gap-y-6 transition-opacity duration-150 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6 ${pending ? "opacity-40" : ""}`}>
                 {visible.slice(0, limit).map(({ shirt, variations }, i) => (
                   <ProductCard
                     key={shirt.id}
@@ -490,22 +415,87 @@ export function ShopView() {
                       e.preventDefault();
                       setShop({ limit: limit + SHOP_PAGE_SIZE });
                     }}
-                    className="flex h-11 items-center rounded-full px-5 text-xs font-semibold text-neutral-300 ring-1 ring-white/15 hover:bg-white/5"
+                    className={BUTTON_SECONDARY}
                   >
-                    Show more · {(visible.length - limit).toLocaleString("en-US")} left
+                    Show more
                   </Link>
                 </div>
               )}
             </>
           ) : (
-            <div className="py-16 text-center text-sm text-neutral-400">
-              Nothing here.
-              <button type="button" onClick={() => setFilter({ tee: null, cats: [] })} className="ml-1 font-semibold text-white underline">
-                Clear
+            <p className="py-16 text-center text-sm text-muted">
+              No tees match.{" "}
+              <button type="button" onClick={() => setFilter({ tee: null, cats: [] })} className="inline-flex min-h-11 items-center text-white underline underline-offset-4">
+                Clear filters
               </button>
-            </div>
+            </p>
           )}
+        </div>
       </div>
+
+      {/* One row of controls at the bottom, within the thumb (above the tab bar): colour, search, filter. */}
+      <div ref={controls} className="shrink-0 border-t border-white/10 bg-[#0a0a0a]">
+        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between gap-2 px-2 2xl:max-w-[1400px]">
+          <TeeSwatches tee={tee} onChange={(t) => setFilter({ tee: t })} onWarm={(c) => warm({ tee: c, cats })} />
+          <div className="flex min-w-0 items-center">
+            {runtime !== null && (
+              <button
+                type="button"
+                onPointerDown={warmSearch}
+                onFocus={warmSearch}
+                onClick={openSearch}
+                aria-haspopup="dialog"
+                aria-label={searching ? `Search: ${query.trim() || "filters"}` : "Search"}
+                className={`${ROW_CONTROL} min-w-0 ${searching ? "text-white" : "text-muted hover:text-white"}`}
+              >
+                <span className="truncate">{searching && query.trim() ? `“${query.trim()}”` : "Search"}</span>
+              </button>
+            )}
+            {searching && (
+              <button type="button" onClick={clearSearch} aria-label="Clear search" className={`${ROW_CONTROL} text-muted hover:text-white`}>
+                ×
+              </button>
+            )}
+            <CategoryFilter
+              cats={cats}
+              counts={counts.by}
+              total={counts.total}
+              results={shownCount}
+              onChange={(next) => setFilter({ cats: next })}
+              onWarm={(next) => warm({ tee, cats: next })}
+              onOpen={warmCategories}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Search: a sheet, the field at its foot next to the keyboard (Back closes it, #search). */}
+      <Sheet open={open && runtime !== null} onClose={() => setOpen(false)} historyKey="search" title="Search">
+        <SearchPanel
+          runtime={runtime}
+          query={query}
+          facets={facets}
+          result={result}
+          count={shownCount}
+          literal={literal}
+          tasteKnown={complete}
+          focusNonce={focusNonce}
+          onQuery={setQuery}
+          onFacets={(next) => {
+            setFacets(next);
+            // A facet chosen shows its tees.
+            if (next.length > facets.length) setOpen(false);
+          }}
+          onLiteral={() => setLiteral(true)}
+          onCommit={() => {
+            searchToUrl(query, facets, false);
+            commitRef.current();
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+          onClear={clearSearch}
+        />
+      </Sheet>
     </div>
   );
 }

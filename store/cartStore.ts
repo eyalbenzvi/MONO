@@ -242,7 +242,7 @@ export const useCartStore = create<CartState & CartActions>()(
         }));
         if (capped) toast(`Max ${MAX_QTY} per item`);
         else {
-          // One confirmation everywhere: the mini bag (with Undo).
+          // One confirmation everywhere: the mini bag at the bottom (the bag is where to take it back).
           if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...printFields(custom, upload) });
           trackEcommerce("add_to_cart", { items: [itemOf(shirt, { color: tee, size, quantity: qty, custom, upload })], source: options.source ?? "product" });
         }

@@ -18,7 +18,7 @@ export default function MazeEditor({ arrival, touched, onChange }: EditorProps) 
   const lex = useLexicon(!!typed.trim());
 
   const x = mazeInitials(typed);
-  const problem = x ? mazeProblem(typed) : touched ? "Type your initials" : null;
+  const problem = x ? mazeProblem(typed) : touched ? "Add your initials." : null;
   const refused = x && !problem && lex ? lex.wordsProblem(x) : null;
   const error = problem ?? refused;
   const spec: CustomSpec | null = x && !error && lex ? { t: "maze", v: 1, p: { x, d, ...(solved ? { s: 1 as const } : {}) } } : null;

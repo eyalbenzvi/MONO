@@ -19,9 +19,9 @@ export const JOURNEY_MAX = 8;
 
 /** Why this list of stops can't be a journey (one line), or null. */
 export function journeyProblem(ids: readonly number[]): string | null {
-  if (ids.length < JOURNEY_MIN) return "Add at least two places";
-  if (ids.length > JOURNEY_MAX) return `Up to ${JOURNEY_MAX} places`;
-  return ids.some((id, i) => i > 0 && ids[i - 1] === id) ? "The same place twice in a row" : null;
+  if (ids.length < JOURNEY_MIN) return "Add at least two places.";
+  if (ids.length > JOURNEY_MAX) return `Up to ${JOURNEY_MAX} places.`;
+  return ids.some((id, i) => i > 0 && ids[i - 1] === id) ? "The same place twice in a row." : null;
 }
 
 /** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */

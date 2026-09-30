@@ -11,7 +11,7 @@ import { Segmented } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
-const TEXTAREA = "w-full resize-none rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-sm text-white ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white";
+const TEXTAREA = "w-full resize-none rounded-control bg-white/[0.06] px-3 py-2 font-mono text-sm text-white ring-1 ring-white/10 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-white";
 const RESULT_OPTIONS = ["", ...RESULTS] as const;
 const RESULT_LABEL: Record<(typeof RESULT_OPTIONS)[number], string> = { "": "None", "1-0": "1–0", "0-1": "0–1", "1/2": "Draw" };
 
@@ -97,7 +97,7 @@ export default function ChessEditor({ arrival, touched, onChange }: EditorProps)
           <input id="make-chess-black" value={black} maxLength={PLAYER_MAX + 12} autoComplete="off" onChange={(e) => setBlack(e.target.value)} aria-invalid={!!b.error} className={INPUT} />
         </Field>
       </div>
-      <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-chess-date">
+      <Field label="The day" hint="optional" error={dateOk ? null : `Between ${FIRST_YEAR} and ${LAST_YEAR}.`} htmlFor="make-chess-date">
         <input id="make-chess-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
       </Field>
       <Segmented label="Result" options={RESULT_OPTIONS} value={result} onChange={setResult} format={(r) => RESULT_LABEL[r]} />

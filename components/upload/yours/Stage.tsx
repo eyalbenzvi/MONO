@@ -64,7 +64,7 @@ export function Stage({ shirt, tee, state, source, pill, label, onPick, drag = f
   if (state.kind === "empty") return <EmptyTee shirt={shirt} tee={tee} onPick={onPick} drag={drag} opening={opening} />;
   const canvas = state.canvas;
   return (
-    <div className={`relative overflow-hidden rounded-3xl ${STAGE_BG}`} data-upload-preview={state.kind === "converting" ? "busy" : state.kind === "ready" ? "ready" : state.kind === "failed" ? "failed" : "empty"}>
+    <div className={`relative overflow-hidden rounded-control ${STAGE_BG}`} data-upload-preview={state.kind === "converting" ? "busy" : state.kind === "ready" ? "ready" : state.kind === "failed" ? "failed" : "empty"}>
       {canvas ? <CustomMockup shirt={shirt} svg={canvas} color={tee} className={`w-full transition-opacity ${state.kind === "converting" ? "opacity-60" : ""}`} label={label} /> : <div className="aspect-[512/704] w-full" />}
       {holding && url && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/85 p-6">
@@ -73,7 +73,7 @@ export function Stage({ shirt, tee, state, source, pill, label, onPick, drag = f
         </div>
       )}
       {pill && (
-        <p className="absolute inset-x-0 bottom-4 mx-auto w-fit rounded-full bg-black/70 px-3 py-1.5 text-xs text-neutral-200 ring-1 ring-white/15" data-stage-pill>
+        <p className="absolute inset-x-0 bottom-4 mx-auto w-fit rounded-control bg-black/70 px-3 py-1.5 text-xs text-neutral-200 ring-1 ring-white/15" data-stage-pill>
           {pill}
         </p>
       )}
@@ -91,7 +91,7 @@ export function Stage({ shirt, tee, state, source, pill, label, onPick, drag = f
           onKeyDown={(e) => (e.key === " " || e.key === "Enter") && !e.repeat && (e.preventDefault(), hold(true))}
           onKeyUp={(e) => (e.key === " " || e.key === "Enter") && hold(false)}
           onContextMenu={(e) => e.preventDefault()}
-          className="absolute bottom-3 right-3 h-10 select-none rounded-full bg-black/60 px-3.5 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur-md [touch-action:none]"
+          className="absolute bottom-3 right-3 h-11 select-none rounded-control bg-black/60 px-3.5 text-xs font-medium text-white ring-1 ring-white/20 backdrop-blur-md [touch-action:none]"
         >
           Original
         </button>
@@ -126,7 +126,7 @@ function EmptyTee({ shirt, tee, onPick, drag, opening }: { shirt: ShirtProduct; 
       aria-busy={opening}
       aria-label="Your print here. Choose a picture"
       aria-describedby="yours-hint"
-      className={`group relative block aspect-[512/704] w-full cursor-pointer overflow-hidden rounded-3xl ${STAGE_BG}`}
+      className={`group relative block aspect-[512/704] w-full cursor-pointer overflow-hidden rounded-control ${STAGE_BG}`}
       data-upload-preview="empty"
     >
       {model && (
@@ -138,7 +138,7 @@ function EmptyTee({ shirt, tee, onPick, drag, opening }: { shirt: ShirtProduct; 
         className={`absolute flex items-center justify-center rounded-[3px] p-2 text-center transition-colors ${drag ? `border-2 border-solid ${ink}` : `border-[1.5px] border-dashed ${rest}`}`}
         style={{ left: `${area.left * 100}%`, top: `${area.top * 100}%`, width: `${area.width * 100}%`, height: `${area.height * 100}%` }}
       >
-        <span className="text-[11px] font-semibold uppercase leading-4 tracking-[0.18em] [text-wrap:balance]">{opening ? "Opening…" : drag ? "Drop it here" : "Your print here"}</span>
+        <span className="text-[11px] font-medium uppercase leading-4 tracking-[0.08em] [text-wrap:balance]">{opening ? "Opening…" : drag ? "Drop it here" : "Your print here"}</span>
       </span>
     </button>
   );

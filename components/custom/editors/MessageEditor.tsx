@@ -28,8 +28,8 @@ export default function MessageEditor({ arrival, touched, onChange }: EditorProp
   const done = cells.filter((c) => c.t.value && c.h);
   const few = done.length < MESSAGES_MIN;
   const errors = cells.map((c, i) => ({
-    t: c.t.error ?? (touched && !c.t.value && (few && i < MESSAGES_MIN || c.h) ? "Type the message" : null),
-    h: c.h === null ? "A time as 21:04" : touched && !c.h && (c.t.value || (few && i < MESSAGES_MIN)) ? "When?" : null,
+    t: c.t.error ?? (touched && !c.t.value && (few && i < MESSAGES_MIN || c.h) ? "Add the message." : null),
+    h: c.h === null ? "A time as 21:04." : touched && !c.h && (c.t.value || (few && i < MESSAGES_MIN)) ? "Add the time." : null,
   }));
   const m: Message[] = rows.flatMap((r, i) => (cells[i].t.value && cells[i].h ? [[r.s === "1" ? 1 : 0, cells[i].t.value!, cells[i].h!] as Message] : []));
   const tooLong = !few && !threadFit(m) ? TOO_LONG : null;
@@ -44,7 +44,7 @@ export default function MessageEditor({ arrival, touched, onChange }: EditorProp
     <>
       <div className="grid grid-cols-2 gap-3">
         <TextField id="make-message-with" label="With" hint="optional" state={who} max={WITH_MAX} placeholder={ex.n} />
-        <Field label="The day" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-message-date">
+        <Field label="The day" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-message-date">
           <input id="make-message-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
         </Field>
       </div>

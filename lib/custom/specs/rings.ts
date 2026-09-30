@@ -28,10 +28,10 @@ export const MARK_DIGIT: Record<YearMark, string> = { hard: "0", normal: "1", go
 
 /** Why this span can't be drawn, in one line, or null. */
 export function spanProblem(b: number, c: number): string | null {
-  if (!int(b, FIRST_YEAR, LAST_YEAR)) return `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
-  if (!int(c, FIRST_YEAR, LAST_YEAR)) return `A year from ${FIRST_YEAR} to ${LAST_YEAR}.`;
-  if (c < b) return "The same year or later";
-  return c - b > RINGS_SPAN ? `Up to ${RINGS_SPAN + 1} years` : null;
+  if (!int(b, FIRST_YEAR, LAST_YEAR)) return `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
+  if (!int(c, FIRST_YEAR, LAST_YEAR)) return `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
+  if (c < b) return "The same year or later.";
+  return c - b > RINGS_SPAN ? `Up to ${RINGS_SPAN + 1} years.` : null;
 }
 
 /** The caption: every line can go (each gated with it hidden, tests/make/captions.test.ts). */

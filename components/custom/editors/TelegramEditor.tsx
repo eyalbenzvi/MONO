@@ -15,9 +15,9 @@ export default function TelegramEditor({ arrival, touched, onChange }: EditorPro
   const a = arrival?.t === "telegram" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const to = useText(a?.to ?? "", TELEGRAM_NAME_MAX, lex, { required: "Who is it to?", touched });
+  const to = useText(a?.to ?? "", TELEGRAM_NAME_MAX, lex, { required: "Add who it’s to.", touched });
   const fr = useText(a?.fr ?? "", TELEGRAM_NAME_MAX, lex);
-  const msg = useText(a?.m ?? "", TELEGRAM_MAX, lex, { required: "Type the message", touched });
+  const msg = useText(a?.m ?? "", TELEGRAM_MAX, lex, { required: "Add the message.", touched });
   const [date, setDate] = useState(a?.d ?? "");
   const dateOk = !date || !!parseDate(date);
   const tooLong = msg.value && !telegramFit(msg.value) ? TOO_LONG : null;
@@ -30,7 +30,7 @@ export default function TelegramEditor({ arrival, touched, onChange }: EditorPro
     <>
       <TextField id="make-telegram-to" label="To" state={to} max={TELEGRAM_NAME_MAX} placeholder={ex.to} />
       <TextField id="make-telegram-from" label="From" hint="optional" state={fr} max={TELEGRAM_NAME_MAX} placeholder={ex.fr} />
-      <Field label="Sent" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-telegram-date">
+      <Field label="Sent" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-telegram-date">
         <input id="make-telegram-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
       </Field>
       <TextField id="make-telegram-message" label="Message" hint={`up to ${TELEGRAM_MAX} characters; full stops print as STOP`} state={{ ...msg, error: msg.error ?? tooLong }} max={TELEGRAM_MAX} placeholder={ex.m} rows={4} />

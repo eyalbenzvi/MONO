@@ -45,5 +45,5 @@ test("Your Night Sky: no place match says so", async ({ page }) => {
   await hydrated(page);
   await page.getByRole("button", { name: "Change" }).click();
   await page.getByRole("combobox", { name: "Place" }).fill("zzqx");
-  await expect(page.getByText("No match. Try the nearest city")).toBeVisible();
+  await expect(page.getByText("No match. Try the nearest city.")).toBeVisible();
 });

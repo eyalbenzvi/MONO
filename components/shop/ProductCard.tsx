@@ -2,23 +2,24 @@
 
 import { memo } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
-import { SaveButton, STAGE_BG } from "@/components/ui";
+import { SaveButton } from "@/components/ui";
 import { useCartStore } from "@/store/cartStore";
+import { useTasteStore } from "@/store/tasteStore";
 import { type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { useHydrated } from "@/store/useUiStore";
 import { productHref } from "@/lib/catalog";
 
 /**
- * Grid card. The whole card is one link (a "stretched link": the title's
- * ::after covers the card) and the heart is a sibling on top of it — never a
- * button inside a link. Quiet by design: at most one tag ("Top pick" on the
- * first card of your ranking, else "New this week"); how well a tee matches
- * is on its product page; adding to the bag (it needs a size) happens there.
- * The heart shows on hover with a mouse. Memoised: the grid re-renders on filter /
- * paging, not on scroll, and unchanged cards skip the work.
+ * Grid card: the picture, full-bleed, and the name (up to two lines). The
+ * whole card is one link (a "stretched link": the title's ::after covers the
+ * card) and the heart is a sibling on top of it — never a button inside a
+ * link. No price (prices are shown only where money changes hands). The
+ * first card of your edit says "Top pick", quietly. The heart shows on hover
+ * with a mouse, and once a tee is saved; on touch, until then, it isn't
+ * there at all (saving is on the product page and in Discover). Memoised: the
+ * grid re-renders on filter / paging, not on scroll.
  */
 export const ProductCard = memo(function ProductCard({
   shirt,
@@ -28,45 +29,45 @@ export const ProductCard = memo(function ProductCard({
   variations = 0,
 }: {
   shirt: ShirtProduct;
-  /** The first card of the "For you" ranking (after the taste test). */
+  /** The first card of your edit (after the taste test). */
   topPick?: boolean;
-  /** Other designs in this card's family (shown as "+N variations"). */
+  /** Other designs in this card's family. */
   variations?: number;
   /** Render in this tee colour (and open the product in it); default = original. */
   color?: BaseColor;
   onOpen?: (id: string) => void;
 }) {
   const tee = color ?? shirt.baseColor;
-  // "New" is judged on the viewer's clock, so only once running in the browser.
   const hydrated = useHydrated();
-  const tag = topPick ? "Top pick" : null; // read by screen readers only: the card shows the name alone
-  // Served (and until the page wakes) the card is simply there: its fade-in is for cards that arrive later (a filter, more).
-  // `isolate`: the card's own controls (z-10) stack inside the card and
-  // never above the shop's sticky filter bar or a page's sticky buy bar.
+  const saved = useTasteStore((s) => s.likedIds.includes(shirt.id)) && hydrated;
+  const more = variations ? `, ${variations} ${variations === 1 ? "variation" : "variations"}` : "";
+  // `isolate`: the card's own controls stack inside the card and never above
+  // the shop's control row or a page's sticky buy bar.
   return (
-    <motion.div initial={hydrated ? { opacity: 0, y: 12 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="group relative isolate" data-product-card>
-      <div className={`relative overflow-hidden rounded-2xl px-2 pb-2 pt-9 ${STAGE_BG}`}>
-        <TeeMockup shirt={shirt} color={tee} sizes={SIZES.grid} className="w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+    <div className="group relative isolate" data-product-card>
+      <div className="relative overflow-hidden">
+        <TeeMockup shirt={shirt} color={tee} sizes={SIZES.grid} className="w-full" />
       </div>
-      <div className="mt-2 flex items-start justify-between gap-2 px-0.5">
+      <div className="mt-2 px-1">
+        {topPick && <p className="text-xs text-muted">Top pick</p>}
         <Link
           href={productHref(shirt.id)}
           onClick={() => {
             if (color) useCartStore.getState().setColor(shirt.id, color);
             onOpen?.(shirt.id);
           }}
-          className="block min-w-0 truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
-          aria-label={`${shirt.title}${tag ? `, ${tag}` : ""}${variations ? `, ${variations} variations` : ""}`}
+          className="line-clamp-2 text-[13px] leading-snug text-neutral-100 outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-white"
+          aria-label={`${shirt.title}${topPick ? ", Top pick" : ""}${more}`}
         >
           {shirt.title}
         </Link>
       </div>
-      {/* A sibling of the link, stacked above its ::after. */}
-      {/* Quiet grid: the heart shows once a tee is saved (and on hover with a mouse); saving is on the product page and in Discover. */}
+      {/* A sibling of the link, stacked above its ::after. On touch it isn't rendered until saved. */}
       <SaveButton
         id={shirt.id}
-        className="pointer-events-none absolute right-2 top-2 z-10 h-8 w-8 opacity-0 transition-opacity focus-visible:opacity-100 aria-pressed:pointer-events-auto aria-pressed:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:pointer-events-auto [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
+        title={shirt.title}
+        className={`absolute right-2 top-2 z-10 h-11 w-11 ${saved ? "" : "hidden [@media(hover:hover)_and_(pointer:fine)]:flex [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:focus-visible:opacity-100"}`}
       />
-    </motion.div>
+    </div>
   );
 });

@@ -4,24 +4,15 @@ import { SHIRTS } from "@/lib/catalog";
 import { CALIBRATION_TOTAL } from "@/lib/deck";
 import { pageMeta } from "@/lib/seo";
 
-// Counts and price from the catalog itself (never hard-coded).
+// Counts from the catalog itself (never hard-coded).
 const COUNT = SHIRTS.length.toLocaleString("en-US");
-const PRICES = [...new Set(SHIRTS.map((s) => s.price))];
-const PRICE = PRICES.length === 1 ? `one price, $${PRICES[0]}` : `from $${Math.min(...PRICES)}`;
 
 export const metadata: Metadata = pageMeta({
   path: "/shop/",
-  title: "Shop monochrome tees | MONO",
-  description: `${COUNT} graphic tees, black or white — drawn, archive and photo prints, ${PRICE}. Take the ${CALIBRATION_TOTAL}-swipe taste test and the shop ranks itself for you.`,
+  title: "Shop · Black and white tees | MONO",
+  description: `${COUNT} one-ink tees in black and white: drawn, archive and photo prints. Swipe ${CALIBRATION_TOTAL === 10 ? "ten" : CALIBRATION_TOTAL} and the shop edits itself to your taste.`,
 });
 
 export default function ShopPage() {
-  return (
-    <>
-      <h1 className="sr-only">
-        Shop {COUNT} monochrome tees, black or white
-      </h1>
-      <ShopView />
-    </>
-  );
+  return <ShopView />;
 }

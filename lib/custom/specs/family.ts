@@ -31,8 +31,8 @@ export type Years = [born: number | null, died: number | null];
 /** Why a pair of years can't go on the tree, in one line, or null. */
 export function yearsProblem([b, d]: Years): string | null {
   const bad = (v: number | null) => v !== null && (!Number.isInteger(v) || v < FIRST_BORN || v > LAST_BORN);
-  if (bad(b) || bad(d)) return `Years between ${FIRST_BORN} and ${LAST_BORN}`;
-  if (b !== null && d !== null && (d < b || d - b > LIFE_MAX)) return "Born before died, within 120 years";
+  if (bad(b) || bad(d)) return `Between ${FIRST_BORN} and ${LAST_BORN}.`;
+  if (b !== null && d !== null && (d < b || d - b > LIFE_MAX)) return "Born before died, within 120 years.";
   return null;
 }
 

@@ -19,15 +19,15 @@ export default function SayingsEditor({ arrival, touched, onChange }: EditorProp
   const lex = useLexicon(true);
   const [mode, setMode] = useState<"sayings" | "first">(a?.k === "first" ? "first" : "sayings");
   const first = mode === "first";
-  const who = useText(a?.n ?? "", SAYER_MAX, lex, { required: first ? "Whose first words?" : "Who says them?", touched });
+  const who = useText(a?.n ?? "", SAYER_MAX, lex, { required: first ? "Add a name." : "Add who says them.", touched });
   const [rows, setRows] = useState<Row[]>(a?.x ? a.x.map((s) => ({ s })) : Array.from({ length: SAYINGS_MIN }, () => ({ s: "" })));
-  const word = useText(a?.o ?? "", WORD_MAX, lex, { required: "Type the word", touched });
+  const word = useText(a?.o ?? "", WORD_MAX, lex, { required: "Add the word.", touched });
   const [date, setDate] = useState(a?.d ?? "");
   const cells = rows.map((r) => checkText(r.s, SAYING_MAX, lex));
   const said = cells.flatMap((c) => (c.value ? [c.value] : []));
   const short = said.length < SAYINGS_MIN;
   const tooLong = !short && cells.every((c) => c.value !== null) && !sayingsFit(said) ? TOO_LONG : null;
-  const errors = cells.map((c, i) => ({ s: c.error ?? (touched && short && !c.value && i < SAYINGS_MIN ? `At least ${SAYINGS_MIN} sayings` : null) }));
+  const errors = cells.map((c, i) => ({ s: c.error ?? (touched && short && !c.value && i < SAYINGS_MIN ? `At least ${SAYINGS_MIN} sayings.` : null) }));
   const dateOk = !date || !!parseDate(date);
   let spec: CustomSpec | null = null;
   if (lex && who.value) {
@@ -44,7 +44,7 @@ export default function SayingsEditor({ arrival, touched, onChange }: EditorProp
       {first ? (
         <>
           <TextField id="make-sayings-word" label="The word" state={word} max={WORD_MAX} placeholder="Banana" />
-          <Field label="The day" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-sayings-date">
+          <Field label="The day" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-sayings-date">
             <input id="make-sayings-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
           </Field>
         </>

@@ -27,14 +27,14 @@ export default function WeeksEditor({ arrival, touched, onChange }: EditorProps)
   const lex = useLexicon(marks.some((m) => m.l.trim()));
 
   const bOk = !!parseDate(b);
-  const bError = bOk ? null : touched || b ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null;
+  const bError = bOk ? null : touched || b ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null;
   const asError = bOk ? weeksDateProblem(b, n, asOf) : null;
   // A row left empty is no milestone; a half-filled one says what it needs.
   const rows = marks.map((m) => {
     const d = m.d, l = m.l.replace(/\s+/g, " ").trim();
     if (!d && !l) return { skip: true, error: null, d, l };
-    const dErr = !bOk ? null : d ? weeksDateProblem(b, n, d) : "Pick its date";
-    const lErr = !l ? "Name it" : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? nameLine(l, MILESTONE_LABEL_MAX) : lex ? lex.wordsProblem(l) : null;
+    const dErr = !bOk ? null : d ? weeksDateProblem(b, n, d) : "Add its date.";
+    const lErr = !l ? "Add its name." : cleanWords(l, MILESTONE_LABEL_MAX) !== l ? nameLine(l, MILESTONE_LABEL_MAX) : lex ? lex.wordsProblem(l) : null;
     return { skip: false, error: dErr ?? lErr, d, l };
   });
   const kept = rows.filter((r) => !r.skip);
@@ -77,7 +77,7 @@ export default function WeeksEditor({ arrival, touched, onChange }: EditorProps)
       ))}
       {twice && <p className="text-xs text-neutral-300">One milestone a day.</p>}
       {marks.length < MILESTONES_MAX && (
-        <button type="button" onClick={() => setMarks((xs) => [...xs, { d: "", l: "" }])} className="h-10 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
+        <button type="button" onClick={() => setMarks((xs) => [...xs, { d: "", l: "" }])} className="h-11 w-fit text-neutral-300 underline underline-offset-4 hover:text-white">
           Add a milestone
         </button>
       )}

@@ -37,3 +37,6 @@ export function formatArrival({ from, to }: { from: Date; to: Date }): string {
     ? `${day(from)} – ${day(to)} ${month(to)}`
     : `${day(from)} ${month(from)} – ${day(to)} ${month(to)}`;
 }
+
+/** The one delivery line, from the policy: "Arrives Tue 6 – Fri 9 Oct" (product page, Make, bag, checkout). */
+export const arrivalLine = (review = false, now: Date = new Date()) => `Arrives ${formatArrival(arrivalRange(now, review))}`;

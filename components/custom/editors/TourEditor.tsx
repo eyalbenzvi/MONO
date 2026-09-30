@@ -25,8 +25,8 @@ export default function TourEditor({ arrival, touched, onChange }: EditorProps) 
       live = false;
     };
   }, []);
-  const name = useText(a?.n ?? "", TOUR_NAME_MAX, lex, { required: "Whose tour?", touched });
-  const title = useText(a?.t ?? TOUR_TITLES[0], TOUR_TITLE_MAX, lex, { required: "Name the tour", touched });
+  const name = useText(a?.n ?? "", TOUR_NAME_MAX, lex, { required: "Add whose tour it is.", touched });
+  const title = useText(a?.t ?? TOUR_TITLES[0], TOUR_TITLE_MAX, lex, { required: "Add the tour.", touched });
   const [drafts, setDrafts] = useState<PlaceDraft[]>(a ? draftsOf(unpackPlaces(a.x, { min: TOUR_MIN, max: TOUR_MAX }) ?? []) : []);
   const rows = rowsOf(drafts);
   const few = !rows || rows.length < TOUR_MIN;
@@ -44,7 +44,7 @@ export default function TourEditor({ arrival, touched, onChange }: EditorProps) 
     <>
       <TextField id="make-tour-name" label="Whose tour" state={name} max={TOUR_NAME_MAX} placeholder={ex.n} />
       <TextField id="make-tour-title" label="The tour" hint="ours, or yours" state={title} max={TOUR_TITLE_MAX} suggestions={TOUR_TITLES} />
-      <PlacesField places={places} value={drafts} onChange={setDrafts} max={TOUR_MAX} label="The dates" error={touched && drafts.length < TOUR_MIN ? `At least ${TOUR_MIN} dates` : !rows ? "A year between 1900 and 2100" : null} />
+      <PlacesField places={places} value={drafts} onChange={setDrafts} max={TOUR_MAX} label="The dates" error={touched && drafts.length < TOUR_MIN ? `At least ${TOUR_MIN} dates.` : !rows ? "Between 1900 and 2100." : null} />
     </>
   );
 }

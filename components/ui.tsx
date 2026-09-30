@@ -1,13 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { motion } from "framer-motion";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
-import { useUiStore } from "@/store/useUiStore";
-import { ADULT_SIZES, COLOR_LABELS, FEATURE_LABELS, KID_SIZES, SIZE_LABELS, SIZE_SHORT, isKidSize, type BaseColor, type FeatureKey, type ShirtSize } from "@/types/shirt";
+import { scrollIntoViewQuietly, useUiStore } from "@/store/useUiStore";
+import { track } from "@/lib/analytics";
+import { PAIR_PRICE } from "@/lib/prices";
+import { formatPrice } from "@/lib/format";
+import { arrivalLine } from "@/lib/delivery";
+import { STORE_POLICY } from "@/lib/store-policy";
+import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, SIZE_SHORT, isKidSize, type BaseColor, type ShirtSize } from "@/types/shirt";
 
 export { STAGE_BG } from "@/components/stage";
+
+export { BUTTON_PRIMARY, BUTTON_SECONDARY, TEXT_ACTION } from "@/components/buttons";
+import { BUTTON_PRIMARY, BUTTON_SECONDARY } from "@/components/buttons";
+
+export function Button({
+  variant = "primary",
+  className = "",
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" }) {
+  return <button type="button" {...props} className={`${variant === "primary" ? BUTTON_PRIMARY : BUTTON_SECONDARY} ${className}`} />;
+}
 
 /** Section label: sentence case, readable (not tiny tracked caps). */
 export const LABEL = "mb-2 text-xs font-medium text-neutral-400";
@@ -47,14 +63,18 @@ export function radioKeys<T>(options: readonly T[], value: T | undefined, onChan
 export function SizeSelector({
   value,
   onChange,
-  compact = false,
   highlight = false,
+  aside,
+  groupRef,
 }: {
   value?: ShirtSize;
   onChange: (size: ShirtSize) => void;
-  compact?: boolean;
-  /** Draw attention (e.g. after "Choose size" was tapped). */
+  /** Draw attention (a buy button tapped before a size was chosen). */
   highlight?: boolean;
+  /** On the row above the sizes, opposite "Kids’ sizes" (the product page's "Size guide"). */
+  aside?: React.ReactNode;
+  /** The sizes themselves (a buy button without a size moves focus to the first). */
+  groupRef?: React.Ref<HTMLDivElement>;
 }) {
   // Adults by default; the kids' row one tap away (and open if a kids' size is chosen).
   const [kids, setKids] = useState(isKidSize(value));
@@ -62,10 +82,18 @@ export function SizeSelector({
   const keys = radioKeys(group, value, onChange);
   return (
     <div>
+      <div className="flex items-center justify-between">
+        <button type="button" onClick={() => setKids((k) => !k)} className="-ml-1 flex h-11 min-w-11 items-center px-1 text-sm text-muted underline-offset-4 hover:text-white hover:underline">
+          {kids ? "Adult sizes" : "Kids’ sizes"}
+        </button>
+        {aside}
+      </div>
+      {/* 44px targets with 8px between; narrow screens wrap rather than shrink them. */}
       <motion.div
-        className={`grid gap-1.5 ${kids ? "grid-cols-5" : "grid-cols-7"}`}
+        ref={groupRef}
+        className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-2"
         role="radiogroup"
-        aria-label={kids ? "Kids' size" : "Size"}
+        aria-label={kids ? "Kids’ size" : "Size"}
         animate={highlight ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
         transition={{ duration: 0.3 }}
       >
@@ -80,10 +108,8 @@ export function SizeSelector({
               aria-label={SIZE_LABELS[size]}
               onClick={() => onChange(size)}
               {...keys(i)}
-              className={`${compact ? "h-9 text-xs" : "h-11 text-sm"} min-w-0 rounded-xl px-0 font-semibold transition-colors ${
-                active
-                  ? "bg-white text-black"
-                  : `bg-white/5 text-neutral-200 ring-1 hover:bg-white/10 ${highlight ? "ring-white/60" : "ring-white/15"}`
+              className={`h-11 min-w-11 rounded-control px-0 text-sm font-medium transition-colors duration-150 ${
+                active ? "bg-white text-black" : `text-neutral-200 ring-1 ring-inset hover:bg-white/5 ${highlight ? "ring-white" : "ring-white/20"}`
               }`}
             >
               {SIZE_SHORT[size]}
@@ -91,90 +117,83 @@ export function SizeSelector({
           );
         })}
       </motion.div>
-      <button type="button" onClick={() => setKids((k) => !k)} className="mt-1.5 h-8 text-xs text-neutral-400 underline-offset-2 hover:text-white hover:underline">
-        {kids ? "Adult sizes" : "Kids' sizes"}
-      </button>
     </div>
   );
 }
 
-const COLORS: readonly BaseColor[] = ["black", "white"];
-/** A tee-colour dot: the same one on the product page, the bag, Saved and the shop. */
-export function Swatch({ color, className }: { color: BaseColor; className: string }) {
-  return <span className={`${className} shrink-0 rounded-full ring-1 ${color === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} aria-hidden />;
+/**
+ * A buy button tapped before a size was chosen: the sizes shake and outline,
+ * focus moves to the first one, and "Select your size." is announced. Render
+ * `status` once near the sizes.
+ */
+export function useSizeRequired(source: string) {
+  const [nudge, setNudge] = useState(0);
+  const [said, setSaid] = useState("");
+  const groupRef = useRef<HTMLDivElement>(null);
+  const require = () => {
+    setNudge((n) => n + 1);
+    setSaid("");
+    track("size_required", { source });
+    requestAnimationFrame(() => {
+      setSaid("Select your size.");
+      scrollIntoViewQuietly(groupRef.current);
+      groupRef.current?.querySelector<HTMLElement>('[role="radio"]')?.focus({ preventScroll: true });
+    });
+  };
+  const status = (
+    <p role="status" className="sr-only">
+      {said}
+    </p>
+  );
+  return { nudge, groupRef, require, status };
 }
-const swatch = (c: BaseColor, size: string) => <Swatch color={c} className={size} />;
+
+type Choice = BaseColor | "both";
+const CHOICES: readonly Choice[] = ["black", "white", "both"];
 
 /**
- * The one tee-colour picker (every design comes in both; the original is
- * marked). Variants:
- * - "cards": two labelled options (product page)
- * - "pills": compact labelled pills (bag lines)
- * - "dots": swatches only (Saved list)
- * - "overlay": swatches on a translucent pill, over a product image
+ * The one tee picker: Black · White · Both (the pair, with its price — the
+ * pair is itself a buying choice, so its price shows here); the original
+ * is marked for screen readers. A design sold in one colour only shows that
+ * colour, and no choice. 44px targets.
  */
-export function ColorSelector({
+export function TeeChoice({
   value,
   original,
+  colors,
   onChange,
-  variant = "cards",
+  noBoth = false,
+  pairPrice = PAIR_PRICE,
 }: {
-  value: BaseColor;
+  value: Choice;
   original: BaseColor;
-  onChange: (color: BaseColor) => void;
-  variant?: "cards" | "pills" | "dots" | "overlay";
+  colors: BaseColor[];
+  onChange: (c: Choice) => void;
+  noBoth?: boolean;
+  /** The pair's price on the Both option (a Make print's pair costs more). */
+  pairPrice?: number;
 }) {
-  const keys = radioKeys(COLORS, value, onChange);
-  const label = (c: BaseColor) => `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
-  const wrap = {
-    cards: "grid grid-cols-2 gap-2",
-    pills: "flex flex-wrap items-center gap-1.5",
-    dots: "flex items-center gap-2",
-    overlay: "flex gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15",
-  }[variant];
+  // A Make print that one tee can't carry: no pair to offer.
+  const options = noBoth ? CHOICES.filter((c) => c !== "both") : CHOICES;
+  const keys = radioKeys(options, value, onChange);
+  if (colors.length < 2) return <p className="flex h-11 items-center text-sm text-neutral-200">{COLOR_LABELS[original]} tee only</p>;
   return (
-    <div className={wrap} role="radiogroup" aria-label="Tee colour">
-      {COLORS.map((c, i) => {
+    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tee colour">
+      {options.map((c, i) => {
         const active = value === c;
-        const common = { type: "button" as const, role: "radio", "aria-checked": active, "aria-label": label(c), title: label(c), onClick: () => onChange(c), ...keys(i) };
-        if (variant === "cards")
-          return (
-            <button
-              key={c}
-              {...common}
-              className={`flex h-12 min-w-0 items-center gap-2.5 rounded-xl px-3 text-sm font-semibold transition ${
-                active ? "bg-white/10 text-white ring-2 ring-white" : "bg-white/[0.03] text-neutral-400 ring-1 ring-white/15 hover:bg-white/[0.07]"
-              }`}
-            >
-              {swatch(c, "h-6 w-6")}
-              <span className="min-w-0 flex-1 text-left leading-tight">
-                <span className="block truncate">{COLOR_LABELS[c]}</span>
-                {c === original && <span className="block text-xs font-medium text-neutral-400">Original</span>}
-              </span>
-            </button>
-          );
-        if (variant === "pills")
-          return (
-            <button
-              key={c}
-              {...common}
-              className={`flex h-8 items-center gap-1.5 rounded-full pl-1 pr-2.5 text-xs font-medium transition ${
-                active ? "bg-white/10 text-white ring-1 ring-white" : "text-neutral-400 ring-1 ring-white/10 hover:text-neutral-200"
-              }`}
-            >
-              {swatch(c, "h-6 w-6")}
-              {COLOR_LABELS[c]}
-            </button>
-          );
+        const label = c === "both" ? `Both · ${formatPrice(pairPrice)}` : COLOR_LABELS[c];
         return (
           <button
             key={c}
-            {...common}
-            className={`relative flex items-center justify-center rounded-full transition-shadow before:absolute before:-inset-1.5 before:content-[''] ${variant === "overlay" ? "h-8 w-8" : "h-7 w-7"} ${
-              active ? "ring-2 ring-white ring-offset-2 ring-offset-black" : variant === "dots" ? "ring-1 ring-white/20" : ""
-            }`}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            aria-label={c === "both" ? `Both tees, black and white, ${formatPrice(pairPrice)}` : `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`}
+            onClick={() => onChange(c)}
+            {...keys(i)}
+            className={`h-11 min-w-11 whitespace-nowrap rounded-control px-4 text-sm font-medium transition-colors duration-150 ${active ? "bg-white text-black" : "text-neutral-200 ring-1 ring-inset ring-white/20 hover:bg-white/5"}`}
           >
-            {swatch(c, variant === "overlay" ? "h-6 w-6" : "h-5 w-5")}
+            {label}
           </button>
         );
       })}
@@ -182,42 +201,48 @@ export function ColorSelector({
   );
 }
 
+/** A tee-colour dot: the same one on the product page, the bag, Saved and the shop. */
+export function Swatch({ color, className }: { color: BaseColor; className: string }) {
+  return <span className={`${className} shrink-0 rounded-full ring-1 ${color === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} aria-hidden />;
+}
+
 let savedToastShown = false;
 
 /**
  * The one save (heart) control. Saving trains the taste vector; unsaving
  * always offers Undo (restores without training twice).
- * - "sm": 32px on grid cards (callers position it; 44px hit area)
+ * - "sm": over a grid card (callers position it; 44px)
  * - "lg": 48px next to the buy button
  */
-export function SaveButton({ id, size = "sm", className = "" }: { id: string; size?: "sm" | "lg"; className?: string }) {
+export function SaveButton({ id, title, size = "sm", className = "" }: { id: string; title?: string; size?: "sm" | "lg"; className?: string }) {
   const hydrated = useUiStore((s) => s.hydrated);
   const saved = useTasteStore((s) => s.likedIds.includes(id)) && hydrated;
+  const name = title ? ` ${title}` : "";
   return (
     <motion.button
       type="button"
-      whileTap={{ scale: 0.8 }}
-      animate={saved ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-      transition={{ duration: 0.25 }}
+      whileTap={{ scale: 0.95 }}
+      animate={saved ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+      transition={{ duration: 0.15 }}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         const { toggleSaved, restoreSaved } = useTasteStore.getState();
         const { showToast } = useUiStore.getState();
         toggleSaved(id);
-        if (saved) showToast("Removed from saved", { label: "Undo", run: () => restoreSaved(id) });
+        if (saved) showToast("Removed from Saved", { label: "Undo", run: () => restoreSaved(id) });
         else if (!savedToastShown) {
           savedToastShown = true;
           showToast("Saved");
         }
       }}
       aria-pressed={saved}
-      aria-label={saved ? "Remove from saved" : "Save"}
-      className={`flex items-center justify-center rounded-full transition-colors ${
-        size === "sm" ? "before:absolute before:-inset-1.5 before:content-['']" : "h-12 w-12 shrink-0 ring-1 ring-white/15"
-      } ${saved ? "bg-white text-black" : size === "sm" ? "bg-black/55 text-white ring-1 ring-white/15 hover:bg-black/75" : "bg-white/5 text-white hover:bg-white/10"} ${className}`}
+      aria-label={saved ? `Remove${name} from Saved` : `Save${name}`}
+      className={`flex items-center justify-center transition-colors duration-150 ${size === "sm" ? "h-11 w-11" : "h-12 w-12 shrink-0 rounded-control ring-1 ring-inset ring-white/25"} ${
+        saved ? (size === "sm" ? "text-white" : "bg-white text-black") : size === "sm" ? "text-white drop-shadow hover:text-neutral-200" : "text-white hover:bg-white/5"
+      } ${className}`}
     >
-      <Icon name="heart" className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
+      <Icon name="heart" className={`${size === "sm" ? "h-5 w-5" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
     </motion.button>
   );
 }
@@ -229,31 +254,28 @@ export function TeeDot({ color }: { color: BaseColor }) {
   );
 }
 
-/** A row in a spec list (<dl>). */
-export function Spec({ label, value }: { label: string; value: string }) {
+/** A row in a spec list (<dl>). `mono`: a measurement or code (the one place the mono face is used). */
+export function Spec({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex justify-between gap-3 border-b border-white/5 py-2 text-sm">
-      <dt className="text-neutral-400">{label}</dt>
-      <dd className="text-right font-medium text-neutral-200">{value}</dd>
+    <div className="flex justify-between gap-3 border-b border-white/10 py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className={`text-right text-neutral-200 ${mono ? "font-mono text-xs" : ""}`}>{value}</dd>
     </div>
   );
 }
 
-export function TraitChips({ keys, className = "", stagger = false }: { keys: FeatureKey[]; className?: string; stagger?: boolean }) {
-  if (keys.length === 0) return null;
+/**
+ * The one line of promises, rendered from the policy (lib/store-policy,
+ * lib/delivery): when it arrives, returns (or the made-for-you exception)
+ * and the fabric. The same words on the product page, Make and the bag.
+ */
+export function TrustLine({ custom = false, review = false, className = "" }: { custom?: boolean; review?: boolean; className?: string }) {
+  // The window is worked out on the viewer's clock, so only once the page runs.
+  const hydrated = useUiStore((s) => s.hydrated);
+  const parts = [hydrated ? arrivalLine(review) : null, custom ? STORE_POLICY.customReturns.replace(/\.$/, "") : STORE_POLICY.returns, STORE_POLICY.fabric].filter(Boolean);
   return (
-    <div className={`flex flex-wrap gap-1.5 ${className}`}>
-      {keys.map((k, i) => (
-        <motion.span
-          key={k}
-          initial={stagger ? { opacity: 0, scale: 0.8 } : false}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: stagger ? 0.35 + i * 0.06 : 0, type: "spring", stiffness: 400, damping: 22 }}
-          className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs text-neutral-200 ring-1 ring-white/10"
-        >
-          {FEATURE_LABELS[k]}
-        </motion.span>
-      ))}
-    </div>
+    <p className={`text-xs leading-relaxed text-muted ${className}`} data-trust>
+      {parts.join(" · ")}
+    </p>
   );
 }

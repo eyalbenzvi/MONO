@@ -10,6 +10,7 @@
  *
  * Runs before `next build` so the images are exported with the site.
  */
+import { MAKE_PRICE } from "../lib/prices";
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import os from "node:os";
@@ -24,7 +25,6 @@ import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt
 import { loadRenderer } from "../lib/custom/renderers";
 import { decodeCities, decodeCountries, type CitiesFile, type CountriesFile } from "../lib/custom/data";
 import { MADE, type MadeProduct } from "../lib/custom/products";
-import { STORE_POLICY } from "../lib/store-policy";
 
 const ALL = shirtsJson as unknown as CatalogEntry[];
 /**
@@ -112,7 +112,7 @@ function makeSvg(m: MadeProduct, printPng: string, color: "black" | "white") {
   ${logo(620, 92)}
   <text x="620" y="245" font-size="${titleSize.toFixed(1)}" font-weight="700" ${FONT} fill="#fff">${esc(m.name)}</text>
   <text x="620" y="296" font-size="${fit(m.line, 540, 26, ADV.regular).toFixed(1)}" ${FONT} fill="#fff" fill-opacity="0.75">${esc(m.line)}</text>
-  <text x="620" y="336" font-size="23" ${FONT} fill="#fff" fill-opacity="0.55">Made for you · $${STORE_POLICY.customPrice} · black or white</text>
+  <text x="620" y="336" font-size="23" ${FONT} fill="#fff" fill-opacity="0.55">Made for you · $${MAKE_PRICE} · black or white</text>
   <rect x="620" y="420" width="${ctaW.toFixed(0)}" height="64" rx="32" fill="#fff"/>
   <text x="${(620 + ctaW / 2).toFixed(0)}" y="461" font-size="25" font-weight="700" text-anchor="middle" ${FONT} fill="#000">${cta}</text>
   <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);

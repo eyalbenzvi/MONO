@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { MotionGlobalConfig } from "framer-motion";
 
 // next/link needs the app router; a plain anchor is enough here.
@@ -11,6 +11,9 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
+
+// The sheets' history steps need a router; these tests only render them.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, back() {} }), usePathname: () => "/" }));
 
 import { ProductCard } from "@/components/shop/ProductCard";
 import { MiniBag } from "@/components/shop/MiniBag";
@@ -39,29 +42,33 @@ afterEach(() => {
 const shirt = getShirtById(W1)!;
 
 describe("ProductCard", () => {
-  it("one link with the name (no price: every tee costs the same) and a heart — no quick add, share or match badge", () => {
-    const { container } = render(<ProductCard shirt={shirt} />);
-    expect(screen.getByRole("link", { name: new RegExp(`^${shirt.title}`) }).getAttribute("href")).toBe(`/shop/${shirt.id}/`);
+  it("one link with the name (no price anywhere on a card) and a heart named for the tee — no quick add, share or match badge", () => {
+    const { container } = render(<ProductCard shirt={shirt} variations={1} />);
+    const link = screen.getByRole("link", { name: new RegExp(`^${shirt.title}`) });
+    expect(link.getAttribute("href")).toBe(`/shop/${shirt.id}/`);
+    // Singular and plural (never "1 variations").
+    expect(link.getAttribute("aria-label")).toBe(`${shirt.title}, 1 variation`);
+    expect(link.className).toMatch(/line-clamp-2/);
     expect(container.textContent).not.toMatch(/\$\d/);
-    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: `Save ${shirt.title}` })).toBeTruthy();
     expect(screen.getAllByRole("button")).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /^Share / })).toBeNull();
     expect(screen.queryByText(/match/i)).toBeNull();
   });
 
-  it("no visible tags (T1 minimal): Top pick is for screen readers only; New this week isn't shown", () => {
+  it("Top pick shows on the first card of your edit, quietly; New this week isn't shown", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(shirt.dropDate + 86_400_000);
     const { rerender, container } = render(<ProductCard shirt={shirt} />);
     expect(container.textContent).not.toMatch(/New this week|Top pick/);
     rerender(<ProductCard shirt={shirt} topPick />);
-    expect(container.textContent).not.toMatch(/Top pick/);
+    expect(screen.getByText("Top pick")).toBeTruthy();
     expect(screen.getByRole("link", { name: /Top pick/ })).toBeTruthy();
   });
 });
 
 describe("MiniBag", () => {
-  it("confirms an add in one row — 'Added · M' and Checkout (to the delivery form), no other buttons", () => {
+  it("confirms an add in one line at the bottom — '✓ Added · M' and Checkout (to the delivery form), no other buttons", () => {
     render(<MiniBag />);
     act(() => void useCartStore.getState().addToCart(shirt.id, "M", "black", 1, { source: "grid" }));
     const region = screen.getByRole("region", { name: "Added to bag" });
@@ -74,27 +81,27 @@ describe("MiniBag", () => {
     expect(region.querySelectorAll("button")).toHaveLength(0);
   });
 
-  it("leaves by itself after 2.5 s", () => {
+  it("leaves by itself after 5 s", () => {
     vi.useFakeTimers();
     render(<MiniBag />);
     act(() => void useCartStore.getState().addToCart(shirt.id, "M", "black"));
     expect(screen.queryByRole("region", { name: "Added to bag" })).not.toBeNull();
-    act(() => void vi.advanceTimersByTime(2600));
+    act(() => void vi.advanceTimersByTime(4000));
+    expect(useUiStore.getState().added).not.toBeNull();
+    act(() => void vi.advanceTimersByTime(1100));
     expect(useUiStore.getState().added).toBeNull();
   });
 });
 
 describe("TasteSheet", () => {
-  it("holds the level, five trait bars, Daily 5 and one button (Share my taste); Reset behind ⋯ — no percentages", () => {
+  it("the taste in words (archetype, sentence, traits), Share as a text link and one way on — no levels, bars, Daily 5, reset or percentages", () => {
     render(<TasteSheet open onClose={() => {}} />);
     const sheet = screen.getByRole("dialog", { name: "Your taste" });
-    expect(screen.getAllByRole("meter")).toHaveLength(5);
-    expect(sheet.textContent).toMatch(/Sharpening|Focused|Dialled in/);
-    expect(sheet.textContent).toContain("Daily 5");
-    expect(screen.getByRole("button", { name: "Share my taste" })).toBeTruthy();
+    expect(screen.queryAllByRole("meter")).toHaveLength(0);
+    expect(sheet.textContent).not.toMatch(/Sharpening|Focused|Dialled in|Daily 5|streak/);
+    expect(screen.getByRole("button", { name: "Share your taste" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "See your edit" }).getAttribute("href")).toBe("/shop/");
     expect(screen.queryByRole("button", { name: /Reset taste/ })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "More for your taste" }));
-    expect(screen.getByRole("button", { name: /^Reset taste/ })).toBeTruthy();
     expect(sheet.textContent).not.toMatch(/\d+%/);
   });
 });

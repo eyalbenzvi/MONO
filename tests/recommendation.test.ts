@@ -8,7 +8,6 @@ import {
   rankShirts,
   topTraits,
   profileSharpness,
-  biggestShift,
   updateUserVector,
 } from "@/lib/recommendation";
 import { SHIRTS } from "@/lib/catalog";
@@ -161,13 +160,5 @@ describe("display helpers (no effect on scores)", () => {
     for (let i = 0; i < 5; i++) v = updateUserVector(v, SHIRTS[0].features, "like");
     expect(profileSharpness(v)).toBeGreaterThan(s0);
     expect(profileSharpness(vec(() => 1))).toBe(1);
-  });
-
-  it("biggestShift names the most-moved trait in the swipe's direction", () => {
-    const before = createInitialVector();
-    const shirt = { ...createInitialVector(0.5), typography: 1, halftone_raster: 0.9 };
-    expect(biggestShift(before, updateUserVector(before, shirt, "like"), "like")).toBe("typography");
-    expect(biggestShift(before, updateUserVector(before, shirt, "dislike"), "dislike")).toBe("typography");
-    expect(biggestShift(before, before, "like")).toBeNull();
   });
 });

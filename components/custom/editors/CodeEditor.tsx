@@ -32,11 +32,11 @@ export default function CodeEditor({ made, arrival, touched, onChange }: EditorP
   const refused = x && lex ? lex.wordsProblem(x) : null;
   const error = !x
     ? touched
-      ? "Type a name"
+      ? "Add a name."
       : null
     : problem
       ? problem.ch === ""
-        ? `Up to ${CODE_MAX} characters`
+        ? `Up to ${CODE_MAX} characters.`
         : `${CODE_NAMES[kind]} has no "${problem.ch}".${problem.instead ? ` Try "${problem.instead}".` : ""}`
       : refused;
   const spec: CustomSpec | null = x && !problem && lex && !refused ? { t: "code", v: 1, p: { x, k: kind, ...(secret ? { h: 1 as const } : {}) } } : null;

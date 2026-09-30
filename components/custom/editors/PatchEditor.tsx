@@ -17,7 +17,7 @@ export default function PatchEditor({ arrival, touched, onChange }: EditorProps)
   const a = arrival?.t === "patch" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const mission = useText(a?.m ?? "", MISSION_MAX, lex, { required: "Name the mission", touched });
+  const mission = useText(a?.m ?? "", MISSION_MAX, lex, { required: "Add the mission.", touched });
   const [rows, setRows] = useState<Row[]>(a ? a.x.map((n) => ({ n })) : [{ n: "" }, { n: "" }]);
   const [e, setE] = useState<Emblem>(a?.e ?? "rocket");
   const [date, setDate] = useState(a?.d ?? "");
@@ -33,7 +33,7 @@ export default function PatchEditor({ arrival, touched, onChange }: EditorProps)
   return (
     <>
       <TextField id="make-patch-mission" label="The mission" state={mission} max={MISSION_MAX} placeholder={ex.m} />
-      <RowsField id="make-patch" noun="crew member" columns={[{ key: "n", label: "Crew", max: CREW_NAME_MAX }]} rows={rows} setRows={setRows} max={CREW_MAX} errors={cells.map((c, i) => ({ n: c.error ?? (touched && i === 0 && !crew.length ? "Name the crew" : null) }))} placeholders={ex.x.map((n) => ({ n }))} />
+      <RowsField id="make-patch" noun="crew member" columns={[{ key: "n", label: "Crew", max: CREW_NAME_MAX }]} rows={rows} setRows={setRows} max={CREW_MAX} errors={cells.map((c, i) => ({ n: c.error ?? (touched && i === 0 && !crew.length ? "Add the crew." : null) }))} placeholders={ex.x.map((n) => ({ n }))} />
       {tooLong && <p className="text-xs font-medium text-white">{tooLong}</p>}
       <div className="grid grid-cols-2 gap-3">
         <Field label="Emblem" htmlFor="make-patch-emblem">
@@ -45,7 +45,7 @@ export default function PatchEditor({ arrival, touched, onChange }: EditorProps)
             ))}
           </select>
         </Field>
-        <Field label="Launched" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-patch-date">
+        <Field label="Launched" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-patch-date">
           <input id="make-patch-date" type="date" value={date} onChange={(ev) => setDate(ev.target.value)} className={INPUT} />
         </Field>
       </div>

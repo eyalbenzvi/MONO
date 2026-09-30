@@ -15,7 +15,7 @@ export default function CreditsEditor({ arrival, touched, onChange }: EditorProp
   const a = arrival?.t === "credits" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const family = useText(a?.f ?? "", FAMILY_MAX, lex, { required: "Type the family's name", touched });
+  const family = useText(a?.f ?? "", FAMILY_MAX, lex, { required: "Add the family’s name.", touched });
   const [rows, setRows] = useState<Row[]>(a ? a.x.map(([r, n]) => ({ r, n })) : Array.from({ length: CREDITS_MIN }, () => ({ r: "", n: "" })));
   const [year, setYear] = useState(a?.y ? String(a.y) : "");
   const cells = rows.map((r) => ({ r: checkText(r.r, ROLE_MAX, lex), n: checkText(r.n, CREDIT_NAME_MAX, lex) }));
@@ -23,8 +23,8 @@ export default function CreditsEditor({ arrival, touched, onChange }: EditorProp
   const half = cells.some((c) => !!c.r.value !== !!c.n.value);
   const few = full.length < CREDITS_MIN;
   const errors = cells.map((c, i) => ({
-    r: c.r.error ?? (touched && !c.r.value && (c.n.value || (few && i < CREDITS_MIN)) ? "Type the role" : null),
-    n: c.n.error ?? (touched && !c.n.value && (c.r.value || (few && i < CREDITS_MIN)) ? "Type who" : null),
+    r: c.r.error ?? (touched && !c.r.value && (c.n.value || (few && i < CREDITS_MIN)) ? "Add the role." : null),
+    n: c.n.error ?? (touched && !c.n.value && (c.r.value || (few && i < CREDITS_MIN)) ? "Add who." : null),
   }));
   const y = yearOf(year, FIRST_YEAR, LAST_YEAR);
   const ok = !!lex && !!family.value && !few && !half && cells.every((c) => c.r.value !== null && c.n.value !== null) && y !== null;
@@ -50,7 +50,7 @@ export default function CreditsEditor({ arrival, touched, onChange }: EditorProp
         errors={errors}
         placeholders={ex.x.map(([r, n]) => ({ r, n }))}
       />
-      <Field label="Year" hint="optional" error={y === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-credits-year">
+      <Field label="Year" hint="optional" error={y === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-credits-year">
         <input id="make-credits-year" value={year} inputMode="numeric" maxLength={4} placeholder={String(ex.y)} onChange={(e) => setYear(e.target.value)} className={INPUT} />
       </Field>
     </>

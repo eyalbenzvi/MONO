@@ -11,7 +11,7 @@ import { type EditorProps } from "./types";
 const STEP_S = 0.22;
 const freq = (p: number) => 261.63 * 2 ** (p / 12);
 const key = (s: number, p: number) => s * PITCHES + p;
-const BUTTON = "h-10 rounded-full px-3.5 text-sm font-semibold text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
+const BUTTON = "h-11 rounded-control px-3.5 text-sm font-medium text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
 
 /**
  * A music box's pluck: a sine and a faint high partial (a tine's), struck and
@@ -133,7 +133,7 @@ export default function MusicboxEditor({ arrival, touched, onChange }: EditorPro
       <div>
         <p className="mb-1 flex items-baseline gap-2 text-xs font-medium text-neutral-400" id="make-music-grid-label">
           The strip
-          <span className="text-neutral-500">
+          <span className="text-muted">
             {notes.length} of {NOTES_MAX} notes · step {cs + 1}
           </span>
         </p>
@@ -154,7 +154,7 @@ export default function MusicboxEditor({ arrival, touched, onChange }: EditorPro
               toggle(cs, cp);
             }
           }}
-          className="relative max-h-72 overflow-y-auto rounded-xl bg-white/[0.06] p-1.5 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="relative max-h-72 overflow-y-auto rounded-control bg-white/[0.06] p-1.5 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
           {Array.from({ length: STEPS }, (_, s) => (
             <div key={s} className={`grid grid-cols-[repeat(25,minmax(0,1fr))] ${s % 8 === 0 && s ? "border-t border-white/15" : ""} ${s === cs || s === playhead ? "bg-white/10" : ""}`}>
@@ -180,7 +180,7 @@ export default function MusicboxEditor({ arrival, touched, onChange }: EditorPro
         <div className="relative h-24 select-none">
           <div className="grid h-full grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5">
             {whites.map((p) => (
-              <button key={p} type="button" aria-label={pitchName(p)} aria-pressed={on.has(key(cs, p))} disabled={full && !on.has(key(cs, p))} onClick={() => toggle(cs, p, true)} className={`flex items-end justify-center rounded-b-lg pb-1 text-[10px] ring-1 ring-white/15 transition disabled:opacity-30 ${on.has(key(cs, p)) ? "bg-white text-black" : "text-neutral-500 hover:bg-white/10"}`}>
+              <button key={p} type="button" aria-label={pitchName(p)} aria-pressed={on.has(key(cs, p))} disabled={full && !on.has(key(cs, p))} onClick={() => toggle(cs, p, true)} className={`flex items-end justify-center rounded-b-lg pb-1 text-[10px] ring-1 ring-white/15 transition disabled:opacity-30 ${on.has(key(cs, p)) ? "bg-white text-black" : "text-muted hover:bg-white/10"}`}>
                 {p % 12 === 0 ? pitchName(p) : ""}
               </button>
             ))}
@@ -218,7 +218,7 @@ export default function MusicboxEditor({ arrival, touched, onChange }: EditorPro
             {playing ? "Stop" : "Play"}
           </button>
         </div>
-        {problem ? <p className="mt-2 text-xs text-neutral-300">{problem}</p> : full && <p className="mt-2 text-xs text-neutral-500">{NOTES_MAX} notes at most.</p>}
+        {problem ? <p className="mt-2 text-xs text-neutral-300">{problem}</p> : full && <p className="mt-2 text-xs text-muted">{NOTES_MAX} notes at most.</p>}
       </div>
     </>
   );

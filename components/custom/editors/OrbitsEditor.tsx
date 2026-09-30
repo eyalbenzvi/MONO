@@ -8,7 +8,7 @@ import { Segmented } from "./Segmented";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
-const LINK = "h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
+const LINK = "h-11 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
 const pad = (n: number) => String(n).padStart(2, "0");
 const iso = (n: number) => {
   const [y, m, d] = dateOf(n);
@@ -42,11 +42,11 @@ export default function OrbitsEditor({ arrival, touched, onChange }: EditorProps
   const dates = rows.map((r) => (parseDate(r.date) ? r.date : null));
   const nameError = (i: number) => {
     const r = rows[i];
-    if (!r.name.trim()) return touched || left[i] ? "Type a name" : null;
+    if (!r.name.trim()) return touched || left[i] ? "Add a name." : null;
     if (!names[i]) return nameLine(r.name, ORBIT_NAME);
     return lex ? lex.wordsProblem(names[i]!) : null;
   };
-  const dateError = (i: number) => (!dates[i] && (touched || left[i]) ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : null);
+  const dateError = (i: number) => (!dates[i] && (touched || left[i]) ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null);
   const ok = !!lex && rows.every((_, i) => names[i] && !nameError(i) && dates[i]);
   const days = ok ? (dates as string[]).map(dayOf) : [];
   const sun = centre >= 0 && centre < rows.length ? centre : -1;
@@ -67,7 +67,7 @@ export default function OrbitsEditor({ arrival, touched, onChange }: EditorProps
     <>
       <div>
         <p className="mb-1 text-xs font-medium text-neutral-400">
-          The family <span className="text-neutral-500">{`${ORBIT_MIN} to ${ORBIT_MAX}, with birthdays`}</span>
+          The family <span className="text-muted">{`${ORBIT_MIN} to ${ORBIT_MAX}, with birthdays`}</span>
         </p>
         <div className="space-y-3">
           {rows.map((r, i) => (

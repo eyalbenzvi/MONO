@@ -21,10 +21,10 @@ import { W1 } from "./fixtures";
 const FULL = full as unknown as CatalogEntry[];
 
 describe("I01: names that say what the print shows", () => {
-  it("every design has a subject, and the SEO title reads 'Name — Subject Style Tee | MONO'", () => {
+  it("every design has a subject, and the SEO title reads 'Name · Subject Style Tee | MONO'", () => {
     for (const s of FULL) expect(s.subject.length, s.id).toBeGreaterThan(2);
     const orion = FULL.find((s) => s.title === "Orion, the Hunter")!;
-    expect(productTitle(orion)).toBe("Orion, the Hunter — Orion Constellation Star-Chart Tee | MONO");
+    expect(productTitle(orion)).toBe("Orion, the Hunter · Orion Constellation Star-Chart Tee | MONO");
     // A title that is its subject isn't said twice.
     const eclipse = FULL.find((s) => s.subject === "Solar Eclipse")!;
     expect(productTitle(eclipse)).toBe("Solar Eclipse Line-Art Tee | MONO");

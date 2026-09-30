@@ -43,10 +43,10 @@ test("Make: From ours and From yours are two pages behind one switch; Back leave
   await hydrated(page);
   await page.goto("make/");
   await hydrated(page);
-  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("From ours");
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("Personalise");
   await expect(page.getByRole("heading", { name: "From a date" })).toBeVisible();
   await expect(page.getByText("Start with a file")).toHaveCount(0);
-  await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
+  await page.locator("[data-make-switch]").getByRole("link", { name: "Upload" }).tap();
   await expect(page).toHaveURL(/\/make\/yours\/$/);
   // One thing to do: the tee with the print area marked, which opens the chooser, as the button does.
   await expect(page.locator('[data-step="start"]')).toHaveText("Your print");
@@ -228,7 +228,7 @@ test("From yours: left for the shop mid-way and back, the picture is there as it
   await page.getByRole("link", { name: "Shop", exact: true }).first().tap();
   await page.waitForURL(/\/shop\//);
   await page.getByRole("link", { name: "Make", exact: true }).first().tap();
-  await page.locator("[data-make-switch]").getByRole("link", { name: "From yours" }).tap();
+  await page.locator("[data-make-switch]").getByRole("link", { name: "Upload" }).tap();
   await expect(page).toHaveURL(/\/make\/yours\/#print$/);
   await ready(page);
   await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
@@ -262,8 +262,8 @@ test("From yours, after the order: checking → cleared; offered → accepted; i
   await expect(page.getByText("Reviews are simulated in this demo.")).toBeVisible();
   await page.clock.fastForward(21_000);
   await expect(page.getByText("Cleared. Printing next.")).toBeVisible();
-  await page.getByRole("button", { name: "Offer it to the catalogue ›" }).tap();
-  const sheet = page.getByRole("dialog", { name: "Offer it to the catalogue" });
+  await page.getByRole("button", { name: "Offer to the catalogue →" }).tap();
+  const sheet = page.getByRole("dialog", { name: "Offer to the catalogue" });
   await sheet.getByLabel("Title").fill("Rings and Bars");
   await sheet.getByLabel(/Credit/).fill("Noa L.");
   await expect(sheet.getByText("$6 a tee, $10 a pair. You keep the rights. We review it again.")).toBeVisible();
@@ -276,7 +276,7 @@ test("From yours, after the order: checking → cleared; offered → accepted; i
   await expect(page.locator('[data-offer="offered"]')).toBeVisible();
   await page.clock.fastForward(31_000);
   await expect(page.locator('[data-offer="accepted"]')).toBeVisible();
-  await expect(page.getByText("Sales: none yet (this is a demo)")).toBeVisible();
+  await expect(page.getByText("No sales yet.")).toBeVisible();
   await page.locator('[data-offer="accepted"] a').tap();
   await expect(page).toHaveURL(/\/shop\/p\/\?id=mono-u-/);
   await expect(page.getByRole("heading", { name: "Rings and Bars" })).toBeVisible();

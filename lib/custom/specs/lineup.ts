@@ -65,13 +65,13 @@ export function check(p: Record<string, unknown>, _ctx: CheckContext): Params | 
 export const detail = (p: Params) => (p.me !== undefined && p.x[p.me][0] ? `${p.t} · ${p.x[p.me][0]}` : p.t);
 
 export const PRODUCT: ProductMeta<Params> = {
-  line: "Your team, in formation, with everyone's name and number.",
+  line: "Your team, in formation, with everyone’s name and number.",
   from: "A team and its players",
   group: "people",
   base: "schematic",
   bases: ["schematic", "type-data"],
   wordsHint: "Sunday FC",
-  hints: { dense: "Try shorter names.", faint: "Try adding the players' names." },
+  hints: { dense: "Try shorter names.", faint: "Try adding the players’ names." },
   example: {
     f: "442",
     t: "Sunday FC",

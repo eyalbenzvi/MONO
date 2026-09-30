@@ -37,7 +37,7 @@ export function ReviewStatus({ ticket, offer }: { ticket: ReviewTicket; offer?: 
   const stages: ReviewState[] = ticket.near || ticket.force?.state === "person" ? ["queued", "person", "cleared"] : ["queued", "cleared"];
   const at = state === "refused" ? 0 : stages.indexOf(state);
   return (
-    <div data-review={state} className="rounded-xl bg-white/[0.04] px-3 py-3 text-left text-sm ring-1 ring-white/10">
+    <div data-review={state} className="rounded-control bg-white/[0.04] px-3 py-3 text-left text-sm ring-1 ring-white/10">
       <div className="flex gap-3">
         {state === "refused" && meta && (
           <Suspense fallback={null}>
@@ -47,7 +47,7 @@ export function ReviewStatus({ ticket, offer }: { ticket: ReviewTicket; offer?: 
           </Suspense>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-white">{meta?.title ?? "Your file"}</p>
+          <p className="truncate font-medium text-white">{meta?.title ?? "Your file"}</p>
           {state !== "refused" && (
             <ol className="mt-2 flex items-center gap-1.5" aria-label={`Step ${at + 1} of ${stages.length}`}>
               {stages.map((st, i) => (
@@ -61,14 +61,14 @@ export function ReviewStatus({ ticket, offer }: { ticket: ReviewTicket; offer?: 
           {state === "refused" && (
             <>
               <p className="mt-1 text-xs text-neutral-400">{reason}</p>
-              <Link href={`/make/yours/?replace=${ticket.id}`} className="mt-2 inline-flex h-10 items-center rounded-full bg-white px-4 text-xs font-bold text-black">
+              <Link href={`/make/yours/?replace=${ticket.id}`} className="mt-2 inline-flex h-11 items-center rounded-control bg-white px-4 text-xs font-medium text-black">
                 Upload another
               </Link>
             </>
           )}
           {state === "cleared" && offer && meta?.tier === "catalogue" && !offered && (
-            <button type="button" onClick={() => offer(ticket.uploadId)} className="mt-1 h-9 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
-              Offer it to the catalogue ›
+            <button type="button" onClick={() => offer(ticket.uploadId)} className="mt-1 h-11 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
+              Offer to the catalogue →
             </button>
           )}
         </div>

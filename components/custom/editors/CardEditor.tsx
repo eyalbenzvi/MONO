@@ -16,9 +16,9 @@ export default function CardEditor({ arrival, touched, onChange }: EditorProps) 
   const a = arrival?.t === "card" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const name = useText(a?.n ?? "", CARD_NAME_MAX, lex, { required: "Type a name", touched });
-  const title = useText(a?.ti ?? "", CARD_LINE_MAX, lex, { required: "Type a title", touched });
-  const company = useText(a?.co ?? "", CARD_LINE_MAX, lex, { required: "Type a company", touched });
+  const name = useText(a?.n ?? "", CARD_NAME_MAX, lex, { required: "Add a name.", touched });
+  const title = useText(a?.ti ?? "", CARD_LINE_MAX, lex, { required: "Add a title.", touched });
+  const company = useText(a?.co ?? "", CARD_LINE_MAX, lex, { required: "Add a company.", touched });
   const contact = useText(a?.ct ?? "", CARD_CONTACT_MAX, lex);
   const [style, setStyle] = useState<CardStyle>(a?.s ?? "classic");
   const ok = allOk(lex, name, title, company, contact) && !!name.value && !!title.value && !!company.value;
@@ -33,7 +33,7 @@ export default function CardEditor({ arrival, touched, onChange }: EditorProps) 
       <TextField id="make-card-title" label="Title" state={title} max={CARD_LINE_MAX} placeholder={ex.ti} />
       <TextField id="make-card-company" label="Company" state={company} max={CARD_LINE_MAX} placeholder={ex.co} />
       <TextField id="make-card-contact" label="Contact line" hint="optional" state={contact} max={CARD_CONTACT_MAX} placeholder={ex.ct} />
-      <p className="text-xs text-neutral-400">The contact line prints on the shirt, for anyone to read. A number or an address is yours to put there, or not.</p>
+      <p className="text-xs text-neutral-400">The contact line prints on the tee, for anyone to read. A number or an address is yours to put there, or not.</p>
     </>
   );
 }

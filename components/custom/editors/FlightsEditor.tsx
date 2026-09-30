@@ -12,7 +12,7 @@ import { Segmented } from "./Segmented";
 import { TextField, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
 
-const LINK = "h-10 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
+const LINK = "h-11 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
 /** Your Flights: a departures board (up to eight airports, each with its year), or a boarding pass (from, to, the day, a seat, a gate). */
 export default function FlightsEditor({ arrival, touched, onChange }: EditorProps) {
@@ -30,7 +30,7 @@ export default function FlightsEditor({ arrival, touched, onChange }: EditorProp
     };
   }, []);
   const [mode, setMode] = useState<"board" | "pass">(a?.k ?? "board");
-  const name = useText(a?.n ?? "", PASSENGER_MAX, lex, { required: mode === "pass" ? "Type the passenger's name" : undefined, touched });
+  const name = useText(a?.n ?? "", PASSENGER_MAX, lex, { required: mode === "pass" ? "Add the passenger’s name." : undefined, touched });
   const [rows, setRows] = useState<{ code: string; year: string }[]>(a?.k === "board" ? a.x!.map(([code, y]) => ({ code, year: y ? String(y) : "" })) : []);
   const [adding, setAdding] = useState(0);
   const [from, setFrom] = useState(a?.f ?? "");
@@ -75,7 +75,7 @@ export default function FlightsEditor({ arrival, touched, onChange }: EditorProp
           {rows.map((r, i) => (
             <div key={`${r.code}-${i}`} className="grid grid-cols-[1fr_5.5rem_auto] items-end gap-2">
               <p className="flex h-11 items-center gap-2 truncate text-sm text-white">
-                <span className="font-mono font-semibold">{r.code}</span>
+                <span className="font-mono font-medium">{r.code}</span>
                 <span className="truncate text-neutral-400">{byCode(r.code)?.city ?? ""}</span>
               </p>
               <Field label={`Year ${i + 1}`} hint="optional" error={years[i] === null ? "1900 to 2100" : null} htmlFor={`make-flights-y${i}`}>
@@ -94,21 +94,21 @@ export default function FlightsEditor({ arrival, touched, onChange }: EditorProp
             </div>
           ))}
           {rows.length < BOARD_MAX && (
-            <AirportField key={adding} id="make-flights-add" label="Add an airport" airports={airports} value={undefined} onChange={(x) => x && (setRows((rs) => [...rs, { code: x.iata, year: "" }]), setAdding((n) => n + 1))} error={touched && !rows.length ? "Add an airport" : null} />
+            <AirportField key={adding} id="make-flights-add" label="Add an airport" airports={airports} value={undefined} onChange={(x) => x && (setRows((rs) => [...rs, { code: x.iata, year: "" }]), setAdding((n) => n + 1))} error={touched && !rows.length ? "Add an airport." : null} />
           )}
         </div>
       ) : (
         <>
-          <AirportField id="make-flights-from" label="From" airports={airports} value={byCode(from)} onChange={(x) => setFrom(x?.iata ?? "")} error={touched && !from ? "Choose an airport" : null} />
-          <AirportField id="make-flights-to" label="To" airports={airports} value={byCode(to)} onChange={(x) => setTo(x?.iata ?? "")} error={touched && !to ? "Choose an airport" : from && from === to ? "Somewhere else" : null} />
+          <AirportField id="make-flights-from" label="From" airports={airports} value={byCode(from)} onChange={(x) => setFrom(x?.iata ?? "")} error={touched && !from ? "Choose an airport." : null} />
+          <AirportField id="make-flights-to" label="To" airports={airports} value={byCode(to)} onChange={(x) => setTo(x?.iata ?? "")} error={touched && !to ? "Choose an airport." : from && from === to ? "Somewhere else." : null} />
           <div className="grid grid-cols-[1fr_5rem_5rem] gap-2">
-            <Field label="Date" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-flights-date">
+            <Field label="Date" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-flights-date">
               <input id="make-flights-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
             </Field>
-            <Field label="Seat" hint="opt." error={seatOk ? null : "As 14A"} htmlFor="make-flights-seat">
+            <Field label="Seat" hint="opt." error={seatOk ? null : "As 14A."} htmlFor="make-flights-seat">
               <input id="make-flights-seat" value={seat} maxLength={3} placeholder="14A" onChange={(e) => setSeat(e.target.value)} className={INPUT} />
             </Field>
-            <Field label="Gate" hint="opt." error={gateOk ? null : "As B22"} htmlFor="make-flights-gate">
+            <Field label="Gate" hint="opt." error={gateOk ? null : "As B22."} htmlFor="make-flights-gate">
               <input id="make-flights-gate" value={gate} maxLength={4} placeholder="B22" onChange={(e) => setGate(e.target.value)} className={INPUT} />
             </Field>
           </div>

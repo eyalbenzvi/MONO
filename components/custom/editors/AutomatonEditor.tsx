@@ -20,7 +20,7 @@ export default function AutomatonEditor({ made, arrival, touched, onChange }: Ed
   const x = text.replace(/\s+/g, " ").trim();
   const problem = x ? automatonWordProblem(text) : null;
   const refused = x && !problem && lex ? lex.wordsProblem(x) : null;
-  const error = !x ? (touched ? "Type a name or a word" : null) : (problem ?? refused);
+  const error = !x ? (touched ? "Add a name or a word." : null) : (problem ?? refused);
   const spec: CustomSpec | null = x && !error && lex ? { t: "automaton", v: 1, p: { x, r: rule, ...(squares ? { s: 1 as const } : {}) } } : null;
 
   useReportSpec(spec, onChange);

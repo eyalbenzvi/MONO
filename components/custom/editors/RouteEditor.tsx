@@ -112,17 +112,17 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
       {source === "file" ? (
         <div className="space-y-1">
           <Field label="GPX file" hint="read on this device, never uploaded" error={fileError} htmlFor="make-gpx">
-            <input id="make-gpx" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" onChange={(e) => onFile(e.target.files?.[0])} className={`${INPUT} pt-2.5 file:mr-3 file:rounded-full file:border-0 file:bg-white file:px-3 file:text-xs file:font-semibold file:text-black`} />
+            <input id="make-gpx" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" onChange={(e) => onFile(e.target.files?.[0])} className={`${INPUT} pt-2.5 file:mr-3 file:rounded-control file:border-0 file:bg-white file:px-3 file:text-xs file:font-medium file:text-black`} />
           </Field>
           {fileName && !fileError && <p className="text-xs text-neutral-400">{fileName}: only the route&rsquo;s shape goes in the print.</p>}
-          {!track && shape && <p className="text-xs text-neutral-500">Showing {a ? "the route from the link" : "an example route"}. Choose a file to use yours.</p>}
+          {!track && shape && <p className="text-xs text-muted">Showing {a ? "the route from the link" : "an example route"}. Choose a file to use yours.</p>}
           <Switch label="Hide the first and last 200 m" checked={hide} onChange={setHide} />
         </div>
       ) : (
         <div>
           <div className="mb-1 flex items-baseline justify-between text-xs font-medium text-neutral-400">
             <span id="make-route-pad">Draw the route</span>
-            <button type="button" onClick={() => setShape(null)} className="h-8 text-neutral-300 underline underline-offset-4 hover:text-white">
+            <button type="button" onClick={() => setShape(null)} className="h-11 text-neutral-300 underline underline-offset-4 hover:text-white">
               Clear
             </button>
           </div>
@@ -130,7 +130,7 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
             ref={pad}
             role="img"
             aria-labelledby="make-route-pad"
-            className="relative aspect-square w-full touch-none select-none rounded-2xl bg-white/[0.04] ring-1 ring-white/10"
+            className="relative aspect-square w-full touch-none select-none rounded-control bg-white/[0.04] ring-1 ring-white/10"
             onPointerDown={(e) => {
               e.currentTarget.setPointerCapture(e.pointerId);
               setDrawing([at(e)]);
@@ -148,15 +148,15 @@ export default function RouteEditor({ made, arrival, onChange }: EditorProps) {
               <path d={GRID} fill="none" strokeWidth={2} className="stroke-white/10" />
               {shown.length > 1 && <polyline points={shown.map(([x, y]) => `${x.toFixed(0)},${y.toFixed(0)}`).join(" ")} fill="none" stroke="white" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />}
             </svg>
-            {!shape && !drawing && <p className="absolute inset-0 flex items-center justify-center text-sm text-neutral-500">Draw here</p>}
+            {!shape && !drawing && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">Draw here</p>}
           </div>
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Distance" hint="km, optional" error={k === null ? `0.1 to ${ROUTE_MAX_KM} km` : null} htmlFor="make-route-km">
+        <Field label="Distance" hint="km, optional" error={k === null ? `0.1 to ${ROUTE_MAX_KM} km.` : null} htmlFor="make-route-km">
           <input id="make-route-km" value={dist} inputMode="decimal" maxLength={6} autoComplete="off" placeholder="10.5" onChange={(e) => setDist(e.target.value)} aria-invalid={k === null} className={`${INPUT} font-mono`} />
         </Field>
-        <Field label="The day" hint="optional" error={dateOk ? null : `A date from ${FIRST_YEAR} to ${LAST_YEAR}.`} htmlFor="make-route-date">
+        <Field label="The day" hint="optional" error={dateOk ? null : `Between ${FIRST_YEAR} and ${LAST_YEAR}.`} htmlFor="make-route-date">
           <input id="make-route-date" type="date" min={`${FIRST_YEAR}-01-01`} max={`${LAST_YEAR}-12-31`} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!dateOk} className={INPUT} />
         </Field>
       </div>

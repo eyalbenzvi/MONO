@@ -17,7 +17,7 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
   const a = arrival?.t === "dinosaur" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const name = useText(a?.n ?? "", DINO_NAME_MAX, lex, { required: "Type the child's name", touched });
+  const name = useText(a?.n ?? "", DINO_NAME_MAX, lex, { required: "Add the child’s name.", touched });
   const [plate, setPlate] = useState<Plate>(a?.k ?? ex.k);
   const [ending, setEnding] = useState<Ending | "">(a?.e ?? "");
   const [species, setSpecies] = useState<Species>(a?.s ?? "rex");
@@ -45,7 +45,7 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
   const sample = name.value && stemOk ? name.value : ex.n;
   return (
     <>
-      <TextField id="make-dinosaur-name" label="The child's name" hint="the new species is named after them" state={{ ...name, error: name.error ?? (stemOk ? null : "Two letters or more") }} max={DINO_NAME_MAX} placeholder={ex.n} />
+      <TextField id="make-dinosaur-name" label="The child’s name" hint="the new species is named after them" state={{ ...name, error: name.error ?? (stemOk ? null : "Two letters or more.") }} max={DINO_NAME_MAX} placeholder={ex.n} />
       <Field label="Skeleton" htmlFor="make-dinosaur-plate">
         <select id="make-dinosaur-plate" value={plate} onChange={(ev) => setPlate(ev.target.value as Plate)} className={INPUT}>
           {PLATES.map((k) => (
@@ -55,7 +55,7 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
           ))}
         </select>
       </Field>
-      <Segmented label="Ending" options={["", ...ENDINGS] as const} value={ending} onChange={setEnding} format={(o) => (o ? genusOf(sample, o) : `${genusOf(sample, PLATE_INFO[plate].ending)} (the skeleton's)`)} />
+      <Segmented label="Ending" options={["", ...ENDINGS] as const} value={ending} onChange={setEnding} format={(o) => (o ? genusOf(sample, o) : `${genusOf(sample, PLATE_INFO[plate].ending)} (the skeleton’s)`)} />
       <Field label="Species" htmlFor="make-dinosaur-species">
         <select id="make-dinosaur-species" value={species} onChange={(ev) => setSpecies(ev.target.value as Species)} className={INPUT}>
           {(Object.keys(SPECIES) as Species[]).map((s) => (
@@ -66,10 +66,10 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
         </select>
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Discovered" hint="the year born; optional" error={y === null ? `A year between ${FIRST_YEAR} and ${LAST_YEAR}` : null} htmlFor="make-dinosaur-year">
+        <Field label="Discovered" hint="the year born; optional" error={y === null ? `Between ${FIRST_YEAR} and ${LAST_YEAR}.` : null} htmlFor="make-dinosaur-year">
           <input id="make-dinosaur-year" value={year} inputMode="numeric" maxLength={4} placeholder={String(ex.y)} onChange={(ev) => setYear(ev.target.value)} className={INPUT} />
         </Field>
-        <Field label="Height, cm" hint="optional" error={hOk ? null : `${HEIGHT_MIN} to ${HEIGHT_MAX}`} htmlFor="make-dinosaur-height">
+        <Field label="Height, cm" hint="optional" error={hOk ? null : `${HEIGHT_MIN} to ${HEIGHT_MAX}.`} htmlFor="make-dinosaur-height">
           <input id="make-dinosaur-height" value={height} inputMode="numeric" maxLength={3} placeholder={String(ex.h)} onChange={(ev) => setHeight(ev.target.value)} className={INPUT} />
         </Field>
       </div>

@@ -3,14 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { ShirtStrip } from "@/components/ShirtStrip";
-import { NeedDots } from "@/components/NeedDots";
-import { familiesOf, getShirtById, productHref } from "@/lib/catalog";
-import { cartTotals } from "@/lib/cart";
+import { NeedLine } from "@/components/NeedLine";
+import { SavedList } from "@/components/SavedList";
+import { TasteSummary } from "@/components/TasteSummary";
+import { BUTTON_PRIMARY, TEXT_ACTION } from "@/components/ui";
+import { getShirtById, productHref } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
-import { topPicks } from "@/lib/match";
-import { shareTaste } from "@/lib/shareTaste";
-import { archetypeOf } from "@/lib/taste";
 import { MAKE_KEY } from "@/lib/upload/keys";
 import { OFFER_STATE_LINE, SALES_LINE, offerState } from "@/lib/upload/openCall";
 import { useMakeStore } from "@/store/makeStore";
@@ -37,11 +35,11 @@ function YourOffers() {
             <li key={o.uploadId} className="border-b border-white/15 py-3 text-sm" data-offer={state}>
               <div className="flex items-baseline justify-between gap-3">
                 {state === "accepted" ? (
-                  <Link href={productHref(o.id)} className="truncate font-semibold text-white underline-offset-2 hover:underline">
+                  <Link href={productHref(o.id)} className="truncate font-medium text-white underline-offset-2 hover:underline">
                     {o.title}
                   </Link>
                 ) : (
-                  <span className="truncate font-semibold text-white">{o.title}</span>
+                  <span className="truncate font-medium text-white">{o.title}</span>
                 )}
                 <button type="button" onClick={() => useMakeStore.getState().withdraw(o.uploadId)} className="shrink-0 text-xs text-neutral-400 underline underline-offset-2 hover:text-white">
                   Withdraw
@@ -69,17 +67,15 @@ function LastOrderUploads({ order }: { order: string }) {
     </div>
   );
 }
-import { CART_KEY, useCartCount, useCartStore } from "@/store/cartStore";
+import { CART_KEY, useCartStore } from "@/store/cartStore";
 import { TASTE_KEY, startOverWithUndo, useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { SIZE_LABELS, type ShirtProduct } from "@/types/shirt";
 
 /**
- * The personal area ("You", the person icon): everything the site keeps for
- * this visitor, set like the About page — the taste the store has learned,
- * what it picks for you, Saved, the last order, your
- * size, and (quietly, at the end) resetting or clearing it all. Nothing
- * leaves the browser.
+ * You: everything the site keeps for this visitor, on one page in three
+ * parts — Your taste (the one place to reset it), Saved in full, and orders
+ * and settings. Nothing leaves the browser.
  */
 export function MeView() {
   const hydrated = useUiStore((s) => s.hydrated);
@@ -87,176 +83,108 @@ export function MeView() {
   const likedIds = useTasteStore((s) => s.likedIds);
   const { complete: calibrated, phase } = useCalibrationProgress();
   const seen = useTasteStore((s) => s.seen.length);
-  const cartCount = useCartCount();
   const lastOrder = useCartStore((s) => s.lastOrder);
-  const cart = useCartStore((s) => s.cart);
   const preferred = useCartStore((s) => s.preferredSize);
-  const [sharing, setSharing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const saved = useMemo(() => [...likedIds].reverse().map(getShirtById).filter((s): s is ShirtProduct => !!s), [likedIds]);
-  // Picks are new to you: never a family already in the bag or saved (as the bag's own picks).
-  const cartKey = cart.map((l) => l.id).join(",");
-  const picks = useMemo(
-    () => (calibrated ? topPicks(vector, 6, { excludeFamilies: familiesOf([...cart.map((l) => l.id), ...likedIds]) }) : []),
-    // The bag's ids, as a string: its lines' other changes (size, quantity) don't move the picks.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [calibrated, vector, cartKey, likedIds],
-  );
 
   if (!hydrated) return <div className="flex-1" />;
-  // Set like the About page: a plain first line, the heavy word on the one inverted bar.
-  const name = archetypeOf(vector).name;
-  // Known: the archetype. After the test without enough likes and passes (or
-  // after unsaving below them): not enough to go on. Before it: not yet.
-  const [lead, word] = calibrated ? (name.startsWith("The ") ? ["The", name.slice(4)] : ["", name]) : phase === "more" ? ["Not", "enough."] : ["Not", "yet."];
 
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-clip">
-      <div className="mx-auto max-w-[560px] px-5 pb-16 pt-8">
-        <p className={LABEL}>Your taste</p>
-        {/* Sized to its longest word, so a long name (RETROFUTURIST) still fits the screen. */}
-        <h1 className="mt-4 text-balance text-3xl font-black leading-tight tracking-tight md:text-5xl">
-          {lead && <span className="block">{lead}</span>}
-          <span className="-mx-2 my-1 block w-fit bg-white px-2 text-black">{word}</span>
-        </h1>
-        {phase === "more" && <NeedDots className="mt-4 -ml-1" />}
+      <div className="mx-auto max-w-[560px] px-5 pb-16 pt-6">
+        <h1 className="text-[28px] font-medium leading-tight">You</h1>
 
-        {/* A bag with something in it: checkout is the first thing here, one tap to the delivery form. */}
-        {cartCount > 0 && (
-          <Link href="/cart/" onClick={() => useUiStore.getState().requestCheckout()} className={CTA}>
-            Checkout · {cartCount} {cartCount === 1 ? "tee" : "tees"} · {formatPrice(cartTotals(cart).total)}
-          </Link>
-        )}
-        {calibrated ? (
-          <button
-            type="button"
-            disabled={sharing}
-            onClick={async () => {
-              setSharing(true);
-              try {
-                await shareTaste(vector);
-              } finally {
-                setSharing(false);
-              }
-            }}
-            className={cartCount > 0 ? CTA_QUIET : CTA}
-          >
-            {sharing ? "Making card…" : "Share my taste"}
-          </button>
-        ) : (
-          <Link href="/" className={cartCount > 0 ? CTA_QUIET : CTA}>
-            {phase === "more" ? "Keep swiping" : "Start swiping"}
-          </Link>
-        )}
-
-        {picks.length > 0 && (
-          <Section title="Picked for you" action={<SectionLink href="/shop/" label="All" aria="All tees, ranked for you" />}>
-            <ShirtStrip shirts={picks} label="Picked for you" quickAdd source="me" />
-          </Section>
-        )}
+        <Section title="Your taste">
+          {calibrated ? (
+            <TasteSummary vector={vector} heading="h2">
+              <button type="button" onClick={() => startOverWithUndo()} className={`${TEXT_ACTION} justify-start`}>
+                Reset taste
+              </button>
+            </TasteSummary>
+          ) : phase === "more" ? (
+            <>
+              <NeedLine />
+              <Link href="/" className={`mt-4 ${BUTTON_PRIMARY}`}>
+                Keep swiping
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-[20px] font-medium">Not yet.</p>
+              <p className="mt-1 text-sm text-muted">Swipe ten tees and we&rsquo;ll learn it.</p>
+              <Link href="/" className={`mt-4 ${BUTTON_PRIMARY}`}>
+                Start the taste test
+              </Link>
+              {seen > 0 && (
+                <button type="button" onClick={() => startOverWithUndo()} className={`${TEXT_ACTION} mt-2 justify-start`}>
+                  Reset taste
+                </button>
+              )}
+            </>
+          )}
+        </Section>
 
         {/* Saved stays while it holds anything: it may be what's being edited. */}
-        {(calibrated || saved.length > 0) && (
-          <Section
-            title="Saved"
-            action={
-              saved.length > 0 ? (
-                <button type="button" onClick={() => useUiStore.getState().setSavedOpen(true)} aria-label="Edit saved" className={ACTION}>
-                  Edit
-                </button>
-              ) : undefined
-            }
-          >
-            {saved.length ? <ShirtStrip shirts={saved.slice(0, 12)} label="Saved" quickAdd source="saved" /> : <p className="text-sm text-neutral-400">Nothing saved yet.</p>}
-          </Section>
-        )}
+        <Section title="Saved">
+          <SavedList items={saved} />
+        </Section>
 
         <YourOffers />
 
-        {/* What the header and logo don't already give: the last order and the size kept. */}
-        {(lastOrder || preferred) && (
-          <Section title="Account">
-            <div className="border-t border-white/15">
-              {lastOrder && <Row label="Last order" value={`${lastOrder.number} · ${formatPrice(lastOrder.total)}`} />}
-              {lastOrder && <LastOrderUploads order={lastOrder.number} />}
-              {preferred && <Row label="Size" value={SIZE_LABELS[preferred]} />}
-            </div>
-          </Section>
-        )}
-
-        {/* The quiet end: destructive actions as plain text. */}
-        <div className="mt-10 flex gap-6" aria-live="polite">
-          {seen > 0 && (
-            <button type="button" onClick={() => startOverWithUndo()} className={QUIET}>
-              Reset taste
+        <Section title="Orders & settings">
+          <div className="border-t border-white/10">
+            {lastOrder && <Row label="Last order" value={`${lastOrder.number} · ${formatPrice(lastOrder.total)}`} mono />}
+            {lastOrder && <LastOrderUploads order={lastOrder.number} />}
+            {preferred && <Row label="Size" value={SIZE_LABELS[preferred]} />}
+            <Row label="About" href="/about/" />
+          </div>
+          {/* The quiet end: clearing everything, as plain text, with a second tap. */}
+          <div className="mt-4" aria-live="polite">
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirmClear) return setConfirmClear(true);
+                // Everything this site stored, gone: taste, Saved, bag, last order, searches, and uploaded files (IndexedDB too).
+                for (const k of [TASTE_KEY, CART_KEY, MAKE_KEY]) localStorage.removeItem(k);
+                for (const store of [localStorage, sessionStorage]) for (const k of Object.keys(store)) if (k.startsWith("mono-")) store.removeItem(k);
+                await import("@/lib/upload/store").then((m) => (m.available() ? m.clearUploads() : undefined)).catch(() => {});
+                window.location.assign(window.location.pathname.replace(/me\/?$/, ""));
+              }}
+              onBlur={() => setConfirmClear(false)}
+              className={`${TEXT_ACTION} justify-start ${confirmClear ? "text-white" : ""}`}
+            >
+              {confirmClear ? "Tap again" : "Clear data"}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={async () => {
-              if (!confirmClear) return setConfirmClear(true);
-              // Everything this site stored, gone: taste, Saved, bag, last order, searches, and uploaded files (IndexedDB too).
-              for (const k of [TASTE_KEY, CART_KEY, MAKE_KEY]) localStorage.removeItem(k);
-              for (const store of [localStorage, sessionStorage])
-                for (const k of Object.keys(store)) if (k.startsWith("mono-")) store.removeItem(k);
-              await import("@/lib/upload/store").then((m) => (m.available() ? m.clearUploads() : undefined)).catch(() => {});
-              window.location.assign(window.location.pathname.replace(/me\/?$/, ""));
-            }}
-            onBlur={() => setConfirmClear(false)}
-            className={`${QUIET} ${confirmClear ? "text-white" : ""}`}
-          >
-            {confirmClear ? "Tap again" : "Clear data"}
-          </button>
-        </div>
-        <p className="mt-3 text-xs text-neutral-400">Saved in this browser only.</p>
+            <p className="text-xs text-muted">Saved in this browser only.</p>
+          </div>
+        </Section>
       </div>
     </div>
   );
 }
 
-
-const LABEL = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400";
-const ACTION = "text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 hover:text-white";
-/** Small text actions: the words stay small, the tap area around them doesn't (at least 24 × 24 px, WCAG 2.5.8). */
-const QUIET = "relative text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400 underline-offset-4 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-[''] hover:text-white hover:underline";
-const CTA =
-  "mt-8 flex h-14 w-full items-center justify-center rounded-full bg-white text-sm font-black uppercase tracking-[0.2em] text-black disabled:opacity-60";
-/** The same action, second to Checkout when the bag holds something. */
-const CTA_QUIET =
-  "mt-3 flex h-12 w-full items-center justify-center rounded-full text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 ring-1 ring-white/20 hover:text-white disabled:opacity-60";
-
-function SectionLink({ href, label, aria }: { href: string; label: string; aria: string }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Link href={href} aria-label={aria} className={ACTION}>
-      {label}
-    </Link>
-  );
-}
-
-function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section className="mt-12 border-t border-white/15 pt-4">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className={LABEL}>{title}</h2>
-        {action}
-      </div>
+    <section className="mt-10">
+      <h2 className="mb-4 text-xs text-muted">{title}</h2>
       {children}
     </section>
   );
 }
 
-function Row({ label, value, href }: { label: string; value?: string; href?: string }) {
+function Row({ label, value, href, mono = false }: { label: string; value?: string; href?: string; mono?: boolean }) {
   const inner = (
     <>
       <span className="text-sm text-white">{label}</span>
-      <span className="flex items-center gap-2 font-mono text-sm tabular-nums text-neutral-400">
+      <span className={`flex items-center gap-2 text-sm tabular-nums text-muted ${mono ? "font-mono text-xs" : ""}`}>
         {value}
-        {href && <Icon name="arrow-right" className="h-4 w-4 text-neutral-500" />}
+        {href && <Icon name="arrow-right" className="h-4 w-4" />}
       </span>
     </>
   );
-  const cls = "flex h-14 items-center justify-between border-b border-white/15";
+  const cls = "flex h-14 items-center justify-between border-b border-white/10";
   return href ? (
     <Link href={href} className={`${cls} hover:bg-white/[0.02]`}>
       {inner}

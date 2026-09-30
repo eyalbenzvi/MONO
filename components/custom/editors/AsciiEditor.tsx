@@ -77,14 +77,14 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
   const [edges, setEdges] = useState(false);
   const linked = useMemo(() => (a?.g && a.c ? asciiUnpack(a.g, a.c) : null), [a?.g, a?.c]);
   const levels = useMemo(() => (source ? tones(source, cols, place, zoom, edges) : linked && a?.c === cols ? linked : null), [source, cols, place, zoom, edges, linked, a?.c]);
-  const pictureError = levels ? asciiPictureProblem(levels, cols) : touched && !fileError ? "Choose a picture" : null;
+  const pictureError = levels ? asciiPictureProblem(levels, cols) : touched && !fileError ? "Choose a picture." : null;
   const onFile = async (file: File | undefined) => {
     if (!file) return;
     try {
       setSource(await readPicture(file));
       setFileError(null);
     } catch {
-      setFileError("This browser can’t open that file. Try a JPEG or a PNG.");
+      setFileError("This browser can’t open that file. Try a JPG or a PNG.");
     }
   };
   const ex = made.example.t === "ascii" ? made.example.p : null;
@@ -99,19 +99,19 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
   const lines = bad ? null : asciiLines(big);
   const bigError = !big.trim()
     ? touched
-      ? "Type a word or two"
+      ? "Add a word or two."
       : null
     : bad
       ? `The pixel font has no "${bad}".${plain && plain !== bad && ASCII_CHARS.test(plain.toUpperCase()) ? ` Try "${plain.toUpperCase()}".` : ""}`
       : !lines
-        ? `Up to ${ASCII_MAX} letters a line, two lines (a space breaks it)`
+        ? `Up to ${ASCII_MAX} letters a line, two lines (a space breaks it).`
         : !lines.some((l) => /[A-Z0-9]/.test(l))
-          ? "A letter or a figure, at least"
+          ? "A letter or a figure, at least."
           : lex
             ? lex.wordsProblem(big)
             : null;
   const p = phrase.trim();
-  const phraseError = fill === "phrase" && p ? (!ASCII_PHRASE.test(p) ? "Plain letters, figures and punctuation, up to 24" : lex ? lex.wordsProblem(p) : null) : fill === "phrase" && touched ? "Type the phrase the letters are typed in" : null;
+  const phraseError = fill === "phrase" && p ? (!ASCII_PHRASE.test(p) ? "Plain letters, figures and punctuation, up to 24." : lex ? lex.wordsProblem(p) : null) : fill === "phrase" && touched ? "Add the phrase the letters are typed in." : null;
   const ok = lines && !bigError && lex && (fill !== "phrase" || (p && !phraseError));
   const spec: CustomSpec | null =
     mode === "picture"
@@ -128,12 +128,12 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
   const picture = (
     <>
       <Field label="Your picture" hint="read on this device, never uploaded" error={fileError ?? pictureError} htmlFor="make-picture">
-        <input id="make-picture" type="file" accept="image/*" onChange={(e) => onFile(e.target.files?.[0])} className={`${INPUT} pt-2.5 file:mr-3 file:rounded-full file:border-0 file:bg-white file:px-3 file:text-xs file:font-semibold file:text-black`} />
+        <input id="make-picture" type="file" accept="image/*" onChange={(e) => onFile(e.target.files?.[0])} className={`${INPUT} pt-2.5 file:mr-3 file:rounded-control file:border-0 file:bg-white file:px-3 file:text-xs file:font-medium file:text-black`} />
       </Field>
       {source ? (
         <p className="text-xs text-neutral-400">Only the characters go in the print and the link.</p>
       ) : (
-        linked && <p className="text-xs text-neutral-500">Showing the picture from the link. Choose one to use yours.</p>
+        linked && <p className="text-xs text-muted">Showing the picture from the link. Choose one to use yours.</p>
       )}
       {source && (
         <>

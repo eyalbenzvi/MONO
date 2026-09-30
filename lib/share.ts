@@ -7,7 +7,7 @@
  * device share sheet with an image file (see lib/shareImage), or by saving the
  * image and posting it from the app.
  */
-import { STORE_POLICY } from "@/lib/store-policy";
+import { MAKE_PRICE } from "@/lib/prices";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
@@ -51,7 +51,7 @@ export function shareTitle(shirt: ShirtProduct) {
 
 /** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
 export function shareMessage(shirt: ShirtProduct, color: BaseColor, make?: string) {
-  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(STORE_POLICY.customPrice)}.`;
+  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(MAKE_PRICE)}.`;
   return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price)}.`;
 }
 

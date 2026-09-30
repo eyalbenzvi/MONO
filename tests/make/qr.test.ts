@@ -76,7 +76,7 @@ describe("Your Link: the spec", () => {
     expect(tidyLink(" HTTPS://Example.ORG/For-Noa ")).toEqual({ a: "example.org/For-Noa", http: false });
     expect(tidyLink("http://example.org/")).toEqual({ a: "example.org", http: true });
     expect(linkProblem("https://example.org/for-noa")).toBeNull();
-    expect(linkProblem("")).toMatch(/Type a web address/);
+    expect(linkProblem("")).toMatch(/Add a web address/);
     expect(linkProblem("example.org/a b")).toMatch(/No spaces/);
     expect(linkProblem("example.org/é")).toMatch(/can’t hold "é"/);
     expect(linkProblem("example")).toMatch(/Add the domain/);

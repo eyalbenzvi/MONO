@@ -133,7 +133,7 @@ export default function VoiceEditor({ made, arrival, onChange }: EditorProps) {
           }}
           onKeyUp={(e) => (e.key === " " || e.key === "Enter") && end()}
           onContextMenu={(e) => e.preventDefault()}
-          className={`h-12 w-full select-none rounded-full text-sm font-semibold ring-1 transition [touch-action:none] ${listening ? "bg-white text-black ring-white" : "text-white ring-white/30 hover:bg-white/10"}`}
+          className={`h-12 w-full select-none rounded-control text-sm font-medium ring-1 transition [touch-action:none] ${listening ? "bg-white text-black ring-white" : "text-white ring-white/30 hover:bg-white/10"}`}
         >
           {listening ? "Listening…" : "Hold and hum"}
         </button>

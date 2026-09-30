@@ -15,8 +15,8 @@ export default function FrontpageEditor({ arrival, touched, onChange }: EditorPr
   const a = arrival?.t === "frontpage" ? arrival.p : null;
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
-  const name = useText(a?.n ?? "", PAPER_NAME_MAX, lex, { required: "Whose paper?", touched });
-  const head = useText(a?.h ?? "", HEADLINE_MAX, lex, { required: "Write the headline", touched });
+  const name = useText(a?.n ?? "", PAPER_NAME_MAX, lex, { required: "Add whose paper it is.", touched });
+  const head = useText(a?.h ?? "", HEADLINE_MAX, lex, { required: "Add the headline.", touched });
   const stand = useText(a?.s ?? "", STANDFIRST_MAX, lex);
   const [date, setDate] = useState(a?.d ?? "");
   const dateOk = !date || !!parseDate(date);
@@ -32,7 +32,7 @@ export default function FrontpageEditor({ arrival, touched, onChange }: EditorPr
       <TextField id="make-frontpage-name" label="The Daily…" hint="whose paper" state={name} max={PAPER_NAME_MAX} placeholder={ex.n} />
       <TextField id="make-frontpage-headline" label="Headline" hint="ours, or yours" state={{ ...head, error: head.error ?? headLong }} max={HEADLINE_MAX} placeholder={ex.h} suggestions={HEADLINES} />
       <TextField id="make-frontpage-standfirst" label="Standfirst" hint="optional: the line under the headline" state={{ ...stand, error: stand.error ?? standLong }} max={STANDFIRST_MAX} placeholder={ex.s} rows={2} />
-      <Field label="The day" hint="optional" error={dateOk ? null : "A day between 1900 and 2100"} htmlFor="make-frontpage-date">
+      <Field label="The day" hint="optional" error={dateOk ? null : "Between 1900 and 2100."} htmlFor="make-frontpage-date">
         <input id="make-frontpage-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={INPUT} />
       </Field>
     </>

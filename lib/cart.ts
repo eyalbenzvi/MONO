@@ -1,8 +1,8 @@
+import { MAKE_PAIR_PRICE, MAKE_PRICE, PAIR_PRICE } from "@/lib/prices";
 import { getShirtById } from "@/lib/catalog";
 import { specHash, type CustomSpec } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
-import { STORE_POLICY } from "@/lib/store-policy";
-import { COLORS, type BaseColor, type CartItem, type ShirtProduct, type ShirtSize, type UploadRef } from "@/types/shirt";
+import { COLORS, SIZE_LABELS, type BaseColor, type CartItem, type ShirtProduct, type ShirtSize, type UploadRef } from "@/types/shirt";
 
 export const FREE_SHIPPING_THRESHOLD = 80;
 export const SHIPPING_FEE = 6;
@@ -13,8 +13,8 @@ export interface CartLine extends CartItem {
   lineTotal: number;
 }
 
-/** A tee's price: the design's, or the made-for-you price when it's personalised (STORE_POLICY.customPrice). Every price of a line comes from here. */
-export const unitPrice = (line: { custom?: unknown; upload?: unknown }, shirt: Pick<ShirtProduct, "price">) => (line.custom || line.upload ? STORE_POLICY.customPrice : shirt.price);
+/** A tee's price: the design's, or the made-for-you price when it's personalised (MAKE_PRICE). Every price of a line comes from here. */
+export const unitPrice = (line: { custom?: unknown; upload?: unknown }, shirt: Pick<ShirtProduct, "price">) => (line.custom || line.upload ? MAKE_PRICE : shirt.price);
 
 /**
  * A personalised or uploaded print's key part ("" for the original): same
@@ -37,9 +37,9 @@ export function cartLines(items: CartItem[]): CartLine[] {
  * as a bundle discount in the bag, so it applies however the two got there
  * (the one-tap button or two separate adds), in any sizes.
  */
-export const PAIR_PRICE = 90;
-/** The pair of one print: PAIR_PRICE, or STORE_POLICY.customPairPrice when it's personalised. */
-export const pairPrice = (custom?: CustomSpec, upload?: UploadRef) => (custom || upload ? STORE_POLICY.customPairPrice : PAIR_PRICE);
+export { PAIR_PRICE };
+/** The pair of one print: PAIR_PRICE, or MAKE_PAIR_PRICE when it's personalised. */
+export const pairPrice = (custom?: CustomSpec, upload?: UploadRef) => (custom || upload ? MAKE_PAIR_PRICE : PAIR_PRICE);
 
 /** What the bag already holds of "the pair" for one design in one size. */
 export interface PairStatus {
@@ -59,11 +59,34 @@ export function pairStatus(items: CartItem[], id: string, size: ShirtSize, custo
   return { have, missing: COLORS.filter((c) => !line(c)), capped: COLORS.some((c) => (line(c)?.qty ?? 0) >= MAX_QTY) };
 }
 
-/** The pair button's label: what one tap on it would do now (`price` a tee's, `pair` the pair's). */
-export function pairLabel(status: PairStatus, price: number, pair = PAIR_PRICE): string {
-  if (status.missing.length === 0) return "In your bag ✓";
-  if (status.have.length > 0) return `Complete the pair · +${formatPrice(pair - price * status.have.length)}`;
-  return "Get it in both";
+/**
+ * The one buy-button pattern, everywhere (product page, Buy sheet, Make,
+ * bag): "[verb] · [size] · [price]", the price always in it, the size once
+ * chosen. The pair: "Add the pair · M · $90"; one colour already in the bag,
+ * "Complete the pair · +$40"; both there, "In your bag · Checkout".
+ */
+export function ctaLabel({
+  verb = "Add to bag",
+  size,
+  price,
+  both = false,
+  pair = PAIR_PRICE,
+  status,
+}: {
+  verb?: string;
+  size?: ShirtSize;
+  /** One tee's price. */
+  price: number;
+  both?: boolean;
+  /** The pair's price. */
+  pair?: number;
+  /** What of the pair (this size) is already in the bag. */
+  status?: PairStatus | null;
+}): string {
+  if (both && status?.missing.length === 0) return "In your bag · Checkout";
+  if (both && status && status.have.length > 0) return `Complete the pair · +${formatPrice(pair - price * status.have.length)}`;
+  const words = both && verb === "Add to bag" ? "Add the pair" : verb;
+  return [words, size && SIZE_LABELS[size], formatPrice(both ? pair : price)].filter(Boolean).join(" · ");
 }
 
 /**

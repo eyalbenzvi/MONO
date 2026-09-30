@@ -10,7 +10,7 @@ import { TextField, checkText, useText } from "./TextField";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
-const YEARS = `A year between ${FIRST_YEAR} and ${LAST_YEAR}`;
+const YEARS = `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
 
 /** Limited Editions: the editions in order (a name, a year), the maker on the seal, the year the series began. */
 export default function EditionsEditor({ arrival, touched, onChange }: EditorProps) {
@@ -18,10 +18,10 @@ export default function EditionsEditor({ arrival, touched, onChange }: EditorPro
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
   const [rows, setRows] = useState<Row[]>(a ? a.x.map(([n, y]) => ({ n, y: y ? String(y) : "" })) : [{ n: "", y: "" }, { n: "", y: "" }]);
-  const role = useText(a?.r ?? "", ROLE_MAX, lex, { required: "Who made them?", touched });
+  const role = useText(a?.r ?? "", ROLE_MAX, lex, { required: "Add who made them.", touched });
   const [est, setEst] = useState(a?.e ? String(a.e) : "");
   const cells = rows.map((r) => ({ n: checkText(r.n, EDITION_NAME_MAX, lex), y: yearOf(r.y, FIRST_YEAR, LAST_YEAR) }));
-  const errors = cells.map((c, i) => ({ n: c.n.error ?? (c.n.value === undefined && ((touched && i === 0) || c.y !== undefined) ? "Type a name" : null), y: c.y === null ? YEARS : null }));
+  const errors = cells.map((c, i) => ({ n: c.n.error ?? (c.n.value === undefined && ((touched && i === 0) || c.y !== undefined) ? "Add a name." : null), y: c.y === null ? YEARS : null }));
   const e = yearOf(est, FIRST_YEAR, LAST_YEAR);
   const named = cells.filter((c) => c.n.value);
   const ok = !!lex && named.length > 0 && cells.every((c) => c.n.value !== null && c.y !== null && (c.n.value || c.y === undefined)) && !!role.value && e !== null;

@@ -56,7 +56,7 @@ describe("the words lexicon: every spelling trick lands on the same letters", ()
     expect(wordsProblem("nike")).toBe(REFUSAL_LINE.brand);
     expect(wordsProblem("1488")).toBe(REFUSAL_LINE.refused);
     expect(wordsProblem("The year we moved")).toBeNull();
-    expect(REFUSAL_LINE).toEqual({ brand: "Those words name a brand.", refused: "We don't print that." });
+    expect(REFUSAL_LINE).toEqual({ brand: "Those words name a brand.", refused: "We don’t print that." });
   });
   it("canonical words: split, joined runs of singles, repeats collapsed", () => {
     expect(canonicalWords("N.I.K.E  Air!!")).toEqual(["nike", "air"]);

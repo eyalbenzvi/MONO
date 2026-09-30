@@ -194,7 +194,7 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
     return () => clearTimeout(t);
   }, [snapped]);
 
-  const chip = (on: boolean) => `inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold ring-1 transition ${on ? "bg-white text-black ring-white" : "text-white ring-white/25 hover:bg-white/10"}`;
+  const chip = (on: boolean) => `inline-flex h-11 shrink-0 items-center gap-2 rounded-control px-4 text-sm font-medium ring-1 transition ${on ? "bg-white text-black ring-white" : "text-white ring-white/25 hover:bg-white/10"}`;
   const tool = (icon: IconName, label: string, onClick: () => void, pressed?: boolean) => (
     <button type="button" onClick={onClick} aria-pressed={pressed} className={chip(!!pressed)}>
       <Icon name={icon} className="h-4 w-4" /> {label}
@@ -209,14 +209,14 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
         aria-modal="true"
         aria-labelledby="edit-photo-title"
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[100dvh] w-full max-w-lg flex-col bg-ink-900 ring-1 ring-white/10 md:h-[min(860px,100%)] md:rounded-3xl"
+        className="flex h-[100dvh] w-full max-w-lg flex-col bg-ink-900 ring-1 ring-white/10 md:h-[min(860px,100%)] md:rounded-sheet"
         data-edit-sheet
       >
         <div className="flex h-14 shrink-0 items-center justify-between gap-2 px-2">
           <button type="button" onClick={onClose} aria-label="Close without saving" className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-300 hover:text-white">
             <Icon name="x" className="h-5 w-5" />
           </button>
-          <h2 id="edit-photo-title" className="text-base font-bold">
+          <h2 id="edit-photo-title" className="text-base font-medium">
             Edit photo
           </h2>
           <button type="button" onClick={reset} className="h-11 px-3 text-sm text-neutral-300 underline underline-offset-4 hover:text-white" data-edit-reset>
@@ -271,7 +271,7 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
         </p>
 
         <div className="shrink-0 space-y-3 px-4 pb-[max(env(safe-area-inset-bottom),16px)] pt-2">
-          <div role="tablist" aria-label="Edit" className="flex gap-1 rounded-full bg-white/[0.06] p-1 ring-1 ring-white/10">
+          <div role="tablist" aria-label="Edit" className="flex gap-1 rounded-control bg-white/[0.06] p-1 ring-1 ring-white/10">
             {(
               [
                 ["crop", "Crop", "crop"],
@@ -286,7 +286,7 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
                 aria-selected={tab === id}
                 aria-controls={`edit-panel-${id}`}
                 onClick={() => setTab(id)}
-                className={`flex h-10 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition ${tab === id ? "bg-white text-black" : "text-neutral-300 hover:text-white"}`}
+                className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-control text-sm font-medium transition ${tab === id ? "bg-white text-black" : "text-neutral-300 hover:text-white"}`}
               >
                 <Icon name={icon} className="h-4 w-4" /> {label}
               </button>
@@ -315,7 +315,7 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
             </div>
           )}
 
-          <button type="button" data-autofocus onClick={save} className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98]" data-edit-save>
+          <button type="button" data-autofocus onClick={save} className="flex h-12 w-full items-center justify-center rounded-control bg-white text-sm font-medium text-black transition active:scale-[0.98]" data-edit-save>
             Save
           </button>
         </div>

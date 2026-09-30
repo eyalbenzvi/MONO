@@ -18,7 +18,7 @@ export default function LineupEditor({ arrival, touched, onChange }: EditorProps
   const ex = PRODUCT.example;
   const lex = useLexicon(true);
   const [f, setF] = useState<Formation>(a?.f ?? "442");
-  const team = useText(a?.t ?? "", TEAM_MAX, lex, { required: "Name the team", touched });
+  const team = useText(a?.t ?? "", TEAM_MAX, lex, { required: "Add the team.", touched });
   const season = useText(a?.s ?? "", SEASON_MAX, lex);
   const [rows, setRows] = useState<Row[]>(a ? a.x.map(([n, k]) => ({ n, k: k === undefined ? "" : String(k) })) : resize([], POSITIONS["442"].length));
   const [whole, setWhole] = useState(false);
@@ -77,8 +77,8 @@ export default function LineupEditor({ arrival, touched, onChange }: EditorProps
       <Switch label="For the whole team" checked={whole} onChange={setWhole} />
       {whole && (
         <>
-          <Stepper label="How many shirts" value={take} min={1} max={n} onChange={setCount} />
-          <p className="text-xs text-neutral-400">One shirt a player, from the top of the list, each marking its own name. Each is its own line in the bag, so each can have its own size.</p>
+          <Stepper label="How many tees" value={take} min={1} max={n} onChange={setCount} />
+          <p className="text-xs text-neutral-400">One tee a player, from the top of the list, each marking its own name. Each is its own line in the bag, so each can have its own size.</p>
         </>
       )}
     </>

@@ -11,7 +11,7 @@ import { INPUT, type EditorProps } from "./types";
 
 /** Who each slot is, in pedigree order (0 you, a person's parents at 2i + 1 and 2i + 2). */
 const RELATION = ["You", "Father", "Mother", "Father’s father", "Father’s mother", "Mother’s father", "Mother’s mother"];
-const LEGEND = "mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500";
+const LEGEND = "mb-2 text-xs text-muted";
 
 /** Your Family Tree: your name, your parents, grandparents and (a switch) great-grandparents, each with optional years. */
 export default function FamilyEditor({ arrival, touched, onChange }: EditorProps) {
@@ -29,14 +29,14 @@ export default function FamilyEditor({ arrival, touched, onChange }: EditorProps
     const ys = parseYears(years[i]);
     const nameError = !nm
       ? i === 0 && (touched || raw)
-        ? "Type your name"
+        ? "Add your name."
         : null
       : cleanWords(nm, FAMILY_NAME_MAX) !== nm
         ? nameLine(nm, FAMILY_NAME_MAX)
         : lex
           ? lex.wordsProblem(nm)
           : null;
-    const yearsError = !ys ? "Years like 1932–2010" : yearsProblem(ys) ?? (!nm && (ys[0] !== null || ys[1] !== null) ? "Name them first" : null);
+    const yearsError = !ys ? "Years like 1932–2010." : yearsProblem(ys) ?? (!nm && (ys[0] !== null || ys[1] !== null) ? "Add their name first." : null);
     return { nm, ys: (ys ?? [null, null]) as Years, nameError, yearsError };
   });
   const ok = !!rows[0].nm && lex && rows.every((r) => !r.nameError && !r.yearsError);
@@ -74,7 +74,7 @@ export default function FamilyEditor({ arrival, touched, onChange }: EditorProps
         <legend className={LEGEND}>Grandparents</legend>
         {[3, 4, 5, 6].map((i) => person(i, RELATION[i]))}
       </fieldset>
-      <p className="text-xs text-neutral-500">Leave anyone out: their place prints hatched.</p>
+      <p className="text-xs text-muted">Leave anyone out: their place prints hatched.</p>
       <Switch label="Great-grandparents" checked={four} onChange={setFour} />
       {four && (
         <fieldset aria-label="Great-grandparents" className="grid gap-3">

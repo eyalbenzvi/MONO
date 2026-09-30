@@ -16,25 +16,27 @@ describe("SizeSelector", () => {
   });
 });
 
-import { ColorSelector } from "@/components/ui";
+import { TeeChoice } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { W1 } from "./fixtures";
 
-describe("ColorSelector", () => {
-  it("is one radiogroup in every variant, with arrow-key navigation and roving tabindex", () => {
-    for (const variant of ["cards", "pills", "dots", "overlay"] as const) {
-      const onChange = vi.fn();
-      render(<ColorSelector value="black" original="white" onChange={onChange} variant={variant} />);
-      const [black, white] = screen.getAllByRole("radio");
-      expect(black.getAttribute("aria-checked")).toBe("true");
-      expect(black.tabIndex).toBe(0);
-      expect(white.tabIndex).toBe(-1);
-      expect(white.getAttribute("aria-label")).toBe("White tee (original)");
-      fireEvent.keyDown(black, { key: "ArrowRight" });
-      expect(onChange).toHaveBeenLastCalledWith("white");
-      cleanup();
-    }
+describe("TeeChoice", () => {
+  it("one radiogroup: Black · White · Both with the pair's price, arrow keys and roving tabindex, the original marked", () => {
+    const onChange = vi.fn();
+    render(<TeeChoice value="black" original="white" colors={["black", "white"]} onChange={onChange} />);
+    const [black, white, both] = screen.getAllByRole("radio");
+    expect(black.getAttribute("aria-checked")).toBe("true");
+    expect(black.tabIndex).toBe(0);
+    expect(white.tabIndex).toBe(-1);
+    expect(white.getAttribute("aria-label")).toBe("White tee (original)");
+    expect(both.textContent).toBe("Both · $90");
+    fireEvent.keyDown(black, { key: "ArrowRight" });
+    expect(onChange).toHaveBeenLastCalledWith("white");
+    for (const r of [black, white, both]) expect(r.className).toMatch(/\bh-11\b/);
+    cleanup();
+    render(<TeeChoice value="black" original="black" colors={["black", "white"]} onChange={onChange} pairPrice={130} />);
+    expect(screen.getAllByRole("radio")[2].textContent).toBe("Both · $130");
   });
 });
 
