@@ -41,7 +41,8 @@ export function telegramBody(p: Params): string {
   rows.forEach(([k, v, end], i) => {
     const y = Y0 + 86 + i * 20;
     s += text(X0 + 12, y, k, LABEL, { anchor: "start", bold: true }) + line(X0 + 50, y + 3, end, y + 3, 0.5);
-    if (v) s += text(X0 + 54, y, v, VALUE, { anchor: "start" });
+    // Set at its size, or smaller when (in capitals) it would run past its rule.
+    if (v) s += text(X0 + 54, y, v, Math.min(VALUE, Math.floor(((end - X0 - 56) / textWidth(v, 1)) * 10) / 10), { anchor: "start" });
   });
   const n = charged(p.m);
   const wy = Y0 + 126;

@@ -136,7 +136,9 @@ export function signpostBody(p: Params, places: City[] = []): string {
   s += post(top - 34);
   // Home, on a plate at the top.
   const homeName = home ? home.name.toUpperCase() : "HOME";
-  const hs = Math.min(9, (9 * 90) / textWidth(`FROM ${homeName}`, 9, { family: COND }));
+  // Its letter-spacing counted (a fixed 0.8 a letter, whatever the size), so the words stay on the plate.
+  const homeLine = `FROM ${homeName}`;
+  const hs = Math.min(9, (90 - homeLine.length * 0.8) / textWidth(homeLine, 1, { family: COND }));
   s += `<path d="M104 ${top - 30}H196V${top - 12}H104Z" fill="${GROUND}" stroke="${INK}" stroke-width="1"/>` + text(150, top - 18, `FROM ${homeName}`, hs, { family: COND, spacing: 0.8 });
   boards.forEach((b, i) => {
     const label = `${b.city.name.toUpperCase()}  ${dist(b.km, p.mi).toUpperCase()}`;

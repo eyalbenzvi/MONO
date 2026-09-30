@@ -206,7 +206,11 @@ export function captionLines(defaults: readonly (string | undefined)[], cap?: re
 
 /** A title block under a print: the name set bold and spaced, a line under it. A hidden title leaves its lines in place. */
 export function caption(y: number, title: string | undefined, sub?: string, sub2?: string): string {
-  let s = title ? text(150, y, title.toUpperCase(), title.length > 22 ? 10 : 12, { bold: true, spacing: title.length > 22 ? 1 : 2.5 }) : "";
+  // Measured as set, in capitals (a letter may grow: ß is SS), and never wider than the print.
+  const t = title?.toUpperCase();
+  const long = !!t && t.length > 22;
+  const spacing = long ? 1 : 2.5;
+  let s = t ? text(150, y, t, Math.min(long ? 10 : 12, Math.floor(((264 / t.length - spacing) / MONO_ADVANCE) * 10) / 10), { bold: true, spacing }) : "";
   // Sized to fit the print's width (a monospace character is 0.6 em).
   const fit = (t: string, max: number) => Math.min(max, 264 / (0.6 * t.length));
   if (sub) s += text(150, y + 15, sub, fit(sub, 8));

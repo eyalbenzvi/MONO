@@ -52,7 +52,9 @@ function slip(p: Params): string {
   for (const item of p.x!) {
     const left = `1x ${item.toUpperCase()}`;
     const dots = Math.max(1, cols - left.length - 5);
-    s += text(L, at, `${left} ${".".repeat(dots)}`, SIZE, { anchor: "start" }) + text(R, at, "0.00", SIZE, { anchor: "end" });
+    // An item longer in capitals than its line (ß is SS) is set smaller, clear of the price.
+    const size = Math.min(SIZE, Math.floor(((cols - 4) / (left.length + 1 + dots)) * SIZE * 10) / 10);
+    s += text(L, at, `${left} ${".".repeat(dots)}`, size, { anchor: "start" }) + text(R, at, "0.00", SIZE, { anchor: "end" });
     at += 12;
   }
   s += dash(at - 4);

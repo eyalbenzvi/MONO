@@ -18,3 +18,23 @@ describe("wideTexts: the fuzz's text-width check", () => {
     expect(wideTexts(`<g transform="scale(3)"></g>${t("x".repeat(30))}`)).toEqual([]);
   });
 });
+
+describe("letters that grow in capitals (ß is SS, ﬃ is FFI) stay on the print", () => {
+  it("in the caption's title, a telegram's names and a receipt's items", async () => {
+    const { validate } = await import("@/lib/custom/spec");
+    const { drawSpec } = await import("./render");
+    const { wideTexts } = await import("./fuzz");
+    const specs = [
+      { t: "telegram", v: 1, p: { to: "ß".repeat(20), fr: "ß".repeat(20), m: "Arrived safely." } },
+      { t: "receipt", v: 1, p: { k: "receipt", h: "ß".repeat(24), x: ["ß".repeat(20), "ﬃ".repeat(20)], d: "2016-08-14" } },
+    ];
+    const { madeBySlug } = await import("@/lib/custom/products");
+    const house = madeBySlug("house")!.example;
+    specs.push({ ...house, p: { ...house.p, cap: ["ß".repeat(24)] } } as never);
+    for (const raw of specs) {
+      const spec = validate(raw);
+      expect(spec, raw.t).not.toBeNull();
+      for (const color of ["black", "white"] as const) expect(wideTexts(await drawSpec(spec!, color)), raw.t).toEqual([]);
+    }
+  });
+});
