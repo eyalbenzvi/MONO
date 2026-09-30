@@ -48,6 +48,8 @@ export function productSuite(s: Suite) {
       const n = encodeMake(spec!).length;
       console.log(`${s.slug}: longest ?make= ${n} characters`);
       expect(n).toBeLessThan(s.linkMax ?? 300);
+      // Whatever the bound, a link ?make= can't read is no link: with the caption at its longest (up to 160 more) it stays within decodeMake's 1,200.
+      expect(n + 160).toBeLessThanOrEqual(1200);
     });
   });
   describe(`${m.NAME}: the template`, () => {

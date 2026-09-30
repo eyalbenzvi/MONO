@@ -57,6 +57,17 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-label-medium")).toHaveValue("Oil on nerves"),
   },
+  {
+    slug: "credits",
+    fill: async (page) => {
+      await page.locator("#make-credits-family").fill("Cohen");
+      await page.locator("#make-credits-r0").fill("Directed by");
+      await page.locator("#make-credits-n0").fill("Mum");
+      await page.locator("#make-credits-r1").fill("Catering");
+      await page.locator("#make-credits-n1").fill("Savta");
+    },
+    again: async (page) => expect(page.locator("#make-credits-n1")).toHaveValue("Savta"),
+  },
 ];
 
 for (const c of CASES)
