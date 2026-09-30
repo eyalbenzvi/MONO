@@ -393,7 +393,11 @@ function Maker({ made }: { made: MadeProduct }) {
   // The page's title says the visitor's title line when there is one.
   const titleLine = (spec?.p as { cap?: Cap } | undefined)?.cap?.[0];
   useEffect(() => {
-    if (titleLine) document.title = `${titleLine} · ${made.name} | MONO`;
+    if (!titleLine) return;
+    const before = document.title;
+    document.title = `${titleLine} · ${made.name} | MONO`;
+    // Back to the page's own when the line is reset or cleared.
+    return () => void (document.title = before);
   }, [titleLine, made.name]);
 
   const [zoom, setZoom] = useState(false);

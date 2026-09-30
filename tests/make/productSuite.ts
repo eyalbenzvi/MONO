@@ -7,7 +7,8 @@
  */
 import { describe, expect, it } from "vitest";
 import { EXTRA } from "@/lib/custom/specs";
-import { encodeMake, validate, type CustomSpec } from "@/lib/custom/spec";
+import { MAKE_MAX, encodeMake, validate, type CustomSpec } from "@/lib/custom/spec";
+import { CAP_LINK_EXTRA, WIDE_CAP, widest, withCap } from "./captions";
 import { gate } from "./fuzz";
 import { drawSpec } from "./render";
 
@@ -48,8 +49,16 @@ export function productSuite(s: Suite) {
       const n = encodeMake(spec!).length;
       console.log(`${s.slug}: longest ?make= ${n} characters`);
       expect(n).toBeLessThan(s.linkMax ?? 300);
-      // Whatever the bound, a link ?make= can't read is no link: with the caption at its longest (up to 160 more) it stays within decodeMake's 1,200.
-      expect(n + 160).toBeLessThanOrEqual(1200);
+      expect(n + CAP_LINK_EXTRA).toBeLessThanOrEqual(MAKE_MAX);
+      // Whatever the bound, a link ?make= can't read is no link: the longest in the widest letters the words rule allows
+      // (three bytes each), with the caption at its longest in them too, stays within what decodeMake reads.
+      const wide = specOf(s.slug, widest(s.longest));
+      if (wide) {
+        const all = validate(withCap(wide, WIDE_CAP)) ?? wide;
+        const w = encodeMake(all).length;
+        console.log(`${s.slug}: longest in the widest letters, with the caption, ${w} characters`);
+        expect(w).toBeLessThanOrEqual(MAKE_MAX);
+      }
     });
   });
   describe(`${m.NAME}: the template`, () => {

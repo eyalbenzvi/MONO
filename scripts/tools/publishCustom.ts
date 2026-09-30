@@ -32,13 +32,19 @@ export function publishedCustom() {
   };
 }
 
-/** Each traced picture (data/art/<set>/<id>.json), keyed "<set>/<id>". */
+/** The licences a picture may be published under (scripts/sources/_license.ts). */
+const FREE = new Set(["PD", "PDM", "CC0", "US-Gov"]);
+/** Each traced picture (data/art/<set>/<id>.json) its record lists as made and freely licensed, keyed "<set>/<id>". */
 export function publishedArt(): Record<string, { json: string; file: string }> {
   const dir = path.join(ROOT, "data", "art");
   const out: Record<string, { json: string; file: string }> = {};
   if (!existsSync(dir)) return out;
-  for (const set of readdirSync(dir).filter((f) => !f.includes(".")).sort())
-    for (const f of readdirSync(path.join(dir, set)).filter((f) => f.endsWith(".json")).sort()) out[`${set}/${f.slice(0, -5)}`] = named(`art-${set}-${f.slice(0, -5)}`, JSON.stringify(read("data", "art", set, f)));
+  for (const set of readdirSync(dir).filter((f) => !f.includes(".")).sort()) {
+    // Only what the set's record lists as made under a free licence (a file left from an earlier run, or refused since, stays out).
+    const rows = existsSync(path.join(dir, `${set}.json`)) ? (read("data", "art", `${set}.json`) as { id: string; license?: string; error?: string }[]) : [];
+    const ok = new Set(rows.filter((r) => !r.error && FREE.has(r.license ?? "")).map((r) => r.id));
+    for (const f of readdirSync(path.join(dir, set)).filter((f) => f.endsWith(".json") && ok.has(f.slice(0, -5))).sort()) out[`${set}/${f.slice(0, -5)}`] = named(`art-${set}-${f.slice(0, -5)}`, JSON.stringify(read("data", "art", set, f)));
+  }
   return out;
 }
 

@@ -50,7 +50,9 @@ export default function BirthEditor({ arrival, touched, onChange }: EditorProps)
   const city: City | undefined = cityId && places ? places.byId(cityId) : undefined;
 
   const sys = imperial ? "imperial" : "metric";
-  const pounds = scaled(lb, 1), ounces = scaled(oz, 1);
+  // Pounds and ounces are whole (7 lb 8 oz, never 7.5 lb rounded to 8).
+  const whole = (v: string) => (/^\s*\d*\s*$/.test(v) ? scaled(v, 1) : null);
+  const pounds = whole(lb), ounces = whole(oz);
   const wt = imperial ? (pounds === undefined && ounces === undefined ? undefined : pounds === null || ounces === null ? null : (pounds ?? 0) * 16 + (ounces ?? 0)) : scaled(kg, 1000);
   const ln = scaled(len, 10);
   const wtOk = wt === undefined || (wt !== null && wt >= WEIGHT[sys][0] && wt <= WEIGHT[sys][1] && (!imperial || (ounces ?? 0) < 16));

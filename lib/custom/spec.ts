@@ -256,7 +256,10 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     const q = (EXTRA[t].check as (p: Record<string, unknown>, ctx: { cityById?: typeof cityById }) => Record<string, unknown> | null)(p, { cityById });
     // The caption's lines, by the product's rule (its CAP), for every later product alike.
     const cap = capOf(p, capRuleFor(t));
-    return q && cap ? ({ t, v: 1, p: { ...q, ...cap } } as CustomSpec) : null;
+    if (!q || !cap) return null;
+    // A title of the visitor's (cap[0], set or hidden) is what prints: an old link's words beside it are dropped, never kept unprinted.
+    if (wordsTitle(t) && typeof cap.cap?.[0] === "string") delete q.w;
+    return { t, v: 1, p: { ...q, ...cap } } as CustomSpec;
   }
   let words: Words = {};
   if (p.w !== undefined) {
@@ -266,6 +269,7 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
   }
   const cap = capOf(p, BASE_CAP[spec.t as BaseId] ?? {});
   if (!cap) return null;
+  if (wordsTitle(spec.t as TemplateId) && typeof cap.cap?.[0] === "string") words = {};
   words = { ...words, ...cap };
   const south = p.s === undefined ? {} : p.s === 1 ? { s: 1 as const } : null;
   if (spec.t === "sky") {
@@ -293,7 +297,7 @@ export function validate(spec: unknown, cityById?: (id: number) => City | undefi
     return { t: "taste", v: 1, p: { q: p.q, ...cap } };
   }
   if (spec.t === "code") {
-    if (typeof p.k !== "string" || !(p.k in CODE_CHARS) || typeof p.x !== "string") return null;
+    if (typeof p.k !== "string" || !Object.hasOwn(CODE_CHARS, p.k as string) || typeof p.x !== "string") return null;
     const k = p.k as CodeKind;
     const x = codeText(p.x, k);
     if (!x || x !== p.x || codeProblem(x, k)) return null;
@@ -470,9 +474,15 @@ export function specHash(spec: CustomSpec): string {
 
 /** The spec for a link (`?make=`): base64url of its canonical JSON. */
 export const encodeMake = (spec: CustomSpec) => b64url(canonical(spec));
+/**
+ * The longest ?make= read: a product's own worst case in the widest letters
+ * the words rule allows (three bytes in UTF-8, four characters of base64
+ * each) with the caption at its longest in them too (tests/make/productSuite).
+ */
+export const MAKE_MAX = 2400;
 /** A link's spec, validated; anything malformed is null. */
 export function decodeMake(s: unknown, cityById?: (id: number) => City | undefined): CustomSpec | null {
-  if (typeof s !== "string" || !/^[A-Za-z0-9_-]{1,1200}$/.test(s)) return null;
+  if (typeof s !== "string" || !new RegExp(`^[A-Za-z0-9_-]{1,${MAKE_MAX}}$`).test(s)) return null;
   try {
     return validate(JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))))), cityById);
   } catch {

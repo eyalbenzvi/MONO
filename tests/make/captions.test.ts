@@ -4,7 +4,8 @@ import { MADE } from "@/lib/custom/products";
 import { loadCaptioner } from "@/lib/custom/renderers";
 import { capRuleFor, encodeMake, validate } from "@/lib/custom/spec";
 import { capOf, titleWords } from "@/lib/custom/specKit";
-import { CAP_LINK_EXTRA, captionedLinkMax, MAX_CAP, SOME_CAP, withCap } from "./captions";
+import { CAP_LINK_EXTRA, CAP_LINK_WIDE, captionedLinkMax, MAX_CAP, SOME_CAP, WIDE_CAP, withCap } from "./captions";
+import { MAKE_MAX } from "@/lib/custom/spec";
 import { gate } from "./fuzz";
 import { dataFor, drawSpec } from "./render";
 
@@ -85,6 +86,12 @@ describe("captions: every From ours product", () => {
       const s = validate(withCap(m.example, MAX_CAP))!;
       const n = encodeMake(s).length;
       expect(n - encodeMake(validate(m.example)!).length, m.slug).toBeLessThanOrEqual(CAP_LINK_EXTRA);
+      // In the widest letters (three bytes each) the caption costs more, and the link still reads.
+      const wide = validate(withCap(m.example, WIDE_CAP));
+      if (wide) {
+        expect(encodeMake(wide).length - encodeMake(validate(m.example)!).length, m.slug).toBeLessThanOrEqual(CAP_LINK_WIDE);
+        expect(encodeMake(wide).length, m.slug).toBeLessThanOrEqual(MAKE_MAX);
+      }
       expect(n, m.slug).toBeLessThanOrEqual(captionedLinkMax(m.slug));
       for (const color of ["black", "white"] as const) {
         const bad = gate(await drawSpec(s, color), color);
@@ -93,4 +100,13 @@ describe("captions: every From ours product", () => {
     }
     expect(failures).toEqual([]);
   }, 600_000);
+});
+
+describe("the caption's title and an old link's words", () => {
+  it("a title of the visitor's (set or hidden) drops an old link's words beside it: nothing kept unprinted", () => {
+    expect(validate({ t: "night", v: 1, p: { d: "2016-08-12", w: "Old words", cap: ["New title"] } })!.p).toEqual({ d: "2016-08-12", cap: ["New title"] });
+    expect(validate({ t: "night", v: 1, p: { d: "2016-08-12", w: "Old words", cap: [""] } })!.p).toEqual({ d: "2016-08-12", cap: [""] });
+    // Ours kept (null): the old words still print, and stay.
+    expect(validate({ t: "night", v: 1, p: { d: "2016-08-12", w: "Old words", cap: [null, "A line"] } })!.p).toEqual({ d: "2016-08-12", w: "Old words", cap: [null, "A line"] });
+  });
 });

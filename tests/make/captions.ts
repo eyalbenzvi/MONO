@@ -17,7 +17,7 @@ export const OWN_LINK_MAX: Record<string, number> = { route: 1040, family: 1000,
 /**
  * What the visitor's three caption lines at their longest (24, 36 and 36
  * characters, about 130 in the link's base64) may add to any link: the caption
- * is the visitor's choice, and ?make= reads up to 1,200 characters (lib/custom/
+ * is the visitor's choice, and ?make= reads up to MAKE_MAX characters (lib/custom/
  * spec decodeMake).
  */
 export const CAP_LINK_EXTRA = 160;
@@ -29,4 +29,14 @@ export const MAX_CAP: Cap = CAP_MAX.map((n) => "W".repeat(n));
 /** Three ordinary lines a visitor might write. */
 export const SOME_CAP: Cap = ["Maya and Sam", "Every Sunday since 2010", "Kept in the kitchen drawer"];
 
+/**
+ * The widest letter the words rule allows (Latin, three bytes in UTF-8: four
+ * characters of the link each), and each line at its longest in it: what a
+ * caption may cost a link at most (CAP_LINK_WIDE).
+ */
+export const WIDE = "ạ";
+export const WIDE_CAP: Cap = CAP_MAX.map((n) => WIDE.repeat(n));
+export const CAP_LINK_WIDE = 420;
+/** A spec's params with every two-byte test letter (Ã) made the widest (the product's worst case, in the widest letters). */
+export const widest = <T,>(v: T): T => JSON.parse(JSON.stringify(v).replaceAll("Ã", WIDE)) as T;
 export const withCap = (spec: CustomSpec, cap: Cap): CustomSpec => ({ ...spec, p: { ...spec.p, cap } }) as CustomSpec;

@@ -21,7 +21,7 @@ export default function EditionsEditor({ arrival, touched, onChange }: EditorPro
   const role = useText(a?.r ?? "", ROLE_MAX, lex, { required: "Who made them?", touched });
   const [est, setEst] = useState(a?.e ? String(a.e) : "");
   const cells = rows.map((r) => ({ n: checkText(r.n, EDITION_NAME_MAX, lex), y: yearOf(r.y, FIRST_YEAR, LAST_YEAR) }));
-  const errors = cells.map((c, i) => ({ n: c.n.error ?? (touched && c.n.value === undefined && i === 0 ? "Type a name" : null), y: c.y === null ? YEARS : null }));
+  const errors = cells.map((c, i) => ({ n: c.n.error ?? (c.n.value === undefined && ((touched && i === 0) || c.y !== undefined) ? "Type a name" : null), y: c.y === null ? YEARS : null }));
   const e = yearOf(est, FIRST_YEAR, LAST_YEAR);
   const named = cells.filter((c) => c.n.value);
   const ok = !!lex && named.length > 0 && cells.every((c) => c.n.value !== null && c.y !== null && (c.n.value || c.y === undefined)) && !!role.value && e !== null;

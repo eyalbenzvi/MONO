@@ -22,7 +22,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { prepImage } from "../archive/fetchArchive";
@@ -246,7 +246,7 @@ async function commonsCandidates(item: ArtItem): Promise<Found[]> {
       if (!ii || seen.has(p.title) || !/^image\/(jpeg|png|tiff)$/.test(ii.mime) || Math.min(ii.width, ii.height) < 700) continue;
       const m = ii.extmetadata ?? {};
       const v = (k: string) => strip(m[k]?.value);
-      const lic = judgeLicense("wikimedia", { license: v("LicenseShortName") || v("License"), rights: [v("UsageTerms"), v("Copyrighted") === "False" ? "public domain" : ""].filter(Boolean).join(" | ") });
+      const lic = judgeLicense("wikimedia", { license: v("LicenseShortName") || v("License"), rights: [v("UsageTerms"), v("Copyrighted") === "False" && !(v("LicenseShortName") || v("License")) ? "public domain" : ""].filter(Boolean).join(" | ") });
       if (!lic.ok) continue;
       const words = `${p.title} ${v("ImageDescription")}`;
       if (!must.test(words)) continue;
@@ -318,6 +318,8 @@ async function main() {
   const rows: { id: string }[] = only.length && existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : [];
   for (const item of items.filter((i) => !only.length || only.includes(i.id))) {
     const r = await (item.commons ? makeCommons(set, item, log) : makeItem(set, item, log)).catch((e) => ({ id: item.id, error: String(e).slice(0, 160) }));
+    // A picture that failed this time leaves nothing of an earlier run behind.
+    if ("error" in r) rmSync(path.join(ROOT, "data", "art", set, `${item.id}.json`), { force: true });
     const at = rows.findIndex((x) => x.id === item.id);
     if (at >= 0) rows[at] = r;
     else rows.push(r);

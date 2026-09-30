@@ -23,7 +23,12 @@ export const COUNTRIES_NAME_MAX = 14;
 /** The United Nations' count of countries: what the map counts against. */
 export const OF = 195;
 
-/** Natural Earth's alpha-3 codes (data/countries), alphabetical, then those added since: bit i is COUNTRY_CODES[i]. */
+/**
+ * Natural Earth's alpha-3 codes (data/countries), alphabetical, then those
+ * added since: bit i is COUNTRY_CODES[i]. The packing is a whole number of
+ * bytes, so up to 240 codes keep every link's length; the 241st would need
+ * unpackCountries to read the shorter links too.
+ */
 export const COUNTRY_CODES = [
   "ABW", "AFG", "AGO", "AIA", "ALB", "ALD", "AND", "ARE", "ARG", "ARM", "ASM", "ATA", "ATF", "ATG", "AUS", "AUT", "AZE", "BDI", "BEL", "BEN",
   "BFA", "BGD", "BGR", "BHR", "BHS", "BIH", "BLM", "BLR", "BLZ", "BMU", "BOL", "BRA", "BRB", "BRN", "BTN", "BWA", "CAF", "CAN", "CHE", "CHL",

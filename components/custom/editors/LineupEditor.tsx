@@ -29,7 +29,9 @@ export default function LineupEditor({ arrival, touched, onChange }: EditorProps
   const errors = cells.map((c) => ({ n: c.n.error, k: c.k === null ? "0 to 99" : null }));
   const ok = allOk(lex, team, season) && !!team.value && cells.every((c) => c.n.value !== null && c.k !== null);
   const x: Player[] = cells.map((c) => (c.k !== undefined ? [c.n.value ?? "", c.k as number] : [c.n.value ?? ""]));
-  const spec: CustomSpec | null = ok ? { t: "lineup", v: 1, p: { f, t: team.value!, ...(season.value ? { s: season.value } : {}), x } } : null;
+  // A shirt of a whole team, reopened from the bag, keeps its player's mark while that position is still there.
+  const me = a?.me !== undefined && a.me < x.length ? { me: a.me } : {};
+  const spec: CustomSpec | null = ok ? { t: "lineup", v: 1, p: { f, t: team.value!, ...(season.value ? { s: season.value } : {}), x, ...(whole ? {} : me) } } : null;
   const take = Math.min(count, n);
   const batch = spec && whole ? Array.from({ length: take }, (_, i) => ({ ...spec, p: { ...spec.p, me: i } }) as CustomSpec) : undefined;
 
