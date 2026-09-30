@@ -3,12 +3,17 @@
  * names, a place) turned into every print MONO can make from it, each a spec
  * ready for its product page (`?make=`). Pure: the page draws the cards.
  * Only the products the inputs allow are listed (no sky without a place, the
- * planets to 2050, a monogram only with two names), and every spec is
- * validated, so one that can't take the inputs drops alone.
+ * planets to 2050, a monogram only with two names, the first messages only
+ * between two named people, a signpost "since" only with the place and
+ * where they live now, two different cities), and every spec is validated,
+ * so one that can't take the inputs drops alone.
  */
 import { PLANETS_LAST_YEAR, cleanWords, parseDate, validate, type City, type CustomSpec } from "./spec";
 import { WEEKS_YEARS, weeksDateProblem } from "./specs/weeks";
 import { SNOWFLAKE_MAX } from "./specs/snowflake";
+import { HEAD_MAX, ITEM_MAX } from "./specs/receipt";
+import { MESSAGE_MAX } from "./specs/message";
+import { packPlaces } from "./specKit";
 
 export type TwoPlace = Pick<City, "id" | "name" | "lat" | "lon">;
 export interface TwoInputs {
@@ -21,6 +26,8 @@ export interface TwoInputs {
   b?: string;
   /** Where; none means no sky and no globe. */
   place?: TwoPlace | null;
+  /** Where they live now (optional): with the place, a signpost between the two. */
+  home?: TwoPlace | null;
 }
 export interface TwoCard {
   /** The product (lib/custom/products slug). */
@@ -75,19 +82,34 @@ export function forTwo(i: TwoInputs, today: string): TwoCard[] {
   const n = WEEKS_YEARS.find((n) => !weeksDateProblem(d, n, today));
   if (n) out.push({ slug: "weeks", spec: { t: "weeks", v: 1, p: { b: d, a: today, n, ...w } }, line: `Every week since ${y}, a dot each` });
   if (a && b && `${a} & ${b}`.length <= SNOWFLAKE_MAX) out.push({ slug: "snowflake", spec: { t: "snowflake", v: 1, p: { n: `${a} & ${b}` } }, line: "A snowflake grown from both names" });
+  // The receipt for it: what it was first (when it fits a line), then our items, and the years since when there are some.
+  const years = Number(today.slice(0, 4)) - y;
+  const items = [i.w && i.w.length <= ITEM_MAX && cleanWords(i.w, ITEM_MAX) === i.w ? i.w : "First date", "Coffee, too strong", "Long walk", "Last train", ...(years >= 2 && years <= 99 ? [`${years} good years`] : [])];
+  // The shop's name is theirs: both names, or the two of them.
+  const head = a && b && `${a} & ${b}`.length <= HEAD_MAX ? `${a} & ${b}` : "The two of us";
+  out.push({ slug: "receipt", spec: { t: "receipt", v: 1, p: { k: "receipt", h: head, x: items, d } }, line: "The receipt for it, itemised" });
+  // The first messages, as they might have gone: only between two named people.
+  if (a && b) {
+    const m = [[0, `Hi ${b}. It was nice to meet you.`, "21:02"], [1, `Hi ${a}. It was. Same time next week?`, "21:05"]];
+    if (m.every(([, t]) => String(t).length <= MESSAGE_MAX)) out.push({ slug: "message", spec: { t: "message", v: 1, p: { n: b, d, m } }, line: "The first messages, as they might have gone" });
+  }
+  // A signpost from where they live now to where it was, and the year it started.
+  const home = i.home ?? null;
+  if (place && home && home.id !== place.id) out.push({ slug: "signpost", spec: { t: "signpost", v: 1, p: { k: "since", h: home.id, x: packPlaces([{ c: place.id }]), y } }, line: `${home.name} to ${place.name}, since ${y}` });
   return out.flatMap((c) => {
     const spec = validate(c.spec);
     return spec ? [{ slug: c.slug, spec, line: c.line }] : [];
   });
 }
 
-/** The page's address: what's typed, each field read alone (a bad one is dropped, the rest kept). `c`: a city id, "none", or absent (the visitor's own). */
+/** The page's address: what's typed, each field read alone (a bad one is dropped, the rest kept). `c`: a city id, "none", or absent (the visitor's own); `h`: where they live now, a city id. */
 export interface TwoQuery {
   d?: string;
   w?: string;
   a?: string;
   b?: string;
   c?: number | "none";
+  h?: number;
 }
 export function readTwo(q: URLSearchParams): TwoQuery {
   const out: TwoQuery = {};
@@ -102,11 +124,14 @@ export function readTwo(q: URLSearchParams): TwoQuery {
   const c = q.get("c");
   if (c === "none") out.c = "none";
   else if (c && /^[1-9]\d{0,9}$/.test(c) && Number(c) <= 0xffffffff) out.c = Number(c);
+  const h = q.get("h");
+  if (h && /^[1-9]\d{0,9}$/.test(h) && Number(h) <= 0xffffffff) out.h = Number(h);
   return out;
 }
 export function writeTwo(t: TwoQuery): string {
   const q = new URLSearchParams();
   for (const k of ["d", "w", "a", "b"] as const) if (t[k]) q.set(k, t[k]!);
   if (t.c !== undefined) q.set("c", String(t.c));
+  if (t.h !== undefined) q.set("h", String(t.h));
   return q.toString();
 }

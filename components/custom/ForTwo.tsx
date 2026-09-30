@@ -50,6 +50,9 @@ export function ForTwo() {
   /** The place: the visitor's own (undefined), none, or a chosen city's id. */
   const [choice, setChoice] = useState<number | "none" | undefined>(undefined);
   const [changing, setChanging] = useState(false);
+  /** Where they live now (a city id, optional): the signpost between it and the place. */
+  const [homeId, setHomeId] = useState<number | undefined>(undefined);
+  const [addingHome, setAddingHome] = useState(false);
   const [touchedDate, setTouchedDate] = useState(false);
   const [ready, setReady] = useState(false);
   const [places, setPlaces] = useState<Places | null>(null);
@@ -63,6 +66,7 @@ export function ForTwo() {
     if (q.a) nameA.setText(q.a);
     if (q.b) nameB.setText(q.b);
     if (q.c !== undefined) setChoice(q.c);
+    if (q.h !== undefined) setHomeId(q.h);
     setReady(true);
     let live = true;
     loadCities()
@@ -78,13 +82,14 @@ export function ForTwo() {
   const here = useMemo(() => (places ? autoCity(places) : undefined), [places]);
   const chosen = typeof choice === "number" && places ? places.byId(choice) : undefined;
   const city = choice === "none" ? null : (chosen ?? here ?? null);
+  const home = homeId !== undefined && places ? (places.byId(homeId) ?? null) : null;
 
   const own = !!parseDate(date);
   const today = useMemo(localToday, []);
   // Before a date, our example fills whatever's empty.
   const pick = (v: string | null | undefined, ex: string) => (v === null ? undefined : (v ?? (own ? undefined : ex)));
-  const inputs = { d: own ? date : TWO_EXAMPLE.d, w: pick(words.value, TWO_EXAMPLE.w), a: pick(nameA.value, TWO_EXAMPLE.a), b: pick(nameB.value, TWO_EXAMPLE.b), place: city };
-  const key = JSON.stringify([inputs.d, inputs.w, inputs.a, inputs.b, city?.id ?? (places || choice === "none" ? 0 : -1)]);
+  const inputs = { d: own ? date : TWO_EXAMPLE.d, w: pick(words.value, TWO_EXAMPLE.w), a: pick(nameA.value, TWO_EXAMPLE.a), b: pick(nameB.value, TWO_EXAMPLE.b), place: city, home };
+  const key = JSON.stringify([inputs.d, inputs.w, inputs.a, inputs.b, city?.id ?? (places || choice === "none" ? 0 : -1), home?.id ?? 0]);
   // The cards wait for the place list (a sky needs its city), then follow the fields a moment behind the typing.
   const [cards, setCards] = useState<TwoCard[]>([]);
   const latest = useRef(inputs);
@@ -106,9 +111,10 @@ export function ForTwo() {
     if (choice === "none") q.c = "none";
     else if (chosen) q.c = chosen.id;
     else if (own && here) q.c = here.id;
+    if (home) q.h = home.id;
     const s = writeTwo(q);
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${s ? `?${s}` : ""}${window.location.hash}`);
-  }, [ready, own, date, words.value, nameA.value, nameB.value, choice, chosen, here]);
+  }, [ready, own, date, words.value, nameA.value, nameB.value, choice, chosen, here, home]);
 
   const dateError = touchedDate && date && !own ? `A date from ${FIRST_YEAR} to ${LAST_YEAR}.` : "";
 
@@ -187,6 +193,39 @@ export function ForTwo() {
               <button type="button" onClick={() => setChanging(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
                 {choice === "none" ? "Add one" : "Change"}
               </button>
+            </p>
+          )}
+          {addingHome ? (
+            <CityField
+              id="two-home"
+              label="Where you live now"
+              places={places}
+              value={home ?? undefined}
+              onChange={(c) => {
+                if (!c) return;
+                setHomeId(c.id);
+                setAddingHome(false);
+              }}
+              error=""
+              onBlur={() => {}}
+            />
+          ) : (
+            <p className="flex min-h-10 flex-wrap items-center gap-x-2 text-sm text-neutral-400" data-home>
+              {home ? (
+                <span>
+                  Living in <span className="text-neutral-200">{cityLabel(home)}</span>
+                </span>
+              ) : (
+                <span>Where you live now: optional, for a signpost</span>
+              )}
+              <button type="button" onClick={() => setAddingHome(true)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+                {home ? "Change" : "Add it"}
+              </button>
+              {home && (
+                <button type="button" onClick={() => setHomeId(undefined)} className="-my-2 h-10 text-neutral-300 underline underline-offset-4 hover:text-white">
+                  Leave it out
+                </button>
+              )}
             </p>
           )}
         </form>

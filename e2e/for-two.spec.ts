@@ -11,7 +11,7 @@ test("For two: before a date, every print drawn with our example; never blank", 
   await expect(page.getByRole("heading", { level: 1, name: "For two" })).toBeVisible();
   await expect(page.getByText("Shown with our example")).toBeVisible();
   await expect(page.locator('[data-two="example"]')).toBeVisible();
-  for (const slug of ["sky", "moon", "planets", "julia", "monogram", "place", "year", "weeks", "snowflake"]) await expect(card(page, slug)).toBeVisible();
+  for (const slug of ["sky", "moon", "planets", "julia", "monogram", "place", "year", "weeks", "snowflake", "receipt", "message"]) await expect(card(page, slug)).toBeVisible();
   // Each card is drawn (the print on its tee).
   await expect(card(page, "moon").locator("canvas[data-custom]")).toBeVisible();
   // The example isn't written into the address.
@@ -47,8 +47,8 @@ test("For two: only the prints the inputs allow", async ({ page }) => {
   await expect(card(page, "sky")).toBeVisible();
   // The planets hold to 2050; a date to come has no weeks yet; no names, no monogram.
   await expect(card(page, "moon")).toBeVisible();
-  for (const slug of ["planets", "weeks", "monogram", "snowflake"]) await expect(card(page, slug)).toHaveCount(0);
-  await expect(cards(page)).toHaveCount(5);
+  for (const slug of ["planets", "weeks", "monogram", "snowflake", "message", "signpost"]) await expect(card(page, slug)).toHaveCount(0);
+  await expect(cards(page)).toHaveCount(6);
   // One name isn't a monogram.
   await page.getByLabel("One of you").fill("Noa");
   await page.getByLabel("The date").fill("2016-08-12");
@@ -85,4 +85,18 @@ test("For two: the lexicon refuses a brand as a name, and the rest stays", async
   await expect(card(page, "moon")).toBeVisible();
   await expect(card(page, "monogram")).toHaveCount(0);
   await expect(page).not.toHaveURL(/[?&]a=/);
+});
+
+test("For two: where you live now adds a signpost from there to the place, since the year; the address keeps it", async ({ page }) => {
+  await page.goto(`make/two/?d=2016-08-12&c=${TEL_AVIV}`);
+  await hydrated(page);
+  await expect(card(page, "signpost")).toHaveCount(0);
+  await page.getByRole("button", { name: "Add it" }).tap();
+  await page.getByRole("combobox", { name: "Where you live now" }).fill("London");
+  await page.getByRole("option", { name: /London, United Kingdom/ }).first().tap();
+  await expect(card(page, "signpost").getByText("London to Tel Aviv, since 2016")).toBeVisible();
+  await expect(page).toHaveURL(/[?&]h=\d+/);
+  await page.getByRole("button", { name: "Leave it out" }).tap();
+  await expect(card(page, "signpost")).toHaveCount(0);
+  await expect(page).not.toHaveURL(/[?&]h=/);
 });
