@@ -9,8 +9,8 @@ import { LICENSE_LABEL, type License } from "./_license";
 import type { Selected } from "./_types";
 import type { SourceId } from "./ranges";
 
-/** Each wave's drop (a Monday): at most 40 of its designs are new that week, the rest a week earlier. */
-export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28" };
+/** Each wave's drop: at most 12 of its designs (four per category) are new that week, the rest a week earlier. */
+export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-30" };
 
 /** The institution a design is "from" in its description, and the credit's source line. */
 export const INSTITUTION: Record<SourceId, string> = {
@@ -48,25 +48,55 @@ const MAP = /\bmap\b|\bchart\b|atlas|bathymetr|coast survey/i;
 const BRUSH = /woodblock|ukiyo|surimono|hanging scroll|handscroll|album leaf|ink on (?:paper|silk)|japan|china|korea/i;
 const PLATE = /plate|specimen|natural history|zoolog|botan|illustration|kunstformen|challenger|haeckel|lithograph.*(?:fish|shell|coral)|chromolith/i;
 const TECH = /patent|technical drawing|mechanical|machine|engine|diagram/i;
+/** From wave 2 on: a chart named in French or in the plural (Commons' "18th-century French nautical charts", "maps of …"). */
+const MAP_2 = /\bmaps?\b|\bcharts?\b|\bcarte\b|atlas|bathymetr|coast survey/i;
+/** From wave 2 on: a building's drawing (a lighthouse elevation on Commons) is architecture. */
+const BUILDING_2 = /architectural (?:elevation|drawing|plan)s?|drawings of [\w\s]+ lighthouse/i;
+/** From wave 2 on: East Asian work named by its culture ("Chinese (culture or style)") too. */
+const BRUSH_2 = new RegExp(`${BRUSH.source}|chinese|japanese|korean`, "i");
+/** From wave 2 on: natural history by name only ("plate", "illustration" or a fishing boat's lithograph don't make a specimen). */
+const NATURE_2 = /specimen|natural history|zoolog|botan|kunstformen|challenger|haeckel/i;
+const SHIP_PLAN = /lines plan|sail plan|cross sections? of ships|ship ?plan|architectura navalis|construction plan|shipbuilding|half model|profile of the|plan of a ship/i;
+const VESSEL = /\b(?:ship|vessel|schooner|lightship|steamer|steamboat|boat|barge|ferry|tug)\b/i;
+const MEASURED = /measured drawing|architectural drawing/i;
 
 /** The archive group whose character (features, screen, tee) a kept picture takes, and its shop category. */
-export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source">): { group: ArchiveGroup; category: ShirtCategory } {
+export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: ShirtCategory } {
   const text = [s.classification, s.title, ...s.tags].join(" · ");
   if (s.mode !== "ink" || PHOTO.test(s.classification)) return { group: "art-photo", category: "photographs" };
-  if (MAP.test(text)) return { group: "etching", category: "sky" };
+  const later = s.wave !== undefined && s.wave >= 2;
+  if ((later ? MAP_2 : MAP).test(text)) return { group: "etching", category: "sky" };
+  // Ship plans and a vessel's measured drawing are technical line work; a building's is architecture.
+  // A HABS/HAER sheet on Commons is a measured drawing too (its title names the survey).
+  const measured = MEASURED.test(s.classification) || /\b(?:HABS|HAER)\b/.test(s.title);
+  if (SHIP_PLAN.test(text) || (measured && VESSEL.test(s.title))) return { group: "etching", category: "systems" };
+  if (measured || (later && BUILDING_2.test(text))) return { group: "etching", category: "architecture" };
   if (TECH.test(text)) return { group: "etching", category: "systems" };
-  if (BRUSH.test(text)) return { group: "ukiyo-e", category: "brush" };
-  if (PLATE.test(text) || s.source === "wikimedia") return { group: "natural-history", category: "specimens" };
+  if ((later ? BRUSH_2 : BRUSH).test(text)) return { group: "ukiyo-e", category: "brush" };
+  // Commons files are all classed "Plate" by the adapter: after the first (natural-history) wave, only their own words count.
+  const plateText = s.source === "wikimedia" && s.wave !== 1 ? [s.title, ...s.tags].join(" · ") : text;
+  if ((later ? NATURE_2 : PLATE).test(plateText) || (s.source === "wikimedia" && s.wave === 1)) return { group: "natural-history", category: "specimens" };
   return { group: "etching", category: "etched" };
 }
 
 /** A record title as a design name of at most 60 characters: its first clause if that fits, else cut at a word. */
 export function shortName(t: string, max = 60): string {
   // A plate's running number ("43. The Sea Wolf") is the book's, not what the picture shows.
-  const s = t.replace(/\s+/g, " ").replace(/^\d+\.\s+/, "").trim();
+  let s = t.replace(/\s+/g, " ").replace(/^\d+\.\s+/, "").trim();
+  // A library record's statement of responsibility ("… de la Méditerranée / par M. …") is not the name.
+  if (s.length > max && / \/ /.test(s)) s = s.replace(/ \/ .*$/, "");
+  if (s.length > max) s = s.replace(/\s+(?:ritad av|ritad af|drawn by|dessiné par|getekend door)\s.*$/i, "");
   if (s.length <= max) return s;
   const clause = /^(.{12,}?)\s*(?:[:;,(]| - | — )/.exec(s)?.[1];
   if (clause && clause.length <= max) return trimDangling(clause);
   // Cut at a word, never on a dangling one ("… between 35th and").
-  return trimDangling(s.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,.;:-]+$/, ""));
+  return trimForeignDangling(trimDangling(s.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,.;:\/-]+$/, "")));
+}
+
+/** French, Dutch and Swedish words a cut record title can't end on either (the shared list covers English and a few more). */
+const FOREIGN_DANGLING = /\s+(?:pour|par|depuis|jusqu'?à|avec|sur|dans|vers|entre|van|het|een|voor|op|till|av|af|och|med|från|för|y|por|para|con)$/i;
+function trimForeignDangling(t: string): string {
+  let s = t;
+  for (let prev = ""; prev !== s; ) (prev = s), (s = trimDangling(s.replace(FOREIGN_DANGLING, "")));
+  return s;
 }

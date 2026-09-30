@@ -83,6 +83,8 @@ export function closest(word: string, vocab: readonly string[], df: readonly num
       const d = distance(word, v, k);
       if (d <= k) found.push({ at: i, dist: d });
     }
-  found.sort((a, b) => a.dist - b.dist || df[b.at] - df[a.at] || vocab[a.at].localeCompare(vocab[b.at]));
+  // At one edit, neighbours swapped (the commonest slip: "loots" for "lotos") before a changed, missing or extra letter.
+  const swapped = (i: number) => Number(isSwap(word, vocab[i]));
+  found.sort((a, b) => a.dist - b.dist || swapped(b.at) - swapped(a.at) || df[b.at] - df[a.at] || vocab[a.at].localeCompare(vocab[b.at]));
   return found.slice(0, limit);
 }

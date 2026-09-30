@@ -1,0 +1,412 @@
+{
+ "met-429729": "keep",
+ "met-688162": "keep",
+ "met-73534": "keep",
+ "met-268398": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-407874": "keep",
+ "met-372506": "keep",
+ "met-285467": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-631050": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-688164": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-306319": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-343509": "keep",
+ "met-766676": "keep",
+ "met-641558": "keep",
+ "met-398047": "keep",
+ "met-767099": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-373059": "keep",
+ "met-415891": "keep",
+ "met-812213": "keep",
+ "met-744875": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-788420": {
+  "decision": "reject",
+  "reason": "content review: a novel's character climbing the ship's side, a caricature scene: figures are the subject"
+ },
+ "met-384228": "keep",
+ "met-380853": "keep",
+ "met-366528": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-285982": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-811884": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-704425": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-380696": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-381322": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-389913": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-403529": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-283217": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-688088": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-371661": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-397355": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-360049": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-407320": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-662035": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-392946": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-361527": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-344574": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-262764": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-381318": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-336243": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-359418": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-345414": {
+  "decision": "reject",
+  "reason": "content review: a book on the Amistad captives: real people, a slave-ship story"
+ },
+ "met-285980": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-728337": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-382738": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-909149": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-348231": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-380679": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-893085": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-765755": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-769239": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-56895": "keep",
+ "met-381305": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-43225": {
+  "decision": "reject",
+  "reason": "quality 73 sliver"
+ },
+ "met-334353": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-766524": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-769240": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-339658": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-57056": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-37071": "keep",
+ "met-749591": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-380694": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-359511": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-728322": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-289343": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-372552": "keep",
+ "met-371727": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-73527": "keep",
+ "met-764915": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-811653": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-762231": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-765684": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-348604": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-287971": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-266644": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-769236": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-415941": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-813290": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-908948": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-335058": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-622952": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-348240": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-355038": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-266873": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "met-363296": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-335059": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-688161": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-340838": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-380851": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-335965": {
+  "decision": "reject",
+  "reason": "quality 63 sliver"
+ },
+ "met-362069": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "met-348244": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "met-359581": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "met-654263": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "met-36002": {
+  "decision": "reject",
+  "reason": "quality 55 sliver"
+ },
+ "met-380862": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-391703": {
+  "decision": "reject",
+  "reason": "quality 53 flat"
+ },
+ "met-364118": {
+  "decision": "reject",
+  "reason": "quality 53 sliver"
+ },
+ "met-338955": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "met-335611": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "met-661751": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-285981": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-365877": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "met-363990": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-746834": {
+  "decision": "reject",
+  "reason": "quality 45 sliver"
+ },
+ "met-339153": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "met-362254": {
+  "decision": "reject",
+  "reason": "quality 43 sliver"
+ },
+ "met-363991": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-335809": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-348233": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "met-370461": {
+  "decision": "reject",
+  "reason": "quality 29 sliver"
+ },
+ "met-336463": {
+  "decision": "reject",
+  "reason": "quality 29 sliver"
+ },
+ "met-370462": {
+  "decision": "reject",
+  "reason": "quality 25 sliver"
+ }
+}

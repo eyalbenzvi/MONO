@@ -1,0 +1,1032 @@
+{
+ "loc-wi0665-00001a": "keep",
+ "loc-ny2412-00002a": "keep",
+ "loc-ma1700-00001a": "keep",
+ "loc-ca1357-00001a": "keep",
+ "loc-ny1544-00001a": "keep",
+ "loc-nc0432-00001a": "keep",
+ "loc-ca1493-00002a": "keep",
+ "loc-il0901-00001a": "keep",
+ "loc-nc0497-00002a": "keep",
+ "loc-pa0452-00001a": "keep",
+ "loc-ma0906-00001a": "keep",
+ "loc-wi0237-00001a": "keep",
+ "loc-ma0676-00001a": "keep",
+ "loc-ma0931-00001a": "keep",
+ "loc-ca1357-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-fl0069-00002a": "keep",
+ "loc-ma0894-00001a": "keep",
+ "loc-ny1517-00002a": "keep",
+ "loc-ca1493-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-hi0083-00001a": "keep",
+ "loc-wi0238-00001a": "keep",
+ "loc-ny0287-00001a": "keep",
+ "loc-ma0367-00001a": "keep",
+ "loc-sc0407-00001a": "keep",
+ "loc-ma0339-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-ca0833-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-mn0001-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-nj0630-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-ny1095-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-wa0212-00001a": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "loc-de0330-00001a": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "loc-ca1356-00001a": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "loc-ma0343-00001a": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "loc-or0577-00001a": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "loc-fl0840-00002a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-wi0305-00001a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-ny1095-00002a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-ny0196-00001a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-wa0212-00002a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-pa2947-00002a": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "loc-nc0617-00001a": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "loc-mi0229-00001a": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "loc-ma1561-00001a": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "loc-md1454-00001a": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "loc-nc0432-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-pa2947-00001a": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "loc-ny1621-00001a": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "loc-ny1414-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ri0037-00001a": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "loc-hi0014-00002a": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "loc-wa0939-00002a": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "loc-wa0184-00001a": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "loc-wi0665-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ny1094-00001a": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "loc-wi0250-00001a": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "loc-fl0814-00002a": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "loc-mi0346-00001a": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "loc-wi0249-00001a": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "loc-ny1621-00002a": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "loc-ny1519-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ma0708-00001a": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "loc-ny1094-00002a": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "loc-ny1093-00002a": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "loc-wa0184-00002a": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "loc-nj0001-00002a": {
+  "decision": "reject",
+  "reason": "quality 51 flat"
+ },
+ "loc-mi0345-00001a": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "loc-nc0605-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-wi0259-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ca1505-00002a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-il0980-00002a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ga0676-00001a": {
+  "decision": "reject",
+  "reason": "quality 50 flat"
+ },
+ "loc-in0149-00002a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ny1099-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-wi0314-00001a": {
+  "decision": "reject",
+  "reason": "quality 50 flat"
+ },
+ "loc-ca0581-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-mo0103-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-in0149-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ny1097-00002a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-la0116-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ma0440-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ny1086-00001a": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "loc-ga0676-00002a": {
+  "decision": "reject",
+  "reason": "quality 49 flat"
+ },
+ "loc-il0901-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-wi0313-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-fl0148-00002a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-wa0939-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-il0978-00002a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-wa0857-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-ny1093-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-tx0180-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-fl0148-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-wa0747-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-hi0014-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-wa0849-00001a": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "loc-wi0258-00001a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-nc0477-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-ma1844-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-mi0351-00001a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-ca0581-00000a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-or0572-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-ny0196-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-mi0350-00001a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-mi0346-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-ny1517-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-tx1010-00001a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-mi0227-00001a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-hi0083-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-wa0864-00002a": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "loc-ny2412-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-va2273-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0915-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-nc0476-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0703-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0703-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-nj1663-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-ri0037-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-ny1544-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-va2273-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-wi0724-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-ny1091-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-ny1520-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ny1518-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-nj1663-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0814-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-md1454-00002a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0915-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-fl0840-00001a": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "loc-ma0339-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-wi0306-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ny1248-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-mi0228-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-mi0230-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-wi0310-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-wi0305-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-mi0229-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ma0367-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-me0337-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ny1100-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-me0360-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-me0348-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-me0354-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-me0341-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-pa0454-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ny1091-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ri0038-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ca2626-00001a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ca0833-00002a": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "loc-ma1700-00002a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ny1092-00002a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-mi0228-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-fl0069-00001a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ny1097-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-wi0302-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-mi0230-00002a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-de0330-00002a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-me0336-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-wa0852-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-wa0860-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-me0340-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-me0358-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-me0361-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-me0346-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-or0576-00001a": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "loc-va2272-00002a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-ny1092-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wa0891-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wi0307-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-nj0391-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wi0307-00002a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-ma0906-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-wi0306-00002a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-tx1367-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wa0855-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-ca2638-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-pa0454-00002a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-me0353-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-tx1010-00002a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wa0861-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-wa0850-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-nc0476-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-ma1844-00001a": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "loc-mi0226-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wi0302-00002a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wa0808-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wa0848-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wa0854-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-md1891-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-me0339-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wa0847-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-sc0408-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-me0349-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-or0577-00002a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-wa0905-00002a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-or0576-00002a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-ny1248-00001a": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "loc-ma1561-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-ny1090-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wi0303-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-ny1090-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wi0723-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-ma0343-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wi0722-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0865-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wi0314-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wi0308-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-il0980-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-mi0350-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0862-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0863-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-nj0001-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-il0606-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0861-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0856-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0860-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-ny1159-00002a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-nc0477-00001a": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "loc-wa0808-00002a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-la0116-00000a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-il0978-00001a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-mi0723-00001a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-wa0863-00001a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-md1891-00002a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-or0572-00001a": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "loc-ny0287-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-mi0354-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-ma0894-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-ri0038-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-wa0865-00002a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-va2272-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-nj0391-00000a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-mi0352-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-fl0731-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-wa0747-00002a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-va1050-00001a": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "loc-mo0103-00000a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-mi0355-00001a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-ma0931-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-mi0353-00001a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-va2271-00001a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-wa0852-00002a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-wa0905-00001a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-sc0408-00002a": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "loc-ma0708-00000a": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "loc-il0606-00001a": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "loc-tx0180-00000a": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "loc-sc0409-00002a": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "loc-mn0001-00000a": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "loc-ma0676-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-sc0409-00001a": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "loc-md1782-00002a": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "loc-wa0848-00002a": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "loc-wa0855-00002a": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "loc-me0358-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-me0360-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-me0339-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-fl0731-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-me0361-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-me0337-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-ny1159-00001a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-wa0849-00002a": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "loc-me0354-00002a": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "loc-me0349-00002a": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "loc-nj0630-00000a": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "loc-pa0452-00000a": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "loc-va1050-00000a": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "loc-wa0854-00002a": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "loc-wa0847-00002a": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "loc-wa0850-00002a": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "loc-wa0857-00002a": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "loc-md1782-00001a": {
+  "decision": "reject",
+  "reason": "quality 33"
+ },
+ "loc-ma0440-00000a": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "loc-wa0856-00002a": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "loc-wa0862-00002a": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "loc-tx1367-00002a": {
+  "decision": "reject",
+  "reason": "quality 30 sliver"
+ }
+}

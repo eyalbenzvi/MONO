@@ -1,0 +1,828 @@
+{
+ "artic-210925": "keep",
+ "artic-42344": "keep",
+ "artic-11342": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-158268": "keep",
+ "artic-146130": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-266145": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-141864": "keep",
+ "artic-46611": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-198379": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-103158": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-43379": "keep",
+ "artic-84759": "keep",
+ "artic-199760": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-96792": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-14873": "keep",
+ "artic-14882": "keep",
+ "artic-38364": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-11833": "keep",
+ "artic-46338": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-61066": "keep",
+ "artic-127493": "keep",
+ "artic-14874": "keep",
+ "artic-198783": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-8118": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-7476": "keep",
+ "artic-111899": "keep",
+ "artic-126487": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-145588": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-33496": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-29256": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115675": "keep",
+ "artic-81006": {
+  "decision": "keep",
+  "title_override": "Ferry boat crossing the Sumida River, from the album \"Friends of the Three Capitals (Santo"
+ },
+ "artic-20545": "keep",
+ "artic-138162": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-63756": "keep",
+ "artic-133358": "keep",
+ "artic-55250": {
+  "decision": "reject",
+  "reason": "content review: Zorn's model beside the boat: a nude"
+ },
+ "artic-59927": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-105714": {
+  "decision": "reject",
+  "reason": "quality 77 sliver"
+ },
+ "artic-234180": {
+  "decision": "reject",
+  "reason": "quality 77 sliver"
+ },
+ "artic-63762": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-49734": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-111958": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-115135": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-105484": "keep",
+ "artic-21646": "keep",
+ "artic-105485": "keep",
+ "artic-8336": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-81540": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-8333": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-34801": {
+  "decision": "keep",
+  "title_override": "Embarking on Pleasure Boats in Summer, from the illustrated book \"Picture Book: Flowers of"
+ },
+ "artic-138436": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-234102": "keep",
+ "artic-8343": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-104215": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115133": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-49732": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-60487": "keep",
+ "artic-41699": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-225010": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-73636": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-234185": {
+  "decision": "reject",
+  "reason": "quality 75 sliver"
+ },
+ "artic-45786": {
+  "decision": "reject",
+  "reason": "solid block"
+ },
+ "artic-24253": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-61258": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-31058": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-45144": {
+  "decision": "reject",
+  "reason": "quality 74 sliver"
+ },
+ "artic-115131": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-21533": "keep",
+ "artic-21426": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-145575": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-49331": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-73994": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-30361": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-28407": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115171": {
+  "decision": "reject",
+  "reason": "quality 73 sliver"
+ },
+ "artic-145823": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-85500": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-85897": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-103316": "keep",
+ "artic-48523": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-114319": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-76351": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-118279": "keep",
+ "artic-50093": {
+  "decision": "reject",
+  "reason": "quality 72 sliver"
+ },
+ "artic-27391": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-151647": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-73634": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-21765": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-83959": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-115661": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-4796": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115156": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-81317": "keep",
+ "artic-83773": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-246749": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-16797": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-41370": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-234189": {
+  "decision": "reject",
+  "reason": "quality 70 sliver"
+ },
+ "artic-88644": "keep",
+ "artic-86016": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-246752": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-246745": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-116240": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-83957": {
+  "decision": "reject",
+  "reason": "quality 69 vignette"
+ },
+ "artic-83771": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-82671": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-114334": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-83576": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-121377": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-115874": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-50834": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115212": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-115153": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-23492": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-198866": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-12535": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-246747": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-246744": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-246748": {
+  "decision": "reject",
+  "reason": "quality 68 sliver"
+ },
+ "artic-54053": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-246750": {
+  "decision": "reject",
+  "reason": "quality 68 sliver"
+ },
+ "artic-246751": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-115182": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-115756": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-95408": {
+  "decision": "reject",
+  "reason": "quality 68 sliver"
+ },
+ "artic-109141": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-246753": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-16800": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-24908": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-19183": "keep",
+ "artic-246746": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-83583": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-70263": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-29814": {
+  "decision": "reject",
+  "reason": "quality 65 sliver"
+ },
+ "artic-59886": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-149576": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-102478": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "artic-95723": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-114329": {
+  "decision": "reject",
+  "reason": "quality 61 sliver"
+ },
+ "artic-129622": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-11831": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-16803": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-23411": "keep",
+ "artic-84009": {
+  "decision": "reject",
+  "reason": "category full (etched)"
+ },
+ "artic-83333": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "artic-114048": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "artic-84095": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "artic-54106": {
+  "decision": "reject",
+  "reason": "quality 59 sliver"
+ },
+ "artic-261640": {
+  "decision": "reject",
+  "reason": "quality 58 sliver"
+ },
+ "artic-41695": {
+  "decision": "reject",
+  "reason": "quality 58 sliver"
+ },
+ "artic-29498": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "artic-117443": {
+  "decision": "reject",
+  "reason": "quality 56 sliver"
+ },
+ "artic-114684": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "artic-48227": {
+  "decision": "reject",
+  "reason": "quality 55 sliver"
+ },
+ "artic-83334": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "artic-54414": {
+  "decision": "reject",
+  "reason": "quality 55 sliver"
+ },
+ "artic-79228": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "artic-16831": {
+  "decision": "reject",
+  "reason": "quality 54 sliver"
+ },
+ "artic-86010": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "artic-73663": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "artic-29671": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "artic-115730": {
+  "decision": "reject",
+  "reason": "quality 53 flat"
+ },
+ "artic-16633": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "artic-83451": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "artic-75948": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-47173": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-84021": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-31648": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-84010": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-83775": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-14459": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-2993": {
+  "decision": "reject",
+  "reason": "quality 52"
+ },
+ "artic-261629": {
+  "decision": "reject",
+  "reason": "quality 51 sliver"
+ },
+ "artic-41247": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "artic-84014": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "artic-85810": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "artic-13137": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-115718": {
+  "decision": "reject",
+  "reason": "quality 49 flat"
+ },
+ "artic-73462": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "artic-54103": {
+  "decision": "reject",
+  "reason": "quality 49 sliver"
+ },
+ "artic-39497": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "artic-46282": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "artic-14327": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-114324": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-209910": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-83769": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-82766": {
+  "decision": "reject",
+  "reason": "quality 47"
+ },
+ "artic-15177": {
+  "decision": "reject",
+  "reason": "quality 46 sliver"
+ },
+ "artic-59520": {
+  "decision": "reject",
+  "reason": "quality 46 sliver"
+ },
+ "artic-83442": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "artic-86297": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "artic-73557": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "artic-3224": {
+  "decision": "reject",
+  "reason": "quality 44 sliver"
+ },
+ "artic-109813": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "artic-13637": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "artic-50920": {
+  "decision": "reject",
+  "reason": "quality 43 sliver"
+ },
+ "artic-182873": {
+  "decision": "reject",
+  "reason": "quality 43 sliver"
+ },
+ "artic-190679": {
+  "decision": "reject",
+  "reason": "quality 43 sliver"
+ },
+ "artic-223870": {
+  "decision": "reject",
+  "reason": "quality 42 sliver"
+ },
+ "artic-129627": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "artic-83897": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "artic-29580": {
+  "decision": "reject",
+  "reason": "quality 41 sliver"
+ },
+ "artic-14350": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "artic-84317": {
+  "decision": "reject",
+  "reason": "quality 40 sliver"
+ },
+ "artic-105932": {
+  "decision": "reject",
+  "reason": "quality 40"
+ },
+ "artic-16343": {
+  "decision": "reject",
+  "reason": "quality 40 sliver"
+ },
+ "artic-85329": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "artic-190713": {
+  "decision": "reject",
+  "reason": "quality 38 sliver"
+ },
+ "artic-50233": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "artic-73558": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "artic-83684": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "artic-261651": {
+  "decision": "reject",
+  "reason": "quality 37 sliver"
+ },
+ "artic-137993": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "artic-46254": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "artic-81339": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "artic-181026": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "artic-50904": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "artic-155215": {
+  "decision": "reject",
+  "reason": "quality 35"
+ },
+ "artic-34630": {
+  "decision": "reject",
+  "reason": "quality 33 sliver"
+ },
+ "artic-84930": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "artic-85861": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "artic-85799": {
+  "decision": "reject",
+  "reason": "quality 32"
+ },
+ "artic-50238": {
+  "decision": "reject",
+  "reason": "quality 30"
+ },
+ "artic-180940": {
+  "decision": "reject",
+  "reason": "quality 29"
+ },
+ "artic-84012": {
+  "decision": "reject",
+  "reason": "quality 29"
+ },
+ "artic-261645": {
+  "decision": "reject",
+  "reason": "quality 28"
+ },
+ "artic-84028": {
+  "decision": "reject",
+  "reason": "quality 28"
+ },
+ "artic-155579": {
+  "decision": "reject",
+  "reason": "quality 27"
+ }
+}

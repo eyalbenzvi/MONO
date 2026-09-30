@@ -725,5 +725,720 @@
   "n": 11014,
   "wave": 1,
   "name": "Shells: Hippopus maculatus Lam"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-121168",
+  "record": "121168",
+  "recordUrl": "https://clevelandart.org/art/1942.1047",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1942.1047/1942.1047_print.jpg",
+  "title": "Fishing Boats at Anchor",
+  "maker": "Eugène Isabey",
+  "date": "1836",
+  "credit": "Eugène Isabey, The Cleveland Museum of Art",
+  "classification": "Print, lithograph",
+  "tags": [
+   "Prints",
+   "France, 19th century"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2654,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.607,
+  "matched": [
+   "fishing boat",
+   "boat",
+   "anchor"
+  ],
+  "screen": "tonal",
+  "tone": 0.499,
+  "contrast": 0.268,
+  "coverage": 0.089,
+  "detail": 1,
+  "box": [
+   0.072,
+   0.055,
+   0.94,
+   0.561
+  ],
+  "sha": "a539cf6b15739848",
+  "assess": {
+   "quality": 67,
+   "ink": 0.044,
+   "extent": 0.332,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11015,
+  "wave": 2,
+  "name": "Fishing Boats at Anchor"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-536592",
+  "record": "536592",
+  "recordUrl": "https://clevelandart.org/art/2023.19.7",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/2023.19.7/2023.19.7_print.jpg",
+  "title": "A Pumpkin Used as a Fishing Boat",
+  "maker": "Filippo Morghen",
+  "date": "about 1769",
+  "credit": "Filippo Morghen, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "Italy"
+  ],
+  "description": "Filippo Morghen’s set of 10 etchings is outstanding among visual narratives of imaginary voyages to the moon, both visual and literary, that intrigued 18th-century European audiences. A title page and nine plates depict the imagined lives and economy of moon dwellers. These include modes of transport such as large birds and sailboats propelled by giant bellows, enormous scissors for capturing wild beasts (including an oversized rat), and the use of giant pumpkins as fishing boats and as dwellings. Representations of the moon dwellers are based on inaccurate and imaginary European interpretations of Asian, Ottoman, and Native American cultures—called chinoiserie and <em>turquerie</em>—that permeated the decorative and visual arts of the period.",
+  "width": 3400,
+  "height": 2544,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.756,
+  "matched": [
+   "fishing boat",
+   "boat"
+  ],
+  "screen": "line",
+  "tone": 0.586,
+  "contrast": 0.264,
+  "coverage": 0.135,
+  "detail": 1,
+  "box": [
+   0.048,
+   0.046,
+   0.941,
+   0.536
+  ],
+  "sha": "dcef32a6a54badde",
+  "assess": {
+   "quality": 78,
+   "ink": 0.08,
+   "extent": 0.422,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11016,
+  "wave": 2,
+  "name": "A Pumpkin Used as a Fishing Boat"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-121161",
+  "record": "121161",
+  "recordUrl": "https://clevelandart.org/art/1942.1040",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1942.1040/1942.1040_print.jpg",
+  "title": "Fishing Boats along the Beach",
+  "maker": "Eugène Isabey",
+  "date": "c. 1830",
+  "credit": "Eugène Isabey, The Cleveland Museum of Art",
+  "classification": "Print, lithograph",
+  "tags": [
+   "Prints",
+   "France, 19th century"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2714,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.698,
+  "matched": [
+   "fishing boat",
+   "boat"
+  ],
+  "screen": "tonal",
+  "tone": 0.519,
+  "contrast": 0.248,
+  "coverage": 0.139,
+  "detail": 1,
+  "box": [
+   0.075,
+   0.039,
+   0.932,
+   0.584
+  ],
+  "sha": "a54c5e7c760cbada",
+  "assess": {
+   "quality": 74,
+   "ink": 0.072,
+   "extent": 0.458,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11017,
+  "wave": 2,
+  "name": "Fishing Boats along the Beach"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-121461",
+  "record": "121461",
+  "recordUrl": "https://clevelandart.org/art/1942.1312",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1942.1312/1942.1312_print.jpg",
+  "title": "Ship-Building, Gloucester Harbor",
+  "maker": "Winslow Homer",
+  "date": "1873",
+  "credit": "Winslow Homer, The Cleveland Museum of Art",
+  "classification": "Print, wood engraving",
+  "tags": [
+   "Prints",
+   "America"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2337,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.752,
+  "matched": [
+   "ship",
+   "harbor"
+  ],
+  "screen": "line",
+  "tone": 0.567,
+  "contrast": 0.242,
+  "coverage": 0.166,
+  "detail": 1,
+  "box": [
+   0.044,
+   0.039,
+   0.955,
+   0.512
+  ],
+  "sha": "9a9746d0ccfac602",
+  "assess": {
+   "quality": 84,
+   "ink": 0.096,
+   "extent": 0.414,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11018,
+  "wave": 2,
+  "name": "Ship-Building, Gloucester Harbor"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-118613",
+  "record": "118613",
+  "recordUrl": "https://clevelandart.org/art/1939.638",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1939.638/1939.638_print.jpg",
+  "title": "Harbor Scene with Boats and Castle",
+  "maker": "Auguste Hervier",
+  "date": "c. 1800s",
+  "credit": "Auguste Hervier, The Cleveland Museum of Art",
+  "classification": "Drawing, black and brown wash",
+  "tags": [
+   "Drawings",
+   "America"
+  ],
+  "description": "",
+  "width": 2512,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.644,
+  "matched": [
+   "harbor",
+   "boat"
+  ],
+  "screen": "tonal",
+  "tone": 0.466,
+  "contrast": 0.212,
+  "coverage": 0.264,
+  "detail": 1,
+  "box": [
+   0.053,
+   0.066,
+   0.953,
+   0.958
+  ],
+  "sha": "af101a86cf7ee3cd",
+  "assess": {
+   "quality": 78,
+   "ink": 0.12,
+   "extent": 0.776,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11019,
+  "wave": 2,
+  "name": "Harbor Scene with Boats and Castle"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-129217",
+  "record": "129217",
+  "recordUrl": "https://clevelandart.org/art/1952.11",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1952.11/1952.11_print.jpg",
+  "title": "A Ship Moving Toward the Right",
+  "maker": "Israhel van Meckenem",
+  "date": "c. 1475–80",
+  "credit": "Israhel van Meckenem, The Cleveland Museum of Art",
+  "classification": "Print, engraving",
+  "tags": [
+   "Prints",
+   "Germany"
+  ],
+  "description": "",
+  "width": 2713,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.747,
+  "matched": [
+   "ship"
+  ],
+  "screen": "line",
+  "tone": 0.538,
+  "contrast": 0.252,
+  "coverage": 0.207,
+  "detail": 1,
+  "box": [
+   0.045,
+   0.045,
+   0.963,
+   0.901
+  ],
+  "sha": "93eabaa92f54dbd0",
+  "assess": {
+   "quality": 80,
+   "ink": 0.113,
+   "extent": 0.779,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11020,
+  "wave": 2,
+  "name": "A Ship Moving Toward the Right"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-107987",
+  "record": "107987",
+  "recordUrl": "https://clevelandart.org/art/1925.608",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1925.608/1925.608_print.jpg",
+  "title": "Low Tide, Oporto",
+  "maker": "Orville Houghton Peets",
+  "date": "c. 1924",
+  "credit": "Orville Houghton Peets, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "America, Ohio, Cleveland",
+   {
+    "description": "laid paper",
+    "watermarks": []
+   }
+  ],
+  "description": "Starting in 1920, Peets was commissioned by the Hispanic Society of America to travel to Portugal and create art reflecting his experience. The society’s goal was to promote interest in Portuguese culture and tourism in the United States. After the commission ended, Peets continued to travel to Porto, the country’s second-largest city. Here, the artist depicts fishing folk gathering their boats around a series of steps that have been revealed by the low water level.",
+  "width": 1694,
+  "height": 2032,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.774,
+  "matched": [
+   "tide",
+   "boat"
+  ],
+  "screen": "line",
+  "tone": 0.577,
+  "contrast": 0.253,
+  "coverage": 0.281,
+  "detail": 1,
+  "box": [
+   0.065,
+   0.058,
+   0.941,
+   0.859
+  ],
+  "sha": "986680aefa2891fd",
+  "assess": {
+   "quality": 91,
+   "ink": 0.165,
+   "extent": 0.672,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11021,
+  "wave": 2,
+  "name": "Low Tide, Oporto"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-165414",
+  "record": "165414",
+  "recordUrl": "https://clevelandart.org/art/2007.265",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/2007.265/2007.265_print.jpg",
+  "title": "Fishermen on  a Pier, Paris",
+  "maker": "Auguste Louis Lepère",
+  "date": "c. 1870–1918",
+  "credit": "Auguste Louis Lepère, The Cleveland Museum of Art",
+  "classification": "Print, wood engraving",
+  "tags": [
+   "Prints",
+   "France, 19th century"
+  ],
+  "description": "",
+  "width": 2253,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.753,
+  "matched": [
+   "pier"
+  ],
+  "screen": "line",
+  "tone": 0.543,
+  "contrast": 0.258,
+  "coverage": 0.236,
+  "detail": 1,
+  "box": [
+   0.163,
+   0.081,
+   0.837,
+   0.932
+  ],
+  "sha": "cef07a89d1d8d49e",
+  "assess": {
+   "quality": 80,
+   "ink": 0.128,
+   "extent": 0.571,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11022,
+  "wave": 2,
+  "name": "Fishermen on a Pier, Paris"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-103104",
+  "record": "103104",
+  "recordUrl": "https://clevelandart.org/art/1921.190",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1921.190/1921.190_print.jpg",
+  "title": "Ship and Elevator",
+  "maker": "Otto H. Bacher",
+  "date": "1878",
+  "credit": "Otto H. Bacher, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "America"
+  ],
+  "description": "",
+  "width": 1921,
+  "height": 3021,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.725,
+  "matched": [
+   "ship"
+  ],
+  "screen": "line",
+  "tone": 0.524,
+  "contrast": 0.246,
+  "coverage": 0.2,
+  "detail": 1,
+  "box": [
+   0.131,
+   0.049,
+   0.864,
+   0.942
+  ],
+  "sha": "48a3676c6cf3f89c",
+  "assess": {
+   "quality": 77,
+   "ink": 0.106,
+   "extent": 0.578,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11023,
+  "wave": 2,
+  "name": "Ship and Elevator"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-114919",
+  "record": "114919",
+  "recordUrl": "https://clevelandart.org/art/1935.10",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1935.10/1935.10_print.jpg",
+  "title": "A Pier in England",
+  "maker": "Félix Hilaire Buhot",
+  "date": "1879",
+  "credit": "Félix Hilaire Buhot, The Cleveland Museum of Art",
+  "classification": "Print, drypoint, roulette and aquatint",
+  "tags": [
+   "Prints",
+   "France, 19th century",
+   {
+    "description": "beige (1) Japanese paper",
+    "watermarks": []
+   }
+  ],
+  "description": "",
+  "width": 2183,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.747,
+  "matched": [
+   "pier"
+  ],
+  "screen": "tonal",
+  "tone": 0.53,
+  "contrast": 0.268,
+  "coverage": 0.215,
+  "detail": 1,
+  "box": [
+   0.109,
+   0.044,
+   0.888,
+   0.943
+  ],
+  "sha": "3fa67841d191b402",
+  "assess": {
+   "quality": 79,
+   "ink": 0.111,
+   "extent": 0.643,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11024,
+  "wave": 2,
+  "name": "A Pier in England"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-103144",
+  "record": "103144",
+  "recordUrl": "https://clevelandart.org/art/1921.225",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1921.225/1921.225_print.jpg",
+  "title": "Three Ships, Venice",
+  "maker": "Otto H. Bacher",
+  "date": "1880",
+  "credit": "Otto H. Bacher, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "America"
+  ],
+  "description": "",
+  "width": 1987,
+  "height": 2625,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.802,
+  "matched": [
+   "ship"
+  ],
+  "screen": "line",
+  "tone": 0.6,
+  "contrast": 0.268,
+  "coverage": 0.169,
+  "detail": 1,
+  "box": [
+   0.043,
+   0.037,
+   0.967,
+   0.959
+  ],
+  "sha": "1fc41c519c491ad8",
+  "assess": {
+   "quality": 77,
+   "ink": 0.103,
+   "extent": 0.419,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11025,
+  "wave": 2,
+  "name": "Three Ships, Venice"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-130970",
+  "record": "130970",
+  "recordUrl": "https://clevelandart.org/art/1953.651",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1953.651/1953.651_print.jpg",
+  "title": "Malaga Harbor",
+  "maker": "Lawrence Blazey",
+  "date": "c. 1926",
+  "credit": "Lawrence Blazey, The Cleveland Museum of Art",
+  "classification": "Drawing, watercolor",
+  "tags": [
+   "Drawings",
+   "America, Ohio, Cleveland"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2698,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.681,
+  "matched": [
+   "harbor"
+  ],
+  "screen": "tonal",
+  "tone": 0.504,
+  "contrast": 0.22,
+  "coverage": 0.193,
+  "detail": 1,
+  "box": [
+   0.031,
+   0.03,
+   0.971,
+   0.589
+  ],
+  "sha": "a16b8b97de7950ad",
+  "assess": {
+   "quality": 82,
+   "ink": 0.096,
+   "extent": 0.526,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11026,
+  "wave": 2,
+  "name": "Malaga Harbor"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-101521",
+  "record": "101521",
+  "recordUrl": "https://clevelandart.org/art/1920.298",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1920.298/1920.298_print.jpg",
+  "title": "The Wharf",
+  "maker": "Willem Roelofs",
+  "date": null,
+  "credit": "Willem Roelofs, The Cleveland Museum of Art",
+  "classification": "Print, lithograph",
+  "tags": [
+   "Prints",
+   "Germany, 19th century"
+  ],
+  "description": "",
+  "width": 2517,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.694,
+  "matched": [
+   "wharf"
+  ],
+  "screen": "tonal",
+  "tone": 0.537,
+  "contrast": 0.208,
+  "coverage": 0.347,
+  "detail": 1,
+  "box": [
+   0.083,
+   0.062,
+   0.928,
+   0.941
+  ],
+  "sha": "f4bcebc6529a8167",
+  "assess": {
+   "quality": 84,
+   "ink": 0.189,
+   "extent": 0.723,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11027,
+  "wave": 2,
+  "name": "The Wharf"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-99495",
+  "record": "99495",
+  "recordUrl": "https://clevelandart.org/art/1919.131",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1919.131/1919.131_print.jpg",
+  "title": "Liber Studiorum:  Ships in a Breeze",
+  "maker": "Joseph Mallord William Turner",
+  "date": null,
+  "credit": "Joseph Mallord William Turner, The Cleveland Museum of Art",
+  "classification": "Print, etching and mezzotint",
+  "tags": [
+   "Prints",
+   "England, 19th century"
+  ],
+  "description": "",
+  "width": 3400,
+  "height": 2482,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.714,
+  "matched": [
+   "ship"
+  ],
+  "screen": "tonal",
+  "tone": 0.538,
+  "contrast": 0.228,
+  "coverage": 0.16,
+  "detail": 1,
+  "box": [
+   0.089,
+   0.071,
+   0.909,
+   0.504
+  ],
+  "sha": "871b77f7688785ed",
+  "assess": {
+   "quality": 77,
+   "ink": 0.087,
+   "extent": 0.351,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11028,
+  "wave": 2,
+  "name": "Liber Studiorum: Ships in a Breeze"
  }
 ]

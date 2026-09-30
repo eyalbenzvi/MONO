@@ -8,13 +8,14 @@ import { candidates, prep } from "./_pipeline";
 import { archiveorg } from "./archiveorg";
 import { artic } from "./artic";
 import { cleveland } from "./cleveland";
+import { loc } from "./loc";
 import { met } from "./met";
 import { smithsonian } from "./smithsonian";
 import { wikimedia } from "./wikimedia";
 import { WORLDS } from "./worlds";
 import type { SourceId } from "./ranges";
 
-const ADAPTERS = { met, artic, cleveland, wikimedia, smithsonian, archiveorg };
+const ADAPTERS = { met, artic, cleveland, wikimedia, smithsonian, archiveorg, loc };
 /** Most candidates kept per source at stop 1 (the owner can change the ceiling). */
 const CAP = Number(process.env.CAP ?? 400);
 
