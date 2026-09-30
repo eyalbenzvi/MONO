@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
 import { BUTTON_PRIMARY, TEXT_ACTION, useShowMatch } from "@/components/ui";
-import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
+import { FREE_SHIPPING_TEES, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { useCartStore } from "@/store/cartStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
@@ -328,8 +328,8 @@ function ecomItems(lines: CartLine[], pairs: { id: string; key?: string; saving:
   );
 }
 
-/** "$6 · free over $80" below the threshold, "Free" above it (the one shipping line, bag and checkout). */
-export const shippingValue = (shipping: number) => (shipping === 0 ? "Free" : `${formatPrice(shipping)} · free over ${formatPrice(FREE_SHIPPING_THRESHOLD)}`);
+/** "$10 · free with 2 tees" for one tee, "Free" from two (the one shipping line, bag and checkout). */
+export const shippingValue = (shipping: number) => (shipping === 0 ? "Free" : `${formatPrice(shipping)} · free with ${FREE_SHIPPING_TEES} tees`);
 
 function Summary({ subtotal, discount, pairCount, shipping, total }: { subtotal: number; discount: number; pairCount: number; shipping: number; total: number }) {
   return (

@@ -4,8 +4,9 @@ import { specHash, type CustomSpec } from "@/lib/custom/spec";
 import { formatPrice } from "@/lib/format";
 import { COLORS, SIZE_LABELS, type BaseColor, type CartItem, type ShirtProduct, type ShirtSize, type UploadRef } from "@/types/shirt";
 
-export const FREE_SHIPPING_THRESHOLD = 80;
-export const SHIPPING_FEE = 6;
+/** Shipping is free from this many tees in the bag (a pair counts as two). */
+export const FREE_SHIPPING_TEES = 2;
+export const SHIPPING_FEE = 10;
 export const MAX_QTY = 9;
 
 export interface CartLine extends CartItem {
@@ -119,8 +120,8 @@ export function cartTotals(items: CartItem[]) {
   const pairs = countPairs(lines);
   const discount = pairs.reduce((sum, p) => sum + p.saving, 0);
   const goods = subtotal - discount;
-  const shipping = goods <= 0 || goods >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  return { lines, count, subtotal, pairs, discount, shipping, total: goods + shipping, toFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - goods) };
+  const shipping = goods <= 0 || count >= FREE_SHIPPING_TEES ? 0 : SHIPPING_FEE;
+  return { lines, count, subtotal, pairs, discount, shipping, total: goods + shipping, toFreeShipping: Math.max(0, FREE_SHIPPING_TEES - count) };
 }
 
 /** What names a bag line: the design, size and colour, and a personalised print's spec. */

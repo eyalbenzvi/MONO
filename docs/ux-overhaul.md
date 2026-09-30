@@ -55,7 +55,7 @@ A short log of the overhaul: the decisions given, the ones made along the way, a
   - If neither is offered, "Select a country".
   - A typed city known in exactly one offered country selects that country, until the shopper picks one themselves.
   - A postcode or city that contradicts the chosen country shows "Check your country".
-- Free shipping applies from $80 (goods ≥ $80). No combination of the four prices totals exactly $80, so "free over $80" is true as worded.
+- Shipping is $10 for a single tee and free from two tees (a pair counts as two): `SHIPPING_FEE` and `FREE_SHIPPING_TEES` in lib/cart.
 
 **Visuals**
 - No tight back-crop exists in the bake pipeline for catalogue designs, so grid and Discover keep the model photo, square and without a frame. The Make cards already use their crop.
@@ -72,7 +72,7 @@ A short log of the overhaul: the decisions given, the ones made along the way, a
 | Shop after the test | Sticky top row (dots, ringed search, filter icon), prices hidden but counts disagreeing | Quiet "Your edit" heading, Top pick on the first card, a bottom row "Black · White  Search  Filter", counts in one unit |
 | Product | ← Shop row, ⋯ menu, framed square picture, "Top pick for you" toggle, lock icon, size under 400 px dropped | Full-bleed 4:5 gallery (tee → print), Share by the title, one Why line, Black · White · Both · $90, sizes 44 px, one trust line, "Add to bag · M · $50" |
 | Buy sheet | "Choose size" / lock icon, pills, Details link | "Buy now · M · $50", Both · $90, Add to bag, "View tee" row, Back closes it |
-| Bag | Rounded cards, 36 px controls, "Free 30-day returns", bare "Shipping $6" | Hairline rows, 44 px size and Remove, "Shipping $6 · free over $80", the delivery window and returns line, sticky "Checkout · $X" |
+| Bag | Rounded cards, 36 px controls, "Free 30-day returns", bare "Shipping $6" | Hairline rows, 44 px size and Remove, "Shipping $10 · free with 2 tees", the delivery window and returns line, sticky "Checkout · $X" |
 | Checkout | "Delivery details", five alerts, US from UTC, "Place demo order" | "Checkout", one summary line, email first, one alert, "Check your country", sticky "Place order · $X", the one preview line |
 | You | Huge inverted archetype, Checkout CTA, Picked for you, Saved drawer, tracked caps | "You": Your taste (sentence, traits, Share, Reset), Saved in full, Orders & settings |
 | Make | Pill switch and filter icon at the top | "Our prints, made yours. Or print your own." at the top, and "Personalise · Upload  Filter" in a bottom row |

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PRICE } from "../scripts/gen/constants";
 import {
-  FREE_SHIPPING_THRESHOLD,
+  FREE_SHIPPING_TEES,
   MAX_QTY,
   PAIR_PRICE,
   SHIPPING_FEE,
@@ -88,10 +88,12 @@ describe("cart", () => {
     expect(black.subtotal).toBe(white.subtotal);
   });
 
-  it("totals with shipping below the threshold and free shipping above it", () => {
+  it("one tee pays $10 shipping; two tees or more ship free", () => {
+    expect(SHIPPING_FEE).toBe(10);
+    expect(FREE_SHIPPING_TEES).toBe(2);
     const one = cartTotals([{ id: a.id, size: "M", color: a.baseColor, qty: 1 }]);
     expect(one.subtotal).toBe(a.price);
-    expect(one.shipping).toBe(a.price >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE);
+    expect(one.shipping).toBe(SHIPPING_FEE);
     expect(one.total).toBe(one.subtotal + one.shipping);
 
     const many = cartTotals([
@@ -101,7 +103,11 @@ describe("cart", () => {
     expect(many.count).toBe(3);
     expect(many.subtotal).toBe(a.price * 2 + b.price);
     expect(many.shipping).toBe(0);
+    // Two of the same tee, or two different tees, count as two.
+    expect(cartTotals([{ id: a.id, size: "M", color: "black", qty: 2 }]).shipping).toBe(0);
+    expect(cartTotals([{ id: a.id, size: "M", color: "black", qty: 1 }, { id: b.id, size: "M", color: "white", qty: 1 }]).shipping).toBe(0);
     expect(cartTotals([]).total).toBe(0);
+    expect(cartTotals([]).shipping).toBe(0);
   });
 
   it("the pair (same print, black + white) costs $90 as a bundle discount (F5)", () => {
@@ -129,10 +135,10 @@ describe("cart", () => {
     expect(cartTotals([{ id: a.id, size: "M", color: "black", qty: 3 }]).discount).toBe(0);
   });
 
-  it("free shipping progress counts the discounted goods", () => {
+  it("free shipping progress counts tees", () => {
     const one = cartTotals([{ id: a.id, size: "M", color: "black", qty: 1 }]);
-    expect(one.toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD - PRICE);
-    expect(cartTotals([]).toFreeShipping).toBe(FREE_SHIPPING_THRESHOLD);
+    expect(one.toFreeShipping).toBe(1);
+    expect(cartTotals([]).toFreeShipping).toBe(FREE_SHIPPING_TEES);
   });
 
   it("ignores unknown ids", () => {

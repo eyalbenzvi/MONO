@@ -143,7 +143,7 @@ test.describe("R25–R27, R29: bag, checkout and Saved", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Thank you, Ada." })).toBeVisible();
     await expect(page.getByText(/^Order .+ is confirmed\.$/)).toBeVisible();
     const rows = page.locator("main ul li");
-    await expect(rows.filter({ hasText: "Shipping" })).toContainText("$6");
+    await expect(rows.filter({ hasText: "Shipping" })).toContainText("$10");
     const text = await page.locator("main ul", { hasText: "Total" }).innerText();
     expect(text.indexOf("Shipping")).toBeLessThan(text.indexOf("Total"));
     await expect(page.getByRole("link", { name: "Continue shopping" })).toBeVisible();

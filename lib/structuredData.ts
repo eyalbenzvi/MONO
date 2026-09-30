@@ -4,7 +4,7 @@
  * so it isn't repeated in each page's React payload.
  */
 import { MAKE_PRICE } from "@/lib/prices";
-import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/cart";
+import { FREE_SHIPPING_TEES, SHIPPING_FEE } from "@/lib/cart";
 import { mockupPath } from "@/lib/images";
 import { SITE_URL, ogImage } from "@/lib/seo";
 import { STORE_POLICY } from "@/lib/store-policy";
@@ -42,7 +42,7 @@ const POLICIES = [
       handlingTime: { "@type": "QuantitativeValue", minValue: STORE_POLICY.delivery.shipDays[0], maxValue: STORE_POLICY.delivery.shipDays[1], unitCode: "DAY" },
       transitTime: { "@type": "QuantitativeValue", minValue: STORE_POLICY.delivery.transitDays[0], maxValue: STORE_POLICY.delivery.transitDays[1], unitCode: "DAY" },
     },
-    description: `Free over $${FREE_SHIPPING_THRESHOLD}`,
+    description: `Free with ${FREE_SHIPPING_TEES} tees or more`,
   },
   {
     "@type": "MerchantReturnPolicy",

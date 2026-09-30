@@ -34,7 +34,7 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   ])
     await page.getByLabel(label, { exact: true }).fill(value);
   await page.getByLabel("Country").selectOption("IL");
-  // $50 + $6 shipping (free only from $80).
+  // $50 + $10 shipping (free from two tees).
   await page.getByRole("button", { name: /^Place order · \$\d+$/ }).tap();
   await expect(page.getByRole("heading", { name: "Thank you, Ada." })).toBeVisible();
 
