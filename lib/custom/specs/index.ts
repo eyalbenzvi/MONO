@@ -40,9 +40,10 @@ import * as patch from "./patch";
 import * as sampler from "./sampler";
 import * as countries from "./countries";
 import * as passport from "./passport";
+import * as frontpage from "./frontpage";
 import * as flights from "./flights";
 
-export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt, message, birth, sign, signpost, tour, lineup, patch, sampler, countries, flights, passport };
+export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt, message, birth, sign, signpost, tour, lineup, patch, sampler, countries, flights, passport, frontpage };
 export type ExtraId = keyof typeof EXTRA;
 export type ExtraParams = { [K in ExtraId]: (typeof EXTRA)[K] extends SpecModule<infer P> ? P : never };
 export type ExtraSpec = { [K in ExtraId]: { t: K; v: 1; p: ExtraParams[K] } }[ExtraId];

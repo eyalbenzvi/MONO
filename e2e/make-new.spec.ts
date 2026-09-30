@@ -214,6 +214,14 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-passport-c0")).toHaveValue("JPN"),
   },
+  {
+    slug: "frontpage",
+    fill: async (page) => {
+      await page.locator("#make-frontpage-name").fill("Noa");
+      await page.locator("#make-frontpage-headline").fill("Local girl turns ten, takes it well");
+    },
+    again: async (page) => expect(page.locator("#make-frontpage-headline")).toHaveValue("Local girl turns ten, takes it well"),
+  },
 ];
 
 for (const c of CASES)
