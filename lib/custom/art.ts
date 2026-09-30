@@ -1,7 +1,7 @@
 /**
  * The landmark picker's thumbnails: each drawing (lib/custom/draw/landmarks)
  * baked at build time to a small picture (scripts/images/bakeMake.ts), so the
- * picker shows 24 of them without drawing any.
+ * picker shows all fifty of them without drawing any.
  */
 
 /** A drawing's thumbnail ("landmarks/eiffel"), under public/. */
