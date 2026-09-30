@@ -81,6 +81,18 @@ const CASES: Case[] = [
       await expect(page.getByRole("radio", { name: "Modern" })).toHaveAttribute("aria-checked", "true");
     },
   },
+  {
+    slug: "receipt",
+    fill: async (page) => {
+      await page.locator("#make-receipt-head").fill("Noa & Dan");
+      await page.locator("#make-receipt-date").fill("2016-08-14");
+      await page.locator("#make-receipt-v0").fill("First date");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-receipt-v0")).toHaveValue("First date");
+      await expect(page.locator("#make-receipt-date")).toHaveValue("2016-08-14");
+    },
+  },
 ];
 
 for (const c of CASES)

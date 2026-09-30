@@ -13,6 +13,8 @@ export interface Column {
   placeholder?: string;
   /** Its share of the row's width (a CSS grid track, "1fr" by default). */
   width?: string;
+  /** Our lines, offered as the cell is typed in (a datalist). */
+  suggestions?: readonly string[];
 }
 
 export type Row = Record<string, string>;
@@ -60,6 +62,7 @@ export function RowsField({ id, noun, columns, rows, setRows, min = 1, max, erro
                 ) : (
                   <input
                     id={cid}
+                    list={c.suggestions ? `${id}-${c.key}-ours` : undefined}
                     value={r[c.key] ?? ""}
                     inputMode={c.kind === "year" ? "numeric" : undefined}
                     maxLength={c.kind === "year" ? 4 : c.kind === "time" ? 5 : (c.max ?? 24) + 4}
@@ -87,6 +90,16 @@ export function RowsField({ id, noun, columns, rows, setRows, min = 1, max, erro
           </div>
         </div>
       ))}
+      {columns.map(
+        (c) =>
+          c.suggestions && (
+            <datalist key={c.key} id={`${id}-${c.key}-ours`}>
+              {c.suggestions.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
+          ),
+      )}
       {rows.length < max && (
         <button type="button" onClick={() => setRows([...rows, blank])} className="h-10 w-fit text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
           Add {article} {noun}

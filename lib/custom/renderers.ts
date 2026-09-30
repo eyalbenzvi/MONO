@@ -61,6 +61,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   label: () => import("./templates/label"),
   credits: () => import("./templates/credits"),
   card: () => import("./templates/card"),
+  receipt: () => import("./templates/receipt"),
   telegram: () => import("./templates/telegram"),
 };
 

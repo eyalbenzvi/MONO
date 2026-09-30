@@ -5,7 +5,7 @@ import { EXTRA } from "../lib/custom/specs";
 import { make } from "./fixtures/custom";
 
 /** Products whose fields start empty (M12): the stage shows the example until something is typed. */
-const EMPTY = new Set(["family", "metro", "orbits", "weeks", "island", "rings", "crossword", "snowflake", "qr", "telegram", "editions", "sayings", "label", "credits", "card"]);
+const EMPTY = new Set(["family", "metro", "orbits", "weeks", "island", "rings", "crossword", "snowflake", "qr", "telegram", "editions", "sayings", "label", "credits", "card", "receipt"]);
 
 /** The later products that ship (lib/custom/products SHIPPED): each is its own template. */
 const LATER = MADE.filter((m) => Object.hasOwn(EXTRA, m.template));
