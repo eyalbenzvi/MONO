@@ -51,17 +51,19 @@ const words = (list: string[]) => new RegExp(`\\b(?:${list.map((w) => w.replace(
 
 export const PEOPLE = words(["portrait", "self-portrait", "man", "woman", "men", "women", "child", "children", "girl", "boy", "people", "crowd", "figure", "soldier", "family", "worker", "crew", "person", "lady", "gentleman", "sailor", "fisherman", "fishermen", "fisher", "youth", "bather", "bathers", "bathing", "gathering", "preparing", "dabblers", "vendor", "shop"]);
 /** People as the subject of a print or drawing. */
-export const PEOPLE_SUBJECT = words(["portrait", "self-portrait", "bust of", "head of a", "figure study", "study of a man", "study of a woman", "nude", "academy figure", "likeness"]);
-export const TEXT = words(["cigarette", "tobacco", "trading card", "playing card", "letter", "manuscript", "document", "page of text", "title page", "certificate", "advertisement", "poster", "label", "trade card", "sheet music", "newspaper", "broadside", "book cover", "ticket", "stamp", "postage stamp", "coin", "banknote", "frontispiece", "bookplate", "calligraphy", "inscription"]);
+export const PEOPLE_SUBJECT = words(["portrait", "self-portrait", "bust of", "head of a", "figure study", "study of a man", "study of a woman", "nude", "academy figure", "likeness",
+  // People who are the picture whatever vessel they're in ("Two Beauties in a Boat", "Girl Boarding a Boat").
+  "beauty", "beauties", "courtesan", "dancer", "geisha", "girl", "girls", "woman", "women", "lovers", "emigrant", "wounded"]);
+export const TEXT = words(["cigarette", "tobacco", "trading card", "playing card", "letter", "manuscript", "document", "page of text", "title page", "certificate", "advertisement", "poster", "label", "trade card", "sheet music", "newspaper", "broadside", "book cover", "ticket", "stamp", "postage stamp", "coin", "banknote", "frontispiece", "bookplate", "calligraphy", "inscription", "postcard", "carte postale", "cartes postales"]);
 export const BRAND = words(["logo", "insignia", "emblem", "coat of arms", "armorial", "official seal", "great seal", "seal of", "badge", "trademark", "brand"]);
 const FLAG = words(["flag"]);
-export const UNSUITABLE = words(["erotic", "nude", "violence", "execution", "war", "battle", "massacre", "devotional", "crucifixion", "madonna", "annunciation", "virgin and child", "holy family", "caricature", "satire", "satirical", "cartoon", "fashion plate", "fragment", "textile swatch", "swatch", "study sheet", "sketchbook page"]);
+export const UNSUITABLE = words(["erotic", "nude", "violence", "execution", "war", "battle", "massacre", "devotional", "crucifixion", "madonna", "annunciation", "virgin and child", "holy family", "caricature", "satire", "satirical", "cartoon", "fashion plate", "fragment", "textile swatch", "swatch", "study sheet", "sketchbook page", "slave", "slaver", "slave ship", "négrier", "negrier", "torpedoed", "hospital ship"]);
 /**
  * A scene rather than a subject (with no eye on the picture, a story's title is the only warning):
  * sacred and mythological figures, fables, allegories. And a long title in a print or drawing tells
  * a story more often than it names a thing.
  */
-export const NARRATIVE = words(["virgin", "saint", "st", "head of medusa", "medusa's head", "apocalypse", "revelation", "angel", "christ", "jonah", "tobias", "bible", "biblical", "apostle", "prophet", "triton", "galatea", "nereid", "neptune", "poseidon", "venus", "cupid", "putto", "putti", "god", "goddess", "allegory", "fable", "myth", "mythological", "legend", "renard", "miracle"]);
+export const NARRATIVE = words(["virgin", "saint", "st", "head of medusa", "medusa's head", "apocalypse", "revelation", "angel", "christ", "jonah", "tobias", "bible", "biblical", "apostle", "prophet", "triton", "galatea", "nereid", "neptune", "poseidon", "venus", "cupid", "putto", "putti", "god", "goddess", "allegory", "fable", "myth", "mythological", "legend", "renard", "miracle", "charon", "psyche", "hercules", "argonaut", "argonauts", "jason", "odysseus", "ulysses", "aeneas", "theuerdanck", "bruin"]);
 export const LONG_TITLE_WORDS = 7;
 /** Scientific plates and specimens, where a long Latin title is still one subject. */
 const PLATE_CLASS = words(["plate", "specimen", "natural history", "illustration", "zoology", "botany", "chromolithograph"]);

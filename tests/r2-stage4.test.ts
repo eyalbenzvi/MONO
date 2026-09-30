@@ -99,7 +99,8 @@ describe("I12: explicit drop dates", () => {
   it("every design carries its own drop date: weekly Mondays, forty a week; the photographs and the new sets dropped together", () => {
     for (const s of FULL) {
       expect(s.dropDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(new Date(`${s.dropDate}T00:00:00Z`).getUTCDay()).toBe(1);
+      // A content wave is dated the day it went live (scripts/sources/waves.ts, checked below); the rest on Mondays.
+      if (!s.wave) expect(new Date(`${s.dropDate}T00:00:00Z`).getUTCDay()).toBe(1);
     }
     const perDrop = new Map<string, number>();
     for (const s of FULL.filter((x) => x.n <= TOTAL && !x.photo)) perDrop.set(s.dropDate, (perDrop.get(s.dropDate) ?? 0) + 1);

@@ -63,8 +63,8 @@ export interface Adapter {
 const TONAL = /watercolou?r|wash|gouache|aquatint|mezzotint|lithograph|chromolith|painting|pastel|charcoal|sepia/i;
 export const screenOf = (r: Pick<Raw, "mode" | "classification">): Candidate["screen"] => (r.mode !== "ink" ? "photo" : TONAL.test(r.classification) ? "tonal" : "line");
 
-/** General art museums: a world's word must be in the title (their tags name anything somewhere in a scene). */
-const TITLE_MATCH = new Set<SourceId>(["met", "artic", "cleveland", "rijksmuseum"]);
+/** General art museums and the LoC surveys: a world's word must be in the title (their tags name anything somewhere in a scene, or the whole site). */
+const TITLE_MATCH = new Set<SourceId>(["met", "artic", "cleveland", "rijksmuseum", "loc"]);
 
 export interface SourceCounts {
   found: number;
@@ -140,13 +140,28 @@ export const UA = "MONO-catalogue/1.0 (https://github.com/eyalbenzvi/mono; publi
 
 export async function download(url: string, file: string, tries = 6): Promise<boolean> {
   if (existsSync(file)) return true;
+  // What arrived before a connection was cut (the LoC's full-size sheets often are, mid-transfer):
+  // the next try asks for the rest (a Range request) and starts over if the server sends it all.
+  let got: Buffer[] = [];
+  let have = 0;
   for (let i = 0; ; i++) {
     let wait = 1000 * 2 ** i;
     try {
       // AIC asks API users to name themselves in AIC-User-Agent (api.artic.edu docs); the others read User-Agent.
-      const r = await fetch(url, { headers: { "User-Agent": UA, "AIC-User-Agent": UA } });
-      if (r.ok) {
-        writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+      const headers: Record<string, string> = { "User-Agent": UA, "AIC-User-Agent": UA, ...(have ? { Range: `bytes=${have}-` } : {}) };
+      const r = await fetch(url, { headers });
+      if (r.ok && r.body) {
+        if (r.status !== 206) (got = []), (have = 0);
+        const total = r.status === 206 ? Number(/\/(\d+)$/.exec(r.headers.get("content-range") ?? "")?.[1] ?? 0) : Number(r.headers.get("content-length") ?? 0);
+        const reader = r.body.getReader();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          got.push(Buffer.from(value));
+          have += value.length;
+        }
+        if (total && have < total) throw new Error(`short: ${have} of ${total}`);
+        writeFileSync(file, Buffer.concat(got));
         return true;
       }
       if (r.status === 404 || r.status === 403 || i >= tries) return false;
@@ -154,6 +169,8 @@ export async function download(url: string, file: string, tries = 6): Promise<bo
       if (r.status === 429) wait = Math.max(Number(r.headers.get("retry-after") ?? 0) * 1000, 5000 * 2 ** i);
     } catch {
       if (i >= tries) return false;
+      // Progress since the last try: go on at once.
+      if (have) wait = 1000;
     }
     await new Promise((res) => setTimeout(res, wait));
   }

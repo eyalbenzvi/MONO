@@ -604,6 +604,8 @@ const SET7_FIRST_N = 7001;
 const SET7_DROP = "2026-09-21";
 /** This week's drop is at most this many designs; the week's other arrivals are dated the week before. */
 const NEW_CAP = 40;
+/** A content wave's own "new this week": at most twelve, four per category (the wave-1 drop's shape). */
+const WAVE_NEW_CAP = 12;
 const LAST_WEEK = "2026-09-14";
 
 /**
@@ -972,7 +974,7 @@ async function main() {
     newPerCat.set(s.category, (newPerCat.get(s.category) ?? 0) + 1);
   }
   for (const { s, i } of thisWeek) if (!keep.has(i)) s.dropDate = LAST_WEEK;
-  // A content wave's drop (scripts/sources/waves.ts): the same rule, its best NEW_CAP (four per category) that week, the rest a week earlier.
+  // A content wave's drop (scripts/sources/waves.ts): the same rule, its best WAVE_NEW_CAP (four per category) that week, the rest a week earlier.
   for (const drop of new Set(Object.values(WAVE_DROP))) {
     const week = shirts.map((s, i) => ({ s, i })).filter(({ s }) => s.wave && s.dropDate === drop);
     const best = [...week].sort((a, b) => Number(isWeak(a.s)) - Number(isWeak(b.s)) || ranks[a.i] - ranks[b.i]);
@@ -980,7 +982,7 @@ async function main() {
     let kept = 0;
     const earlier = new Date(Date.parse(`${drop}T00:00:00Z`) - 7 * DAY).toISOString().slice(0, 10);
     for (const { s } of best) {
-      if (kept < NEW_CAP && (perCat.get(s.category) ?? 0) < 4 && !isWeak(s)) (kept++, perCat.set(s.category, (perCat.get(s.category) ?? 0) + 1));
+      if (kept < WAVE_NEW_CAP && (perCat.get(s.category) ?? 0) < 4 && !isWeak(s)) (kept++, perCat.set(s.category, (perCat.get(s.category) ?? 0) + 1));
       else s.dropDate = earlier;
     }
   }

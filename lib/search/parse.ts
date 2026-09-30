@@ -266,8 +266,8 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       // The closest few stand in (the most used is shown as the correction): "sveen" may be "seen" or "seven".
       // And the word without a final "e" ("engnie" is a swap from "engin", engine's stem).
       const bare = w.length > 4 && w.endsWith("e") ? [w.slice(0, -1)] : [];
-      // A typo inside an -ing ending ("lookxng"): the word before it, when the catalogue has it as it is.
-      const ing = /^[a-z]{3,}.ng$/.test(w) ? index.termId.get(stem(w.slice(0, -3))) : undefined;
+      // A typo inside an -ing ending ("lookxng", "fishixg", "fishinx", a swap: "clearign", "sailnig"): the word before it, when the catalogue has it as it is.
+      const ing = /^[a-z]{3,}(?:.ng|i.g|in.|ign|nig)$/.test(w) ? index.termId.get(stem(w.slice(0, -3))) : undefined;
       if (ing !== undefined) add(ing, WEIGHT.fuzzy1);
       const plural = w.length > 4 && w.endsWith("s") ? [w.slice(0, -1)] : [];
       const near = [t, w, ...bare, ...plural]

@@ -71,7 +71,7 @@ describe("T8: the archive — public-domain works from Smithsonian Open Access",
   it("credits name the artist or photographer where the record does, and always the museum", () => {
     for (const s of ARCHIVE_DESIGNS) {
       // (Or the content waves' sources: scripts/sources/waves.ts SOURCE_LINE.)
-      expect(s.photo!.credit, s.id).toMatch(/Smithsonian|Museum|Archives|Gallery|Cooper Hewitt|Wikimedia Commons|The Met Open Access|Art Institute of Chicago|Open Access/);
+      expect(s.photo!.credit, s.id).toMatch(/Smithsonian|Museum|Archives|Gallery|Cooper Hewitt|Wikimedia Commons|The Met Open Access|Art Institute of Chicago|Library of Congress|Open Access/);
       expect(s.title.length, s.id).toBeLessThanOrEqual(60);
     }
   });

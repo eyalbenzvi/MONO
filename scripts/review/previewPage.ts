@@ -43,7 +43,8 @@ export async function preview(wave: number, base = "origin/claude/tshirt-discove
     waveInTasteTest: waveList.filter((s) => calibration.has(s.id)).length,
     thisWeek: [thisWeek(before), thisWeek(after)],
     printsMB: Math.round(du("public/prints")),
-    gitMB: Math.round(du(".git")),
+    // The repository's own git directory (in a worktree, .git is only a pointer file).
+    gitMB: Math.round(du(execFileSync("git", ["rev-parse", "--git-common-dir"], { cwd: ROOT, encoding: "utf8" }).trim())),
     incoming: incoming.length,
     leaving: leaving.length,
   };

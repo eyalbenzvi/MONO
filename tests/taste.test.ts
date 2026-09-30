@@ -78,8 +78,8 @@ describe("the taste in words (1.6)", () => {
 const LATEST_DROP = latestDrop(SHIRTS);
 
 describe("drops (F13, round 2 I12)", () => {
-  it("the latest drop is Monday 28 Sep 2026, content wave 1 (explicit dates from the generator)", () => {
-    expect(new Date(LATEST_DROP).toISOString().slice(0, 10)).toBe("2026-09-28");
+  it("the latest drop is 30 Sep 2026, content wave 2 (explicit dates from the generator)", () => {
+    expect(new Date(LATEST_DROP).toISOString().slice(0, 10)).toBe("2026-09-30");
     expect(SHIRTS.reduce((m, s) => Math.max(m, s.dropDate), 0)).toBe(LATEST_DROP);
   });
 
