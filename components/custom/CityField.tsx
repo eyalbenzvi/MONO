@@ -11,7 +11,7 @@ export const cityLabel = (c: City) => `${c.name}, ${c.country}`;
  * starts in the city or its country, accents folded; lib/custom/data), arrows
  * to move, Enter to choose, Esc to close the list (a second Esc closes the sheet).
  */
-export function CityField({ places, value, onChange, error, onBlur, label = "Place" }: { places: Places | null; value: City | undefined; onChange: (c: City | null) => void; error: string; onBlur: () => void; label?: string }) {
+export function CityField({ places, value, onChange, error, onBlur, label = "Place", id = "custom-place" }: { places: Places | null; value: City | undefined; onChange: (c: City | null) => void; error: string; onBlur: () => void; label?: string; id?: string }) {
   const [text, setText] = useState(value ? cityLabel(value) : "");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -28,18 +28,18 @@ export function CityField({ places, value, onChange, error, onBlur, label = "Pla
   };
   return (
     <div className="relative">
-      <label htmlFor="custom-place" className="mb-1 block text-xs font-medium text-neutral-400">
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-neutral-400">
         {label}
       </label>
       <input
-        id="custom-place"
+        id={id}
         role="combobox"
         aria-expanded={open && matches.length > 0}
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={open && matches[active] ? `${listId}-${matches[active].id}` : undefined}
         aria-invalid={!!error}
-        aria-describedby={error ? "custom-place-error" : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         autoComplete="off"
         placeholder={places ? "Type a city" : "Loading places…"}
         value={text}
@@ -88,7 +88,7 @@ export function CityField({ places, value, onChange, error, onBlur, label = "Pla
         </ul>
       )}
       {error && (
-        <p id="custom-place-error" className="mt-1 text-xs text-neutral-300">
+        <p id={`${id}-error`} className="mt-1 text-xs text-neutral-300">
           {error}
         </p>
       )}

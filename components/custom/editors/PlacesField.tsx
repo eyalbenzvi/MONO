@@ -87,6 +87,7 @@ export function PlacesField({ places, value, onChange, max, label, years = true,
           {/* A fresh field for each place added (it clears once one is chosen). */}
           <CityField
             key={adding}
+            id="custom-place-add"
             label="Add a place"
             places={places}
             value={undefined}

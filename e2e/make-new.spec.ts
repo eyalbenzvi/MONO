@@ -126,6 +126,19 @@ const CASES: Case[] = [
       await expect(page.locator("#make-sign-pictogram")).toHaveValue("dog");
     },
   },
+  {
+    slug: "signpost",
+    fill: async (page) => {
+      await page.getByRole("combobox", { name: "Home" }).fill("tel aviv");
+      await page.getByRole("option", { name: /^Tel Aviv/ }).first().tap();
+      await page.getByRole("combobox", { name: "Add a place" }).fill("london");
+      await page.getByRole("option", { name: /^London, United Kingdom/ }).first().tap();
+    },
+    again: async (page) => {
+      await expect(page.getByRole("combobox", { name: "Home" })).toHaveValue(/Tel Aviv/);
+      await expect(page.getByText(/London/).first()).toBeVisible();
+    },
+  },
 ];
 
 for (const c of CASES)
