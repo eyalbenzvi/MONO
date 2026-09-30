@@ -153,6 +153,15 @@ const CASES: Case[] = [
       await expect(page.getByText(/Tokyo/).first()).toBeVisible();
     },
   },
+  {
+    slug: "lineup",
+    fill: async (page) => {
+      await page.locator("#make-lineup-team").fill("Sunday FC");
+      await page.locator("#make-lineup-n0").fill("Dad");
+      await page.locator("#make-lineup-k0").fill("1");
+    },
+    again: async (page) => expect(page.locator("#make-lineup-n0")).toHaveValue("Dad"),
+  },
 ];
 
 for (const c of CASES)
@@ -178,3 +187,22 @@ for (const c of CASES)
     await other.close();
     expect(errors).toEqual([]);
   });
+
+test("lineup: for the whole team, three shirts go into the bag in one step, each its own line", async ({ page }) => {
+  await page.goto("make/lineup/");
+  await hydrated(page);
+  await page.locator("#make-lineup-team").fill("Sunday FC");
+  for (const [i, n] of ["Dad", "Ari", "Tom"].entries()) await page.locator(`#make-lineup-n${i}`).fill(n);
+  await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });
+  await page.getByText("For the whole team").tap();
+  const steps = page.getByRole("spinbutton", { name: "How many shirts" });
+  await steps.focus();
+  for (let i = 0; i < 8; i++) await page.keyboard.press("ArrowDown");
+  await expect(steps).toHaveAttribute("aria-valuenow", "3");
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await page.getByRole("button", { name: /^Add 3 to bag · M · \$225$/ }).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+  await page.goto("cart/");
+  await hydrated(page);
+  for (const n of ["Dad", "Ari", "Tom"]) await expect(page.getByText(`Sunday FC · ${n}`).first()).toBeVisible();
+});

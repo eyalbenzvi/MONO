@@ -83,6 +83,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   route: lazy(() => import("@/components/custom/editors/RouteEditor")),
   island: lazy(() => import("@/components/custom/editors/IslandEditor")),
   qr: lazy(() => import("@/components/custom/editors/QrEditor")),
+  lineup: lazy(() => import("@/components/custom/editors/LineupEditor")),
   tour: lazy(() => import("@/components/custom/editors/TourEditor")),
   signpost: lazy(() => import("@/components/custom/editors/SignpostEditor")),
   sign: lazy(() => import("@/components/custom/editors/SignEditor")),
@@ -205,7 +206,10 @@ function Maker({ made }: { made: MadeProduct }) {
   // The print: the editor's fields and the caption's lines together (a caption line that can't print holds it back, with its reason).
   const mergedKey = edited.spec && cap ? JSON.stringify(validate({ ...edited.spec, p: { ...edited.spec.p, cap } })) : "";
   const merged = useMemo(() => (mergedKey && mergedKey !== "null" ? (JSON.parse(mergedKey) as CustomSpec) : null), [mergedKey]);
-  const state: EditorState = useMemo(() => ({ ...edited, spec: merged }), [edited, merged]);
+  // The whole team's prints take the visitor's caption too.
+  const batchKey = edited.batch && cap ? JSON.stringify(edited.batch.map((b) => validate({ ...b, p: { ...b.p, cap } }))) : "";
+  const batch = useMemo(() => (batchKey ? (JSON.parse(batchKey) as (CustomSpec | null)[]).filter((b): b is CustomSpec => !!b) : undefined), [batchKey]);
+  const state: EditorState = useMemo(() => ({ ...edited, spec: merged, batch }), [edited, merged, batch]);
   // Until the fields make a print (empty, or not yet valid), the stage shows the product's example.
   // A field gone invalid keeps the last print that was (never a jump back to the example, as if the input were ignored).
   const lastGood = useRef<CustomSpec | null>(null);
@@ -331,7 +335,14 @@ function Maker({ made }: { made: MadeProduct }) {
       track("customize_apply", { template: made.template, caption_edited: capEdited });
       return router.push("/cart/");
     }
-    const ok = both && pairOk ? addPair(made.id, size, { source: "product", custom: state.spec }) : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
+    // The whole team: every print checked, then each added as its own line (its size can change in the bag).
+    const batch = state.batch?.length ? state.batch : null;
+    if (batch && !batch.every((b) => draw(b, color)?.check?.ok)) return;
+    const ok = batch
+      ? batch.map((b) => addToCart(made.id, size, color, 1, { source: "product", custom: b })).every(Boolean)
+      : both && pairOk
+        ? addPair(made.id, size, { source: "product", custom: state.spec })
+        : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;
     flashAdded(true);
     // A small like of the design it's drawn like (its taste, never the inputs; once per design).
@@ -348,7 +359,7 @@ function Maker({ made }: { made: MadeProduct }) {
   }, [waiting, renderer, state.spec]);
   // The size in every label that adds, the price as it was.
   const sized = size ? ` · ${SIZE_LABELS[size]}` : "";
-  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : `Add to bag${sized} · ${formatPrice(unit)}`;
+  const priceLabel = editing ? `Save changes${sized} · ${formatPrice(unit)}` : both ? (pair && pair.missing.length === 1 ? `Complete the pair · +${formatPrice(pairTotal - unit)}` : `Add both${sized} · ${formatPrice(pairTotal)}`) : state.batch?.length ? `Add ${state.batch.length} to bag${sized} · ${formatPrice(unit * state.batch.length)}` : `Add to bag${sized} · ${formatPrice(unit)}`;
   // The mini bag confirms an add; the button says so for a moment, then is itself again.
   const buyLabel = !size ? "Choose size" : added ? "Added" : priceLabel;
 

@@ -8,6 +8,8 @@ export interface EditorState {
   data?: RenderData;
   /** Nothing to make yet (Your Taste before the taste test): the page shows the example and no bag. */
   blocked?: boolean;
+  /** Several prints added in one step, each its own line in the bag (Your Line-up's whole team, one shirt a player): the bag adds these instead of `spec`. */
+  batch?: CustomSpec[];
 }
 
 export interface EditorProps {
