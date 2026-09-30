@@ -115,6 +115,17 @@ const CASES: Case[] = [
       await expect(page.locator("#make-birth-kg")).toHaveValue("3.4");
     },
   },
+  {
+    slug: "sign",
+    fill: async (page) => {
+      await page.locator("#make-sign-pictogram").selectOption("dog");
+      await page.locator("#make-sign-warning").fill("Dog is friendly, mostly");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-sign-warning")).toHaveValue("Dog is friendly, mostly");
+      await expect(page.locator("#make-sign-pictogram")).toHaveValue("dog");
+    },
+  },
 ];
 
 for (const c of CASES)
