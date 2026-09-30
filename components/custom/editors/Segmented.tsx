@@ -46,7 +46,7 @@ export function Stepper({ label, value, min, max, onChange }: { label: string; v
   const step = "grid h-10 w-10 place-items-center rounded-full text-lg text-neutral-300 ring-1 ring-white/15 transition hover:bg-white/10 disabled:opacity-30";
   return (
     <div>
-      <p className="mb-1 text-xs font-medium text-neutral-400" id={`step-${label}`}>
+      <p className="mb-1 text-xs font-medium text-neutral-400" id={`step-${label.replace(/\W+/g, "-")}`}>
         {label}
       </p>
       <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function Stepper({ label, value, min, max, onChange }: { label: string; v
         <div
           role="spinbutton"
           tabIndex={0}
-          aria-labelledby={`step-${label}`}
+          aria-labelledby={`step-${label.replace(/\W+/g, "-")}`}
           aria-valuenow={value}
           aria-valuemin={min}
           aria-valuemax={max}
