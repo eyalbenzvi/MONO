@@ -139,6 +139,20 @@ const CASES: Case[] = [
       await expect(page.getByText(/London/).first()).toBeVisible();
     },
   },
+  {
+    slug: "tour",
+    fill: async (page) => {
+      await page.locator("#make-tour-name").fill("Noa");
+      for (const city of ["london", "paris", "rome", "tokyo"]) {
+        await page.getByRole("combobox", { name: "Add a place" }).fill(city);
+        await page.getByRole("option").first().tap();
+      }
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-tour-name")).toHaveValue("Noa");
+      await expect(page.getByText(/Tokyo/).first()).toBeVisible();
+    },
+  },
 ];
 
 for (const c of CASES)

@@ -34,8 +34,9 @@ import * as message from "./message";
 import * as birth from "./birth";
 import * as sign from "./sign";
 import * as signpost from "./signpost";
+import * as tour from "./tour";
 
-export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt, message, birth, sign, signpost };
+export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt, message, birth, sign, signpost, tour };
 export type ExtraId = keyof typeof EXTRA;
 export type ExtraParams = { [K in ExtraId]: (typeof EXTRA)[K] extends SpecModule<infer P> ? P : never };
 export type ExtraSpec = { [K in ExtraId]: { t: K; v: 1; p: ExtraParams[K] } }[ExtraId];
