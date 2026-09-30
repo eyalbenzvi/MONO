@@ -12,9 +12,8 @@ import { lengthText, weightText, type Params } from "../specs/birth";
 import { loadCities } from "../data";
 import type { City, CustomSpec } from "../spec";
 import type { RenderData } from "../renderers";
-import { moonShape } from "./moon";
 import { rosette } from "../draw/ornament";
-import { phaseName } from "./night";
+import { phaseName, screenedMoon } from "./night";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
@@ -76,7 +75,7 @@ export function birthBody(p: Params, city?: City): string {
   });
   if (withMoon) {
     const { k, waxing } = moonOf(p);
-    s += moonShape(150, 272, 13, k, waxing) + text(150, 298, `The moon that night: ${phaseName(k, waxing).toLowerCase()}`, 7, { family: SERIF });
+    s += screenedMoon(150, 272, 13, k, waxing) + text(150, 298, `The moon that night: ${phaseName(k, waxing).toLowerCase()}`, 7, { family: SERIF });
   } else {
     // No moon: a star rosette in its place, as the card's printer would set one.
     s += rosette({ n: 9, circles: [true, false], cx: 150, cy: 274, r: 20, depth: 12 });

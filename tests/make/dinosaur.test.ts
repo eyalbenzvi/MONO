@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { productSuite } from "./productSuite";
+import { FORBIDDEN, productSuite, specOf } from "./productSuite";
+import { gate } from "./fuzz";
+import { drawSpec } from "./render";
 import { DIET_MAX, DINO_NAME_MAX, ENDINGS, HEIGHT_MAX, HEIGHT_MIN, PLATES, SPECIES, genusOf, isGenus, scientificName, stemOf } from "@/lib/custom/specs/dinosaur";
-import art from "../../data/art/dinosaurs.json";
-import { ART } from "./render";
+import { DINOSAURS, dinosaur } from "@/lib/custom/draw/dinosaurs";
+import { wrap } from "@/lib/custom/svg";
 import { mulberry32 } from "../../scripts/gen/core";
+import { solidBlock, svgInk } from "../../scripts/gen/quality";
 
 const W = (n: number) => "W".repeat(n);
 const rnd = mulberry32(0xd1e0);
@@ -43,13 +46,34 @@ describe("dinosaur names", () => {
 });
 
 describe("dinosaur plates", () => {
-  it("every plate is traced, public domain, sourced, and drawn whole in the print", () => {
-    expect(art.map((a) => a.id).sort()).toEqual([...PLATES].sort());
-    for (const a of art as { id: string; license: string; source: { record: string; author: string; year: number } }[]) {
-      expect(["PD", "US-Gov", "CC0", "PDM"]).toContain(a.license);
-      expect(a.source.record).toMatch(/^https:\/\/archive\.org\/details\//);
-      expect(a.source.year).toBeLessThan(1929);
-      expect(ART[`dinosaurs/${a.id}`]?.rings.length).toBeGreaterThan(50);
+  it("draw a skeleton for every plate the spec offers", () => {
+    expect([...DINOSAURS].sort()).toEqual([...PLATES].sort());
+  });
+  it("each skeleton is drawn the same every time, in markup the preview draws, standing in its box", () => {
+    for (const k of PLATES) {
+      const a = dinosaur(k, 30, 58, 240, 168);
+      expect(a.svg, k).not.toMatch(FORBIDDEN);
+      expect(a.svg, k).not.toMatch(/transform=/);
+      expect(a.svg.length, k).toBeGreaterThan(5000);
+      expect(a.h, k).toBeGreaterThan(30);
+      expect(a.h, k).toBeLessThanOrEqual(168);
+      // Every point inside the box.
+      for (const [, x, y] of a.svg.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)) {
+        expect(Number(x), k).toBeGreaterThanOrEqual(29);
+        expect(Number(x), k).toBeLessThanOrEqual(271);
+        expect(Number(y), k).toBeGreaterThanOrEqual(57);
+        expect(Number(y), k).toBeLessThanOrEqual(227);
+      }
     }
+    // Remembered, and drawn again from scratch the same (a box it hasn't seen before).
+    expect(dinosaur("triceratops", 30, 58, 240, 168)).toBe(dinosaur("triceratops", 30, 58, 240, 168));
+    expect(dinosaur("triceratops", 31, 58, 240, 168).svg).toBe(dinosaur("triceratops", 30, 58, 240, 168).svg.replace(/(-?[\d.]+) (-?[\d.]+)/g, (m, x, y) => `${Math.round((Number(x) + 1) * 10) / 10} ${y}`));
+  });
+  it("each skeleton has no solid ink of its own, and its plate alone passes the gate in both colours", async () => {
+    for (const k of PLATES)
+      for (const color of ["black", "white"] as const) {
+        expect(solidBlock(svgInk(wrap(dinosaur(k, 30, 58, 240, 168).svg, color), color)).reject, `${k} ${color}`).toBeNull();
+        expect(gate(await drawSpec(specOf("dinosaur", { n: "Al", k })!, color), color), `${k} ${color}`).toBeNull();
+      }
   });
 });

@@ -1,17 +1,20 @@
 /**
  * Your Place: where you were when it happened. The globe turned so the
- * place sits at its centre (orthographic, as a navigator's globe is drawn),
- * a 15° graticule, and the world's cities of 200,000 people or more as dots
- * (data/cities, GeoNames): the only land drawn, so the continents show in
- * the lights of their cities, with no coastline data to carry. The place is
- * a target of rings; under the globe, the hours of daylight every day of
- * that year at that latitude (the catalogue's Daylight charts, NOAA's
- * solar declination), the day itself drawn bold.
+ * place sits at its centre (orthographic, as a navigator's globe is drawn):
+ * the land hatched inside bold coastlines (Your Countries' outlines, data/
+ * countries, Natural Earth: lib/custom/globe, each coast cut where it goes
+ * over the horizon), a 15° graticule over the sea. The place is a target of
+ * rings, the land cleared round it; under the globe, the hours of daylight
+ * every day of that year at that latitude (the catalogue's Daylight charts,
+ * NOAA's solar declination), the day itself drawn bold. The place list
+ * (data/cities, GeoNames) names the place.
  */
 import { INK, caption, captionLines, circle, f1, line, longDate, shortMonth, text, type Lines } from "../kit";
 import { titleWords } from "../specKit";
 import { coords, parseDate, type City, type CustomSpec, type PlaceParams } from "../spec";
-import { wrap } from "../svg";
+import { GROUND, wrap } from "../svg";
+import { landPaths, seaGraticule, tracePolylines, vec } from "../globe";
+import { loadCities, loadCountries, type Countries } from "../data";
 import type { RenderData } from "../renderers";
 import type { BaseColor } from "@/types/shirt";
 
@@ -33,40 +36,18 @@ export function daylight(lat: number, doy: number): number {
 const dayOfYear = (y: number, m: number, d: number) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86_400_000) + 1;
 const hm = (h: number) => (h >= 24 ? "24h (midnight sun)" : h <= 0 ? "0h (polar night)" : `${Math.floor(h)}h ${String(Math.round((h % 1) * 60) % 60).padStart(2, "0")}m`);
 
-export function placeBody(p: PlaceParams, places: City[] = [], city?: City): string {
-  const phi0 = p.la * DEG, lam0 = p.lo * DEG;
-  const [s0, c0] = [Math.sin(phi0), Math.cos(phi0)];
-  /** Screen position and whether it faces us. */
-  const project = (lat: number, lon: number): [number, number, boolean] => {
-    const phi = lat * DEG, dl = lon * DEG - lam0;
-    const cosc = s0 * Math.sin(phi) + c0 * Math.cos(phi) * Math.cos(dl);
-    return [CX + R * Math.cos(phi) * Math.sin(dl), CY - R * (c0 * Math.sin(phi) - s0 * Math.cos(phi) * Math.cos(dl)), cosc >= 0];
-  };
-  // The graticule, broken where it goes round the back.
-  let d = "";
-  const trace = (pts: [number, number, boolean][]) => {
-    let pen = false;
-    for (const [x, y, v] of pts) {
-      if (!v) {
-        pen = false;
-        continue;
-      }
-      d += `${pen ? "L" : "M"}${f1(x)} ${f1(y)}`;
-      pen = true;
-    }
-  };
-  for (let lat = -75; lat <= 75; lat += 15) trace(Array.from({ length: 145 }, (_, i) => project(lat, -180 + i * 2.5)));
-  for (let lon = -180; lon < 180; lon += 15) trace(Array.from({ length: 73 }, (_, i) => project(-90 + i * 2.5, lon)));
-  let s = `<path d="${d}" fill="none" stroke="${INK}" stroke-width=".45"/>` + circle(CX, CY, R, 1.4);
-  // The cities facing us, sized by population, none on the target itself.
-  let dots = "";
-  for (const c of places) {
-    const [x, y, v] = project(c.lat, c.lon);
-    if (!v || Math.hypot(x - CX, y - CY) < 16) continue;
-    dots += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.min(1.6, 0.7 + 0.3 * Math.log10(Math.max(1, c.pop / 2e5))))}" fill="${INK}"/>`;
-  }
-  s += dots;
-  // The place: rings, a cross with a gap, a dot.
+export function placeBody(p: PlaceParams, countries?: Countries): string {
+  const view = { centre: vec(p.la, p.lo), k: R, cx: CX, cy: CY, r: R };
+  // The graticule over the sea; the land hatched, its coasts bold.
+  const land = landPaths(countries, view, { gap: 2.4 });
+  let s = `<path d="${tracePolylines(seaGraticule(countries, 15), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  if (land.coast) s += `<path d="${land.coast}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s += circle(CX, CY, R, 1.4);
+  // The place: the land cleared inside the inner ring and round the outer ring and the cross; rings, a cross with a gap, a dot.
+  const halo = (r: number, w: number) => `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="${GROUND}" stroke-width="${w}"/>`;
+  s += `<circle cx="${CX}" cy="${CY}" r="7.4" fill="${GROUND}"/>` + halo(12, 2.7);
+  s += `<path d="M${CX - 22} ${CY}H${CX - 14}M${CX + 14} ${CY}H${CX + 22}M${CX} ${CY - 22}V${CY - 14}M${CX} ${CY + 14}V${CY + 22}" fill="none" stroke="${GROUND}" stroke-width="3"/>`;
   s += circle(CX, CY, 6, 1) + circle(CX, CY, 12, 0.7) + `<circle cx="${CX}" cy="${CY}" r="2.2" fill="${INK}"/>`;
   s += line(CX - 22, CY, CX - 14, CY, 1) + line(CX + 14, CY, CX + 22, CY, 1) + line(CX, CY - 22, CX, CY - 14, 1) + line(CX, CY + 14, CX, CY + 22, 1);
 
@@ -88,7 +69,7 @@ export function placeBody(p: PlaceParams, places: City[] = [], city?: City): str
     const x = X0 + ((doy - 1) / (days - 1)) * XW;
     s += line(x, Y0 + 2, x, Y0 - YH - 4, 2) + circle(x, Y0 - YH - 7, 2.4, 1);
   }
-  return s + caption(342, ...captionLines(placeCaption(p, city), p.cap));
+  return s;
 }
 
 /** The caption's lines (ours): the words (the visitor's title), else the city or the coordinates; the place; the day and its daylight. */
@@ -105,5 +86,12 @@ export const captionOf = (spec: CustomSpec, data: RenderData = {}) => placeCapti
 
 export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => {
   const p = (spec as { p: PlaceParams }).p;
-  return wrap(placeBody(p, data.places ?? [], cityOf(p, data)), color);
+  return wrap(placeBody(p, data.countries) + caption(342, ...captionLines(placeCaption(p, cityOf(p, data)), p.cap)), color);
 };
+
+/** The countries (the land) and the place list (the place's name), for the page, the index cards and the bag. */
+export async function prepare(spec: CustomSpec): Promise<RenderData> {
+  const [places, countries] = await Promise.all([loadCities(), loadCountries()]);
+  const c = (spec as { p: PlaceParams }).p.c;
+  return { places: places.list, countries, ...(c !== undefined ? { city: places.byId(c) } : {}) };
+}

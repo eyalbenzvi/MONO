@@ -40,9 +40,33 @@ export interface TextOpts {
   family?: Family;
 }
 
+/**
+ * A line as a face can set it: a letter the face lacks (a place name's Ḥ or
+ * ố in a face cut to the Latin it prints) becomes its base letter (Ḥ → H,
+ * ố → ô or o), so it never falls back to another font, wider than measured.
+ * The monospace face holds every place name's letters as they are.
+ */
+export function printable(s: string, family: Family = "mono", bold = false): string {
+  if (family === "mono") return s;
+  const faces = WIDTHS[family];
+  const face = (bold ? faces.bold : undefined) ?? faces.regular;
+  let out = "";
+  for (const ch of s) {
+    if (face[ch] !== undefined || ch === " ") {
+      out += ch;
+      continue;
+    }
+    // The letter with fewer marks, then bare: the first the face holds.
+    const bare = ch.normalize("NFD");
+    const one = bare.length > 2 ? (bare[0] + bare[1]).normalize("NFC") : "";
+    out += one && face[one] !== undefined ? one : face[bare[0]] !== undefined ? bare[0] : ch;
+  }
+  return out;
+}
+
 /** Text in the print's type (monospace unless a family is given), centred unless an anchor is given. */
 export const text = (x: number, y: number, s: string, size: number, opts: TextOpts = {}) =>
-  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="${FONT_FAMILY[opts.family ?? "mono"]}" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(s)}</text>`;
+  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="${FONT_FAMILY[opts.family ?? "mono"]}" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(printable(s, opts.family, opts.bold))}</text>`;
 
 /** DejaVu Sans Mono's advance, em (every character alike). */
 export const MONO_ADVANCE = 0.602;
@@ -62,7 +86,7 @@ export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" |
   else {
     const faces = WIDTHS[family];
     const face = (opts.bold ? faces.bold : undefined) ?? faces.regular;
-    for (const ch of chars) em += (face[ch] ?? MISSING * 1000) / 1000;
+    for (const ch of printable(s, family, opts.bold)) em += (face[ch] ?? MISSING * 1000) / 1000;
   }
   return em * size + chars.length * (opts.spacing ?? 0);
 }
@@ -117,7 +141,7 @@ export const ARC_TRACK = 0.08;
  * family steps by each glyph's own advance.
  */
 export function arcText(s: string, cx: number, cy: number, r: number, mid: number, size: number, up: boolean, opts: { bold?: boolean; family?: Family; track?: number } = {}): string {
-  const chars = [...s];
+  const chars = [...printable(s, opts.family, opts.bold)];
   const track = opts.track ?? ARC_TRACK;
   const family = opts.family ?? "mono";
   // Each letter's centre along the arc, degrees from the line's middle.
@@ -152,7 +176,7 @@ export function arcText(s: string, cx: number, cy: number, r: number, mid: numbe
  * since the canvas preview draws no transformed text runs.
  */
 export function turnedText(s: string, cx: number, cy: number, deg: number, size: number, opts: { bold?: boolean; family?: Family; spacing?: number } = {}): string {
-  const chars = [...s];
+  const chars = [...printable(s, opts.family, opts.bold)];
   const family = opts.family ?? "mono";
   const w = chars.map((ch) => textWidth(ch, size, { family, bold: opts.bold }) + (opts.spacing ?? 0));
   const total = w.reduce((a, b) => a + b, 0);

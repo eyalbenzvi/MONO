@@ -22,7 +22,7 @@ import { allJobs, bakeAll } from "./images/bake";
 import sharp from "sharp";
 import { CATEGORY_LABELS, COLOR_LABELS, type CatalogEntry } from "../types/shirt";
 import { loadRenderer } from "../lib/custom/renderers";
-import { decodeCities, type CitiesFile } from "../lib/custom/data";
+import { decodeCities, decodeCountries, type CitiesFile, type CountriesFile } from "../lib/custom/data";
 import { MADE, type MadeProduct } from "../lib/custom/products";
 import { STORE_POLICY } from "../lib/store-policy";
 
@@ -118,15 +118,16 @@ function makeSvg(m: MadeProduct, printPng: string, color: "black" | "white") {
   <text x="620" y="560" font-size="${fit(HOST, 540, 22, ADV.mono).toFixed(1)}" ${MONO_FONT} fill="#fff" fill-opacity="0.55">${esc(HOST)}</text>`);
 }
 
-/** Every Make product's preview, public/og/make-<slug>.jpg, from its example drawn as the page draws it (with the stars and the place list). */
+/** Every Make product's preview, public/og/make-<slug>.jpg, from its example drawn as the page draws it (with the stars, the place list and the countries: the globes' land). */
 async function renderMake() {
   const read = (f: string) => JSON.parse(readFileSync(path.join(ROOT, "data", f), "utf8"));
   const sky = { stars: read("sky/stars.json"), lines: (read("sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
   const places = decodeCities(read("cities/cities.json") as CitiesFile);
+  const countries = decodeCountries(read("countries/countries.json") as CountriesFile);
   for (const m of MADE) {
     const color = (ALL.find((s) => s.id === m.id)?.baseColor ?? "black") as "black" | "white";
     const c = (m.example.p as { c?: number }).c;
-    const svg = (await loadRenderer(m.template))(m.example, color, { sky, city: c !== undefined ? places.byId(c) : undefined, places: places.list });
+    const svg = (await loadRenderer(m.template))(m.example, color, { sky, city: c !== undefined ? places.byId(c) : undefined, places: places.list, countries });
     const png = new Resvg(svg, { fitTo: { mode: "height", value: 1080 }, font: FONT_OPTS }).render().asPng();
     writeFileSync(path.join(OUT, `make-${m.slug}.jpg`), await render(makeSvg(m, Buffer.from(png).toString("base64"), color)));
   }

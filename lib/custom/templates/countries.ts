@@ -27,9 +27,13 @@ const py = (y: number) => CY + (y / 1000) * S;
 /** The caption's lines (ours). */
 export function countriesCaption(p: Params, countries?: Countries): Lines {
   const codes = unpackCountries(p.x) ?? [];
-  const names = countries ? codes.map((c) => countries.byA3(c)?.name).filter(Boolean) : [];
-  const first = names.length ? `${names[0]}${names.length > 1 ? ` and ${names.length - 1} more` : ""}` : `${codes.length} countries`;
-  return [p.n ? `${p.n}’s countries` : "Countries visited", first.length <= 36 ? first : `${codes.length} countries`, p.y ? `Since ${p.y} · Equal Earth projection` : "Equal Earth projection"];
+  // The countries (the 195) first, then any territories: the line never counts a territory as a country.
+  const [states, others] = [codes.filter((c) => counted([c])), codes.filter((c) => !counted([c]))];
+  const names = countries ? states.map((c) => countries.byA3(c)?.name).filter(Boolean) : [];
+  const plus = others.length ? ` + ${others.length} ${others.length === 1 ? "territory" : "territories"}` : "";
+  const first = names.length ? `${names[0]}${names.length > 1 ? ` and ${names.length - 1} more` : ""}${plus}` : "";
+  const count = states.length ? `${states.length} ${states.length === 1 ? "country" : "countries"}${plus}` : `${others.length} ${others.length === 1 ? "territory" : "territories"}`;
+  return [p.n ? `${p.n}’s countries` : "Countries visited", first && first.length <= 36 ? first : count, p.y ? `Since ${p.y} · Equal Earth projection` : "Equal Earth projection"];
 }
 
 /** The world's edge: the meridians at ±180° from pole to pole. */
@@ -108,7 +112,10 @@ export function countriesBody(p: Params, countries?: Countries): string {
   if (line) s += text(150, 276, line, Math.min(13, (13 * 230) / (textWidth(line, 13, { family: COND }) + line.length * 2)), { family: COND, spacing: 2 });
   // The names, small, as a list under it (as many as fit four rows).
   if (countries) {
-    const names = [...chosen].map((a3) => countries.byA3(a3)?.name).filter((n): n is string => !!n).sort();
+    // The countries, then the territories (each alphabetical): the list reads as the count does.
+    const nameOf = (a3: string) => countries.byA3(a3)?.name;
+    const byName = (codes: string[]) => codes.map(nameOf).filter((n): n is string => !!n).sort();
+    const names = [...byName([...chosen].filter((c) => counted([c]))), ...byName([...chosen].filter((c) => !counted([c])))];
     const fits = (r: string) => textWidth(r.toUpperCase(), 6.5, { family: COND }) + r.length * 0.6 <= 256;
     const rows: string[][] = [[]];
     for (const n of names) {

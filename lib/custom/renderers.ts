@@ -6,7 +6,6 @@
 import type { BaseColor } from "@/types/shirt";
 import type { Lines } from "./kit";
 import type { City, CustomSpec, TemplateId } from "./spec";
-import type { ArtFile } from "./art";
 import type { Airports, Countries } from "./data";
 import type { SkyData } from "./templates/sky";
 
@@ -14,14 +13,12 @@ import type { SkyData } from "./templates/sky";
 export interface RenderData {
   sky?: SkyData;
   city?: City;
-  /** The place list (data/cities): Your Place draws its cities as the globe's only land. */
+  /** The place list (data/cities): the cities of Your Place, Your Journey and the rest. */
   places?: City[];
-  /** The countries (data/countries): Your Countries' map. */
+  /** The countries (data/countries): Your Countries' map, and the land on Your Place's and Your Journey's globes (lib/custom/globe). */
   countries?: Countries;
   /** The airports (data/airports): Your Flights' codes and cities. */
   airports?: Airports;
-  /** Traced pictures (data/art), by "<set>/<id>": Your Dinosaur's plate, Your Landmarks' drawings. */
-  art?: Record<string, ArtFile>;
 }
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 

@@ -1,9 +1,10 @@
 /**
  * Where the eight planets stand around the sun on a date: their real orbits
  * (JPL's approximate Keplerian elements, valid 1800–2050) seen from above the
- * solar system, distances on a square-root scale so Mercury and Neptune share
- * the print. The catalogue's Planets prints and "Your Planets" are this
- * function with different inputs.
+ * solar system: in the catalogue's Planets prints, distances on a
+ * square-root scale so Mercury and Neptune share the print; in "Your
+ * Planets", the orbits evenly spaced in order, each its own shape, so the
+ * inner four's paths don't run together. The same function, different inputs.
  */
 import { DEG, caption, circle, dot, norm360, path, polyline, text } from "../kit";
 
@@ -53,11 +54,15 @@ export interface PlanetsInput {
 /** The orbits, the planets on them, and the caption: the print's body (white ink, unwrapped). */
 export function planetsBody({ jd, caption: c, rich = false }: PlanetsInput): string {
   const CX = 150, CY = 160, RMAX = 122;
-  // Distances on a square-root scale, so Mercury and Neptune share the print.
-  const sc = (r: number) => 10 + (RMAX - 10) * Math.sqrt(r / 30.4);
+  // The catalogue's prints: distances on a square-root scale, so Mercury and Neptune share the print. Your Planets
+  // (rich, its paths drawn bold) spaces the orbits evenly in order, each keeping its own shape: on the root scale
+  // the four inner ones sit four units apart, and their paths ran together.
+  const root = (r: number) => 10 + (RMAX - 10) * Math.sqrt(r / 30.4);
   let body = circle(CX, CY, 4, 0.9) + dot(CX, CY, 1.4);
-  for (const p of PLANETS) {
+  for (const [i, p] of PLANETS.entries()) {
     const { x, y: py, a, e, w } = planetAt(p, jd);
+    const ring = 24 + (i * (RMAX - 24)) / (PLANETS.length - 1);
+    const sc = rich ? (r: number) => (ring * r) / a : root;
     const orbit: [number, number][] = [];
     for (let k = 0; k <= 180; k++) {
       const E = (k / 180) * Math.PI * 2;

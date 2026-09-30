@@ -138,8 +138,11 @@ export function signpostBody(p: Params, places: City[] = []): string {
   const homeName = home ? home.name.toUpperCase() : "HOME";
   // Its letter-spacing counted (a fixed 0.8 a letter, whatever the size), so the words stay on the plate.
   const homeLine = `FROM ${homeName}`;
-  const hs = Math.min(9, (90 - homeLine.length * 0.8) / textWidth(homeLine, 1, { family: COND }));
-  s += `<path d="M104 ${top - 30}H196V${top - 12}H104Z" fill="${GROUND}" stroke="${INK}" stroke-width="1"/>` + text(150, top - 18, `FROM ${homeName}`, hs, { family: COND, spacing: 0.8 });
+  // The plate grows with a long name (up to 170 wide), a margin kept each side; past that the words get smaller.
+  const track = homeLine.length * 0.8;
+  const pw = Math.min(170, Math.max(92, textWidth(homeLine, 9, { family: COND }) + track + 16));
+  const hs = Math.round(Math.min(9, (pw - 16 - track) / textWidth(homeLine, 1, { family: COND })) * 10) / 10;
+  s += `<path d="M${f1(150 - pw / 2)} ${top - 30}H${f1(150 + pw / 2)}V${top - 12}H${f1(150 - pw / 2)}Z" fill="${GROUND}" stroke="${INK}" stroke-width="1"/>` + text(150, top - 18, homeLine, hs, { family: COND, spacing: 0.8 });
   boards.forEach((b, i) => {
     const label = `${b.city.name.toUpperCase()}  ${dist(b.km, p.mi).toUpperCase()}`;
     const size = Math.min(h * 0.46, (h * 0.46 * labelRoom(h)) / (textWidth(label, h * 0.46, { family: COND, bold: true }) + label.length * 0.6 * 1.05));

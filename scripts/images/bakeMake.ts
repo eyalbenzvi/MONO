@@ -5,20 +5,22 @@
  * white ink screened onto a black one), then the chest crop the cards show
  * (CustomMockup chestCrop), at CARD_WIDTHS, into public/img/make/.
  * Unchanged cards are skipped (a stamp per card: the print, the photo, the recipe).
- * Also the pickers' thumbnails of the Make artwork (Your Landmarks' drawings,
- * data/art/landmarks), into public/img/make/art-*.webp.
+ * Also the picker's thumbnails of Your Landmarks' drawings (lib/custom/draw/landmarks),
+ * into public/img/make/art-landmarks-*.webp.
  *
  *   npx tsx --tsconfig tsconfig.scripts.json scripts/images/bakeMake.ts
  */
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
 import shirtsJson from "../../data/shirts.json";
-import { ART_THUMB, artSvg, artThumbPath, type ArtFile } from "../../lib/custom/art";
+import { ART_THUMB, artThumbPath } from "../../lib/custom/art";
+import { landmarkSvg } from "../../lib/custom/draw/landmarks";
+import { LANDMARK_IDS } from "../../lib/custom/specs/landmarks";
 import { chestBox } from "../../lib/custom/chest";
-import { decodeCities, type CitiesFile } from "../../lib/custom/data";
+import { decodeCities, decodeCountries, type CitiesFile, type CountriesFile } from "../../lib/custom/data";
 import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "../../lib/custom/makeCards";
 import { MADE, madeBySlug, type MadeProduct } from "../../lib/custom/products";
 import { loadRenderer, prepareData } from "../../lib/custom/renderers";
@@ -42,11 +44,11 @@ interface Card {
 
 const cards = (): Card[] => [...MADE.map((made) => ({ key: made.slug, made, spec: made.example })), { key: TWO_KEY, made: madeBySlug("monogram") as MadeProduct, spec: TWO_SPEC }];
 
-/** The data the example prints need (a sky's stars and city, the world's cities), read from disk as the link previews read it. */
+/** The data the example prints need (a sky's stars and city, the world's cities, the countries: the globes' land), read from disk as the link previews read it. */
 function baseData() {
   const read = (f: string) => JSON.parse(readFileSync(path.join(ROOT, "data", f), "utf8"));
   const sky = { stars: read("sky/stars.json"), lines: (read("sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
-  return { sky, places: decodeCities(read("cities/cities.json") as CitiesFile) };
+  return { sky, places: decodeCities(read("cities/cities.json") as CitiesFile), countries: decodeCountries(read("countries/countries.json") as CountriesFile) };
 }
 
 /** The print flat on the tee colour at 1500 × 2000, one grey channel (bake.ts flatPrint, for a drawn print in its colour's inks). */
@@ -83,7 +85,7 @@ async function main() {
     const model = modelFor(base, color);
     if (!model) throw new Error(`${key}: no model photo in ${color}`);
     const c = (spec.p as { c?: number }).c;
-    const svg = (await loadRenderer(spec.t))(spec, color, { sky: data.sky, city: c !== undefined ? data.places.byId(c) : undefined, places: data.places.list, ...(await prepareData(spec)) });
+    const svg = (await loadRenderer(spec.t))(spec, color, { sky: data.sky, city: c !== undefined ? data.places.byId(c) : undefined, places: data.places.list, countries: data.countries, ...(await prepareData(spec)) });
     const photoFile = path.join(PUBLIC, "models", `${model.id}.webp`);
     const buf = readFileSync(photoFile);
     stamps[key] = createHash("sha1").update(`${RECIPE}|${color}|${model.id}|${model.box.join()}|`).update(svg).update(buf).digest("hex").slice(0, 16);
@@ -113,20 +115,18 @@ async function main() {
 }
 
 /**
- * The pickers' thumbnails (Your Landmarks' drawings): each picture in white
- * ink on nothing, square, for the dark editor. Unchanged ones are skipped.
+ * The picker's thumbnails (Your Landmarks' drawings): each drawing in white
+ * ink on nothing, square, for the dark editor, in heavier strokes and without
+ * the fine detail (it's shown 64 px wide). Unchanged ones are skipped.
  */
 async function bakeThumbs(old: Record<string, string>, stamps: Record<string, string>): Promise<number> {
-  const dir = path.join(ROOT, "data", "art", "landmarks");
-  if (!existsSync(dir)) return 0;
   let baked = 0;
-  for (const f of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
-    const key = `landmarks/${f.slice(0, -5)}`;
-    const json = readFileSync(path.join(dir, f), "utf8");
+  for (const id of LANDMARK_IDS) {
+    const key = `landmarks/${id}`;
     const out = path.join(PUBLIC, artThumbPath(key));
-    stamps[key] = createHash("sha1").update(`${RECIPE}|${ART_THUMB}|`).update(json).digest("hex").slice(0, 16);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">${landmarkSvg(id, 4, 4, 92, 92, { weight: 2.4, fine: false })}</svg>`;
+    stamps[key] = createHash("sha1").update(`${RECIPE}|${ART_THUMB}|`).update(svg).digest("hex").slice(0, 16);
     if (old[key] === stamps[key] && existsSync(out)) continue;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">${artSvg(JSON.parse(json) as ArtFile, 4, 4, 92, 92)}</svg>`;
     const png = new Resvg(svg, { fitTo: { mode: "width", value: ART_THUMB } }).render().asPng();
     mkdirSync(path.dirname(out), { recursive: true });
     writeFileSync(out, await sharp(png).webp({ quality: 80, alphaQuality: 80 }).toBuffer());

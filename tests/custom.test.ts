@@ -9,7 +9,7 @@ import { moonBody } from "@/lib/custom/templates/moon";
 import { latLon, skyBody } from "@/lib/custom/templates/sky";
 import { localToUtc } from "@/lib/custom/tz";
 import { decodeCities, searchCities } from "@/lib/custom/data";
-import { publishedArt, publishedCustom } from "../scripts/tools/publishCustom";
+import { publishedCustom } from "../scripts/tools/publishCustom";
 import { getShirtById, productHref } from "@/lib/catalog";
 import { MADE, madeBySlug, madeFor } from "@/lib/custom/products";
 import { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg, specHash, templateFor, validate, cleanWords, WORDS_MAX, type City, type CustomSpec } from "@/lib/custom";
@@ -203,20 +203,14 @@ describe("personalised prints: the data", () => {
   const gz = (s: string) => gzipSync(s).length / 1024;
   const published = publishedCustom();
 
-  it("fits its budgets: cities ≤ 80 KB, the sky ≤ 30 KB, the countries ≤ 40 KB, the airports ≤ 80 KB and each picture ≤ 60 KB gzipped, published under their content hashes", () => {
+  it("fits its budgets: cities ≤ 80 KB, the sky ≤ 30 KB, the countries ≤ 40 KB, and the airports ≤ 80 KB gzipped, published under their content hashes", () => {
     expect(gz(published.cities.json)).toBeLessThanOrEqual(80);
     expect(gz(published.sky.json)).toBeLessThanOrEqual(30);
     expect(gz(published.countries.json)).toBeLessThanOrEqual(40);
     expect(gz(published.airports.json)).toBeLessThanOrEqual(80);
     const m = readJson("data/custom.manifest.json");
-    const art = publishedArt();
-    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file, countries: published.countries.file, airports: published.airports.file, art: Object.fromEntries(Object.entries(art).map(([k, o]) => [k, o.file])) });
+    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file, countries: published.countries.file, airports: published.airports.file });
     for (const k of ["cities", "sky", "countries", "airports"] as const) expect(readFileSync(path.join(ROOT, "public", "data", m[k]), "utf8")).toBe(published[k].json);
-    // Each traced picture its own file (a print loads only its own), none over 60 KB gzipped.
-    for (const [k, o] of Object.entries(art)) {
-      expect(gz(o.json), k).toBeLessThanOrEqual(60);
-      expect(readFileSync(path.join(ROOT, "public", "data", o.file), "utf8")).toBe(o.json);
-    }
   });
 
   it("the place list is sorted by id, credits its source, and every zone is one this runtime knows", () => {

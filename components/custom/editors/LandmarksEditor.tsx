@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { artThumbPath, type ArtFile } from "@/lib/custom/art";
-import { loadArt } from "@/lib/custom/data";
+import { artThumbPath } from "@/lib/custom/art";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
 import { JOURNAL_NAME_MAX, LANDMARKS, LANDMARKS_MAX, LANDMARKS_MIN, LANDMARK_IDS, PRODUCT, type Landmark, type Visit } from "@/lib/custom/specs/landmarks";
@@ -21,21 +20,6 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
   const lex = useLexicon(true);
   const name = useText(a?.n ?? "", JOURNAL_NAME_MAX, lex);
   const [rows, setRows] = useState<{ id: Landmark; year: string }[]>(a ? a.x.map(([id, y]) => ({ id, year: y ? String(y) : "" })) : []);
-  const [art, setArt] = useState<Record<string, ArtFile>>({});
-  const ids = rows.map((r) => r.id).join(",");
-  useEffect(() => {
-    let live = true;
-    for (const id of ids.split(",").filter(Boolean)) {
-      const key = `landmarks/${id}`;
-      loadArt(key)
-        .then((f) => live && setArt((m) => (m[key] ? m : { ...m, [key]: f })))
-        .catch(() => {});
-    }
-    return () => {
-      live = false;
-    };
-  }, [ids]);
-
   const years = rows.map((r) => yearOf(r.year, FIRST_YEAR, LAST_YEAR));
   const ok = allOk(lex, name) && rows.length >= LANDMARKS_MIN && rows.length <= LANDMARKS_MAX && years.every((y) => y !== null);
   const x: Visit[] = rows.map((r, i) => (years[i] ? [r.id, years[i]!] : [r.id]));
@@ -44,11 +28,9 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
-  const loaded = rows.filter((r) => art[`landmarks/${r.id}`]).length;
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { art } });
-    // Redrawn as each drawing arrives.
-  }, [key, loaded, art]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
+  }, [key]);
 
   const toggle = (id: Landmark) => setRows((rs) => (rs.some((r) => r.id === id) ? rs.filter((r) => r.id !== id) : rs.length < LANDMARKS_MAX ? [...rs, { id, year: "" }] : rs));
   const move = (i: number) => setRows((rs) => rs.map((r, j) => (j === i - 1 ? rs[i] : j === i ? rs[i - 1] : r)));

@@ -94,8 +94,10 @@ export function lineupBody(p: Params): string {
     if (num !== undefined) s += text(x, y + r * 0.37, String(num), r, { family: COND, bold: true });
     else s += circle(x, y, r * 0.45, 0.8) + dot(x, y, 1.4);
     if (name) {
-      const ns = Math.round(Math.min(8, (8 * 50) / (textWidth(name, 8, { family: COND, bold: mine }) + name.length * 0.3)) * 10) / 10;
-      s += text(x, y + r + (mine ? 13 : 10), name.toUpperCase(), ns, { family: COND, bold: mine, spacing: 0.3 });
+      // Measured as it prints (upper case, its letter-spacing): it keeps to its 50 units, clear of the next player's.
+      const shown = name.toUpperCase();
+      const ns = Math.round(Math.min(8, (50 - shown.length * 0.3) / textWidth(shown, 1, { family: COND, bold: mine })) * 10) / 10;
+      s += text(x, y + r + (mine ? 13 : 10), shown, ns, { family: COND, bold: mine, spacing: 0.3 });
     }
   });
   return s + caption(344, ...captionLines(lineupCaption(p), p.cap));

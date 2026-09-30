@@ -1,23 +1,19 @@
 /**
  * Your Landmarks: a page of a travel journal. The landmarks in a grid (three
- * across, one to three rows), each a drawing (data/art/landmarks, one path)
- * in a frame taped in at its top corners, its name and the year under it,
+ * across, one to three rows), each a line drawing (draw/landmarks) in a
+ * frame taped in at its top corners, its name and the year under it,
  * and under the page the name and the years ("NOA · 2009–2026").
  */
 import { INK, caption, captionLines, f1, rect, text, textWidth, type Lines } from "../kit";
-import { artSvg } from "../art";
-import { loadArt } from "../data";
+import { landmarkSvg } from "../draw/landmarks";
 import { LANDMARKS, type Params } from "../specs/landmarks";
 import type { CustomSpec } from "../spec";
-import type { RenderData } from "../renderers";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 const COND = "condensed" as const;
 const AREA = { x: 24, y: 30, w: 252, h: 262 };
 const GAP = 10;
-
-export const artKeys = (p: Params) => p.x.map(([id]) => `landmarks/${id}`);
 
 /** The years as a span ("2009–2026"), or the one year, or nothing. */
 export function spanOf(p: Params): string {
@@ -33,7 +29,7 @@ export const footOf = (p: Params) => [p.n?.toUpperCase(), spanOf(p)].filter(Bool
 /** The caption's lines (ours). */
 export function landmarksCaption(p: Params): Lines {
   const span = spanOf(p);
-  return [p.n ? `${p.n}’s landmarks` : "Landmarks", `${p.x.length} landmarks${span ? ` · ${span}` : ""}`, "Drawn from public-domain pictures"];
+  return [p.n ? `${p.n}’s landmarks` : "Landmarks", `${p.x.length} landmarks${span ? ` · ${span}` : ""}`, "Every one drawn for the shirt"];
 }
 
 /** The grid for n tiles: three across, as many rows as it takes; tiles a little taller than wide. */
@@ -59,7 +55,7 @@ function tape(cx: number, cy: number, deg: number, len: number): string {
   return `<path d="M${pts.join("L")}Z" fill="none" stroke="${INK}" stroke-width=".6" stroke-linejoin="round"/>`;
 }
 
-export function landmarksBody(p: Params, data: RenderData = {}): string {
+export function landmarksBody(p: Params): string {
   let s = rect(14, 18, 272, 306, 0.6);
   const tiles = gridOf(p.x.length);
   p.x.forEach(([id, year], i) => {
@@ -67,8 +63,7 @@ export function landmarksBody(p: Params, data: RenderData = {}): string {
     s += rect(t.x, t.y, t.w, t.h, 1);
     s += tape(t.x + 5, t.y + 3, -35, 16) + tape(t.x + t.w - 5, t.y + 3, 35, 16);
     const label = t.h < 60 ? 11 : 15;
-    const art = data.art?.[`landmarks/${id}`];
-    if (art) s += artSvg(art, t.x + 5, t.y + 7, t.w - 10, t.h - 12 - label, "bottom");
+    s += landmarkSvg(id, t.x + 5, t.y + 7, t.w - 10, t.h - 12 - label);
     const name = LANDMARKS[id].toUpperCase();
     const size = Math.min(label < 15 ? 5 : 6, (t.w - 8) / textWidth(name, 1, { family: COND, bold: true }));
     s += text(t.x + t.w / 2, t.y + t.h - label + size + 1.5, name, Math.round(size * 10) / 10, { family: COND, bold: true, spacing: 0.3 });
@@ -81,11 +76,4 @@ export function landmarksBody(p: Params, data: RenderData = {}): string {
 
 export const captionOf = (spec: CustomSpec) => landmarksCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(landmarksBody((spec as { p: Params }).p, data), color);
-
-/** The landmarks' drawings, for the index cards and the bag (the editor passes its own). */
-export async function prepare(spec: CustomSpec): Promise<RenderData> {
-  const keys = artKeys((spec as { p: Params }).p);
-  const files = await Promise.all(keys.map((k) => loadArt(k).catch(() => null)));
-  return { art: Object.fromEntries(keys.flatMap((k, i) => (files[i] ? [[k, files[i]!]] : []))) };
-}
+export const render = (spec: CustomSpec, color: BaseColor) => wrap(landmarksBody((spec as { p: Params }).p), color);

@@ -1,19 +1,26 @@
 /**
  * Your Journey: the places you've been, joined in order on a globe, drawn
- * like Your Place and the catalogue's Daylight prints (an orthographic globe,
- * a graticule, the world's cities of 200,000 people or more as its only land:
- * data/cities, GeoNames). The globe is turned to the middle of the journey
- * (the centre of the smallest cap that holds every stop, so as many stops as
- * can be face us) and, when the journey is small, seen closer through a round
- * lens, so a weekend in two cities still reads. Each leg is the great circle
- * between two stops (the way a plane flies), cut exactly where it meets the
- * lens or goes round the back; the far side of an antipodal leg is chosen
- * through the side that faces us. Stops are numbered; the list and the total
- * distance sit under the globe.
+ * like Your Place (an orthographic globe, the land hatched inside bold
+ * coastlines: Your Countries' outlines, lib/custom/globe; the graticule over
+ * the sea). The globe is turned to the middle of the journey (the centre of
+ * the smallest cap that holds every stop, so as many stops as can be face
+ * us), then moved off the longest leg towards the equator, so the legs are
+ * seen from the side and bow as great circles do on a globe (seen from
+ * straight above, one through the middle is a straight line); when the
+ * journey is small it's seen closer through a round lens (the coasts
+ * smoothed there, the borders drawn thin), so a weekend in two cities still
+ * reads. Each leg is the great circle between two stops (the way a plane
+ * flies), densely sampled and cut exactly where it meets the lens or goes
+ * round the back; the far side of an antipodal leg is chosen through the
+ * side that faces us. Stops are numbered (stops too close to part on the
+ * print share one marker, "1–2"); the list and the total distance
+ * sit under the globe. The stops are the place list's (data/cities,
+ * GeoNames).
  */
 import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
 import { titleWords } from "../specKit";
-import { loadCities } from "../data";
+import { loadCities, loadCountries, type Countries } from "../data";
+import { landPaths, seaGraticule, tracePolylines } from "../globe";
 import type { City, CustomSpec } from "../spec";
 import type { Params as JourneyParams } from "../specs/journey";
 import { GROUND, wrap } from "../svg";
@@ -23,6 +30,8 @@ import type { BaseColor } from "@/types/shirt";
 type V3 = [number, number, number];
 const DEG = Math.PI / 180;
 const CX = 150, CY = 138, R = 110;
+/** The lens's closest: the countries' outlines (1:110m) still read as their coasts, not as polygons. */
+const ZOOM_MAX = 4;
 const EARTH_KM = 6371;
 
 const vec = (lat: number, lon: number): V3 => [Math.cos(lat * DEG) * Math.cos(lon * DEG), Math.cos(lat * DEG) * Math.sin(lon * DEG), Math.sin(lat * DEG)];
@@ -82,27 +91,69 @@ function centreOf(stops: V3[]): V3 {
   }
   return best;
 }
+/**
+ * The centre moved off the journey's longest leg, square to it and towards
+ * the equator, so the great circles are seen from the side and bow as they
+ * do on a globe held in the hand (seen from straight above, a great circle
+ * through the middle is a straight line). As far as the journey is wide, up
+ * to 30°, and never so far a stop goes round the back; a journey wider than
+ * 60° is left as it is.
+ */
+function bowed(centre: V3, stops: V3[]): V3 {
+  const cap = Math.max(...stops.map((v) => angle(centre, v)));
+  const shift = cap <= Math.PI / 3 ? Math.min(1.1 * cap, 30 * DEG, 80 * DEG - cap) : 0;
+  let best: [number, number] = [0, 0];
+  for (let i = 1; i < stops.length; i++) {
+    const om = angle(stops[i - 1], stops[i]);
+    if (om > best[0]) best = [om, i];
+  }
+  if (shift < 1e-6 || best[0] < 1e-6) return centre;
+  let n = norm(cross(stops[best[1] - 1], stops[best[1]]));
+  // Towards the equator (a leg along a meridian: westward), so the leg bows to the pole, as on a map.
+  const side = Math.abs(n[2]) > 0.05 ? -Math.sign(n[2]) * Math.sign(centre[2] || 1) : dot3(n, [-centre[1], centre[0], 0]) < 0 ? 1 : -1;
+  if (side < 0) n = [-n[0], -n[1], -n[2]];
+  // Off the leg's plane by `shift`: the centre's part in the plane kept, the part along n set.
+  const along = dot3(centre, n);
+  const inPlane = norm([centre[0] - along * n[0], centre[1] - along * n[1], centre[2] - along * n[2]]);
+  const a = Math.asin(Math.max(-1, Math.min(1, along))) + shift;
+  return norm([inPlane[0] * Math.cos(a) + n[0] * Math.sin(a), inPlane[1] * Math.cos(a) + n[1] * Math.sin(a), inPlane[2] * Math.cos(a) + n[2] * Math.sin(a)]);
+}
 /** Two unit vectors perpendicular to v and to each other. */
 function basis(v: V3): [V3, V3] {
   const e1 = norm(Math.abs(v[2]) < 0.9 ? cross([0, 0, 1], v) : cross([1, 0, 0], v));
   return [e1, cross(v, e1)];
 }
 
+/** Stops nearer than this on the print share a marker (two markers' width, less a little). */
+const MERGE = 9;
+/** The numbers of the stops at one marker: runs as "1–3", the rest by commas ("1–2,5"). */
+function numbers(idx: number[]): string {
+  const n = [...idx].sort((a, b) => a - b).map((i) => i + 1);
+  const out: string[] = [];
+  for (let i = 0; i < n.length; ) {
+    let j = i;
+    while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++;
+    out.push(j > i ? `${n[i]}–${n[j]}` : String(n[i]));
+    i = j + 1;
+  }
+  return out.join(",");
+}
+
 const km = (n: number) => String(Math.round(n / 10) * 10).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 /** The drawing, the caption's lines as ours, and where the caption sits. */
-function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, number] {
+function journeyDraw(p: JourneyParams, places: City[] = [], countries?: Countries): [string, Lines, number] {
   const byId = new Map(places.map((c) => [c.id, c]));
   const cities = p.c.map((id) => byId.get(id));
   const known = cities.filter((c): c is City => !!c);
   const stops = known.map((c) => vec(c.lat, c.lon));
-  const centre = stops.length ? centreOf(stops) : vec(20, 0);
+  const centre = stops.length ? bowed(centreOf(stops), stops) : vec(20, 0);
   const [la0, lo0] = latLon(centre);
   const phi0 = la0 * DEG, lam0 = lo0 * DEG;
   const [s0, c0] = [Math.sin(phi0), Math.cos(phi0)];
-  // Closer when the journey is small: the farthest stop lands about two thirds of the way out (at most twelve times).
+  // Closer when the journey is small: the farthest stop lands about two thirds of the way out (at most four times: closer, the outlines show as polygons).
   const spread = Math.max(0, ...stops.map((v) => Math.sin(Math.min(Math.PI / 2, angle(centre, v)))));
-  const zoom = Math.max(1, Math.min(12, 0.66 / Math.max(spread, 1e-6)));
+  const zoom = Math.max(1, Math.min(ZOOM_MAX, 0.66 / Math.max(spread, 1e-6)));
   const RK = R * zoom;
   /** Screen position, and whether it shows (facing us, inside the lens). */
   const project = (v: V3): [number, number, boolean] => {
@@ -158,12 +209,14 @@ function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, num
     return d;
   };
 
-  // The graticule, finer as the globe comes closer.
+  // The graticule over the sea, finer as the globe comes closer; the land hatched, its coasts bold (its borders too, thin, when seen close).
+  const view = { centre, k: RK, cx: CX, cy: CY, r: R };
   const g = zoom < 2.5 ? 15 : zoom < 5 ? 10 : zoom < 9 ? 5 : 2;
-  let grat = "";
-  for (let lat = -90 + g; lat < 90; lat += g) grat += trace((t) => vec(lat, -180 + 360 * t), 144);
-  for (let lon = -180; lon < 180; lon += g) grat += trace((t) => vec(-89.9 + 179.8 * t, lon), 72);
-  let s = `<path d="${grat}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  const land = landPaths(countries, view, { gap: 2.4, smooth: zoom >= 3 ? 3 : 0 });
+  let s = `<path d="${tracePolylines(seaGraticule(countries, g), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  if (land.border && zoom >= 2.5) s += `<path d="${land.border}" fill="none" stroke="${INK}" stroke-width=".5" stroke-linejoin="round"/>`;
+  if (land.coast) s += `<path d="${land.coast}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round"/>`;
   s += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${INK}" stroke-width="1.4"/>`;
   if (zoom > 1.05) s += `<circle cx="${CX}" cy="${CY}" r="${R + 3.5}" fill="none" stroke="${INK}" stroke-width=".6"/>`;
 
@@ -198,29 +251,23 @@ function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, num
     }
   }
 
-  // The land: every city facing us, clear of the stops and of the legs' casing.
-  const near = (x: number, y: number, r: number) => screen.some(([sx, sy, v]) => v && Math.hypot(sx - x, sy - y) < r);
-  let dots = "";
-  for (const c of places) {
-    const [x, y, v] = project(vec(c.lat, c.lon));
-    if (!v || near(x, y, 7) || Math.hypot(x - CX, y - CY) > R - 1.5) continue;
-    dots += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.min(1.6, 0.7 + 0.3 * Math.log10(Math.max(1, c.pop / 2e5))))}" fill="${INK}"/>`;
-  }
-  s += dots;
   const legPath = legs.join("");
   if (legPath) s += `<path d="${legPath}" fill="none" stroke="${GROUND}" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="${legPath}" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
   if (arrows.length) s += `<path d="${arrows.join("")}" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>`;
 
-  // Each place once (a place visited twice carries both numbers), numbered where there's room.
-  const seen = new Map<number, number[]>();
-  known.forEach((c, i) => seen.set(c.id, [...(seen.get(c.id) ?? []), i]));
+  // Each place once, and stops that would overlap on the print as one (a place visited twice, or two a few kilometres apart, carry every number: "1–2", "1,5"), numbered where there's room.
+  const groups: { idx: number[]; x: number; y: number }[] = [];
+  screen.forEach(([x, y, v], i) => {
+    if (!v) return;
+    const g = groups.find((q) => Math.hypot(q.x - x, q.y - y) < MERGE);
+    if (g) g.idx.push(i);
+    else groups.push({ idx: [i], x, y });
+  });
   const taken: { x: number; y: number; w: number; h: number }[] = [];
   let marks = "", labels = "";
-  for (const [, idx] of seen) {
-    const [x, y, v] = screen[idx[0]];
-    if (!v) continue;
+  for (const { idx, x, y } of groups) {
     marks += `<circle cx="${f1(x)}" cy="${f1(y)}" r="4.2" fill="${GROUND}" stroke="${INK}" stroke-width="1.2"/><circle cx="${f1(x)}" cy="${f1(y)}" r="1.7" fill="${INK}"/>`;
-    const label = idx.map((i) => i + 1).join(",");
+    const label = numbers(idx);
     const w = label.length * 0.602 * 8, h = 7;
     let best: { x: number; y: number; score: number } | null = null;
     for (let k = 0; k < 8; k++) {
@@ -229,7 +276,7 @@ function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, num
       const box = { x: lx - w / 2, y: ly - h, w, h };
       const inside = Math.hypot(lx - CX, ly - 3 - CY) < R - 6 ? 0 : 50;
       const hitLeg = legSamples.filter(([px, py]) => px > box.x - 1.5 && px < box.x + w + 1.5 && py > box.y - 1.5 && py < box.y + h + 1.5).length;
-      const hitStop = screen.filter(([sx, sy, sv]) => sv && sx > box.x - 5 && sx < box.x + w + 5 && sy > box.y - 5 && sy < box.y + h + 5).length;
+      const hitStop = groups.filter((q) => q.x > box.x - 5.5 && q.x < box.x + w + 5.5 && q.y > box.y - 5.5 && q.y < box.y + h + 5.5).length;
       const hitLabel = taken.filter((t) => t.x < box.x + w + 1 && box.x < t.x + t.w + 1 && t.y < box.y + h + 1 && box.y < t.y + t.h + 1).length;
       const score = inside + hitLeg * 3 + hitStop * 20 + hitLabel * 40 + k * 0.01;
       if (!best || score < best.score) best = { x: lx, y: ly, score };
@@ -264,16 +311,17 @@ function journeyDraw(p: JourneyParams, places: City[] = []): [string, Lines, num
 /** The caption's lines (ours). */
 export const journeyCaption = (p: JourneyParams, places: City[] = []): Lines => journeyDraw(p, places)[1];
 
-export function journeyBody(p: JourneyParams, places: City[] = []): string {
-  const [s, lines, y] = journeyDraw(p, places);
+export function journeyBody(p: JourneyParams, places: City[] = [], countries?: Countries): string {
+  const [s, lines, y] = journeyDraw(p, places, countries);
   return s + caption(y, ...captionLines(lines, p.cap));
 }
 
 export const captionOf = (spec: CustomSpec, data: RenderData = {}) => journeyCaption((spec as { p: JourneyParams }).p, data.places ?? []);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(journeyBody((spec as { p: JourneyParams }).p, data.places ?? []), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(journeyBody((spec as { p: JourneyParams }).p, data.places ?? [], data.countries), color);
 
-/** The place list, for the index cards and the bag (the editor passes its own). */
+/** The place list and the countries (the land), for the index cards and the bag (the editor passes its own). */
 export async function prepare(): Promise<RenderData> {
-  return { places: (await loadCities()).list };
+  const [places, countries] = await Promise.all([loadCities(), loadCountries()]);
+  return { places: places.list, countries };
 }

@@ -75,7 +75,7 @@ export function customCaption(spec: CustomSpec, data: { city?: City }): Lines {
   }
   if (spec.t === "planets") {
     const date = dateOf(spec.p.d);
-    return [fitName(w ?? date), w ? date : "The eight planets around the sun", "Sun at the centre · distances on a square-root scale"];
+    return [fitName(w ?? date), w ? date : "The eight planets around the sun", "Sun at the centre · the orbits in order, not to scale"];
   }
   if (spec.t !== "sky") throw new Error(`${spec.t} draws in its own template`);
   const city = data.city!;

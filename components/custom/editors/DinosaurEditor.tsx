@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ArtFile } from "@/lib/custom/art";
-import { loadArt } from "@/lib/custom/data";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
 import { DIET_MAX, DINO_NAME_MAX, ENDINGS, HEIGHT_MAX, HEIGHT_MIN, PLATES, PLATE_INFO, PRODUCT, SPECIES, genusOf, stemOf, type Ending, type Plate, type Species } from "@/lib/custom/specs/dinosaur";
@@ -26,17 +24,6 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
   const [year, setYear] = useState(a?.y ? String(a.y) : "");
   const [height, setHeight] = useState(a?.h ? String(a.h) : "");
   const diet = useText(a?.d ?? "", DIET_MAX, lex);
-  const [art, setArt] = useState<Record<string, ArtFile>>({});
-  const key = `dinosaurs/${plate}`;
-  useEffect(() => {
-    let live = true;
-    loadArt(key)
-      .then((f) => live && setArt((m) => ({ ...m, [key]: f })))
-      .catch(() => {});
-    return () => {
-      live = false;
-    };
-  }, [key]);
 
   const y = yearOf(year, FIRST_YEAR, LAST_YEAR);
   const hNum = height.trim() ? Number(height.trim()) : undefined;
@@ -51,10 +38,9 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
   const report = useRef(onChange);
   report.current = onChange;
   const specKey = spec ? JSON.stringify(spec) : "";
-  const loaded = !!art[key];
   useEffect(() => {
-    report.current({ spec: specKey ? (JSON.parse(specKey) as CustomSpec) : null, data: loaded ? { art } : {} });
-  }, [specKey, loaded, art]);
+    report.current({ spec: specKey ? (JSON.parse(specKey) as CustomSpec) : null, data: {} });
+  }, [specKey]);
 
   const sample = name.value && stemOk ? name.value : ex.n;
   return (
@@ -64,7 +50,7 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
         <select id="make-dinosaur-plate" value={plate} onChange={(ev) => setPlate(ev.target.value as Plate)} className={INPUT}>
           {PLATES.map((k) => (
             <option key={k} value={k}>
-              {PLATE_INFO[k].name} ({PLATE_INFO[k].after.replace(/^After /, "")})
+              {PLATE_INFO[k].name} ({PLATE_INFO[k].period})
             </option>
           ))}
         </select>

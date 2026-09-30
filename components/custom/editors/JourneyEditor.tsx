@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CityField } from "@/components/custom/CityField";
-import { loadCities, type Places } from "@/lib/custom/data";
+import { loadCities, loadCountries, type Countries, type Places } from "@/lib/custom/data";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { JOURNEY_MAX, PRODUCT, journeyProblem } from "@/lib/custom/specs/journey";
 
@@ -17,10 +17,15 @@ const LINK = "h-10 text-neutral-300 underline underline-offset-4 hover:text-whit
 export default function JourneyEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "journey" ? arrival.p : null;
   const [places, setPlaces] = useState<Places | null>(null);
+  // The land (the countries' outlines): the globe draws without it until it comes.
+  const [countries, setCountries] = useState<Countries | null>(null);
   useEffect(() => {
     let live = true;
     loadCities()
       .then((p) => live && setPlaces(p))
+      .catch(() => {});
+    loadCountries()
+      .then((c) => live && setCountries(c))
       .catch(() => {});
     return () => {
       live = false;
@@ -36,8 +41,8 @@ export default function JourneyEditor({ arrival, touched, onChange }: EditorProp
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list } });
-  }, [key, places]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list, countries: countries ?? undefined } });
+  }, [key, places, countries]);
 
   const shown = problem && (touched || ids.length >= 2) ? problem : null;
 

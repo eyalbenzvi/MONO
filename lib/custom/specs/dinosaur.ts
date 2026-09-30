@@ -1,8 +1,7 @@
 /**
- * Your Dinosaur: a palaeontology plate. A skeleton (one of eight traced
- * public-domain plates, data/art/dinosaurs: four of O. C. Marsh's, The
- * Dinosaurs of North America, 1896, and four from the monographs that first
- * restored the animals he didn't), a scientific name made from the child's
+ * Your Dinosaur: a palaeontology plate. A skeleton (one of eight, drawn in
+ * code as a monograph's restoration, lib/custom/draw/dinosaurs), a
+ * scientific name made from the child's
  * name (an ending of the visitor's choosing, never an existing genus
  * exactly), the facts (discovered, height, diet) and a scale bar in the
  * child's own height. Drawn by lib/custom/templates/dinosaur.
@@ -19,16 +18,16 @@ export type Ending = (typeof ENDINGS)[number];
 export const SPECIES = { rex: "king", magnus: "large", velox: "swift", minimus: "smallest", horridus: "bristling", dormiens: "asleep", gloriosus: "glorious", esuriens: "hungry" } as const;
 export type Species = keyof typeof SPECIES;
 
-/** Each plate: what the print calls it, the ending it suggests, and whose restoration it is. */
-export const PLATE_INFO: Record<Plate, { name: string; ending: Ending; after: string }> = {
-  tyrannosaurus: { name: "Tyrannosaurus", ending: "raptor", after: "After H. F. Osborn, 1916" },
-  triceratops: { name: "Triceratops", ending: "ceratops", after: "After O. C. Marsh, 1896" },
-  stegosaurus: { name: "Stegosaurus", ending: "saurus", after: "After O. C. Marsh, 1896" },
-  brontosaurus: { name: "Brontosaurus", ending: "saurus", after: "After O. C. Marsh, 1896" },
-  allosaurus: { name: "Allosaurus", ending: "raptor", after: "After C. W. Gilmore, 1920" },
-  diplodocus: { name: "Diplodocus", ending: "saurus", after: "After J. B. Hatcher, 1901" },
-  iguanodon: { name: "Iguanodon", ending: "don", after: "After O. C. Marsh, 1896" },
-  pteranodon: { name: "Pteranodon", ending: "don", after: "After G. F. Eaton, 1910" },
+/** Each plate: what the print calls it, the ending it suggests, when it lived, and the caption's remark on it. */
+export const PLATE_INFO: Record<Plate, { name: string; ending: Ending; period: string; note: string }> = {
+  tyrannosaurus: { name: "Tyrannosaurus", ending: "raptor", period: "Late Cretaceous", note: "Arms as found" },
+  triceratops: { name: "Triceratops", ending: "ceratops", period: "Late Cretaceous", note: "Three horns, one frill" },
+  stegosaurus: { name: "Stegosaurus", ending: "saurus", period: "Late Jurassic", note: "Plates in two rows" },
+  brontosaurus: { name: "Brontosaurus", ending: "saurus", period: "Late Jurassic", note: "A genus again since 2015" },
+  allosaurus: { name: "Allosaurus", ending: "raptor", period: "Late Jurassic", note: "Horns over the eyes" },
+  diplodocus: { name: "Diplodocus", ending: "saurus", period: "Late Jurassic", note: "Mostly neck and tail" },
+  iguanodon: { name: "Iguanodon", ending: "don", period: "Early Cretaceous", note: "The spike is a thumb" },
+  pteranodon: { name: "Pteranodon", ending: "don", period: "Late Cretaceous", note: "Not strictly a dinosaur" },
 };
 
 export interface Params {

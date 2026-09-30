@@ -52,7 +52,9 @@ function board(p: Params, airports?: Airports): string {
   let s = rect(18, 34, 264, 282, 1.4) + rect(22, 38, 256, 274, 0.5);
   s += emblem("plane", 44, 62, 24, 6) + text(62, 70, "DEPARTURES", 22, { family: COND, bold: true, anchor: "start", spacing: 2 });
   const who = p.n ? p.n.toUpperCase() : "";
-  if (who) s += text(266, 70, who, Math.min(10, (10 * 90) / textWidth(who, 10, { family: COND })), { family: COND, anchor: "end", spacing: 1 });
+  // The name at the right, in what DEPARTURES leaves (never over it).
+  const room = 266 - (62 + textWidth("DEPARTURES", 22, { family: COND, bold: true }) + 2 * 9) - 8;
+  if (who) s += text(266, 70, who, Math.min(10, (10 * room) / (textWidth(who, 10, { family: COND }) + who.length)), { family: COND, anchor: "end", spacing: 1 });
   // The columns: destination, code, year, status; a cell each.
   const pitch = 8.9, cols = [11, 3, 4, 8], gap = 0.7;
   const x0 = 150 - (pitch * (cols.reduce((a, b) => a + b, 0) + gap * 3)) / 2;
@@ -89,7 +91,18 @@ function pass(p: Params, airports?: Airports): string {
   s += text(34, Y0 + 72, p.f!, 33, { bold: true, anchor: "start" }) + text(STUB - 14, Y0 + 72, p.t!, 33, { bold: true, anchor: "end" });
   s += emblem("plane", (34 + STUB - 14) / 2, Y0 + 60, 20, 6);
   const ca = cityOf(a), cb = cityOf(b);
-  s += text(34, Y0 + 86, ca.slice(0, 14), 7, { anchor: "start", spacing: 0.4 }) + text(STUB - 14, Y0 + 86, cb.slice(0, 14), 7, { anchor: "end", spacing: 0.4 });
+  // Each city in its half of the line: smaller when long, and cut with an ellipsis only when even that won't do.
+  const half = (STUB - 14 - 34) / 2 - 4;
+  const fit = (c: string): [string, number] => {
+    const w = (t: string, size: number) => textWidth(t, size) + t.length * 0.4;
+    if (w(c, 7) <= half) return [c, 7];
+    const size = Math.max(5, (7 * half) / w(c, 7));
+    let t = c;
+    while (t.length > 1 && w(t, size) > half) t = `${t.slice(0, -2).trimEnd()}…`;
+    return [t, size];
+  };
+  const [[ta, sa], [tb, sb]] = [fit(ca), fit(cb)];
+  s += text(34, Y0 + 86, ta, sa, { anchor: "start", spacing: 0.4 }) + text(STUB - 14, Y0 + 86, tb, sb, { anchor: "end", spacing: 0.4 });
   // The fields.
   const d8 = p.d ? parseDate(p.d) : null;
   const date = d8 ? `${String(d8[2]).padStart(2, "0")} ${shortMonth(d8[1])} ${d8[0]}` : "TBC";

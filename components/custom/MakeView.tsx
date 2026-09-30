@@ -345,11 +345,23 @@ function Maker({ made }: { made: MadeProduct }) {
     const now = ready ? current : draw(state.spec, color);
     if (!now?.check?.ok) return;
     if (!size) return needSize();
+    // Both chosen before the other tee's quiet check came in (a heavy print): checked now, never a single tee added
+    // under a button that said the pair. If the other tee can't print, nothing is added and the choice goes back to one tee.
+    let pairNow = pairOk;
+    if (both && !pairOk && current?.other !== false) {
+      try {
+        const c = otherColor(color);
+        pairNow = checkPrint(inkFromCanvas(renderer(state.spec, c, state.data ?? {}), c), made.hints).ok;
+      } catch {
+        pairNow = false;
+      }
+      if (!pairNow) return setBoth(false);
+    }
     if (editing) {
       // Saving an edit replaces its line (its quantity kept), then back to the bag.
       useCartStore.getState().changeCartItem(editing, { custom: state.spec, color, size });
       // Both tees chosen: the other colour joins it, as the pair.
-      if (both && pairOk) addPair(made.id, size, { source: "product", custom: state.spec, silent: true });
+      if (both && pairNow) addPair(made.id, size, { source: "product", custom: state.spec, silent: true });
       track("customize_apply", { template: made.template, caption_edited: capEdited });
       return router.push("/cart/");
     }
@@ -358,7 +370,7 @@ function Maker({ made }: { made: MadeProduct }) {
     if (batch && !batch.every((b) => draw(b, color)?.check?.ok)) return;
     const ok = batch
       ? batch.map((b) => addToCart(made.id, size, color, 1, { source: "product", custom: b })).every(Boolean)
-      : both && pairOk
+      : both && pairNow
         ? addPair(made.id, size, { source: "product", custom: state.spec })
         : addToCart(made.id, size, color, 1, { source: "product", custom: state.spec });
     if (!ok) return;

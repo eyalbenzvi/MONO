@@ -1,8 +1,7 @@
 /**
  * Your Landmarks: a page of a travel journal. Three to nine landmarks, each
- * a drawing (data/art/landmarks: public-domain or CC0 pictures from
- * Wikimedia Commons, traced or screened at build time) in a small taped-in
- * frame with its name and the year you were there, and the name and the
+ * a line drawing (lib/custom/draw/landmarks) in a small taped-in frame with
+ * its name and the year you were there, and the name and the
  * years under the page ("NOA · 2009–2026"). Drawn by
  * lib/custom/templates/landmarks.
  */

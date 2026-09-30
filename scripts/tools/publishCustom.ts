@@ -9,7 +9,7 @@
  * data/custom.manifest.json, which the app imports to know those names.
  */
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(__dirname, "../..");
@@ -32,32 +32,14 @@ export function publishedCustom() {
   };
 }
 
-/** The licences a picture may be published under (scripts/sources/_license.ts). */
-const FREE = new Set(["PD", "PDM", "CC0", "US-Gov"]);
-/** Each traced picture (data/art/<set>/<id>.json) its record lists as made and freely licensed, keyed "<set>/<id>". */
-export function publishedArt(): Record<string, { json: string; file: string }> {
-  const dir = path.join(ROOT, "data", "art");
-  const out: Record<string, { json: string; file: string }> = {};
-  if (!existsSync(dir)) return out;
-  for (const set of readdirSync(dir).filter((f) => !f.includes(".")).sort()) {
-    // Only what the set's record lists as made under a free licence (a file left from an earlier run, or refused since, stays out).
-    const rows = existsSync(path.join(dir, `${set}.json`)) ? (read("data", "art", `${set}.json`) as { id: string; license?: string; error?: string }[]) : [];
-    const ok = new Set(rows.filter((r) => !r.error && FREE.has(r.license ?? "")).map((r) => r.id));
-    for (const f of readdirSync(path.join(dir, set)).filter((f) => f.endsWith(".json") && ok.has(f.slice(0, -5))).sort()) out[`${set}/${f.slice(0, -5)}`] = named(`art-${set}-${f.slice(0, -5)}`, JSON.stringify(read("data", "art", set, f)));
-  }
-  return out;
-}
-
 if (require.main === module) {
   const out = publishedCustom();
-  const art = publishedArt();
   mkdirSync(DIR, { recursive: true });
-  const all = [...Object.values(out), ...Object.values(art)];
+  const all = Object.values(out);
   const files = new Set(all.map((o) => o.file));
   for (const f of readdirSync(DIR)) if (/^(cities|sky|countries|airports|art-[a-z]+-[a-z0-9-]+)\.[0-9a-f]+\.json$/.test(f) && !files.has(f)) rmSync(path.join(DIR, f));
   for (const { json, file } of all) writeFileSync(path.join(DIR, file), json);
-  const manifest = { ...Object.fromEntries(Object.entries(out).map(([k, o]) => [k, o.file])), art: Object.fromEntries(Object.entries(art).map(([k, o]) => [k, o.file])) };
+  const manifest = Object.fromEntries(Object.entries(out).map(([k, o]) => [k, o.file]));
   writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
-  const artKb = Object.values(art).reduce((t, o) => t + o.json.length, 0) / 1024;
-  console.log(`custom → ${Object.values(out).map((o) => `public/data/${o.file} (${(o.json.length / 1024).toFixed(0)} KB)`).join(", ")}, ${Object.keys(art).length} pictures (${artKb.toFixed(0)} KB)`);
+  console.log(`custom → ${Object.values(out).map((o) => `public/data/${o.file} (${(o.json.length / 1024).toFixed(0)} KB)`).join(", ")}`);
 }

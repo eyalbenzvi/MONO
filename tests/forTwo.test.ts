@@ -1,20 +1,15 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import cities from "../data/cities/cities.json";
 import { decodeCities, type CitiesFile } from "@/lib/custom/data";
 import { TWO_EXAMPLE, forTwo, initialOf, readTwo, writeTwo, type TwoInputs } from "@/lib/custom/forTwo";
 import { madeBySlug } from "@/lib/custom/products";
 import { decodeMake, encodeMake, validate, type CustomSpec } from "@/lib/custom/spec";
-import { loadRenderer, prepareData } from "@/lib/custom/renderers";
+import { drawSpec } from "./make/render";
 import { gate } from "./make/fuzz";
 
 const places = decodeCities(cities as unknown as CitiesFile);
 const TLV = places.byId(293397)!;
 const SYDNEY = places.list.find((c) => c.name === "Sydney" && c.country.startsWith("Austral"))!;
-const ROOT = path.resolve(__dirname, "..");
-const readJson = (f: string) => JSON.parse(readFileSync(path.join(ROOT, f), "utf8"));
-const SKY = { stars: readJson("data/sky/stars.json"), lines: (readJson("data/sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
 const TODAY = "2026-09-29";
 const slugs = (i: TwoInputs, today = TODAY) => forTwo(i, today).map((c) => c.slug);
 const LONDON = places.list.find((c) => c.name === "London" && c.country.startsWith("United Kingdom"))!;
@@ -118,13 +113,8 @@ describe("For two: the address", () => {
 });
 
 describe("For two: the prints pass the gate", () => {
-  const draw = async (spec: CustomSpec, color: "black" | "white") => {
-    const data: Record<string, unknown> = { sky: SKY, places: places.list };
-    if (spec.t === "sky" || spec.t === "place") data.city = places.byId(spec.p.c!);
-    // What a template loads for itself, read from disk here (the signpost's places are the list above).
-    if (spec.t !== "signpost") Object.assign(data, await prepareData(spec));
-    return (await loadRenderer(spec.t))(spec, color, data as never);
-  };
+  // Every template's data read from disk (the sky, the places, the countries, a spec's city), as the Make tests draw.
+  const draw = (spec: CustomSpec, color: "black" | "white") => drawSpec(spec, color);
   it("the example, and a southern winter's date with long names, in both colours", async () => {
     const cases: TwoInputs[] = [{ ...full, home: LONDON }, { d: "1994-07-03", w: "Our wedding", a: "Élodie", b: "Matthias", place: SYDNEY, home: TLV }];
     for (const i of cases)

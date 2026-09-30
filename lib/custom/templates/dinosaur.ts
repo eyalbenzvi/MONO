@@ -1,17 +1,15 @@
 /**
  * Your Dinosaur: a plate in a palaeontology monograph. A double rule round
- * the page, FIG. 1 and the plate's number, the skeleton (data/art/dinosaurs,
- * traced; drawn as one even-odd path), a scale bar in the child's own height
- * (or one child, when the height isn't given), the new name set large in the
- * serif with "n. gen., n. sp." under it, and the caption: the child, the
- * facts, whose restoration the skeleton is.
+ * the page, FIG. 1 and the plate's number, the skeleton (drawn in code,
+ * lib/custom/draw/dinosaurs, standing on the box's floor), a scale bar in the
+ * child's own height (or one child, when the height isn't given), the new
+ * name set large in the serif with "n. gen., n. sp." under it, and the
+ * caption: the child, the facts, when the animal lived and a remark on it.
  */
 import { caption, captionLines, line, rect, text, textWidth, type Lines } from "../kit";
-import { artFit, artSvg } from "../art";
-import { loadArt } from "../data";
+import { dinosaur } from "../draw/dinosaurs";
 import { PLATES, PLATE_INFO, scientificName, type Params } from "../specs/dinosaur";
 import type { CustomSpec } from "../spec";
-import type { RenderData } from "../renderers";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
@@ -20,17 +18,16 @@ const SERIF = "serif" as const;
 const BOX = { x: 30, y: 58, w: 240, h: 168 };
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 
-export const artKey = (p: Pick<Params, "k">) => `dinosaurs/${p.k}`;
-
 /** The facts line: discovered, height, diet (each only when given). */
 export function factsOf(p: Params): string {
   const parts = [p.y ? `Discovered ${p.y}` : "", p.h ? `Height ${p.h} cm` : "", p.d ? `Diet: ${p.d}` : ""].filter(Boolean);
   return parts.length ? parts.join(" · ") : "Discovered recently";
 }
 
-/** The caption's lines (ours): the child, the facts, whose restoration. */
+/** The caption's lines (ours): the child, the facts, when the animal lived and a remark on it. */
 export function dinosaurCaption(p: Params): Lines {
-  return [p.n, factsOf(p), PLATE_INFO[p.k].after];
+  const info = PLATE_INFO[p.k];
+  return [p.n, factsOf(p), `${info.period}. ${info.note}`];
 }
 
 /**
@@ -59,18 +56,12 @@ function scaleBar(p: Params, drawnHeight: number, y: number): string {
   return s;
 }
 
-export function dinosaurBody(p: Params, data: RenderData = {}): string {
+export function dinosaurBody(p: Params): string {
   let s = rect(16, 20, 268, 298, 1.4) + rect(20, 24, 260, 290, 0.5);
   s += text(30, 40, "FIG. 1", 7, { family: SERIF, anchor: "start", spacing: 1.2 }) + text(270, 40, `PL. ${ROMAN[PLATES.indexOf(p.k)]}`, 7, { family: SERIF, anchor: "end", spacing: 1.2 });
   s += line(30, 46, 270, 46, 0.5);
-  const art = data.art?.[artKey(p)];
-  let drawnHeight = BOX.h * 0.6;
-  if (art) {
-    const fit = artFit(art, BOX.x, BOX.y, BOX.w, BOX.h, "bottom");
-    drawnHeight = fit.h;
-    s += artSvg(art, BOX.x, BOX.y, BOX.w, BOX.h, "bottom");
-  }
-  s += scaleBar(p, drawnHeight, 240);
+  const skeleton = dinosaur(p.k, BOX.x, BOX.y, BOX.w, BOX.h);
+  s += skeleton.svg + scaleBar(p, skeleton.h, 240);
   // The name, as large as fits the page, and what it is.
   const name = scientificName(p);
   const size = Math.min(22, 236 / textWidth(name, 1, { family: SERIF }));
@@ -81,10 +72,4 @@ export function dinosaurBody(p: Params, data: RenderData = {}): string {
 
 export const captionOf = (spec: CustomSpec) => dinosaurCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(dinosaurBody((spec as { p: Params }).p, data), color);
-
-/** The skeleton's plate, for the index cards and the bag (the editor passes its own). */
-export async function prepare(spec: CustomSpec): Promise<RenderData> {
-  const key = artKey((spec as { p: Params }).p);
-  return { art: { [key]: await loadArt(key) } };
-}
+export const render = (spec: CustomSpec, color: BaseColor) => wrap(dinosaurBody((spec as { p: Params }).p), color);

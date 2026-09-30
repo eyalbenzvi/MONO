@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CityField } from "@/components/custom/CityField";
-import { loadCities, type Places } from "@/lib/custom/data";
+import { loadCities, loadCountries, type Countries, type Places } from "@/lib/custom/data";
 import { FIRST_YEAR, LAST_YEAR, coords, parseDate, type City, type CustomSpec } from "@/lib/custom/spec";
 import { autoCity } from "./DateEditor";
 import { Field } from "./Field";
@@ -28,10 +28,15 @@ function parseCoord(raw: string, max: number, pos: string, neg: string): number 
 export default function PlaceEditor({ arrival, onChange }: EditorProps) {
   const a = arrival?.t === "place" ? arrival.p : null;
   const [places, setPlaces] = useState<Places | null>(null);
+  // The land (the countries' outlines): the globe draws without it until it comes.
+  const [countries, setCountries] = useState<Countries | null>(null);
   useEffect(() => {
     let live = true;
     loadCities()
       .then((p) => live && setPlaces(p))
+      .catch(() => {});
+    loadCountries()
+      .then((c) => live && setCountries(c))
       .catch(() => {});
     return () => {
       live = false;
@@ -59,8 +64,8 @@ export default function PlaceEditor({ arrival, onChange }: EditorProps) {
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list } });
-  }, [key, places]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list, countries: countries ?? undefined } });
+  }, [key, places, countries]);
 
   const locate = () => {
     if (!navigator.geolocation) return setLocating("off");

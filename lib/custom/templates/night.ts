@@ -24,11 +24,12 @@ export function phaseName(k: number, waxing: boolean): string {
 }
 
 const CX = 150, CY = 150, R = 104;
+const RADIUS = R;
 /** The dot screen: spacing and dot radius (a quarter of the lit area in ink). */
 const STEP = 4.6, DOT = 1.25, DUST = 0.85;
 
 /** The phase, and whether a point (relative to the centre, y down) is on the lit part. */
-export function litTest(k: number, waxing: boolean, south: boolean) {
+export function litTest(k: number, waxing: boolean, south: boolean, R = RADIUS) {
   const rx = Math.abs(1 - 2 * k) * R;
   // Lit on the right when waxing seen from the north; mirrored otherwise.
   const right = waxing !== south;
@@ -39,6 +40,22 @@ export function litTest(k: number, waxing: boolean, south: boolean) {
     // A crescent is lit beyond the terminator; a gibbous moon from the terminator on the far side.
     return k < 0.5 ? sx > t : sx > -t;
   };
+}
+
+/**
+ * A small moon in the same screen (Your Birth's "the moon that night"): full dots on the lit part and fine ones
+ * on the dark, inside its outline, so it reads the same on either tee and is never a disc of solid ink.
+ */
+export function screenedMoon(cx: number, cy: number, r: number, k: number, waxing: boolean, south = false): string {
+  const lit = litTest(k, waxing, south, r);
+  const step = r / 5.2;
+  let s = circle(cx, cy, r, 0.8);
+  for (let row = 0, y = -r; y <= r; row++, y += step * 0.866)
+    for (let x = -r + (row % 2 ? step / 2 : 0); x <= r; x += step) {
+      if (x * x + y * y > (r - step * 0.6) ** 2) continue;
+      s += dot(cx + x, cy + y, lit(x, y) ? step * 0.3 : step * 0.13);
+    }
+  return s;
 }
 
 export function nightBody({ jd, south = false, caption: c }: NightInput): string {
