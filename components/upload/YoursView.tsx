@@ -8,12 +8,12 @@ import { Icon } from "@/components/Icon";
 import { SizeSelector } from "@/components/ui";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { track } from "@/lib/analytics";
-import { getShirtById, productHref } from "@/lib/catalog";
+import { getShirtById } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { YOURS_ID } from "@/lib/upload/keys";
 import { WONT_PRINT } from "@/lib/upload/review";
-import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source } from "@/lib/upload/client";
+import type { Fix, Preview, PreviewFail, PreviewOk, Settings, Source, Tee } from "@/lib/upload/client";
 import { sizeFor, useCartStore } from "@/store/cartStore";
 import { FORCE_KEY, useMakeStore } from "@/store/makeStore";
 import { scrollIntoViewQuietly, useHydrated } from "@/store/useUiStore";
@@ -72,6 +72,8 @@ function Yours() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [last, setLast] = useState<PreviewOk | null>(null);
   const [busy, setBusy] = useState(false);
+  // The files known to be photographs (a Style to choose), kept by source: a failed print still offers its styles.
+  const photos = useRef(new Set<string>());
   const [fixes, setFixes] = useState<{ fix: Fix; settings: Settings; preview: PreviewOk }[] | null>(null);
   const [choice, setChoice] = useState<Choice>("white");
   const [title, setTitle] = useState("");
@@ -253,6 +255,7 @@ function Yours() {
       const first = firstSeen.current !== source.id;
       firstSeen.current = source.id;
       if (first) setAutoNote(null);
+      if (p.cls === "photo") photos.current.add(source.id);
       setPreview(p);
       setBusy(false);
       if (p.ok) {
@@ -265,7 +268,7 @@ function Yours() {
       }
       setStatus(p.reason);
       track("upload_refused", { reason: p.code });
-      const found = p.duplicateOf ? [] : await c.passingFixes(source, settings, p);
+      const found = await c.passingFixes(source, settings, p);
       if (n !== run.current) return;
       if (first && found[0]) {
         // As a file too small for Full goes to Small: the first fix that passes, applied, in one quiet line.
@@ -311,6 +314,8 @@ function Yours() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [source, settings?.crop, settings?.rot, settings?.flip, settings?.light, settings?.contrast, tee],
   );
+  // The tee the stage wears is the one its print is for (a print for the black tee drawn on the white one reads as a box of ink).
+  const stageTee: Tee = busy ? (last ? (last.tees.includes(tee) ? tee : last.tee) : tee) : ok ? (ok.tees.includes(tee) ? tee : ok.tee) : (failed?.tee ?? tee);
   const stageState: StageState = useMemo(() => {
     if (!source) return { kind: "empty" };
     if (busy) return { kind: "converting", canvas: last?.canvas(last.tees.includes(tee) ? tee : last.tee) ?? fade };
@@ -390,9 +395,7 @@ function Yours() {
       ? ok && !busy
         ? { label: `Next · ${formatPrice(price)}`, onClick: toSize }
         : failed && !busy
-          ? failed.duplicateOf
-            ? { label: "See it in the shop", href: productHref(failed.duplicateOf) }
-            : fixes === null
+          ? fixes === null
               ? { label: "Finding a fix…", disabled: true }
               : firstFix
                 ? { label: firstFix.fix.label, onClick: () => applyFix(firstFix) }
@@ -454,7 +457,7 @@ function Yours() {
         )}
         <div className="grid gap-6 md:grid-cols-2 md:gap-10">
           <div className="min-w-0 md:sticky md:top-4 md:self-start">
-            <Stage shirt={shirt} tee={tee} state={stageState} source={source} pill={pill} label={title || "Your print"} onPick={pickFile} drag={drag} opening={opening} />
+            <Stage shirt={shirt} tee={stageTee} state={stageState} source={source} pill={pill} label={title || "Your print"} onPick={pickFile} drag={drag} opening={opening} />
             <p aria-live="polite" className="sr-only" data-upload-status>
               {status}
             </p>
@@ -476,6 +479,7 @@ function Yours() {
                 failed={failed}
                 busy={busy}
                 fixes={fixes}
+                photo={!!source && (photos.current.has(source.id) || settings.mode !== "dots")}
                 choice={choice}
                 setChoice={setChoice}
                 patch={patch}
@@ -556,6 +560,7 @@ function PrintStep({
   failed,
   busy,
   fixes,
+  photo,
   choice,
   setChoice,
   patch,
@@ -572,6 +577,7 @@ function PrintStep({
   failed: PreviewFail | null;
   busy: boolean;
   fixes: { fix: Fix; settings: Settings; preview: PreviewOk }[] | null;
+  photo: boolean;
   choice: Choice;
   setChoice: (c: Choice) => void;
   patch: (p: Partial<Settings>) => void;
@@ -608,14 +614,19 @@ function PrintStep({
           </p>
         )
       )}
-      {source && (ok ?? null) && <ChoiceThumbs source={source} settings={settings} preview={ok!} choice={choice} onSettings={patch} onChoice={setChoice} />}
+      {source && preview && <ChoiceThumbs source={source} settings={settings} preview={preview} photo={photo} choice={choice} onSettings={patch} onChoice={setChoice} />}
       {failed && !busy && (
         <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10" data-fix-card>
           <p className="text-sm font-semibold text-white" data-upload-line>
             {failed.reason}
           </p>
           {meaning[failed.code] && <p className="mt-1 text-sm text-neutral-400">{meaning[failed.code]}</p>}
-          {fixes === null && !failed.duplicateOf && <p className="mt-3 text-xs text-neutral-400">Finding a fix…</p>}
+          {fixes === null && <p className="mt-3 text-xs text-neutral-400">Finding a fix…</p>}
+          {fixes?.length === 0 && !cropFix && (
+            <p className="mt-1 text-sm text-neutral-400" data-no-fix>
+              {source?.kind === "file" && failed.code !== "blank" ? "Try a different crop in Edit photo, or another picture." : "Try another picture."}
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             {(fixes ?? []).slice(1).map((f) => (
               <button key={f.fix.id} type="button" onClick={() => onFix(f)} className="h-11 rounded-full px-4 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10" data-fix={f.fix.id}>

@@ -340,3 +340,24 @@ test("A product page leads to the rest of its group on the index (More from a na
   await page.getByRole("link", { name: "Make", exact: true }).first().tap();
   await expect(page).toHaveURL(/\/make\/(#name)?$/);
 });
+
+test("Back on the index from a product (the header's Make tab or Back): the list where it was left, not the top", async ({ page }) => {
+  await page.goto("make/");
+  await hydrated(page);
+  const card = page.locator('[data-made="code"]');
+  await card.scrollIntoViewIfNeeded();
+  const scroller = page.locator("[data-make-index]");
+  await scroller.evaluate((el) => (el.scrollTop += 300));
+  const top = await scroller.evaluate((el) => el.scrollTop);
+  expect(top).toBeGreaterThan(200);
+  await card.tap();
+  await expect(page).toHaveURL(/\/make\/code\/$/);
+  await page.getByRole("link", { name: "Make", exact: true }).first().tap();
+  await expect(page).toHaveURL(/\/make\/$/);
+  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(top - 40);
+  await page.locator('[data-made="code"]').tap();
+  await expect(page).toHaveURL(/\/make\/code\/$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/make\/$/);
+  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(top - 40);
+});

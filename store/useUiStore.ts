@@ -129,6 +129,8 @@ export const SHOP_PAGE_SIZE = 24;
  * it's only read to restore the position when coming back to the grid.
  */
 export const shopScroll = { top: 0 };
+/** Make, from ours, the same way: where the list was, and the card opened from it by keyboard (its link gets the focus back). */
+export const makeScroll: { top: number; focus: string | null } = { top: 0, focus: null };
 
 export const useUiStore = create<UiState>()((set) => ({
   hydrated: false,

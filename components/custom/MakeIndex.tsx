@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CustomMockup } from "@/components/custom/CustomMockup";
 import { MakeHeader } from "@/components/custom/MakeHeader";
 import { MakeFilter } from "@/components/custom/MakeFilter";
@@ -14,6 +14,7 @@ import { GROUP_COUNTS as COUNTS, MADE, MAKE_GROUPS, groupsFrom, madeBySlug, type
 import type { CustomSpec } from "@/lib/custom/spec";
 import { updateQuery } from "@/lib/url";
 import { SIZES } from "@/lib/images";
+import { makeScroll } from "@/store/useUiStore";
 
 /** Your Taste's card, drawn from the visitor's own taste once it's known (its store loads apart from this page). */
 const TasteCard = lazy(() => import("@/components/custom/TasteCard"));
@@ -31,17 +32,33 @@ const cardName = (name: string) => name.replace(/^Your /, "");
 const MONOGRAM = madeBySlug("monogram") as MadeProduct;
 export function MakeIndex() {
   // The filter: every group until some are chosen; kept in the address (replaced, so Back leaves Make).
-  const [groups, setGroups] = useState<MakeGroup[]>([]);
+  const [groups, setGroups] = useState<MakeGroup[] | null>(null);
   useEffect(() => setGroups(groupsFrom(window.location.search)), []);
   const choose = (next: MakeGroup[]) => {
     setGroups(next);
+    makeScroll.top = 0;
     updateQuery((q) => (next.length ? q.set("g", next.join(".")) : q.delete("g")));
   };
+  // Coming back (Back, the header's Make tab, a product's own link): the list where it was left, once its filter is read.
+  const scroller = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!groups || !el) return;
+    // A group asked for by name (More from a name → /make/#name) goes to that group instead.
+    if (window.location.hash) return void (makeScroll.focus = null);
+    el.scrollTop = makeScroll.top;
+    const slug = makeScroll.focus;
+    makeScroll.focus = null;
+    if (slug) el.querySelector<HTMLElement>(`[data-made="${slug}"], [data-for-two][href*="${slug}"]`)?.focus({ preventScroll: true });
+    // Only on arrival: the filter changing starts from the top (choose).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groups === null]);
+  const shown = groups ?? [];
   return (
-    <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
+    <div ref={scroller} data-make-index onScroll={(e) => groups && (makeScroll.top = e.currentTarget.scrollTop)} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-4 2xl:max-w-6xl">
-        <MakeHeader track="ours" filter={<MakeFilter groups={groups} counts={COUNTS} onChange={choose} />} />
-        {MAKE_GROUPS.filter((g) => COUNTS[g.id] > 0 && (!groups.length || groups.includes(g.id))).map((g) => (
+        <MakeHeader track="ours" filter={<MakeFilter groups={shown} counts={COUNTS} onChange={choose} />} />
+        {MAKE_GROUPS.filter((g) => COUNTS[g.id] > 0 && (!shown.length || shown.includes(g.id))).map((g) => (
           <section key={g.id} id={g.id} className="mt-10 scroll-mt-24" aria-labelledby={`make-${g.id}`}>
             <h2 id={`make-${g.id}`} className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
               {g.label}
@@ -137,7 +154,11 @@ export function MakeCard({
         <Link
           href={href}
           {...(rest["data-for-two"] ? { "data-for-two": true } : { "data-made": made.slug })}
-          onClick={() => markFrom("index")}
+          onClick={(e) => {
+            markFrom("index");
+            // A click with no pointer (Enter on the link) is the keyboard: its focus comes back to this card.
+            makeScroll.focus = e.detail === 0 ? (rest["data-for-two"] ? "two" : made.slug) : null;
+          }}
           className="block truncate rounded-2xl text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-black"
         >
           {cardName(name)}

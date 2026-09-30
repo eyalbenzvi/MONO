@@ -229,7 +229,7 @@ function inkBox(ink: Uint8Array, w: number, h: number) {
  * the skeleton's widths (widths); the reversed gap: the same over the
  * ground between the ink, inside the ink's box.
  */
-export function measure(ink: Uint8Array, w: number, h: number, tee: Tee, opts: { screened?: boolean; size?: PrintSize } = {}): Measures {
+export function measure(ink: Uint8Array, w: number, h: number, tee: Tee, opts: { screened?: boolean; size?: PrintSize; shapes?: Uint8Array } = {}): Measures {
   void tee; // the ink is the same shapes on either tee; the tee only moves the thresholds (tier)
   const screened = !!opts.screened;
   const raster = checkRaster(ink, w, h);
@@ -239,15 +239,17 @@ export function measure(ink: Uint8Array, w: number, h: number, tee: Tee, opts: {
   for (let i = 0; i < ink.length; i++) (full[i] = ink[i]), (count += ink[i]);
   const solid = solidBlock({ w, h, ink: full }).reject;
   let [minStrokeMm, minGapMm, strokes] = [null as number | null, null as number | null, null as Measures["strokes"]];
-  const box = inkBox(ink, w, h);
+  // Strokes and gaps: of the shapes as drawn (line work whose solid areas print as a mesh: the mesh's holes aren't gaps).
+  const shapes = opts.shapes ?? ink;
+  const box = inkBox(shapes, w, h);
   if (!screened && box) {
-    const sw = widths(ink, w, h, box);
+    const sw = widths(shapes, w, h, box);
     if (sw.length) {
       strokes = { p5: quantile(sw, 0.05) * MM_PER_PX, p50: quantile(sw, 0.5) * MM_PER_PX, p95: quantile(sw, 0.95) * MM_PER_PX };
       minStrokeMm = strokes.p5;
     }
     const ground = new Uint8Array(ink.length);
-    for (let i = 0; i < ink.length; i++) ground[i] = 1 - ink[i];
+    for (let i = 0; i < ink.length; i++) ground[i] = 1 - shapes[i];
     const gw = widths(ground, w, h, box, true);
     if (gw.length) minGapMm = quantile(gw, 0.05) * MM_PER_PX;
   }
@@ -267,8 +269,13 @@ export const BAR = {
   /** The thinnest line, mm: black ink on a white tee, white ink on a black tee (white ink spreads less, so it needs more). */
   stroke: { white: [0.4, 0.6], black: [0.5, 0.7] },
   gap: [0.6, 0.8],
-  /** dHash near-duplicate of a catalogue design: Hamming distance at most this. */
-  duplicate: 6,
+  /**
+   * dHash near a catalogue design: at most this Hamming distance, the print
+   * passes a person first (near), who can refuse a copy. Never refused on the
+   * hash alone: a sparse or wide print (a photograph's lines, a line of text,
+   * a panorama padded to 3:4) hashes within 0–4 of designs it's nothing like.
+   */
+  nearDuplicate: 6,
 } as const;
 /** Within this share of a threshold it passed, a check is near (the simulated review's "person" stage). */
 export const NEAR = 0.1;
@@ -288,16 +295,16 @@ export function tier(m: Measures, tee: Tee, dupDistance?: number): { tier: Tier;
   let near = m.quality < BAR.quality[0] * (1 + NEAR) || m.coverage < lo * (1 + NEAR) || m.coverage > hi * (1 - NEAR) || m.detail < BAR.detail[0] * (1 + NEAR);
   if (judged && m.minStrokeMm !== null) near ||= m.minStrokeMm < minStroke * (1 + NEAR);
   if (judged && m.minGapMm !== null) near ||= m.minGapMm < BAR.gap[0] * (1 + NEAR);
-  if (dupDistance !== undefined) near ||= dupDistance <= BAR.duplicate * (1 + NEAR);
+  if (dupDistance !== undefined) near ||= dupDistance <= BAR.nearDuplicate;
   const refuse = (reason: string) => ({ tier: "refuse" as const, reason, near });
-  if (dupDistance !== undefined && dupDistance <= BAR.duplicate) return refuse(REASONS.duplicate);
   if (m.solid) return refuse(m.screened ? REASONS.solidDots : REASONS.solid);
   if (m.coverage < lo) return refuse(REASONS.faint);
   if (m.coverage > hi) return refuse(m.screened ? REASONS.denseDots : REASONS.dense);
   if (m.detail < BAR.detail[0]) return refuse(REASONS.plain);
   if (m.quality < BAR.quality[0]) return refuse(REASONS.weak);
-  if (judged && m.minStrokeMm !== null && m.minStrokeMm < minStroke) return refuse(strokeReason(minStroke, m.size));
-  if (judged && m.minGapMm !== null && m.minGapMm < BAR.gap[0]) return refuse(gapReason(BAR.gap[0], m.size));
+  if (judged && m.minStrokeMm !== null && m.minStrokeMm < minStroke) return refuse(strokeReason(minStroke));
+  if (judged && m.minGapMm !== null && m.minGapMm < BAR.gap[0]) return refuse(gapReason(BAR.gap[0]));
+  // A copy of a catalogue design: judged only on a print that would otherwise print (an empty or faint picture matches anything sparse).
   const [clo, chi] = BAR.coverage.catalogue;
   const catalogue =
     m.quality >= BAR.quality[1] &&

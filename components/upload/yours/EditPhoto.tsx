@@ -29,7 +29,7 @@ const PREVIEW_LONG = 720;
  * "Stronger"), shown on the picture in grey as it will print in one ink.
  * Save applies it all at once; closing (×, Escape, outside) keeps what was
  * there. The crop can't go below what prints at Small (the short side's
- * 800 px); under Full's 1,100 it says so. Drag inside the frame to move it,
+ * 600 px); under Full's 900 it says so. Drag inside the frame to move it,
  * a corner to resize; by keyboard, arrows move (Shift: further), Alt+arrows
  * resize, R turns. Save stays in view whatever the phone's height: the
  * picture takes what's left.
@@ -114,7 +114,14 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
     const [cx, cy] = [around.x + around.w / 2, around.y + around.h / 2];
     return { w, h, x: clamp(cx - w / 2, 0, 1 - w), y: clamp(cy - h / 2, 0, 1 - h) };
   };
+  /** Whether a shape's largest crop is big enough to print (a small picture can't be cut to every shape). */
+  const fits = (r: number | null) => {
+    if (!r) return true;
+    const c = largest(r);
+    return Math.min(c.w * tw, c.h * th) + 0.5 >= MIN_SHORT.small;
+  };
   const chooseAspect = (id: string) => {
+    if (!fits(ASPECTS.find((a) => a.id === id)?.r ?? null)) return;
     setAspect(id);
     const r = ASPECTS.find((a) => a.id === id)?.r;
     if (r) setCrop(largest(r));
@@ -290,7 +297,7 @@ export function EditPhoto({ source, settings, onSave, onClose }: { source: Sourc
             <div role="tabpanel" id="edit-panel-crop" aria-labelledby="edit-tab-crop" className="space-y-3">
               <div role="radiogroup" aria-label="Crop shape" className="no-scrollbar -mx-4 -my-1 flex gap-2 overflow-x-auto px-4 py-1">
                 {ASPECTS.map((a) => (
-                  <button key={a.id} type="button" role="radio" aria-checked={aspect === a.id} onClick={() => chooseAspect(a.id)} className={chip(aspect === a.id)} data-aspect={a.id}>
+                  <button key={a.id} type="button" role="radio" aria-checked={aspect === a.id} disabled={!fits(a.r)} title={fits(a.r) ? undefined : "Too small to print at this shape"} onClick={() => chooseAspect(a.id)} className={`${chip(aspect === a.id)} disabled:opacity-35`} data-aspect={a.id}>
                     {a.label}
                   </button>
                 ))}

@@ -5,7 +5,7 @@
  * for the near-copy check, and the features on each tee. Pure: typed arrays
  * in, plain data out.
  */
-import { OUT_H, OUT_W, inkFor, type Converted, type Tee } from "./convert";
+import { OUT_H, OUT_W, inkFor, meshMasses, type Converted, type Tee } from "./convert";
 import { features } from "./features";
 import { designHash, measure, type Measures } from "./measure";
 import type { FeatureVector } from "@/types/shirt";
@@ -40,7 +40,13 @@ export function analyse(conv: Converted, { bolder }: { bolder: boolean }): Analy
     inks.black = bolden(inks.black, conv.w, conv.h);
     inks.white = same ? inks.black : bolden(inks.white, conv.w, conv.h);
   }
-  const on = (t: Tee) => measure(inks[t], conv.w, conv.h, t, { screened: conv.mode === "dots", size: conv.size });
+  // Line work's solid areas print as a mesh (never a slab); its strokes and gaps are measured on the shapes as drawn.
+  let shapes: Uint8Array | undefined;
+  if (conv.mode !== "dots") {
+    const meshed = meshMasses(inks.white);
+    if (meshed !== inks.white) (shapes = inks.white), (inks.white = inks.black = meshed);
+  }
+  const on = (t: Tee) => measure(inks[t], conv.w, conv.h, t, { screened: conv.mode === "dots", size: conv.size, shapes });
   const measures = { black: on("black"), white: on("white") };
   return {
     inks,

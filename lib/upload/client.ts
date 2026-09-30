@@ -1,6 +1,6 @@
 /**
  * The upload page's engine (browser only). A file is opened once
- * (checked: format, size, the lexicon on its name), then converted for a
+ * (checked: what it is, from its first bytes, and its size), then converted for a
  * set of settings — the crop, a quarter turn, a mirror, light and contrast,
  * "Stronger" (levels and a gamma boost on the source), Dots, Lines or
  * Drawing, Full or Small, "Bolder" (one
@@ -14,12 +14,11 @@
  */
 import { convertInWorker, type UploadRequest } from "./run";
 import { MIN_SHORT, type Mode, type PrintSize, type Tee, type UploadClass } from "./convert";
-import { TYPES } from "./decode";
 import { nearestIndex, tier } from "./measure";
 import { chooseTee } from "./teeRule";
 import { cleanTitle } from "./title";
 import { category, measured } from "./features";
-import { MAX_BYTES, REASONS } from "./reasons";
+import { MAX_BYTES, REASONS, smallReason } from "./reasons";
 import { inkCanvas, inkHash, inkPng } from "./bitmap";
 import { getUpload, putUpload, deleteUpload } from "./store";
 import { cropPixels, sourcePixels } from "./pixels";
@@ -126,12 +125,10 @@ export interface PreviewFail extends Common, Refusal {
   /** The tee the failed print is shown on, when there is a print to show. */
   tee?: Tee;
   perTee?: Record<Tee, TeeResult>;
-  /** A near-copy of a catalogue design: its id, to link to. */
-  duplicateOf?: string;
 }
 export type Preview = PreviewOk | PreviewFail;
 
-const EXT: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml" };
+const EXT: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", gif: "image/gif", bmp: "image/bmp", avif: "image/avif", heic: "image/heic", heif: "image/heic" };
 const lexicon = () => import("@/lib/custom/lexicon");
 const newId = () => Date.now().toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, "0");
 
@@ -139,16 +136,45 @@ const newId = () => Date.now().toString(36) + Math.floor(Math.random() * 36 ** 4
 /* Opening                                                             */
 /* ------------------------------------------------------------------ */
 
-/** A file opened: format, size and the words in its name checked, the picture decoded the right way up. */
+/**
+ * A file's kind from its first bytes (its name and the browser's type can be
+ * wrong or missing: a photo saved without an extension, a .jpg that's a PNG).
+ * Null when it isn't a picture we know.
+ */
+export function sniffType(b: Uint8Array): string | null {
+  const at = (i: number, ...v: number[]) => v.every((x, k) => b[i + k] === x);
+  const ascii = (i: number, t: string) => [...t].every((c, k) => b[i + k] === c.charCodeAt(0));
+  if (at(0, 0x89, 0x50, 0x4e, 0x47)) return "image/png";
+  if (at(0, 0xff, 0xd8, 0xff)) return "image/jpeg";
+  if (ascii(0, "RIFF") && ascii(8, "WEBP")) return "image/webp";
+  if (ascii(0, "GIF8")) return "image/gif";
+  if (ascii(0, "BM")) return "image/bmp";
+  if (ascii(4, "ftyp")) {
+    const brand = String.fromCharCode(...b.slice(8, 12));
+    if (/avi[fs]/.test(brand)) return "image/avif";
+    if (/hei[cxms]|mif1|msf1|hev[cx]/.test(brand)) return "image/heic";
+  }
+  // An SVG: text whose first tag (after a declaration, comments or a doctype) is <svg.
+  const text = new TextDecoder().decode(b.slice(0, 4096)).replace(/^\uFEFF/, "").trimStart();
+  if (/^(?:<\?xml[^>]*>\s*|<!--[\s\S]*?-->\s*|<!DOCTYPE[^>]*>\s*)*<svg\b/i.test(text)) return "image/svg+xml";
+  return null;
+}
+
+/**
+ * A file opened: what it is read from its first bytes, its size checked, the
+ * picture decoded the right way up. Any picture the browser can open is taken
+ * (JPG, PNG, WebP, SVG, and GIF, BMP, AVIF or HEIC where the browser opens
+ * them); the words in its name only make the title, so a name never refuses
+ * a picture.
+ */
 export async function openFile(file: File | Blob, name = (file as File).name ?? "file"): Promise<{ ok: true; source: Source } | Refusal> {
-  const type = file.type || EXT[name.split(".").pop()?.toLowerCase() ?? ""] || "";
-  if (!(TYPES as readonly string[]).includes(type)) return { ok: false, reason: REASONS.format, code: "format" };
   if (file.size > MAX_BYTES) return { ok: false, reason: REASONS.heavy, code: "heavy" };
-  const problem = (await lexicon()).wordsProblem(name.replace(/\.[a-z0-9]+$/i, "").replace(/[_\-.]+/g, " "));
-  if (problem) return { ok: false, reason: problem, code: "words" };
+  const head = new Uint8Array(await file.slice(0, HEADER_BYTES).arrayBuffer());
+  const type = sniffType(head) ?? (file.type.startsWith("image/") ? file.type : EXT[name.split(".").pop()?.toLowerCase() ?? ""]) ?? "";
+  if (!type) return { ok: false, reason: REASONS.unreadable, code: "unreadable" };
   if (type === "image/svg+xml") return { ok: true, source: { id: newId(), kind: "svg", name, file, type, w: 1500, h: 1500 } };
   // Its size from its header first: a small file can decode to gigabytes.
-  if (tooManyPixels(new Uint8Array(await file.slice(0, HEADER_BYTES).arrayBuffer()))) return { ok: false, reason: REASONS.huge, code: "huge" };
+  if (tooManyPixels(head)) return { ok: false, reason: REASONS.huge, code: "huge" };
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -156,8 +182,9 @@ export async function openFile(file: File | Blob, name = (file as File).name ?? 
     return { ok: false, reason: REASONS.unreadable, code: "unreadable" };
   }
   if (Math.min(bitmap.width, bitmap.height) < MIN_SHORT.small) {
+    const [w, h] = [bitmap.width, bitmap.height];
     bitmap.close();
-    return { ok: false, reason: REASONS.smallForSmall, code: "smallForSmall" };
+    return { ok: false, reason: smallReason(w, h, MIN_SHORT.small), code: "smallForSmall" };
   }
   return { ok: true, source: { id: newId(), kind: "file", name, file, type, bitmap, w: bitmap.width, h: bitmap.height } };
 }
@@ -189,8 +216,9 @@ const catalogueHashes = () =>
 export function codeOf(reason: string): string {
   const hit = (Object.entries(REASONS) as [string, string][]).find(([, r]) => r === reason);
   if (hit) return hit[0];
-  if (/^Lines under/.test(reason)) return "stroke";
-  if (/^Gaps under/.test(reason)) return "gap";
+  if (/^Lines too thin/.test(reason)) return "stroke";
+  if (/^Gaps too narrow/.test(reason)) return "gap";
+  if (/^Too small to print:/.test(reason)) return "smallForSmall";
   return "other";
 }
 
@@ -237,7 +265,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   if (src.kind === "svg") req = { file: src.file!, type: src.type!, size, ...judge };
   else {
     const { short } = cropPixels(src, s);
-    if (short < MIN_SHORT.small) return fail(REASONS.smallForSmall, size);
+    if (short < MIN_SHORT.small) return fail(REASONS.smallCrop, size);
     if (size === "full" && short < MIN_SHORT.full) (size = "small"), (autoSmall = true);
     req = { pixels: sourcePixels(src, s), mode: s.mode, size, checked: true, ...judge };
   }
@@ -267,8 +295,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
   const t = tier(on(tee), tee, near.distance);
   if (t.tier === "refuse") {
     const reason = t.reason ?? REASONS.weak;
-    const duplicateOf = reason === REASONS.duplicate && near.index >= 0 ? (await import("@/lib/catalog")).SHIRTS[near.index]?.id : undefined;
-    return keepDrawn({ ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, autoSmall, tee, perTee, canvas, ...(duplicateOf ? { duplicateOf } : {}) }, drawn);
+    return keepDrawn({ ok: false, reason, code: codeOf(reason), cls: conv.cls, mode: conv.mode, size, autoSmall, tee, perTee, canvas }, drawn);
   }
   const other = flip(tee);
   const tees: Tee[] = perTee[other].ok && (tee === choice.tee ? choice.other : true) ? [tee, other] : [tee];
@@ -286,7 +313,7 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     tier: t.tier,
     near: t.near,
     hash: inkHash(inks[tee]),
-    title: cleanTitle(src.name, conv.cls),
+    title: await titleFor(src.name, conv.cls),
     quality: m.quality,
     distance: near.distance,
     category: category(conv, f, m),
@@ -295,6 +322,14 @@ async function run(src: Source, s: Settings): Promise<Preview> {
     inks: Object.fromEntries(tees.map((x) => [x, inks[x]])),
     canvas,
   }, drawn);
+}
+
+/** The title made from the file's name: its words when they're Latin and pass the lexicon (it names the line in the bag), else ours. */
+async function titleFor(name: string, cls: UploadClass): Promise<string> {
+  const t = cleanTitle(name, cls);
+  const ours = cls === "photo" ? "Your Photograph" : "Your Drawing";
+  if (t === ours || !/^[\p{Script=Latin}0-9 '’&-]+$/u.test(t)) return ours;
+  return (await lexicon()).wordsProblem(t) ? ours : t;
 }
 
 function keepDrawn<P extends Preview>(p: P, drawn: Map<Tee, HTMLCanvasElement>): P {
@@ -317,16 +352,8 @@ export interface Fix {
   patch?: Partial<Settings>;
 }
 
-/** What a failure means, under its reason in the fix card: only what the reason doesn't already say. */
-export const MEANING: Record<string, string> = {
-  faint: "It would come out as a grey haze.",
-  solid: "It would print as a patch.",
-  solidDots: "It would print as a patch.",
-  dense: "The tee would be mostly ink.",
-  denseDots: "The tee would be mostly ink.",
-  stroke: "They’d break up in the print.",
-  gap: "They’d fill in with ink.",
-};
+/** What a failure means, under its reason in the fix card: the reasons now say it themselves (kept for callers). */
+export const MEANING: Record<string, string> = {};
 
 /** The fixes worth trying for a failure, in order (the PM's table), before any is tried. */
 export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">): Fix[] {
@@ -370,12 +397,14 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
       add(crop, picture);
       break;
   }
+  // Whatever failed in Lines or Drawing, a picture's own dots are the way back (they carry tone, and seldom fail).
+  add(dots, picture && s.mode !== "dots");
   return out;
 }
 
-/** The fixes that pass once tried (up to three tried; "Crop tighter" can't be tried, so it's kept last). */
+/** The fixes that pass once tried (up to four tried; "Crop tighter" can't be tried, so it's kept last). */
 export async function passingFixes(src: Source, s: Settings, f: PreviewFail): Promise<{ fix: Fix; settings: Settings; preview: PreviewOk }[]> {
-  const tries = fixesFor(f, s, src).filter((x) => x.patch).slice(0, 3);
+  const tries = fixesFor(f, s, src).filter((x) => x.patch).slice(0, 4);
   const results = await Promise.all(
     tries.map(async (fix) => {
       const settings = { ...s, ...fix.patch };

@@ -166,7 +166,7 @@ describe("uploads: the main-thread fallback", () => {
     expect(typeof Worker).toBe("undefined");
     const r = await convertInWorker({ pixels: scan(1600, 1200), size: "full" });
     expect(r.ok && r.converted.cls).toBe("line");
-    const small = await convertInWorker({ pixels: fromGrey(new Float32Array(900 * 900).fill(1), 900, 900), size: "full" });
+    const small = await convertInWorker({ pixels: fromGrey(new Float32Array(800 * 800).fill(1), 800, 800), size: "full" });
     expect(small).toEqual({ ok: false, reason: REASONS.smallForFull });
   });
 });

@@ -6,7 +6,7 @@
  * upload worker (lib/upload/worker.ts), or on the main thread where there
  * is no worker (lib/upload/run.ts). The conversion itself is convert.ts.
  */
-import { MAX_LONG, convert, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
+import { MAX_LONG, convert, isFlat, sanitiseSvg, tooSmall, type Ask, type Converted, type Pixels, type PrintSize } from "./convert";
 import { MAX_BYTES, REASONS } from "./reasons";
 import { analyse, type Analysis } from "./analyse";
 
@@ -22,7 +22,6 @@ export type UploadRequest = (
 export type UploadResult = { ok: true; converted: Converted; source: { w: number; h: number }; analysis?: Analysis } | { ok: false; reason: string };
 
 /** The formats the page takes. */
-export const TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"] as const;
 /** An SVG is rasterised this big on its long side (brief 6.2). */
 export const SVG_LONG = 1500;
 /**
@@ -81,14 +80,18 @@ async function svgPixels(text: string): Promise<Pixels> {
 export async function handle(req: UploadRequest): Promise<UploadResult> {
   const ok = (converted: Converted, w: number, h: number): UploadResult => ({ ok: true, converted, source: { w, h }, ...(req.analyse ? { analysis: analyse(converted, req.analyse) } : {}) });
   try {
+    // One flat colour (a blank page, a solid fill) has nothing to print, whatever the settings.
+    const flat = { ok: false, reason: REASONS.blank } as const;
+    if ("svgRaster" in req && isFlat(req.svgRaster)) return flat;
     if ("svgRaster" in req) return ok(convert({ svgRaster: req.svgRaster }, { size: req.size }), req.svgRaster.w, req.svgRaster.h);
     if ("pixels" in req) {
       // `checked`: the page measured the source before scaling it down (lib/upload/client), so the pixels' own size says nothing.
       if (!req.checked && tooSmall(req.pixels.w, req.pixels.h, req.size)) return { ok: false, reason: req.size === "full" ? REASONS.smallForFull : REASONS.smallForSmall };
+      if (isFlat(req.pixels)) return flat;
       return ok(convert({ pixels: req.pixels }, { mode: req.mode, size: req.size }), req.pixels.w, req.pixels.h);
     }
     const { file, type, mode, size } = req;
-    if (!(TYPES as readonly string[]).includes(type)) return { ok: false, reason: REASONS.format };
+    if (!type.startsWith("image/")) return { ok: false, reason: REASONS.format };
     if (file.size > MAX_BYTES) return { ok: false, reason: REASONS.heavy };
     if (type === "image/svg+xml") {
       const s = sanitiseSvg(await file.text());
@@ -99,6 +102,7 @@ export async function handle(req: UploadRequest): Promise<UploadResult> {
       } catch {
         return { ok: false, reason: SVG_ON_MAIN };
       }
+      if (isFlat(p)) return flat;
       return ok(convert({ svgRaster: p }, { size }), p.w, p.h);
     }
     let bmp: ImageBitmap;
@@ -111,6 +115,7 @@ export async function handle(req: UploadRequest): Promise<UploadResult> {
     if (tooSmall(w, h, size)) return bmp.close(), { ok: false, reason: size === "full" ? REASONS.smallForFull : REASONS.smallForSmall };
     const p = draw(bmp, MAX_LONG);
     bmp.close();
+    if (isFlat(p)) return flat;
     return ok(convert({ pixels: p }, { mode, size }), w, h);
   } catch {
     return { ok: false, reason: REASONS.unreadable };

@@ -115,8 +115,7 @@ test("From yours: a print that fails shows itself, says why, and offers the fix 
   await ready(page);
   await page.getByRole("radio", { name: /^Lines/ }).tap();
   await expect(page.locator('[data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
-  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText(/^Gaps under 0\.6 mm\./);
-  await expect(page.locator("[data-fix-card]")).toContainText("They’d fill in with ink.");
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText(/^Gaps too narrow to print \(under 0\.6 mm\): they’d fill in\.$/);
   await expect(primary(page)).toHaveText("Use Dots", { timeout: 25_000 });
   await primary(page).tap();
   await ready(page);
@@ -228,11 +227,14 @@ for (const [force, line] of [
     }
   });
 
-test("From yours: a brand in the file name is refused before anything is converted", async ({ page }) => {
+test("From yours: a brand in the file name never refuses the picture; it just isn't the title", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "nike-logo.png", await drawing());
-  await expect(page.locator("[data-upload-error]")).toHaveText("Those words name a brand.");
+  await ready(page);
+  await expect(page.locator("[data-upload-error]")).toHaveCount(0);
+  await primary(page).tap();
+  await expect(page.locator("[data-title-text]")).toHaveText("Your Drawing");
 });
 
 test("No CSP violation on the Make pages, the upload worker and an SVG included", async ({ page }) => {
@@ -261,7 +263,7 @@ test("From yours: an SVG with a script is refused", async ({ page }) => {
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "bad.svg", Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="10" height="10"/></svg>'), "image/svg+xml");
-  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can’t print.", { timeout: 25_000 });
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can’t print. Try it saved as a PNG.", { timeout: 25_000 });
   await expect(primary(page)).toHaveText("Choose another file");
 });
 

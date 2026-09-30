@@ -5,7 +5,7 @@ import { radioKeys } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { formatPrice } from "@/lib/format";
 import { STORE_POLICY } from "@/lib/store-policy";
-import type { Preview, PreviewOk, Settings, Source, Tee } from "@/lib/upload/client";
+import type { Preview, Settings, Source, Tee } from "@/lib/upload/client";
 
 export type Choice = Tee | "both";
 
@@ -80,11 +80,11 @@ const STYLE_LABEL: Record<Settings["mode"], string> = { dots: "Dots", lines: "Li
  * Style (a photograph), Print size and Tee, each a pill of text; the stage
  * shows the choice. The other styles and sizes are worked out when the page
  * is idle, and an option that won't print is left out (never shown only to
- * be refused). The tee the rule picks is marked Suggested.
+ * be refused). The tee the rule picks is marked Suggested. When the print
+ * fails, Style and Print size stay (a style or size tried is never a dead
+ * end); Tee waits for a print.
  */
-export function ChoiceThumbs({ source, settings, preview, choice, onSettings, onChoice }: { source: Source; settings: Settings; preview: PreviewOk; choice: Choice; onSettings: (patch: Partial<Settings>) => void; onChoice: (c: Choice) => void }) {
-  // A photograph has a style; so does one read as a Drawing (its class is then line work).
-  const photo = preview.cls === "photo" || settings.mode === "drawing";
+export function ChoiceThumbs({ source, settings, preview, photo, choice, onSettings, onChoice }: { source: Source; settings: Settings; preview: Preview; photo: boolean; choice: Choice; onSettings: (patch: Partial<Settings>) => void; onChoice: (c: Choice) => void }) {
   const [modeA, modeB] = STYLES.filter((m) => m !== settings.mode);
   const altA = useAlt(source, { ...settings, mode: modeA, size: preview.size }, photo ? 150 : 1e9);
   const altB = useAlt(source, { ...settings, mode: modeB, size: preview.size }, photo ? 600 : 1e9);
@@ -92,7 +92,8 @@ export function ChoiceThumbs({ source, settings, preview, choice, onSettings, on
   const otherSize = preview.size === "full" ? "small" : "full";
   const altSize = useAlt(source, { ...settings, size: otherSize }, photo ? 1200 : 300);
   // A file too small for Full comes back at Small: Full isn't on offer.
-  const sizeOk = prints(altSize) && !(altSize?.ok && altSize.autoSmall && otherSize === "full");
+  const sizeOk = prints(altSize) && !(altSize?.ok && altSize.autoSmall && otherSize === "full") && !(preview.autoSmall && otherSize === "full");
+  const sizes = (["full", "small"] as const).filter((v) => v === preview.size || sizeOk);
   return (
     <div className="space-y-4">
       {photo && (
@@ -104,20 +105,19 @@ export function ChoiceThumbs({ source, settings, preview, choice, onSettings, on
           options={STYLES.filter((v) => v === settings.mode || prints(altMode(v))).map((v) => ({ value: v, label: STYLE_LABEL[v] }))}
         />
       )}
-      <Segments
-        label="Print size"
-        value={preview.size}
-        onChange={(v) => onSettings({ size: v })}
-        options={(["full", "small"] as const).filter((v) => v === preview.size || sizeOk).map((v) => ({ value: v, label: v === "full" ? "Full" : "Small" }))}
-      />
-      <Segments
-        label="Tee"
-        value={choice}
-        onChange={onChoice}
-        options={(["black", "white", "both"] as const)
-          .filter((v) => v === choice || (v === "both" ? preview.tees.length === 2 : preview.tees.includes(v)))
-          .map((v) => ({ value: v, label: v === "both" ? `Both · ${formatPrice(STORE_POLICY.customPairPrice)}` : v === "black" ? "Black" : "White", tag: v === preview.tee ? "Suggested" : undefined }))}
-      />
+      {(preview.ok || sizes.length > 1) && (
+        <Segments label="Print size" value={preview.size} onChange={(v) => onSettings({ size: v })} options={sizes.map((v) => ({ value: v, label: v === "full" ? "Full" : "Small" }))} />
+      )}
+      {preview.ok && (
+        <Segments
+          label="Tee"
+          value={choice}
+          onChange={onChoice}
+          options={(["black", "white", "both"] as const)
+            .filter((v) => v === choice || (v === "both" ? preview.tees.length === 2 : preview.tees.includes(v)))
+            .map((v) => ({ value: v, label: v === "both" ? `Both · ${formatPrice(STORE_POLICY.customPairPrice)}` : v === "black" ? "Black" : "White", tag: v === preview.tee ? "Suggested" : undefined }))}
+        />
+      )}
     </div>
   );
 }

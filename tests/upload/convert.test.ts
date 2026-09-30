@@ -24,6 +24,7 @@ import {
   shapesOf,
   screenTone,
   tooSmall,
+  isFlat,
   type Pixels,
 } from "@/lib/upload/convert";
 import { REASONS } from "@/lib/upload/reasons";
@@ -133,7 +134,7 @@ describe("uploads: SVG sanitising", () => {
   };
   for (const [name, svg] of Object.entries(bad))
     it(`refuses ${name}`, () => {
-      expect(sanitiseSvg(svg)).toEqual({ ok: false, reason: "This SVG has parts we can’t print." });
+      expect(sanitiseSvg(svg)).toEqual({ ok: false, reason: "This SVG has parts we can’t print. Try it saved as a PNG." });
     });
 
   it("passes a plain drawing with in-file references (gradients, <use href='#…'>, url(#…))", () => {
@@ -143,7 +144,7 @@ describe("uploads: SVG sanitising", () => {
   });
 
   it("the refusal line is the reasons file's", () => {
-    expect(REASONS.svg).toBe("This SVG has parts we can’t print.");
+    expect(REASONS.svg).toBe("This SVG has parts we can’t print. Try it saved as a PNG.");
   });
 });
 
@@ -197,11 +198,23 @@ describe("uploads: placement on the catalogue's grid", () => {
     expect(m[170 * w + 170]).toBe(1);
   });
 
-  it("the size limits: short side 1,100 px for Full, 800 for Small", () => {
-    expect(tooSmall(1099, 3000, "full")).toBe(true);
-    expect(tooSmall(1100, 3000, "full")).toBe(false);
-    expect(tooSmall(799, 900, "small")).toBe(true);
-    expect(tooSmall(800, 900, "small")).toBe(false);
+  it("a picture of one flat colour is blank (nothing to print); a faint one isn't", () => {
+    const flatOf = (f: (i: number) => number) => {
+      const data = new Uint8ClampedArray(400 * 300 * 4);
+      for (let i = 0; i < 400 * 300; i++) data.fill(f(i), i * 4, i * 4 + 3), (data[i * 4 + 3] = 255);
+      return isFlat({ w: 400, h: 300, data });
+    };
+    expect(flatOf(() => 255)).toBe(true);
+    expect(flatOf(() => 0)).toBe(true);
+    expect(flatOf((i) => 250 + (i % 3))).toBe(true);
+    expect(flatOf((i) => (i % 400 < 200 ? 230 : 200))).toBe(false);
+  });
+
+  it("the size limits: short side 900 px for Full, 600 for Small", () => {
+    expect(tooSmall(899, 3000, "full")).toBe(true);
+    expect(tooSmall(900, 3000, "full")).toBe(false);
+    expect(tooSmall(599, 900, "small")).toBe(true);
+    expect(tooSmall(600, 900, "small")).toBe(false);
   });
 
   it("downscale: area averaged, premultiplied (a transparent pixel's colour never bleeds)", () => {

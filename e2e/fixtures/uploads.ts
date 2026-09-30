@@ -51,7 +51,7 @@ export function pencilSketch(): Promise<Buffer> {
   });
 }
 
-/** Too small for either size (short side under 800 px). */
+/** Too small for either size (short side under 600 px). */
 export function tiny(): Promise<Buffer> {
   return png(600, 500, (x, y) => (Math.hypot(x - 300, y - 250) < 150 ? 20 : 240));
 }
@@ -62,7 +62,7 @@ export function engraving(): Promise<Buffer> {
   return png(1500, 1500, (x, y) => {
     let z = 0;
     for (const [hx, hy, r, k] of hills) z += k * Math.exp(-((x - hx) ** 2 + (y - hy) ** 2) / (2 * r * r));
-    return z > 0.08 && (z * 10) % 1 < 0.3 ? 10 : 245;
+    return z > 0.08 && (z * 10) % 1 < 0.22 ? 10 : 245;
   });
 }
 
@@ -76,7 +76,7 @@ export function hairlines(): Promise<Buffer> {
 
 /** A photograph big enough for Small but not Full (short side 900 px). */
 export async function mediumPhoto(): Promise<Buffer> {
-  return sharp(await photo()).resize(1200, 900).png().toBuffer();
+  return sharp(await photo()).resize(1000, 750).png().toBuffer();
 }
 
 /** Soft bands of mid-grey: prints in dots, but as lines its edges crowd (gaps too narrow). */

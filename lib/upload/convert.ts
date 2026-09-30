@@ -75,7 +75,7 @@ export { MAX_LONG } from "./pixels";
  */
 const workLong = (w: number, h: number) => Math.round(Math.max(w, h) * Math.min(1, BOXES.full.w / w, BOXES.full.h / h));
 /** A file's short side must be at least this for each size (brief 6.1). */
-export const MIN_SHORT: Record<PrintSize, number> = { full: 1100, small: 800 };
+export const MIN_SHORT: Record<PrintSize, number> = { full: 900, small: 600 };
 export const tooSmall = (w: number, h: number, size: PrintSize) => Math.min(w, h) < MIN_SHORT[size];
 
 /* ------------------------------------------------------------------ */
@@ -204,14 +204,25 @@ function areaDown(p: Pixels, f: number): Pixels {
   return { w: dw, h: dh, data: out };
 }
 
-/** Luminance 0–1 (Rec. 709 on the encoded values, as halftone.py reads its masters), composited over white paper. */
+/**
+ * Luminance 0–1 (Rec. 709 on the encoded values, as halftone.py reads its
+ * masters), composited over white paper. A picture of one colour cut out by
+ * its transparency (a white logo on a transparent ground, which over white
+ * paper would vanish) is its shape: dark where it's opaque.
+ */
 export function grey(p: Pixels): Float32Array {
   const g = new Float32Array(p.w * p.h);
   const d = p.data;
+  let [lo, hi, clear, solid] = [1, 0, 0, 0];
   for (let i = 0, j = 0; i < g.length; i++, j += 4) {
     const a = d[j + 3] / 255;
-    g[i] = ((0.2126 * d[j] + 0.7152 * d[j + 1] + 0.0722 * d[j + 2]) / 255) * a + 1 - a;
+    const l = (0.2126 * d[j] + 0.7152 * d[j + 1] + 0.0722 * d[j + 2]) / 255;
+    g[i] = l * a + 1 - a;
+    if (a > 0.5) (solid++, l < lo && (lo = l), l > hi && (hi = l));
+    else clear++;
   }
+  if (hi - lo < FLAT_SPREAD && clear > 0.01 * g.length && solid > 0.01 * g.length)
+    for (let i = 0, j = 3; i < g.length; i++, j += 4) g[i] = 1 - d[j] / 255;
   return g;
 }
 
@@ -226,6 +237,14 @@ function quantiles(g: Float32Array, qs: number[], mask?: Uint8Array | Float32Arr
     for (let b = 0; b < 1024; b++) if ((k += bins[b]) >= want) return b / 1023;
     return 1;
   });
+}
+
+/** Below this spread (1st to 99th percentile of the luminance) a picture is one flat colour: nothing to print (Levels would stretch it into a slab of tone). */
+export const FLAT_SPREAD = 0.04;
+/** Whether a picture is one flat colour (a blank page, a solid fill). */
+export function isFlat(p: Pixels): boolean {
+  const [lo, hi] = quantiles(grey(p), [0.01, 0.99]);
+  return hi - lo < FLAT_SPREAD;
 }
 
 /** Levels: the 1st–99th percentile stretched to 0–1 (over the mask, when given: a photograph's subject, not its removed ground). */
@@ -623,8 +642,42 @@ export function toDots(g: Float32Array, w: number, h: number): { lum: Float32Arr
     for (let i = 0; i < alpha.length; i++) kept += alpha[i];
     if (kept < 0.02 * alpha.length) alpha.fill(1);
   }
+  trimFrame(g, alpha, w, h);
   const lum = levels(g, alpha);
   return { lum, alpha, box: bbox(alpha, w, h) ?? { x: 0, y: 0, w, h } };
+}
+
+/** A row or column this even (its lightest and darkest this close) at the picture's edge is a frame: a scan's border, a letterbox. */
+const FRAME_RANGE = 0.12;
+/** At most this much of each side is taken as a frame. */
+const FRAME_MAX = 0.08;
+/**
+ * A plain frame round a photograph (a black border, a letterbox, a scanner's
+ * margin) left out: kept, it would print as a thin solid line round the
+ * picture (on one tee or the other), a box of ink the solid check refuses.
+ */
+function trimFrame(g: Float32Array, alpha: Float32Array, w: number, h: number) {
+  const plain = (at: (k: number) => number, n: number) => {
+    let [lo, hi] = [Infinity, -Infinity];
+    for (let k = 0; k < n; k++) {
+      const v = at(k);
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+    return hi - lo < FRAME_RANGE;
+  };
+  const side = (n: number, isPlain: (i: number) => boolean) => {
+    let k = 0;
+    while (k < Math.floor(n * FRAME_MAX) && isPlain(k)) k++;
+    return k === Math.floor(n * FRAME_MAX) ? 0 : k;
+  };
+  const top = side(h, (i) => plain((x) => g[i * w + x], w));
+  const bottom = side(h, (i) => plain((x) => g[(h - 1 - i) * w + x], w));
+  const left = side(w, (i) => plain((y) => g[y * w + i], h));
+  const right = side(w, (i) => plain((y) => g[y * w + w - 1 - i], h));
+  if (!(top || bottom || left || right)) return;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) if (y < top || y >= h - bottom || x < left || x >= w - right) alpha[y * w + x] = 0;
 }
 
 /** The screen (halftone.py): 30 lpi at 45°, on the 28 cm grid. */
@@ -726,6 +779,21 @@ export function screenTone(D: Float32Array): Uint8Array {
   const ink = new Uint8Array(n);
   for (let i = 0; i < n; i++) ink[i] = (mass[i] && d[i] > MAX_TONE ? MAX_TONE : d[i]) > s[i] ? 1 : 0;
   return ink;
+}
+
+/**
+ * Line work's solid areas (a filled shape, a stroke wider than SLAB_PX,
+ * about 3.5 mm) printed as the MAX_TONE mesh of the screen, as halftone.py
+ * caps a dark mass: a solid slab never goes on a tee, and a narrower stroke
+ * stays solid ink. The same array back when there's no such area.
+ */
+export function meshMasses(ink: Uint8Array): Uint8Array {
+  const mass = morph(morph(ink, OUT_W, OUT_H, SLAB_PX, true), OUT_W, OUT_H, SLAB_PX, false);
+  if (mass.indexOf(1) < 0) return ink;
+  const s = screenAt();
+  const out = ink.slice();
+  for (let i = 0; i < out.length; i++) if (mass[i]) out[i] = MAX_TONE > s[i] ? 1 : 0;
+  return out;
 }
 
 /** A placed tone as ink for a tee, never inverted: a black tee's white ink draws the lights, a white tee's black ink the darks. */

@@ -39,8 +39,8 @@ describe("uploads: line width and gap, on the final raster (1 px ≈ 0.187 mm)",
       // Only the line width is in question here.
       return tier({ ...m, quality: 80, coverage: 0.1, detail: 0.5, solid: null, minGapMm: 2 }, tee);
     };
-    expect(at(0.3, "white")).toMatchObject({ tier: "refuse", reason: "Lines under 0.4 mm. Try bolder lines." });
-    expect(at(0.3, "black")).toMatchObject({ tier: "refuse", reason: "Lines under 0.5 mm. Try bolder lines." });
+    expect(at(0.3, "white")).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.4 mm)." });
+    expect(at(0.3, "black")).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.5 mm)." });
     expect(at(0.5, "white").tier).toBe("print");
     expect(at(0.8, "white").tier).toBe("catalogue");
     expect(at(0.8, "black").tier).toBe("catalogue");
@@ -90,7 +90,7 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
 
   it("solidBlock: any refusal refuses", () => {
     expect(t({ solid: "slab" })).toMatchObject({ tier: "refuse", reason: REASONS.solid });
-    expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: "Too much ink to print. Try Lines." });
+    expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: REASONS.solidDots });
   });
 
   it("quality: refused under 53, prints from 53, catalogue from 68", () => {
@@ -101,7 +101,7 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
   });
 
   it("coverage: refused under 1% or over 45%; catalogue 4–32%", () => {
-    expect(t({ coverage: 0.0099 })).toMatchObject({ tier: "refuse", reason: "Too faint to print. Try a stronger picture." });
+    expect(t({ coverage: 0.0099 })).toMatchObject({ tier: "refuse", reason: REASONS.faint });
     expect(t({ coverage: 0.01 }).tier).toBe("print");
     expect(t({ coverage: 0.0399 }).tier).toBe("print");
     expect(t({ coverage: 0.04 }).tier).toBe("catalogue");
@@ -120,21 +120,21 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
   });
 
   it("line width, black ink on a white tee: refused under 0.4 mm, catalogue from 0.6", () => {
-    expect(t({ minStrokeMm: 0.399 })).toMatchObject({ tier: "refuse", reason: "Lines under 0.4 mm. Try bolder lines." });
+    expect(t({ minStrokeMm: 0.399 })).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.4 mm)." });
     expect(t({ minStrokeMm: 0.4 }).tier).toBe("print");
     expect(t({ minStrokeMm: 0.599 }).tier).toBe("print");
     expect(t({ minStrokeMm: 0.6 }).tier).toBe("catalogue");
   });
 
   it("line width, white ink on a black tee: refused under 0.5 mm, catalogue from 0.7; at Small the advice is Full size", () => {
-    expect(t({ minStrokeMm: 0.499, size: "small" }, "black")).toMatchObject({ tier: "refuse", reason: "Lines under 0.5 mm. Try Full size." });
+    expect(t({ minStrokeMm: 0.499, size: "small" }, "black")).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.5 mm)." });
     expect(t({ minStrokeMm: 0.5 }, "black").tier).toBe("print");
     expect(t({ minStrokeMm: 0.699 }, "black").tier).toBe("print");
     expect(t({ minStrokeMm: 0.7 }, "black").tier).toBe("catalogue");
   });
 
   it("reversed gap: refused under 0.6 mm, catalogue from 0.8", () => {
-    expect(t({ minGapMm: 0.599 })).toMatchObject({ tier: "refuse", reason: "Gaps under 0.6 mm. Try a simpler picture." });
+    expect(t({ minGapMm: 0.599 })).toMatchObject({ tier: "refuse", reason: "Gaps too narrow to print (under 0.6 mm): they’d fill in." });
     expect(t({ minGapMm: 0.6 }).tier).toBe("print");
     expect(t({ minGapMm: 0.799 }).tier).toBe("print");
     expect(t({ minGapMm: 0.8 }).tier).toBe("catalogue");
@@ -144,8 +144,10 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
     expect(t({ minStrokeMm: 0.1, minGapMm: 0.1, screened: true }).tier).toBe("catalogue");
   });
 
-  it("a near-duplicate of a catalogue design (Hamming ≤ 6) is refused", () => {
-    expect(t({}, "white", 6)).toMatchObject({ tier: "refuse", reason: "This one is already in the catalogue." });
+  it("a hash near a catalogue design (Hamming ≤ 6) is never refused on its own: it passes a person first", () => {
+    expect(t({}, "white", 0)).toMatchObject({ tier: "catalogue", near: true });
+    expect(t({}, "white", 6)).toMatchObject({ tier: "catalogue", near: true });
+    expect(t({}, "white", 7)).toMatchObject({ tier: "catalogue", near: false });
     expect(t({}, "white", 7).tier).toBe("catalogue");
   });
 
@@ -191,8 +193,9 @@ describe("designHash: the design, wherever it sits on the sheet", () => {
     };
     const [a, b] = [designHash(draw(0, 0, 300), W, H), designHash(draw(110, 12, 80), W, H)];
     const bits = [...a].reduce((n, c, i) => n + [...(parseInt(c, 16) ^ parseInt(b[i], 16)).toString(2)].filter((x) => x === "1").length, 0);
-    expect(bits).toBeLessThanOrEqual(BAR.duplicate);
+    expect(bits).toBeLessThanOrEqual(BAR.nearDuplicate);
     // The same small picture on a mostly empty sheet, hashed whole, is far from it: what used to match sparse designs.
     expect(dhash(draw(110, 12, 80), W, H)).not.toBe(a);
   });
 });
+

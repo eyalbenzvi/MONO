@@ -15,7 +15,7 @@ describe("the From yours examples are the converter's own output", () => {
     for (const e of now) {
       // The print bar and the rest of the tier's checks, a near-copy of a catalogue design included.
       expect(e.ex.quality).toBeGreaterThanOrEqual(53);
-      expect(e.dup).toBeGreaterThan(BAR.duplicate);
+      expect(e.dup).toBeGreaterThan(BAR.nearDuplicate);
       expect(tier(e.measures, e.ex.tee, e.dup).tier).not.toBe("refuse");
     }
     // The photograph is big enough for Full, as a customer's file must be.
