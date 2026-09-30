@@ -52,7 +52,8 @@ describe("photographs: where they come from", () => {
       expect(src, s.id).toBeDefined();
       expect(s.photo!.url).toBe(`https://collections.si.edu/search/detail/edanmdm:${src!.record}`);
       expect(s.photo!.credit).toBe(src!.credit);
-      expect(s.subject).toBe(src!.subject);
+      // The record's subject (where it is the title too, with the title's typographic apostrophe: scripts/gen/titles houseTitle).
+      expect(s.subject.replace(/’/g, "'")).toBe(src!.subject);
       expect(s.photo!.credit).toMatch(/Smithsonian|FONZ|Zoo|Museum/);
     }
     // Drawn designs carry no photo credit.

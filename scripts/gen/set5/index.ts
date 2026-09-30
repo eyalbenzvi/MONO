@@ -334,7 +334,7 @@ function botanyDesigns(): Set5Design[] {
 /* ------------------------------------------------------------------ */
 
 const FOLD_NAMES: Record<number, string> = { 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten", 12: "Twelve", 16: "Sixteen", 24: "Twenty-four" };
-const METALS = ["Silver", "Engraved", "Banknote", "Watch-dial", "Engine-turned", "Lathe", "Fine", "Bright", "Scrolled", "Waved"];
+const METALS = ["Rose-engine", "Engraved", "Banknote", "Watch-dial", "Engine-turned", "Lathe", "Fine", "Bright", "Scrolled", "Waved"];
 
 function ornamentDesigns(): Set5Design[] {
   const out: Set5Design[] = [];
