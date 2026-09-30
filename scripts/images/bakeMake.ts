@@ -5,15 +5,18 @@
  * white ink screened onto a black one), then the chest crop the cards show
  * (CustomMockup chestCrop), at CARD_WIDTHS, into public/img/make/.
  * Unchanged cards are skipped (a stamp per card: the print, the photo, the recipe).
+ * Also the pickers' thumbnails of the Make artwork (Your Landmarks' drawings,
+ * data/art/landmarks), into public/img/make/art-*.webp.
  *
  *   npx tsx --tsconfig tsconfig.scripts.json scripts/images/bakeMake.ts
  */
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
 import shirtsJson from "../../data/shirts.json";
+import { ART_THUMB, artSvg, artThumbPath, type ArtFile } from "../../lib/custom/art";
 import { chestBox } from "../../lib/custom/chest";
 import { decodeCities, type CitiesFile } from "../../lib/custom/data";
 import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "../../lib/custom/makeCards";
@@ -103,9 +106,33 @@ async function main() {
     }
     baked++;
   }
+  const thumbs = await bakeThumbs(old, stamps);
   mkdirSync(path.dirname(STAMP), { recursive: true });
   writeFileSync(STAMP, JSON.stringify(stamps));
-  console.log(`make cards: ${baked} of ${cards().length} baked (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  console.log(`make cards: ${baked} of ${cards().length} baked, ${thumbs} picker thumbnails (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+}
+
+/**
+ * The pickers' thumbnails (Your Landmarks' drawings): each picture in white
+ * ink on nothing, square, for the dark editor. Unchanged ones are skipped.
+ */
+async function bakeThumbs(old: Record<string, string>, stamps: Record<string, string>): Promise<number> {
+  const dir = path.join(ROOT, "data", "art", "landmarks");
+  if (!existsSync(dir)) return 0;
+  let baked = 0;
+  for (const f of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
+    const key = `landmarks/${f.slice(0, -5)}`;
+    const json = readFileSync(path.join(dir, f), "utf8");
+    const out = path.join(PUBLIC, artThumbPath(key));
+    stamps[key] = createHash("sha1").update(`${RECIPE}|${ART_THUMB}|`).update(json).digest("hex").slice(0, 16);
+    if (old[key] === stamps[key] && existsSync(out)) continue;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">${artSvg(JSON.parse(json) as ArtFile, 4, 4, 92, 92)}</svg>`;
+    const png = new Resvg(svg, { fitTo: { mode: "width", value: ART_THUMB } }).render().asPng();
+    mkdirSync(path.dirname(out), { recursive: true });
+    writeFileSync(out, await sharp(png).webp({ quality: 80, alphaQuality: 80 }).toBuffer());
+    baked++;
+  }
+  return baked;
 }
 
 main().catch((e) => {

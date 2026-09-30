@@ -234,6 +234,18 @@ const CASES: Case[] = [
       await expect(page.locator("#make-dinosaur-plate")).toHaveValue("stegosaurus");
     },
   },
+  {
+    slug: "landmarks",
+    fill: async (page) => {
+      await page.locator("#make-landmarks-name").fill("Noa");
+      for (const name of ["Eiffel Tower", "Colosseum", "Taj Mahal"]) await page.getByRole("button", { name, exact: true }).tap();
+      await page.locator("#make-landmarks-y0").fill("2009");
+    },
+    again: async (page) => {
+      await expect(page.getByRole("button", { name: "Colosseum", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator("#make-landmarks-y0")).toHaveValue("2009");
+    },
+  },
 ];
 
 for (const c of CASES)

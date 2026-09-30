@@ -1,0 +1,1484 @@
+[
+ {
+  "id": "eiffel",
+  "name": "Eiffel Tower",
+  "source": {
+   "title": "The Eiffel Tower. Half-tone by Binner Engraving Company.jpg",
+   "author": "Binner Engraving Company",
+   "year": 1896,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:The_Eiffel_Tower._Half-tone_by_Binner_Engraving_Company.jpg",
+   "commons": "File:The Eiffel Tower. Half-tone by Binner Engraving Company.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 344,
+   "h": 437,
+   "rings": 415,
+   "points": 3222,
+   "inked": 0.1381
+  },
+  "bytes": 25376,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 75,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 75,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:The Eiffel Tower. Half-tone by Binner Engraving Company.jpg",
+    "score": 8,
+    "quality": [
+     75,
+     75
+    ],
+    "bytes": 25376
+   },
+   {
+    "title": "File:La Tour Eiffel - terrasse de la première plate-forme.jpg",
+    "score": 6,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 10486
+   }
+  ]
+ },
+ {
+  "id": "colosseum",
+  "name": "Colosseum",
+  "source": {
+   "title": "Colosseopiranesi.jpg",
+   "author": "clop",
+   "year": 2008,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Colosseopiranesi.jpg",
+   "commons": "File:Colosseopiranesi.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 349,
+   "h": 252,
+   "rings": 889,
+   "points": 5850,
+   "inked": 0.2445
+  },
+  "bytes": 44114,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 73,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 73,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Colosseopiranesi.jpg",
+    "score": 8,
+    "quality": [
+     73,
+     73
+    ],
+    "bytes": 44114
+   },
+   {
+    "title": "File:Inner view of the Colosseum MET DP806202.jpg",
+    "score": 9,
+    "quality": [
+     38,
+     38
+    ],
+    "bytes": 2340
+   }
+  ]
+ },
+ {
+  "id": "bigben",
+  "name": "Big Ben",
+  "source": {
+   "title": "Big Ben from the London Eye.jpg",
+   "author": "PhilDaBirdMan",
+   "year": 2023,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Big_Ben_from_the_London_Eye.jpg",
+   "commons": "File:Big Ben from the London Eye.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 529,
+   "dots": 958,
+   "rings": 0,
+   "points": 958
+  },
+  "bytes": 10290,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Big Ben from the London Eye.jpg",
+    "score": 3,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 10290
+   },
+   {
+    "title": "File:Big Ben from the London Eye 2.jpg",
+    "score": 3,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 9406
+   },
+   {
+    "title": "File:Fridel Meyer (13a).JPG",
+    "score": 3,
+    "quality": [
+     75,
+     75
+    ],
+    "bytes": 15560
+   }
+  ]
+ },
+ {
+  "id": "tajmahal",
+  "name": "Taj Mahal",
+  "source": {
+   "title": "1836-35-Ruins about the Taj Mahal, Agra.png",
+   "author": "Artist: S. Austin - Engraved by: E. Challis",
+   "year": 1835,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:1836-35-Ruins_about_the_Taj_Mahal,_Agra.png",
+   "commons": "File:1836-35-Ruins about the Taj Mahal, Agra.png"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 355,
+   "h": 151,
+   "rings": 336,
+   "points": 2055,
+   "inked": 0.3387
+  },
+  "bytes": 15352,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 69,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 69,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:1836-35-Ruins about the Taj Mahal, Agra.png",
+    "score": 9,
+    "quality": [
+     69,
+     69
+    ],
+    "bytes": 15352
+   },
+   {
+    "title": "File:The Taj Mahal, Tomb of the Emperor Shah Jehan - British Library X757(24).jpg",
+    "score": 9,
+    "quality": [
+     65,
+     65
+    ],
+    "bytes": 8293
+   },
+   {
+    "title": "File:'Taj Mahal, India' by Charles W. Bartlett, 1916, etching.JPG",
+    "score": 10,
+    "quality": [
+     37,
+     37
+    ],
+    "bytes": 1283
+   }
+  ]
+ },
+ {
+  "id": "giza",
+  "name": "Pyramids of Giza",
+  "source": {
+   "title": "Adrien Dauzats - The Great Pyramid, Giza - 2015.506.1 - Metropolitan Museum of Art.jpg",
+   "author": "Adrien Dauzats",
+   "year": 1830,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Adrien_Dauzats_-_The_Great_Pyramid,_Giza_-_2015.506.1_-_Metropolitan_Museum_of_Art.jpg",
+   "commons": "File:Adrien Dauzats - The Great Pyramid, Giza - 2015.506.1 - Metropolitan Museum of Art.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 913,
+   "dots": 1809,
+   "rings": 0,
+   "points": 1809
+  },
+  "bytes": 19454,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Adrien Dauzats - The Great Pyramid, Giza - 2015.506.1 - Metropolitan Museum of Art.jpg",
+    "score": 7,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 19454
+   },
+   {
+    "title": "File:Louis Haghe - Egypt and Nubia- Volume I - No. 18, The Great Sphinx, Pyramids of Gizeh, F - 1953.503 - Cleveland Museum of Art.jpg",
+    "score": 7,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 9680
+   }
+  ]
+ },
+ {
+  "id": "machupicchu",
+  "name": "Machu Picchu",
+  "source": {
+   "title": "The three-windowed temple facing the plaza in Machu Picchu 1911.jpg",
+   "author": "Hiram Bingham III",
+   "year": 1911,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:The_three-windowed_temple_facing_the_plaza_in_Machu_Picchu_1911.jpg",
+   "commons": "File:The three-windowed temple facing the plaza in Machu Picchu 1911.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 386,
+   "dots": 815,
+   "rings": 0,
+   "points": 815
+  },
+  "bytes": 8640,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:The three-windowed temple facing the plaza in Machu Picchu 1911.jpg",
+    "score": 5,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 8640
+   },
+   {
+    "title": "File:Agustín Lizárraga signature on Temple of Three Windows of Machu Picchu enhanced.jpg",
+    "score": 5,
+    "quality": [
+     78,
+     78
+    ],
+    "bytes": 10563
+   },
+   {
+    "title": "File:Agustín Lizárraga signature on Temple of Three Windows of Machu Picchu.jpg",
+    "score": 5,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 8517
+   }
+  ]
+ },
+ {
+  "id": "greatwall",
+  "name": "Great Wall of China",
+  "source": {
+   "title": "KITLV - 36D658 - The Great Wall of China - Copper engraving - Circa 1750.tif",
+   "author": "Unknown artist Unknown artist",
+   "year": 1750,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:KITLV_-_36D658_-_The_Great_Wall_of_China_-_Copper_engraving_-_Circa_1750.tif",
+   "commons": "File:KITLV - 36D658 - The Great Wall of China - Copper engraving - Circa 1750.tif"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 319,
+   "h": 219,
+   "rings": 242,
+   "points": 1937,
+   "inked": 0.2365
+  },
+  "bytes": 15049,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 75,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 75,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:KITLV - 36D658 - The Great Wall of China - Copper engraving - Circa 1750.tif",
+    "score": 10,
+    "quality": [
+     75,
+     75
+    ],
+    "bytes": 15049
+   },
+   {
+    "title": "File:Allom - The Great Wall of China.jpg",
+    "score": 10,
+    "quality": [
+     69,
+     69
+    ],
+    "bytes": 14643
+   },
+   {
+    "title": "File:Termination of the Great Wall.jpg",
+    "score": 7,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 8717
+   }
+  ]
+ },
+ {
+  "id": "sydneyopera",
+  "name": "Sydney Opera House",
+  "source": {
+   "title": "Sydney opera house in sunlight backed by cloud.jpg",
+   "author": "Leon Brooks",
+   "year": 2013,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Sydney_opera_house_in_sunlight_backed_by_cloud.jpg",
+   "commons": "File:Sydney opera house in sunlight backed by cloud.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 940,
+   "dots": 1782,
+   "rings": 0,
+   "points": 1782
+  },
+  "bytes": 19133,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 77,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 77,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Sydney opera house in sunlight backed by cloud.jpg",
+    "score": 3,
+    "quality": [
+     77,
+     77
+    ],
+    "bytes": 19133
+   }
+  ]
+ },
+ {
+  "id": "goldengate",
+  "name": "Golden Gate Bridge",
+  "source": {
+   "title": "EXTERIOR, SOUTHSIDE WITH GOLDEN GATE BRIDGE - Fort Point, U.S. Highway 101, San Francisco, San Francisco County, CA HABS CAL,38-SANFRA,4-13.tif",
+   "author": "Related names: Maul, David, transmitter De Vries, David G Jandoli, Liz, transmit",
+   "year": 1933,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:EXTERIOR,_SOUTHSIDE_WITH_GOLDEN_GATE_BRIDGE_-_Fort_Point,_U.S._Highway_101,_San_Francisco,_San_Francisco_County,_CA_HABS_CAL,38-SANFRA,4-13.tif",
+   "commons": "File:EXTERIOR, SOUTHSIDE WITH GOLDEN GATE BRIDGE - Fort Point, U.S. Highway 101, San Francisco, San Francisco County, CA HABS CAL,38-SANFRA,4-13.tif"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 564,
+   "dots": 1162,
+   "rings": 0,
+   "points": 1162
+  },
+  "bytes": 12371,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 88,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 88,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:EXTERIOR, SOUTHSIDE WITH GOLDEN GATE BRIDGE - Fort Point, U.S. Highway 101, San Francisco, San Francisco County, CA HABS CAL,38-SANFRA,4-13.tif",
+    "score": 5,
+    "quality": [
+     88,
+     88
+    ],
+    "bytes": 12371
+   },
+   {
+    "title": "File:VIEW OF FORT AND GOLDEN GATE BRIDGE - Fort Point, U.S. Highway 101, San Francisco, San Francisco County, CA HABS CAL,38-SANFRA,4-11.tif",
+    "score": 6,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 8542
+   },
+   {
+    "title": "File:Crissy Field beach and Golden Gate Bridge.jpg",
+    "score": 3,
+    "quality": [
+     70,
+     70
+    ],
+    "bytes": 3833
+   }
+  ]
+ },
+ {
+  "id": "liberty",
+  "name": "Statue of Liberty",
+  "source": {
+   "title": "STATUE OF LIBERTY, building PEDESTAL by W P Snyder, antique engraving 1885.jpg",
+   "author": "W. P. Snyder",
+   "year": 1885,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:STATUE_OF_LIBERTY,_building_PEDESTAL_by_W_P_Snyder,_antique_engraving_1885.jpg",
+   "commons": "File:STATUE OF LIBERTY, building PEDESTAL by W P Snyder, antique engraving 1885.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 323,
+   "h": 217,
+   "rings": 199,
+   "points": 1671,
+   "inked": 0.1561
+  },
+  "bytes": 12540,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 71,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 71,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:STATUE OF LIBERTY, building PEDESTAL by W P Snyder, antique engraving 1885.jpg",
+    "score": 9,
+    "quality": [
+     71,
+     71
+    ],
+    "bytes": 12540
+   }
+  ]
+ },
+ {
+  "id": "westernwall",
+  "name": "Western Wall",
+  "source": {
+   "title": "Frederick Richards - Richards-98199 - The Wailing Wall.jpg",
+   "author": "Frederick Charles Richards",
+   "year": 1932,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Frederick_Richards_-_Richards-98199_-_The_Wailing_Wall.jpg",
+   "commons": "File:Frederick Richards - Richards-98199 - The Wailing Wall.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 354,
+   "h": 436,
+   "rings": 989,
+   "points": 6700,
+   "inked": 0.2266
+  },
+  "bytes": 52818,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Frederick Richards - Richards-98199 - The Wailing Wall.jpg",
+    "score": 7,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 52818
+   },
+   {
+    "title": "File:PikiWiki Israel 70746 the western wall.jpg",
+    "score": 5,
+    "quality": [
+     85,
+     85
+    ],
+    "bytes": 14839
+   },
+   {
+    "title": "File:Jerusalem Western Wall BW 4.JPG",
+    "score": 5,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 10266
+   }
+  ]
+ },
+ {
+  "id": "petra",
+  "name": "Petra",
+  "source": {
+   "title": "Gezicht op de graftempel Al Khazneh in Petra, RP-P-2018-3285.jpg",
+   "author": "Rijksmuseum",
+   "year": 1834,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Gezicht_op_de_graftempel_Al_Khazneh_in_Petra,_RP-P-2018-3285.jpg",
+   "commons": "File:Gezicht op de graftempel Al Khazneh in Petra, RP-P-2018-3285.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 317,
+   "h": 448,
+   "rings": 1372,
+   "points": 7768,
+   "inked": 0.1304
+  },
+  "bytes": 62802,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 67,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 67,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Gezicht op de graftempel Al Khazneh in Petra, RP-P-2018-3285.jpg",
+    "score": 8,
+    "quality": [
+     67,
+     67
+    ],
+    "bytes": 62802
+   },
+   {
+    "title": "File:Petra Jordan BW 36.JPG",
+    "score": 3,
+    "quality": [
+     83,
+     83
+    ],
+    "bytes": 10976
+   },
+   {
+    "title": "File:Petra Jordan BW 37.JPG",
+    "score": 3,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 10365
+   }
+  ]
+ },
+ {
+  "id": "acropolis",
+  "name": "Acropolis",
+  "source": {
+   "title": "Drawing, View of the Acropolis from Mount Lycabettus, Athens, April 1869 (CH 18197455).jpg",
+   "author": "Frederic Edwin Church",
+   "year": 1869,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Drawing,_View_of_the_Acropolis_from_Mount_Lycabettus,_Athens,_April_1869_(CH_18197455).jpg",
+   "commons": "File:Drawing, View of the Acropolis from Mount Lycabettus, Athens, April 1869 (CH 18197455).jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 300,
+   "h": 152,
+   "rings": 213,
+   "points": 1697,
+   "inked": 0.2963
+  },
+  "bytes": 12961,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 71,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 71,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Drawing, View of the Acropolis from Mount Lycabettus, Athens, April 1869 (CH 18197455).jpg",
+    "score": 11,
+    "quality": [
+     71,
+     71
+    ],
+    "bytes": 12961
+   },
+   {
+    "title": "File:Drawing, View of the Acropolis, Athens, April 1869 (CH 18197461-2).jpg",
+    "score": 11,
+    "quality": [
+     64,
+     64
+    ],
+    "bytes": 9119
+   },
+   {
+    "title": "File:Drawing, North Peristyle of the Parthenon, Athens, 1869 (CH 18199563).jpg",
+    "score": 11,
+    "quality": [
+     64,
+     64
+    ],
+    "bytes": 14269
+   }
+  ]
+ },
+ {
+  "id": "sagrada",
+  "name": "Sagrada Família",
+  "source": {
+   "title": "Apsis Sagrada Familia.jpg",
+   "author": "Triptychon",
+   "year": 2026,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Apsis_Sagrada_Familia.jpg",
+   "commons": "File:Apsis Sagrada Familia.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 940,
+   "dots": 1941,
+   "rings": 0,
+   "points": 1941
+  },
+  "bytes": 20883,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 81,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 81,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Apsis Sagrada Familia.jpg",
+    "score": 1,
+    "quality": [
+     81,
+     81
+    ],
+    "bytes": 20883
+   },
+   {
+    "title": "File:Temple Expiatori de la Sagrada Família (85713).jpg",
+    "score": 1,
+    "quality": [
+     78,
+     78
+    ],
+    "bytes": 18038
+   }
+  ]
+ },
+ {
+  "id": "towerbridge",
+  "name": "Tower Bridge",
+  "source": {
+   "title": "London-TowerBridge-1900-Closed.jpg",
+   "author": "Unknown author Unknown author",
+   "year": 1890,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:London-TowerBridge-1900-Closed.jpg",
+   "commons": "File:London-TowerBridge-1900-Closed.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 523,
+   "dots": 810,
+   "rings": 0,
+   "points": 810
+  },
+  "bytes": 8775,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:London-TowerBridge-1900-Closed.jpg",
+    "score": 5,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 8775
+   },
+   {
+    "title": "File:London-TowerBridge-1900-Open.jpg",
+    "score": 5,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 8885
+   },
+   {
+    "title": "File:INF3-30 Tower Bridge Artist Eve Kirk 1939-1946.jpg",
+    "score": 5,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 18416
+   }
+  ]
+ },
+ {
+  "id": "pisa",
+  "name": "Leaning Tower of Pisa",
+  "source": {
+   "title": "Pisa basilica tower c1830.jpg",
+   "author": "Jakob Rauschenfels von Steinberg",
+   "year": 1830,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Pisa_basilica_tower_c1830.jpg",
+   "commons": "File:Pisa basilica tower c1830.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 462,
+   "dots": 944,
+   "rings": 0,
+   "points": 944
+  },
+  "bytes": 10016,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Pisa basilica tower c1830.jpg",
+    "score": 5,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 10016
+   },
+   {
+    "title": "File:Leaning Tower of Pisa, 2023.jpg",
+    "score": 3,
+    "quality": [
+     74,
+     74
+    ],
+    "bytes": 18040
+   },
+   {
+    "title": "File:Circling around the Tower of Pisa.jpg",
+    "score": 4,
+    "quality": [
+     72,
+     72
+    ],
+    "bytes": 12017
+   }
+  ]
+ },
+ {
+  "id": "redeemer",
+  "name": "Christ the Redeemer",
+  "source": {
+   "title": "Rio skyline and Cristo Redentor from Sugarloaf Mountain, Brazil.jpg",
+   "author": "Wilfredor",
+   "year": 2023,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Rio_skyline_and_Cristo_Redentor_from_Sugarloaf_Mountain,_Brazil.jpg",
+   "commons": "File:Rio skyline and Cristo Redentor from Sugarloaf Mountain, Brazil.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 425,
+   "dots": 803,
+   "rings": 0,
+   "points": 803
+  },
+  "bytes": 8574,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 79,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Rio skyline and Cristo Redentor from Sugarloaf Mountain, Brazil.jpg",
+    "score": 3,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 8574
+   }
+  ]
+ },
+ {
+  "id": "fuji",
+  "name": "Mount Fuji",
+  "source": {
+   "title": "Le Fuji dans les montagnes Totomi - Hokusai preparatoire Guimet.jpg",
+   "author": "Katsushika Hokusai",
+   "year": 1834,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Le_Fuji_dans_les_montagnes_Totomi_-_Hokusai_preparatoire_Guimet.jpg",
+   "commons": "File:Le Fuji dans les montagnes Totomi - Hokusai preparatoire Guimet.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 353,
+   "h": 266,
+   "rings": 669,
+   "points": 5184,
+   "inked": 0.283
+  },
+  "bytes": 40135,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Le Fuji dans les montagnes Totomi - Hokusai preparatoire Guimet.jpg",
+    "score": 10,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 40135
+   },
+   {
+    "title": "File:Artiste s'installant pour peindre le mont Fuji - Hokusai preparatoire Guimet 1.jpg",
+    "score": 10,
+    "quality": [
+     75,
+     75
+    ],
+    "bytes": 23377
+   },
+   {
+    "title": "File:DV239 Mount Fuji, Japan.jpg",
+    "score": 10,
+    "quality": [
+     37,
+     37
+    ],
+    "bytes": 428
+   }
+  ]
+ },
+ {
+  "id": "angkor",
+  "name": "Angkor Wat",
+  "source": {
+   "title": "Le Tour du monde-08-p300.jpg",
+   "author": "Jacques Guiaud",
+   "year": 1863,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Le_Tour_du_monde-08-p300.jpg",
+   "commons": "File:Le Tour du monde-08-p300.jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 530,
+   "dots": 1114,
+   "rings": 0,
+   "points": 1114
+  },
+  "bytes": 11915,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 83,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 83,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Le Tour du monde-08-p300.jpg",
+    "score": 6,
+    "quality": [
+     83,
+     83
+    ],
+    "bytes": 11915
+   },
+   {
+    "title": "File:Angkor Wat west gate.jpg",
+    "score": 6,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 10680
+   },
+   {
+    "title": "File:Commission at Angkor Wat.jpg",
+    "score": 7,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 11016
+   }
+  ]
+ },
+ {
+  "id": "brandenburg",
+  "name": "Brandenburg Gate",
+  "source": {
+   "title": "Allers Spree Berlin (Brandenburger Tor).jpg",
+   "author": "Christian Wilhelm Allers (1857-1915)",
+   "year": 1889,
+   "plate": "drawing",
+   "record": "https://commons.wikimedia.org/wiki/File:Allers_Spree_Berlin_(Brandenburger_Tor).jpg",
+   "commons": "File:Allers Spree Berlin (Brandenburger Tor).jpg"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 342,
+   "h": 441,
+   "rings": 434,
+   "points": 3420,
+   "inked": 0.1323
+  },
+  "bytes": 27300,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 72,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 72,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Allers Spree Berlin (Brandenburger Tor).jpg",
+    "score": 9,
+    "quality": [
+     72,
+     72
+    ],
+    "bytes": 27300
+   },
+   {
+    "title": "File:Berger nach Lüdtke Brandenburger Tor Aquatinta 1796.jpg",
+    "score": 7,
+    "quality": [
+     79,
+     79
+    ],
+    "bytes": 10009
+   },
+   {
+    "title": "File:Berlin, Mitte, Berlin - Brandenburger Tor (Zeno Ansichtskarten).jpg",
+    "score": 7,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 8256
+   }
+  ]
+ },
+ {
+  "id": "burjkhalifa",
+  "name": "Burj Khalifa",
+  "source": {
+   "title": "Burj Khalifa 16.jpg",
+   "author": "EditQ",
+   "year": 2023,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Burj_Khalifa_16.jpg",
+   "commons": "File:Burj Khalifa 16.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 529,
+   "dots": 1024,
+   "rings": 0,
+   "points": 1024
+  },
+  "bytes": 10902,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 82,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 82,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Burj Khalifa 16.jpg",
+    "score": 3,
+    "quality": [
+     82,
+     82
+    ],
+    "bytes": 10902
+   },
+   {
+    "title": "File:Burj Khalifa Image.jpg",
+    "score": 3,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 10281
+   },
+   {
+    "title": "File:Front view from Burj Khalifa Metro Station.jpg",
+    "score": 4,
+    "quality": [
+     76,
+     76
+    ],
+    "bytes": 7104
+   }
+  ]
+ },
+ {
+  "id": "empirestate",
+  "name": "Empire State Building",
+  "source": {
+   "title": "Empire State Building 2022.jpg",
+   "author": "John Dillenbeck",
+   "year": 2022,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Empire_State_Building_2022.jpg",
+   "commons": "File:Empire State Building 2022.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 573,
+   "dots": 1218,
+   "rings": 0,
+   "points": 1218
+  },
+  "bytes": 12986,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 89,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 89,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Empire State Building 2022.jpg",
+    "score": 3,
+    "quality": [
+     89,
+     89
+    ],
+    "bytes": 12986
+   }
+  ]
+ },
+ {
+  "id": "neuschwanstein",
+  "name": "Neuschwanstein",
+  "source": {
+   "title": "Neuschwanstein Castle 2024.jpg",
+   "author": "Wilfredor",
+   "year": 2024,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:Neuschwanstein_Castle_2024.jpg",
+   "commons": "File:Neuschwanstein Castle 2024.jpg"
+  },
+  "license": "CC0",
+  "licenseLabel": "CC0",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 470,
+   "dots": 900,
+   "rings": 0,
+   "points": 900
+  },
+  "bytes": 9581,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 80,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:Neuschwanstein Castle 2024.jpg",
+    "score": 6,
+    "quality": [
+     80,
+     80
+    ],
+    "bytes": 9581
+   },
+   {
+    "title": "File:Neuschwanstein Castle LOC print rotated.jpg",
+    "score": 7,
+    "quality": [
+     78,
+     78
+    ],
+    "bytes": 9824
+   },
+   {
+    "title": "File:Neuschwanstein Castle LOC print.jpg",
+    "score": 7,
+    "quality": [
+     77,
+     77
+    ],
+    "bytes": 9266
+   }
+  ]
+ },
+ {
+  "id": "santorini",
+  "name": "Santorini",
+  "source": {
+   "title": "ETH-BIB-Friedlaender-Santorin, Gang bei Oia-Hs 1309-0010-030.tif",
+   "author": "Immanuel Friedlaender",
+   "year": 1923,
+   "plate": "photograph",
+   "record": "https://commons.wikimedia.org/wiki/File:ETH-BIB-Friedlaender-Santorin,_Gang_bei_Oia-Hs_1309-0010-030.tif",
+   "commons": "File:ETH-BIB-Friedlaender-Santorin, Gang bei Oia-Hs 1309-0010-030.tif"
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "turned": 0,
+  "traced": {
+   "w": 705,
+   "h": 482,
+   "dots": 1008,
+   "rings": 0,
+   "points": 1008
+  },
+  "bytes": 10769,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 84,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 84,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true,
+  "candidates": [
+   {
+    "title": "File:ETH-BIB-Friedlaender-Santorin, Gang bei Oia-Hs 1309-0010-030.tif",
+    "score": 5,
+    "quality": [
+     84,
+     84
+    ],
+    "bytes": 10769
+   }
+  ]
+ }
+]

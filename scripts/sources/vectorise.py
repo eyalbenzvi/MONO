@@ -3,10 +3,11 @@ Make artwork's last step: a prepared master (scripts/archive prepImage: the
 ink as alpha, 750 x 1000) traced to one-ink vector outlines, for templates
 that draw it as SVG paths (no images in a print).
 
-  python scripts/sources/vectorise.py <master.webp> <out.json> [--min-area N] [--eps E] [--grow G]
+  python scripts/sources/vectorise.py <master.webp> <out.json> [--min-area N] [--eps E] [--grow G] [--scale S]
 
 The ink is the alpha at half strength and over, thickened by G pixels (a
-hairline engraving grows to a line a screen holds); specks under N pixels go;
+hairline engraving grows to a line a screen holds), at S of the master's
+size (a picture printed small needs fewer points); specks under N pixels go;
 the rest is cropped to its box and traced (OpenCV contours, outer and hole
 rings, each simplified by E pixels). Out: {"w", "h", "rings": [[x, y, x, y, ...], ...]}
 in the crop's whole pixels, drawn even-odd (a hole is a ring inside a ring).
@@ -23,8 +24,11 @@ src, out = args[0], args[1]
 min_area = int(args[args.index("--min-area") + 1]) if "--min-area" in args else 6
 eps = float(args[args.index("--eps") + 1]) if "--eps" in args else 0.7
 grow = int(args[args.index("--grow") + 1]) if "--grow" in args else 0
+scale = float(args[args.index("--scale") + 1]) if "--scale" in args else 1.0
 
 alpha = np.asarray(Image.open(src).convert("RGBA"))[:, :, 3]
+if scale != 1.0:
+    alpha = cv2.resize(alpha, (round(alpha.shape[1] * scale), round(alpha.shape[0] * scale)), interpolation=cv2.INTER_AREA)
 ink = (alpha >= 128).astype(np.uint8)
 if grow:
     ink = cv2.dilate(ink, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * grow + 1, 2 * grow + 1)))

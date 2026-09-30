@@ -11,9 +11,9 @@ export const LINK_MAX = 300;
 /**
  * The products whose own inputs already have a larger, justified bound, from
  * their own tests: a drawn route is its points, a family its fifteen names, a
- * game its moves, a map its stations, a tune its notes, a passport page its ten stamps (each a country, a day and how you came), a front page its headline and standfirst.
+ * game its moves, a map its stations, a tune its notes, a passport page its ten stamps (each a country, a day and how you came), a front page its headline and standfirst, a journal page its nine landmarks.
  */
-export const OWN_LINK_MAX: Record<string, number> = { route: 1040, family: 1000, metro: 700, chess: 600, musicbox: 400, orbits: 335, crossword: 310, editions: 560, sayings: 900, label: 440, credits: 1040, card: 420, receipt: 920, message: 1000, sign: 420, tour: 420, lineup: 700, passport: 460, frontpage: 540 };
+export const OWN_LINK_MAX: Record<string, number> = { route: 1040, family: 1000, metro: 700, chess: 600, musicbox: 400, orbits: 335, crossword: 310, editions: 560, sayings: 900, label: 440, credits: 1040, card: 420, receipt: 920, message: 1000, sign: 420, tour: 420, lineup: 700, passport: 460, frontpage: 540, landmarks: 380 };
 /**
  * What the visitor's three caption lines at their longest (24, 36 and 36
  * characters, about 130 in the link's base64) may add to any link: the caption
