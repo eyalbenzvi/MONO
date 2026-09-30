@@ -35,14 +35,22 @@ const PATHS: Record<Pictogram, string> = {
 };
 
 /** A pictogram, `size` wide, centred at (cx, cy), in strokes `weight` (in the 100 box's units) wide. */
-export function pictogram(name: Pictogram, cx: number, cy: number, size: number, weight = 5): string {
+export const pictogram = (name: Pictogram, cx: number, cy: number, size: number, weight = 5) => boxPath(PATHS[name], cx, cy, size, weight);
+
+/**
+ * Line work drawn in a 100 × 100 box, `size` wide, centred at (cx, cy):
+ * absolute M, L, H, V, Q and A commands move into place, relative arcs (the
+ * rings) only scale. The pictograms here and the patch's emblems use it.
+ */
+export function boxPath(path: string, cx: number, cy: number, size: number, weight = 5): string {
   const k = size / 100;
-  const d = PATHS[name].replace(/([MLHVQAZa-z])([^MLHVQAZa-z]*)/g, (_, cmd: string, args: string) => {
+  const d = path.replace(/([MLHVQAZa-z])([^MLHVQAZa-z]*)/g, (_, cmd: string, args: string) => {
     const nums = args.trim() ? args.trim().split(/[\s,]+/).map(Number) : [];
     // Absolute commands move into place; relative arcs (the rings) only scale.
     if (cmd === "H") return `H${f1(cx + (nums[0] - 50) * k)}`;
     if (cmd === "V") return `V${f1(cy + (nums[0] - 50) * k)}`;
     if (cmd === "a") return `a${nums.map((v, i) => (i >= 2 && i <= 4 ? String(v) : f1(v * k))).join(" ")}`;
+    if (cmd === "A") return `A${nums.map((v, i) => (i === 5 ? f1(cx + (v - 50) * k) : i === 6 ? f1(cy + (v - 50) * k) : i >= 2 ? String(v) : f1(v * k))).join(" ")}`;
     if (cmd === "Z") return "Z";
     return cmd + nums.map((v, i) => f1(i % 2 ? cy + (v - 50) * k : cx + (v - 50) * k)).join(" ");
   });

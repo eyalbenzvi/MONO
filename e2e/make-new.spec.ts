@@ -162,6 +162,16 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-lineup-n0")).toHaveValue("Dad"),
   },
+  {
+    slug: "patch",
+    fill: async (page) => {
+      await page.locator("#make-patch-mission").fill("Operation Beach");
+      await page.locator("#make-patch-n0").fill("Mum");
+      await page.locator("#make-patch-n1").fill("Dad");
+      await page.locator("#make-patch-emblem").selectOption("boat");
+    },
+    again: async (page) => expect(page.locator("#make-patch-emblem")).toHaveValue("boat"),
+  },
 ];
 
 for (const c of CASES)
