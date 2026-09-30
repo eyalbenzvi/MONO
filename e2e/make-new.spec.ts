@@ -204,6 +204,16 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-flights-y0")).toHaveValue("2019"),
   },
+  {
+    slug: "passport",
+    fill: async (page) => {
+      await page.locator("#make-passport-name").fill("Noa Cohen");
+      await expect(page.locator("#make-passport-c0 option[value=JPN]")).toBeAttached();
+      await page.locator("#make-passport-c0").selectOption("JPN");
+      await page.locator("#make-passport-d0").fill("2019-04-12");
+    },
+    again: async (page) => expect(page.locator("#make-passport-c0")).toHaveValue("JPN"),
+  },
 ];
 
 for (const c of CASES)

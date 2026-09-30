@@ -7,8 +7,8 @@ import { INPUT } from "./types";
 export interface Column {
   key: string;
   label: string;
-  /** "text" (the default), "year" (four figures), "time" (hh:mm) or a list of choices. */
-  kind?: "text" | "year" | "time" | readonly { value: string; label: string }[];
+  /** "text" (the default), "year" (four figures), "time" (hh:mm), "date" (the browser's day picker) or a list of choices. */
+  kind?: "text" | "year" | "time" | "date" | readonly { value: string; label: string }[];
   max?: number;
   placeholder?: string;
   /** Its share of the row's width (a CSS grid track, "1fr" by default). */
@@ -62,6 +62,7 @@ export function RowsField({ id, noun, columns, rows, setRows, min = 1, max, erro
                 ) : (
                   <input
                     id={cid}
+                    type={c.kind === "date" ? "date" : undefined}
                     list={c.suggestions ? `${id}-${c.key}-ours` : undefined}
                     value={r[c.key] ?? ""}
                     inputMode={c.kind === "year" ? "numeric" : undefined}

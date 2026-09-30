@@ -146,6 +146,29 @@ export function arcText(s: string, cx: number, cy: number, r: number, mid: numbe
   return out;
 }
 
+/**
+ * A line of letters turned by `deg` about its centre (cx, cy): each glyph
+ * placed along the turned baseline and rotated on its own, as arcText does,
+ * since the canvas preview draws no transformed text runs.
+ */
+export function turnedText(s: string, cx: number, cy: number, deg: number, size: number, opts: { bold?: boolean; family?: Family; spacing?: number } = {}): string {
+  const chars = [...s];
+  const family = opts.family ?? "mono";
+  const w = chars.map((ch) => textWidth(ch, size, { family, bold: opts.bold }) + (opts.spacing ?? 0));
+  const total = w.reduce((a, b) => a + b, 0);
+  const [c, sn] = [Math.cos(deg * DEG), Math.sin(deg * DEG)];
+  let at = -total / 2;
+  let out = "";
+  chars.forEach((ch, i) => {
+    const u = at + w[i] / 2;
+    at += w[i];
+    if (ch === " ") return;
+    const [x, y] = [cx + u * c, cy + u * sn];
+    out += `<g transform="rotate(${f1(deg)} ${f1(x)} ${f1(y)})"><text x="${f1(x)}" y="${f1(y + 0.35 * size)}" fill="${INK}" font-size="${f1(size)}" font-family="${FONT_FAMILY[family]}" text-anchor="middle"${opts.bold ? ` font-weight="bold"` : ""}>${esc(ch)}</text></g>`;
+  });
+  return out;
+}
+
 /** A polyline as path data (one decimal). */
 export function polyline(points: [number, number][], close = false): string {
   let d = "";
