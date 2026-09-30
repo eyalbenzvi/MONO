@@ -322,7 +322,7 @@ describe("stage-1 fixes", () => {
     useCartStore.getState().addToCart(W1, "M", "black", 8);
     useCartStore.getState().addToCart(W1, "M", "black", 3);
     expect(useCartStore.getState().cart[0].qty).toBe(9);
-    expect(useUiStore.getState().toast?.message).toMatch(/max 9/i);
+    expect(useUiStore.getState().toast?.message).toBe("Limit of 9 per tee.");
   });
 
   it("R20: a size change that would merge past 9 is refused", async () => {
@@ -331,7 +331,7 @@ describe("stage-1 fixes", () => {
     useCartStore.getState().addToCart(W1, "L", "black", 5);
     useCartStore.getState().changeCartItem({ id: W1, size: "M", color: "black" }, { size: "L" });
     expect(useCartStore.getState().cart.map((l) => [l.size, l.qty])).toEqual([["M", 6], ["L", 5]]);
-    expect(useUiStore.getState().toast?.message).toMatch(/max 9/i);
+    expect(useUiStore.getState().toast?.message).toBe("Limit of 9 per tee.");
   });
 
   it("I15: Start over can be undone (snapshot / restore brings Saved back)", async () => {

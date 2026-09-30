@@ -45,9 +45,10 @@ describe("share links", () => {
     expect(channelLink("tiktok", shirt, "black", ORIGIN)).toBeNull();
   });
 
-  it("describes the tee in the chosen colour", () => {
-    expect(shareMessage(shirt, "white")).toContain("white tee");
-    expect(shareMessage(shirt, "white")).toContain(`$${shirt.price}`);
+  it("describes the tee in the chosen colour, in the brand's voice: no price, no emoji", () => {
+    expect(shareMessage(shirt, "white")).toBe(`“${shirt.title}”, white tee. MONO`);
+    expect(shareMessage(shirt, "white", "x")).toBe(`Made on MONO: “${shirt.title}”, white tee.`);
+    expect(shareMessage(shirt, "black")).not.toMatch(/\$|\p{Extended_Pictographic}/u);
   });
 
   it("gives downloads a clean file name", () => {

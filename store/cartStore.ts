@@ -240,7 +240,7 @@ export const useCartStore = create<CartState & CartActions>()(
           selectedColors: { ...s.selectedColors, [id]: tee },
           preferredSize: size,
         }));
-        if (capped) toast(`Max ${MAX_QTY} per item`);
+        if (capped) toast(`Limit of ${MAX_QTY} per tee.`);
         else {
           // One confirmation everywhere: the mini bag at the bottom (the bag is where to take it back).
           if (!options.silent) useUiStore.getState().noteAdded({ id, size, color: tee, added: Array(qty).fill(tee), ...printFields(custom, upload) });
@@ -260,7 +260,7 @@ export const useCartStore = create<CartState & CartActions>()(
         const { custom, upload } = print;
         const status = pairStatus(get().cart, id, size, custom, upload);
         if (status.capped) {
-          toast(`Max ${MAX_QTY} per item — the pair wasn't added`);
+          toast(`Limit of ${MAX_QTY} per tee. The pair wasn’t added.`);
           return false;
         }
         if (status.missing.length === 0) return false;
@@ -302,7 +302,7 @@ export const useCartStore = create<CartState & CartActions>()(
       changeCartItem: (line, to) => {
         if (to.color && !getShirtById(line.id)?.colors.includes(to.color)) return;
         const { items, capped } = changeItem(get().cart, line, to);
-        if (capped) toast(`Max ${MAX_QTY} per item`);
+        if (capped) toast(`Limit of ${MAX_QTY} per tee.`);
         else set({ cart: items });
       },
 

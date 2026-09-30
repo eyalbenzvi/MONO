@@ -37,14 +37,14 @@ export default function PassportEditor({ arrival, touched, onChange }: EditorPro
   const [rows, setRows] = useState<Row[]>(a ? a.x.map(rowOf) : [{ c: "", d: "", by: "air" }]);
   const choices = useMemo(() => {
     const list = (countries?.list ?? []).filter((c) => (COUNTRY_CODES as readonly string[]).includes(c.a3)).sort((m, n) => (m.name < n.name ? -1 : 1));
-    return [{ value: "", label: countries ? "Choose a country" : "Loading countries…" }, ...list.map((c) => ({ value: c.a3, label: c.name }))];
+    return [{ value: "", label: countries ? "Select a country" : "Loading countries…" }, ...list.map((c) => ({ value: c.a3, label: c.name }))];
   }, [countries]);
   const columns: Column[] = [
     { key: "c", label: "Country", kind: choices, width: "1.6fr" },
     { key: "d", label: "Day", kind: "date", width: "1.3fr" },
     { key: "by", label: "How", kind: BY, width: "1fr" },
   ];
-  const errors = rows.map((r) => ({ c: touched && !r.c ? "Choose a country." : null, d: r.d && !parseDate(r.d) ? "Between 1900 and 2100." : null }));
+  const errors = rows.map((r) => ({ c: touched && !r.c ? "Select a country." : null, d: r.d && !parseDate(r.d) ? "Between 1900 and 2100." : null }));
   const stamps = rows.every((r) => r.c && (!r.d || parseDate(r.d))) ? rows.map((r): Stamp => (r.by === "train" ? [r.c, r.d || 0, 1] : r.d ? [r.c, r.d] : [r.c])) : null;
   const ok = allOk(lex, name) && !!name.value && !!stamps && stamps.length > 0;
   const spec: CustomSpec | null = ok ? { t: "passport", v: 1, p: { n: name.value!, x: stamps! } } : null;
