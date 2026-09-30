@@ -9,14 +9,15 @@ import { gate } from "./fuzz";
 describe("Your ASCII: the template", () => {
   it("types each lit pixel of the pixel font in the chosen character", () => {
     // The letters sit inside a glow five cells deep: strip it to read them.
-    const letters = (rows: string[], r: number) => rows[r + 5].replace(/[+=\-:.]/g, " ").trim();
+    const letters = (rows: string[], r: number) => rows[r + 5].replace(/[:·.]/g, " ").trim();
     expect(letters(asciiRows({ x: ["HI"], f: "#" }), 0)).toBe("#   #  ###");
     expect(letters(asciiRows({ x: ["HI"], f: "self" }), 3)).toBe("HHHHH   I");
     expect(letters(asciiRows({ x: ["HI"], f: "phrase", p: "ab" }), 0)).toBe("a   b  aba");
     expect(asciiRows({ x: ["I"], f: "@", s: 1 })[6]).toContain("@/");
-    // The glow fades outwards: + next to the letters, . at its edge.
+    // The glow: a light halo (·) next to the letters, the brightest ring (:) round it, fading out to . at its edge.
     const top = asciiRows({ x: ["I"], f: "#" });
-    expect(top[4]).toContain("+");
+    expect(top[4]).toContain("·");
+    expect(top[3]).toContain(":");
     expect(top[0].trim()).toMatch(/^\.+$/);
   });
   it("validates lines, characters, fills and the phrase", () => {
@@ -137,7 +138,7 @@ describe("Your ASCII: a picture", () => {
     expect(svg).toContain("+-----");
     expect(render(spec, "white")).not.toBe(svg);
   });
-  it("the words' prints are unchanged (render hashes from before the picture mode)", () => {
+  it("the words' prints are unchanged (render hashes of the house-type banner: Plex Mono grid, bold letters in a light glow)", () => {
     const specs = [
       { x: ["NOA"], f: "self", s: 1 },
       { x: ["HAPPY", "BIRTHDAY"], f: "phrase", p: "from tel aviv", w: "For Maya" },
@@ -146,7 +147,7 @@ describe("Your ASCII: a picture", () => {
       { x: ["1991"], f: "$", w: "Tel Aviv" },
     ];
     const hashes = specs.flatMap((p) => (["black", "white"] as const).map((c) => createHash("sha256").update(render(validate({ t: "ascii", v: 1, p })!, c)).digest("hex").slice(0, 16)));
-    expect(hashes).toEqual(["6dcf182891bc13d2", "626617eb38775b4f", "3a8fc25ae1f3b9df", "0dc77148a8b67633", "a739bf7f4f947154", "4a1890df8f35d057", "10c07d83ca64085c", "2c28ae2a09865149", "2e22092a72824ac6", "d29197a6e21d7d44"]);
+    expect(hashes).toEqual(["bfbb76afd69243f1", "8e32d376f813408a", "3c681f0c4a4ba674", "73487d7a72dc5aee", "5a69954967fb725b", "1a8b221eb04f52c8", "7d557ce883cd7cfc", "a8adfea5ce3ab141", "491804cd549d46ea", "2d8b1cadafb2a048"]);
   });
   it("the largest picture link fits (48 × 27, 28 three-byte characters of words)", () => {
     const lv = gradient(48);

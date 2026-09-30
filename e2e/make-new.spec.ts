@@ -258,6 +258,12 @@ for (const c of CASES)
     await expect(page.locator("canvas[data-custom]").first()).toBeVisible();
     await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });
     await expect(page.locator("[data-print-problem]")).toHaveCount(0);
+    // The address follows the fields a moment after each change: the link is taken once it holds the last one (steady for 600 ms).
+    await expect(async () => {
+      const before = page.url();
+      await page.waitForTimeout(600);
+      expect(page.url()).toBe(before);
+    }).toPass({ timeout: 15_000 });
     const link = page.url();
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     await page.getByRole("button", { name: /^Add to bag · M · \$75$/ }).tap();

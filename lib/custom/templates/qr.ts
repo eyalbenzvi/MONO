@@ -14,7 +14,7 @@
  * white, so the code is inverted, which the phone cameras (iOS Camera,
  * Google Lens and Android's own) read.
  */
-import { INK, caption, f1, line, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, clip, f1, fitSize, line, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { encodeQr } from "../draw/qr";
 import { hostOf, linkUrl, type Params } from "../specs/qr";
@@ -23,9 +23,9 @@ import type { BaseColor } from "@/types/shirt";
 import type { CustomSpec } from "../spec";
 
 /** The code's box (modules only; the quiet zone is outside it). */
-const CODE = { x: 56, y: 50, s: 188 };
-/** The registration marks' distance from the code: at least four modules at any version from 4 (a module is 188/33 ≈ 5.7 at most). */
-const QUIET = 24;
+const CODE = { x: 60, y: 66, s: 180 };
+/** The registration marks' distance from the code: at least four modules at any version from 4 (a module is 180/33 ≈ 5.5 at most). */
+const QUIET = 22;
 /** The print always uses at least this version: a short address isn't a crude 21-module blob. */
 export const QR_MIN_VERSION = 4;
 
@@ -65,7 +65,7 @@ function marks(x0: number, y0: number, x1: number, y1: number): string {
   const L = 12;
   let s = "";
   for (const [x, y, dx, dy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]])
-    s += line(x, y, x + dx * L, y, 1) + line(x, y, x, y + dy * L, 1);
+    s += line(x, y, x + dx * L, y, STROKE.fine) + line(x, y, x, y + dy * L, STROKE.fine);
   return s;
 }
 
@@ -100,16 +100,18 @@ function qrDraw(p: Params): [string, Lines, number] {
   // Registration marks outside the quiet zone, labelled like a terminal print.
   const [x0, y0, x1, y1] = [CODE.x - QUIET, CODE.y - QUIET, CODE.x + CODE.s + QUIET, CODE.y + CODE.s + QUIET];
   s += marks(x0, y0, x1, y1);
-  s += text(x0, y0 - 6, `${size} x ${size} MODULES`, 6, { anchor: "start", spacing: 0.6 });
-  s += text(x1, y0 - 6, `MASK ${mask.toString(2).padStart(3, "0")} · LEVEL Q`, 6, { anchor: "end", spacing: 0.6 });
+  // Machine labels: small tracked capitals level with the marks' top, clear of the live area's edge.
+  const ly = y0 - 6;
+  s += text(x0, ly, `${size} × ${size} MODULES`, 5.5, { anchor: "start", spacing: 0.66 });
+  s += text(x1, ly, `MASK ${mask.toString(2).padStart(3, "0")} · LEVEL Q`, 5.5, { anchor: "end", spacing: 0.66 });
   // The address, as it prints (no scheme), in type under the marks.
   const lines = addressLines(p.a);
-  const longest = Math.max(...lines.map((l) => l.length));
-  const size2 = Math.min(11, 256 / (0.602 * longest));
-  const lead = size2 * 1.3;
+  // Sized in its own face (Plex Mono Bold) to the live width, every line at one size.
+  const size2 = Math.min(...lines.map((l) => fitSize(l, 256, 10, { bold: true, floor: 4.5 })));
+  const lead = size2 * 1.35;
   // Centred between the marks and the caption.
-  const top = (y1 + 326) / 2 - ((lines.length - 1) * lead) / 2 + size2 * 0.35;
-  lines.forEach((l, i) => (s += text(150, top + i * lead, l, Math.round(size2 * 10) / 10, { bold: true })));
+  const top = (y1 + 328) / 2 - ((lines.length - 1) * lead) / 2 + (CAP.plex * size2) / 2;
+  lines.forEach((l, i) => (s += text(150, top + i * lead, textWidth(l, size2, { bold: true }) > 256 ? clip(l, 256, size2, { bold: true }) : l, size2, { bold: true })));
   const host = hostOf(p.a);
   const title = titleWords(p) ?? (host.length <= 28 ? host : `${host.slice(0, 27)}…`);
   return [s, [title, `QR code · version ${version} · error correction Q`, "A quarter of it can be lost and it still reads"], 342];
@@ -125,4 +127,4 @@ export function qrBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => qrCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(qrBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(qrBody((spec as { p: Params }).p), color));

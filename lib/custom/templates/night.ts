@@ -1,12 +1,14 @@
 /**
  * The moon on one night, large: its lit part as a field of halftone dots (so
  * even a full moon prints as a mesh of ink, never a solid disc), the dark part
- * as the same screen in fine dots, and the phase named under it. Seen
+ * as the same screen in fine dots (the seas in smaller dots, so the full
+ * moon shows its face), the month's scale under it with the night's age
+ * marked, and the phase named in the caption. Seen
  * from the north the waxing moon is lit on the right; from the south the
  * lit side is the other one.
  */
 import { moonPhase } from "../astro";
-import { caption, circle, dot } from "../kit";
+import { DEG, STROKE, caption, circle, dot, line, text } from "../kit";
 
 export interface NightInput {
   /** The moment, as a Julian date (UT). */
@@ -25,8 +27,6 @@ export function phaseName(k: number, waxing: boolean): string {
 
 const CX = 150, CY = 150, R = 104;
 const RADIUS = R;
-/** The dot screen: spacing and dot radius (a quarter of the lit area in ink). */
-const STEP = 4.6, DOT = 1.25, DUST = 0.85;
 
 /** The phase, and whether a point (relative to the centre, y down) is on the lit part. */
 export function litTest(k: number, waxing: boolean, south: boolean, R = RADIUS) {
@@ -58,17 +58,60 @@ export function screenedMoon(cx: number, cy: number, r: number, k: number, waxin
   return s;
 }
 
+/**
+ * The near side's dark seas (selenographic longitude, latitude, in degrees; a
+ * radius as a share of the disc): the maria that give the full moon its face,
+ * printed as smaller dots. Seen from the north, east (Crisium) is on the right.
+ */
+const MARIA: [number, number, number][] = [
+  [59, 17, 0.1], [31, 8, 0.17], [17, 28, 0.15], [51, -8, 0.13], [35, -15, 0.09], [4, 13, 0.07],
+  [-15, 33, 0.24], [-2, 40, 0.1], [-30, 56, 0.08], [0, 57, 0.08], [25, 56, 0.07], [-45, 55, 0.07],
+  [-57, 20, 0.2], [-60, 0, 0.18], [-45, 35, 0.14], [-35, 5, 0.14], [-40, -12, 0.14], [-23, -10, 0.12],
+  [-17, -21, 0.15], [-39, -24, 0.09], [-10, 2, 0.06],
+];
+/** The seas' tone at a point of the disc (x right, y up, radius 1): 0 highland, 1 the heart of a sea. */
+function sea(x: number, y: number): number {
+  // Soft blobs summed, so neighbouring seas run together as they do (Imbrium into Procellarum, Serenitatis into Tranquillitatis).
+  let sum = 0;
+  for (const [lon, lat, r] of MARIA) {
+    const mx = Math.sin(lon * DEG) * Math.cos(lat * DEG), my = Math.sin(lat * DEG);
+    const d2 = ((x - mx) ** 2 + (y - my) ** 2) / (r * r);
+    if (d2 < 4) sum += Math.exp(-2 * d2);
+  }
+  return Math.min(1, 1.25 * (1 - Math.exp(-2 * sum)));
+}
+/** The synodic month, days. */
+const MONTH = 29.53;
+
 export function nightBody({ jd, south = false, caption: c }: NightInput): string {
   const { k, waxing } = moonPhase(jd);
   const lit = litTest(k, waxing, south);
-  let body = circle(CX, CY, R, 1.1);
-  // One hexagonal screen over the disc: full dots on the lit part, fine ones on the dark part (a new moon still reads as the moon).
-  for (let row = 0, y = -R; y <= R; row++, y += STEP * 0.866) {
-    for (let x = -R + (row % 2 ? STEP / 2 : 0); x <= R; x += STEP) {
-      if (x * x + y * y > (R - 1.6) * (R - 1.6)) continue;
-      if (lit(x, y)) body += dot(CX + x, CY + y, DOT);
-      else body += dot(CX + x, CY + y, DUST);
+  let body = circle(CX, CY, R, STROKE.fine);
+  // One hexagonal screen over the disc: full dots on the lit part (smaller over the seas, so the full moon shows its face),
+  // fine ones on the dark part, the seas finer still (a new moon still reads as the moon). From the south the face is turned half round.
+  const step = 4.6;
+  for (let row = 0, y = -R; y <= R; row++, y += step * 0.866) {
+    for (let x = -R + (row % 2 ? step / 2 : 0); x <= R; x += step) {
+      if (x * x + y * y > (R - 1.8) * (R - 1.8)) continue;
+      const m = south ? sea(-x / R, y / R) : sea(x / R, -y / R);
+      if (lit(x, y)) body += dot(CX + x, CY + y, 1.5 - 0.85 * m);
+      // The dark part in earthshine: the seas faintly there too, so a new moon still has a face, not a flat screen.
+      else body += dot(CX + x, CY + y, 0.9 - 0.4 * m);
     }
   }
+  // The month under it: new, the quarters and full on a hairline, the night's place on it (its age from the phase).
+  const e = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * k))) / DEG;
+  const age = ((waxing ? e : 360 - e) / 360) * MONTH;
+  const [x0, x1, y] = [48, 252, 283];
+  const xAt = (d: number) => x0 + ((x1 - x0) * d) / MONTH;
+  body += line(x0, y, x1, y, STROKE.hairline);
+  for (let d = 0; d <= 29; d++) body += line(xAt(d), y, xAt(d), y - 2, STROKE.hairline);
+  const marks: [number, string][] = [[0, "NEW"], [MONTH / 4, "FIRST Q"], [MONTH / 2, "FULL"], [(3 * MONTH) / 4, "LAST Q"], [MONTH, "NEW"]];
+  for (const [d, label] of marks) {
+    body += line(xAt(d), y - 4, xAt(d), y + 2, STROKE.hairline);
+    body += text(xAt(d), y + 10, label, 4.5, { spacing: 0.55, anchor: d === 0 ? "start" : d === MONTH ? "end" : "middle" });
+  }
+  const xa = xAt(age);
+  body += dot(xa, y, 2) + text(Math.min(x1 - 20, Math.max(x0 + 20, xa)), y - 7, `DAY ${age.toFixed(1)}`, 4.5, { bold: true, spacing: 0.55 });
   return body + caption(318, c.title, c.sub, c.sub2);
 }

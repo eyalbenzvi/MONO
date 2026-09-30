@@ -17,7 +17,7 @@
  * sit under the globe. The stops are the place list's (data/cities,
  * GeoNames).
  */
-import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { INK, STROKE, caption, clip, f1, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { loadCities, loadCountries, type Countries } from "../data";
 import { landPaths, seaGraticule, tracePolylines } from "../globe";
@@ -213,12 +213,12 @@ function journeyDraw(p: JourneyParams, places: City[] = [], countries?: Countrie
   const view = { centre, k: RK, cx: CX, cy: CY, r: R };
   const g = zoom < 2.5 ? 15 : zoom < 5 ? 10 : zoom < 9 ? 5 : 2;
   const land = landPaths(countries, view, { gap: 2.4, smooth: zoom >= 3 ? 3 : 0 });
-  let s = `<path d="${tracePolylines(seaGraticule(countries, g), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
-  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  let s = `<path d="${tracePolylines(seaGraticule(countries, g), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
+  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
   if (land.border && zoom >= 2.5) s += `<path d="${land.border}" fill="none" stroke="${INK}" stroke-width=".5" stroke-linejoin="round"/>`;
   if (land.coast) s += `<path d="${land.coast}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round"/>`;
-  s += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${INK}" stroke-width="1.4"/>`;
-  if (zoom > 1.05) s += `<circle cx="${CX}" cy="${CY}" r="${R + 3.5}" fill="none" stroke="${INK}" stroke-width=".6"/>`;
+  s += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}"/>`;
+  if (zoom > 1.05) s += `<circle cx="${CX}" cy="${CY}" r="${R + 3.5}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
 
   // The stops on screen, and the legs between them (sampled, for the labels to keep clear of).
   const screen = stops.map(project);
@@ -252,8 +252,8 @@ function journeyDraw(p: JourneyParams, places: City[] = [], countries?: Countrie
   }
 
   const legPath = legs.join("");
-  if (legPath) s += `<path d="${legPath}" fill="none" stroke="${GROUND}" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="${legPath}" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-  if (arrows.length) s += `<path d="${arrows.join("")}" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if (legPath) s += `<path d="${legPath}" fill="none" stroke="${GROUND}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="${legPath}" fill="none" stroke="${INK}" stroke-width="${STROKE.bold}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if (arrows.length) s += `<path d="${arrows.join("")}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linecap="round" stroke-linejoin="round"/>`;
 
   // Each place once, and stops that would overlap on the print as one (a place visited twice, or two a few kilometres apart, carry every number: "1–2", "1,5"), numbered where there's room.
   const groups: { idx: number[]; x: number; y: number }[] = [];
@@ -268,7 +268,7 @@ function journeyDraw(p: JourneyParams, places: City[] = [], countries?: Countrie
   for (const { idx, x, y } of groups) {
     marks += `<circle cx="${f1(x)}" cy="${f1(y)}" r="4.2" fill="${GROUND}" stroke="${INK}" stroke-width="1.2"/><circle cx="${f1(x)}" cy="${f1(y)}" r="1.7" fill="${INK}"/>`;
     const label = numbers(idx);
-    const w = label.length * 0.602 * 8, h = 7;
+    const w = textWidth(label, 7.5, { bold: true }), h = 6.6;
     let best: { x: number; y: number; score: number } | null = null;
     for (let k = 0; k < 8; k++) {
       const a = (k * Math.PI) / 4 - Math.PI / 4;
@@ -284,23 +284,25 @@ function journeyDraw(p: JourneyParams, places: City[] = [], countries?: Countrie
     taken.push({ x: best!.x - w / 2, y: best!.y - h, w, h });
     // A knockout behind the number so no dot or line runs through it.
     labels += `<rect x="${f1(best!.x - w / 2 - 1)}" y="${f1(best!.y - h - 0.6)}" width="${f1(w + 2)}" height="${f1(h + 2)}" fill="${GROUND}"/>`;
-    labels += text(best!.x, best!.y, label, 8, { bold: true });
+    labels += text(best!.x, best!.y, label, 7.5, { bold: true });
   }
   s += marks + labels;
 
-  // The list: two columns under the globe, a place that's round the back said so.
+  // The list: two columns under the globe, the width of the globe, each name measured and cut to its column; a place round the back said so.
   const rows = Math.ceil(cities.length / 2);
   const LH = 10.5, Y0 = 276 + ((4 - rows) * LH) / 2;
+  const [L, RR] = [CX - R, CX + R];
+  const colW = (RR - L) / 2;
+  const FS = 6.8;
   cities.forEach((c, i) => {
     const col = i < rows ? 0 : 1, row = col ? i - rows : i;
-    const x = col ? 160 : 34, y = Y0 + row * LH;
+    const x = L + col * (colW + 6), y = Y0 + row * LH;
     const hidden = c && !screen[known.indexOf(c)]?.[2];
-    let name = c ? c.name : "?";
-    const room = hidden ? 16 : 22;
-    if (name.length > room) name = `${name.slice(0, room - 1).trimEnd()}…`;
-    s += text(x, y, String(i + 1), 7, { anchor: "end", bold: true }) + text(x + 5, y, `${name}${hidden ? " (far side)" : ""}`, 7, { anchor: "start" });
+    const tail = hidden ? " (far side)" : "";
+    const room = colW - 16 - textWidth(tail, FS);
+    s += text(x + 6, y, String(i + 1), FS, { anchor: "end", bold: true }) + text(x + 10, y, clip(c ? c.name : "?", room, FS) + tail, FS, { anchor: "start" });
   });
-  s += `<path d="M34 ${f1(Y0 - 13)}H266" fill="none" stroke="${INK}" stroke-width=".6"/>`;
+  s += `<path d="M${L} ${f1(Y0 - 13)}H${RR}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
 
   const first = known[0]?.name, last = known[known.length - 1]?.name;
   const route = first && last ? (first === last ? `${first} and back` : `${first} to ${last}`) : "Your Journey";
@@ -318,7 +320,7 @@ export function journeyBody(p: JourneyParams, places: City[] = [], countries?: C
 
 export const captionOf = (spec: CustomSpec, data: RenderData = {}) => journeyCaption((spec as { p: JourneyParams }).p, data.places ?? []);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(journeyBody((spec as { p: JourneyParams }).p, data.places ?? [], data.countries), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => house(() => wrap(journeyBody((spec as { p: JourneyParams }).p, data.places ?? [], data.countries), color));
 
 /** The place list and the countries (the land), for the index cards and the bag (the editor passes its own). */
 export async function prepare(): Promise<RenderData> {

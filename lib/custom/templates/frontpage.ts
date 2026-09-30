@@ -5,7 +5,7 @@
  * columns of our copy (specs/frontpage FRONTPAGE_COPY) with rules between
  * them, seeded by the page so the same page always reads the same.
  */
-import { caption, captionLines, line, longDate, text, textWidth, wrapWords, type Lines } from "../kit";
+import { STROKE, caption, captionLines, clip, line, longDate, text, textWidth, wrapWords, type Lines, house } from "../kit";
 import { mulberry32 } from "../rng";
 import { parseDate } from "../specKit";
 import { FRONTPAGE_COPY, headlineFit, standfirstFit, type Params } from "../specs/frontpage";
@@ -79,7 +79,7 @@ function columns(p: Params, top: number): string {
   // The rules between the columns.
   for (const i of [1, 2]) {
     const x = X0 + i * (w + GUTTER) - GUTTER / 2;
-    s += line(x, top, x, top + rows * PITCH - 2, 0.5);
+    s += line(x, top, x, top + rows * PITCH - 2, STROKE.hairline);
   }
   return s;
 }
@@ -87,20 +87,23 @@ function columns(p: Params, top: number): string {
 export function frontpageBody(p: Params): string {
   // The masthead: the paper's name as large as fits.
   const mast = `The Daily ${p.n}`;
-  const mSize = Math.min(40, (X1 - X0) / textWidth(mast, 1, { family: "blackletter" }));
+  // Never under the blackletter's 18: a name too long for that is cut (only a run of the widest letters is).
+  const mSize = Math.max(18, Math.min(40, (X1 - X0) / textWidth(mast, 1, { family: "blackletter" })));
+  const mLine = clip(mast, X1 - X0, Math.round(mSize * 10) / 10, { family: "blackletter" });
   let s = text(X0, 28, "No. 1  ·  Est. the day you arrived", 5.5, { anchor: "start", family: SERIF }) + text(X1, 28, "All the news that concerns you", 5.5, { anchor: "end", family: SERIF });
-  s += text(150, 36 + mSize * 0.78, mast, Math.round(mSize * 10) / 10, { family: "blackletter" });
+  s += text(150, 36 + mSize * 0.78, mLine, Math.round(mSize * 10) / 10, { family: "blackletter" });
   let y = 36 + mSize + 4;
   // The day, the edition and the price between rules.
-  s += line(X0, y, X1, y, 1.4) + line(X0, y + 2.5, X1, y + 2.5, 0.5);
-  s += text(X0, y + 11, dayLine(p.d), 6.5, { family: SERIF, anchor: "start" }) + text(150, y + 11, "FINAL", 6.5, { family: COND, bold: true, spacing: 1.5 }) + text(X1, y + 11, "Price: one biscuit", 6.5, { family: SERIF, anchor: "end" });
+  s += line(X0, y, X1, y, STROKE.bold) + line(X0, y + 2.8, X1, y + 2.8, STROKE.hairline);
+  s += text(X0, y + 11, dayLine(p.d), 6.5, { family: SERIF, anchor: "start" }) + text(150 + 0.39, y + 11, "FINAL", 6.5, { family: COND, bold: true, spacing: 0.78 }) + text(X1, y + 11, "Price: one biscuit", 6.5, { family: SERIF, anchor: "end" });
   y += 15;
-  s += line(X0, y, X1, y, 0.5);
-  // The headline.
+  s += line(X0, y, X1, y, STROKE.hairline);
+  // The headline: its lines set close (the spec's 1.04), opened a little when an accent stands over a capital.
   const h = headlineFit(p.h)!;
+  const accents = /[À-ÖØ-ÞĀ-ſ]/.test(h.lines.join(""));
   y += 4;
   for (const l of h.lines) {
-    y += h.size * 0.9;
+    y += h.size * (accents ? 1 : 0.9);
     s += text(150, y, l, h.size, { family: COND, bold: true });
     y += h.size * 0.14;
   }
@@ -114,12 +117,12 @@ export function frontpageBody(p: Params): string {
     }
     y += 6;
   }
-  s += line(X0, y, X1, y, 0.8);
+  s += line(X0, y, X1, y, STROKE.fine);
   s += columns(p, y + 6);
-  s += line(X0, BOTTOM - 6, X1, BOTTOM - 6, 0.8);
+  s += line(X0, BOTTOM - 6, X1, BOTTOM - 6, STROKE.fine);
   return s + caption(346, ...captionLines(frontpageCaption(p), p.cap));
 }
 
 export const captionOf = (spec: CustomSpec) => frontpageCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(frontpageBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(frontpageBody((spec as { p: Params }).p), color));

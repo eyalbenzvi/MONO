@@ -16,7 +16,7 @@
  * already set (vertical rather than horizontal, as the names then have
  * their own rows); the whole is then centred on the print.
  */
-import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { INK, caption, f1, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { mulberry32 } from "../rng";
 import type { CustomSpec } from "../spec";
@@ -30,7 +30,7 @@ const BRANCH = [26, 64] as const;
 const TOP = 30, BOTTOM = 282;
 /** Rows never further apart than this (a short map stays a map, not a few lonely stations). */
 const UNIT_MAX = 60;
-const FONT = 7.4, CH = 0.602 * FONT;
+const FONT = 7.4;
 const MIN_X = 14, MAX_X = 286;
 /** The map is drawn larger than its own units when the names leave room (1.2 times, a map of few stations up to 1.7): lines, stations and names bolder, or a sparse map prints too faint. */
 /** Rows at least this far apart in the map's own units before it's drawn larger. */
@@ -63,13 +63,14 @@ function segHits(p: Pt, q: Pt, b: Box): boolean {
   return true;
 }
 
-/** A line's path drawn in its style (solid, double, dashed, dotted). */
-function stroke(d: string, style: (typeof LINE_STYLES)[number]): string {
+/** A line's path drawn in its style (solid, double, dashed, dotted), its weights and dashes times `k` (the map's scale). */
+function stroke(d: string, style: (typeof LINE_STYLES)[number], k = 1): string {
   const base = `d="${d}" fill="none" stroke-linejoin="round"`;
-  if (style === "double") return `<path ${base} stroke="${INK}" stroke-width="5" stroke-linecap="butt"/><path ${base} stroke="${GROUND}" stroke-width="1.8" stroke-linecap="butt"/>`;
-  if (style === "dashed") return `<path ${base} stroke="${INK}" stroke-width="3.6" stroke-linecap="butt" stroke-dasharray="6 3"/>`;
-  if (style === "dotted") return `<path ${base} stroke="${INK}" stroke-width="3.8" stroke-linecap="round" stroke-dasharray=".1 5.6"/>`;
-  return `<path ${base} stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/>`;
+  const w = (n: number) => f1(n * k);
+  if (style === "double") return `<path ${base} stroke="${INK}" stroke-width="${w(5)}" stroke-linecap="butt"/><path ${base} stroke="${GROUND}" stroke-width="${w(1.8)}" stroke-linecap="butt"/>`;
+  if (style === "dashed") return `<path ${base} stroke="${INK}" stroke-width="${w(3.6)}" stroke-linecap="butt" stroke-dasharray="${w(6)} ${w(3)}"/>`;
+  if (style === "dotted") return `<path ${base} stroke="${INK}" stroke-width="${w(3.8)}" stroke-linecap="round" stroke-dasharray=".1 ${w(5.6)}"/>`;
+  return `<path ${base} stroke="${INK}" stroke-width="${w(3.6)}" stroke-linecap="round"/>`;
 }
 
 export interface MetroLayout {
@@ -109,7 +110,7 @@ export function layout(p: MetroParams, span = BOTTOM - TOP): MetroLayout {
   // Branches as far out as the names allow (a side's outermost column and its longest name within half the print), and no
   // further than a change of column can go at 45° in its gap.
   const levels = Math.ceil(branchy.length / 2);
-  const longest = Math.max(...p.s.map((x) => x.length)) * CH + 10;
+  const longest = Math.max(...p.s.map((x) => textWidth(x, FONT))) + 10;
   const branch = levels ? Math.max(BRANCH[0], Math.min(BRANCH[1], tall - 14, (134 - half - longest) / levels)) : 0;
   const column = new Map<number, number>();
   branchy.forEach((i, r) => column.set(i, (r % 2 ? 1 : -1) * (half + branch * (1 + Math.floor(r / 2)))));
@@ -209,7 +210,7 @@ export function metroPlan(p: MetroParams) {
   const [left, right] = [Math.min(...cols) - 60, Math.max(...cols) + 60];
   stations.forEach((s, j) => {
     const label = p.s[j];
-    const w = label.length * CH, h = FONT * 0.8;
+    const w = textWidth(label, FONT), h = FONT * 0.8;
     const e = s.half + 6;
     // Outward first for a branch; the trunk's names to the right.
     const side = s.trunk ? 1 : Math.sign(s.x) || 1;
@@ -245,34 +246,38 @@ export function metroPlan(p: MetroParams) {
 /** The drawing, the caption's lines as ours, and where the caption sits. */
 function metroDraw(p: MetroParams): [string, Lines, number] {
   const { routes, stations, rows, changed, sc, segs, placed } = metroPlan(p);
-  let s = "";
-  // Lines first, the last line under the first, each cased in the ground so it crosses the river and the others cleanly.
-  for (let i = routes.length - 1; i >= 0; i--) {
-    const d = routes[i].map(([x, y], t) => `${t ? "L" : "M"}${f1(x)} ${f1(y)}`).join("");
-    s += `<path d="${d}" fill="none" stroke="${GROUND}" stroke-width="7.6" stroke-linejoin="round"/>` + stroke(d, LINE_STYLES[i]);
-  }
-  for (const st of stations) {
-    if (st.trunk) s += `<path d="M${f1(st.x - st.half)} ${f1(st.y)}H${f1(st.x + st.half)}" fill="none" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M${f1(st.x - st.half)} ${f1(st.y)}H${f1(st.x + st.half)}" fill="none" stroke="${GROUND}" stroke-width="5.6" stroke-linecap="round"/>`;
-    else s += `<circle cx="${f1(st.x)}" cy="${f1(st.y)}" r="3.7" fill="${GROUND}" stroke="${INK}" stroke-width="1.7"/>`;
-    // In the pill, a dot on the lane of each line that stops.
-    for (const x of st.stops) s += `<circle cx="${f1(x)}" cy="${f1(st.y)}" r="1.3" fill="${INK}"/>`;
-  }
-  for (const q of placed) s += `<rect x="${f1(q.box.x0)}" y="${f1(q.box.y0)}" width="${f1(q.box.x1 - q.box.x0)}" height="${f1(q.box.y1 - q.box.y0)}" fill="${GROUND}"/>` + text(q.x, q.y, q.label, FONT, { anchor: q.anchor });
-
-  // Scaled (a short map drawn bolder, see SCALE) and centred on the print, the map and its names inside the margins.
+  // Scaled (a short map drawn bolder, see SCALE) and centred on the print, the map and its names inside the margins:
+  // the scale worked into every coordinate, weight and size (the print carries no transforms).
   const xs = [...placed.flatMap((q) => [q.box.x0, q.box.x1]), ...stations.flatMap((st) => [st.x - st.half - 4, st.x + st.half + 4]), ...segs.flatMap(([a, b]) => [a[0] - 2, b[0] + 2])];
   const [lo, hi] = [Math.min(...xs), Math.max(...xs)];
   const k = Math.min(sc, (MAX_X - MIN_X) / (hi - lo));
   const tx = 150 - ((lo + hi) / 2) * k, ty = (TOP + BOTTOM) / 2 - (rows[rows.length - 1] / 2) * k;
+  const X = (x: number) => f1(tx + x * k), Y = (y: number) => f1(ty + y * k), W = (w: number) => f1(w * k);
+  let s = "";
+  // Lines first, the last line under the first, each cased in the ground so it crosses the river and the others cleanly.
+  for (let i = routes.length - 1; i >= 0; i--) {
+    const d = routes[i].map(([x, y], t) => `${t ? "L" : "M"}${X(x)} ${Y(y)}`).join("");
+    s += `<path d="${d}" fill="none" stroke="${GROUND}" stroke-width="${W(7.6)}" stroke-linejoin="round"/>` + stroke(d, LINE_STYLES[i], k);
+  }
+  for (const st of stations) {
+    const bar = `M${X(st.x - st.half)} ${Y(st.y)}H${X(st.x + st.half)}`;
+    if (st.trunk) s += `<path d="${bar}" fill="none" stroke="${INK}" stroke-width="${W(9)}" stroke-linecap="round"/><path d="${bar}" fill="none" stroke="${GROUND}" stroke-width="${W(5.6)}" stroke-linecap="round"/>`;
+    else s += `<circle cx="${X(st.x)}" cy="${Y(st.y)}" r="${W(3.7)}" fill="${GROUND}" stroke="${INK}" stroke-width="${W(1.7)}"/>`;
+    // In the pill, a dot on the lane of each line that stops.
+    for (const x of st.stops) s += `<circle cx="${X(x)}" cy="${Y(st.y)}" r="${W(1.3)}" fill="${INK}"/>`;
+  }
+  const fs = Math.floor(FONT * k * 10) / 10;
+  for (const q of placed) s += `<rect x="${X(q.box.x0)}" y="${Y(q.box.y0)}" width="${W(q.box.x1 - q.box.x0)}" height="${W(q.box.y1 - q.box.y0)}" fill="${GROUND}"/>` + text(tx + q.x * k, ty + q.y * k, q.label, fs, { anchor: q.anchor });
+
   // The river as wide as the map and its names and a margin each side (never narrower than half the print).
   const reach = Math.min(134, Math.max(80, ((hi - lo) * k) / 2 + 30));
-  let out = river(p, rows.map((y) => ty + y * k), changed, 150 - reach, 150 + reach) + `<g transform="translate(${f1(tx)} ${f1(ty)}) scale(${Math.round(k * 1000) / 1000})">${s}</g>`;
+  let out = river(p, rows.map((y) => ty + y * k), changed, 150 - reach, 150 + reach) + s;
 
   // The key: each line's stroke and its name, in one or two rows.
   const keyRows = p.l.length <= 2 ? [p.l.map((_, i) => i)] : [[0, 1], p.l.map((_, i) => i).slice(2)];
   keyRows.forEach((row, r) => {
     const y = 298 + r * 11;
-    const widths = row.map((i) => 20 + 5 + p.l[i].length * 0.602 * 7);
+    const widths = row.map((i) => 20 + 5 + textWidth(p.l[i], 7));
     let x = 150 - (widths.reduce((a, b) => a + b, 0) + (row.length - 1) * 14) / 2;
     row.forEach((i, t) => {
       out += stroke(`M${f1(x)} ${f1(y - 2.4)}H${f1(x + 20)}`, LINE_STYLES[i]) + text(x + 25, y, p.l[i], 7, { anchor: "start" });
@@ -293,4 +298,4 @@ export function metroBody(p: MetroParams): string {
 
 export const captionOf = (spec: CustomSpec) => metroCaption((spec as { p: MetroParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(metroBody((spec as { p: MetroParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(metroBody((spec as { p: MetroParams }).p), color));

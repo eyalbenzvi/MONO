@@ -6,7 +6,7 @@
  * when wanted.
  */
 import { moonPhase } from "../astro";
-import { INK, caption, captionLines, dot, f1, julian, line, longDate, rect, text, textWidth, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, dot, f1, julian, line, longDate, rect, text, textWidth, type Lines, house } from "../kit";
 import { parseDate, parseTime } from "../specKit";
 import { lengthText, weightText, type Params } from "../specs/birth";
 import { loadCities } from "../data";
@@ -42,20 +42,24 @@ function star(cx: number, cy: number, r: number): string {
     const rr = i % 2 ? r * 0.45 : r;
     d += `${i ? "L" : "M"}${f1(cx + rr * Math.cos(a))} ${f1(cy + rr * Math.sin(a))}`;
   }
-  return `<path d="${d}Z" fill="none" stroke="${INK}" stroke-width=".7" stroke-linejoin="round"/>`;
+  return `<path d="${d}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}" stroke-linejoin="round"/>`;
 }
 
 export function birthBody(p: Params, city?: City): string {
-  let s = rect(28, 24, 244, 296, 1.2) + rect(33, 29, 234, 286, 0.4);
-  for (const [x, y] of [[42, 38], [258, 38], [42, 306], [258, 306]]) s += star(x, y, 7) + star(x, y, 3);
-  // The head between rules of dots.
+  // The card's double rule inside the live area: the frame regular, the inner line a hairline.
+  let s = rect(28, 28, 244, 292, STROKE.regular) + rect(33, 33, 234, 282, STROKE.hairline);
+  for (const [x, y] of [[42, 42], [258, 42], [42, 306], [258, 306]]) s += star(x, y, 7) + star(x, y, 3);
+  // The head between rules of dots, the rules as wide as the head.
   const head = HEAD[p.h];
-  s += text(150, 66, head, 15, { family: SERIF, bold: true, spacing: 2.5 });
-  for (let i = 0; i < 27; i++) s += dot(98 + i * 4, 50, 0.8) + dot(98 + i * 4, 76, 0.8);
-  // The name, as large as it fits.
+  const hs = 15, hTrack = 1.2;
+  s += text(150, 67, head, hs, { family: SERIF, bold: true, spacing: hTrack });
+  const hw = textWidth(head, hs, { family: SERIF, bold: true, spacing: hTrack });
+  const n = Math.max(12, Math.round((hw + 8) / 4));
+  for (let i = 0; i <= n; i++) s += dot(150 + (i - n / 2) * 4, 52, 0.8) + dot(150 + (i - n / 2) * 4, 77, 0.8);
+  // The name, as large as it fits, centred optically between the head's rule and the short rule under it.
   const ns = Math.round(Math.min(44, (44 * 210) / textWidth(p.n, 44, { family: SERIF, bold: true })) * 10) / 10;
-  s += text(150, 124, p.n, ns, { family: SERIF, bold: true });
-  s += line(110, 140, 190, 140, 0.6);
+  s += text(150, 109 + (CAP.serif * ns) / 2, p.n, ns, { family: SERIF, bold: true });
+  s += line(118, 142, 182, 142, STROKE.fine);
   // The table.
   const [y, mo, d] = parseDate(p.d)!;
   // Every row, as a printed card has them: a blank one left to the rule.
@@ -67,15 +71,15 @@ export function birthBody(p: Params, city?: City): string {
   rows.forEach(([k, v], i) => {
     const ry = top + i * pitch;
     const vs = v ? Math.round(Math.min(12, (12 * 110) / textWidth(v, 12, { family: SERIF })) * 10) / 10 : 12;
-    s += text(62, ry, k.toUpperCase(), 7.5, { family: SERIF, anchor: "start", spacing: 1.5 });
+    s += text(62, ry, k.toUpperCase(), 7.5, { family: SERIF, anchor: "start", spacing: 0.9 });
     if (v) s += text(238, ry, v, vs, { family: SERIF, anchor: "end" });
-    const x0 = 62 + textWidth(k.toUpperCase(), 7.5, { family: SERIF }) + k.length * 1.5 + 6;
+    const x0 = 62 + textWidth(k.toUpperCase(), 7.5, { family: SERIF, spacing: 0.9 }) + 5;
     const x1 = v ? 238 - textWidth(v, vs, { family: SERIF }) - 6 : 238;
     if (x1 - x0 > 6) s += `<path d="M${f1(x0)} ${f1(ry)}H${f1(x1)}" fill="none" stroke="${INK}" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="0 3"/>`;
   });
   if (withMoon) {
     const { k, waxing } = moonOf(p);
-    s += screenedMoon(150, 272, 13, k, waxing) + text(150, 298, `The moon that night: ${phaseName(k, waxing).toLowerCase()}`, 7, { family: SERIF });
+    s += screenedMoon(150, 270, 15, k, waxing) + text(150, 298, `The moon that night: ${phaseName(k, waxing).toLowerCase()}`, 7, { family: SERIF });
   } else {
     // No moon: a star rosette in its place, as the card's printer would set one.
     s += rosette({ n: 9, circles: [true, false], cx: 150, cy: 274, r: 20, depth: 12 });
@@ -85,7 +89,7 @@ export function birthBody(p: Params, city?: City): string {
 
 export const captionOf = (spec: CustomSpec, data: RenderData = {}) => birthCaption((spec as { p: Params }).p, data.city);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(birthBody((spec as { p: Params }).p, data.city), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => house(() => wrap(birthBody((spec as { p: Params }).p, data.city), color));
 
 /** The place, for the index cards and the bag (the editor passes its own). */
 export async function prepare(spec: CustomSpec): Promise<RenderData> {

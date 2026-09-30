@@ -6,7 +6,7 @@
  * the one this print is for marked with a second ring. The team and the
  * season at the top.
  */
-import { INK, caption, captionLines, circle, dot, f1, line, rect, text, textWidth, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, circle, clip, dot, f1, fitSize, line, rect, text, textWidth, type Lines, house } from "../kit";
 import { FORMATION_NAMES, POSITIONS, type Params } from "../specs/lineup";
 import type { CustomSpec } from "../spec";
 import { GROUND, wrap } from "../svg";
@@ -76,33 +76,47 @@ function court(): string {
 
 export function lineupBody(p: Params): string {
   let s = p.f === "bb" ? court() : football(p.f === "5");
-  // The team and the season at the top.
+  // The team and the season at the top, fitted to the live area with their tracking counted.
   const head = p.s ? `${p.t.toUpperCase()} · ${p.s}` : p.t.toUpperCase();
-  const hs = Math.round(Math.min(20, (20 * 250) / (textWidth(head, 20, { family: COND, bold: true }) + head.length * 1.2)) * 10) / 10;
-  s += text(150, 42, head, hs, { family: COND, bold: true, spacing: 1.2 });
+  const hs = fitSize(head, 250, 20, { family: COND, bold: true, track: 0.06, floor: 8 });
+  const hsp = Math.round(hs * 0.6) / 10;
+  s += text(150 + hsp / 2, 34 + (CAP.condensed * hs) / 2, clip(head, 250, hs, { family: COND, bold: true, spacing: hsp }), hs, { family: COND, bold: true, spacing: hsp });
   const [w, h] = [X1 - X0, Y1 - Y0];
-  POSITIONS[p.f].forEach(([u, v], i) => {
-    const x = X0 + u * w;
-    const y = Y1 - v * h - 6;
+  // Fewer players, larger rings.
+  const r = POSITIONS[p.f].length > 5 ? 9 : 12;
+  const pos = POSITIONS[p.f];
+  const players = pos.map(([u, v], i) => {
     const [name, num] = p.x[i];
     const mine = p.me === i;
-    // The ring hides the lines under it (filled with the ground), a second ring round the one this print is for.
-    // Fewer players, larger rings.
-    const r = POSITIONS[p.f].length > 5 ? 9 : 12;
-    s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${r}" fill="${GROUND}" stroke="${INK}" stroke-width="${mine ? 1.8 : 1.2}"/>`;
-    if (mine) s += circle(x, y, r + 4, 0.8);
-    if (num !== undefined) s += text(x, y + r * 0.37, String(num), r, { family: COND, bold: true });
-    else s += circle(x, y, r * 0.45, 0.8) + dot(x, y, 1.4);
-    if (name) {
-      // Measured as it prints (upper case, its letter-spacing): it keeps to its 50 units, clear of the next player's.
-      const shown = name.toUpperCase();
-      const ns = Math.round(Math.min(8, (50 - shown.length * 0.3) / textWidth(shown, 1, { family: COND, bold: mine })) * 10) / 10;
-      s += text(x, y + r + (mine ? 13 : 10), shown, ns, { family: COND, bold: mine, spacing: 0.3 });
-    }
+    const x = X0 + u * w, y = Y1 - v * h - 6;
+    // Each name keeps to its own slot: the gap to its nearest neighbour in its row (positions within 0.08 of the
+    // pitch's height) less 6 units, at most 60; a player alone in the row has the 60.
+    const gap = Math.min(66, ...pos.filter(([, v2], j) => j !== i && Math.abs(v2 - v) < 0.08).map(([u2]) => Math.abs(u2 - u) * w));
+    const slot = gap - 6;
+    // The name in tracked capitals, measured as it prints, fitted to its slot (never under 5) and cut there if it must be.
+    const shown = name.toUpperCase();
+    const ns = shown ? fitSize(shown, slot, 8, { family: COND, bold: mine, track: 0.08, floor: 5 }) : 0;
+    const sp = Math.round(ns * 0.8) / 10;
+    const label = shown ? clip(shown, slot, ns, { family: COND, bold: mine, spacing: sp }) : "";
+    return { x, y, num, mine, ns, sp, label, ny: y + r + (mine ? 13 : 10) };
   });
+  // Each name knocked out of the pitch's lines (a patch of the ground under it, never ink), then the rings over them.
+  for (const q of players) if (q.label) {
+    const tw = textWidth(q.label, q.ns, { family: COND, bold: q.mine, spacing: q.sp });
+    const ch = CAP.condensed * q.ns;
+    s += `<rect x="${f1(q.x - tw / 2 - 2)}" y="${f1(q.ny - ch - 2)}" width="${f1(tw + 4)}" height="${f1(ch + 4)}" fill="${GROUND}"/>`;
+  }
+  for (const q of players) {
+    // The ring hides the lines under it (filled with the ground), a second ring round the one this print is for.
+    s += `<circle cx="${f1(q.x)}" cy="${f1(q.y)}" r="${r}" fill="${GROUND}" stroke="${INK}" stroke-width="${q.mine ? STROKE.bold : STROKE.regular}"/>`;
+    if (q.mine) s += circle(q.x, q.y, r + 4, STROKE.fine);
+    if (q.num !== undefined) s += text(q.x, q.y + r * 0.37, String(q.num), r, { family: COND, bold: true });
+    else s += circle(q.x, q.y, r * 0.45, STROKE.fine) + dot(q.x, q.y, 1.4);
+    if (q.label) s += text(q.x + q.sp / 2, q.ny, q.label, q.ns, { family: COND, bold: q.mine, spacing: q.sp });
+  }
   return s + caption(344, ...captionLines(lineupCaption(p), p.cap));
 }
 
 export const captionOf = (spec: CustomSpec) => lineupCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(lineupBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(lineupBody((spec as { p: Params }).p), color));

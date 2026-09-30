@@ -8,7 +8,7 @@
  * its thread, the tone's weight, the densest capped so it never fills.
  * The sett is centred on its first pivot, so the swatch is symmetric.
  */
-import { INK, caption, f1, captionLines, type Lines } from "../kit";
+import { INK, caption, f1, captionLines, type Lines, house } from "../kit";
 import { WEIGHT, deriveSett, repeatOf } from "../draw/tartan";
 import type { CustomSpec } from "../spec";
 import { parseSett, type Params, type Tone } from "../specs/tartan";
@@ -94,4 +94,4 @@ export function tartanBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => tartanCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(tartanBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(tartanBody((spec as { p: Params }).p), color));

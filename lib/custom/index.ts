@@ -6,7 +6,7 @@
  * (types, validation, links) is lib/custom/spec, re-exported here.
  */
 import type { BaseColor } from "@/types/shirt";
-import { captionLines, longDate, type Lines } from "./kit";
+import { captionLines, house, longDate, type Lines } from "./kit";
 import { titleWords, type Cap } from "./specKit";
 import { DEFAULT_TIME, customDay, parseDate, parseTime, type City, type CustomSpec, type SkyParams } from "./spec";
 import { wrap } from "./svg";
@@ -94,13 +94,13 @@ export function customBody(spec: CustomSpec, data: { sky?: SkyData; city?: City 
   const cap = (spec.p as { cap?: Cap }).cap;
   const lines = customCaption(spec, data);
   const [title, sub, sub2] = captionLines(lines, cap);
-  if (spec.t === "moon") return moonBody({ year: spec.p.y, south: spec.p.s === 1, words: titleWords(spec.p) }, cap);
+  if (spec.t === "moon") return moonBody({ year: spec.p.y, south: spec.p.s === 1, words: titleWords(spec.p), make: true }, cap);
   if (spec.t === "night") return nightBody({ jd: jdOf(spec.p.d, NIGHT_HOUR), south: spec.p.s === 1, caption: { title, sub, sub2 } });
   if (spec.t === "planets") return planetsBody({ jd: jdOf(spec.p.d, PLANETS_HOUR), caption: { title, sub, sub2 }, rich: true });
   if (spec.t !== "sky") throw new Error(`${spec.t} draws in its own template`);
   const city = data.city!;
-  return skyBody({ place: city, jd: skyMoment(spec.p, city).jd, caption: { title, sub, sub2 } }, data.sky!);
+  return skyBody({ place: city, jd: skyMoment(spec.p, city).jd, caption: { title, sub, sub2 }, make: true }, data.sky!);
 }
 
 /** The whole print for a tee colour (white ink on black; inks swapped on white). */
-export const renderCustomSvg = (spec: CustomSpec, teeColor: BaseColor, data: { sky?: SkyData; city?: City }) => wrap(customBody(spec, data), teeColor);
+export const renderCustomSvg = (spec: CustomSpec, teeColor: BaseColor, data: { sky?: SkyData; city?: City }) => house(() => wrap(customBody(spec, data), teeColor));

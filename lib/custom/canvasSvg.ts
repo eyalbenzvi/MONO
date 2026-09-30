@@ -19,6 +19,10 @@ const FAMILIES: Record<string, string> = {
   "Libre Caslon Text": "MONO Libre Caslon Text",
   Oswald: "MONO Oswald",
   UnifrakturMaguntia: "MONO UnifrakturMaguntia",
+  "IBM Plex Mono": "MONO IBM Plex Mono",
+  "Space Grotesk": "MONO Space Grotesk",
+  Cinzel: "MONO Cinzel",
+  "Playfair Display": "MONO Playfair Display",
 };
 const FILES = [
   ["/fonts/dejavu-sans-mono.woff2", FAMILY, "normal"],
@@ -28,6 +32,14 @@ const FILES = [
   ["/fonts/oswald.woff2", FAMILIES.Oswald, "normal"],
   ["/fonts/oswald-bold.woff2", FAMILIES.Oswald, "bold"],
   ["/fonts/unifraktur-maguntia.woff2", FAMILIES.UnifrakturMaguntia, "normal"],
+  ["/fonts/ibm-plex-mono.woff2", FAMILIES["IBM Plex Mono"], "normal"],
+  ["/fonts/ibm-plex-mono-bold.woff2", FAMILIES["IBM Plex Mono"], "bold"],
+  ["/fonts/space-grotesk.woff2", FAMILIES["Space Grotesk"], "normal"],
+  ["/fonts/space-grotesk-bold.woff2", FAMILIES["Space Grotesk"], "bold"],
+  ["/fonts/cinzel.woff2", FAMILIES.Cinzel, "normal"],
+  ["/fonts/cinzel-bold.woff2", FAMILIES.Cinzel, "bold"],
+  ["/fonts/playfair-display.woff2", FAMILIES["Playfair Display"], "normal"],
+  ["/fonts/playfair-display-bold.woff2", FAMILIES["Playfair Display"], "bold"],
 ] as const;
 /** The canvas font stack for an SVG font-family: its own face, then the generic the SVG names. */
 const canvasFamily = (svgFamily: string | undefined) => {
@@ -130,12 +142,12 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
   ctx.restore();
 }
 
-/** The print alone on a new canvas of w × h pixels. */
-export function printCanvas(svg: string, w: number, h: number): HTMLCanvasElement {
+/** The print alone on a new canvas of w × h pixels (`readable`: kept in memory, for a caller reading its pixels back: raster layInk). */
+export function printCanvas(svg: string, w: number, h: number, readable = false): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
-  const ctx = c.getContext("2d")!;
+  const ctx = c.getContext("2d", readable ? { willReadFrequently: true } : undefined)!;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   drawSvg(ctx, svg, w, h);

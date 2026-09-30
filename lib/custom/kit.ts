@@ -22,15 +22,20 @@ export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 /**
  * The print's type families: DejaVu Sans Mono (every print until now), and
  * the Make prints' own (scripts/tools/buildPrintFonts.py): a text serif, a
- * condensed sans and a blackletter for mastheads. The SVG names the family;
- * resvg (the gate) and the canvas preview load the same files.
+ * condensed sans and a blackletter for mastheads; and the house faces every
+ * Make print is set in (the type system below: HOUSE). The SVG names the
+ * family; resvg (the gate) and the canvas preview load the same files.
  */
-export type Family = "mono" | "serif" | "condensed" | "blackletter";
+export type Family = "mono" | "serif" | "condensed" | "blackletter" | "plex" | "grotesk" | "roman" | "display";
 export const FONT_FAMILY: Record<Family, string> = {
   mono: "DejaVu Sans Mono, monospace",
   serif: "Libre Caslon Text, serif",
   condensed: "Oswald, sans-serif",
   blackletter: "UnifrakturMaguntia, serif",
+  plex: "IBM Plex Mono, monospace",
+  grotesk: "Space Grotesk, sans-serif",
+  roman: "Cinzel, serif",
+  display: "Playfair Display, serif",
 };
 export interface TextOpts {
   anchor?: "start" | "middle" | "end";
@@ -41,12 +46,33 @@ export interface TextOpts {
 }
 
 /**
+ * The house style: every Make print is drawn inside house() (each template's
+ * render), where the print's default face is IBM Plex Mono, not DejaVu Sans
+ * Mono, and the caption is the house lockup (caption, below). Outside it,
+ * the kit draws exactly as before, so the catalogue's computed prints built
+ * on the same templates (scripts/gen/set7) stay byte for byte. Drawing is
+ * synchronous, so the scope is simply set and restored around the call.
+ */
+let inHouse = false;
+export function house<T>(draw: () => T): T {
+  const was = inHouse;
+  inHouse = true;
+  try {
+    return draw();
+  } finally {
+    inHouse = was;
+  }
+}
+/** The face a text is set in: its own, else the scope's default. */
+export const faceOf = (family?: Family): Family => family ?? (inHouse ? "plex" : "mono");
+
+/**
  * A line as a face can set it: a letter the face lacks (a place name's Ḥ or
  * ố in a face cut to the Latin it prints) becomes its base letter (Ḥ → H,
  * ố → ô or o), so it never falls back to another font, wider than measured.
  * The monospace face holds every place name's letters as they are.
  */
-export function printable(s: string, family: Family = "mono", bold = false): string {
+export function printable(s: string, family: Family = faceOf(), bold = false): string {
   if (family === "mono") return s;
   const faces = WIDTHS[family];
   const face = (bold ? faces.bold : undefined) ?? faces.regular;
@@ -66,7 +92,7 @@ export function printable(s: string, family: Family = "mono", bold = false): str
 
 /** Text in the print's type (monospace unless a family is given), centred unless an anchor is given. */
 export const text = (x: number, y: number, s: string, size: number, opts: TextOpts = {}) =>
-  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="${FONT_FAMILY[opts.family ?? "mono"]}" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(printable(s, opts.family, opts.bold))}</text>`;
+  `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="${size}" font-family="${FONT_FAMILY[faceOf(opts.family)]}" text-anchor="${opts.anchor ?? "middle"}"${opts.bold ? ` font-weight="bold"` : ""}${opts.spacing ? ` letter-spacing="${opts.spacing}"` : ""}>${esc(printable(s, faceOf(opts.family), opts.bold))}</text>`;
 
 /** DejaVu Sans Mono's advance, em (every character alike). */
 export const MONO_ADVANCE = 0.602;
@@ -80,7 +106,7 @@ const MISSING = 0.6;
  */
 export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" | "spacing" | "family"> = {}): number {
   const chars = [...s];
-  const family = opts.family ?? "mono";
+  const family = faceOf(opts.family);
   let em = 0;
   if (family === "mono") em = chars.length * MONO_ADVANCE;
   else {
@@ -89,6 +115,37 @@ export function textWidth(s: string, size: number, opts: Pick<TextOpts, "bold" |
     for (const ch of printable(s, family, opts.bold)) em += (face[ch] ?? MISSING * 1000) / 1000;
   }
   return em * size + chars.length * (opts.spacing ?? 0);
+}
+
+/** Each face's capital height, em (the fonts' OS/2 sCapHeight): a line of capitals sits optically centred on y at baseline y + CAP * size / 2. */
+export const CAP: Record<Family, number> = { mono: 0.729, serif: 0.77, condensed: 0.81, blackletter: 0.688, plex: 0.698, grotesk: 0.7, roman: 0.7, display: 0.708 };
+
+/**
+ * The house stroke scale (print units; 1 ≈ 0.93 mm on the tee): hairline for
+ * rules and grids, fine for secondary line work, regular for the drawing, bold
+ * for a frame or a key line. Nothing prints under 0.4 (below the screen's
+ * reliable line), and a drawing's line sits near its type's stem: a 1.2 line
+ * beside 9-unit bold capitals, a 0.8 one beside 7-unit text.
+ */
+export const STROKE = { hairline: 0.5, fine: 0.8, regular: 1.2, bold: 1.8 } as const;
+
+/**
+ * The size at which `s` fills `width` (its tracking counted, em per letter),
+ * at most `max`, rounded down to a tenth; never under `floor` (a template
+ * that must not overflow checks textWidth at the floor itself, or cuts).
+ */
+export function fitSize(s: string, width: number, max: number, opts: Pick<TextOpts, "bold" | "family"> & { track?: number; floor?: number } = {}): number {
+  const per = textWidth(s, 1, opts) + [...s].length * (opts.track ?? 0);
+  const size = per > 0 ? Math.min(max, width / per) : max;
+  return Math.max(opts.floor ?? 0, Math.floor(size * 10) / 10);
+}
+
+/** A line cut to fit `width` at `size`, an ellipsis ending it when cut. */
+export function clip(s: string, width: number, size: number, opts: Pick<TextOpts, "bold" | "family" | "spacing"> = {}): string {
+  if (textWidth(s, size, opts) <= width) return s;
+  const chars = [...s];
+  while (chars.length > 1 && textWidth(chars.join("").trimEnd() + "…", size, opts) > width) chars.pop();
+  return chars.join("").trimEnd() + "…";
 }
 
 /** Words wrapped to a width at one size: the lines (greedy, word by word), or null when a word alone is wider. */
@@ -141,9 +198,9 @@ export const ARC_TRACK = 0.08;
  * family steps by each glyph's own advance.
  */
 export function arcText(s: string, cx: number, cy: number, r: number, mid: number, size: number, up: boolean, opts: { bold?: boolean; family?: Family; track?: number } = {}): string {
-  const chars = [...printable(s, opts.family, opts.bold)];
+  const family = faceOf(opts.family);
+  const chars = [...printable(s, family, opts.bold)];
   const track = opts.track ?? ARC_TRACK;
-  const family = opts.family ?? "mono";
   // Each letter's centre along the arc, degrees from the line's middle.
   let offs: number[];
   if (family === "mono") {
@@ -176,8 +233,8 @@ export function arcText(s: string, cx: number, cy: number, r: number, mid: numbe
  * since the canvas preview draws no transformed text runs.
  */
 export function turnedText(s: string, cx: number, cy: number, deg: number, size: number, opts: { bold?: boolean; family?: Family; spacing?: number } = {}): string {
-  const chars = [...printable(s, opts.family, opts.bold)];
-  const family = opts.family ?? "mono";
+  const family = faceOf(opts.family);
+  const chars = [...printable(s, family, opts.bold)];
   const w = chars.map((ch) => textWidth(ch, size, { family, bold: opts.bold }) + (opts.spacing ?? 0));
   const total = w.reduce((a, b) => a + b, 0);
   const [c, sn] = [Math.cos(deg * DEG), Math.sin(deg * DEG)];
@@ -230,6 +287,7 @@ export function captionLines(defaults: readonly (string | undefined)[], cap?: re
 
 /** A title block under a print: the name set bold and spaced, a line under it. A hidden title leaves its lines in place. */
 export function caption(y: number, title: string | undefined, sub?: string, sub2?: string): string {
+  if (inHouse) return houseCaption(y, title, sub, sub2);
   // Measured as set, in capitals (a letter may grow: ß is SS), and never wider than the print.
   const t = title?.toUpperCase();
   const long = !!t && t.length > 22;
@@ -239,6 +297,43 @@ export function caption(y: number, title: string | undefined, sub?: string, sub2
   const fit = (t: string, max: number) => Math.min(max, 264 / (0.6 * t.length));
   if (sub) s += text(150, y + 15, sub, fit(sub, 8));
   if (sub2) s += text(150, y + 27, sub2, fit(sub2, 7));
+  return s;
+}
+
+/** The widest a caption line runs: the print less a 22-unit margin each side. */
+const CAPTION_W = 256;
+/** A size that sets `s` within `w` at most `max`, in tenths (never under `floor`). */
+const sizeFor = (s: string, w: number, max: number, floor: number, opts: Pick<TextOpts, "bold" | "family">, track: number) =>
+  Math.max(floor, Math.floor(Math.min(max, w / (textWidth(s, 1, opts) + [...s].length * track)) * 10) / 10);
+
+/**
+ * The house caption lockup (every Make print): the title in Space Grotesk
+ * Bold capitals, tracked a sixth of an em; the lines under it in IBM Plex
+ * Mono, lightly tracked, a step down each. The same baselines as the old
+ * caption (y, y + 15, y + 27), so every layout keeps its place; the tracking
+ * scales with the size, so a long title tightens as it shrinks.
+ */
+function houseCaption(y: number, title: string | undefined, sub?: string, sub2?: string): string {
+  let s = "";
+  const t = title?.toUpperCase();
+  if (t) {
+    const size = sizeFor(t, CAPTION_W, 12, 6, { family: "grotesk", bold: true }, 0.16);
+    // SVG's letter-spacing follows the last letter too, and a centred line counts it: shifted half a space right, the letters centre.
+    const spacing = Math.round(size * 1.6) / 10;
+    s += text(150 + spacing / 2, y, t, size, { family: "grotesk", bold: true, spacing });
+  }
+  const small = (line: string, max: number) => {
+    const size = sizeFor(line, CAPTION_W, max, 4.5, { family: "plex" }, 0.05);
+    return { size, spacing: Math.round(size * 0.5) / 10 };
+  };
+  if (sub) {
+    const f = small(sub, 7.6);
+    s += text(150 + f.spacing / 2, y + 15, sub, f.size, { family: "plex", spacing: f.spacing });
+  }
+  if (sub2) {
+    const f = small(sub2, 6.6);
+    s += text(150 + f.spacing / 2, y + 27, sub2, f.size, { family: "plex", spacing: f.spacing });
+  }
   return s;
 }
 

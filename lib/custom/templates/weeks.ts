@@ -9,7 +9,7 @@
  * labels pushed apart so they never touch.
  */
 import { GROUND } from "../svg";
-import { INK, caption, dot, f1, line, text, captionLines, type Lines } from "../kit";
+import { INK, STROKE, caption, clip, dot, f1, line, text, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { parseDate, type CustomSpec } from "../spec";
 import { weeksDay, type Params } from "../specs/weeks";
@@ -17,7 +17,7 @@ import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 const DAY = 86_400_000;
-const TOP = 30, BOTTOM = 318;
+const TOP = 38, BOTTOM = 321;
 /** Extra space after every ten rows, and the label margin a milestone needs. */
 const DECADE = 2.6, HALF = 1, QUARTER = 2.6, MARGIN = 54;
 const LABEL = 5, LABEL_GAP = 7;
@@ -63,11 +63,12 @@ function weeksDraw(p: Params): [string, Lines, number] {
   let s = (dots ? `<path d="${dots}" fill="${INK}"/>` : "") + (rings ? `<path d="${rings}" fill="none" stroke="${INK}" stroke-width="${f1(ringW)}"/>` : "");
 
   // Decades down the left, the weeks along the top.
-  for (let k = 10; k < rows; k += 10) s += text(x0 - 3.5, cy(k) + 1.6, String(k), 4.6, { anchor: "end" });
-  s += text(x0 - 3.5, cy(0) + 1.6, "0", 4.6, { anchor: "end" });
-  for (const c of [1, 13, 26, 39, 52]) s += text(cx(c - 1), TOP - 3.5, String(c), 4.2);
-  s += text(x0 - 3.5, TOP - 3.5, "AGE", 3.6, { anchor: "end" });
-  s += line(x0, TOP - 1.2, x0 + gridW, TOP - 1.2, 0.4);
+  // Plex at its smallest (4.5), the labels' capitals tracked; the rule under the weeks a hairline.
+  const mid = (4.5 * 0.698) / 2;
+  for (let k = 0; k < rows; k += 10) s += text(x0 - 3.5, cy(k) + mid, String(k), 4.5, { anchor: "end" });
+  for (const c of [1, 13, 26, 39, 52]) s += text(cx(c - 1), TOP - 4, String(c), 4.5);
+  s += text(x0 - 3.5, TOP - 4, "AGE", 4.5, { anchor: "end", spacing: 0.5 });
+  s += line(x0, TOP - 1.4, x0 + gridW, TOP - 1.4, STROKE.hairline);
 
   // Milestones: ringed on their week, named in the margin (in date order, pushed apart, kept inside the grid's height).
   if (marks.length) {
@@ -81,15 +82,15 @@ function weeksDraw(p: Params): [string, Lines, number] {
       const [r, c] = cells[i];
       const [x, y] = [cx(c), cy(r)];
       const ring = pitch * 0.72;
-      s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(ring)}" fill="${GROUND}" stroke="${INK}" stroke-width=".6"/>` + dot(x, y, pitch * 0.24);
+      s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(ring)}" fill="${GROUND}" stroke="${INK}" stroke-width="${STROKE.hairline}"/>` + dot(x, y, pitch * 0.24);
       // The row's end, then an elbow out to the label.
-      s += `<path d="M${f1(edge)} ${f1(y)}H${f1(edge + 4)}L${f1(lx - 2)} ${f1(ys[i] - 1.7)}" fill="none" stroke="${INK}" stroke-width=".45" stroke-linejoin="round"/>`;
-      s += text(lx, ys[i], name, LABEL, { anchor: "start" });
+      s += `<path d="M${f1(edge)} ${f1(y)}H${f1(edge + 4)}L${f1(lx - 2)} ${f1(ys[i] - 1.7)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>`;
+      s += text(lx, ys[i], clip(name, 278 - lx, LABEL), LABEL, { anchor: "start" });
     });
   }
 
   const span = `${weeksDay(p.b)} – ${weeksDay(p.a)}`;
-  return [s, [titleWords(p) ?? "A life in weeks", span, `${thousands(lived)} of ${thousands(rows * 52)} weeks`], 340];
+  return [s, [titleWords(p) ?? "A life in weeks", span, `${thousands(lived)} of ${thousands(rows * 52)} weeks`], 342];
 }
 /** The caption's lines (ours). */
 export const weeksCaption = (p: Params): Lines => weeksDraw(p)[1];
@@ -101,4 +102,4 @@ export function weeksBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => weeksCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(weeksBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(weeksBody((spec as { p: Params }).p), color));

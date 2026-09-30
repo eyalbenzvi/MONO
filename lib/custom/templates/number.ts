@@ -6,13 +6,13 @@
  * stopwatch instead: seconds round the face, the minute hand, and the hours
  * on a sub-dial.
  */
-import { DEG, caption, captionLines, circle, dot, line, rect, text, type Lines } from "../kit";
+import { CAP, DEG, STROKE, caption, clip, fitSize, textWidth, captionLines, circle, dot, line, rect, text, type Lines, house } from "../kit";
 import { dial } from "../draw/instruments";
 import { parseClock, type CustomSpec, type NumberParams } from "../spec";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
-const CX = 150, CY = 168, R = 104;
+const CX = 150, CY = 172, R = 104;
 const NICE = [1, 2, 5];
 
 /** The smallest 1-2-5 number at or above x (x > 0). */
@@ -57,12 +57,15 @@ function knurl(): string {
 
 function valueWindow(value: string, unit: string): string {
   const shown = [value, unit].filter(Boolean).join(" ");
-  const size = Math.min(15, 104 / (0.6 * Math.max(4, shown.length)));
-  const w = Math.max(56, shown.length * size * 0.62 + 16);
-  return rect(CX - w / 2, CY + 34, w, 24, 1.2) + text(CX, CY + 46 + size * 0.36, shown, size, { bold: true });
+  // Measured in its face (Plex Mono Bold) and kept clear of the scale's end labels at the foot of the arc (a window at most 96 wide, above them).
+  const size = fitSize(shown, 80, 14, { bold: true, floor: 6 });
+  const w = Math.max(56, textWidth(shown, size, { bold: true }) + 16);
+  const [top, h] = [CY + 20, 24];
+  return rect(CX - w / 2, top, w, h, STROKE.regular) + text(CX, top + h / 2 + (CAP.plex * size) / 2, clip(shown, 80, size, { bold: true }), size, { bold: true });
 }
 
-function numberFace(v: number, unit: string): string {
+/** The dial for a value; `shown` in its window instead of the value and unit (a time, read on the dial in hours). */
+function numberFace(v: number, unit: string, shown?: string): string {
   const s = scaleFor(v);
   const majors = Math.round((s.max - s.min) / s.step);
   const ticks = majors * s.minor;
@@ -76,7 +79,7 @@ function numberFace(v: number, unit: string): string {
     r: R,
     cx: CX,
     cy: CY,
-    inner: valueWindow(label(v), unit),
+    inner: shown ? valueWindow(shown, "") : valueWindow(label(v), unit),
   });
 }
 
@@ -96,7 +99,7 @@ function stopwatch(secs: number, shown: string): string {
     s += line(sx + Math.cos(a) * sr, sy + Math.sin(a) * sr, sx + Math.cos(a) * (sr - (k % 3 ? 3 : 6)), sy + Math.sin(a) * (sr - (k % 3 ? 3 : 6)), k % 3 ? 0.6 : 1);
   }
   const ah = ((h % 12) / 12) * Math.PI * 2 - Math.PI / 2;
-  s += line(sx, sy, sx + Math.cos(ah) * (sr - 5), sy + Math.sin(ah) * (sr - 5), 1.6) + dot(sx, sy, 1.6) + text(sx, sy + sr + 9, "HOURS", 5, { spacing: 1 });
+  s += line(sx, sy, sx + Math.cos(ah) * (sr - 5), sy + Math.sin(ah) * (sr - 5), 1.6) + dot(sx, sy, 1.6) + text(sx, sy + sr + 9, "HOURS", 5, { spacing: 0.6 });
   return s + valueWindow(shown, "");
 }
 
@@ -108,7 +111,7 @@ export function numberBody(p: NumberParams): string {
     const [h, m, s] = [Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60];
     shown = `${h}:${pad(m)}:${pad(s)}`;
     // On the dial a time reads in hours (the needle at its fraction of an hour past the whole ones).
-    face = p.face === "stopwatch" ? stopwatch(secs, shown) : numberFace(Math.round((secs / 3600) * 1000) / 1000, "h").replace(/>[\d.]+ h</, `>${shown}<`);
+    face = p.face === "stopwatch" ? stopwatch(secs, shown) : numberFace(Math.round((secs / 3600) * 1000) / 1000, "h", shown);
   } else {
     shown = [label(p.v as number), p.u].filter(Boolean).join(" ");
     face = numberFace(p.v as number, p.u);
@@ -132,4 +135,4 @@ export function numberCaption(p: NumberParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => numberCaption((spec as { p: NumberParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(numberBody((spec as { p: NumberParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(numberBody((spec as { p: NumberParams }).p), color));

@@ -13,7 +13,7 @@
  * lib/custom/draw/asciiPicture), each cell a character of a ramp by ink,
  * in the same frame, printed by `$ cat picture.txt`.
  */
-import { INK, caption, captionLines, text, type Lines } from "../kit";
+import { FONT_FAMILY, INK, caption, captionLines, clip, fitSize, house, text, type Lines } from "../kit";
 import { titleWords } from "../specKit";
 import { pixelTextRows } from "../draw/pixelFont";
 import { ASCII_ROWS, asciiUnpack, type AsciiParams, type CustomSpec } from "../spec";
@@ -21,91 +21,158 @@ import { pictureRows } from "../draw/asciiPicture";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
-/** Advance of one monospace cell, as a fraction of font size (DejaVu Sans Mono: 0.602). */
-const CELL = 0.602;
-const AREA = { x: 34, y: 58, w: 232, h: 222 };
+/** Advance of one monospace cell, as a fraction of font size: IBM Plex Mono's, the face the grid is set in. */
+const CELL = 0.6;
+const GRID_FAMILY = FONT_FAMILY.plex;
+const AREA = { x: 34, y: 60, w: 232, h: 222 };
 /** The terminal's frame: + - | characters round the whole print, as the catalogue's framed banners. */
-const FRAME = { x: 14, y: 20, w: 272, h: 290, fs: 10 };
+const FRAME = { x: 14, y: 22, w: 272, h: 290, fs: 10 };
 
-/** The character grid of the banner. */
-export function asciiRows(p: AsciiParams): string[] {
+/** What each cell of the banner is: a letter's pixel, its shadow, the glow round them, or nothing. */
+type Kind = "L" | "S" | "G" | " ";
+
+/** The banner's grid: its characters, and what each one is. */
+function asciiGrid(p: AsciiParams): { rows: string[]; kinds: Kind[][] } {
   const f = p.f ?? "self";
   const phrase = f === "phrase" ? [...(p.p ?? "").replace(/\s+/g, "")] : [];
   let k = 0;
-  const out: string[] = [];
-  p.x.forEach((word, wi) => {
-    const rows = pixelTextRows(word);
-    const width = rows[0].length + (p.s ? 1 : 0);
+  const words = p.x.map((word) => pixelTextRows(word));
+  const widest = Math.max(...words.map((rows) => rows[0].length));
+  const chars: string[][] = [];
+  const kinds: Kind[][] = [];
+  words.forEach((rows, wi) => {
+    const word = p.x[wi];
+    // A shorter word centred over the longer one, on whole cells.
+    const pad = Math.floor((widest - rows[0].length) / 2);
+    const width = widest + (p.s ? 1 : 0);
     const grid = Array.from({ length: 7 + (p.s ? 1 : 0) }, () => Array<string>(width).fill(" "));
+    const kind = grid.map((g) => g.map((): Kind => " "));
     rows.forEach((row, r) =>
       [...row].forEach((cell, c) => {
-        if (cell === "X") grid[r][c] = f === "self" ? word[Math.floor(c / 6)] : f === "phrase" ? phrase[k++ % phrase.length] : f;
+        if (cell !== "X") return;
+        grid[r][c + pad] = f === "self" ? word[Math.floor(c / 6)] : f === "phrase" ? phrase[k++ % phrase.length] : f;
+        kind[r][c + pad] = "L";
       }),
     );
     // The shadow: down and to the right of every lit pixel that doesn't cover another.
     if (p.s)
-      rows.forEach((row, r) => [...row].forEach((cell, c) => cell === "X" && grid[r + 1][c + 1] === " " && (grid[r + 1][c + 1] = "/")));
-    if (wi > 0) out.push("");
-    out.push(...grid.map((g) => g.join("")));
+      rows.forEach((row, r) =>
+        [...row].forEach((cell, c) => {
+          if (cell === "X" && kind[r + 1][c + pad + 1] === " ") (grid[r + 1][c + pad + 1] = "/"), (kind[r + 1][c + pad + 1] = "S");
+        }),
+      );
+    if (wi > 0) chars.push([]), kinds.push([]);
+    chars.push(...grid);
+    kinds.push(...kind);
   });
-  return glow(out).map((r) => r.replace(/\s+$/, ""));
+  return glow(chars, kinds);
 }
 
-/** The glow: round the letters, lighter characters by distance (a character ramp, as ASCII shading has), GLOW cells deep. */
-const RAMP = ["+", "=", "-", ":", "."];
+/** The character grid of the banner. */
+export function asciiRows(p: AsciiParams): string[] {
+  return asciiGrid(p).rows;
+}
+
+/**
+ * The glow: round the letters, lighter characters by distance (a character
+ * ramp, as ASCII shading has), GLOW cells deep. Light marks only, set in the
+ * regular weight, so the letters (bold) read first and the glow falls away.
+ */
+const RAMP = ["·", ":", ":", "·", "."];
 const GLOW = RAMP.length;
-function glow(rows: string[]): string[] {
-  const w = Math.max(...rows.map((r) => r.length)) + 2 * GLOW, h = rows.length + 2 * GLOW;
-  const grid = Array.from({ length: h }, (_, y) => Array.from({ length: w }, (_, x) => rows[y - GLOW]?.[x - GLOW] ?? " "));
+function glow(chars: string[][], kinds: Kind[][]): { rows: string[]; kinds: Kind[][] } {
+  const w = Math.max(...chars.map((r) => r.length)) + 2 * GLOW, h = chars.length + 2 * GLOW;
+  const at = <T,>(g: T[][], y: number, x: number, blank: T) => g[y - GLOW]?.[x - GLOW] ?? blank;
+  const grid = Array.from({ length: h }, (_, y) => Array.from({ length: w }, (_, x) => at(chars, y, x, " ")));
+  const kind = Array.from({ length: h }, (_, y) => Array.from({ length: w }, (_, x): Kind => at(kinds, y, x, " " as Kind)));
   // Distance to the nearest lit character, a cell being half as tall as it is wide in look (rows count double).
   const dist = (x: number, y: number) => {
     let best = Infinity;
     for (let dy = -GLOW; dy <= GLOW; dy++)
       for (let dx = -2 * GLOW; dx <= 2 * GLOW; dx++) {
-        const c = grid[y + dy]?.[x + dx];
-        if (c && c !== " " && !RAMP.includes(c)) best = Math.min(best, Math.max(Math.abs(dx) / 2, Math.abs(dy)));
+        const c = kind[y + dy]?.[x + dx];
+        if (c === "L" || c === "S") best = Math.min(best, Math.max(Math.abs(dx) / 2, Math.abs(dy)));
       }
     return best;
   };
   const out = grid.map((r) => [...r]);
+  const outKind = kind.map((r) => [...r]);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++)
-      if (grid[y][x] === " ") {
+      if (kind[y][x] === " ") {
         const d = Math.ceil(dist(x, y));
-        if (d >= 1 && d <= GLOW) out[y][x] = RAMP[d - 1];
+        if (d >= 1 && d <= GLOW) (out[y][x] = RAMP[d - 1]), (outKind[y][x] = "G");
       }
-  return out.map((r) => r.join(""));
+  // Trailing blanks dropped (as the rows always were).
+  const rows = out.map((r) => r.join("").replace(/\s+$/, ""));
+  return { rows, kinds: outKind.map((r, i) => r.slice(0, rows[i].length)) };
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** A run of characters on the grid, from column `col` (spaces kept, so the columns hold). */
+const run = (x0: number, col: number, y: number, fs: number, str: string, bold = false) =>
+  `<text x="${(x0 + col * fs * CELL).toFixed(1)}" y="${y.toFixed(1)}" fill="${INK}" font-size="${fs.toFixed(2)}" font-family="${GRID_FAMILY}"${bold ? ` font-weight="bold"` : ""} xml:space="preserve">${esc(str)}</text>`;
+
+/** One row of the banner as runs: the letters bold, the shadow and the glow regular. */
+function rowRuns(x0: number, y: number, fs: number, row: string, kinds: Kind[]): string {
+  let s = "";
+  const chars = [...row];
+  let i = 0;
+  while (i < chars.length) {
+    if (kinds[i] === " " || chars[i] === " ") {
+      i++;
+      continue;
+    }
+    const bold = kinds[i] === "L";
+    let j = i;
+    while (j < chars.length && chars[j] !== " " && (kinds[j] === "L") === bold && kinds[j] !== " ") j++;
+    s += run(x0, i, y, fs, chars.slice(i, j).join(""), bold);
+    i = j;
+  }
+  return s;
+}
 
 /** The terminal's frame, and where its shell line starts. */
 function frame(): { s: string; fx: number } {
   const fc = Math.floor(FRAME.w / (FRAME.fs * CELL)), fr = Math.floor(FRAME.h / FRAME.fs);
   const fx = 150 - (fc * FRAME.fs * CELL) / 2;
-  const row = (r: number, str: string) => `<text x="${fx.toFixed(1)}" y="${(FRAME.y + (r + 0.8) * FRAME.fs).toFixed(1)}" fill="${INK}" font-size="${FRAME.fs}" font-family="DejaVu Sans Mono, monospace" xml:space="preserve">${esc(str)}</text>`;
+  const row = (r: number, str: string) => run(fx, 0, FRAME.y + (r + 0.8) * FRAME.fs, FRAME.fs, str);
   let s = row(0, `+${"-".repeat(fc - 2)}+`) + row(fr - 1, `+${"-".repeat(fc - 2)}+`);
   for (let r = 1; r < fr - 1; r++) s += row(r, `|${" ".repeat(fc - 2)}|`);
   return { s, fx };
 }
 
+/** The shell line that printed it, at the frame's top left, fitted to the frame (cut with an ellipsis when it can't). */
+function shell(fx: number, cmd: string): string {
+  const w = 272 - FRAME.fs * CELL * 4;
+  const size = fitSize(cmd, w, 9, { floor: 5 });
+  return text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, clip(cmd, w, size), size, { anchor: "start" });
+}
+
 export function asciiBody(p: AsciiParams): string {
-  const rows = asciiRows(p);
-  const cols = Math.max(...rows.map((r) => r.length));
+  const grid = asciiGrid(p);
+  // A narrow banner (a short word, set by the area's height) has its glow's
+  // outer dots carried out to the area's width, so the screen is lit edge to
+  // edge and the word sits in the middle of it.
+  const own = Math.max(...grid.rows.map((r) => r.length));
+  const fit = Math.floor(AREA.w / ((AREA.h / (grid.rows.length * 1.02)) * CELL));
+  const side = Math.max(0, Math.floor((fit - own) / 2));
+  const edge = RAMP[GLOW - 1];
+  // A wide one (set by the width) gives up the glow's outer columns, up to
+  // all but its inner four cells (two rings), so its letters grow.
+  const crop = fit < own ? Math.min(2 * GLOW - 4, Math.ceil((own - fit) / 2)) : 0;
+  const rows = grid.rows.map((r) => edge.repeat(side) + [...r.padEnd(own, edge)].slice(crop, own - crop).join("") + edge.repeat(side));
+  const kinds = grid.kinds.map((k) => [...Array<Kind>(side).fill("G"), ...[...k, ...Array<Kind>(own - k.length).fill("G")].slice(crop, own - crop), ...Array<Kind>(side).fill("G")]);
+  const cols = own - 2 * crop + 2 * side;
   // As big as the area allows (a short word grows, up to 44).
   const fs = Math.min(AREA.w / (cols * CELL), AREA.h / (rows.length * 1.02), 44);
   const bw = cols * fs * CELL, lh = fs * 1.02;
   const x0 = 150 - bw / 2, y0 = AREA.y + (AREA.h - rows.length * lh) / 2;
   let s = "";
-  rows.forEach((r, i) => {
-    const lead = r.length - r.trimStart().length;
-    if (r.trim())
-      s += `<text x="${(x0 + lead * fs * CELL).toFixed(1)}" y="${(y0 + (i + 0.8) * lh).toFixed(1)}" fill="${INK}" font-size="${fs.toFixed(2)}" font-family="DejaVu Sans Mono, monospace" font-weight="bold" xml:space="preserve">${esc(r.slice(lead))}</text>`;
-  });
+  rows.forEach((r, i) => (s += rowRuns(x0, y0 + (i + 0.8) * lh, fs, r, kinds[i])));
   const { s: box, fx } = frame();
-  s += box;
-  const cmd = `$ banner "${p.x.join(" ").toLowerCase()}"`;
-  s += text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, cmd, Math.min(9, 230 / (0.602 * cmd.length)), { anchor: "start" });
+  s += box + shell(fx, `$ banner "${p.x.join(" ").toLowerCase()}"`);
   return s + caption(338, ...captionLines(asciiCaption(p), p.cap));
 }
 
@@ -136,17 +203,16 @@ export function asciiPictureBody(p: AsciiParams, color: BaseColor): string {
     const r = row.replace(/\s+$/, "");
     const lead = r.length - r.trimStart().length;
     if (r.trim())
-      s += `<text x="${(x0 + lead * fs * CELL).toFixed(1)}" y="${(y0 + (i + 0.8) * lh).toFixed(1)}" fill="${INK}" font-size="${fs.toFixed(2)}" font-family="DejaVu Sans Mono, monospace" xml:space="preserve">${esc(r.slice(lead))}</text>`;
+      s += run(x0, lead, y0 + (i + 0.8) * lh, fs, r.slice(lead));
   });
   const { s: box, fx } = frame();
-  s += box + text(fx + FRAME.fs * CELL * 2, FRAME.y + 2.8 * FRAME.fs, "$ cat picture.txt", 9, { anchor: "start" });
-  // Without a title the line is set alone, smaller (as it always was); the visitor may add one, or more lines.
+  s += box + shell(fx, "$ cat picture.txt");
+  // Without a title the house lockup's lines move up into its place (the line where the title would be); the visitor may add one, or more lines.
   const [title, sub, sub2] = captionLines(asciiCaption(p), p.cap);
-  if (title) return s + caption(338, title, sub, sub2);
-  return s + (sub ? text(150, 338, sub, 8) : "") + (sub2 ? text(150, 350, sub2, Math.min(7, 264 / (0.6 * sub2.length))) : "");
+  return s + caption(title ? 338 : 323, title, sub, sub2);
 }
 
 export const render = (spec: CustomSpec, color: BaseColor) => {
   const p = (spec as { p: AsciiParams }).p;
-  return wrap(p.g ? asciiPictureBody(p, color) : asciiBody(p), color);
+  return house(() => wrap(p.g ? asciiPictureBody(p, color) : asciiBody(p), color));
 };

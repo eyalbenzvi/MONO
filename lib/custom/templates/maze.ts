@@ -7,7 +7,7 @@
  * With `s: 1` the way through is drawn as a thin dotted line, and the
  * letters appear.
  */
-import { INK, caption, f1, captionLines, type Lines } from "../kit";
+import { INK, STROKE, caption, f1, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { AREA, E, S, buildMaze } from "../draw/maze";
 import type { CustomSpec } from "../spec";
@@ -15,7 +15,8 @@ import { MAZE_LEVEL_NAMES, dotted, type Params } from "../specs/maze";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
-const TOP = 32;
+/** The maze's top: its entrance arrow above it stays inside the live area (y 28 on). */
+const TOP = 37;
 
 /** The drawing, the caption's lines as ours, and where the caption sits. */
 function mazeDraw(p: Params): [string, Lines, number] {
@@ -46,10 +47,10 @@ function mazeDraw(p: Params): [string, Lines, number] {
   let s = `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${f1(wall)}" stroke-linecap="square"/>`;
 
   // In at the top, out at the bottom: an arrow at each gap.
-  const arrow = (x: number, ya: number, yb: number) => `<path d="M${f1(x)} ${f1(ya)}V${f1(yb)}M${f1(x - 2.6)} ${f1(yb - 2.8)}L${f1(x)} ${f1(yb)}L${f1(x + 2.6)} ${f1(yb - 2.8)}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const arrow = (x: number, ya: number, yb: number) => `<path d="M${f1(x)} ${f1(ya)}V${f1(yb)}M${f1(x - 2.6)} ${f1(yb - 2.8)}L${f1(x)} ${f1(yb)}L${f1(x + 2.6)} ${f1(yb - 2.8)}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}" stroke-linecap="round" stroke-linejoin="round"/>`;
   const [entry, exit] = [mz.path[0], mz.path[mz.path.length - 1]];
-  s += arrow(X((entry % cols) + 0.5), y0 - 11, y0 - 2.5);
-  s += arrow(X((exit % cols) + 0.5), Y(rows) + 2.5, Y(rows) + 11);
+  s += arrow(X((entry % cols) + 0.5), y0 - 9, y0 - 2.2);
+  s += arrow(X((exit % cols) + 0.5), Y(rows) + 2.2, Y(rows) + 9);
 
   if (p.s) {
     const pts = mz.path.map((q) => `${f1(X((q % cols) + 0.5))} ${f1(Y(Math.floor(q / cols) + 0.5))}`);
@@ -58,7 +59,7 @@ function mazeDraw(p: Params): [string, Lines, number] {
   }
 
   const sub = p.s ? "The one way through, dotted." : "In at the top, out at the bottom. One way through.";
-  return [s, [titleWords(p) ?? dotted(p.x), sub, `${MAZE_LEVEL_NAMES[p.d]} · ${cols} by ${rows}`], 340];
+  return [s, [titleWords(p) ?? dotted(p.x), sub, `${MAZE_LEVEL_NAMES[p.d]} · ${cols} by ${rows}`], 344];
 }
 /** The caption's lines (ours). */
 export const mazeCaption = (p: Params): Lines => mazeDraw(p)[1];
@@ -70,4 +71,4 @@ export function mazeBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => mazeCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(mazeBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(mazeBody((spec as { p: Params }).p), color));

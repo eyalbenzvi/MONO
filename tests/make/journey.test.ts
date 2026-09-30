@@ -102,8 +102,8 @@ describe("Your Journey: the template", () => {
     const A: City = { id: 1, name: "London", ascii: "London", country: "GB", lat: 51.51, lon: -0.13, pop: 1e7, tz: "UTC" };
     const B: City = { ...A, id: 2, name: "New York", lat: 40.71, lon: -74.01 };
     const svg = journeyBody({ c: [1, 2] }, [A, B], countries);
-    // The leg: the casing's path (stroke 4.6), its points in order.
-    const d = /<path d="([^"]*)" fill="none" stroke="#010101" stroke-width="4\.6"/.exec(svg)![1];
+    // The leg: the casing's path (stroke 5), its points in order.
+    const d = /<path d="([^"]*)" fill="none" stroke="#010101" stroke-width="5"/.exec(svg)![1];
     const pts = [...d.matchAll(/(-?[\d.]+)[ ,](-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
     const [a, b] = [pts[0], pts[pts.length - 1]];
     const off = Math.max(...pts.map(([x, y]) => Math.abs((b[0] - a[0]) * (a[1] - y) - (a[0] - x) * (b[1] - a[1])) / Math.hypot(b[0] - a[0], b[1] - a[1])));

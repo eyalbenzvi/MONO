@@ -14,7 +14,7 @@
  * rings first, then thins (never under the catalogue's hairline); a line that
  * never moved becomes a ring of beads.
  */
-import { caption, captionLines, f1, INK, type Lines } from "../kit";
+import { caption, captionLines, f1, INK, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { decodeStroke, type CustomSpec, type LineParams } from "../spec";
 import { wrap } from "../svg";
@@ -31,6 +31,16 @@ const RINGS: [number, number][] = [
 ];
 /** The empty middle, as a share of the radius. */
 const HOLE = 0.16;
+/**
+ * Where across the unit square lands, as a share of the radius, for a ring
+ * of `scale`: the main line from the hole's edge to the rim; an offset ring
+ * starts further out the smaller it is, so the strands' inner ends are
+ * staggered and never knot together round the hole.
+ */
+const radial = (scale: number, x: number) => {
+  const inner = HOLE + (1 - scale) * 0.55;
+  return inner + (scale - inner) * x;
+};
 /** Ink the disc takes before the rings go and the line thins (line length × weight, px²). */
 const INK_BUDGET = 7200;
 
@@ -58,7 +68,7 @@ function copies(unit: [number, number][], n: number, mirror: boolean, scale: num
       let seg = "";
       let last = "";
       unit.forEach(([x, y], i) => {
-        const r = R * scale * (HOLE + (1 - HOLE) * x);
+        const r = R * radial(scale, x);
         const a = axis + flip * (y - 0.5) * wedge;
         const q = `${f1(CX + r * Math.cos(a))} ${f1(CY + r * Math.sin(a))}`;
         if (q === last && i > 0) return;
@@ -100,9 +110,9 @@ export function lineBody(p: LineParams): string {
     const length = (sc: number) => {
       let sum = 0;
       for (let i = 1; i < unit.length; i++) {
-        const [r0, r1] = [HOLE + (1 - HOLE) * unit[i - 1][0], HOLE + (1 - HOLE) * unit[i][0]];
+        const [r0, r1] = [radial(sc, unit[i - 1][0]), radial(sc, unit[i][0])];
         const arc = ((unit[i][1] - unit[i - 1][1]) * ((Math.PI * 2) / p.n) * 0.92 * (r0 + r1)) / 2;
-        sum += Math.hypot((r1 - r0) * R * sc, arc * R * sc);
+        sum += Math.hypot((r1 - r0) * R, arc * R);
       }
       return sum * p.n * (mirror ? 2 : 1);
     };
@@ -127,4 +137,4 @@ export function lineCaption(p: LineParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => lineCaption((spec as { p: LineParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(lineBody((spec as { p: LineParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(lineBody((spec as { p: LineParams }).p), color));

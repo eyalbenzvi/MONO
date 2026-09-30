@@ -9,7 +9,7 @@
  * NOAA's solar declination), the day itself drawn bold. The place list
  * (data/cities, GeoNames) names the place.
  */
-import { INK, caption, captionLines, circle, f1, line, longDate, shortMonth, text, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, circle, dot, f1, house, line, longDate, shortMonth, text, type Lines } from "../kit";
 import { titleWords } from "../specKit";
 import { coords, parseDate, type City, type CustomSpec, type PlaceParams } from "../spec";
 import { GROUND, wrap } from "../svg";
@@ -34,16 +34,22 @@ export function daylight(lat: number, doy: number): number {
   return c <= -1 ? 24 : c >= 1 ? 0 : (2 * Math.acos(c)) / DEG / 15;
 }
 const dayOfYear = (y: number, m: number, d: number) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86_400_000) + 1;
-const hm = (h: number) => (h >= 24 ? "24h (midnight sun)" : h <= 0 ? "0h (polar night)" : `${Math.floor(h)}h ${String(Math.round((h % 1) * 60) % 60).padStart(2, "0")}m`);
+/** Hours and minutes, rounded to the minute as a whole (11.995 h is 12h 00m, not 11h 00m). */
+const hm = (h: number) => {
+  const m = Math.round(h * 60);
+  return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m`;
+};
+/** The day's light, as the caption says it: the midnight sun and the polar night by name, never "0h of daylight". */
+const daylightWords = (h: number) => (h >= 24 ? "midnight sun" : h <= 0 ? "polar night" : `${hm(h)} of daylight`);
 
 export function placeBody(p: PlaceParams, countries?: Countries): string {
   const view = { centre: vec(p.la, p.lo), k: R, cx: CX, cy: CY, r: R };
   // The graticule over the sea; the land hatched, its coasts bold.
   const land = landPaths(countries, view, { gap: 2.4 });
-  let s = `<path d="${tracePolylines(seaGraticule(countries, 15), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
-  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  let s = `<path d="${tracePolylines(seaGraticule(countries, 15), view, 0.15, 0)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
+  if (land.hatch) s += `<path d="${land.hatch}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
   if (land.coast) s += `<path d="${land.coast}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round"/>`;
-  s += circle(CX, CY, R, 1.4);
+  s += circle(CX, CY, R, STROKE.regular);
   // The place: the land cleared inside the inner ring and round the outer ring and the cross; rings, a cross with a gap, a dot.
   const halo = (r: number, w: number) => `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="${GROUND}" stroke-width="${w}"/>`;
   s += `<circle cx="${CX}" cy="${CY}" r="7.4" fill="${GROUND}"/>` + halo(12, 2.7);
@@ -55,19 +61,28 @@ export function placeBody(p: PlaceParams, countries?: Countries): string {
   const date = p.d ? parseDate(p.d) : null;
   const year = date?.[0] ?? 2025;
   const days = Math.round((Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / 86_400_000);
-  const X0 = 44, XW = 212, Y0 = 300, YH = 60;
+  const X0 = 46, XW = 208, Y0 = 300, YH = 56;
+  const xOf = (doy: number) => X0 + ((doy - 1) / (days - 1)) * XW;
+  const yOf = (h: number) => Y0 - (h / 24) * YH;
   let bars = "";
   for (let doy = 1; doy <= days; doy += 3) {
     const h = daylight(p.la, doy);
-    if (h > 0.05) bars += `M${f1(X0 + ((doy - 1) / (days - 1)) * XW)} ${Y0}V${f1(Y0 - (h / 24) * YH)}`;
+    if (h > 0.05) bars += `M${f1(xOf(doy))} ${Y0}V${f1(yOf(h))}`;
   }
-  s += `<path d="${bars}" fill="none" stroke="${INK}" stroke-width=".6"/>` + line(X0 - 4, Y0, X0 + XW + 4, Y0, 0.9);
-  for (const h of [12, 24]) s += line(X0 - 4, Y0 - (h / 24) * YH, X0 - 1, Y0 - (h / 24) * YH, 0.8) + text(X0 - 7, Y0 - (h / 24) * YH + 2, `${h}h`, 5, { anchor: "end" });
-  MONTH_START.forEach((doy, m) => (s += text(X0 + ((doy + 14) / (days - 1)) * XW, Y0 + 9, shortMonth(m + 1)[0], 5)));
+  s += `<path d="${bars}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>` + line(X0 - 4, Y0, X0 + XW + 4, Y0, STROKE.fine);
+  // The 12- and 24-hour levels: a dotted hairline across, a label outside the axis.
+  for (const h of [12, 24]) {
+    s += `<path d="M${X0 - 4} ${f1(yOf(h))}H${X0 + XW + 4}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-dasharray=".5 2.5" stroke-linecap="round"/>`;
+    s += text(X0 - 7, yOf(h) + (CAP.plex * 4.5) / 2, `${h}H`, 4.5, { anchor: "end", spacing: 0.4 });
+  }
+  MONTH_START.forEach((doy, m) => (s += text(xOf(doy + 14), Y0 + 9, shortMonth(m + 1)[0], 4.5, { spacing: 0.5 })));
+  // The chart's own head: what it counts, the year; the day marked bold, its hours at the marker.
+  s += text(X0 - 4, Y0 - YH - 14, "HOURS OF DAYLIGHT", 4.5, { anchor: "start", spacing: 0.55 });
+  s += text(X0 + XW + 4, Y0 - YH - 14, String(year), 4.5, { anchor: "end", spacing: 0.55 });
   if (date) {
     const doy = dayOfYear(...date);
-    const x = X0 + ((doy - 1) / (days - 1)) * XW;
-    s += line(x, Y0 + 2, x, Y0 - YH - 4, 2) + circle(x, Y0 - YH - 7, 2.4, 1);
+    const x = xOf(doy);
+    s += line(x, Y0 + 2, x, Y0 - YH - 1, STROKE.bold) + dot(x, Y0 + 2, 1.6);
   }
   return s;
 }
@@ -75,7 +90,7 @@ export function placeBody(p: PlaceParams, countries?: Countries): string {
 /** The caption's lines (ours): the words (the visitor's title), else the city or the coordinates; the place; the day and its daylight. */
 export function placeCaption(p: PlaceParams, city?: City): Lines {
   const date = p.d ? parseDate(p.d) : null;
-  const sub2 = date ? `${longDate(...date)} · ${hm(daylight(p.la, dayOfYear(...date)))} of daylight` : undefined;
+  const sub2 = date ? `${longDate(...date)} · ${daylightWords(daylight(p.la, dayOfYear(...date)))}` : undefined;
   const where = coords(p.la, p.lo);
   const title = titleWords(p) ?? city?.name ?? where;
   return [title, title === where ? (city ? `${city.name}, ${city.country}` : "Where I was") : where, sub2];
@@ -86,7 +101,7 @@ export const captionOf = (spec: CustomSpec, data: RenderData = {}) => placeCapti
 
 export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => {
   const p = (spec as { p: PlaceParams }).p;
-  return wrap(placeBody(p, data.countries) + caption(342, ...captionLines(placeCaption(p, cityOf(p, data)), p.cap)), color);
+  return house(() => wrap(placeBody(p, data.countries) + caption(342, ...captionLines(placeCaption(p, cityOf(p, data)), p.cap)), color));
 };
 
 /** The countries (the land) and the place list (the place's name), for the page, the index cards and the bag. */

@@ -7,7 +7,7 @@
  * plain letters sit small in the caption; "Keep it secret" leaves them out
  * everywhere (the code alone, and the code's own name as the title).
  */
-import { caption, captionLines, circle, dot, f1, line, text, type Lines } from "../kit";
+import { CAP, STROKE, caption, captionLines, circle, dot, f1, line, path, polyline, text, turnedText, type Lines, house } from "../kit";
 import { ITA2, binaryText, brailleCell, brailleEncode, morseEncode, morseMarks, punchCard } from "../draw/code";
 import { CODE_NAMES, type CodeKind, type CodeParams } from "../spec";
 import { wrap } from "../svg";
@@ -65,21 +65,67 @@ function tapeFrames(s: string): { bits: string; ch: string | null }[] {
   return out;
 }
 
+/**
+ * The tape as it lies on the bench: one length folded flat into four strips
+ * (two 45° folds turn it back each time, so it rises and falls), the name
+ * punched all the way along. Holes on the tape's own 0.1-inch grid, across
+ * and along (five code holes, the small feed hole between the third and the
+ * fourth); a pointed leader where it starts, a straight cut where it ends,
+ * feed holes only along the folds. Each strip's letters beside it.
+ */
 function tape(x: string, printed: boolean): string {
-  const frames = tapeFrames(loop(x, 34)).slice(0, 44);
-  const pitch = 6.2, y0 = 0, X = 0, w = 66;
-  const H = frames.length * pitch + 8;
-  let s = line(X - w / 2, y0 - 6, X - w / 2, y0 + H, 1.2) + line(X + w / 2, y0 - 6, X + w / 2, y0 + H, 1.2);
-  frames.forEach(({ bits, ch }, i) => {
-    const y = y0 + i * pitch;
-    const xs = [-2.5, -1.5, -0.5, 0.9, 1.9].map((k) => X + k * 9 - 0.2);
-    for (let b = 0; b < 5; b++) if (bits[b] === "1") s += dot(xs[b] - 2, y, 2.3);
-    s += dot(X + 0.2 * 9 - 2, y, 0.9);
-    // The holes written out on the left (the tape's own code, not the letters), as the catalogue's tape has them.
-    s += text(X - w / 2 - 8, y + 2, bits, 3.8, { anchor: "end" });
-    if (printed && ch) s += text(X + w / 2 + 8, y + 2, ch, 5, { anchor: "start" });
-  });
-  return fitted(s, { x: -w / 2 - 22, y: -8, w: w + 38, h: H + 10 }, 1.4);
+  const p = 5.4, W = 7 * p, strips = 4;
+  const [top, bottom] = [30, 302];
+  const yT = top + W, yB = bottom - W;
+  // Strips spread across the live area (the letters sit in the gaps).
+  const D = (244 - W) / (strips - 1);
+  const x0 = 150 - (3 * D) / 2;
+  const cx = (k: number) => x0 + k * D;
+  const U = [-2.5, -1.5, -0.5, 1.5, 2.5];
+  const [rHole, rFeed] = [0.36 * p, 0.23 * p];
+  const frames = tapeFrames(loop(x, 240));
+  let at = 0;
+  let s = "";
+  const lw = STROKE.fine;
+  for (let k = 0; k < strips; k++) {
+    const down = k % 2 === 0;
+    const c = cx(k), L = c - W / 2, R = c + W / 2;
+    // The strip's run: the first starts at the top with its leader, the last ends at the top; the rest turn in folds.
+    const y1 = k === 0 || k === strips - 1 ? top : yT;
+    const y2 = yB;
+    const lead = k === 0 ? W / 2 : 0;
+    const n = Math.floor((y2 - y1 - lead) / p);
+    // The edges (each strip's own; the folds join them).
+    s += line(L, k === 0 ? y1 + W / 2 : y1, L, y2, lw) + line(R, k === 0 ? y1 + W / 2 : y1, R, y2, lw);
+    if (k === 0) s += path(polyline([[L, y1 + W / 2], [c, y1], [R, y1 + W / 2]]), lw);
+    if (k === strips - 1) s += line(L, y1, R, y1, lw);
+    for (let i = 0; i < n; i++) {
+      // Frames step along the tape's travel: down a falling strip, up a rising one.
+      const y = down ? y2 - (n - i - 0.5) * p : y2 - (i + 0.5) * p;
+      const sgn = down ? 1 : -1;
+      s += dot(c + sgn * 0.5 * p, y, rFeed);
+      const leader = k === 0 && i < 3;
+      const f = leader ? undefined : frames[at++ % frames.length];
+      if (!f) continue;
+      U.forEach((u, b) => {
+        if (f.bits[b] === "1") s += dot(c + sgn * u * p, y, rHole);
+      });
+      // The letters ride with the tape: upright beside a falling strip, turned over (on its other side) beside a rising one.
+      if (printed && f.ch) s += down ? text(R + 3.5, y + (CAP.plex * 4.6) / 2, f.ch, 4.6, { anchor: "start" }) : turnedText(f.ch, L - 3.5 - 1.4, y, 180, 4.6);
+    }
+    // The fold into the next strip: along the bottom after a falling strip, the top after a rising one.
+    if (k < strips - 1) {
+      const n2 = cx(k + 1);
+      const [yi, yo] = down ? [yB, yB + W] : [yT, yT - W];
+      const [Li, Ri] = [n2 - W / 2, n2 + W / 2];
+      s += line(L, yi, L, yo, lw) + line(Ri, yi, Ri, yo, lw) + line(L, yo, Ri, yo, lw) + line(R, yi, Li, yi, lw);
+      // The creases, and the feed holes running between them.
+      s += line(R, yi, L, yo, STROKE.hairline) + line(Li, yi, Ri, yo, STROKE.hairline);
+      const yf = (yi + yo) / 2 + 0.5 * p;
+      for (let fx = R + p; fx < Li - p / 2; fx += p) s += dot(fx, yf, rFeed);
+    }
+  }
+  return s;
 }
 
 function morse(x: string): string {
@@ -123,7 +169,8 @@ function braille(x: string, printed: boolean): string {
     const [cx, cy] = [(i % cols) * adv, Math.floor(i / cols) * rowH];
     // Every cell shows its six places (the slate's grid): raised dots filled, the rest as rings.
     s += dots ? brailleCell(cx, cy, dots, pitch, 3.6, 1.6) : [0, 1, 2].map((r) => circle(cx, cy + r * pitch, 1.6, 0.5) + circle(cx + pitch, cy + r * pitch, 1.6, 0.5)).join("");
-    if (printed && ch.trim()) s += text(cx + pitch / 2, cy + 3 * pitch + 6, ch, 6);
+    // The letter just under its own cell (clear of the row below).
+    if (printed && ch.trim()) s += text(cx + pitch / 2, cy + 2 * pitch + 5.6 + CAP.plex * 5.6, ch, 5.6);
   });
   return fitted(s, { x: -6, y: -6, w: (cols - 1) * adv + pitch + 12, h: rows * rowH }, 1.4);
 }
@@ -149,4 +196,4 @@ export function codeCaption(p: CodeParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => codeCaption((spec as { p: CodeParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(codeBody((spec as { p: CodeParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(codeBody((spec as { p: CodeParams }).p), color));

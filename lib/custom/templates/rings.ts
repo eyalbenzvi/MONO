@@ -14,7 +14,7 @@
  * over a long span the lean flattens, the air narrows and the widths even
  * out to fit.
  */
-import { INK, caption, dot, f1, polyline, captionLines, type Lines } from "../kit";
+import { INK, caption, dot, f1, polyline, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import type { Params } from "../specs/rings";
@@ -24,7 +24,7 @@ import { fnv1aChars } from "@/lib/hash";
 import type { BaseColor } from "@/types/shirt";
 
 /** The disc's box, bark included: its centre and size. */
-const BOX = { x: 150, y: 168, w: 250, h: 256 };
+const BOX = { x: 150, y: 171, w: 252, h: 262 };
 /** The cambium's farthest reach before fitting (the rings' outside, inside the bark), and the bark's widest. */
 const RIN = 116, BARK = 6.4;
 const K = 180;
@@ -236,4 +236,4 @@ export function ringsBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => ringsCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(ringsBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(ringsBody((spec as { p: Params }).p), color));

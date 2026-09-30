@@ -9,14 +9,14 @@
  * smaller line. A ring shares one size, the largest its longest name allows.
  * Blank slots are hatched. A double rule and a ring of ticks close it.
  */
-import { INK, arcText as arcTextKit, caption, circle, f1, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, STROKE, arcText as arcTextKit, caption, circle, f1, fitSize, text, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import { familyYears, yearsText, type Params } from "../specs/family";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
-const CX = 150, CY = 176, R = 128;
+const CX = 150, CY = 176, R = 122;
 /** A monospace advance (em) and the air added between letters (em). */
 const ADV = 0.602, TRACK = 0.08;
 const DEG = Math.PI / 180;
@@ -26,7 +26,7 @@ const pt = (r: number, a: number): [number, number] => [CX + r * Math.sin(a * DE
 
 /** Ring edges from the centre out: the middle disc, then one ring a generation (the outer rings deeper, they carry two lines on shorter arcs). */
 function radii(gens: number): number[] {
-  return gens === 4 ? [0, 31, 60, 90, R] : [0, 36, 76, R];
+  return gens === 4 ? [0, 30, 58, 87, R] : [0, 35, 73, R];
 }
 
 /** Letters along a ring of the chart (lib/custom/kit arcText, centred on the chart). */
@@ -79,7 +79,8 @@ function lineRadii(r0: number, r1: number, size: number, up: boolean, withYears:
   const [outer, inner] = [rm + block / 2, rm - block / 2];
   return up ? [outer - size * 0.36, inner + ySize * 0.36] : [inner + size * 0.36, outer - ySize * 0.36];
 }
-const yearSize = (size: number) => Math.max(3.2, size * 0.74);
+/** The years a step under the names, never under the mono's smallest. */
+const yearSize = (size: number) => Math.max(4.5, Math.round(size * 7.4) / 10);
 /** The air left at each end of a sector's line, in print units. */
 const END_AIR = 2.6;
 
@@ -95,7 +96,7 @@ function ringSize(names: string[], years: string[], r0: number, r1: number, swee
       return ok([...nm].length, size, rn) && (!years[k] || ok(years[k].length, yearSize(size), ry)) && block <= r1 - r0 - 4;
     });
   let size = cap;
-  while (size > 3.2 && !fits(size)) size = Math.round((size - 0.1) * 10) / 10;
+  while (size > 4.5 && !fits(size)) size = Math.round((size - 0.1) * 10) / 10;
   return size;
 }
 
@@ -107,14 +108,14 @@ function familyDraw(p: Params): [string, Lines, number] {
   let s = "";
 
   // Ornament: the outer double rule and a ring of ticks, as on the Concentric designs.
-  s += circle(CX, CY, R, 1.2) + circle(CX, CY, R + 5, 0.5);
+  s += circle(CX, CY, R, STROKE.regular) + circle(CX, CY, R + 5, STROKE.hairline);
   let ticks = "";
   for (let a = 0; a < 360; a += 5) {
     const [x0, y0] = pt(R + 1.8, a), [x1, y1] = pt(R + (a % 45 === 0 ? 5 : 3.4), a);
     ticks += `M${f1(x0)} ${f1(y0)}L${f1(x1)} ${f1(y1)}`;
   }
-  s += `<path d="${ticks}" fill="none" stroke="${INK}" stroke-width=".5"/>`;
-  for (let g = 1; g < gens; g++) s += circle(CX, CY, rs[g], 0.9);
+  s += `<path d="${ticks}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
+  for (let g = 1; g < gens; g++) s += circle(CX, CY, rs[g], STROKE.fine);
 
   let hatches = "", rules = "";
   for (let g = 1; g < gens; g++) {
@@ -141,7 +142,7 @@ function familyDraw(p: Params): [string, Lines, number] {
     }
   }
   if (hatches) s += `<path d="${hatches}" fill="none" stroke="${INK}" stroke-width="${HATCH_W}" stroke-linecap="round"/>`;
-  s += `<path d="${rules}" fill="none" stroke="${INK}" stroke-width=".9"/>`;
+  s += `<path d="${rules}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}"/>`;
 
   // The middle: you, set straight (two lines when a long name has a space), bold, the years under it.
   const root = p.n[0];
@@ -156,16 +157,21 @@ function familyDraw(p: Params): [string, Lines, number] {
     }
     lines = best;
   }
-  const longest = Math.max(...lines.map((l) => l.length));
-  const rootSize = Math.min(gens === 4 ? 8.5 : 10, (r0 * 1.62) / (ADV * longest));
-  const rootYear = Math.min(rootSize * 0.74, (r0 * 1.5) / (ADV * Math.max(1, ys[0].length)));
-  const lh = rootSize * 1.1;
-  const h = lines.length * lh + (ys[0] ? rootYear * 1.2 : 0);
-  let y = CY - h / 2 + rootSize * 0.8;
-  for (const l of lines) (s += text(CX, y, l, f1Size(rootSize), { bold: true })), (y += lh);
-  if (ys[0]) s += text(CX, y - lh + rootSize * 0.35 + rootYear * 1.2, ys[0], f1Size(rootYear));
+  // Sized to the disc in the title face (each line measured), the years under it in the mono, a step down.
+  const GRO = { family: "grotesk", bold: true } as const;
+  const room = r0 * 1.55;
+  const rootSize = Math.min(gens === 4 ? 9 : 11, ...lines.map((l) => fitSize(l, lines.length > 1 ? room * 0.94 : room, 11, { ...GRO, floor: 5 })));
+  const rootYear = ys[0] ? Math.max(4.5, Math.min(Math.round(rootSize * 7) / 10, fitSize(ys[0], r0 * 1.4, 8))) : 0;
+  const lh = rootSize * 1.12;
+  const capH = rootSize * CAP.grotesk;
+  const gap = rootSize * 0.55;
+  const h = capH + (lines.length - 1) * lh + (ys[0] ? gap + rootYear * CAP.plex : 0);
+  let y = CY - h / 2 + capH;
+  lines.forEach((l, i) => (s += text(CX, y + i * lh, l, f1Size(rootSize), GRO)));
+  y += (lines.length - 1) * lh;
+  if (ys[0]) s += text(CX, y + gap + rootYear * CAP.plex, ys[0], f1Size(rootYear));
   // A fine second rule inside the middle disc, as the Concentric designs double their rings.
-  s += circle(CX, CY, r0 - 2.6, 0.4);
+  s += circle(CX, CY, r0 - 2.6, STROKE.hairline);
 
   const named = p.n.filter(Boolean).length;
   const title = titleWords(p) ?? "Family tree";
@@ -183,4 +189,4 @@ const f1Size = (v: number) => Math.round(v * 10) / 10;
 
 export const captionOf = (spec: CustomSpec) => familyCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(familyBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(familyBody((spec as { p: Params }).p), color));

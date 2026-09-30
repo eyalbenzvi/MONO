@@ -5,7 +5,7 @@
  * pixel font, a row of stitches between, the name (twice the size when it
  * fits) and the year, a line of words, and motifs at the foot.
  */
-import { INK, caption, captionLines, f1, type Lines } from "../kit";
+import { INK, STROKE, caption, captionLines, f1, type Lines, house } from "../kit";
 import { BORDER_NAMES, BORDER_TILES, MOTIF_GRIDS, MOTIF_NAMES } from "../draw/sampler";
 import { pixelTextCells, pixelTextRows } from "../draw/pixelFont";
 import { wordRows, type Params } from "../specs/sampler";
@@ -43,7 +43,7 @@ class Cloth {
       const [x, y] = [X0 + c * C + m, Y0 + r * C + m];
       d += `M${f1(x)} ${f1(y)}l${f1(k)} ${f1(k)}M${f1(x + k)} ${f1(y)}l${f1(-k)} ${f1(k)}`;
     }
-    return `<path d="${d}" fill="none" stroke="${INK}" stroke-width=".55" stroke-linecap="round"/>`;
+    return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline + 0.1}" stroke-linecap="round"/>`;
   }
 }
 
@@ -75,21 +75,28 @@ export function samplerBody(p: Params): string {
   centred(cloth, "1234567890", 24);
   // A row of stitches between, every other cell.
   for (let c = 8; c < COLS - 8; c += 2) cloth.set(c, 34);
-  // The name, twice the size when it fits; the year under it.
+  // The name (twice the size when it fits), the year and the words: one block, centred in the cloth between the
+  // row of stitches and the motifs, with a second row over the motifs when there is room for it.
   const name = p.n.toUpperCase();
   const big = pixelTextCells(name) * 2 <= COLS - 10;
-  centred(cloth, name, 38, big ? 2 : 1);
-  let r = 38 + (big ? 14 : 7) + 3;
+  const words = p.w ? wordRows(p.w)! : [];
+  const mr = ROWS - 5 - 11;
+  const block = (big ? 14 : 7) + (p.y ? 10 : 0) + words.length * 9 + (p.y || words.length ? 3 : 0);
+  const [top, foot] = [37, mr - 6];
+  const room = foot - top - block;
+  let r = top + Math.max(0, Math.floor(room / 2));
+  if (room >= 6) for (let c = 8; c < COLS - 8; c += 2) cloth.set(c, mr - 4);
+  centred(cloth, name, r, big ? 2 : 1);
+  r += (big ? 14 : 7) + 3;
   if (p.y) {
     centred(cloth, String(p.y), r);
     r += 10;
   }
-  if (p.w) for (const row of wordRows(p.w)!) {
+  for (const row of words) {
     centred(cloth, row, r);
     r += 9;
   }
   // The motifs at the foot: one in the middle, two in the corners, three all.
-  const mr = ROWS - 5 - 11;
   const at = p.mo.length === 1 ? [Math.floor((COLS - 11) / 2)] : p.mo.length === 2 ? [6, COLS - 17] : [6, Math.floor((COLS - 11) / 2), COLS - 17];
   p.mo.forEach((m, i) => cloth.put(MOTIF_GRIDS[m], at[i], mr));
   return cloth.stitches() + caption(348, ...captionLines(samplerCaption(p), p.cap));
@@ -97,4 +104,4 @@ export function samplerBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => samplerCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(samplerBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(samplerBody((spec as { p: Params }).p), color));

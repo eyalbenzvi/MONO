@@ -7,7 +7,7 @@
  * one of twelve pictograms (draw/pictograms), CAUTION and a line, bare or on
  * a panel.
  */
-import { INK, arcText, caption, captionLines, circle, dot, f1, line, text, textWidth, type Family, type Lines } from "../kit";
+import { ARC_TRACK, DEG, INK, STROKE, arcText, caption, captionLines, circle, clip, dot, f1, fitSize, line, text, textWidth, type Family, type Lines, house } from "../kit";
 import { PICTOGRAM_NAMES, pictogram } from "../draw/pictograms";
 import type { Params } from "../specs/sign";
 import type { CustomSpec } from "../spec";
@@ -15,7 +15,7 @@ import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 const COND = "condensed" as const;
-const SERIF = "serif" as const;
+const ROMAN = "roman" as const;
 
 /** The caption's lines (ours). */
 export function signCaption(p: Params): Lines {
@@ -24,8 +24,15 @@ export function signCaption(p: Params): Lines {
   return [p.n, p.l ?? "Street sign", "Adopted by no council"];
 }
 
-const fit = (s: string, w: number, max: number, family: Family, bold = false, spacing = 0) =>
-  Math.round(Math.min(max, (max * w) / (textWidth(s, max, { family, bold }) + [...s].length * spacing)) * 10) / 10;
+/** A line fitted to a width, tracked `em` of its size: the size (at most `max`, never under `floor`), the tracking, and the line, cut there if it must be. */
+function fit(s: string, w: number, max: number, family: Family, bold = false, em = 0, floor = 6) {
+  const size = fitSize(s, w, max, { family, bold, track: em, floor });
+  const spacing = Math.round(size * em * 100) / 100;
+  return { size, spacing, line: clip(s, w, size, { family, bold, spacing }) };
+}
+/** A fitted line centred on x (nudged by half its tracking, which SVG adds after the last letter too). */
+const centred = (x: number, y: number, f: ReturnType<typeof fit>, family: Family, bold = false) =>
+  text(x + f.spacing / 2, y, f.line, f.size, { family, bold, spacing: f.spacing || undefined });
 
 /** A rounded rectangle as a path. */
 const round = (x0: number, y0: number, x1: number, y1: number, r: number, w: number) =>
@@ -35,35 +42,43 @@ function street(p: Params): string {
   const [x0, y0, x1, y1] = [24, 84, 276, 206];
   // The posts behind it, and their feet.
   let s = line(70, y1, 70, 316, 2.2) + line(80, y1, 80, 316, 2.2) + line(220, y1, 220, 316, 2.2) + line(230, y1, 230, 316, 2.2);
-  s += line(58, 316, 92, 316, 1.4) + line(208, 316, 242, 316, 1.4);
-  s += round(x0, y0, x1, y1, 16, 2.6) + round(x0 + 7, y0 + 7, x1 - 7, y1 - 7, 10, 1.2);
+  s += line(58, 316, 92, 316, STROKE.regular) + line(208, 316, 242, 316, STROKE.regular);
+  s += round(x0, y0, x1, y1, 16, 2.6) + round(x0 + 7, y0 + 7, x1 - 7, y1 - 7, 10, STROKE.regular);
   // Bolts at the ends.
-  for (const x of [x0 + 18, x1 - 18]) s += circle(x, (y0 + y1) / 2, 3.4, 1) + dot(x, (y0 + y1) / 2, 1);
-  const name = p.n!.toUpperCase();
-  const size = fit(name, 186, 50, COND, true, 1.5);
-  const cy = p.l ? 150 : 158;
-  s += text(150, cy + size * 0.36, name, size, { family: COND, bold: true, spacing: 1.5 });
-  if (p.l) s += line(96, 172, 204, 172, 0.8) + text(150, 190, p.l.toUpperCase(), fit(p.l.toUpperCase(), 170, 12, COND, false, 1.2), { family: COND, spacing: 1.2 });
+  for (const x of [x0 + 18, x1 - 18]) s += circle(x, (y0 + y1) / 2, 3.4, STROKE.fine) + dot(x, (y0 + y1) / 2, 1);
+  const name = fit(p.n!.toUpperCase(), 186, 50, COND, true, 0.03, 9);
+  // The name centred optically in its part of the plate (its capitals' middle on cy).
+  const cy = p.l ? 146 : 145;
+  s += centred(150, cy + (0.81 * name.size) / 2, name, COND, true);
+  if (p.l) s += line(96, 172, 204, 172, STROKE.fine) + centred(150, 190, fit(p.l.toUpperCase(), 170, 12, COND, false, 0.08, 6), COND);
   return s;
 }
 
+/** The round plaque, as a museum's or a council's: inscriptional capitals (Cinzel) round the top and in the middle. */
 function plaque(p: Params): string {
   const [cx, cy, R] = [150, 164, 124];
-  let s = circle(cx, cy, R, 2.4) + circle(cx, cy, R - 6, 0.8) + circle(cx, cy, R - 34, 0.6);
-  // The words round the top, sized to at most half the ring.
+  let s = circle(cx, cy, R, 2.4) + circle(cx, cy, R - 6, STROKE.fine) + circle(cx, cy, R - 34, STROKE.hairline);
+  // The words round the top, as large as the band holds (22), along at most half the ring.
   const arc = p.n!.toUpperCase();
-  const size = Math.round(Math.min(15, (Math.PI * (R - 20) * 0.95) / (textWidth(arc, 1, { family: SERIF, bold: true }) + arc.length * 0.08)) * 10) / 10;
-  s += arcText(arc, cx, cy, R - 20, 0, size, true, { family: SERIF, bold: true });
-  // A star either side, where the words end.
-  for (const a of [-118, 118]) s += dot(cx + (R - 20) * Math.sin((a * Math.PI) / 180), cy - (R - 20) * Math.cos((a * Math.PI) / 180), 2.4);
-  // The lines, and a rule over them.
-  const lines = p.x!;
-  const ls = Math.min(...lines.map((l) => fit(l, 160, 18, SERIF)));
-  const lead = ls * 1.35;
-  const top = cy + 10 - ((lines.length - 1) * lead) / 2;
-  s += line(cx - 40, top - ls * 1.4, cx + 40, top - ls * 1.4, 1);
-  lines.forEach((l, i) => (s += text(cx, top + i * lead + ls * 0.35, l, ls, { family: SERIF })));
-  s += line(cx - 24, top + (lines.length - 1) * lead + ls * 1.4, cx + 24, top + (lines.length - 1) * lead + ls * 1.4, 0.6);
+  const r = R - 20;
+  const per = textWidth(arc, 1, { family: ROMAN, bold: true }) + [...arc].length * ARC_TRACK;
+  const size = Math.max(7, Math.min(20, Math.floor(((Math.PI * r * 0.95) / per) * 10) / 10));
+  s += arcText(arc, cx, cy, r, 0, size, true, { family: ROMAN, bold: true });
+  // A dot either side, just past where the words end.
+  const half = (per * size) / 2 / r / DEG + 7;
+  for (const a of [-half, half]) s += dot(cx + r * Math.sin(a * DEG), cy - r * Math.cos(a * DEG), 2.2);
+  // The lines in the middle, one size for all (as large as the longest allows, at most 19), between two rules.
+  const lines = p.x!.map((l) => l.toUpperCase());
+  const fits = lines.map((l) => fit(l, 146, 19, ROMAN, false, 0.04, 7));
+  const ls = Math.min(...fits.map((f) => f.size));
+  const sets = lines.map((l) => fit(l, 146, ls, ROMAN, false, 0.04, 7));
+  const lead = ls * 1.4;
+  const top = cy + 8 - ((lines.length - 1) * lead) / 2;
+  const capMid = (0.7 * ls) / 2;
+  s += line(cx - 40, top - capMid - ls * 1.1, cx + 40, top - capMid - ls * 1.1, STROKE.fine);
+  sets.forEach((f, i) => (s += centred(cx, top + i * lead + capMid, f, ROMAN)));
+  const foot = top + (lines.length - 1) * lead + capMid + ls * 1.1;
+  s += line(cx - 24, foot, cx + 24, foot, STROKE.hairline);
   return s;
 }
 
@@ -85,14 +100,14 @@ function warning(p: Params): string {
   const panel = p.pn === 1;
   const side = panel ? 172 : 214;
   const top = panel ? 44 : 28;
-  if (panel) s += round(34, 24, 266, 318, 14, 2.4) + round(40, 30, 260, 312, 9, 0.8);
+  if (panel) s += round(34, 24, 266, 318, 14, 2.4) + round(40, 30, 260, 312, 9, STROKE.fine);
   s += triangle(150, top, side);
   const h = (side * Math.sqrt(3)) / 2;
   s += pictogram(p.pc!, 150, top + h * 0.64, side * 0.36, 6);
   const cy = top + h + (panel ? 38 : 44);
-  s += text(150, cy, "CAUTION", panel ? 30 : 34, { family: COND, bold: true, spacing: 5 });
-  const l = p.l!.toUpperCase();
-  s += text(150, cy + (panel ? 30 : 34), l, fit(l, panel ? 196 : 230, 16, COND, false, 1), { family: COND, spacing: 1 });
+  const cs = panel ? 30 : 34;
+  s += centred(150, cy, { size: cs, spacing: cs * 0.06, line: "CAUTION" }, COND, true);
+  s += centred(150, cy + (panel ? 30 : 34), fit(p.l!.toUpperCase(), panel ? 196 : 230, 16, COND, false, 0.06, 7), COND);
   return s;
 }
 
@@ -103,4 +118,4 @@ export function signBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => signCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(signBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(signBody((spec as { p: Params }).p), color));

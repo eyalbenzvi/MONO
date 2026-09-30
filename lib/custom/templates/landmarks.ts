@@ -4,7 +4,7 @@
  * frame taped in at its top corners, its name and the year under it,
  * and under the page the name and the years ("NOA · 2009–2026").
  */
-import { INK, caption, captionLines, f1, rect, text, textWidth, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, clip, f1, fitSize, rect, text, type Lines, house } from "../kit";
 import { landmarkSvg } from "../draw/landmarks";
 import { LANDMARKS, type Params } from "../specs/landmarks";
 import type { CustomSpec } from "../spec";
@@ -12,7 +12,7 @@ import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 const COND = "condensed" as const;
-const AREA = { x: 24, y: 30, w: 252, h: 262 };
+const AREA = { x: 30, y: 37, w: 240, h: 258 };
 const GAP = 10;
 
 /** The years as a span ("2009–2026"), or the one year, or nothing. */
@@ -52,28 +52,34 @@ export function gridOf(n: number) {
 function tape(cx: number, cy: number, deg: number, len: number): string {
   const [c, s] = [Math.cos((deg * Math.PI) / 180), Math.sin((deg * Math.PI) / 180)];
   const pts = [[-len / 2, -2.6], [len / 2, -2.6], [len / 2, 2.6], [-len / 2, 2.6]].map(([u, v]) => `${f1(cx + u * c - v * s)} ${f1(cy + u * s + v * c)}`);
-  return `<path d="M${pts.join("L")}Z" fill="none" stroke="${INK}" stroke-width=".6" stroke-linejoin="round"/>`;
+  return `<path d="M${pts.join("L")}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>`;
 }
 
 export function landmarksBody(p: Params): string {
-  let s = rect(14, 18, 272, 306, 0.6);
+  // The page, inside the live area.
+  let s = rect(22, 28, 256, 296, STROKE.hairline);
   const tiles = gridOf(p.x.length);
   p.x.forEach(([id, year], i) => {
     const t = tiles[i];
-    s += rect(t.x, t.y, t.w, t.h, 1);
+    s += rect(t.x, t.y, t.w, t.h, STROKE.fine);
     s += tape(t.x + 5, t.y + 3, -35, 16) + tape(t.x + t.w - 5, t.y + 3, 35, 16);
-    const label = t.h < 60 ? 11 : 15;
+    const label = t.h < 60 ? 12 : 15;
     s += landmarkSvg(id, t.x + 5, t.y + 7, t.w - 10, t.h - 12 - label);
+    // The name in condensed capitals, sized to the tile (never under the face's smallest), the year under it in the mono.
     const name = LANDMARKS[id].toUpperCase();
-    const size = Math.min(label < 15 ? 5 : 6, (t.w - 8) / textWidth(name, 1, { family: COND, bold: true }));
-    s += text(t.x + t.w / 2, t.y + t.h - label + size + 1.5, name, Math.round(size * 10) / 10, { family: COND, bold: true, spacing: 0.3 });
-    if (year) s += text(t.x + t.w / 2, t.y + t.h - 2.5, String(year), label < 15 ? 4 : 4.8);
+    const room = t.w - 8;
+    const size = fitSize(name, room, label < 15 ? 5.5 : 6.5, { family: COND, bold: true, track: 0.06, floor: 5 });
+    const yName = t.y + t.h - label + 1.5 + size * CAP.condensed;
+    s += text(t.x + t.w / 2, yName, clip(name, room, size, { family: COND, bold: true, spacing: size * 0.06 }), size, { family: COND, bold: true, spacing: Math.round(size * 0.6) / 10 });
+    if (year) s += text(t.x + t.w / 2, t.y + t.h - 2.5, String(year), label < 15 ? 4.5 : 5, { spacing: 0.3 });
   });
+  // The foot: the name and the years, tracked capitals fitted to the page.
   const foot = footOf(p);
-  s += text(150, 312, foot, Math.min(9, 240 / textWidth(foot, 1, { family: COND, bold: true, spacing: 0 }) ), { family: COND, bold: true, spacing: 1.5 });
+  const fs = fitSize(foot, 230, 10, { family: COND, bold: true, track: 0.14, floor: 5 });
+  s += text(150, 310 + (fs * CAP.condensed) / 2 - 3, clip(foot, 230, fs, { family: COND, bold: true, spacing: fs * 0.14 }), fs, { family: COND, bold: true, spacing: Math.round(fs * 1.4) / 10 });
   return s + caption(346, ...captionLines(landmarksCaption(p), p.cap));
 }
 
 export const captionOf = (spec: CustomSpec) => landmarksCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(landmarksBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(landmarksBody((spec as { p: Params }).p), color));

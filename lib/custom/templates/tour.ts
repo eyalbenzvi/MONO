@@ -3,7 +3,7 @@
  * the tour spaced under it between stars, the years it ran, then the dates
  * in two columns (the year bold, the city after it), a rule between them.
  */
-import { INK, caption, captionLines, f1, line, text, textWidth, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, clip, f1, fitSize, line, text, textWidth, type Lines, house } from "../kit";
 import { unpackPlaces } from "../specKit";
 import { TOUR_MAX, TOUR_MIN, type Params } from "../specs/tour";
 import { loadCities } from "../data";
@@ -42,53 +42,64 @@ function star(cx: number, cy: number, r: number): string {
     const rr = i % 2 ? r * 0.42 : r;
     d += `${i ? "L" : "M"}${f1(cx + rr * Math.cos(a))} ${f1(cy + rr * Math.sin(a))}`;
   }
-  return `<path d="${d}Z" fill="none" stroke="${INK}" stroke-width=".9" stroke-linejoin="round"/>`;
+  return `<path d="${d}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}" stroke-linejoin="round"/>`;
 }
 
 export function tourBody(p: Params, places: City[] = []): string {
   const dates = datesOf(p, places);
+  // The name huge: sized to the measure (a short name and a long one both fill it), lightly tracked.
   const name = p.n.toUpperCase();
-  const ns = Math.round(Math.min(64, (64 * 240) / (textWidth(name, 64, { family: COND, bold: true }) + name.length * 2)) * 10) / 10;
-  let s = text(150, 30 + ns * 0.78, name, ns, { family: COND, bold: true, spacing: 2 });
-  let y = 30 + ns * 0.78 + 26;
+  const NT = 0.03;
+  const ns = fitSize(name, 244, 64, { family: COND, bold: true, track: NT, floor: 5 });
+  const nameTop = 30;
+  let s = text(150, nameTop + ns * CAP.condensed, clip(name, 244, ns, { family: COND, bold: true, spacing: ns * NT }), ns, { family: COND, bold: true, spacing: Math.round(ns * NT * 10) / 10 });
+  let y = nameTop + ns * CAP.condensed + 26;
+  // The tour, spaced wide between two stars.
   const title = p.t.toUpperCase();
-  const ts = Math.round(Math.min(20, (20 * 190) / (textWidth(title, 20, { family: COND }) + title.length * 3)) * 10) / 10;
-  const tw = textWidth(title, ts, { family: COND }) + title.length * 3;
-  s += text(150, y, title, ts, { family: COND, spacing: 3 }) + star(150 - tw / 2 - 14, y - ts * 0.35, 6) + star(150 + tw / 2 + 12, y - ts * 0.35, 6);
+  const TT = 0.15;
+  const ts = fitSize(title, 190, 20, { family: COND, track: TT, floor: 5 });
+  const tset = clip(title, 190, ts, { family: COND, spacing: ts * TT });
+  const tw = textWidth(tset, ts, { family: COND, spacing: ts * TT }) - ts * TT;
+  const tc = y - (ts * CAP.condensed) / 2;
+  s += text(150 + (ts * TT) / 2, y, tset, ts, { family: COND, spacing: Math.round(ts * TT * 10) / 10 }) + star(150 - tw / 2 - 13, tc, 6) + star(150 + tw / 2 + 13, tc, 6);
   y += 18;
   const years = span(dates);
-  if (years) s += text(150, y, years, 12, { family: COND, bold: true, spacing: 2 });
+  if (years) s += text(150, y, years, 12, { family: COND, bold: true, spacing: 1.2 });
   y += 12;
-  s += line(40, y, 260, y, 1.2) + line(40, y + 3, 260, y + 3, 0.4);
-  // The dates, down two columns (the first column filled first).
+  s += line(40, y, 260, y, STROKE.regular) + line(40, y + 3, 260, y + 3, STROKE.hairline);
+  // The dates, down two columns (the first column filled first), either side of a hairline on the centre.
   const perCol = Math.ceil(dates.length / 2);
   const room = 296 - (y + 14);
   const pitch = Math.min(34, room / perCol);
   const size = Math.min(14, pitch * 0.62);
   const top = y + 14 + (room - pitch * (perCol - 1)) / 2 - size * 0.2;
-  const colW = 104;
+  const colW = 102;
+  const yearW = textWidth("0000", size, { family: COND, bold: true }) + 0.35 * size;
+  // Every city at one size, as a tour shirt's list is set: the longest sets it (never under 0.45 of the years, nor the face’s
+  // smallest), and a name longer still is cut.
+  const CT = 0.04;
+  const cityRoom = colW - yearW;
+  const cities = dates.map((d) => (d.city?.name ?? "?").toUpperCase());
+  const floor = Math.min(size, Math.max(5, size * 0.45));
+  const cs = Math.max(floor, Math.min(size, ...cities.map((c) => fitSize(c, cityRoom, size, { family: COND, track: CT }))));
   dates.forEach((d, i) => {
     const col = i < perCol ? 0 : 1;
     const row = col ? i - perCol : i;
-    const x = col ? 162 : 40;
+    const x = col ? 158 : 40;
     const yy = top + row * pitch + size * 0.4;
-    const yr = d.y ? String(d.y) : "—";
-    s += text(x, yy, yr, size, { family: COND, bold: true, anchor: "start" });
-    const city = (d.city?.name ?? "?").toUpperCase();
-    const left = x + textWidth("0000", size, { family: COND, bold: true }) + 7;
-    const cs = Math.round(Math.min(size, (size * (colW - (left - x))) / (textWidth(city, size, { family: COND }) + city.length * 0.4)) * 10) / 10;
-    s += text(left, yy, city, cs, { family: COND, anchor: "start", spacing: 0.4 });
+    s += text(x, yy, d.y ? String(d.y) : "—", size, { family: COND, bold: true, anchor: "start" });
+    s += text(x + yearW, yy, clip(cities[i], cityRoom, cs, { family: COND, spacing: cs * CT }), cs, { family: COND, anchor: "start", spacing: Math.round(cs * CT * 100) / 100 });
   });
-  s += line(152, top - size, 152, top + (perCol - 1) * pitch + size * 0.8, 0.6);
+  s += line(150, top - size, 150, top + (perCol - 1) * pitch + size * 0.8, STROKE.hairline);
   // The foot, as a tour shirt's.
-  s += line(40, 302, 260, 302, 0.4) + line(40, 305, 260, 305, 1.2);
-  s += text(150, 318, "ALL AGES · NO RE-ENTRY · MERCHANDISE AT THE DOOR", 7, { family: COND, spacing: 1.2 });
+  s += line(40, 302, 260, 302, STROKE.hairline) + line(40, 305, 260, 305, STROKE.regular);
+  s += text(150, 318, "ALL AGES · NO RE-ENTRY · MERCHANDISE AT THE DOOR", 6.5, { family: COND, spacing: 0.8 });
   return s + caption(344, ...captionLines(tourCaption(p, places), p.cap));
 }
 
 export const captionOf = (spec: CustomSpec, data: RenderData = {}) => tourCaption((spec as { p: Params }).p, data.places ?? []);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(tourBody((spec as { p: Params }).p, data.places ?? []), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => house(() => wrap(tourBody((spec as { p: Params }).p, data.places ?? []), color));
 
 /** The place list, for the index cards and the bag (the editor passes its own). */
 export async function prepare(): Promise<RenderData> {

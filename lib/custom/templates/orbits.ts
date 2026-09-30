@@ -9,19 +9,19 @@
  * the letters turn to read left to right. Orbits are concentric and at
  * least a label's height apart, so no two names can meet.
  */
-import { INK, caption, circle, dot, f1, line, text, captionLines, type Lines } from "../kit";
+import { INK, STROKE, caption, circle, dot, f1, line, text, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { dateOf, eldest, unpackDays, type Params } from "../specs/orbits";
 import type { CustomSpec } from "../spec";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
-const CX = 150, CY = 170;
+const CX = 150, CY = 172;
 /** The orbits span these radii; the sun's own label runs at SUN_LABEL; the calendar dial sits at DIAL. */
-const R0 = 40, R1 = 106, SUN_LABEL = 27, DIAL = 118;
+const R0 = 40, R1 = 100, SUN_LABEL = 27, DIAL = 110;
 /** Letter size and spacing of the names; the planet's dot and ring. A small family draws larger (its orbits are further apart). */
 const SIZE = 5.8, SPACING = 0.7;
-const PLANET = 2.6, RING = 4.4;
+const PLANET = 2.3, RING = 3.9;
 const LANES = 8;
 const lane = (j: number) => R0 + ((R1 - R0) * j) / (LANES - 1);
 const scaleFor = (orbits: number) => (orbits <= 1 ? 1.45 : orbits <= 3 ? 1.25 : orbits <= 5 ? 1.1 : 1);
@@ -90,30 +90,31 @@ function orbitsDraw(p: Params): [string, Lines, number] {
   // Eight lanes; the planets spread over them, the lanes left empty dotted (room for more).
   const lanes = planets.map((_, k) => (m === 1 ? 5 : Math.round((k * (LANES - 1)) / (m - 1))));
   for (let j = 0; j < LANES; j++)
-    if (!lanes.includes(j)) s += `<circle cx="${CX}" cy="${CY}" r="${f1(lane(j))}" fill="none" stroke="${INK}" stroke-width=".9" stroke-linecap="round" stroke-dasharray="0 3.4"/>`;
+    if (!lanes.includes(j)) s += `<circle cx="${CX}" cy="${CY}" r="${f1(lane(j))}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}" stroke-linecap="round" stroke-dasharray="0 3.4"/>`;
 
   // The calendar dial: a tick a day, longer at each month, the months' initials outside.
   let ticks = "";
   for (let d = 0; d < 365; d++) {
     const a = (d / 365) * 360;
     const month = MONTH_START.includes(d);
-    const [x0, y0] = at(DIAL, a), [x1, y1] = at(DIAL + (month ? 10 : d % 7 === 0 ? 6 : 3.5), a);
+    const [x0, y0] = at(DIAL, a), [x1, y1] = at(DIAL + (month ? 8 : d % 7 === 0 ? 5 : 3), a);
     ticks += `M${f1(x0)} ${f1(y0)}L${f1(x1)} ${f1(y1)}`;
   }
-  s += circle(CX, CY, DIAL, 0.7) + `<path d="${ticks}" fill="none" stroke="${INK}" stroke-width=".45"/>`;
+  s += circle(CX, CY, DIAL, STROKE.fine) + `<path d="${ticks}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
   MONTH_START.forEach((d0, k) => {
     const next = k < 11 ? MONTH_START[k + 1] : 365;
-    const [x, y] = at(DIAL + 16, (((d0 + next) / 2) / 365) * 360);
-    s += text(x, y + 2.2, INITIALS[k], 6.2, { bold: true });
+    // Inside the live area: the initials' ring clears x 22 and 278.
+    const [x, y] = at(DIAL + 14, (((d0 + next) / 2) / 365) * 360);
+    s += text(x, y + (0.698 * 5.6) / 2, INITIALS[k], 5.6, { bold: true });
   });
 
   // The sun: rings, rays, the initial; its name on a ring of its own above it.
   const S = people[sun];
-  s += circle(CX, CY, 12, 1.3) + circle(CX, CY, 8.6, 0.6) + text(CX, CY + 3.6, S.name.toUpperCase()[0], 10, { bold: true });
+  s += circle(CX, CY, 12, STROKE.regular) + circle(CX, CY, 8.6, STROKE.hairline) + text(CX, CY + 3.6, S.name.toUpperCase()[0], 10, { bold: true });
   for (let k = 0; k < 16; k++) {
     const a = k * 22.5 + 11.25;
     const [x0, y0] = at(15.5, a), [x1, y1] = at(k % 2 ? 18.5 : 20.5, a);
-    s += line(x0, y0, x1, y1, 0.7);
+    s += line(x0, y0, x1, y1, STROKE.fine);
   }
   const sunText = `${S.name.toUpperCase()} · ${S.date[0]}`;
   s += arcLabel(sunText, SUN_LABEL, -((sunText.length * adv(SIZE)) / SUN_LABEL / DEG) / 2, false, SIZE, true).svg;
@@ -132,8 +133,8 @@ function orbitsDraw(p: Params): [string, Lines, number] {
     const towardsLarger = lower ? a < 180 : a >= 180;
     const L = arcLabel(lbl, r, towardsLarger ? a + clear : a - clear - span, lower, SIZE * sc);
     const pad = 1.6 / r / DEG;
-    s += brokenCircle(r, [[a - clear + 1.2 / r / DEG, a + clear - 1.2 / r / DEG], [L.arc[0] - pad, L.arc[1] + pad]], Math.round(7 * sc) / 10);
-    s += dot(x, y, PLANET * sc) + circle(x, y, RING * sc, 0.6 * sc) + L.svg;
+    s += brokenCircle(r, [[a - clear + 1.2 / r / DEG, a + clear - 1.2 / r / DEG], [L.arc[0] - pad, L.arc[1] + pad]], Math.max(STROKE.fine, Math.round(7 * sc) / 10));
+    s += dot(x, y, PLANET * sc) + circle(x, y, RING * sc, Math.max(STROKE.hairline, 0.6 * sc)) + L.svg;
   });
 
   const years = people.map((q) => q.date[0]);
@@ -152,4 +153,4 @@ export function orbitsBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => orbitsCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(orbitsBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(orbitsBody((spec as { p: Params }).p), color));

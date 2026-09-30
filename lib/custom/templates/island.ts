@@ -11,7 +11,7 @@
  * bays, spread out (each as far as it can be from the ones before), each
  * name on a patch of ground cleared of lines.
  */
-import { INK, caption, circle, f1, line, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, circle, f1, line, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { fbm, isolines, pad } from "../draw/islandMarch";
 import type { Point } from "../draw/paths";
 import type { CustomSpec } from "../spec";
@@ -165,7 +165,7 @@ function islandDraw(p: Params): [string, Lines, number] {
     }
 
   // The compass rose: in the corner with the most open sea.
-  const corners: Point[] = [[X0 + 24, Y0 + 26], [X1 - 24, Y0 + 26], [X0 + 24, Y1 - 26], [X1 - 24, Y1 - 26]];
+  const corners: Point[] = [[X0 + 24, Y0 + 32], [X1 - 24, Y0 + 32], [X0 + 24, Y1 - 26], [X1 - 24, Y1 - 26]];
   const rose = corners.reduce((a, b) => (sample(dist, b[0], b[1]) > sample(dist, a[0], a[1]) + 0.01 ? b : a));
   const roseBox: Box = { x0: rose[0] - 20, y0: rose[1] - 26, x1: rose[0] + 20, y1: rose[1] + 20 };
 
@@ -186,26 +186,26 @@ function islandDraw(p: Params): [string, Lines, number] {
     }
     flush(X1);
   }
-  s += `<path d="${hatch}" fill="none" stroke="${INK}" stroke-width=".5"/>`;
+  s += `<path d="${hatch}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
 
   // The coast and the contours (every third one heavier).
   const field = pad(h, GW, GH, -1);
   const runs = (level: number) => isolines(field, GW + 2, GH + 2, level).map((r) => (r.closed ? [...r.pts, r.pts[0]] : r.pts).map(toChart));
-  for (let k = 1; k < LEVELS; k++) s += pathOf(runs((hmax * k) / LEVELS), k % 3 === 0 ? 0.8 : 0.5);
-  s += pathOf(runs(0), 1.5);
+  for (let k = 1; k < LEVELS; k++) s += pathOf(runs((hmax * k) / LEVELS), k % 3 === 0 ? STROKE.fine : STROKE.hairline);
+  s += pathOf(runs(0), 1.4);
 
   // The rose.
   const [rx, ry] = rose;
-  s += circle(rx, ry, 13, 0.7) + circle(rx, ry, 10.5, 0.45);
+  s += circle(rx, ry, 13, STROKE.fine) + circle(rx, ry, 10.5, STROKE.hairline);
   const kite = (a: number, len: number, wide: number, fill: boolean) => {
     const [ca, sa] = [Math.cos(a), Math.sin(a)];
     const tip: Point = [rx + ca * len, ry + sa * len], l: Point = [rx - sa * wide, ry + ca * wide], r: Point = [rx + sa * wide, ry - ca * wide];
     const d = `M${f1(l[0])} ${f1(l[1])}L${f1(tip[0])} ${f1(tip[1])}L${f1(r[0])} ${f1(r[1])}Z`;
-    return `<path d="${d}" fill="${fill ? INK : GROUND}" stroke="${INK}" stroke-width=".7" stroke-linejoin="round"/>`;
+    return `<path d="${d}" fill="${fill ? INK : GROUND}" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>`;
   };
   for (let q = 0; q < 4; q++) s += kite(-Math.PI / 4 + (q * Math.PI) / 2, 9, 2.2, false);
   for (let q = 0; q < 4; q++) s += kite(-Math.PI / 2 + (q * Math.PI) / 2, 17, 3, q === 0);
-  s += text(rx, ry - 20, "N", 6.5, { bold: true });
+  s += text(rx, ry - 20, "N", 6.5, { bold: true, family: "grotesk" });
 
   // Where the places go: peaks (local highs), capes and bays along the coast.
   const cands: { x: number; y: number; kind: "peak" | "coast" }[] = [];
@@ -240,12 +240,12 @@ function islandDraw(p: Params): [string, Lines, number] {
   }
 
   // The names: beside their mark where they fit (in the chart, clear of the rose and each other), on cleared ground.
-  const SIZE = 6.2, CW = 0.602 * SIZE + 0.4;
+  const SIZE = 6.2, TRACK = 0.3;
   const taken: Box[] = [roseBox, ...chosen.map((c) => ({ x0: c.x - 3.5, y0: c.y - 3.5, x1: c.x + 3.5, y1: c.y + 3.5 }))];
   let marks = "", labels = "";
   chosen.forEach((c, k) => {
     const name = names[k];
-    const w = name.length * CW;
+    const w = textWidth(name, SIZE, { bold: true, spacing: TRACK });
     marks += c.kind === "peak" ? `<path d="M${f1(c.x - 3)} ${f1(c.y + 2)}L${f1(c.x)} ${f1(c.y - 3)}L${f1(c.x + 3)} ${f1(c.y + 2)}Z" fill="${INK}" stroke="${INK}" stroke-width=".5" stroke-linejoin="round"/>` : `<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="2.6" fill="${GROUND}" stroke="${INK}" stroke-width="1"/><circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="1" fill="${INK}"/>`;
     const options: [number, number, "start" | "end" | "middle"][] = [
       [c.x + 6, c.y + 2.2, "start"], [c.x - 6, c.y + 2.2, "end"], [c.x, c.y - 6, "middle"], [c.x, c.y + 10, "middle"],
@@ -258,16 +258,19 @@ function islandDraw(p: Params): [string, Lines, number] {
     const inside = (b: Box) => b.x0 >= X0 && b.x1 <= X1 && b.y0 >= Y0 && b.y1 <= Y1;
     const own = taken.indexOf(taken.find((t) => t.x0 === c.x - 3.5 && t.y0 === c.y - 3.5)!);
     const pick = options.find((o) => inside(boxOf(o)) && taken.every((t, i) => i === own || !hit(t, boxOf(o)))) ?? options.find((o) => inside(boxOf(o))) ?? options[0];
-    const b = boxOf(pick);
+    // Where no place beside the mark keeps inside the chart, the name slides back in along its line.
+    const b0 = boxOf(pick);
+    const dx = b0.x0 < X0 ? X0 - b0.x0 : b0.x1 > X1 ? X1 - b0.x1 : 0;
+    const b = { ...b0, x0: b0.x0 + dx, x1: b0.x1 + dx };
     taken.push(b);
-    labels += `<rect x="${f1(b.x0)}" y="${f1(b.y0)}" width="${f1(b.x1 - b.x0)}" height="${f1(b.y1 - b.y0)}" fill="${GROUND}"/>` + text(pick[0], pick[1], name, SIZE, { anchor: pick[2], bold: true });
+    labels += `<rect x="${f1(b.x0)}" y="${f1(b.y0)}" width="${f1(b.x1 - b.x0)}" height="${f1(b.y1 - b.y0)}" fill="${GROUND}"/>` + text(pick[0] + dx, pick[1], name, SIZE, { anchor: pick[2], bold: true, spacing: TRACK });
   });
   s += labels + marks;
 
   // A scale bar in the corner the rose leaves (a chart's leagues, for an island that has none).
   const bx = rose[0] < 150 ? X1 - 46 : X0 + 2, by = Y1 + 8;
-  s += `<path d="M${bx} ${by}H${bx + 44}M${bx} ${by - 2}V${by + 2}M${bx + 22} ${by - 2}V${by + 2}M${bx + 44} ${by - 2}V${by + 2}" fill="none" stroke="${INK}" stroke-width=".8"/>` + line(bx, by, bx + 22, by, 2);
-  s += text(bx + 22, by + 8, "2 leagues", 5);
+  s += `<path d="M${bx} ${by}H${bx + 44}M${bx} ${by - 2}V${by + 2}M${bx + 22} ${by - 2}V${by + 2}M${bx + 44} ${by - 2}V${by + 2}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}"/>` + line(bx, by, bx + 22, by, STROKE.bold);
+  s += text(bx + 22, by + 6 + CAP.plex * 4.5, "2 LEAGUES", 4.5, { spacing: 0.55 });
 
   const joined = names.join(" · ");
   const sub = !names.length ? "Uncharted" : joined.length <= 56 ? joined : `${names.length} places`;
@@ -283,4 +286,4 @@ export function islandBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => islandCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(islandBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(islandBody((spec as { p: Params }).p), color));

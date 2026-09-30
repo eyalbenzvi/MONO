@@ -9,10 +9,10 @@
  * fitted to the print; past eight floors the hatching takes a coarser
  * module, so its lines never crowd under the smallest stroke that prints.
  */
-import { INK, caption, captionLines, f1, line, rect, text, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, f1, line, rect, text, textWidth, type Lines, house } from "../kit";
 import { ORDERS } from "../draw/architecture";
 import type { CustomSpec, HouseParams } from "../spec";
-import { wrap } from "../svg";
+import { GROUND as SHIRT, wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 /** In metres: a bay (window and pier), the side piers, the plinth, the ground storey. */
@@ -20,7 +20,7 @@ const BAY = 1.5, PIER = 0.5, PLINTH = 0.45, GROUND = 3.4;
 /** Brick courses (75 mm with the joint) and a stretcher with its joint (225 mm). */
 const COURSE = 0.075, BRICK = 0.225;
 const AREA = { w: 232, h: 246 };
-const BASE = 294;
+const BASE = 286;
 /** Hatching never closer than this (print units): the finest line a tee takes, with air between. */
 const MIN_GAP = 2.6;
 
@@ -77,17 +77,25 @@ export function houseBody(p: HouseParams): string {
     const next = yy - m(step);
     for (let x = X0 + (row % 2 ? m(brick) / 2 : m(brick)); x < X1 - 1; x += m(brick)) if (!inOpening(x, yy - 1) && !inOpening(x, next + 1) && next > top) d += `M${f1(x)} ${f1(yy)}V${f1(next)}`;
   }
-  s += `<path d="${d}" fill="none" stroke="${INK}" stroke-width=".55"/>`;
+  s += `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
 
   // The wall's outline and the plinth.
-  s += rect(X0, top, X1 - X0, BASE - top, 1.4) + line(X0, BASE - m(PLINTH), X1, BASE - m(PLINTH), 1);
+  s += rect(X0, top, X1 - X0, BASE - top, STROKE.regular) + line(X0, BASE - m(PLINTH), X1, BASE - m(PLINTH), STROKE.fine);
   // Openings: reveals (a second outline inside), sills, glazing bars; the door's panels and number.
   for (const o of openings) {
     const r = Math.max(1.2, m(0.07));
-    s += `<rect x="${f1(o.x)}" y="${f1(o.y)}" width="${f1(o.w)}" height="${f1(o.h)}" fill="none" stroke="${INK}" stroke-width="1"/>` + rect(o.x + r, o.y + r, o.w - 2 * r, o.h - 2 * r, 0.6);
+    s += rect(o.x, o.y, o.w, o.h, STROKE.fine) + rect(o.x + r, o.y + r, o.w - 2 * r, o.h - 2 * r, STROKE.hairline);
     if (o.door) {
       s += line(o.x + o.w / 2, o.y + r, o.x + o.w / 2, o.y + o.h, 0.6) + rect(o.x + r * 2, o.y + o.h * 0.15, o.w / 2 - r * 3, o.h * 0.3, 0.5) + rect(o.x + o.w / 2 + r, o.y + o.h * 0.15, o.w / 2 - r * 3, o.h * 0.3, 0.5);
-      if (p.no !== undefined) s += text(o.x + o.w / 2, o.y - Math.max(3, m(0.2)), String(p.no), Math.max(5, Math.min(11, m(0.45))), { bold: true });
+      // The number on a plaque over the door: the brickwork cleared behind it, a hairline round it.
+      if (p.no !== undefined) {
+        const no = String(p.no);
+        const size = Math.max(5, Math.min(11, m(0.45)));
+        const [pw, ph] = [textWidth(no, size, { bold: true }) + size * 0.9, size * CAP.plex + size * 0.8];
+        const cy = o.y - Math.max(2.5, m(0.12)) - ph / 2;
+        s += `<rect x="${f1(o.x + o.w / 2 - pw / 2)}" y="${f1(cy - ph / 2)}" width="${f1(pw)}" height="${f1(ph)}" fill="${SHIRT}" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
+        s += text(o.x + o.w / 2, cy + (size * CAP.plex) / 2, no, size, { bold: true });
+      }
     } else {
       s += line(o.x + o.w / 2, o.y + r, o.x + o.w / 2, o.y + o.h - r, 0.5) + line(o.x + r, o.y + o.h * 0.45, o.x + o.w - r, o.y + o.h * 0.45, 0.5);
       s += line(o.x - m(0.08), o.y + o.h + Math.max(1, m(0.06)), o.x + o.w + m(0.08), o.y + o.h + Math.max(1, m(0.06)), 1.2);
@@ -104,11 +112,11 @@ export function houseBody(p: HouseParams): string {
     void tuscan;
   } else if (p.r === "pitched") {
     const h = m(roofH);
-    s += `<path d="M${f1(X0 - m(0.3))} ${f1(top)}L${f1(cx)} ${f1(top - h)}L${f1(X1 + m(0.3))} ${f1(top)}Z" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    s += `<path d="M${f1(X0 - m(0.3))} ${f1(top)}L${f1(cx)} ${f1(top - h)}L${f1(X1 + m(0.3))} ${f1(top)}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>`;
     // Roof tiles as courses along the slope.
     for (let t = 1; t < 7; t++) {
       const f = t / 7;
-      s += line(X0 - m(0.3) + (cx - X0 + m(0.3)) * f, top - h * f, X1 + m(0.3) - (X1 + m(0.3) - cx) * f, top - h * f, 0.5);
+      s += line(X0 - m(0.3) + (cx - X0 + m(0.3)) * f, top - h * f, X1 + m(0.3) - (X1 + m(0.3) - cx) * f, top - h * f, STROKE.hairline);
     }
   } else if (p.r === "stepped") {
     // A crow-stepped gable: five steps each side up to a finial.
@@ -118,14 +126,14 @@ export function houseBody(p: HouseParams): string {
     pts += `V${f1(top - h)}H${f1(X1 - sw * steps)}`;
     for (let i = steps - 1; i >= 0; i--) pts += `V${f1(top - (h * (i + 1)) / (steps + 1))}H${f1(X1 - sw * i)}`;
     pts += `V${f1(top)}`;
-    s += `<path d="${pts}" fill="none" stroke="${INK}" stroke-width="1.4"/>`;
+    s += `<path d="${pts}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>`;
     s += rect(cx - m(0.35), top - h * 0.62, m(0.7), m(0.9), 0.8);
   } else {
     // A dome on a drum: the drum a fifth of the dome's height, ribs and a lantern.
     const R = Math.min((X1 - X0) / 2 * 0.8, m(roofH) * 0.8);
     const drum = m(roofH) * 0.18;
     s += rect(cx - R, top - drum, 2 * R, drum, 1.2);
-    s += `<path d="M${f1(cx - R)} ${f1(top - drum)}A${f1(R)} ${f1(R)} 0 0 1 ${f1(cx + R)} ${f1(top - drum)}" fill="none" stroke="${INK}" stroke-width="1.4"/>`;
+    s += `<path d="M${f1(cx - R)} ${f1(top - drum)}A${f1(R)} ${f1(R)} 0 0 1 ${f1(cx + R)} ${f1(top - drum)}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}"/>`;
     for (const f of [-0.6, -0.25, 0.25, 0.6]) s += `<path d="M${f1(cx + f * R)} ${f1(top - drum)}Q${f1(cx + f * R * 0.8)} ${f1(top - drum - R * 0.9)} ${f1(cx)} ${f1(top - drum - R)}" fill="none" stroke="${INK}" stroke-width=".6"/>`;
     s += rect(cx - m(0.3), top - drum - R - m(0.9), m(0.6), m(0.9), 0.9);
   }
@@ -153,19 +161,19 @@ export function houseBody(p: HouseParams): string {
         yy -= m(h);
       });
     });
-    s += `<path d="${nd}" fill="none" stroke="${INK}" stroke-width=".75"/>`;
+    s += `<path d="${nd}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}"/>`;
   }
 
   // The dimension line across the front, and a scale bar in metres.
   // The ground in section under the whole sheet: a hatched band, as an elevation stands the building on it.
   let g = "";
   for (let x = 150 - 126; x < 150 + 126; x += 4) g += `M${f1(x)} ${f1(BASE + 5)}L${f1(x + 5)} ${f1(BASE)}`;
-  s += `<path d="${g}" fill="none" stroke="${INK}" stroke-width=".55"/>` + line(150 - 128, BASE, 150 + 128, BASE, 1.6);
+  s += `<path d="${g}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>` + line(150 - 128, BASE, 150 + 128, BASE, STROKE.bold);
   const dy = BASE + 12;
-  s += line(X0, dy, X1, dy, 0.6) + line(X0, dy - 3, X0, dy + 3, 0.8) + line(X1, dy - 3, X1, dy + 3, 0.8) + text(150, dy + 8, `${W.toFixed(1)} m`, 6);
+  s += line(X0, dy, X1, dy, STROKE.hairline) + line(X0, dy - 3, X0, dy + 3, STROKE.fine) + line(X1, dy - 3, X1, dy + 3, STROKE.fine) + text(150, dy + 8, `${W.toFixed(1)} m`, 6);
   const unit = [1, 2, 5, 10].find((u) => m(u) >= 14) ?? 10;
   const sx = 150 - m(unit * 2) / 2, sy = dy + 18;
-  for (let i = 0; i < 2; i++) s += rect(sx + i * m(unit), sy, m(unit), 3, 0.7);
+  for (let i = 0; i < 2; i++) s += rect(sx + i * m(unit), sy, m(unit), 3, STROKE.hairline);
   s += text(sx, sy + 10, "0", 5) + text(sx + m(unit), sy + 10, String(unit), 5) + text(sx + m(unit * 2), sy + 10, `${unit * 2} m`, 5);
 
   return s + caption(348, ...captionLines(houseCaption(p), p.cap));
@@ -180,4 +188,4 @@ export function houseCaption(p: HouseParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => houseCaption((spec as { p: HouseParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(houseBody((spec as { p: HouseParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(houseBody((spec as { p: HouseParams }).p), color));

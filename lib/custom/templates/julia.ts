@@ -8,7 +8,7 @@
  * nearest of its mathematical designs: hairlines traced from an equation,
  * one ink, the equation's numbers in the caption.
  */
-import { INK, caption, captionLines, longDate, type Lines } from "../kit";
+import { INK, STROKE, caption, captionLines, line, longDate, text, type Lines, house } from "../kit";
 import { juliaDrawing } from "../draw/julia";
 import { dayNumber, parseDate, titleWords, type Cap } from "../specKit";
 import type { CustomSpec } from "../spec";
@@ -93,7 +93,7 @@ export function bandIndex(d: string): number {
 }
 const gcdOf = (a: number, b: number): number => (b ? gcdOf(b, a % b) : a);
 
-const BOX = { x: 30, y: 24, w: 240, h: 282 };
+const BOX = { x: 30, y: 32, w: 240, h: 274 };
 
 /** c written as the caption has it: "c = -0.7269 + 0.1889i". */
 export const cLabel = (re: number, im: number) => `c = ${re < 0 ? "-" : ""}${(Math.abs(re) / 1e4).toFixed(4)} ${im < 0 ? "-" : "+"} ${(Math.abs(im) / 1e4).toFixed(4)}i`;
@@ -104,12 +104,27 @@ const juliaLines = (re: number, im: number, title: string, day?: string): Lines 
 export function juliaFor(re: number, im: number, title: string, day?: string, cap?: Cap): string {
   const j = juliaDrawing(re / 1e4, im / 1e4, BOX);
   return (
-    `<path d="${j.bands}" fill="none" stroke="${INK}" stroke-width=".45" stroke-linejoin="round"/>` +
-    (j.inner ? `<path d="${j.inner}" fill="none" stroke="${INK}" stroke-width=".4" stroke-linejoin="round"/>` : "") +
-    `<path d="${j.edge}" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>` +
+    `<path d="${j.bands}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>` +
+    (j.inner ? `<path d="${j.inner}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>` : "") +
+    `<path d="${j.edge}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>` +
+    plate() +
     // One line under the title, with the day in it when the title is the words (the print's depth stays the same).
     caption(338, ...captionLines(juliaLines(re, im, title, day), cap))
   );
+}
+
+/**
+ * The plate round the set: crop marks at the drawing box's corners (hairlines,
+ * clear of the contours, which keep to an oval inside it), the map at the top
+ * left and the drawing's depth at the bottom right, in Plex at its smallest.
+ */
+function plate(): string {
+  const [x0, y0, x1, y1, m] = [BOX.x - 6, BOX.y - 4, BOX.x + BOX.w + 6, BOX.y + BOX.h + 4, 9];
+  let s = "";
+  for (const [x, y, dx, dy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]) s += line(x, y, x + dx * m, y, STROKE.hairline) + line(x, y, x, y + dy * m, STROKE.hairline);
+  s += text(x0 + m + 3, y0 + 1.6, "z → z² + c", 4.5, { anchor: "start", spacing: 0.2 });
+  s += text(x1 - m - 3, y1 + 1.6, "ESCAPE TIME · 400 STEPS", 4.5, { anchor: "end", spacing: 0.5 });
+  return s;
 }
 
 /** The set's c for the day, and the caption's title and day (the visitor's words, else the day). */
@@ -129,4 +144,4 @@ export function juliaBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => juliaCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(juliaBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(juliaBody((spec as { p: Params }).p), color));

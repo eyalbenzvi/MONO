@@ -5,7 +5,7 @@
  * the personalised ones are this function with different inputs.
  */
 import { altAzOf, siderealTime } from "../astro";
-import { DEG, caption, circle, dot, line, path, polyline, text } from "../kit";
+import { DEG, STROKE, caption, circle, dot, line, path, polyline, text } from "../kit";
 
 export interface SkyData {
   /** [ra°, dec°, magnitude]. */
@@ -19,13 +19,16 @@ export interface SkyInput {
   /** The moment as a Julian date (UT). */
   jd: number;
   caption: { title?: string; sub?: string; sub2?: string };
+  /** The Make print's chart (house type, the live area, the stroke scale); absent, the catalogue's, byte for byte. */
+  make?: boolean;
 }
 
 /** A place's coordinates as the caption writes them ("31.78°N 35.24°E"). */
 export const latLon = (lat: number, lon: number) => `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"} ${Math.abs(lon).toFixed(2)}°${lon >= 0 ? "E" : "W"}`;
 
 /** The chart alone (no caption). */
-export function skyChart({ stars, lines }: SkyData, place: { lat: number; lon: number }, jd: number): string {
+export function skyChart({ stars, lines }: SkyData, place: { lat: number; lon: number }, jd: number, make = false): string {
+  if (make) return makeChart({ stars, lines }, place, jd);
   const altAz = altAzOf(place.lat, siderealTime(jd, place.lon));
   // Stereographic, zenith at the centre, horizon the circle; north up, east on the left (a chart held overhead).
   const CX = 150, CY = 160, R = 118;
@@ -62,5 +65,50 @@ export function skyChart({ stars, lines }: SkyData, place: { lat: number; lon: n
   return body;
 }
 
+/**
+ * The Make print's chart: the same projection and stars, drawn to the house
+ * grid. The ring sits inside the live area with its cardinals (bold Plex, the
+ * key line) and the azimuth every 30° (Plex at its smallest) outside it; the
+ * horizon is the regular line, the scale ring and ticks hairlines, the figures
+ * a fine-hairline between them, and a small cross marks the zenith.
+ */
+function makeChart({ stars, lines }: SkyData, place: { lat: number; lon: number }, jd: number): string {
+  const altAz = altAzOf(place.lat, siderealTime(jd, place.lon));
+  const CX = 150, CY = 160, R = 110;
+  const xy = (alt: number, az: number): [number, number] => {
+    const r = R * Math.tan((Math.PI / 2 - alt) / 2);
+    return [CX - r * Math.sin(az), CY - r * Math.cos(az)];
+  };
+  const at = (r: number, deg: number): [number, number] => [CX - r * Math.sin(deg * DEG), CY - r * Math.cos(deg * DEG)];
+  let body = circle(CX, CY, R, STROKE.regular) + circle(CX, CY, R + 6, STROKE.hairline);
+  for (let k = 0; k < 360; k += 5) {
+    const r1 = k % 30 === 0 ? R + 6 : k % 10 === 0 ? R + 3.5 : R + 2;
+    body += line(...at(R, k), ...at(r1, k), STROKE.hairline);
+  }
+  for (let k = 0; k < 360; k += 30) {
+    const [x, y] = at(R + 13.5, k);
+    if (k % 90 === 0) body += text(x, y + (0.698 * 7.5) / 2, "NESW"[k / 90], 7.5, { bold: true });
+    else body += text(x, y + (0.698 * 4.5) / 2, String(k), 4.5, { spacing: 0.3 });
+  }
+  // The zenith.
+  body += line(CX - 3, CY, CX + 3, CY, STROKE.hairline) + line(CX, CY - 3, CX, CY + 3, STROKE.hairline);
+  let d = "";
+  for (const l of lines)
+    for (let i = 1; i < l.length; i++) {
+      const [a1, z1] = altAz(l[i - 1][0], l[i - 1][1]);
+      const [a2, z2] = altAz(l[i][0], l[i][1]);
+      if (a1 > 0.02 && a2 > 0.02) d += polyline([xy(a1, z1), xy(a2, z2)]);
+    }
+  body += path(d, 0.6);
+  for (const [ra, dec, mag] of stars) {
+    if (mag > 4.8) continue;
+    const [alt, az] = altAz(ra, dec);
+    if (alt <= 0) continue;
+    const [x, y] = xy(alt, az);
+    body += dot(x, y, Math.max(0.7, 3.1 - 0.55 * mag));
+  }
+  return body;
+}
+
 /** The chart and its caption: the print's body (white ink, unwrapped). */
-export const skyBody = (input: SkyInput, data: SkyData) => skyChart(data, input.place, input.jd) + caption(318, input.caption.title, input.caption.sub, input.caption.sub2);
+export const skyBody = (input: SkyInput, data: SkyData) => skyChart(data, input.place, input.jd, input.make) + caption(318, input.caption.title, input.caption.sub, input.caption.sub2);

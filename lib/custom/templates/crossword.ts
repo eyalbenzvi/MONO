@@ -8,7 +8,7 @@
  * grid is left blank and the names are listed under it by length, to be
  * fitted back in. A name that crosses no other sits a cell clear, on its own.
  */
-import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, caption, clip, f1, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { buildCrossword, type Crossword } from "../draw/crossword";
 import type { CustomSpec } from "../spec";
@@ -30,18 +30,44 @@ function numbering(cw: Crossword): Map<string, number> {
   return new Map(starts.map(([r, c], i) => [`${r},${c}`, i + 1]));
 }
 
-/** Words as lines of about `max` characters: "3 NOA · 4 ELLA RUTH · …", by length. */
-function listLines(words: string[], max: number): string[] {
+/** The names grouped by length, as a setter lists a fill-in's words: "3: NOA", "4: ELLA RUTH", … */
+function listGroups(words: string[]): string[] {
   const byLen = new Map<number, string[]>();
   for (const w of [...words].sort((a, b) => a.length - b.length || (a < b ? -1 : 1))) byLen.set(w.length, [...(byLen.get(w.length) ?? []), w]);
-  const groups = [...byLen].map(([n, ws]) => `${n}: ${ws.join(" ")}`);
-  const lines: string[] = [];
-  for (const g of groups) {
-    const last = lines[lines.length - 1];
-    if (last !== undefined && last.length + 3 + g.length <= max) lines[lines.length - 1] = `${last} · ${g}`;
-    else lines.push(g);
+  return [...byLen].map(([n, ws]) => `${n}: ${ws.join(" ")}`);
+}
+
+/**
+ * The groups set in lines at the largest size (at most `max`, down to the
+ * face's floor) that fits `width` in at most `maxLines`: groups joined by a
+ * centred dot while they fit, a group too long for a line broken between its
+ * names.
+ */
+function listFit(groups: string[], width: number, max: number, maxLines: number): { lines: string[]; size: number } {
+  const opts = { spacing: 0 };
+  for (let size = max; size >= 4.5; size = Math.round((size - 0.25) * 100) / 100) {
+    const sp = { ...opts, spacing: r1(size * 0.04) };
+    const fits = (l: string) => textWidth(l, size, sp) <= width;
+    const lines: string[] = [];
+    let ok = true;
+    for (const g of groups) {
+      const last = lines[lines.length - 1];
+      if (last !== undefined && fits(`${last} · ${g}`)) lines[lines.length - 1] = `${last} · ${g}`;
+      else if (fits(g)) lines.push(g);
+      else {
+        let line = "";
+        for (const w of g.split(" ")) {
+          const next = line ? `${line} ${w}` : w;
+          if (fits(next)) line = next;
+          else if (line) lines.push(line), (line = w);
+          else ok = false;
+        }
+        if (line) lines.push(line);
+      }
+    }
+    if (ok && lines.length <= maxLines) return { lines, size };
   }
-  return lines;
+  return { lines: groups.map((g) => clip(g, width, 4.5)), size: 4.5 };
 }
 
 /** The drawing, the caption's lines as ours, and where the caption sits. */
@@ -62,8 +88,11 @@ function crosswordDraw(p: Params): [string, Lines, number] {
   let d = "";
   let s = "";
   const ink = Math.max(0.6, Math.min(1.2, cell * 0.055));
-  const numSize = cell * 0.27;
-  const numbered = numSize >= 2.6;
+  // A light's number in Plex, never under the face's floor: a grid too fine for it goes unnumbered.
+  const numSize = r1(Math.min(7, Math.max(4.5, cell * 0.3)));
+  const numbered = cell >= 14;
+  // The letters in Space Grotesk Bold (a name set large), optically centred in the cell (below the number when there is one).
+  const letterSize = r1(cell * 0.5);
   for (const [key, ch] of letters) {
     const [r, c] = key.split(",").map(Number);
     const [x, y] = [x0 + c * cell, y0 + r * cell];
@@ -75,13 +104,13 @@ function crosswordDraw(p: Params): [string, Lines, number] {
     ])
       if (!edges.has(k)) edges.add(k), (d += seg);
     const n = nums.get(key);
-    if (n !== undefined && numbered) s += text(x + cell * 0.08, y + numSize * 1.05, String(n), r1(numSize), { anchor: "start" });
-    if (!blank) s += text(x + cell / 2, y + cell * 0.7 + (n !== undefined && numbered ? cell * 0.05 : 0), ch, r1(cell * 0.52), { bold: true });
+    if (n !== undefined && numbered) s += text(x + Math.max(1.4, cell * 0.08), y + numSize * 1.02 + 0.6, String(n), numSize, { anchor: "start" });
+    if (!blank) s += text(x + cell / 2, y + cell / 2 + (CAP.grotesk * letterSize) / 2 + (n !== undefined && numbered ? cell * 0.06 : 0), ch, letterSize, { bold: true, family: "grotesk" });
   }
   // Where a printed grid has its black squares, hatching (one ink: the block's tone from lines, never a slab), the
   // diagonals on one phase across the whole grid so neighbouring blocks read as one.
   let hatch = "";
-  const gap = Math.max(1.9, Math.min(3.2, cell / 5));
+  const gap = Math.max(2.2, Math.min(3.2, cell / 5));
   for (let r = 0; r < cw.rows; r++)
     for (let c = 0; c < cw.cols; c++) {
       if (letters.has(`${r},${c}`)) continue;
@@ -99,12 +128,10 @@ function crosswordDraw(p: Params): [string, Lines, number] {
   if (blank) {
     // The names to fit, by length, as a setter lists a fill-in's words.
     // As large as the longest line allows (a short list reads from across the room), never over 9.
-    let lines = listLines(names, 32);
-    if (lines.length > 3) lines = listLines(names, 58);
-    const size = r1(Math.min(9, 262 / (0.602 * Math.max(...lines.map((l) => l.length)))));
-    const lead = size * 1.7;
-    const top = Math.min(y0 + cw.rows * cell + 16 + size, 320 - (lines.length - 1) * lead);
-    lines.forEach((l, i) => (s += text(150, top + i * lead, l, size)));
+    const { lines, size } = listFit(listGroups(names), 256, 8.5, 4);
+    const lead = size * 1.65;
+    const top = Math.min(y0 + cw.rows * cell + 14 + size, 318 - (lines.length - 1) * lead);
+    lines.forEach((l, i) => (s += text(150, top + i * lead, l, size, { spacing: r1(size * 0.04) })));
   }
   const title = titleWords(p) ?? "Crossword";
   const sub = `${names.length} names · ${cw.crossings === 0 ? "no" : cw.crossings} ${cw.crossings === 1 ? "crossing" : "crossings"}${blank ? " · fill them in" : ""}`;
@@ -120,4 +147,4 @@ export function crosswordBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => crosswordCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(crosswordBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(crosswordBody((spec as { p: Params }).p), color));

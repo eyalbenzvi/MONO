@@ -15,7 +15,7 @@
  * 32-bit hash spread over continuous ranges), so no two names give the same
  * flake in practice.
  */
-import { INK, caption, captionLines, f1, type Lines } from "../kit";
+import { INK, STROKE, caption, captionLines, f1, type Lines, house } from "../kit";
 import type { Cap } from "../specKit";
 import { broadArms, growCrystal, type Crystal } from "../draw/snowflake";
 import { mulberry32 } from "../rng";
@@ -27,7 +27,7 @@ import type { BaseColor } from "@/types/shirt";
 
 /** Grid radius in cells: fine enough for the arms' side branches, small enough to grow in a live preview. */
 export const GRID = 50;
-const CX = 150, CY = 164, RADIUS = 124;
+const CX = 150, CY = 169, RADIUS = 124;
 const SQ3 = Math.sqrt(3) / 2;
 
 /** FNV-1a of the name, as printed. */
@@ -148,14 +148,15 @@ export function crystalBody(c: Crystal, name: string, sub2?: string, plate = 0, 
   const h = RADIUS / Math.max(c.radius + 1, 20);
   // Axial (q, r) to the print, turned so an arm points up.
   const pos = (q: number, r: number): [number, number] => [CX + r * SQ3 * h, CY - (q + r / 2) * h];
-  let s = `<path d="${contour(c, 1, pos)}" fill="none" stroke="${INK}" stroke-width="1.1" stroke-linecap="round"/>`;
-  s += `<path d="${contour(c, 1.08, pos)}" fill="none" stroke="${INK}" stroke-width=".5" stroke-linecap="round"/>`;
-  s += `<path d="${contour(c, 1.3, pos)}" fill="none" stroke="${INK}" stroke-width=".5" stroke-linecap="round"/>`;
+  // The outline on the regular line, the ice's ridges inside it hairlines (the ridge that hugged the outline is left
+  // out: at 3 cm it ran into the outline as one thick, muddy edge).
+  let s = `<path d="${contour(c, 1, pos)}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s += `<path d="${contour(c, 1.3, pos)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linecap="round" stroke-linejoin="round"/>`;
   if (plate) {
     // The centre plate the arms grew from: its edge, and a ridge inside it.
     const hex = (k: number) => [[k, 0], [0, k], [-k, k], [-k, 0], [0, -k], [k, -k]].map(([q, r], i) => `${i ? "L" : "M"}${pos(q, r).map(f1).join(" ")}`).join("") + "Z";
-    s += `<path d="${hex(plate + 0.5)}" fill="${GROUND}" stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"/>`;
-    s += `<path d="${hex((plate + 0.5) * 0.55)}" fill="none" stroke="${INK}" stroke-width=".6" stroke-linejoin="round"/>`;
+    s += `<path d="${hex(plate + 0.5)}" fill="${GROUND}" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>`;
+    s += `<path d="${hex((plate + 0.5) * 0.55)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>`;
   }
   return s + caption(338, ...captionLines([name, "A snow crystal grown from a name", sub2], cap));
 }
@@ -172,4 +173,4 @@ export function snowflakeBody(p: SnowflakeParams): string {
 
 export const captionOf = (spec: CustomSpec) => snowflakeCaption((spec as { p: SnowflakeParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(snowflakeBody((spec as { p: SnowflakeParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(snowflakeBody((spec as { p: SnowflakeParams }).p), color));

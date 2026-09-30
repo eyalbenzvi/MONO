@@ -30,7 +30,7 @@ import type { BaseColor, CatalogEntry } from "../../types/shirt";
 import { FONT_OPTS, mockup, type Grey } from "./bake";
 
 /** Bumped whenever the recipe changes: every card is baked again. */
-const RECIPE = 1;
+const RECIPE = 2;
 const ROOT = path.resolve(__dirname, "..", "..");
 const PUBLIC = path.join(ROOT, "public");
 const STAMP = path.join(ROOT, "node_modules", ".cache", "mono-make-cards.json");

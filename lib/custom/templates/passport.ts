@@ -8,7 +8,7 @@
  * land is seeded by the list (lib/custom/rng), none over another. The name
  * heads the page; the foot says what the page isn't.
  */
-import { INK, arcText, caption, captionLines, circle, f1, line, polyline, text, textWidth, turnedText, type Lines } from "../kit";
+import { CAP, INK, STROKE, arcText, caption, captionLines, circle, clip, f1, fitSize, line, polyline, text, textWidth, turnedText, type Lines, house } from "../kit";
 import { mulberry32 } from "../rng";
 import { parseDate } from "../specKit";
 import type { Params, Stamp } from "../specs/passport";
@@ -20,8 +20,10 @@ import type { BaseColor } from "@/types/shirt";
 
 type Pt = [number, number];
 const COND = "condensed" as const;
+/** The air between a stamp's letters round its ring, em. */
+const ARC = 0.06;
 /** The page, and the grid's field inside it. */
-const PX0 = 22, PX1 = 278, PY0 = 26, PY1 = 322;
+const PX0 = 22, PX1 = 278, PY0 = 28, PY1 = 322;
 const GX0 = 28, GX1 = 272, GY0 = 66, GY1 = 298;
 const SHAPES = ["ring", "double", "rect", "rounded", "octagon", "hexagon"] as const;
 type Shape = (typeof SHAPES)[number];
@@ -138,13 +140,26 @@ function outline(shape: Shape, r: number): Pt[] {
   return pts;
 }
 
-/** The largest size, up to max, at which a line fits the width (a shorter name when even `floor` won't). */
-function fitLine(s: string, width: number, max: number, floor: number): { s: string; size: number } {
+/**
+ * A country's name as a stamp sets it, in condensed bold capitals: the largest
+ * size up to max at which it fits the width (its tracking counted), never
+ * under the face's smallest; a shorter name (its last words dropped, never
+ * ending on a joining word) when even that won't do, and cut as a last resort.
+ */
+const VAGUE = /^(UNITED|SOUTH|NORTH|NEW|EAST|WEST|CENTRAL|REPUBLIC|DEMOCRATIC|SAINT|SAN|SAO|SRI|PAPUA|SIERRA|COSTA|EL|BURKINA|CAPE|SAUDI|EQUATORIAL|DOMINICAN|CZECH|IVORY|MARSHALL|SOLOMON|FAROE|COOK|CAYMAN|VIRGIN|FEDERATED|BOSNIA|TRINIDAD|ANTIGUA|TURKS|HONG|PUERTO|AMERICAN|BRITISH|FRENCH|NORTHERN|WESTERN|HEARD|FALKLAND|ISLE|ST.)$/;
+function fitLine(s: string, width: number, max: number, track = 0.04): { s: string; size: number } {
+  const FLOOR = 5;
+  const o = { family: COND, bold: true } as const;
   let words = s.split(" ");
   for (;;) {
     const t = words.join(" ");
-    const size = Math.min(max, width / Math.max(1, textWidth(t, 1, { bold: true })));
-    if (size >= floor || words.length === 1) return { s: t, size: Math.max(size, Math.min(floor, max)) };
+    const size = fitSize(t, width, Math.max(max, FLOOR), { ...o, track });
+    // A name that would shrink to a word that means nothing alone ("UNITED" of the United Kingdom) is cut instead.
+    const bare = words.length === 1 && t !== s && VAGUE.test(t);
+    if (size >= FLOOR || words.length === 1) {
+      const set = Math.max(FLOOR, size);
+      return { s: clip(bare ? s : t, width, set, { ...o, spacing: set * track }), size: set };
+    }
     words = words.slice(0, -1);
     // Never ending on a joining word ("UNITED STATES OF").
     while (words.length > 1 && /^(OF|AND|THE|DE|DU|DA|DEL|ET)$/.test(words[words.length - 1])) words = words.slice(0, -1);
@@ -160,38 +175,46 @@ function drawStamp(o: Placed, countries?: Countries): string {
   const icon = (u: number, v: number, size: number) => turnedPath(train ? TRAIN : PLANE, ...at(u, v), size, deg + (train ? 0 : 90), 5 * (size / 100) + 0.3);
   let s = "";
   if (shape === "ring" || shape === "double") {
-    s += circle(cx, cy, r - 1, 1.4) + (shape === "double" ? circle(cx, cy, r - 3.6, 0.6) : "");
+    s += circle(cx, cy, r - 1, STROKE.regular) + (shape === "double" ? circle(cx, cy, r - 3.6, STROKE.hairline) : "");
     const inner = r * 0.64;
-    s += circle(cx, cy, inner, 0.8);
+    s += circle(cx, cy, inner, STROKE.fine);
     const band = (shape === "double" ? r - 3.6 : r - 1) - inner;
-    const size = Math.min(band * 0.62, 6.5);
-    const mid = (r - 1 + inner) / 2 - (shape === "double" ? 1.3 : 0);
-    // The name round the top, the day round the foot (each shortened to the arc it has).
-    const arcLen = (Math.PI * mid * 0.9);
+    const size = Math.min(band * 0.72, 7);
+    const mid = (shape === "double" ? r - 3.6 : r - 1) / 2 + inner / 2 - 0.2;
+    // The name round the top in condensed capitals, the day round the foot in the mono (each fitted to the arc it has).
+    const arcLen = Math.PI * mid * 0.9;
     if (name) {
-      const fit = fitLine(name, arcLen, size, size * 0.7);
-      s += arcText(fit.s, cx, cy, mid, deg, fit.size, true, { bold: true });
+      const fit = fitLine(name, arcLen, size, ARC);
+      s += arcText(fit.s, cx, cy, mid, deg, fit.size, true, { bold: true, family: COND, track: ARC });
     }
-    if (day) s += arcText(day, cx, cy, mid, 180 + deg, Math.min(size, arcLen / textWidth(day, 1)), false);
+    if (day) {
+      const ds = Math.max(4.5, Math.min(size, arcLen / (textWidth(day, 1) + [...day].length * ARC)));
+      s += arcText(day, cx, cy, mid, 180 + deg, ds, false, { track: ARC });
+    }
     s += turnedText(a3, ...at(0, inner * 0.12), deg, inner * 0.62, { bold: true });
     s += icon(0, -inner * 0.58, inner * 0.5);
-    s += turnedPath(`M20 50H80`, ...at(0, inner * 0.6), inner * 1.1, deg, 0.7);
+    s += turnedPath(`M20 50H80`, ...at(0, inner * 0.6), inner * 1.1, deg, STROKE.fine);
     return s;
   }
   const pts = outline(shape, r - 1).map(([u, v]) => at(u, v));
-  s += `<path d="${polyline(pts, true)}" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
+  s += `<path d="${polyline(pts, true)}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>`;
   const insetPts = outline(shape, r - 4.2).map(([u, v]) => at(u, v));
-  s += `<path d="${polyline(insetPts, true)}" fill="none" stroke="${INK}" stroke-width=".6" stroke-linejoin="round"/>`;
-  // Inside: the name, the code large beside the plane or train, a rule, the day.
+  s += `<path d="${polyline(insetPts, true)}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linejoin="round"/>`;
+  // Inside: the name in condensed capitals, the code large beside the plane or train, a rule, the day in the mono.
   const w = r * 1.18;
   if (name) {
-    const fit = fitLine(name, w, r * 0.16, 3.2);
-    s += turnedText(fit.s, ...at(0, -r * 0.34), deg, fit.size, { bold: true });
+    const fit = fitLine(name, r * 1.3, r * 0.2, 0.02);
+    s += turnedText(fit.s, ...at(0, -r * 0.34), deg, fit.size, { bold: true, family: COND, spacing: Math.round(fit.size * 0.2) / 10 });
   }
   s += turnedText(a3, ...at(-r * 0.14, r * 0.02), deg, r * 0.36, { bold: true });
   s += icon(r * 0.46, r * 0.0, r * 0.3);
-  s += `<path d="M${at(-w / 2, r * 0.22).map(f1).join(" ")}L${at(w / 2, r * 0.22).map(f1).join(" ")}" fill="none" stroke="${INK}" stroke-width=".7"/>`;
-  s += turnedText(day || "ADMITTED", ...at(0, r * 0.38), deg, Math.min(r * 0.14, w / textWidth(day || "ADMITTED", 1)));
+  s += `<path d="M${at(-w / 2, r * 0.22).map(f1).join(" ")}L${at(w / 2, r * 0.22).map(f1).join(" ")}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}"/>`;
+  // The day as long as it fits at the smallest size: 31 DEC 2026, 31 DEC 26, then 31.12.26 (never a year cut short).
+  const pd = typeof d === "string" ? parseDate(d) : null;
+  const forms = pd ? [day, `${day.slice(0, 7)}${String(pd[0]).slice(-2)}`, `${String(pd[2]).padStart(2, "0")}.${String(pd[1]).padStart(2, "0")}.${String(pd[0]).slice(-2)}`] : ["ADMITTED"];
+  const foot = forms.find((f) => textWidth(f, 4.5) <= w) ?? forms[forms.length - 1];
+  const fs = Math.max(4.5, Math.min(r * 0.15, w / textWidth(foot, 1)));
+  s += turnedText(foot, ...at(0, r * 0.38), deg, fs);
   return s;
 }
 
@@ -212,18 +235,21 @@ function grid(stamps: Placed[]): string {
       flush();
     }
   }
-  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width=".35"/>`;
+  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width=".4"/>`;
 }
 
 export function passportBody(p: Params, countries?: Countries): string {
   const stamps = layout(p.x);
   // The page: its edge, the head with the name, the grid's frame.
-  let s = `<path d="M${PX0 + 8} ${PY0}H${PX1 - 8}Q${PX1} ${PY0} ${PX1} ${PY0 + 8}V${PY1 - 8}Q${PX1} ${PY1} ${PX1 - 8} ${PY1}H${PX0 + 8}Q${PX0} ${PY1} ${PX0} ${PY1 - 8}V${PY0 + 8}Q${PX0} ${PY0} ${PX0 + 8} ${PY0}Z" fill="none" stroke="${INK}" stroke-width="1.4"/>`;
-  s += text(GX0, 46, "ARRIVALS", 15, { family: COND, bold: true, anchor: "start", spacing: 2 });
+  let s = `<path d="M${PX0 + 8} ${PY0}H${PX1 - 8}Q${PX1} ${PY0} ${PX1} ${PY0 + 8}V${PY1 - 8}Q${PX1} ${PY1} ${PX1 - 8} ${PY1}H${PX0 + 8}Q${PX0} ${PY1} ${PX0} ${PY1 - 8}V${PY0 + 8}Q${PX0} ${PY0} ${PX0 + 8} ${PY0}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}"/>`;
+  s += text(GX0, 46, "ARRIVALS", 15, { family: COND, bold: true, anchor: "start", spacing: 1.2 });
+  // The holder's name at the right, in what ARRIVALS leaves: sized to it, then cut.
   const who = p.n.toUpperCase();
-  s += text(GX1, 46, who, Math.min(11, 150 / textWidth(who, 1, { bold: true })), { bold: true, anchor: "end" });
+  const room = GX1 - GX0 - textWidth("ARRIVALS", 15, { family: COND, bold: true, spacing: 1.2 }) - 12;
+  const ws = fitSize(who, room, 11, { bold: true, floor: 5 });
+  s += text(GX1, 46 - (15 * CAP.condensed) / 2 + (ws * CAP.plex) / 2, clip(who, room, ws, { bold: true }), ws, { bold: true, anchor: "end" });
   s += text(GX0, 58, "PAGE 7", 5.5, { anchor: "start", spacing: 1 }) + text(GX1, 58, "HOLDER", 5.5, { anchor: "end", spacing: 1 });
-  s += line(GX0, 62, GX1, 62, 0.6) + line(GX0, GY1 + 4, GX1, GY1 + 4, 0.6);
+  s += line(GX0, 62, GX1, 62, STROKE.hairline) + line(GX0, GY1 + 4, GX1, GY1 + 4, STROKE.hairline);
   s += grid(stamps);
   for (const o of stamps) s += drawStamp(o, countries);
   s += text(150, PY1 - 12, "THIS PAGE IS NOT A TRAVEL DOCUMENT. IT IS A SHIRT.", 5.5, { spacing: 0.5 });
@@ -232,7 +258,7 @@ export function passportBody(p: Params, countries?: Countries): string {
 
 export const captionOf = (spec: CustomSpec) => passportCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(passportBody((spec as { p: Params }).p, data.countries), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => house(() => wrap(passportBody((spec as { p: Params }).p, data.countries), color));
 
 /** The countries' names, for the index cards and the bag (the editor passes its own). */
 export async function prepare(): Promise<RenderData> {

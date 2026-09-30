@@ -10,7 +10,7 @@
  * designs (a square grid, one ink, tone from hatching); the khatam tiles are
  * the next nearest.
  */
-import { INK, caption, f1, longDate, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, caption, clip, f1, longDate, text, textWidth, captionLines, type Lines, house } from "../kit";
 import { PROMOS, decodeMoves, fileOf, inCheck, isLegal, legalMoves, play, rankOf, startPosition, toSan, type Move, type Piece, type Position } from "../draw/chess";
 import { parseDate, type CustomSpec } from "../spec";
 import { unpackInts } from "../specKit";
@@ -19,7 +19,7 @@ import { GROUND, wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 const S = 26;
-const X0 = 46, Y0 = 22;
+const X0 = 46, Y0 = 31;
 /** A square's centre (a1 bottom left, White's view). */
 const centre = (sq: number): [number, number] => [X0 + (fileOf(sq) + 0.5) * S, Y0 + (7.5 - rankOf(sq)) * S];
 
@@ -90,25 +90,31 @@ export function replay(p: ChessParams): Replay {
   return { moves, sans, final: pos, paths: [...paths.values()] };
 }
 
-/** The score sheet: "1.e4 e5 2.Nf3 …" in as few lines as fit between top and bottom, the type as large as will, centred in the space. */
+/**
+ * The score sheet: "1.e4 e5 2.Nf3 …" across the live width, each move (White's
+ * and Black's) kept together on a line, in as few lines as fit between top and
+ * bottom, the type as large as will (never under Plex's floor), centred in the
+ * space; a game too long for it ends its last line with an ellipsis.
+ */
 function scoreSheet(sans: string[], top: number, bottom: number): string {
-  const tokens = sans.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}.${s}` : s));
-  for (const size of [5.6, 5.2, 4.8, 4.4]) {
-    const per = Math.floor(262 / (0.602 * size));
+  const pairs: string[] = [];
+  sans.forEach((s, i) => (i % 2 === 0 ? pairs.push(`${i / 2 + 1}.${s}`) : (pairs[pairs.length - 1] += ` ${s}`)));
+  const W = 256;
+  for (const size of [5.6, 5.2, 4.8, 4.5]) {
     const lh = size * 1.6;
     const rows = Math.floor((bottom - top) / lh) + 1;
     const lines: string[] = [];
-    for (const t of tokens) {
+    for (const t of pairs) {
       const last = lines[lines.length - 1];
-      if (last !== undefined && last.length + 1 + t.length <= per) lines[lines.length - 1] = `${last} ${t}`;
+      if (last !== undefined && textWidth(`${last}  ${t}`, size) <= W) lines[lines.length - 1] = `${last}  ${t}`;
       else lines.push(t);
     }
-    if (lines.length <= rows || size === 4.4) {
+    if (lines.length <= rows || size === 4.5) {
       const shown = lines.slice(0, rows);
-      if (lines.length > rows) shown[rows - 1] = `${shown[rows - 1].slice(0, per - 2)} …`;
+      if (lines.length > rows) shown[rows - 1] = clip(`${shown[rows - 1]} …`, W, size);
       // Centred between the board and the caption.
-      const y0 = (top + bottom) / 2 - ((shown.length - 1) * lh) / 2;
-      return shown.map((l, i) => text(19, y0 + i * lh, l, size, { anchor: "start" })).join("");
+      const y0 = (top + bottom) / 2 - ((shown.length - 1) * lh) / 2 + (CAP.plex * size) / 2;
+      return shown.map((l, i) => text(22, y0 + i * lh, l, size, { anchor: "start" })).join("");
     }
   }
   return "";
@@ -132,7 +138,7 @@ function chessDraw(p: ChessParams): [string, Lines, number] {
   s += `<path d="${hatch}" fill="none" stroke="${INK}" stroke-width=".4"/>`;
   s += `<rect x="${X0}" y="${Y0}" width="${8 * S}" height="${8 * S}" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
   s += `<rect x="${X0 - 3}" y="${Y0 - 3}" width="${8 * S + 6}" height="${8 * S + 6}" fill="none" stroke="${INK}" stroke-width=".5"/>`;
-  for (let i = 0; i < 8; i++) s += text(X0 + (i + 0.5) * S, Y0 + 8 * S + 11, "abcdefgh"[i], 6) + text(X0 - 9, Y0 + (7.5 - i) * S + 2, String(i + 1), 6);
+  for (let i = 0; i < 8; i++) s += text(X0 + (i + 0.5) * S, Y0 + 8 * S + 12, "abcdefgh"[i], 6) + text(X0 - 10, Y0 + (7.5 - i) * S + CAP.plex * 3, String(i + 1), 6);
 
   // The journeys: each piece in its own lane of the square (a 4 × 4 grid of lanes, one per piece of a side).
   const lane = (id: number): [number, number] => {
@@ -164,7 +170,7 @@ function chessDraw(p: ChessParams): [string, Lines, number] {
     if (pc) s += glyph(pc, ...centre(sq));
   });
 
-  s += scoreSheet(game.sans, Y0 + 8 * S + 26, 318);
+  s += scoreSheet(game.sans, Y0 + 8 * S + 25, 318);
 
   const plies = game.moves.length;
   const mate = inCheck(game.final) && legalMoves(game.final).length === 0;
@@ -185,4 +191,4 @@ export function chessBody(p: ChessParams): string {
 
 export const captionOf = (spec: CustomSpec) => chessCaption((spec as { p: ChessParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(chessBody((spec as { p: ChessParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(chessBody((spec as { p: ChessParams }).p), color));

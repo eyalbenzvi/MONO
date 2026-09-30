@@ -8,7 +8,7 @@
  * (lib/custom/draw/ornament), as a watch dial or a banknote's. The year, when
  * given, sits under it between two rules.
  */
-import { INK, captionLines, line, text, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, captionLines, line, text, textWidth, type Lines, house } from "../kit";
 import { GLYPHS, interlace, meeting, placedStrokes, type Placed } from "../draw/monogram";
 import { guilloche } from "../draw/ornament";
 import type { CustomSpec } from "../spec";
@@ -102,8 +102,11 @@ const medallion = (cy: number) => guilloche({ lobes: 9, strands: 4, amps: [0.5, 
 /** The year between two rules, at y. */
 function year(y: number, at: number, halfWidth: number): string {
   const s = String(y);
-  const tw = s.length * (0.602 * 11 + 4);
-  return text(CX + 2, at, s, 11, { bold: true, spacing: 4 }) + line(CX - halfWidth, at - 4, CX - tw / 2 - 8, at - 4, 0.8) + line(CX + tw / 2 + 8, at - 4, CX + halfWidth, at - 4, 0.8);
+  const size = 9, spacing = 1.8;
+  // Measured as set (the tracking follows the last figure too: the text is shifted back by half of it to centre the figures).
+  const tw = textWidth(s, size, { bold: true, spacing }) - spacing;
+  const mid = at - (CAP.plex * size) / 2;
+  return text(CX + spacing / 2, at, s, size, { bold: true, spacing }) + line(CX - halfWidth, mid, CX - tw / 2 - 9, mid, STROKE.fine) + line(CX + tw / 2 + 9, mid, CX + halfWidth, mid, STROKE.fine);
 }
 
 export function monogramBody(p: Params): string {
@@ -130,13 +133,9 @@ export function monogramBody(p: Params): string {
     placed = row(chars, CX, cy, 232, 220, 0.11);
   }
   s += interlace(placed.letters, ribbonFor(placed.width));
-  if (dated) s += year(p.y!, 322, p.s === "seal" ? 80 : p.s === "stack" ? 70 : 90);
-  // The caption: the letters, spaced, at the foot; the visitor's own lines under them, smaller.
-  const [l1, l2, l3] = captionLines(monogramCaption(p), p.cap);
-  if (l1) s += text(CX, 356, l1, 7, { spacing: 2 });
-  if (l2) s += text(CX, 367, l2, 6);
-  if (l3) s += text(CX, 377, l3, 6);
-  return s;
+  if (dated) s += year(p.y!, 312, p.s === "seal" ? 80 : p.s === "stack" ? 70 : 90);
+  // The caption: the house lockup (the letters, spaced, as its title; the visitor's own lines under them).
+  return s + caption(342, ...captionLines(monogramCaption(p), p.cap));
 }
 
 /** The caption's lines (ours): the letters, spaced; nothing under them until the visitor writes it. */
@@ -147,4 +146,4 @@ export const captionOf = (spec: CustomSpec) => monogramCaption((spec as { p: Par
 /** The ribbon at a given width in print units. */
 const ribbonFor = (width: number) => ribbon(width, 1);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(monogramBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(monogramBody((spec as { p: Params }).p), color));

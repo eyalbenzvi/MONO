@@ -60,10 +60,11 @@ describe("landmarks: the drawings", () => {
   });
   it("the grid keeps every frame on the page, three across", () => {
     for (let n = LANDMARKS_MIN; n <= LANDMARKS_MAX; n++) for (const t of gridOf(n)) {
-      expect(t.x).toBeGreaterThanOrEqual(24);
-      expect(t.x + t.w).toBeLessThanOrEqual(276.01);
-      expect(t.y).toBeGreaterThanOrEqual(30);
-      expect(t.y + t.h).toBeLessThanOrEqual(292.01);
+      // Inside the page (x 22–278, y 28–324) with its margin, above the foot line.
+      expect(t.x).toBeGreaterThanOrEqual(30);
+      expect(t.x + t.w).toBeLessThanOrEqual(270.01);
+      expect(t.y).toBeGreaterThanOrEqual(37);
+      expect(t.y + t.h).toBeLessThanOrEqual(295.01);
     }
   });
 });

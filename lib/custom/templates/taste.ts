@@ -22,9 +22,9 @@
  * | contrast                      | the seeds filled (else open)                             |
  * | figurative                    | the seeds grow outwards (else shrink)                    |
  */
-import { DEG, INK, caption, captionLines, circle, f1, line, text, type Lines } from "../kit";
+import { DEG, INK, caption, captionLines, circle, clip, f1, fitSize, line, text, type Lines, house } from "../kit";
 import { lsystem, turtle } from "../draw/botany";
-import { fit, polyline, type Point } from "../draw/paths";
+import { polyline, type Point } from "../draw/paths";
 import { tasteFromQ } from "../tasteCode";
 import type { CustomSpec, TasteParams } from "../spec";
 import { wrap } from "../svg";
@@ -32,7 +32,7 @@ import { archetypeOf } from "@/lib/taste";
 import { FEATURE_LABELS, type BaseColor, type FeatureKey } from "@/types/shirt";
 import { mulberry32 } from "../rng";
 
-const HEAD = { x: 150, y: 112 };
+const HEAD = { x: 150, y: 94 };
 const GROUND = 302;
 
 /** Chaikin's corner cutting: a branch's polyline smoothed (two passes). */
@@ -49,6 +49,14 @@ function smooth(pts: Point[]): Point[] {
     p = out;
   }
   return p;
+}
+
+/** The L-system's lines scaled about their root (the turtle's start, 0 0) and set on the stem's foot: at most `half` wide either side, `h` tall. */
+function rooted(lines: Point[][], half: number, h: number): Point[][] {
+  let [reach, top] = [0, 0];
+  for (const l of lines) for (const [x, y] of l) (reach = Math.max(reach, Math.abs(x))), (top = Math.min(top, y));
+  const k = Math.min(half / (reach || 1), h / (-top || 1));
+  return lines.map((l) => l.map(([x, y]) => [150 + x * k, GROUND + y * k] as Point));
 }
 
 /** A leaf: a pointed oval along its angle, hatched when engraved. */
@@ -77,13 +85,13 @@ export function tasteBody(p: TasteParams): string {
   const str = lsystem({ axiom: "X", rules: { X: rule, F: "FF" }, iter: Math.min(iter, v.clean_minimal >= 0.6 ? 6 : 5) });
   const jitterAmp = 1 - v.geometric;
   const lines = turtle(str, straight ? 18 : 22.5, 0, () => 0.5 + (rng() - 0.5) * jitterAmp);
-  const stemBox = { x: 70, y: HEAD.y + 34, w: 160, h: GROUND - HEAD.y - 34 };
-  let fitted = fit(lines, stemBox);
+  // Rooted where the stem meets the ground (so the branches grow from the plant, not beside it), scaled to reach at most 80 either side and to stop under the head.
+  let fitted = rooted(lines, 80, GROUND - (HEAD.y + 52 + 14));
   if (v.dark_industrial < 0.5) fitted = fitted.map(smooth);
   let body = `<path d="${fitted.map((l) => polyline(l)).join("")}" fill="none" stroke="${INK}" stroke-width="${f1(w)}" stroke-linecap="round" stroke-linejoin="${v.dark_industrial >= 0.5 ? "miter" : "round"}"/>`;
   // The main stem up to the head, straight on a stake when architectural.
-  body += line(150, GROUND, HEAD.x, HEAD.y + 30, w * 1.4);
-  if (straight) body += line(158, GROUND + 4, 158, HEAD.y + 50, w * 0.8) + line(150, HEAD.y + 80, 158, HEAD.y + 80, w * 0.6) + line(150, HEAD.y + 150, 158, HEAD.y + 150, w * 0.6);
+  body += line(150, GROUND, HEAD.x, HEAD.y + 57, w * 1.4);
+  if (straight) body += line(158, GROUND + 4, 158, HEAD.y + 66, w * 0.8) + line(150, HEAD.y + 80, 158, HEAD.y + 80, w * 0.6) + line(150, HEAD.y + 150, 158, HEAD.y + 150, w * 0.6);
   body += line(96, GROUND, 204, GROUND, w);
 
   // Leaves along the stem: nature sets how many, pictorial how big; wit puts one out of place.
@@ -121,9 +129,18 @@ export function tasteBody(p: TasteParams): string {
   // The caption: the taste's name and its three strongest traits (or the visitor's lines); typography sets it larger.
   const [name, sub, sub2] = captionLines(tasteCaption(p), p.cap);
   if (v.typography >= 0.6) {
-    if (name) body += text(150, 336, name.toUpperCase(), name.length > 18 ? 13 : 16, { bold: true, spacing: 2 });
-    if (sub) body += text(150, 352, sub, Math.min(8, 264 / (0.6 * sub.length)));
-    if (sub2) body += text(150, 364, sub2, Math.min(7, 264 / (0.6 * sub2.length)));
+    // The house lockup a size up: the name in Space Grotesk Bold capitals (tracked lightly, as large capitals are), the lines in Plex.
+    const t = name?.toUpperCase();
+    if (t) {
+      const size = fitSize(t, 256, 17, { family: "grotesk", bold: true, track: 0.05 });
+      body += text(150, 334, t, size, { family: "grotesk", bold: true, spacing: Math.round(size * 0.5) / 10 });
+    }
+    const small = (l: string, y: number, max: number) => {
+      const size = fitSize(l, 256, max, { track: 0.05, floor: 4.5 });
+      return text(150, y, clip(l, 256, size, { spacing: Math.round(size * 0.5) / 10 }), size, { spacing: Math.round(size * 0.5) / 10 });
+    };
+    if (sub) body += small(sub, 352, 8.4);
+    if (sub2) body += small(sub2, 364, 7.2);
   } else body += caption(336, name, sub, sub2);
   return body;
 }
@@ -136,4 +153,4 @@ export function tasteCaption(p: TasteParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => tasteCaption((spec as { p: TasteParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(tasteBody((spec as { p: TasteParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(tasteBody((spec as { p: TasteParams }).p), color));

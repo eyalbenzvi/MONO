@@ -24,16 +24,17 @@ import os from "node:os";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
-import type { Metadata } from "sharp";
+import type { Metadata, Sharp } from "sharp";
 import shirtsJson from "../../data/shirts.json";
 import { needsInvert } from "../../lib/catalog";
 import { DETAIL_WIDTH, MOCKUP_WIDTHS, PRINT_WIDTHS, detailPath, isVector, mockupPath, printPath } from "../../lib/images";
+import { inkOnCloth } from "../../lib/custom/inkOnCloth";
 import { modelFor } from "../../lib/models";
 import { fontFiles } from "../gen/fonts";
 import type { BaseColor, CatalogEntry } from "../../types/shirt";
 
 /** Bumped whenever the recipe below changes: every picture is baked again. */
-const RECIPE = 3;
+const RECIPE = 4;
 const ROOT = path.resolve(__dirname, "..", "..");
 const PUBLIC = path.join(ROOT, "public");
 const STAMP = path.join(ROOT, "node_modules", ".cache", "mono-images.json");
@@ -87,18 +88,22 @@ export async function flatPrint(shirt: CatalogEntry, color: BaseColor): Promise<
  */
 const shrink = (print: Grey, w: number, h: number) => raw(print).resize(w, h, { fit: "fill", kernel: "lanczos3" });
 
-const blend = (color: BaseColor) => (color === "black" ? "screen" : "multiply");
+/** The print (at the box's size) laid on the photo's box: ink on cloth (lib/custom/inkOnCloth), as the page's canvas lays it. */
+async function lay(color: BaseColor, print: Grey, base: Sharp, box: { left: number; top: number; width: number; height: number }): Promise<Buffer> {
+  const ink = await shrink(print, box.width, box.height).extractChannel(0).raw().toBuffer();
+  // The model photos are greyscale: read as three channels, so the arithmetic's stride is known.
+  const area = await base.clone().extract(box).removeAlpha().toColourspace("srgb").raw().toBuffer();
+  inkOnCloth(area, 3, ink, 1, color);
+  return sharp(area, { raw: { width: box.width, height: box.height, channels: 3 } }).png({ compressionLevel: 1 }).toBuffer();
+}
 
 /** The design on its model photo, `w` px wide. */
 export async function mockup(color: BaseColor, print: Grey, w: number, photo: Metadata & { buf: Buffer }, box: number[]): Promise<Buffer> {
   const h = Math.round((w * photo.height!) / photo.width!);
   const [bx, by, bw, bh] = [Math.round(box[0] * w), Math.round(box[1] * h), Math.round(box[2] * w), Math.round(box[3] * h)];
-  const ink = await shrink(print, bw, bh).toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer();
-  return sharp(photo.buf)
-    .resize(w, h, { kernel: "lanczos3" })
-    .composite([{ input: ink, left: bx, top: by, blend: blend(color) }])
-    .webp({ quality: 74, effort: 2 })
-    .toBuffer();
+  const base = sharp(await sharp(photo.buf).resize(w, h, { kernel: "lanczos3" }).removeAlpha().toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer());
+  const inked = await lay(color, print, base, { left: bx, top: by, width: bw, height: bh });
+  return base.composite([{ input: inked, left: bx, top: by }]).webp({ quality: 74, effort: 2 }).toBuffer();
 }
 
 /** The close-up: the print's area of the photo, enlarged to DETAIL_WIDTH, with the print on it. */
@@ -106,13 +111,9 @@ async function detail(color: BaseColor, print: Grey, photo: Metadata & { buf: Bu
   const [W, H] = [photo.width!, photo.height!];
   const area = { left: Math.round(box[0] * W), top: Math.round(box[1] * H), width: Math.round(box[2] * W), height: Math.round(box[3] * H) };
   const h = Math.round((DETAIL_WIDTH * 4) / 3);
-  const ink = await shrink(print, DETAIL_WIDTH, h).toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer();
-  return sharp(photo.buf)
-    .extract(area)
-    .resize(DETAIL_WIDTH, h, { fit: "fill", kernel: "lanczos3" })
-    .composite([{ input: ink, blend: blend(color) }])
-    .webp({ quality: 58, effort: 4 })
-    .toBuffer();
+  const base = sharp(await sharp(photo.buf).extract(area).resize(DETAIL_WIDTH, h, { fit: "fill", kernel: "lanczos3" }).removeAlpha().toColourspace("srgb").png({ compressionLevel: 1 }).toBuffer());
+  const inked = await lay(color, print, base, { left: 0, top: 0, width: DETAIL_WIDTH, height: h });
+  return sharp(inked).webp({ quality: 58, effort: 4 }).toBuffer();
 }
 
 const write = (rel: string, data: Buffer | string) => {

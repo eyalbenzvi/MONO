@@ -27,13 +27,13 @@ describe("Make: the print fonts", () => {
       expect(x1 - x0, family).toBeGreaterThan(measured - 4);
       spans.set(family, x1 - x0);
     }
-    expect(new Set([...spans.values()].map((v) => Math.round(v))).size).toBe(4);
+    expect(new Set([...spans.values()].map((v) => Math.round(v * 10))).size).toBe(Object.keys(FONT_FAMILY).length);
     // Condensed is narrower than the serif; bold is wider than regular.
     expect(textWidth(line, 12, { family: "condensed" })).toBeLessThan(textWidth(line, 12, { family: "serif" }));
     expect(textWidth(line, 12, { family: "serif", bold: true })).toBeGreaterThan(textWidth(line, 12, { family: "serif" }));
   });
   it("every character the words' rule allows is in the serif and the condensed faces", () => {
-    for (const family of ["serif", "condensed"] as const) {
+    for (const family of ["serif", "condensed", "plex", "grotesk", "display"] as const) {
       const [x0, x1] = inkSpan(text(20, 200, "Zoë Ångström-Łódź & Co. (1990)", 12, { anchor: "start", family }));
       expect(x1 - x0, family).toBeGreaterThan(60);
     }

@@ -9,7 +9,7 @@
  * leader. A short tune goes round again until the strip is full (a music box
  * plays in a loop), each pass opened with a double rule.
  */
-import { INK, caption, f1, line, text, captionLines, type Lines } from "../kit";
+import { CAP, INK, STROKE, caption, f1, line, text, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import type { CustomSpec } from "../spec";
 import { PITCHES, isSharp, pitchName, unpackNotes, type Params } from "../specs/musicbox";
@@ -19,7 +19,7 @@ import type { BaseColor } from "@/types/shirt";
 const LANE = 8.2;
 const X0 = 150 - ((PITCHES - 1) * LANE) / 2;
 const XL = X0 - 12, XR = X0 + (PITCHES - 1) * LANE + 12;
-const LEAD = 22, Y0 = 54, GRID_H = 256;
+const LEAD = 28, Y0 = 59, GRID_H = 250;
 /** A strip is at least this many steps long (a short tune goes round again). */
 const MIN_STEPS = 32;
 
@@ -38,10 +38,10 @@ function musicboxDraw(p: Params): [string, Lines, number] {
   let s = "";
 
   // The strip: a pointed leader, the two feed edges, a square end.
-  s += `<path d="M${f1(XL)} ${f1(Y0 - 6)}V${f1(LEAD + 12)}L150 ${LEAD}L${f1(XR)} ${f1(LEAD + 12)}V${f1(Y0 - 6)}" fill="none" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>`;
+  s += `<path d="M${f1(XL)} ${f1(Y0 - 6)}V${f1(LEAD + 12)}L150 ${LEAD}L${f1(XR)} ${f1(LEAD + 12)}V${f1(Y0 - 6)}" fill="none" stroke="${INK}" stroke-width="${STROKE.regular}" stroke-linejoin="round"/>`;
   s += line(XL, Y0 - 6, XL, yEnd + 4, 1.2) + line(XR, Y0 - 6, XR, yEnd + 4, 1.2) + line(XL, yEnd + 4, XR, yEnd + 4, 1.2);
   // The feed direction, in the leader.
-  s += `<path d="M146 ${LEAD + 13}L150 ${LEAD + 8}L154 ${LEAD + 13}M150 ${LEAD + 8}V${LEAD + 20}" fill="none" stroke="${INK}" stroke-width=".6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s += `<path d="M146 ${LEAD + 13}L150 ${LEAD + 8}L154 ${LEAD + 13}M150 ${LEAD + 8}V${LEAD + 16}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}" stroke-linecap="round" stroke-linejoin="round"/>`;
 
   // Perforations: a ring every beat down both edges.
   let perf = "";
@@ -59,7 +59,8 @@ function musicboxDraw(p: Params): [string, Lines, number] {
     else {
       solid += seg;
       const nm = pitchName(q);
-      s += text(x(q), Y0 - 9, nm.startsWith("C") ? nm : nm[0], nm.startsWith("C") ? 4 : 4.4, { bold: nm.startsWith("C") });
+      // Plex at its floor: the Cs (with their octave) bold, the other naturals regular.
+      s += text(x(q), Y0 - 7.5, nm.startsWith("C") ? nm : nm[0], 4.5, { bold: nm.startsWith("C") });
     }
   }
   s += `<path d="${solid}" fill="none" stroke="${INK}" stroke-width=".45"/><path d="${dashed}" fill="none" stroke="${INK}" stroke-width=".4" stroke-dasharray="1.2 1.6"/>`;
@@ -73,7 +74,7 @@ function musicboxDraw(p: Params): [string, Lines, number] {
       bars += `M${f1(XL)} ${f1(yy - 0.9)}H${f1(XR)}M${f1(XL)} ${f1(yy + 0.9)}H${f1(XR)}`;
     } else if (inBar % 8 === 0) bars += `M${f1(XL + 9)} ${f1(yy)}H${f1(XR - 9)}`;
     else if (step >= 3 || inBar % 4 === 0) beats += `M${f1(X0)} ${f1(yy)}H${f1(x(PITCHES - 1))}`;
-    if (inBar % 8 === 0 && k < steps && (step * 8 >= 12 || inBar % 16 === 0)) s += text(XL - 3.5, yy + 1.6, String(inBar / 8 + 1), 4.4, { anchor: "end" });
+    if (inBar % 8 === 0 && k < steps && (step * 8 >= 12 || inBar % 16 === 0)) s += text(XL - 3.5, yy + (CAP.plex * 4.5) / 2, String(inBar / 8 + 1), 4.5, { anchor: "end" });
   }
   s += `<path d="${beats}" fill="none" stroke="${INK}" stroke-width=".4"/><path d="${bars}" fill="none" stroke="${INK}" stroke-width=".8"/>`;
 
@@ -102,4 +103,4 @@ export function musicboxBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => musicboxCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(musicboxBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(musicboxBody((spec as { p: Params }).p), color));

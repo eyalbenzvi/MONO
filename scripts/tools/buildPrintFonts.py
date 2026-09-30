@@ -25,6 +25,13 @@ before. The condensed face also holds Latin Extended-B and Latin Extended
 Additional (a place name's ố or Ḥ, set in Your Tour or Your Signpost); a
 letter any face still lacks is set as its base letter (lib/custom/kit
 printable), never in a wider fallback.
+
+The Make house faces (the type system, lib/custom/kit FONT_FAMILY): IBM Plex
+Mono (plex: data, captions, the machine's voice), Space Grotesk (grotesk:
+titles and modern display), Cinzel (roman: inscriptional capitals) and
+Playfair Display (display: the editorial serif, set large only: its hairlines
+hold from about 16 units up). Their static instances are google/fonts'
+variable fonts at wght 400 and 700 where there is no static file.
 """
 import json, os, sys, urllib.request
 from fontTools import subset
@@ -37,6 +44,10 @@ OFL = {
     "librecaslontext": "https://raw.githubusercontent.com/google/fonts/main/ofl/librecaslontext/OFL.txt",
     "oswald": "https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/OFL.txt",
     "unifrakturmaguntia": "https://raw.githubusercontent.com/google/fonts/main/ofl/unifrakturmaguntia/OFL.txt",
+    "ibmplexmono": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/OFL.txt",
+    "spacegrotesk": "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/OFL.txt",
+    "cinzel": "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/OFL.txt",
+    "playfairdisplay": "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/OFL.txt",
 }
 # (source, output name, family key, weight, licence key)
 FACES = [
@@ -45,12 +56,21 @@ FACES = [
     ("Oswald-Regular.ttf", "oswald", "condensed", "regular", "oswald"),
     ("Oswald-Bold.ttf", "oswald-bold", "condensed", "bold", "oswald"),
     ("UnifrakturMaguntia-Book.ttf", "unifraktur-maguntia", "blackletter", "regular", "unifrakturmaguntia"),
+    ("IBMPlexMono-Regular.ttf", "ibm-plex-mono", "plex", "regular", "ibmplexmono"),
+    ("IBMPlexMono-Bold.ttf", "ibm-plex-mono-bold", "plex", "bold", "ibmplexmono"),
+    ("SpaceGrotesk-Regular.ttf", "space-grotesk", "grotesk", "regular", "spacegrotesk"),
+    ("SpaceGrotesk-Bold.ttf", "space-grotesk-bold", "grotesk", "bold", "spacegrotesk"),
+    ("Cinzel-Regular.ttf", "cinzel", "roman", "regular", "cinzel"),
+    ("Cinzel-Bold.ttf", "cinzel-bold", "roman", "bold", "cinzel"),
+    ("PlayfairDisplay-Regular.ttf", "playfair-display", "display", "regular", "playfairdisplay"),
+    ("PlayfairDisplay-Bold.ttf", "playfair-display-bold", "display", "bold", "playfairdisplay"),
 ]
 
 # Printable ASCII, Latin-1 and Latin Extended-A (the words' rule is the Latin script), and the templates' symbols.
 chars = set(chr(c) for c in range(0x20, 0x7F)) | set(chr(c) for c in range(0xA0, 0x180)) | set("‘’“”–—…·•№×°′″→←↑↓★")
 text = "".join(sorted(chars))
-EXTRA = {"condensed": set(chr(c) for c in range(0x180, 0x250)) | set(chr(c) for c in range(0x1E00, 0x1F00))}
+LATIN_EXT = set(chr(c) for c in range(0x180, 0x250)) | set(chr(c) for c in range(0x1E00, 0x1F00))
+EXTRA = {"condensed": LATIN_EXT, "plex": LATIN_EXT, "grotesk": LATIN_EXT}
 widths = json.load(open(os.path.join(ROOT, "lib", "custom", "fontWidths.json"))) if ONLY else {}
 for src, name, family, weight, lic in FACES:
     if ONLY and family not in ONLY:
@@ -74,6 +94,8 @@ for src, name, family, weight, lic in FACES:
     widths.setdefault(family, {})[weight] = adv
     print(name, os.path.getsize(os.path.join(ROOT, "public", "fonts", f"{name}.woff2")), "bytes,", len(adv), "glyphs")
 for key, url in OFL.items():
+    if ONLY and not any(f[4] == key and f[2] in ONLY for f in FACES):
+        continue
     data = urllib.request.urlopen(url).read()
     for folder in ("public/fonts", "assets/fonts"):
         open(os.path.join(ROOT, folder, f"LICENSE-{key}.txt"), "wb").write(data)

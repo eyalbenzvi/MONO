@@ -7,7 +7,7 @@
  * The hatch opens up as more of the world is chosen, so a well-travelled map
  * isn't a solid block.
  */
-import { INK, caption, captionLines, circle, f1, text, textWidth, type Lines } from "../kit";
+import { INK, STROKE, caption, captionLines, circle, clip, f1, fitSize, text, textWidth, type Lines, house } from "../kit";
 import { EE_X, equalEarth } from "../equalEarth";
 import { OF, counted, unpackCountries, type Params } from "../specs/countries";
 import { loadCountries, type Countries, type Country } from "../data";
@@ -18,7 +18,7 @@ import type { BaseColor } from "@/types/shirt";
 
 const COND = "condensed" as const;
 /** The map: its width on the print, and where its middle sits. */
-const W = 264, CX = 150, CY = 122;
+const W = 256, CX = 150, CY = 112;
 const S = W / (2 * EE_X);
 
 const px = (x: number) => CX + (x / 1000) * S;
@@ -41,7 +41,7 @@ function worldEdge(): string {
   const pts: string[] = [];
   for (let lat = -90; lat <= 90; lat += 5) pts.push(`${f1(CX + equalEarth(180, lat)[0] * S)} ${f1(CY - equalEarth(180, lat)[1] * S)}`);
   for (let lat = 90; lat >= -90; lat -= 5) pts.push(`${f1(CX + equalEarth(-180, lat)[0] * S)} ${f1(CY - equalEarth(-180, lat)[1] * S)}`);
-  return `<path d="M${pts.join("L")}Z" fill="none" stroke="${INK}" stroke-width="1"/>`;
+  return `<path d="M${pts.join("L")}Z" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}"/>`;
 }
 
 /** A ring's points on the print. */
@@ -86,7 +86,7 @@ function hatchRing(pts: [number, number][], gap: number): string {
 export function countriesBody(p: Params, countries?: Countries): string {
   const chosen = new Set(unpackCountries(p.x) ?? []);
   let s = worldEdge();
-  let outline = "", hatch = "";
+  let outline = "", visited = "", hatch = "";
   let area = 0;
   const list: Country[] = countries?.list ?? [];
   for (const c of list) if (chosen.has(c.a3)) area += c.area;
@@ -97,19 +97,26 @@ export function countriesBody(p: Params, countries?: Countries): string {
     for (const ring of c.rings) {
       const pts = ringPts(ring);
       if (pts.length < 3) continue;
-      outline += `M${pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join("L")}Z`;
-      if (chosen.has(c.a3)) hatch += hatchRing(pts, gap);
+      const d = `M${pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join("L")}Z`;
+      if (chosen.has(c.a3)) (visited += d), (hatch += hatchRing(pts, gap));
+      else outline += d;
     }
   }
-  s += `<path d="${outline}" fill="none" stroke="${INK}" stroke-width=".35" stroke-linejoin="round"/>`;
-  if (hatch) s += `<path d="${hatch}" fill="none" stroke="${INK}" stroke-width=".55"/>`;
+  // The world's countries in the finest line; the chosen ones outlined a step up and hatched.
+  if (outline) s += `<path d="${outline}" fill="none" stroke="${INK}" stroke-width=".4" stroke-linejoin="round"/>`;
+  if (hatch) s += `<path d="${hatch}" fill="none" stroke="${INK}" stroke-width="${STROKE.hairline}"/>`;
+  if (visited) s += `<path d="${visited}" fill="none" stroke="${INK}" stroke-width="${STROKE.fine}" stroke-linejoin="round"/>`;
   // The tiny countries (a point each): a ring for each chosen.
-  for (const c of list) if (!c.rings.length && chosen.has(c.a3)) s += circle(px(c.point[0]), py(c.point[1]), 1.6, 0.8);
+  for (const c of list) if (!c.rings.length && chosen.has(c.a3)) s += circle(px(c.point[0]), py(c.point[1]), 1.6, STROKE.fine);
   // The count, the name, the year.
   const count = `${counted([...chosen])} / ${OF}`;
-  s += text(150, 252, count, 44, { family: COND, bold: true, spacing: 2 });
+  s += text(150, 240, count, 44, { family: COND, bold: true, spacing: 1.3 });
+  // The name and the year: sized to the measure (tracked 0.12 em), then cut.
   const line = [p.n?.toUpperCase(), p.y ? `SINCE ${p.y}` : ""].filter(Boolean).join(" · ");
-  if (line) s += text(150, 276, line, Math.min(13, (13 * 230) / (textWidth(line, 13, { family: COND }) + line.length * 2)), { family: COND, spacing: 2 });
+  if (line) {
+    const ls = fitSize(line, 230, 13, { family: COND, track: 0.12, floor: 6 });
+    s += text(150, 262, clip(line, 230, ls, { family: COND, spacing: ls * 0.12 }), ls, { family: COND, spacing: Math.round(ls * 1.2) / 10 });
+  }
   // The names, small, as a list under it (as many as fit four rows).
   if (countries) {
     // The countries, then the territories (each alphabetical): the list reads as the count does.
@@ -134,7 +141,7 @@ export function countriesBody(p: Params, countries?: Countries): string {
       kept[3].push(`AND ${names.length - shown} MORE`);
       rows.splice(0, rows.length, ...kept);
     }
-    rows.forEach((r, i) => (s += text(150, 292 + i * 9, r.join(" · ").toUpperCase(), 6.5, { family: COND, spacing: 0.6 })));
+    rows.forEach((r, i) => (s += text(150, 280 + i * 9, r.join(" · ").toUpperCase(), 6.5, { family: COND, spacing: 0.6 })));
   }
   return s + caption(348, ...captionLines(countriesCaption(p, countries), p.cap));
 }
@@ -142,7 +149,7 @@ export function countriesBody(p: Params, countries?: Countries): string {
 
 export const captionOf = (spec: CustomSpec, data: RenderData = {}) => countriesCaption((spec as { p: Params }).p, data.countries);
 
-export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => wrap(countriesBody((spec as { p: Params }).p, data.countries), color);
+export const render = (spec: CustomSpec, color: BaseColor, data: RenderData = {}) => house(() => wrap(countriesBody((spec as { p: Params }).p, data.countries), color));
 
 /** The countries, for the index cards and the bag (the editor passes its own). */
 export async function prepare(): Promise<RenderData> {

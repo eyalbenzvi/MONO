@@ -11,7 +11,7 @@
  * Pendulums in step can draw a flat ellipse or a line; the y pendulums
  * start wherever the figure comes out roundest, so every voice draws an area.
  */
-import { caption, captionLines, type Lines } from "../kit";
+import { caption, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
 import { harmonographPoints, tracePath } from "../draw/curves";
 import type { CustomSpec, VoiceParams } from "../spec";
@@ -19,7 +19,7 @@ import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 
 type Four = [number, number, number, number];
-const BOX = { x: 36, y: 40, w: 228, h: 276 };
+const BOX = { x: 32, y: 34, w: 236, h: 274 };
 
 export function voiceBody(p: VoiceParams): string {
   const { a, b, d, ph, f } = p;
@@ -39,7 +39,7 @@ export function voiceBody(p: VoiceParams): string {
   };
   const pts = [0, Math.PI / 2, Math.PI / 4].map(trace).reduce((best, t) => (aspect(t) < aspect(best) - 0.05 ? t : best));
   // A low ratio draws fewer lines, so a heavier pen; a high one a finer pen, so its turning points don't close up.
-  return tracePath(pts, BOX, m <= 3 ? ".7" : m <= 5 ? ".6" : ".5") + caption(348, ...captionLines(voiceCaption(p), p.cap));
+  return tracePath(pts, BOX, m <= 3 ? ".7" : m <= 5 ? ".6" : ".5") + caption(340, ...captionLines(voiceCaption(p), p.cap));
 }
 
 /** The caption's lines (ours): the words (the visitor's title) or "Your voice", and the pitch. */
@@ -50,4 +50,4 @@ export function voiceCaption(p: VoiceParams): Lines {
 
 export const captionOf = (spec: CustomSpec) => voiceCaption((spec as { p: VoiceParams }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(voiceBody((spec as { p: VoiceParams }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(voiceBody((spec as { p: VoiceParams }).p), color));

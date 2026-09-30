@@ -7,13 +7,14 @@
  * block. The word sits at the top as its bits, one digit over each cell of
  * the first row, its letters over their bytes.
  */
-import { INK, caption, f1, text, captionLines, type Lines } from "../kit";
+import { INK, STROKE, caption, f1, line, text, captionLines, type Lines, house } from "../kit";
 import type { Params } from "../specs/automaton";
 import { wrap } from "../svg";
 import type { BaseColor } from "@/types/shirt";
 import type { CustomSpec } from "../spec";
 
-const X0 = 18, X1 = 282, BOTTOM = 318;
+/** The live area across; the grid stops clear of the caption. */
+const X0 = 22, X1 = 278, BOTTOM = 313;
 
 /** The word's bits, most significant first, eight to a character. */
 export const wordBits = (x: string) => [...x].flatMap((c) => [...c.charCodeAt(0).toString(2).padStart(8, "0")].map(Number));
@@ -50,8 +51,8 @@ function automatonDraw(p: Params): [string, Lines, number] {
   const cols = cellsAcross(bits.length);
   const s = (X1 - X0) / cols;
   // The bits are set so one digit's advance (0.602 em) is exactly one cell.
-  const bitSize = s / 0.602;
-  const letterY = 34, bitsY = letterY + 11, top = bitsY + 5;
+  const bitSize = Math.floor((s / 0.6) * 100) / 100;
+  const letterY = 38, bitsY = letterY + 10, top = bitsY + 7;
   const rows = Math.floor((BOTTOM - top) / s);
   const grid = evolve(bits, p.r, cols, rows);
   const off = Math.floor((cols - bits.length) / 2);
@@ -61,6 +62,8 @@ function automatonDraw(p: Params): [string, Lines, number] {
     out += text(x + 4 * s, letterY, ch, Math.min(9, 8 * s * 0.9), { bold: true });
     out += text(x, bitsY, bits.slice(i * 8, i * 8 + 8).join(""), bitSize, { anchor: "start" });
   });
+  // A hairline under the bits, over the first row: the word above it, what it grows below.
+  out += line(X0 + off * s, bitsY + 3, X0 + (off + bits.length) * s, bitsY + 3, STROKE.hairline);
   // One path a row: dots as two arcs, squares as closed boxes; filled, each apart from its neighbours.
   const r = s * 0.36, q = s * 0.7;
   grid.forEach((row, j) => {
@@ -92,4 +95,4 @@ export function automatonBody(p: Params): string {
 
 export const captionOf = (spec: CustomSpec) => automatonCaption((spec as { p: Params }).p);
 
-export const render = (spec: CustomSpec, color: BaseColor) => wrap(automatonBody((spec as { p: Params }).p), color);
+export const render = (spec: CustomSpec, color: BaseColor) => house(() => wrap(automatonBody((spec as { p: Params }).p), color));
