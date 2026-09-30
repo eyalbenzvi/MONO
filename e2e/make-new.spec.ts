@@ -172,6 +172,15 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-patch-emblem")).toHaveValue("boat"),
   },
+  {
+    slug: "sampler",
+    fill: async (page) => {
+      await page.locator("#make-sampler-name").fill("Maya");
+      await page.locator("#make-sampler-year").fill("2019");
+      await page.locator("#make-sampler-border").selectOption("zigzag");
+    },
+    again: async (page) => expect(page.locator("#make-sampler-border")).toHaveValue("zigzag"),
+  },
 ];
 
 for (const c of CASES)

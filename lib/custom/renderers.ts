@@ -69,6 +69,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   tour: () => import("./templates/tour"),
   lineup: () => import("./templates/lineup"),
   patch: () => import("./templates/patch"),
+  sampler: () => import("./templates/sampler"),
   telegram: () => import("./templates/telegram"),
 };
 
