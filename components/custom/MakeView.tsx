@@ -202,7 +202,12 @@ function Maker({ made }: { made: MadeProduct }) {
   }, [editing, editKey]);
   // What the editor makes of its fields.
   const [edited, setEdited] = useState<EditorState>({ spec: null });
-  const onEditor = useCallback((s: EditorState) => setEdited(s), []);
+  // The caption waits for the editor's first report: typed into while the editor's code was still loading, a slow phone lost it as the editor came in.
+  const [editorIn, setEditorIn] = useState(false);
+  const onEditor = useCallback((s: EditorState) => {
+    setEdited(s);
+    setEditorIn(true);
+  }, []);
   // The visitor's own caption lines (CaptionField), from the address's print when it has some: a link from before
   // captions carries its words as `w`, the title of the products whose editors now write cap[0].
   const capRule = capRuleFor(made.template);
@@ -532,7 +537,7 @@ function Maker({ made }: { made: MadeProduct }) {
                   <Editor made={made} arrival={arrival} touched={tried} onChange={onEditor} />
                 </Suspense>
               )}
-              {Editor && arrival !== undefined && !state.blocked && <CaptionField ours={ours} value={capDraft} onChange={setCapDraft} rule={capRule} follows={made.from.toLowerCase()} />}
+              {Editor && arrival !== undefined && editorIn && !state.blocked && <CaptionField ours={ours} value={capDraft} onChange={setCapDraft} rule={capRule} follows={made.from.toLowerCase()} />}
               {problem && (
                 <p className="text-xs text-neutral-300" role="status" data-print-problem>
                   {problem}

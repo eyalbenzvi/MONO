@@ -91,6 +91,8 @@ function Yours() {
   const [step, setStep] = useState<Step>("start");
   const [source, setSource] = useState<Source | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  /** The draft save waiting on DRAFT_SAVE_MS, if any. */
+  const pendingSave = useRef<(() => void) | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [last, setLast] = useState<PreviewOk | null>(null);
   const [busy, setBusy] = useState(false);
@@ -316,11 +318,26 @@ function Yours() {
     });
     // The draft follows every change, half a second after the last (a slider dragged doesn't store the file again at every step).
     // An edit from the bag keeps no draft: the bag has the print, and an edit left unsaved is simply not saved.
-    const save = editId ? undefined : setTimeout(() => void loadClient().then((c) => saveLive(c, source, settings)), DRAFT_SAVE_MS);
+    // Leaving sooner (a tap away right after a choice) saves at once: the last choice is never dropped.
+    const saveNow = () => {
+      pendingSave.current = null;
+      void loadClient().then((c) => saveLive(c, source, settings));
+    };
+    pendingSave.current = editId ? null : saveNow;
+    const save = editId ? undefined : setTimeout(saveNow, DRAFT_SAVE_MS);
     return () => clearTimeout(save);
     // `last` is only read for the status.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, settings]);
+  // Declared after the effect above, so on leaving its cleanup has run first and the save still pending is done here.
+  useEffect(() => {
+    const flush = () => pendingSave.current?.();
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, []);
 
   const patch = (p: Partial<Settings>) => {
     if (!settings) return;
