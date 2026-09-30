@@ -6,8 +6,8 @@ import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
 import { CREDITS_MAX, CREDITS_MIN, CREDIT_NAME_MAX, FAMILY_MAX, PRODUCT, ROLE_MAX, type Credit } from "@/lib/custom/specs/credits";
 import { Field, useLexicon } from "./Field";
 import { RowsField, yearOf, type Row } from "./RowsField";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Credits: the family, who did what (two to twelve), the year. */
@@ -31,7 +31,13 @@ export default function CreditsEditor({ arrival, touched, onChange }: EditorProp
   const x: Credit[] = full.map((c) => [c.r.value!, c.n.value!]);
   const spec: CustomSpec | null = ok ? { t: "credits", v: 1, p: { f: family.value!, x, ...(y ? { y } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: the example's, cell by cell (as the placeholders say).
+  const cellsOk = cells.every((c) => c.r.value !== null && c.n.value !== null);
+  const px = cells.flatMap((c, i): Credit[] => {
+    const [r, n] = [orExample(c.r.value, ex.x[i]?.[0]), orExample(c.n.value, ex.x[i]?.[1])];
+    return r && n ? [[r, n]] : [];
+  });
+  useReportSpec(spec, onChange, noProblem(family) && cellsOk && y !== null && px.length >= CREDITS_MIN && { t: "credits", v: 1, p: { f: orExample(family.value, ex.f)!, x: px, ...(y ? { y } : {}) } });
 
   return (
     <>

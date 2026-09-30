@@ -6,8 +6,8 @@ import { TOO_LONG } from "@/lib/custom/kit";
 import { PRODUCT, TELEGRAM_MAX, TELEGRAM_NAME_MAX, telegramFit } from "@/lib/custom/specs/telegram";
 import { parseDate } from "@/lib/custom/specKit";
 import { Field, useLexicon } from "./Field";
-import { TextField, allOk, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, allOk, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Telegram: to, from, the day it was sent, and the message (it prints in capitals, the full stops as STOP). */
@@ -22,9 +22,11 @@ export default function TelegramEditor({ arrival, touched, onChange }: EditorPro
   const dateOk = !date || !!parseDate(date);
   const tooLong = msg.value && !telegramFit(msg.value) ? TOO_LONG : null;
   const ok = allOk(lex, to, fr, msg) && dateOk && !tooLong && !!to.value && !!msg.value;
-  const spec: CustomSpec | null = ok ? { t: "telegram", v: 1, p: { to: to.value!, ...(fr.value ? { fr: fr.value } : {}), ...(date ? { d: date } : {}), m: msg.value! } } : null;
+  const make = (to: string | null, m: string | null): CustomSpec => ({ t: "telegram", v: 1, p: { to: to!, ...(fr.value ? { fr: fr.value } : {}), ...(date ? { d: date } : {}), m: m! } });
+  const spec: CustomSpec | null = ok ? make(to.value!, msg.value!) : null;
 
-  useReportSpec(spec, onChange);
+  // Who it's to or the message not yet typed: the example's.
+  useReportSpec(spec, onChange, noProblem(to, fr, msg) && dateOk && !tooLong && make(orExample(to.value, ex.to), orExample(msg.value, ex.m)));
 
   return (
     <>

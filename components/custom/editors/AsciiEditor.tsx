@@ -61,6 +61,8 @@ function tones(src: HTMLCanvasElement, cols: AsciiCols, place: number, zoom: num
 }
 
 const FILL_LABEL: Record<AsciiFill, string> = { self: "Its letters", "#": "#", "@": "@", "%": "%", "8": "8", $: "$", phrase: "A phrase" };
+/** The phrase the placeholder suggests (and the preview types the letters in, until the visitor’s own). */
+const PHRASE_EXAMPLE = "love from tel aviv";
 
 /**
  * Your ASCII: the big letters (one or two lines), what they're typed in, a drop shadow; or a
@@ -122,7 +124,12 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
         ? { t: "ascii", v: 1, p: { x: lines!, f: fill, ...(fill === "phrase" ? { p } : {}), ...(shadow ? { s: 1 as const } : {}) } }
         : null;
 
-  useReportSpec(spec, onChange);
+  // The letters, or the phrase they're typed in, not yet typed: what the placeholders say.
+  const pLines = !big.trim() ? (ex?.x ?? null) : lines && !bigError ? lines : null;
+  const preview: CustomSpec | null =
+    mode === "words" && pLines && (!p || !phraseError) ? { t: "ascii", v: 1, p: { x: pLines, f: fill, ...(fill === "phrase" ? { p: p || PHRASE_EXAMPLE } : {}), ...(shadow ? { s: 1 as const } : {}) } } : null;
+
+  useReportSpec(spec, onChange, preview);
 
   const wide = source ? source.width / source.height > (cols * 0.602) / (ASCII_ROWS[cols] * 1.02) : true;
   const picture = (
@@ -159,7 +166,7 @@ export default function AsciiEditor({ made, arrival, touched, onChange }: Editor
           <Segmented label="Typed in" options={ASCII_FILLS} value={fill} onChange={setFill} format={(f) => FILL_LABEL[f]} />
           {fill === "phrase" && (
             <Field label="The phrase" error={phraseError} htmlFor="make-phrase">
-              <input id="make-phrase" value={phrase} maxLength={24} placeholder="love from tel aviv" autoComplete="off" onChange={(e) => setPhrase(e.target.value)} aria-invalid={!!phraseError} className={`${INPUT} font-mono`} />
+              <input id="make-phrase" value={phrase} maxLength={24} placeholder={PHRASE_EXAMPLE} autoComplete="off" onChange={(e) => setPhrase(e.target.value)} aria-invalid={!!phraseError} className={`${INPUT} font-mono`} />
             </Field>
           )}
           <Switch label="Drop shadow" checked={shadow} onChange={setShadow} />

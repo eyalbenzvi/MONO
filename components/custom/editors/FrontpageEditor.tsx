@@ -6,8 +6,8 @@ import { TOO_LONG } from "@/lib/custom/kit";
 import { HEADLINES, HEADLINE_MAX, PAPER_NAME_MAX, PRODUCT, STANDFIRST_MAX, headlineFit, standfirstFit } from "@/lib/custom/specs/frontpage";
 import { parseDate } from "@/lib/custom/specKit";
 import { Field, useLexicon } from "./Field";
-import { TextField, allOk, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, allOk, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Front Page: whose paper (The Daily …), the headline (ours or yours), a standfirst and the day. */
@@ -23,9 +23,11 @@ export default function FrontpageEditor({ arrival, touched, onChange }: EditorPr
   const headLong = head.value && !headlineFit(head.value) ? TOO_LONG : null;
   const standLong = stand.value && !standfirstFit(stand.value) ? TOO_LONG : null;
   const ok = allOk(lex, name, head, stand) && dateOk && !headLong && !standLong && !!name.value && !!head.value;
-  const spec: CustomSpec | null = ok ? { t: "frontpage", v: 1, p: { n: name.value!, h: head.value!, ...(stand.value ? { s: stand.value } : {}), ...(date ? { d: date } : {}) } } : null;
+  const make = (n: string | null, h: string | null): CustomSpec => ({ t: "frontpage", v: 1, p: { n: n!, h: h!, ...(stand.value ? { s: stand.value } : {}), ...(date ? { d: date } : {}) } });
+  const spec: CustomSpec | null = ok ? make(name.value!, head.value!) : null;
 
-  useReportSpec(spec, onChange);
+  // Whose paper or the headline not yet typed: the example's.
+  useReportSpec(spec, onChange, noProblem(name, head, stand) && dateOk && !headLong && !standLong && make(orExample(name.value, ex.n), orExample(head.value, ex.h)));
 
   return (
     <>

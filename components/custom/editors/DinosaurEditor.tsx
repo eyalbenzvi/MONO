@@ -7,8 +7,9 @@ import { DIET_MAX, DINO_NAME_MAX, ENDINGS, HEIGHT_MAX, HEIGHT_MIN, PLATES, PLATE
 import { Field, useLexicon } from "./Field";
 import { yearOf } from "./RowsField";
 import { Segmented } from "./Segmented";
-import { TextField, allOk, useText } from "./TextField";
+import { TextField, allOk, noProblem, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
+import { previewOf, usePreviewKey } from "./useReportSpec";
 
 const DIETS = ["pasta", "toast", "raisins", "yoghurt", "everything", "nothing green", "biscuits"];
 
@@ -31,16 +32,18 @@ export default function DinosaurEditor({ arrival, touched, onChange }: EditorPro
   const stemOk = !name.value || stemOf(name.value).length >= 2;
   const ok = allOk(lex, name, diet) && !!name.value && stemOk && y !== null && hOk;
   const e = ending || undefined;
-  const spec: CustomSpec | null = ok
-    ? { t: "dinosaur", v: 1, p: { n: name.value!, k: plate, ...(e ? { e } : {}), ...(species !== "rex" ? { s: species } : {}), ...(y ? { y } : {}), ...(hNum !== undefined ? { h: hNum } : {}), ...(diet.value ? { d: diet.value } : {}) } }
-    : null;
+  const make = (n: string): CustomSpec => ({ t: "dinosaur", v: 1, p: { n, k: plate, ...(e ? { e } : {}), ...(species !== "rex" ? { s: species } : {}), ...(y ? { y } : {}), ...(hNum !== undefined ? { h: hNum } : {}), ...(diet.value ? { d: diet.value } : {}) } });
+  const spec: CustomSpec | null = ok ? make(name.value!) : null;
+  // No name yet: the example's, with the skeleton, the names and the facts as chosen.
+  const preview = !spec && name.value === undefined && noProblem(diet) && y !== null && hOk ? make(ex.n) : null;
 
   const report = useRef(onChange);
   report.current = onChange;
   const specKey = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: specKey ? (JSON.parse(specKey) as CustomSpec) : null, data: {} });
-  }, [specKey]);
+    report.current({ spec: specKey ? (JSON.parse(specKey) as CustomSpec) : null, data: {}, ...previewOf(previewKey) });
+  }, [specKey, previewKey]);
 
   const sample = name.value && stemOk ? name.value : ex.n;
   return (

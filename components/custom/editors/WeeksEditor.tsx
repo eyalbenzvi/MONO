@@ -44,7 +44,10 @@ export default function WeeksEditor({ arrival, touched, onChange }: EditorProps)
   const ok = bOk && !asError && !twice && rows.every((r) => !r.error) && (!kept.length || lex);
   const spec: CustomSpec | null = ok ? { t: "weeks", v: 1, p: { b, a: asOf, n, ...(m.length ? { m } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // No birthday yet: the example's, with the rest as chosen (no milestone typed: the example's).
+  const preview: CustomSpec | null = !b && !twice && rows.every((r) => !r.error) && (!kept.length || lex) ? { t: "weeks", v: 1, p: { b: ex.b, a: asOf, n, ...(kept.length ? { m } : ex.m ? { m: ex.m } : {}) } } : null;
+
+  useReportSpec(spec, onChange, preview);
 
   const setMark = (i: number, v: Partial<{ d: string; l: string }>) => setMarks((xs) => xs.map((x, j) => (j === i ? { ...x, ...v } : x)));
   const dateInput = (id: string, value: string, set: (v: string) => void, invalid: boolean) => (

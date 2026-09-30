@@ -11,8 +11,8 @@ import {
 import { Field, useLexicon } from "./Field";
 import { RowsField, yearOf, type Row } from "./RowsField";
 import { Segmented } from "./Segmented";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const KIND_NAMES: Record<ReceiptKind, string> = { receipt: "Receipt", terms: "Terms", review: "Review" };
@@ -50,7 +50,15 @@ export default function ReceiptEditor({ arrival, touched, onChange }: EditorProp
     else if (head.value && rowsOk && dateOk && !termsLong) spec = kind === "terms" ? { t: "receipt", v: 1, p: { k: "terms", h: head.value, x: lines, ...(date ? { d: date } : {}) } } : { t: "receipt", v: 1, p: { k: "receipt", h: head.value, x: lines, d: date } };
   }
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: what the placeholders say (the example's name and day on a receipt).
+  let preview: CustomSpec | null = null;
+  if (!spec && lex && noProblem(head, quote, by) && cells.every((c) => c.value !== null)) {
+    const h = orExample(head.value, kind === "terms" ? "The Terms of Us" : ex.h!)!;
+    if (kind === "review") preview = !quoteLong && y !== null ? { t: "receipt", v: 1, p: { k: "review", n: stars, q: orExample(quote.value, REVIEW_QUOTES[0])!, by: orExample(by.value, "Noa")!, ...(y ? { y } : {}) } } : null;
+    else if (!few && !termsLong && (!date || parseDate(date))) preview = kind === "terms" ? { t: "receipt", v: 1, p: { k: "terms", h, x: lines, ...(date ? { d: date } : {}) } } : { t: "receipt", v: 1, p: { k: "receipt", h, x: lines, d: date || ex.d! } };
+  }
+
+  useReportSpec(spec, onChange, preview);
 
   const ours = kind === "terms" ? TERMS_CLAUSES : RECEIPT_ITEMS;
   return (

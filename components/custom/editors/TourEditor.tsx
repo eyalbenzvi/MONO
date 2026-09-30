@@ -7,7 +7,8 @@ import { packPlaces, unpackPlaces } from "@/lib/custom/specKit";
 import { PRODUCT, TOUR_MAX, TOUR_MIN, TOUR_NAME_MAX, TOUR_TITLES, TOUR_TITLE_MAX } from "@/lib/custom/specs/tour";
 import { useLexicon } from "./Field";
 import { PlacesField, draftsOf, rowsOf, type PlaceDraft } from "./PlacesField";
-import { TextField, allOk, useText } from "./TextField";
+import { TextField, allOk, noProblem, useText } from "./TextField";
+import { orExample, previewOf, usePreviewKey } from "./useReportSpec";
 import type { EditorProps } from "./types";
 
 /** Your World Tour: whose tour, which tour (ours or yours), and the dates: 4 to 24 places, each with its year. */
@@ -33,12 +34,18 @@ export default function TourEditor({ arrival, touched, onChange }: EditorProps) 
   const ok = allOk(lex, name, title) && !!name.value && !!title.value && !few;
   const spec: CustomSpec | null = ok ? { t: "tour", v: 1, p: { n: name.value!, t: title.value!, x: packPlaces(rows!) } } : null;
 
+  // Anything not yet given: the example's (fewer than four dates: the example's after them, to four).
+  const exRows = unpackPlaces(ex.x, { min: TOUR_MIN, max: TOUR_MAX }) ?? [];
+  const px = rows && [...rows, ...exRows.filter((e) => !rows.some((r) => r.c === e.c))].slice(0, Math.max(TOUR_MIN, rows.length));
+  const preview: CustomSpec | null = !spec && !!lex && noProblem(name, title) && !!px ? { t: "tour", v: 1, p: { n: orExample(name.value, ex.n)!, t: orExample(title.value, ex.t)!, x: packPlaces(px) } } : null;
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list } });
-  }, [key, places]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list }, ...previewOf(previewKey) });
+  }, [key, previewKey, places]);
 
   return (
     <>

@@ -8,7 +8,7 @@ import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
 import { PRODUCT, SAMPLER_NAME_MAX, SAMPLER_WORDS_MAX, STITCHABLE, wordRows } from "@/lib/custom/specs/sampler";
 import { Field, useLexicon } from "./Field";
 import { yearOf } from "./RowsField";
-import { TextField, allOk, useText } from "./TextField";
+import { TextField, allOk, noProblem, useText } from "./TextField";
 import { useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
@@ -30,9 +30,11 @@ export default function SamplerEditor({ arrival, touched, onChange }: EditorProp
   const wordsBad = words.value ? (!STITCHABLE.test(words.value) ? STITCH_LINE : !wordRows(words.value) ? TOO_LONG : null) : null;
   const motifs = mo.filter((m): m is Motif => !!m);
   const ok = allOk(lex, name, words) && !!name.value && !nameBad && !wordsBad && y !== null && motifs.length > 0;
-  const spec: CustomSpec | null = ok ? { t: "sampler", v: 1, p: { n: name.value!, ...(y ? { y } : {}), ...(words.value ? { w: words.value } : {}), b, mo: motifs } } : null;
+  const make = (n: string): CustomSpec => ({ t: "sampler", v: 1, p: { n, ...(y ? { y } : {}), ...(words.value ? { w: words.value } : {}), b, mo: motifs } });
+  const spec: CustomSpec | null = ok ? make(name.value!) : null;
 
-  useReportSpec(spec, onChange);
+  // No name yet: the example's, stitched with everything else as chosen.
+  useReportSpec(spec, onChange, name.value === undefined && noProblem(words) && !wordsBad && y !== null && motifs.length > 0 && make(ex.n));
 
   return (
     <>

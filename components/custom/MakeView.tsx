@@ -223,12 +223,19 @@ function Maker({ made }: { made: MadeProduct }) {
   const batchKey = edited.batch && cap ? JSON.stringify(edited.batch.map((b) => validate({ ...b, p: { ...b.p, cap } }))) : "";
   const batch = useMemo(() => (batchKey ? (JSON.parse(batchKey) as (CustomSpec | null)[]).filter((b): b is CustomSpec => !!b) : undefined), [batchKey]);
   const state: EditorState = useMemo(() => ({ ...edited, spec: merged, batch }), [edited, merged, batch]);
-  // Until the fields make a print (empty, or not yet valid), the stage shows the product's example.
+  // Until the fields make a print, the stage shows what they make so far: the fields filled over the example while a
+  // required one is empty (the editor's preview), with the caption's lines; else the example, with them too.
+  // Never an input that doesn't show: whatever the visitor has typed or picked is in the picture at once.
+  const withCap = (s: CustomSpec | null | undefined) => (s && cap ? JSON.stringify(validate({ ...s, p: { ...s.p, cap } })) : "");
+  const previewKey = !edited.spec && !edited.blocked ? withCap(edited.preview) : "";
+  const preview = useMemo(() => (previewKey && previewKey !== "null" ? (JSON.parse(previewKey) as CustomSpec) : null), [previewKey]);
+  const exampleKey = cap?.some((c) => c !== null) && !edited.blocked ? withCap(made.example) : "";
+  const exampleShown = useMemo(() => (exampleKey && exampleKey !== "null" ? (JSON.parse(exampleKey) as CustomSpec) : made.example), [exampleKey, made.example]);
   // A field gone invalid keeps the last print that was (never a jump back to the example, as if the input were ignored).
   const lastGood = useRef<CustomSpec | null>(null);
   if (state.spec && !state.blocked) lastGood.current = state.spec;
-  const example = state.blocked || (!state.spec && !lastGood.current);
-  const spec = example ? made.example : (state.spec ?? lastGood.current);
+  const example = state.blocked || (!state.spec && !preview && !lastGood.current);
+  const spec = state.blocked ? made.example : example ? exampleShown : (state.spec ?? preview ?? lastGood.current);
 
   // The picture: debounced, checked (a print that won't print well isn't offered), and the address kept in step.
   const [shown, setShown] = useState<Shown | null>(null);

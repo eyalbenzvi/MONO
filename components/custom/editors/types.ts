@@ -10,6 +10,12 @@ export interface EditorState {
   blocked?: boolean;
   /** Several prints added in one step, each its own line in the bag (Your Line-up's whole team, one shirt a player): the bag adds these instead of `spec`. */
   batch?: CustomSpec[];
+  /**
+   * While a required field is still empty (`spec` null): the fields filled so far over the example (an empty
+   * required field shows the example's, as its placeholder does). The stage draws it, so every field shows at
+   * once; it's never bought, nor put in the address. Anything not valid (a field that can't print) is dropped.
+   */
+  preview?: CustomSpec | null;
 }
 
 export interface EditorProps {

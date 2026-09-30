@@ -11,6 +11,7 @@ import { yearOf } from "./RowsField";
 import { Segmented } from "./Segmented";
 import { TextField, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
+import { previewOf, usePreviewKey } from "./useReportSpec";
 
 const LINK = "h-11 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
@@ -53,12 +54,24 @@ export default function FlightsEditor({ arrival, touched, onChange }: EditorProp
   if (mode === "pass" && name.value && nameOk && from && to && from !== to && dateOk && seatOk && gateOk)
     spec = { t: "flights", v: 1, p: { k: "pass", n: name.value, f: from, t: to, ...(date ? { d: date } : {}), ...(seat ? { s: seat.toUpperCase() } : {}), ...(gate ? { g: gate.toUpperCase() } : {}) } };
 
+  // Anything not yet given: the example's board, or the pass the placeholders describe (Tel Aviv to New York, or on from where it's from).
+  let preview: CustomSpec | null = null;
+  if (!spec && name.value !== null && years.every((y) => y !== null)) {
+    if (mode === "board") preview = { t: "flights", v: 1, p: { k: "board", ...(name.value ? { n: name.value } : {}), x: ex.x! } };
+    else if (dateOk && seatOk && gateOk) {
+      const f = from || (to === "TLV" ? "JFK" : "TLV");
+      const t = to || (f === "JFK" ? "TLV" : "JFK");
+      preview = { t: "flights", v: 1, p: { k: "pass", n: name.value || "Noa Cohen", f, t, ...(date ? { d: date } : {}), ...(seat ? { s: seat.toUpperCase() } : {}), ...(gate ? { g: gate.toUpperCase() } : {}) } };
+    }
+  }
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: airports ? { airports } : {} });
-  }, [key, airports]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: airports ? { airports } : {}, ...previewOf(previewKey) });
+  }, [key, previewKey, airports]);
 
   const move = (i: number, by: number) => setRows((rs) => {
     const next = [...rs];

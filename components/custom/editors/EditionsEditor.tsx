@@ -6,8 +6,8 @@ import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
 import { EDITIONS_MAX, EDITION_NAME_MAX, PRODUCT, ROLE_MAX, type Edition } from "@/lib/custom/specs/editions";
 import { Field, useLexicon } from "./Field";
 import { RowsField, yearOf, type Row } from "./RowsField";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const YEARS = `Between ${FIRST_YEAR} and ${LAST_YEAR}.`;
@@ -28,7 +28,14 @@ export default function EditionsEditor({ arrival, touched, onChange }: EditorPro
   const x: Edition[] = cells.flatMap((c) => (c.n.value ? [c.y ? ([c.n.value, c.y] as Edition) : ([c.n.value] as Edition)] : []));
   const spec: CustomSpec | null = ok ? { t: "editions", v: 1, p: { x, r: role.value!, ...(e ? { e } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: the example's (the names as the placeholders say; a year stays as typed).
+  const cellsOk = cells.every((c) => c.n.value !== null && c.y !== null);
+  const px = cells.flatMap((c, i): Edition[] => {
+    const n = orExample(c.n.value, ex.x[i]?.[0]);
+    const y = c.n.value === undefined && c.y === undefined ? ex.x[i]?.[1] : c.y;
+    return n ? [y ? [n, y] : [n]] : [];
+  });
+  useReportSpec(spec, onChange, noProblem(role) && cellsOk && e !== null && px.length > 0 && { t: "editions", v: 1, p: { x: px, r: orExample(role.value, ex.r)!, ...(e ? { e } : {}) } });
 
   return (
     <>

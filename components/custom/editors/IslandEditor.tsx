@@ -37,7 +37,8 @@ export default function IslandEditor({ made, arrival, touched, onChange }: Edito
   const spec: CustomSpec | null =
     n.value && placesOk ? { t: "island", v: 1, p: { n: n.value, ...(typed.length ? { x: typed } : {}), ...(redraw ? { s: redraw } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // No name yet: the example's island, with the places typed and the redraw.
+  useReportSpec(spec, onChange, !name.trim() && placesOk && { t: "island", v: 1, p: { n: ex.n, ...(typed.length ? { x: typed } : {}), ...(redraw ? { s: redraw } : {}) } });
 
   const link = "h-11 text-sm text-neutral-300 underline underline-offset-4 hover:text-white disabled:opacity-30";
   return (

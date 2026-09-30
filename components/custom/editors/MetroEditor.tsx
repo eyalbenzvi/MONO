@@ -43,7 +43,13 @@ export default function MetroEditor({ arrival, touched, onChange }: EditorProps)
       ? { t: "metro", v: 1, p: { l: lines.map((l) => cleanWords(l, LINE_MAX)!), s: stations.map((s) => cleanWords(s.name, STATION_MAX)!), k: masks } }
       : null;
 
-  useReportSpec(spec, onChange);
+  // A name not yet typed: the example's in its place (its placeholder), with the map as drawn so far.
+  const orEx = (text: string, error: string | null, max: number, fallback: string | undefined) => (!text.trim() ? (fallback ?? null) : error === null ? cleanWords(text.trim(), max) : null);
+  const pl = lines.map((l, i) => orEx(l, lineErrors[i], LINE_MAX, ex.l[i]));
+  const ps = stations.map((s, j) => orEx(s.name, stationErrors[j], STATION_MAX, ex.s[j]));
+  const preview: CustomSpec | null = !spec && !mapProblem && (lex || [...lines, ...stations.map((s) => s.name)].every((t) => !t.trim())) && pl.every(Boolean) && ps.every(Boolean) ? { t: "metro", v: 1, p: { l: pl as string[], s: ps as string[], k: masks } } : null;
+
+  useReportSpec(spec, onChange, preview);
 
   const setStation = (j: number, s: Partial<Station>) => setStations((xs) => xs.map((x, i) => (i === j ? { ...x, ...s } : x)));
   const removeLine = (i: number) => {
