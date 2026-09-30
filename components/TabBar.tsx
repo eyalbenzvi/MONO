@@ -77,7 +77,7 @@ export function TabBar() {
                   e.preventDefault();
                   scrollPageToTop();
                 }}
-                className={`flex h-full min-h-11 items-center justify-center whitespace-nowrap text-[13px] font-medium transition-colors duration-150 ${active ? "text-white" : "text-muted hover:text-white"}`}
+                className={`flex h-full min-h-11 items-center justify-center whitespace-nowrap text-[13px] font-medium transition-colors duration-150 ${active ? "text-white" : "text-muted [@media(hover:hover)]:hover:text-white"}`}
               >
                 <span className={`border-b pb-0.5 ${active ? "border-white" : "border-transparent"}`}>{label}</span>
               </Link>

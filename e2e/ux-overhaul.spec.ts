@@ -10,6 +10,15 @@ import { CALIBRATION_IDS, hydrated, seed } from "./helpers";
  */
 const AXE = path.join(process.cwd(), "node_modules/axe-core/axe.min.js");
 
+/** Swipes `n` cards with the buttons, each after the last has landed (a card on its way out takes no presses). */
+async function swipe(page: Page, n: number, each?: () => Promise<void>) {
+  for (let i = 0; i < n; i++) {
+    if (i > 0) await expect(page.getByRole("status").filter({ hasText: / of 10\./ }).first()).toContainText(`${i} of 10.`);
+    await each?.();
+    await page.getByRole("button", { name: i % 2 ? "Pass" : "Save" }).click();
+  }
+}
+
 async function centreY(page: Page, name: string | RegExp, role: "button" | "link" = "button") {
   const box = await page.getByRole(role, { name }).last().boundingBox();
   expect(box, String(name)).not.toBeNull();
@@ -56,10 +65,7 @@ test.describe("the thumb: primary actions in the bottom third, 44 px targets", (
     expect(await centreY(page, "Pass")).toBeGreaterThanOrEqual(560);
     await expect(page.getByRole("button", { name: /^Buy / })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
-    for (let i = 0; i < 9; i++) {
-      await expect(page.locator("[data-strip]").first().locator("p").first()).not.toBeEmpty();
-      await page.getByRole("button", { name: i % 2 ? "Pass" : "Save" }).click();
-    }
+    await swipe(page, 9, () => expect(page.locator("[data-strip]").first().locator("p").first()).not.toBeEmpty());
     await expect(page.locator("[data-strip]").first()).toContainText(/Last one\.|Undo/);
     expect(await smallTargets(page)).toEqual([]);
   });
@@ -95,7 +101,7 @@ test.describe("the thumb: primary actions in the bottom third, 44 px targets", (
     await seed(page, { calibrated: false });
     await page.goto("./");
     await hydrated(page);
-    for (let i = 0; i < CALIBRATION_IDS.length; i++) await page.getByRole("button", { name: i % 2 ? "Pass" : "Save" }).click();
+    await swipe(page, CALIBRATION_IDS.length);
     await expect(page.getByText("Your shop is now edited around this.")).toBeVisible();
     expect(await centreY(page, "See your edit", "link")).toBeGreaterThanOrEqual(560);
   });
@@ -160,7 +166,7 @@ test.describe("Back closes every overlay without leaving the page", () => {
     await seed(page, { calibrated: false });
     await page.goto("./");
     await hydrated(page);
-    for (let i = 0; i < CALIBRATION_IDS.length; i++) await page.getByRole("button", { name: i % 2 ? "Pass" : "Save" }).click();
+    await swipe(page, CALIBRATION_IDS.length);
     await expect(page.getByText("Your shop is now edited around this.")).toBeVisible();
     await page.goBack();
     await expect(page.getByText("Your shop is now edited around this.")).toHaveCount(0);
