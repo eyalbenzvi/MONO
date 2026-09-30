@@ -30,8 +30,9 @@ import * as label from "./label";
 import * as credits from "./credits";
 import * as card from "./card";
 import * as receipt from "./receipt";
+import * as message from "./message";
 
-export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt };
+export const EXTRA = { weeks, elements, crossword, journey, snowflake, maze, automaton, julia, rings, family, orbits, tartan, musicbox, monogram, chess, metro, route, island, qr, telegram, editions, sayings, label, credits, card, receipt, message };
 export type ExtraId = keyof typeof EXTRA;
 export type ExtraParams = { [K in ExtraId]: (typeof EXTRA)[K] extends SpecModule<infer P> ? P : never };
 export type ExtraSpec = { [K in ExtraId]: { t: K; v: 1; p: ExtraParams[K] } }[ExtraId];

@@ -93,6 +93,16 @@ const CASES: Case[] = [
       await expect(page.locator("#make-receipt-date")).toHaveValue("2016-08-14");
     },
   },
+  {
+    slug: "message",
+    fill: async (page) => {
+      await page.locator("#make-message-t0").fill("Was that you with the umbrella?");
+      await page.locator("#make-message-h0").fill("21:02");
+      await page.locator("#make-message-t1").fill("It was. Sorry about your shoes.");
+      await page.locator("#make-message-h1").fill("21:04");
+    },
+    again: async (page) => expect(page.locator("#make-message-t1")).toHaveValue("It was. Sorry about your shoes."),
+  },
 ];
 
 for (const c of CASES)
