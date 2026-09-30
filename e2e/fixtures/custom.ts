@@ -1,4 +1,5 @@
 import shirts from "../../data/shirts.json";
+import { madeAllFor } from "../../lib/custom/products";
 
 type Entry = { id: string; variant: string; title: string };
 const ALL = shirts as unknown as Entry[];
@@ -6,8 +7,8 @@ const ALL = shirts as unknown as Entry[];
 export const SKY = ALL.find((s) => s.variant === "sky-night")!;
 export const MOON = ALL.find((s) => s.variant === "moon-year")!;
 export const PLANETS = ALL.find((s) => s.variant === "planets-date")!;
-const BASES = ["sky-night", "moon-year", "planets-date"];
-export const OTHERS = ALL.filter((s) => !BASES.includes(s.variant)).filter((_, i) => i % 400 === 7).slice(0, 3);
+/** Designs no Make product is drawn like (lib/custom/products madeAllFor). */
+export const OTHERS = ALL.filter((s) => madeAllFor(s.variant).length === 0).filter((_, i) => i % 400 === 7).slice(0, 3);
 /** Tel Aviv's GeoNames id (data/cities). */
 export const TEL_AVIV = 293397;
 /** A link's `make` for a spec (lib/custom encodeMake: base64url of the canonical JSON). */

@@ -87,7 +87,7 @@ describe("T3: the bag (cart store v4)", () => {
     ]);
     expect(s.selectedColors).toEqual({ [both.id]: otherColor(both.baseColor) });
     s.setSize(both.id, "S");
-    expect(JSON.parse(localStorage.getItem("mono-cart")!).version).toBe(5);
+    expect(JSON.parse(localStorage.getItem("mono-cart")!).version).toBe(6);
   });
 
   it("adding a one-colour design in the other colour adds the original; the pair and a colour change can't be made", async () => {

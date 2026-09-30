@@ -3,7 +3,9 @@ import { SHIRTS } from "@/lib/catalog";
 import { closest, distance } from "@/lib/search/fuzzy";
 import { clean, stem, terms, words } from "@/lib/search/normalize";
 import { parseQuery } from "@/lib/search/parse";
-import { humanizeId, sourceOf } from "@/lib/search/labels";
+import { LABEL_WORDS, VARIANT_LABELS, humanizeId, labelCase, sourceOf, titleCase, typographic } from "@/lib/search/labels";
+import { LEXICON } from "@/lib/search/lexicon";
+import { subjectChips } from "@/lib/search/runtime";
 import { realIndex } from "./searchFixture";
 
 describe("search: normalizing text (shared by the index and the query)", () => {
@@ -66,5 +68,55 @@ describe("search: labels", () => {
     expect(sourceOf("Someone, Smithsonian's Nati")?.id).toBe("zoo");
     expect(sourceOf("National Air and Space Museum, Smithsonian Institution")?.id).toBe("air-space");
     expect(sourceOf("Mehg")).toBeNull();
+  });
+});
+
+describe("search: label case", () => {
+  it("writes acronyms in capitals", () => {
+    expect(labelCase("nasa")).toBe("NASA");
+    expect(labelCase("nyc")).toBe("NYC");
+    expect(labelCase("ascii art")).toBe("ASCII art");
+    expect(labelCase("led display")).toBe("LED display");
+    expect(humanizeId("ibm-card")).toBe("IBM card");
+    // Only whole words: "ledger", "nasal" and "us" are left alone.
+    expect(labelCase("ledger")).toBe("Ledger");
+    expect(labelCase("nasal")).toBe("Nasal");
+    expect(labelCase("for us")).toBe("For us");
+  });
+
+  it("title-cases places, keeping particles lower-case", () => {
+    expect(labelCase("new york")).toBe("New York");
+    expect(labelCase("new england")).toBe("New England");
+    expect(labelCase("old new york harbor")).toBe("Old New York harbor");
+    expect(labelCase("new")).toBe("New");
+    expect(labelCase("newest")).toBe("Newest");
+    expect(titleCase("rio de janeiro")).toBe("Rio de Janeiro");
+    expect(titleCase("stratford upon avon")).toBe("Stratford upon Avon");
+    expect(titleCase("isle of man")).toBe("Isle of Man");
+    expect(titleCase("la paz")).toBe("La Paz");
+    expect(titleCase("new york nyc")).toBe("New York NYC");
+  });
+
+  it("uses typographic apostrophes", () => {
+    expect(typographic("Halley's orbit")).toBe("Halley’s orbit");
+    expect(typographic("Henri L'Evêque")).toBe("Henri L’Evêque");
+    expect(typographic("the Wrights' flyer")).toBe("the Wrights’ flyer");
+    expect(labelCase("jupiter's moons")).toBe("Jupiter’s moons");
+    for (const label of Object.values(VARIANT_LABELS)) expect(label).not.toContain("'");
+  });
+
+  it("every label the index and the runtime produce is cased right", () => {
+    const { file, index } = realIndex();
+    const labels = [...Object.values(file.tables).flatMap((t) => t.map((e) => e.label)), ...subjectChips(index, SHIRTS).map((s) => s.label), ...LEXICON.flatMap((e) => e.phrases).map(labelCase)];
+    for (const label of labels) {
+      expect(label, label).not.toContain("'");
+      expect(label, label).not.toMatch(/^\p{Ll}/u);
+      for (const w of label.split(/[^\p{L}\p{N}]+/u)) if (LABEL_WORDS[w.toLowerCase()]) expect(w, label).toBe(LABEL_WORDS[w.toLowerCase()]);
+      expect(label, label).not.toMatch(/\bNew (york|england)\b/);
+    }
+    const subjects = subjectChips(index, SHIRTS).map((s) => s.label);
+    expect(subjects).toEqual(expect.arrayContaining(["NASA", "New York", "New England"]));
+    expect(file.tables.style.map((e) => e.label)).toEqual(expect.arrayContaining(["Line art", "ASCII art", "Star chart"]));
+    expect(file.tables.variant.find((e) => e.id === "orbit-halley")?.label).toBe("Halley’s orbit");
   });
 });

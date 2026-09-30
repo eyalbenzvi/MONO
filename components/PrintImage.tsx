@@ -1,6 +1,8 @@
 "use client";
 
 import { Sharper } from "@/components/Sharper";
+import { useRef } from "react";
+import { useNear } from "@/hooks/useNear";
 import { usePageZoom } from "@/hooks/usePageZoom";
 import { printImage } from "@/lib/images";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
@@ -33,14 +35,17 @@ export function PrintImage({
   const factor = usePageZoom() * zoom;
   const { src, srcSet } = printImage(shirt, color);
   const cls = `h-full w-full select-none object-cover ${className}`;
+  // Loaded ahead of the scroller's view (hooks/useNear), not only once on screen.
+  const ref = useRef<HTMLImageElement>(null);
+  const near = useNear(ref, !priority);
   const img = (
     <img
-      src={src}
-      srcSet={srcSet}
+      ref={ref}
+      src={near ? src : undefined}
+      srcSet={near ? srcSet : undefined}
       sizes={srcSet ? sizes : undefined}
       alt={`${shirt.title} print`}
       draggable={false}
-      loading={priority ? "eager" : "lazy"}
       {...{ fetchpriority: priority ? "high" : "auto" }}
       decoding="async"
       className={cls}

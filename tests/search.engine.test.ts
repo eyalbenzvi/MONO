@@ -178,10 +178,10 @@ describe("search: the index file", () => {
       else queries.push([`${w} ${file.vocab[Math.floor(rnd() * file.vocab.length)]} `, facet]);
     }
     for (const [q, f] of queries.slice(0, 50)) run(q, f); // warm up
-    // Each query's best of three runs: the engine's own time, not the other test files sharing the CPU.
+    // Each query's best of five runs: the engine's own time, not the other test files (or a shared CI runner) taking the CPU.
     const times = queries.map(([q, f]) => {
       let best = Infinity;
-      for (let k = 0; k < 3; k++) {
+      for (let k = 0; k < 5; k++) {
         const t = performance.now();
         run(q, f);
         best = Math.min(best, performance.now() - t);
@@ -242,5 +242,17 @@ describe("search: expert review (algorithm and content)", () => {
     expect(run("text ").suggestions.map((s) => s.label)).not.toContain("No text");
     expect(run("new york ").suggestions.some((s) => s.facet.kind === "new")).toBe(false);
     expect(run("new york ").total).toBeGreaterThan(0);
+  });
+});
+
+describe("search: a design named exactly is found, not a miss", () => {
+  it("an id, SKU or number leads the results and says no 'No match'", () => {
+    const s = SHIRTS[0];
+    const id = `mono-${String(s.n).padStart(4, "0")}`;
+    const r = run(id);
+    expect(r.results[0].shirt.id).toBe(s.id);
+    expect(r.relaxed).toBeNull();
+    // Only that design: the rest of the catalogue isn't listed after it.
+    expect(r.results.map((x) => x.shirt.id)).toEqual([s.id]);
   });
 });

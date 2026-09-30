@@ -62,7 +62,7 @@ describe("taste store v5 (the taste test's prints changed)", () => {
     await mod.useTasteStore.persist.rehydrate();
     expect(mod.useTasteStore.getState().calibrationAcknowledged).toBe(false);
     mod.useTasteStore.getState().toggleSaved(W1);
-    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(5);
+    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(6);
   });
 });
 
@@ -187,9 +187,9 @@ describe("Part 5: copy", () => {
     expect(productDescription(other).startsWith(`${other.title}: ${other.subject}. `)).toBe(true);
   });
 
-  it("the site's description: ten tees swiped, the rest ranked (and no false count)", () => {
+  it("the site's description: one ink, black and white, ten swipes edit the shop (and no false count)", () => {
     for (const f of ["app/layout.tsx", "app/page.tsx"]) {
-      expect(readFileSync(path.join(ROOT, f), "utf8")).toContain('"Swipe ten black-and-white tees. MONO ranks over a thousand more to your taste."');
+      expect(readFileSync(path.join(ROOT, f), "utf8")).toContain('"One-ink tees in black and white. Swipe ten and the shop edits itself to your taste."');
     }
     expect(FULL.length).toBeGreaterThan(1000);
   });

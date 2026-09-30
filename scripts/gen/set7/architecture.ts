@@ -5,7 +5,8 @@
  * types, Vignola's five orders in their module proportions, Le Corbusier's
  * Modulor series (183 cm and 226 cm, stepped by the golden ratio).
  */
-import { DEG, INK, caption, circle, dot, f1, line, path, polyline, rect, text, type Set7Design } from "./kit";
+import { DEG, INK, caption, circle, dot, f1, line, path, polyline, text, type Set7Design } from "./kit";
+import { brickBond, orders, type Bond } from "../../../lib/custom/draw/architecture";
 
 const FEAT = { architectural: 0.9, geometric: 0.65, line_art: 0.75, clean_minimal: 0.6, classic: 0.5, abstract: 0.2, density: 0.25, contrast: 0.7, typography: 0.15 };
 
@@ -106,86 +107,21 @@ function archDesigns(): Set7Design[] {
   });
 }
 
-/** A convex polygon cut to an axis-aligned box (Sutherland–Hodgman). */
-function clipToBox(poly: [number, number][], x0: number, y0: number, x1: number, y1: number): [number, number][] {
-  const edges: [(p: [number, number]) => boolean, (a: [number, number], b: [number, number]) => [number, number]][] = [
-    [(p) => p[0] >= x0, (a, b) => [x0, a[1] + ((b[1] - a[1]) * (x0 - a[0])) / (b[0] - a[0])]],
-    [(p) => p[0] <= x1, (a, b) => [x1, a[1] + ((b[1] - a[1]) * (x1 - a[0])) / (b[0] - a[0])]],
-    [(p) => p[1] >= y0, (a, b) => [a[0] + ((b[0] - a[0]) * (y0 - a[1])) / (b[1] - a[1]), y0]],
-    [(p) => p[1] <= y1, (a, b) => [a[0] + ((b[0] - a[0]) * (y1 - a[1])) / (b[1] - a[1]), y1]],
-  ];
-  let out = poly;
-  for (const [inside, cross] of edges) {
-    const input = out;
-    out = [];
-    input.forEach((p, i) => {
-      const prev = input[(i + input.length - 1) % input.length];
-      if (inside(p)) {
-        if (!inside(prev)) out.push(cross(prev, p));
-        out.push(p);
-      } else if (inside(prev)) out.push(cross(prev, p));
-    });
-    if (!out.length) break;
-  }
-  return out;
-}
-
 /* ------------------------------------------------------------------ */
 /* Brick bonds                                                          */
 /* ------------------------------------------------------------------ */
 
 function bondDesigns(): Set7Design[] {
-  // Units: 1 = 1 mm at 0.3 scale. Stretcher 225 (with joint), header 112.5, course 75.
-  const S = 0.3, L = 225 * S, Hd = 112.5 * S, C = 75 * S, J = 10 * S;
-  const X0 = 30, Y0 = 36, WW = 240, HH = 240;
-  const clip = (id: string) => `<clipPath id="${id}"><rect x="${X0}" y="${Y0}" width="${WW}" height="${HH}"/></clipPath>`;
-  const brick = (x: number, y: number, w: number) => rect(x, y, w - J, C - J, 0.9);
-  const course = (y: number, units: number[], offset: number) => {
-    let s = "", x = X0 - offset;
-    let i = 0;
-    while (x < X0 + WW) {
-      const w = units[i++ % units.length];
-      s += brick(x, y, w);
-      x += w;
-    }
-    return s;
-  };
-  const courses = (fn: (row: number, y: number) => string) => {
-    let s = "";
-    for (let row = 0, y = Y0; y < Y0 + HH; row++, y += C) s += fn(row, y);
-    return s;
-  };
-  const bonds: [string, string, string, string][] = [
-    ["Stretcher Bond", "Every course stretchers, each over the joint below", "stretcher", courses((r, y) => course(y, [L], r % 2 ? L / 2 : 0))],
-    ["English Bond", "A course of stretchers, a course of headers", "english", courses((r, y) => (r % 2 ? course(y, [Hd], Hd / 2) : course(y, [L], 0)))],
-    ["Flemish Bond", "Header and stretcher in every course, headers centred over stretchers", "flemish", courses((r, y) => course(y, [Hd, L], r % 2 ? Hd / 2 + L / 2 : 0))],
-    ["Header Bond", "Every course headers, each over the joint below", "header", courses((r, y) => course(y, [Hd], r % 2 ? Hd / 2 : 0))],
-    (() => {
-      // Herringbone (2:1 bricks): along each diagonal a flat brick, then an upright one beside it; the strips repeat
-      // every four units. Turned 45° and cut to the panel exactly (each brick's outline clipped), so no line leaves it.
-      const u = Hd;
-      const turn = ([x, y]: [number, number]): [number, number] => {
-        const [dx, dy] = [x - 150, y - 156];
-        return [150 + (dx - dy) * Math.SQRT1_2, 156 + (dx + dy) * Math.SQRT1_2];
-      };
-      const brickAt = (x: number, y: number, w: number, h: number) => {
-        const poly = clipToBox([turn([x, y]), turn([x + w, y]), turn([x + w, y + h]), turn([x, y + h])], X0, Y0, X0 + WW, Y0 + HH);
-        return poly.length >= 3 ? path(polyline(poly, true), 0.9) : "";
-      };
-      let s = "";
-      for (let m = -8; m <= 8; m++)
-        for (let k = -14; k <= 14; k++) {
-          const ox = 150 + (k + 4 * m) * u, oy = 156 + k * u;
-          // Only bricks that can reach the panel (turning keeps the distance to the centre).
-          if (Math.hypot(ox + u - 150, oy + u / 2 - 156) > 190) continue;
-          s += brickAt(ox, oy, 2 * u - J, u - J) + brickAt(ox + 2 * u, oy - u, u - J, 2 * u - J);
-        }
-      return ["Herringbone Bond", "Stretchers laid at right angles, zigzagging", "herringbone", s] as [string, string, string, string];
-    })(),
+  // Units: 1 = 1 mm at 0.3 scale (stretcher 225 with its joint, header 112.5, course 75), on a 240 panel.
+  const bonds: [string, string, Bond][] = [
+    ["Stretcher Bond", "Every course stretchers, each over the joint below", "stretcher"],
+    ["English Bond", "A course of stretchers, a course of headers", "english"],
+    ["Flemish Bond", "Header and stretcher in every course, headers centred over stretchers", "flemish"],
+    ["Header Bond", "Every course headers, each over the joint below", "header"],
+    ["Herringbone Bond", "Stretchers laid at right angles, zigzagging", "herringbone"],
   ];
-  return bonds.map(([title, how, key, bricks]) => {
-    const id = `c${key}`;
-    const body = `<defs>${clip(id)}</defs><g clip-path="url(#${id})">${bricks}</g>` + rect(X0, Y0, WW, HH, 1.4) + caption(310, title, how, "Brick 215 × 102.5 × 65 mm · 10 mm joints");
+  return bonds.map(([title, how, key]) => {
+    const body = brickBond(key) + caption(310, title, how, "Brick 215 × 102.5 × 65 mm · 10 mm joints");
     return {
       body,
       variant: "brick-bond",
@@ -260,31 +196,7 @@ function trussDesigns(): Set7Design[] {
 
 function ordersDesign(): Set7Design {
   // Vignola: column height in lower diameters (D), entablature a quarter of the column.
-  const orders: [string, number][] = [["Tuscan", 7], ["Doric", 8], ["Ionic", 9], ["Corinthian", 10], ["Composite", 10]];
-  const base = 262;
-  const D = 19; // one lower diameter, px
-  let s = line(18, base, 282, base, 1.2);
-  orders.forEach(([name, h], i) => {
-    const cx = 42 + i * 54;
-    const colH = h * D, top = base - colH;
-    const leafy = name === "Corinthian" || name === "Composite";
-    const capH = leafy ? D * (7 / 6) : name === "Ionic" ? D / 3 : D / 2;
-    const topW = D * (5 / 6);
-    // Base: plinth and torus, half a diameter.
-    s += rect(cx - D * 0.66, base - D / 4, D * 1.32, D / 4, 1) + rect(cx - D * 0.58, base - D / 2, D * 1.16, D / 4, 1);
-    // Shaft: straight for its lower third, tapering to 5/6 D.
-    const shaftBot = base - D / 2, shaftTop = top + capH, third = shaftBot - (shaftBot - shaftTop) / 3;
-    s += path(polyline([[cx - D / 2, shaftBot], [cx - D / 2, third], [cx - topW / 2, shaftTop]]), 1.2) + path(polyline([[cx + D / 2, shaftBot], [cx + D / 2, third], [cx + topW / 2, shaftTop]]), 1.2);
-    // Capital: bell or echinus up to the abacus.
-    const abH = Math.min(D / 4, capH * 0.35);
-    s += path(polyline([[cx - topW / 2, shaftTop], [cx - D * 0.62, top + abH], [cx + D * 0.62, top + abH], [cx + topW / 2, shaftTop]], true), 1) + rect(cx - D * 0.68, top, D * 1.36, abH, 1);
-    if (name === "Ionic" || name === "Composite") s += circle(cx - D * 0.62, top + abH + D * 0.17, D * 0.17, 0.9) + circle(cx + D * 0.62, top + abH + D * 0.17, D * 0.17, 0.9);
-    if (leafy) for (let k = 0; k < 3; k++) s += path(`M${f1(cx - topW / 2 + (k * topW) / 3)} ${f1(shaftTop)}q${f1(topW / 6)} ${f1(-capH * 0.55)} ${f1(topW / 3)} 0`, 0.8);
-    // Entablature, a quarter of the column: architrave, frieze, cornice.
-    const e = colH / 4;
-    s += rect(cx - D * 0.62, top - e * 0.3, D * 1.24, e * 0.3, 1) + rect(cx - D * 0.62, top - e * 0.65, D * 1.24, e * 0.35, 0.8) + rect(cx - D * 0.85, top - e, D * 1.7, e * 0.35, 1);
-    s += text(cx, base + 12, name.toUpperCase(), 5.5, { bold: true }) + text(cx, base + 21, `${h} D`, 5.5);
-  });
+  const s = orders();
   return {
     body: s + caption(318, "The Five Orders", "After Vignola: column heights in lower diameters", "Entablature a quarter of the column"),
     variant: "orders",

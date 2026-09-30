@@ -154,11 +154,14 @@ function run(index: SearchIndex, catalog: readonly ShirtProduct[], opts: SearchO
   const titles = titleKey(catalog);
   const named: { shirt: ShirtProduct; score: number }[] = parsed.exact.map((i) => ({ shirt: catalog[i], score: 100 - catalog[i].rank / n }));
   const titled = new Set<ShirtProduct>();
+  const onlyNamed = parsed.exact.length > 0 && !words.length && !sim && !softKeys.length && !hints.length;
   const scored: { shirt: ShirtProduct; score: number }[] = [];
   for (let i = 0; i < n; i++) {
     const s = catalog[i];
     if (exact.has(i)) continue;
     if (!pass(i)) continue;
+    // An id alone names its design, and only it (nothing else was asked for).
+    if (onlyNamed) continue;
     // With words, a design must match one; "like this" alone orders everything but the design's own family.
     if (words.length && text[i] === 0) continue;
     if (sim && !words.length && s.family === catalog[from].family) continue;
@@ -208,7 +211,8 @@ export function search(index: SearchIndex, catalog: readonly ShirtProduct[], opt
   let out = run(index, catalog, opts, parsed, slots, facets);
   // Never a dead end. Words are ORed (a design needs one), so dropping a known word can't help — only facets
   // go, latest first. Words the catalog doesn't know at all are reported (nothing stood in for them).
-  const droppedTerms = slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
+  // A design named exactly (an id, SKU or number) is found, not a miss: its words aren't "dropped".
+  const droppedTerms = parsed.exact.length || slots.some((s) => s.alts.length) ? [] : slots.map((s) => s.word);
   const droppedFacets: Facet[] = [];
   while (!out.hits.length && facets.length) {
     droppedFacets.push(facets.pop()!);

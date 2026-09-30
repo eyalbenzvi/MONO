@@ -24,6 +24,7 @@ export function QuickAdd({
   compact = false,
   long = false,
   iconOnly = false,
+  fill = false,
   source,
   className = "",
 }: {
@@ -36,6 +37,8 @@ export function QuickAdd({
   long?: boolean;
   /** Just a round "+" (lists with little room); the label says the size. */
   iconOnly?: boolean;
+  /** Under a narrow tile (a strip of tees): as wide as the tile and never wider; the sizes open as a grid inside it. */
+  fill?: boolean;
   /** Where the add happens (analytics). */
   source?: AddSource;
   className?: string;
@@ -63,10 +66,10 @@ export function QuickAdd({
   // Over a card: a small round "+" on touch screens; with a mouse it says
   // what it does (the card shows it on hover — see ProductCard).
   const chip = overlay
-    ? "[@media(hover:hover)_and_(pointer:fine)]:px-3 h-8 min-w-8 justify-center rounded-full bg-black/60 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm hover:bg-black/80"
-    : "h-9 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-white ring-1 ring-white/10 hover:bg-white/15";
+    ? "[@media(hover:hover)_and_(pointer:fine)]:px-3 h-11 min-w-11 justify-center rounded-control bg-black/60 text-xs font-medium text-white ring-1 ring-inset ring-white/20 hover:bg-black/80"
+    : "h-11 min-w-11 rounded-control px-3.5 text-xs font-medium text-white ring-1 ring-inset ring-white/25 hover:bg-white/5";
   const words = (text: string) => (iconOnly ? null : overlay ? <span className="hidden [@media(hover:hover)_and_(pointer:fine)]:inline">{text}</span> : text);
-  const shape = iconOnly ? "!w-9 !px-0 justify-center" : "";
+  const shape = iconOnly ? "!w-11 !px-0 justify-center" : fill ? "w-full min-w-0 justify-center overflow-hidden !px-2" : "";
 
   if (preferred && !open) {
     return (
@@ -77,13 +80,13 @@ export function QuickAdd({
         aria-label={`Add ${shirt.title} to bag, size ${SIZE_LABELS[preferred]}`}
         className={`flex shrink-0 items-center gap-1 whitespace-nowrap ${chip} ${shape} ${className}`}
       >
-        <Icon name="plus" className="h-3.5 w-3.5" /> {words(compact ? SIZE_SHORT[preferred] : `${long ? "Add to bag" : "Add"} · ${SIZE_LABELS[preferred]}`)}
+        <Icon name="plus" className="h-3.5 w-3.5 shrink-0" /> <span className={fill ? "truncate" : undefined}>{words(compact ? SIZE_SHORT[preferred] : `${long ? "Add to bag" : "Add"} · ${SIZE_LABELS[preferred]}`)}</span>
       </button>
     );
   }
 
   return (
-    <div className={overlay ? `${open ? "left-2" : ""} ${className}` : `flex items-center gap-2 ${className}`}>
+    <div className={overlay ? `${open ? "left-2" : ""} ${className}` : `flex items-center gap-2 ${fill ? "w-full min-w-0" : ""} ${className}`}>
       <AnimatePresence initial={false} mode="wait">
         {open ? (
           <motion.div
@@ -93,8 +96,8 @@ export function QuickAdd({
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
             role="group"
-            aria-label={`Add ${shirt.title}: pick a size`}
-            className={`grid grid-cols-4 gap-0.5 ${overlay ? "w-full min-w-0 rounded-2xl bg-black/75 p-1 ring-1 ring-white/20 backdrop-blur-sm" : iconOnly ? "w-44" : "w-48"}`}
+            aria-label={`Add ${shirt.title}: select size`}
+            className={`grid grid-cols-4 gap-0.5 ${overlay ? "w-full min-w-0 rounded-control bg-black/75 p-1 ring-1 ring-white/20 backdrop-blur-sm" : fill ? "w-full min-w-0" : iconOnly ? "w-44" : "w-48"}`}
           >
             {/* Adult sizes here; kids' sizes are on the product page. */}
             {ADULT_SIZES.map((size) => (
@@ -106,12 +109,12 @@ export function QuickAdd({
                   close();
                 }}
                 aria-label={`Size ${SIZE_LABELS[size]}`}
-                className={`h-8 min-w-0 rounded-full px-0 text-xs font-bold ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
+                className={`h-11 min-w-0 rounded-control px-0 text-xs font-medium ${overlay ? "text-white hover:bg-white hover:text-black" : "bg-white/10 text-white ring-1 ring-white/10 hover:bg-white hover:text-black"}`}
               >
                 {SIZE_SHORT[size]}
               </button>
             ))}
-            <button type="button" onClick={close} aria-label="Close sizes" className="flex h-8 min-w-0 items-center justify-center rounded-full text-neutral-300 hover:text-white">
+            <button type="button" onClick={close} aria-label="Close sizes" className="flex h-11 min-w-0 items-center justify-center text-neutral-300 hover:text-white">
               <Icon name="x" className="h-3.5 w-3.5" />
             </button>
           </motion.div>
@@ -127,6 +130,7 @@ export function QuickAdd({
             aria-label={`Quick add ${shirt.title}`}
             aria-expanded={false}
             className={`flex shrink-0 items-center gap-1 ${chip} ${shape} ${overlay ? "ml-auto" : ""}`}
+            data-fill={fill || undefined}
           >
             <Icon name="plus" className="h-3.5 w-3.5" /> {words(long ? "Add to bag" : "Add")}
           </motion.button>

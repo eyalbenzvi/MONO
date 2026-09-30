@@ -1,0 +1,415 @@
+import { expect, test, type Page } from "@playwright/test";
+import { CALIBRATION_IDS, hydrated } from "./helpers";
+import { bands, drawing, engraving, mediumPhoto, photo } from "./fixtures/uploads";
+
+async function choose(page: Page, name: string, buffer: Buffer, mimeType = "image/png") {
+  await page.locator("#upload-file").setInputFiles({ name, mimeType, buffer });
+}
+const ready = (page: Page) => expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 25_000 });
+const primary = (page: Page) => page.locator("[data-primary]");
+
+/** From Start to the bag: a file, Next, M, Add to bag (adding confirms the rights). */
+async function uploadToBag(page: Page, name: string, buffer: Buffer, query = "") {
+  await page.goto(`make/yours/${query}`);
+  await hydrated(page);
+  await choose(page, name, buffer);
+  await ready(page);
+  await primary(page).tap();
+  await expect(page.locator('[data-step="size"]')).toBeVisible();
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await expect(primary(page)).toHaveText(/^Add to bag · M · \$75$/);
+  await primary(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+}
+
+async function checkoutFromMiniBag(page: Page) {
+  await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
+  // Checkout opens on the delivery form, a step in the history (#details).
+  await page.waitForURL(/\/cart\/(#details)?$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Checkout" })).toBeVisible();
+  for (const [label, value] of [
+    ["Email", "ada@example.com"],
+    ["Full name", "Ada Lovelace"],
+    ["Address", "12 Analytical St"],
+    ["City", "Tel Aviv"],
+    ["Postcode / ZIP", "6100001"],
+  ])
+    await page.getByLabel(label, { exact: true }).fill(value);
+  await page.getByLabel("Country", { exact: true }).selectOption({ label: "Israel" });
+  // The one demo disclosure, under the order button.
+  await expect(page.getByText("Preview store. No payment is taken and nothing ships.")).toBeVisible();
+  await page.getByRole("button", { name: /^Place order · \$/ }).tap();
+  await expect(page.getByRole("heading", { level: 1, name: "Thank you, Ada." })).toBeVisible();
+}
+
+test("Make: From ours and From yours are two pages behind one switch; Back leaves Make", async ({ page }) => {
+  await page.goto("shop/");
+  await hydrated(page);
+  await page.goto("make/");
+  await hydrated(page);
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("Personalise");
+  await expect(page.getByRole("heading", { name: "From a date" })).toBeVisible();
+  await expect(page.getByText("Start with a file")).toHaveCount(0);
+  await page.locator("[data-make-switch]").getByRole("link", { name: "Upload" }).tap();
+  await expect(page).toHaveURL(/\/make\/yours\/$/);
+  // One thing to do: the tee with the print area marked, which opens the chooser, as the button does.
+  await expect(page.locator('[data-step="start"]')).toHaveText("Your print");
+  await expect(page.locator('[data-upload-preview="empty"] img')).toHaveCount(1);
+  await expect(page.locator('[data-upload-preview="empty"]')).toContainText("Your print here");
+  await expect(page.locator("[data-primary]")).toHaveText("Choose a picture");
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: /^Your print here/ }).tap()]);
+  expect(chooser.isMultiple()).toBe(false);
+  await expect(page.locator("[data-tile]")).toHaveCount(0);
+  await expect(page.getByText("Words", { exact: true })).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/shop\/$/);
+});
+
+test("From yours, a photo: the print shows while converting, then Style, Print size and Tee; Lines; size, the rights in one line; the bag", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "IMG_2041 heron at dusk.png", await photo());
+  await expect(page).toHaveURL(/#print$/);
+  await ready(page);
+  await expect(page.getByRole("radiogroup", { name: "Style" }).getByRole("radio")).toHaveCount(3);
+  await expect(page.getByRole("radiogroup", { name: "Tee" }).getByText("Suggested")).toBeVisible();
+  await page.getByRole("radio", { name: /^Lines/ }).tap();
+  await ready(page);
+  await expect(primary(page)).toHaveText(/^Next · \$(75|130)$/);
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await page.getByRole("button", { name: "What we won’t print" }).tap();
+  await expect(page.getByRole("dialog", { name: "What we won’t print" })).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).tap();
+  // The title made from the file, as text; a tap edits it.
+  await expect(page.locator("[data-title-text]")).toHaveText("Heron At Dusk");
+  await expect(page.locator("[data-summary]")).toContainText("Lines · Full ·");
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await primary(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+  await page.goto("cart/");
+  await hydrated(page);
+  await expect(page.getByText("Heron At Dusk")).toBeVisible();
+  await expect(page.getByText(/^Your file · (Black|White)/)).toBeVisible();
+});
+
+test("From yours: Back walks back through the steps, and the draft comes back after a reload", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await page.reload();
+  await hydrated(page);
+  // A reload opens the file in hand again, where it was.
+  await expect(page.locator('[data-step="size"]')).toBeVisible();
+  await ready(page);
+  await page.goBack();
+  await expect(page.locator('[data-step="print"]')).toBeVisible();
+  await page.goBack();
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
+  await expect(page.locator("[data-draft]")).toContainText("Carry on with rings.png");
+});
+
+test("From yours: a print that fails shows itself, says why, and offers the fix that passes", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "bands.png", await bands());
+  await ready(page);
+  await page.getByRole("radio", { name: /^Lines/ }).tap();
+  await expect(page.locator('[data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText(/^Gaps too narrow to print \(under 0\.6 mm\): they’d fill in\.$/);
+  await expect(primary(page)).toHaveText("Use Dots", { timeout: 25_000 });
+  await primary(page).tap();
+  await ready(page);
+  await expect(page.getByRole("radio", { name: /^Dots/ })).toHaveAttribute("aria-checked", "true");
+  await expect(primary(page)).toHaveText(/^Next/);
+});
+
+test("From yours: big enough for Small, not Full — it goes to Small and says so; Full isn't offered", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "medium.png", await mediumPhoto());
+  await ready(page);
+  await expect(page.locator("p:not(.sr-only)", { hasText: "Big enough for Small, not Full. We’ve set Small." })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Full/ })).toHaveCount(0, { timeout: 25_000 });
+});
+
+test("From yours: an old address (#start) opens Your print; a file dropped on it opens as one picked", async ({ page }) => {
+  await page.goto("make/yours/#start");
+  await hydrated(page);
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
+  await expect(page.locator('[data-upload-preview="empty"]')).toBeVisible();
+  const buffer = (await drawing()).toString("base64");
+  const dt = await page.evaluateHandle(async (b64) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const t = new DataTransfer();
+    t.items.add(new File([bytes], "dropped.png", { type: "image/png" }));
+    return t;
+  }, buffer);
+  await page.locator('[data-step="start"]').dispatchEvent("drop", { dataTransfer: dt });
+  await expect(page).toHaveURL(/#print$/);
+  await ready(page);
+});
+
+test("From yours: Edit from the bag opens the same file at Your print; rights aren't asked again; Save changes replaces the line", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "Edit" }).first().tap();
+  await expect(page).toHaveURL(/\/make\/yours\/\?edit=.*#print$/);
+  await ready(page);
+  await primary(page).tap();
+  await expect(page).toHaveURL(/#size$/);
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$75$/);
+  await primary(page).tap();
+  // Checkout opens on the delivery form, a step in the history (#details).
+  await page.waitForURL(/\/cart\/(#details)?$/);
+  await expect(page.getByText(/^Your file ·/)).toHaveCount(1);
+});
+
+const bagLines = (page: Page) => page.evaluate(() => ((JSON.parse(localStorage.getItem("mono-cart") ?? "{}").state?.cart ?? []) as { size: string; qty: number; color: string; upload?: { id: string } }[]).map((l) => `${l.color} ${l.size} ×${l.qty}`));
+const editFromBag = async (page: Page) => {
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "Edit" }).first().tap();
+  await ready(page);
+};
+const tee = (page: Page, name: RegExp) => page.getByRole("radiogroup", { name: "Tee" }).getByRole("radio", { name });
+
+test("From yours, Edit from the bag: Both adds the other colour; one tee makes the pair that tee; the line's own size is kept", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  expect(await bagLines(page)).toEqual(["white M ×1"]);
+  // Another size picked elsewhere since: the edit still opens at the line's.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("mono-cart")!);
+    s.state.preferredSize = "S";
+    s.state.selectedSizes = {};
+    localStorage.setItem("mono-cart", JSON.stringify(s));
+  });
+  await editFromBag(page);
+  await tee(page, /^Both/).tap();
+  await primary(page).tap();
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$130$/);
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["white M ×1", "black M ×1"]);
+  await editFromBag(page);
+  await expect(tee(page, /^Both/)).toHaveAttribute("aria-checked", "true");
+  await tee(page, /^Black/).tap();
+  await primary(page).tap();
+  await expect(primary(page)).toHaveText(/^Save changes · M · \$75$/);
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["black M ×1"]);
+});
+
+test("From yours, Edit from the bag of a line removed meanwhile: saving adds it again, never loses it", async ({ page }) => {
+  await uploadToBag(page, "rings.png", await drawing());
+  await editFromBag(page);
+  const edit = page.url();
+  await page.goto("cart/");
+  await hydrated(page);
+  await page.getByRole("button", { name: /^Remove/ }).tap();
+  await page.goto(edit);
+  await hydrated(page);
+  await ready(page);
+  await primary(page).tap();
+  await primary(page).tap();
+  await page.waitForURL(/\/cart\/$/);
+  expect(await bagLines(page)).toEqual(["white M ×1"]);
+});
+
+test("From yours: left for the shop mid-way and back, the picture is there as it was (no draft left by an edit)", async ({ page }) => {
+  // The taste test already done, so Discover shows the tab bar.
+  await page.addInitScript((ids) => {
+    if (localStorage.getItem("mono-taste")) return;
+    localStorage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ids.slice(0, 5), dislikedIds: ids.slice(5, 10), seen: ids.slice(0, 10), calibrationAcknowledged: true, onboardingSeen: true }, version: 6 }));
+  }, CALIBRATION_IDS);
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ }).tap();
+  await ready(page);
+  // Upload has its own bottom bar (no tab bar): away by the wordmark, then the tab bar (Discover shows it once the taste test is done).
+  await page.getByRole("link", { name: "MONO, home" }).tap();
+  await page.waitForURL(/127\.0\.0\.1:\d+\/$/);
+  const tabs = page.getByRole("navigation", { name: "Main" });
+  await tabs.getByRole("link", { name: "Shop", exact: true }).tap();
+  await page.waitForURL(/\/shop\//);
+  await tabs.getByRole("link", { name: "Make", exact: true }).tap();
+  await page.waitForURL(/\/make\/$/);
+  await page.locator("[data-make-switch]").getByRole("link", { name: "Upload" }).tap();
+  await expect(page).toHaveURL(/\/make\/yours\/#print$/);
+  await ready(page);
+  await expect(page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ })).toHaveAttribute("aria-checked", "true");
+  // Added: nothing in hand any more, so the next visit starts afresh.
+  await primary(page).tap();
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await primary(page).tap();
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await expect(page.locator('[data-step="start"]')).toBeVisible();
+  await expect(page.locator("[data-draft]")).toHaveCount(0);
+});
+
+test("From yours: another file picked on Your print and refused says why there; the picture in hand stays", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await choose(page, "notes.jpg", Buffer.from("not a picture"), "image/jpeg");
+  await expect(page.locator("[data-upload-error]")).toHaveText("This file won’t open. Try a JPG or PNG.");
+  await expect(page.locator('[data-upload-preview="ready"]')).toBeVisible();
+});
+
+test("From yours, after the order: checking → cleared; offered → accepted; in the shop with its credit, and in Your offers", async ({ page }) => {
+  await page.clock.install();
+  await uploadToBag(page, "rings.png", await engraving());
+  await checkoutFromMiniBag(page);
+  await expect(page.locator("[data-upload-reviews] [data-review]")).toHaveAttribute("data-review", "queued");
+  await expect(page.getByText("Checking your file. Up to 2 days.")).toBeVisible();
+  // One demo disclosure only (in checkout): the review status carries no demo line of its own.
+  await expect(page.getByText(/simulated/i)).toHaveCount(0);
+  await page.clock.fastForward(21_000);
+  await expect(page.getByText("Cleared. Printing next.")).toBeVisible();
+  await page.getByRole("button", { name: "Offer to the catalogue →" }).tap();
+  const sheet = page.getByRole("dialog", { name: "Offer to the catalogue" });
+  await sheet.getByLabel("Title").fill("Rings and Bars");
+  await sheet.getByLabel(/Credit/).fill("Noa L.");
+  await expect(sheet.getByText("$6 a tee, $10 a pair. You keep the rights. We review it again.")).toBeVisible();
+  const offer = sheet.getByRole("button", { name: "Offer it" });
+  await expect(offer).toBeDisabled();
+  await sheet.getByText("It’s my own work, and I allow MONO to sell it.").tap();
+  await offer.tap();
+  await page.goto("me/");
+  await hydrated(page);
+  await expect(page.locator('[data-offer="offered"]')).toBeVisible();
+  await page.clock.fastForward(31_000);
+  await expect(page.locator('[data-offer="accepted"]')).toBeVisible();
+  await expect(page.getByText("No sales yet.")).toBeVisible();
+  await page.locator('[data-offer="accepted"] a').tap();
+  await expect(page).toHaveURL(/\/shop\/p\/\?id=mono-u-/);
+  await expect(page.getByRole("heading", { name: "Rings and Bars" })).toBeVisible();
+  await expect(page.locator("[data-credit]")).toHaveText("By Noa L. · Open Call 01");
+  await page.evaluate((ids) => {
+    const make = JSON.parse(localStorage.getItem("mono-make")!);
+    const features = Object.values(make.state.offers as Record<string, { features: object }>)[0].features;
+    const taste = JSON.parse(localStorage.getItem("mono-taste") ?? '{"state":{},"version":5}');
+    Object.assign(taste.state, { preferenceVector: features, likedIds: ids.slice(0, 3), dislikedIds: ids.slice(3, 6), seen: ids, calibrationAcknowledged: true });
+    localStorage.setItem("mono-taste", JSON.stringify(taste));
+  }, CALIBRATION_IDS);
+  await page.goto("shop/");
+  await hydrated(page);
+  await expect(page.locator('main a[href*="mono-u-"]').first()).toBeAttached();
+  await page.goto("me/");
+  await hydrated(page);
+  await page.locator('[data-offer="accepted"]').getByRole("button", { name: "Withdraw" }).tap();
+  await expect(page.locator("[data-offers]")).toHaveCount(0);
+});
+
+for (const [force, line] of [
+  ["refuse:logo", "It has someone else’s logo."],
+  ["refuse:hate", "It targets people."],
+  ["person", "A person is looking at this one."],
+] as const)
+  test(`From yours: ?review=${force} shows "${line}"`, async ({ page }) => {
+    await page.clock.install();
+    await uploadToBag(page, "rings.png", await drawing(), `?review=${force}`);
+    await checkoutFromMiniBag(page);
+    await page.clock.fastForward(21_000);
+    await expect(page.getByText(line)).toBeVisible();
+    if (force.startsWith("refuse")) {
+      await expect(page.getByText("We can’t print this one. Nothing was charged.")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Upload another" })).toHaveAttribute("href", /\/make\/yours\/\?replace=/);
+    }
+  });
+
+test("From yours: a brand in the file name never refuses the picture; it just isn't the title", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "nike-logo.png", await drawing());
+  await ready(page);
+  await expect(page.locator("[data-upload-error]")).toHaveCount(0);
+  await primary(page).tap();
+  await expect(page.locator("[data-title-text]")).toHaveText("Your Drawing");
+});
+
+test("No CSP violation on the Make pages, the upload worker and an SVG included", async ({ page }) => {
+  await page.addInitScript(() => document.addEventListener("securitypolicyviolation", (e) => ((window as unknown as { __csp: string[] }).__csp ??= []).push(`${e.violatedDirective} ${e.blockedURI}`)));
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  for (const path of ["make/", "make/taste/", "make/code/", "make/line/", "make/voice/", "make/house/", "make/number/", "make/place/", "make/ascii/", "make/sky/"]) {
+    await page.goto(path);
+    await hydrated(page);
+    expect(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? []), path).toEqual([]);
+  }
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await page.goto("make/yours/");
+  await hydrated(page);
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="#fff"/><g fill="none" stroke="#000" stroke-width="10"><circle cx="150" cy="170" r="110"/><circle cx="150" cy="170" r="70"/><path d="M40 360h220M60 330h180"/></g></svg>');
+  await choose(page, "circles.svg", svg, "image/svg+xml");
+  await expect(page.locator('[data-upload-preview="ready"], [data-upload-preview="failed"]')).toBeVisible({ timeout: 25_000 });
+  expect(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? [])).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("From yours: an SVG with a script is refused", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "bad.svg", Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="10" height="10"/></svg>'), "image/svg+xml");
+  await expect(page.locator("[data-fix-card] [data-upload-line]")).toHaveText("This SVG has parts we can’t print. Try it saved as a PNG.", { timeout: 25_000 });
+  await expect(primary(page)).toHaveText("Choose another file");
+});
+
+test("A bag line whose file is gone from this device leaves the bag, said once", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem("seeded")) return;
+    sessionStorage.setItem("seeded", "1");
+    localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id: "make-yours", size: "M", color: "white", qty: 1, upload: { id: "gone1234", mode: "line", size: "full", hash: "0a1b2c3d" } }] }, version: 6 }));
+  });
+  await page.goto("cart/");
+  await hydrated(page);
+  await expect(page.getByText("A file was cleared from this device, so it left the bag.")).toBeVisible();
+  await expect(page.getByText(/Your file ·/)).toHaveCount(0);
+});
+
+test("Analytics carry the kind and the tier, never the file's name, title or pixels", async ({ page }) => {
+  await uploadToBag(page, "grandma's garden 1987.png", await drawing());
+  const layer = await page.evaluate(() => JSON.stringify(window.dataLayer ?? []));
+  for (const e of ["upload_start", "upload_preview", "yours_step", "upload_rights_confirm"]) expect(layer).toContain(`"${e}"`);
+  expect(layer).toContain("white-upload");
+  // Timestamps left out: a millisecond clock can contain "1987" by chance.
+  expect(layer.toLowerCase().replace(/"ts":\d+/g, "")).not.toMatch(/grandma|garden|1987|data:image/);
+});
+
+test("From yours by keyboard: tiles, choices and size without a pointer", async ({ page }) => {
+  await page.goto("make/yours/");
+  await hydrated(page);
+  await choose(page, "rings.png", await drawing());
+  await ready(page);
+  await page.getByRole("radio", { name: /^Small/ }).focus();
+  await page.keyboard.press("Enter");
+  // Small is converted afresh: the last print stays "ready" on the stage meanwhile, so wait for Next itself (enabled only once it's done).
+  await expect(primary(page)).toBeEnabled({ timeout: 25_000 });
+  await expect(primary(page)).toHaveText(/^Next/);
+  // Under load a fresh conversion can still start as Next is pressed (Next then waits): press again until Size opens.
+  await expect(async () => {
+    await primary(page).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-step="size"]')).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(page.locator('[data-step="size"]')).toBeFocused();
+  await page.getByRole("radio", { name: /^M\b/ }).first().focus();
+  await page.keyboard.press("Enter");
+  await primary(page).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+});

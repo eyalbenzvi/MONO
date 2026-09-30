@@ -53,11 +53,15 @@ export async function hydrated(page: Page) {
   await page.locator("[data-hydrated]").waitFor({ state: "attached" });
 }
 
-/** Saved lives in the personal area now: the person icon, then "Edit" (the Saved drawer). */
-export async function openSaved(page: import("@playwright/test").Page) {
-  await page.getByRole("link", { name: "You: taste, saved, orders" }).click();
+/** Saved lives on You (/me/), in full: the You tab (or the address when the tab bar is hidden), then the list. */
+export async function openSaved(page: import("@playwright/test").Page, { hint = false } = {}) {
+  // The first-open swipe hint moves the first row: tests that swipe turn it off (e2e/saved-swipe covers it).
+  if (!hint) await page.evaluate(() => localStorage.setItem("mono-saved-hint", "1"));
+  const tab = page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "You" });
+  if (await tab.count()) await tab.click();
+  else await page.goto("me/");
   await page.waitForURL(/\/me\/$/);
-  await page.getByRole("button", { name: "Edit saved" }).click();
+  await page.getByRole("list", { name: "Saved" }).waitFor();
 }
 
 /** A taste that leans somewhere (pictures of nature, classic, figurative), for personal lines. */
@@ -65,11 +69,18 @@ export const LEANING: Record<string, number> = Object.fromEntries(
   index.keys.map((k: string) => [k, { nature: 0.82, pictorial: 0.78, classic: 0.74, figurative: 0.7 }[k] ?? 0.42]),
 );
 
-/** Opens the shop's filter, ticks these categories and closes it. */
+/** Opens the shop's filter (the bottom row's "Filter"), ticks these categories and closes it. */
 export async function pickCategories(page: Page, labels: string[]) {
-  await page.getByRole("button", { name: /^Categories/ }).click();
+  await page.getByRole("button", { name: /^Filter/ }).click();
   const sheet = page.getByRole("dialog", { name: "Categories" });
   for (const l of labels) await sheet.getByRole("checkbox", { name: new RegExp(`^${l}`) }).click();
   await page.keyboard.press("Escape");
   await expect(sheet).toHaveCount(0);
+}
+
+/** A caption line's field ("Edit the text under the print", opened when it's closed): 0 the title, 1 and 2 the lines under it. */
+export async function captionLine(page: Page, i: 0 | 1 | 2) {
+  const toggle = page.locator("[data-caption] > button");
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+  return page.locator(`[data-cap-line="${i}"]`);
 }

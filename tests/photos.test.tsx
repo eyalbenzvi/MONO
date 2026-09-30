@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -52,7 +52,8 @@ describe("photographs: where they come from", () => {
       expect(src, s.id).toBeDefined();
       expect(s.photo!.url).toBe(`https://collections.si.edu/search/detail/edanmdm:${src!.record}`);
       expect(s.photo!.credit).toBe(src!.credit);
-      expect(s.subject).toBe(src!.subject);
+      // The record's subject (where it is the title too, with the title's typographic apostrophe: scripts/gen/titles houseTitle).
+      expect(s.subject.replace(/’/g, "'")).toBe(src!.subject);
       expect(s.photo!.credit).toMatch(/Smithsonian|FONZ|Zoo|Museum/);
     }
     // Drawn designs carry no photo credit.
@@ -179,8 +180,8 @@ describe("taste store v4: the new dimension, for people who already have a profi
     expect(s.preferenceVector).toEqual({ ...v3, photographic: 0.5 });
     expect(s.likedIds).toEqual([W1]);
     s.toggleSaved(B4);
-    // Stored at the current version (v5: see the content overhaul's migration in tests/overhaul).
-    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(5);
+    // Stored at the current version (v6: the gamification removal; see tests/r2-stage1).
+    expect(JSON.parse(localStorage.getItem("mono-taste")!).version).toBe(6);
   });
 
   it("someone who finished the taste test before the photographs isn't sent back into it; the photos are dealt next", async () => {

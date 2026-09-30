@@ -8,6 +8,7 @@ import { makeScorer } from "@/lib/recommendation";
 import type { ShirtProduct, UserProfileVector } from "@/types/shirt";
 import { search } from "./engine";
 import type { SearchIndex } from "./format";
+import { labelCase } from "./labels";
 import { LEXICON } from "./lexicon";
 
 export { loadSearchIndex } from "./load";
@@ -34,7 +35,7 @@ export function subjectChips(index: SearchIndex, catalog: readonly ShirtProduct[
       const count = !r.relaxed && r.mode === "text" && r.total <= 0.4 * catalog.length ? r.total : 0;
       if (count >= SUBJECT_MIN && !seen.has(phrase)) {
         seen.add(phrase);
-        list.push({ label: phrase.charAt(0).toUpperCase() + phrase.slice(1), query: phrase, count });
+        list.push({ label: labelCase(phrase), query: phrase, count });
       }
     }
     subjects.set(index, list);

@@ -4,13 +4,9 @@
  * byte-identical when the catalog is regenerated.
  */
 import type { SourceCategory } from "../../types/shirt";
-import {
-  IH, IW, M, W, H, X0, Y0,
-  clamp01, int, n1, pick, polygon, pts, range, smooth,
-  type Design, type Generator, type Rng, type Signature,
-  POLYGON, an, scale, screen,
-} from "./core";
+import { IH, IW, W, H, X0, Y0, clamp01, int, n1, pick, polygon, pts, range, smooth, type Generator, type Rng, POLYGON, an, scale, screen } from "./core";
 import { MONO, SANS, measure, sizeToFit } from "./art";
+import { facadeGrid as facadeGridDrawing } from "../../lib/custom/draw/architecture";
 
 /* a) Architectural grids & perspective ------------------------------ */
 
@@ -19,29 +15,14 @@ const facadeGrid: Generator = (rng, ink) => {
   const rows = int(rng, 5, 16);
   const fillP = range(rng, 0.08, 0.65);
   const sw = pick(rng, [1, 1.5, 2, 3]);
-  const cw = IW / cols;
-  const ch = IH / rows;
-  const gap = range(rng, 0.14, 0.32) * Math.min(cw, ch);
-  let filled = 0;
-  let cells = `<rect x="${X0}" y="${Y0}" width="${IW}" height="${IH}"/>`;
-  const bandRows = new Set(Array.from({ length: rows }, (_, r) => r).filter(() => rng() < 0.1));
-  for (let r = 0; r < rows; r++) {
-    if (bandRows.has(r)) {
-      cells += `<rect x="${X0}" y="${n1(Y0 + r * ch + gap / 2)}" width="${IW}" height="${n1(ch - gap)}" fill="${ink}"/>`;
-      filled += cols;
-      continue;
-    }
-    for (let c = 0; c < cols; c++) {
-      const on = rng() < fillP;
-      if (on) filled++;
-      cells += `<rect x="${n1(X0 + c * cw + gap / 2)}" y="${n1(Y0 + r * ch + gap / 2)}" width="${n1(cw - gap)}" height="${n1(ch - gap)}"${on ? ` fill="${ink}"` : ""}/>`;
-    }
-  }
+  const gap = range(rng, 0.14, 0.32) * Math.min(IW / cols, IH / rows);
+  const bands = new Set(Array.from({ length: rows }, (_, r) => r).filter(() => rng() < 0.1));
+  const { body, filled } = facadeGridDrawing({ cols, rows, gap, sw, bands, filled: () => rng() < fillP, box: { x: X0, y: Y0, w: IW, h: IH }, ink });
   const fillRatio = filled / (cols * rows);
   const count = (cols * rows) / 192;
   const density = clamp01(count * 0.65 + fillRatio * 0.45);
   return {
-    body: `<g fill="none" stroke="${ink}" stroke-width="${sw}">${cells}</g>`,
+    body,
     variant: "facade",
     sig: { key: "facade", vec: [(cols - 4) / 8, (rows - 5) / 11, fillRatio] },
     description: `Brutalist facade grid of ${cols * rows > 80 ? "tight" : "wide"} bays, ${scale(fillRatio, 0.08, 0.65, ["mostly open", "half filled in", "heavily filled in"])}.`,

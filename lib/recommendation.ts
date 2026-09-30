@@ -1,21 +1,19 @@
+import { fnv1aUnits } from "@/lib/hash";
 import {
   FEATURE_KEYS,
-  type FeatureKey,
   type FeatureVector,
-  type RecommendationStrategy,
   type ShirtProduct,
   type SwipeAction,
   type UserProfileVector,
 } from "@/types/shirt";
+import { clamp01 } from "@/lib/math";
 
 export const LIKE_RATE = 0.15;
 export const DISLIKE_RATE = 0.08;
 /** "Make it yours" on a design: a weak like of it (a third of one), once per design. */
 export const CUSTOM_LIKE = 0.05;
-export const EXPLORE_PROBABILITY = 0.2;
 export const CALIBRATION_SIZE = 10;
 
-const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 
 /**
@@ -204,50 +202,6 @@ export function getCalibrationQueue<T extends Pick<ShirtProduct, "id" | "feature
   return chosen;
 }
 
-export interface NextCardResult {
-  shirt: ShirtProduct;
-  strategy: Exclude<RecommendationStrategy, "calibration">;
-  score: number;
-}
-
-/**
- * Choose the next card from the unseen pool.
- *  - greedy:  highest match score to the user vector.
- *  - explore: the shirt most orthogonal to the user vector (centered cosine
- *             closest to 0) — probes taste dimensions the profile hasn't
- *             committed to, without serving an obvious anti-match.
- * When `strategy` is omitted it is rolled: 80% greedy / 20% explore.
- */
-export function getNextCard(
-  userVec: UserProfileVector,
-  availableShirts: ShirtProduct[],
-  seenIds: Iterable<string>,
-  strategy?: "greedy" | "explore",
-  rng: () => number = Math.random,
-): NextCardResult | null {
-  const seen = new Set(seenIds);
-  const unseen = availableShirts.filter((s) => !seen.has(s.id));
-  if (unseen.length === 0) return null;
-
-  const chosenStrategy = strategy ?? (rng() < EXPLORE_PROBABILITY ? "explore" : "greedy");
-
-  const score = makeScorer(userVec);
-  let best = unseen[0];
-  let bestKey = chosenStrategy === "greedy" ? -Infinity : Infinity;
-  for (const shirt of unseen) {
-    let key: number;
-    if (chosenStrategy === "greedy") {
-      const r = score(shirt.features);
-      key = r.score + r.raw / 1000;
-    } else key = Math.abs(centeredCosine(userVec, shirt.features));
-    if (chosenStrategy === "greedy" ? key > bestKey : key < bestKey) {
-      bestKey = key;
-      best = shirt;
-    }
-  }
-  return { shirt: best, strategy: chosenStrategy, score: score(best.features).score };
-}
-
 /** Per-feature contribution breakdown for the debug panel. */
 export function similarityBreakdown(userVec: UserProfileVector, features: FeatureVector) {
   const dot = FEATURE_KEYS.reduce((s, k) => s + userVec[k] * features[k], 0);
@@ -318,9 +272,7 @@ export const SEEN_PENALTY = 0.3;
 
 /** A stable pseudo-random number in [0, 1) for a string (FNV-1a). */
 export function hash01(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return (h >>> 0) / 2 ** 32;
+  return fnv1aUnits(s) / 2 ** 32;
 }
 
 /** Today's rotation seed (changes at local midnight), personal to this browser: everyone gets their own order. */
@@ -334,28 +286,6 @@ export function daySeed(d = new Date()): string {
     /* storage blocked: a shared order for today */
   }
   return `${salt}:${day}`;
-}
-
-/**
- * Prints closest in style to `shirt` (centered cosine), excluding itself.
- * Top-k partial selection (a small sorted buffer) rather than a full sort.
- * The product page uses the generator's precomputed list; this stays for
- * the generator and tests.
- */
-export function similarShirts(shirt: ShirtProduct, shirts: ShirtProduct[], n = 4): ShirtProduct[] {
-  const better = (a: { s: ShirtProduct; sim: number }, b: { s: ShirtProduct; sim: number }) =>
-    a.sim > b.sim || (a.sim === b.sim && a.s.id.localeCompare(b.s.id) < 0);
-  const top: { s: ShirtProduct; sim: number }[] = [];
-  for (const s of shirts) {
-    if (s.id === shirt.id) continue;
-    const item = { s, sim: centeredCosine(shirt.features, s.features) };
-    if (top.length === n && !better(item, top[n - 1])) continue;
-    let i = top.length;
-    while (i > 0 && better(item, top[i - 1])) i--;
-    top.splice(i, 0, item);
-    if (top.length > n) top.pop();
-  }
-  return top.map(({ s }) => s);
 }
 
 /**
@@ -389,18 +319,3 @@ export function profileSharpness(userVec: UserProfileVector): number {
   return clamp01(spread / (FEATURE_KEYS.length * 0.25));
 }
 
-/** The feature a swipe moved most — used for the "learning" chip after each swipe. */
-export function biggestShift(before: UserProfileVector, after: UserProfileVector, action: SwipeAction) {
-  let best: FeatureKey | null = null;
-  let bestDelta = 0;
-  for (const k of FEATURE_KEYS) {
-    const d = after[k] - before[k];
-    // like → largest increase; pass → largest decrease
-    const signed = action === "like" ? d : -d;
-    if (signed > bestDelta) {
-      bestDelta = signed;
-      best = k;
-    }
-  }
-  return best;
-}

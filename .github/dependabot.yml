@@ -1,0 +1,7 @@
+# The workflows' actions are pinned to commit SHAs (a moved tag can't change what runs); Dependabot proposes the updates.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

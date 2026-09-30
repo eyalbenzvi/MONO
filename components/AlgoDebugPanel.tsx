@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FORCE_KEY, REFUSE_REASONS } from "@/lib/upload/keys";
 import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { getShirtById } from "@/lib/catalog";
@@ -54,7 +55,7 @@ function DebugPanel() {
             className="no-scrollbar pointer-events-auto mt-2 max-h-[62dvh] w-[min(92vw,340px)] origin-top-left overflow-y-auto rounded-2xl border border-white/10 bg-ink-900/95 p-4 font-mono text-[11px] text-neutral-300 shadow-2xl shadow-black backdrop-blur-xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Algo debug</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-white">Algo debug</span>
               <button
                 type="button"
                 onClick={reset}
@@ -73,7 +74,7 @@ function DebugPanel() {
 
             <Section title="User vector">
               {lastUpdate && (
-                <p className="mb-1.5 text-[10px] text-neutral-500">
+                <p className="mb-1.5 text-[10px] text-muted">
                   Δ from last {lastUpdate.action === "like" ? "♥ like" : "✕ dislike"} ·{" "}
                   {getShirtById(lastUpdate.shirtId)?.title}
                 </p>
@@ -97,7 +98,7 @@ function DebugPanel() {
                       <span className="w-9 text-right text-white">{v.toFixed(3)}</span>
                       <span
                         className={`w-11 text-right ${
-                          delta > 0.0005 ? "font-semibold text-white" : delta < -0.0005 ? "text-neutral-400" : "text-neutral-600"
+                          delta > 0.0005 ? "font-medium text-white" : delta < -0.0005 ? "text-neutral-400" : "text-muted"
                         }`}
                       >
                         {delta >= 0 ? "+" : ""}
@@ -116,7 +117,7 @@ function DebugPanel() {
                   <Stat label="Centered" value={centeredCosine(vector, shirt.features).toFixed(3)} />
                   <Stat label="Match" value={`${matchScore(vector, shirt.features)}%`} />
                 </div>
-                <p className="mb-1.5 text-[10px] text-neutral-500">
+                <p className="mb-1.5 text-[10px] text-muted">
                   Strategy: <span className="text-white">{top.strategy}</span> · dot-product share per feature
                 </p>
                 <ul className="space-y-1">
@@ -125,7 +126,7 @@ function DebugPanel() {
                     .map((row) => (
                       <li key={row.key} className="flex items-center gap-2">
                         <span className="w-[74px] shrink-0 truncate text-neutral-400">{FEATURE_LABELS[row.key]}</span>
-                        <span className="w-[86px] shrink-0 text-neutral-500">
+                        <span className="w-[86px] shrink-0 text-muted">
                           {row.user.toFixed(2)}×{row.shirt.toFixed(2)}
                         </span>
                         <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
@@ -146,18 +147,19 @@ function DebugPanel() {
                     .reverse()
                     .map((h) => (
                       <li key={h.timestamp + h.shirtId} className="flex justify-between gap-2">
-                        <span className={h.action === "like" ? "font-semibold text-white" : "text-neutral-400"}>
+                        <span className={h.action === "like" ? "font-medium text-white" : "text-neutral-400"}>
                           {h.action === "like" ? "♥" : "✕"}
                         </span>
-                        {h.source === "shop" && <span className="text-neutral-500">shop</span>}
+                        {h.source === "shop" && <span className="text-muted">shop</span>}
                         <span className="flex-1 truncate">{getShirtById(h.shirtId)?.title}</span>
-                        <span className="text-neutral-500">{h.strategy.slice(0, 5)}</span>
+                        <span className="text-muted">{h.strategy.slice(0, 5)}</span>
                         <span className="w-9 text-right">{h.matchScore}%</span>
                       </li>
                     ))}
                 </ul>
               </Section>
             )}
+            <ReviewForce />
           </motion.div>
         )}
       </AnimatePresence>
@@ -181,8 +183,8 @@ function DebugPanel() {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg bg-white/[0.04] px-1 py-1.5 ring-1 ring-white/5">
-      <div className="text-[12px] font-semibold text-white">{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-neutral-500">{label}</div>
+      <div className="text-[12px] font-medium text-white">{value}</div>
+      <div className="text-[9px] uppercase tracking-wider text-muted">{label}</div>
     </div>
   );
 }
@@ -190,8 +192,44 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-3 border-t border-white/10 pt-3">
-      <p className="mb-2 truncate text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-400">{title}</p>
+      <p className="mb-2 truncate text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-400">{title}</p>
       {children}
     </div>
+  );
+}
+
+/** Uploads: force the next simulated review (and Open Call) result, as `?review=` does. Kept for the tab. */
+function ReviewForce() {
+  const [value, setValue] = useState(() => {
+    try {
+      return sessionStorage.getItem(FORCE_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const options = ["", "person", ...REFUSE_REASONS.map((r) => `refuse:${r}`), "accept", "decline"];
+  return (
+    <Section title="Upload review">
+      <select
+        aria-label="Force the upload review"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          try {
+            if (e.target.value) sessionStorage.setItem(FORCE_KEY, e.target.value);
+            else sessionStorage.removeItem(FORCE_KEY);
+          } catch {
+            /* storage unavailable */
+          }
+        }}
+        className="h-8 w-full rounded-lg bg-white/[0.06] px-2 text-[11px] text-white ring-1 ring-white/10"
+      >
+        {options.map((o) => (
+          <option key={o} value={o} className="bg-ink-900">
+            {o || "As the checks say"}
+          </option>
+        ))}
+      </select>
+    </Section>
   );
 }

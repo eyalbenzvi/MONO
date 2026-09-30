@@ -1,40 +1,49 @@
 "use client";
 
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
-import { ColorSelector, STAGE_BG, useShowMatch } from "@/components/ui";
-import { FREE_SHIPPING_THRESHOLD, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
-import { SHIRTS, dedupeByFamily, familiesOf, getShirtById } from "@/lib/catalog";
-import { topPicks } from "@/lib/match";
-import { ShirtStrip } from "@/components/ShirtStrip";
+import { BUTTON_PRIMARY, TEXT_ACTION, useShowMatch } from "@/components/ui";
+import { FREE_SHIPPING_TEES, MAX_QTY, cartLines, cartTotals, type CartLine } from "@/lib/cart";
 import { STORE_POLICY } from "@/lib/store-policy";
 import { useCartStore } from "@/store/cartStore";
-import { useTasteStore } from "@/store/tasteStore";
 import { useHydrated, useUiStore } from "@/store/useUiStore";
+import { useDock } from "@/hooks/useDock";
 import { apiConfigured, fetchReferral, isEmail } from "@/lib/api";
-import { arrivalRange, formatArrival } from "@/lib/delivery";
-import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize } from "@/types/shirt";
+import { arrivalLine, formatArrival } from "@/lib/delivery";
+import { codeOfCountry, countryConflicts, countryFromLanguages, type CountryCode } from "@/lib/checkout";
+import { ADULT_SIZES, COLOR_LABELS, KID_SIZES, SIZE_LABELS, type Customer, type Order, type ShirtProduct, type ShirtSize, type UploadRef } from "@/types/shirt";
 import { formatPrice } from "@/lib/format";
-import { itemOf, trackEcommerce, type AddSource } from "@/lib/analytics";
+import { itemOf, track, trackEcommerce } from "@/lib/analytics";
 import { productHref } from "@/lib/catalog";
-import { customKey } from "@/lib/cart";
+import { customKey, lineKey } from "@/lib/cart";
+import { ReviewStatus, useOrderTickets } from "@/components/upload/ReviewStatus";
+import { useMakeStore } from "@/store/makeStore";
 import { customTitle, encodeMake, type CustomSpec } from "@/lib/custom/spec";
 
 // A made-for-you line's picture draws its own print; its code loads only when the bag holds one.
 const CustomLineMockup = lazy(() => import("@/components/custom/CustomLineMockup"));
 
 /** A line's name: a made-for-you print's own title ("Your Moon · 14 March 1991"), else the design's. */
-const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec }) => (l.custom ? customTitle(l.custom) : l.shirt.title);
-/** A line's key (a made-for-you print's spec makes it a line of its own). */
-const lineKey = (l: { id: string; size: string; color: string; custom?: CustomSpec }) => `${l.id}-${l.size}-${l.color}-${customKey(l.custom)}`;
-/** Where a line leads: its product page, a made-for-you one with its print in the address. */
-const lineHref = (l: { id: string; custom?: CustomSpec }) => (l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}` : productHref(l.id));
+const lineTitle = (l: { shirt: ShirtProduct; custom?: CustomSpec; upload?: UploadRef }) =>
+  l.upload ? (useMakeStore.getState().uploads[l.upload.id]?.title ?? "Your file") : l.custom ? customTitle(l.custom) : l.shirt.title;
+/** Where a line leads: its product page in the line's colour, a made-for-you one with its print in the address and the line it edits, an upload its editor. */
+const lineHref = (l: CartLine) =>
+  l.upload ? `/make/yours/?edit=${l.upload.id}` : l.custom ? `${productHref(l.id)}?make=${encodeMake(l.custom)}&edit=${encodeURIComponent(lineKey(l))}` : `${productHref(l.id)}?c=${l.color}`;
+
+const UploadMockup = lazy(() => import("@/components/upload/UploadMockup"));
 
 function LineMockup({ line, className }: { line: CartLine; className?: string }) {
+  const label = useMakeStore((s) => (line.upload ? s.uploads[line.upload.id]?.title : undefined));
+  if (line.upload)
+    return (
+      <Suspense fallback={<div className={className} style={{ aspectRatio: "3 / 4" }} />}>
+        <UploadMockup shirt={line.shirt} uploadId={line.upload.id} color={line.color} className={className} label={label} />
+      </Suspense>
+    );
   if (!line.custom) return <TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />;
   return (
     <Suspense fallback={<TeeMockup shirt={line.shirt} color={line.color} sizes={SIZES.thumb} className={className} />}>
@@ -45,12 +54,33 @@ function LineMockup({ line, className }: { line: CartLine; className?: string })
 
 type Step = "bag" | "details" | "done";
 
+/** The uploaded prints of an order and where their review stands. */
+function UploadReviews({ order }: { order: string }) {
+  const tickets = useOrderTickets(order);
+  if (!tickets.length) return null;
+  return (
+    <div className="mt-5 w-full space-y-2" data-upload-reviews>
+      {tickets.map((t) => (
+        <ReviewStatus key={t.id} ticket={t} offer={(id) => useUiStore.getState().openOffer(id)} />
+      ))}
+    </div>
+  );
+}
+
+/** begin_checkout, from the bag's totals (the Checkout button and "Buy now" alike). */
+const beginCheckout = (t: Pick<ReturnType<typeof cartTotals>, "total" | "discount" | "shipping" | "lines" | "pairs">) =>
+  trackEcommerce("begin_checkout", { value: t.total, discount: t.discount, shipping: t.shipping, items: ecomItems(t.lines, t.pairs) });
+
+/** The one demo disclosure, under the order button (nowhere else). */
+export const PREVIEW_LINE = "Preview store. No payment is taken and nothing ships.";
+
 export function CartView() {
   const hydrated = useHydrated();
+  // lineTitle reads the uploads' titles: subscribed, so a rename shows here (and in the form and the confirmation).
+  useMakeStore((s) => s.uploads);
   const cart = useCartStore((s) => s.cart);
-  const lastOrder = useCartStore((s) => s.lastOrder);
-  const setCartQty = useCartStore((s) => s.setCartQty);
   const changeCartItem = useCartStore((s) => s.changeCartItem);
+  const setCartQty = useCartStore((s) => s.setCartQty);
   const placeOrder = useCartStore((s) => s.placeOrder);
   const [step, setStep] = useState<Step>("bag");
   const [placed, setPlaced] = useState<Order | null>(null);
@@ -66,19 +96,36 @@ export function CartView() {
     heading.current?.focus({ preventScroll: true });
     heading.current?.scrollIntoView({ block: "nearest" });
   }, [step]);
-  // Adding from the empty bag's suggestions swaps the page for the bag: the
-  // control that had focus is gone, so focus goes to the bag's heading.
-  const wasEmpty = useRef(cart.length === 0);
-  useEffect(() => {
-    if (wasEmpty.current && cart.length > 0 && (!document.activeElement || document.activeElement === document.body)) heading.current?.focus({ preventScroll: true });
-    wasEmpty.current = cart.length === 0;
-  }, [cart.length]);
+  // The delivery form is a step in the history (#details), so a phone's Back returns to the bag, keeping what was typed.
   const go = (next: Step) => {
     moved.current = true;
+    const here = window.location.hash === "#details";
+    if (next === "details" && !here) window.history.pushState(window.history.state, "", `${window.location.pathname}${window.location.search}#details`);
+    else if (next === "bag" && here) return window.history.back();
+    else if (next === "done" && here) {
+      // The form's step is left behind (not kept as a second bag entry): one Back leaves the confirmation.
+      setStep(next);
+      return window.history.back();
+    }
     setStep(next);
   };
+  useEffect(() => {
+    const on = () => {
+      moved.current = true;
+      setStep((s) => (s === "done" ? s : window.location.hash === "#details" && useCartStore.getState().cart.length ? "details" : "bag"));
+    };
+    window.addEventListener("popstate", on);
+    return () => window.removeEventListener("popstate", on);
+  }, []);
+  // Arriving at #details (a reload, or Forward): the form is memory-only, so it opens at the bag.
+  useEffect(() => {
+    if (window.location.hash === "#details") window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+  }, []);
 
   const { lines, count, subtotal, discount, pairs, shipping, total } = cartTotals(cart);
+  const pairCount = pairs.reduce((n, p) => n + p.pairs, 0);
+  const known = useShowMatch();
+  const review = lines.some((l) => l.upload);
 
   // "Buy now" and the add confirmation's Checkout: straight to the delivery form (also when already here).
   const checkoutRequested = useUiStore((s) => s.checkoutRequested);
@@ -88,290 +135,297 @@ export function CartView() {
     const t = cartTotals(useCartStore.getState().cart);
     if (!t.count) return;
     go("details");
-    trackEcommerce("begin_checkout", { value: t.total, discount: t.discount, shipping: t.shipping, items: ecomItems(t.lines, t.pairs) });
+    beginCheckout(t);
   }, [hydrated, checkoutRequested]);
 
-  // view_cart once per visit to the bag, when it has loaded.
+  // view_cart once per visit, and only when the bag itself is on screen (not when Buy now opens the form directly).
   const viewedCart = useRef(false);
   useEffect(() => {
-    if (!hydrated || viewedCart.current) return;
-    viewedCart.current = true;
+    if (!hydrated || viewedCart.current || step !== "bag" || checkoutRequested) return;
     const t = cartTotals(useCartStore.getState().cart);
+    if (!t.count) return;
+    viewedCart.current = true;
     trackEcommerce("view_cart", { value: t.total - t.shipping, items: ecomItems(t.lines, t.pairs) });
-  }, [hydrated]);
+  }, [hydrated, step, checkoutRequested]);
+
+  const bar = useRef<HTMLDivElement>(null);
+  useDock(bar, hydrated && step !== "done");
 
   if (!hydrated) return <div className="flex-1" />;
 
   if (step === "done" && placed) return <Confirmation order={placed} />;
 
+  const toCheckout = () => {
+    track("sticky_checkout_click", { from: "bag" });
+    go("details");
+    beginCheckout({ total, discount, shipping, lines, pairs });
+  };
+
   return (
-    <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
-      <div className={`mx-auto px-4 pb-28 pt-1 ${step !== "done" && count > 0 ? "max-w-3xl lg:max-w-5xl" : "max-w-3xl"}`}>
-        <div className="mb-4 flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-3xl px-4 pb-8 pt-1">
           {step === "details" ? (
-            <button type="button" onClick={() => go("bag")} className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <Icon name="arrow-left" className="h-4 w-4" /> Bag
+            <button type="button" onClick={() => go("bag")} className="-ml-1 inline-flex h-11 min-w-11 items-center px-1 text-sm text-muted hover:text-white">
+              ← Bag
             </button>
           ) : (
-            <Link href="/shop/" className="inline-flex h-9 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-              <Icon name="arrow-left" className="h-4 w-4" /> Continue shopping
+            <Link href="/shop/" className="-ml-1 inline-flex h-11 min-w-11 items-center px-1 text-sm text-muted hover:text-white">
+              ← Shop
             </Link>
           )}
-        </div>
 
-        <h1 ref={heading} tabIndex={-1} className="mb-4 text-2xl font-bold tracking-tight outline-none">
-          {step === "bag" ? "Your bag" : "Delivery details"}
-        </h1>
+          <h1 ref={heading} tabIndex={-1} className="mb-4 mt-1 text-[28px] font-medium leading-tight outline-none">
+            {step === "bag" || count === 0 ? "Your bag" : "Checkout"}
+          </h1>
 
-        {count === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <Icon name="shopping-bag" className="h-10 w-10 text-neutral-600" />
-            <p className="text-sm text-neutral-400">Your bag is empty.</p>
-            <Link href="/shop/" className="flex h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black">
-              Browse the shop
-            </Link>
-            {lastOrder && (
-              <p className="mt-4 text-xs text-neutral-400">
-                Last order {lastOrder.number} · {formatPrice(lastOrder.total)}
+          {count === 0 ? (
+            <p className="py-12 text-base text-neutral-200">Your bag is empty.</p>
+          ) : step === "bag" ? (
+            <>
+              <ul className="border-t border-white/10">
+                <AnimatePresence initial={false}>
+                  {lines.map((line) => (
+                    <motion.li key={lineKey(line)} layout exit={{ opacity: 0, transition: { duration: 0.15 } }} className="flex gap-3 border-b border-white/10 py-3">
+                      <Link tabIndex={-1} aria-hidden href={lineHref(line)} className="w-20 shrink-0 self-start max-[339px]:w-14">
+                        <LineMockup line={line} className="w-full" />
+                      </Link>
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="line-clamp-2 text-sm">{lineTitle(line)}</p>
+                            {/* The colour, in words (change it on the product page); the size is the control below. */}
+                            <p className="text-xs text-muted">
+                              {line.upload ? `Your file · ${COLOR_LABELS[line.color]}` : `${COLOR_LABELS[line.color]} tee`}
+                              {(line.custom || line.upload) && (
+                                <>
+                                  {" · "}
+                                  <Link href={lineHref(line)} className="inline-flex min-h-11 items-center text-neutral-300 underline underline-offset-2 hover:text-white">
+                                    Edit
+                                  </Link>
+                                </>
+                              )}
+                            </p>
+                          </div>
+                          <span className="text-sm tabular-nums">{formatPrice(line.lineTotal)}</span>
+                        </div>
+                        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
+                          <select
+                            value={line.size}
+                            onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
+                            aria-label="Size"
+                            className="h-11 rounded-control bg-transparent px-2 text-sm text-white ring-1 ring-inset ring-white/25"
+                          >
+                            {(
+                              [
+                                ["Adults", ADULT_SIZES],
+                                ["Kids", KID_SIZES],
+                              ] as const
+                            ).map(([label, group]) => (
+                              <optgroup key={label} label={label} className="bg-ink-900">
+                                {group.map((s) => (
+                                  <option key={s} value={s} className="bg-ink-900">
+                                    Size {SIZE_LABELS[s]}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                          {/* Quantity only once there's more than one (add again for another). */}
+                          {line.qty > 1 && (
+                            <div className="flex h-11 items-center rounded-control ring-1 ring-inset ring-white/25">
+                              <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-11 w-11 items-center justify-center text-neutral-300 hover:text-white">
+                                <Icon name="minus" className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="w-5 text-center text-sm tabular-nums" aria-live="polite">
+                                {line.qty}
+                              </span>
+                              <button type="button" aria-label="Increase quantity" disabled={line.qty >= MAX_QTY} onClick={() => setCartQty(line, line.qty + 1)} className="flex h-11 w-11 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
+                                <Icon name="plus" className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                          <button type="button" aria-label={`Remove ${lineTitle(line)}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-11 min-w-11 items-center justify-center px-2 text-sm text-muted underline-offset-4 hover:text-white hover:underline">
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+              <Summary subtotal={subtotal} discount={discount} pairCount={pairCount} shipping={shipping} total={total} />
+              {/* The delivery window and the returns that apply (lib/delivery, lib/store-policy). */}
+              <p className="mt-3 text-xs leading-relaxed text-muted" data-policy>
+                {arrivalLine(review)} · {policyLine(lines)}
               </p>
-            )}
-            <Suggestions exclude={[]} title="Picked from your taste" source="empty_bag" savedFirst />
-          </div>
-        ) : step === "bag" ? (
-          <>
-            {/* Large screens: lines on the left, summary + checkout on the right (sticky). */}
-            <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
-              <div>
-                <ul className="space-y-3">
-              <AnimatePresence initial={false}>
-                {lines.map((line) => (
-                  <motion.li
-                    key={lineKey(line)}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
-                    className="flex gap-3 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10"
-                  >
-                    <Link tabIndex={-1} aria-hidden href={lineHref(line)} className={`w-20 shrink-0 self-start rounded-xl p-1.5 max-[339px]:w-14 ${STAGE_BG}`}>
-                      <LineMockup line={line} className="w-full" />
-                    </Link>
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{lineTitle(line)}</p>
-                          {/* The colour, in words (change it on the product page); the size is the control below. */}
-                          <p className="text-xs text-neutral-400">
-                            {COLOR_LABELS[line.color]} tee
-                            {line.custom && (
-                              <>
-                                {" · "}
-                                <Link href={lineHref(line)} className="text-neutral-300 underline underline-offset-2 hover:text-white">
-                                  Edit
-                                </Link>
-                              </>
-                            )}
-                          </p>
-                        </div>
-                        <span className="font-mono text-sm">{formatPrice(line.lineTotal)}</span>
-                      </div>
-                      <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
-                        <select
-                          value={line.size}
-                          onChange={(e) => changeCartItem(line, { size: e.target.value as ShirtSize })}
-                          aria-label="Size"
-                          className="h-9 rounded-lg bg-white/[0.06] px-2 text-xs font-semibold text-white ring-1 ring-white/10"
-                        >
-                          {([["Adults", ADULT_SIZES], ["Kids", KID_SIZES]] as const).map(([label, group]) => (
-                            <optgroup key={label} label={label} className="bg-ink-900">
-                              {group.map((s) => (
-                                <option key={s} value={s} className="bg-ink-900">
-                                  Size {SIZE_LABELS[s]}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                        </select>
-                        {/* Quantity only once there's more than one (add again for another). */}
-                        {line.qty > 1 && (
-                        <div className="flex h-9 items-center rounded-lg ring-1 ring-white/10">
-                          <button type="button" aria-label="Decrease quantity" onClick={() => setCartQty(line, line.qty - 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white">
-                            <Icon name="minus" className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="w-5 text-center font-mono text-sm" aria-live="polite">{line.qty}</span>
-                          <button type="button" aria-label="Increase quantity" disabled={line.qty >= MAX_QTY} onClick={() => setCartQty(line, line.qty + 1)} className="flex h-9 w-9 items-center justify-center text-neutral-300 hover:text-white disabled:opacity-30">
-                            <Icon name="plus" className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                        )}
-                        <button type="button" aria-label={`Remove ${lineTitle(line)}`} onClick={() => setCartQty(line, 0)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 hover:bg-white/5 hover:text-white">
-                          <Icon name="trash-2" className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.li>
-                ))}
-              </AnimatePresence>
-                </ul>
-              </div>
-              <div className="lg:sticky lg:top-4 lg:[&>*:first-child]:mt-0">
-            <Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} />
-            <button
-              type="button"
-              onClick={() => {
-                go("details");
-                trackEcommerce("begin_checkout", { value: total, discount, shipping, items: ecomItems(lines, pairs) });
+            </>
+          ) : (
+            <DetailsForm
+              values={values}
+              setValues={setValues}
+              touched={touched}
+              setTouched={setTouched}
+              lines={lines}
+              summaryLine={`${count} ${count === 1 ? "tee" : "tees"} · ${formatPrice(total)} · ${arrivalLine(review)}`}
+              onSubmit={(customer) => {
+                trackEcommerce("add_shipping_info", { value: total, shipping, items: ecomItems(lines, pairs) });
+                const order = placeOrder(customer);
+                if (order) {
+                  setPlaced(order);
+                  go("done");
+                  setValues(EMPTY_DETAILS);
+                  setTouched({});
+                }
               }}
-              className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]"
-            >
-              <Icon name="lock" className="h-4 w-4" /> Checkout · {formatPrice(total)}
-            </button>
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
-              <Icon name="rotate-ccw" className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {STORE_POLICY.returns}
-            </p>
-            {lines.some((l) => l.custom) && <p className="mt-1 text-center text-xs text-neutral-400">{STORE_POLICY.customReturns}</p>}
-              </div>
-            </div>
-          </>
-        ) : (
-          <DetailsForm
-            values={values}
-            setValues={setValues}
-            touched={touched}
-            setTouched={setTouched}
-            total={total}
-            lines={lines}
-            summary={<Summary subtotal={subtotal} discount={discount} pairCount={pairs.reduce((n, p) => n + p.pairs, 0)} shipping={shipping} total={total} compact itemCount={count} />}
-            onSubmit={(customer) => {
-              const order = placeOrder(customer);
-              if (order) {
-                setPlaced(order);
-                go("done");
-                setValues(EMPTY_DETAILS);
-                setTouched({});
-              }
-            }}
-          />
-        )}
+            />
+          )}
+        </div>
       </div>
+
+      {/* The step's one action, pinned within the thumb (the tab bar gives way to it). */}
+      <div ref={bar} className="shrink-0 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),12px)] pt-3">
+          <div className="mx-auto max-w-3xl">
+            {count === 0 ? (
+              <Link href={known ? "/shop/" : "/"} className={`w-full ${BUTTON_PRIMARY}`}>
+                {known ? "See your edit" : "Start the taste test"}
+              </Link>
+            ) : step === "bag" ? (
+              // Keyed apart from the submit button: the same element changing type under the tap would submit the form.
+              <button key="checkout" type="button" onClick={toCheckout} className={`w-full ${BUTTON_PRIMARY}`}>
+                <span className="tabular-nums">Checkout · {formatPrice(total)}</span>
+              </button>
+            ) : (
+              <>
+                <button key="place" type="submit" form="checkout-form" className={`w-full ${BUTTON_PRIMARY}`}>
+                  <span className="tabular-nums">Place order · {formatPrice(total)}</span>
+                </button>
+                <p className="mt-2 text-center text-xs text-muted">{PREVIEW_LINE}</p>
+              </>
+            )}
+          </div>
+        </div>
     </div>
   );
 }
 
+/** The returns line for what's in the bag: the one phrase, the made-for-you exception, or both. */
+function policyLine(lines: CartLine[]): string {
+  const made = lines.filter((l) => l.custom || l.upload).length;
+  if (!made) return STORE_POLICY.returns;
+  if (made === lines.length) return STORE_POLICY.customReturns;
+  return `${STORE_POLICY.returns}. ${STORE_POLICY.customReturns}`;
+}
 
-/** Bag lines as GA4 items, each design's pair saving spread over its units. */
-function ecomItems(lines: CartLine[], pairs: { id: string; saving: number }[]) {
-  const saving = new Map(pairs.map((p) => [p.id, p.saving]));
+/** Bag lines as GA4 items, each print's pair saving spread over its units (a print: a design and a personalised one's spec, as `purchase` counts them). */
+function ecomItems(lines: CartLine[], pairs: { id: string; key?: string; saving: number }[]) {
+  const printOf = (l: CartLine) => `${l.id}|${customKey(l.custom, l.upload)}`;
+  const saving = new Map(pairs.map((p) => [`${p.id}|${p.key ?? ""}`, p.saving]));
   const units = new Map<string, number>();
-  for (const l of lines) units.set(l.id, (units.get(l.id) ?? 0) + l.qty);
-  return lines.map((l) => itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, discount: saving.has(l.id) ? saving.get(l.id)! / units.get(l.id)! : undefined }));
-}
-
-
-
-/**
- * Three prints not already chosen (no family already in the bag or just
- * bought): on an empty bag, from Saved first; then the best matches once
- * the taste test is done (topPicks), otherwise from Saved, otherwise none.
- * Used in the bag
- * ("One more from your taste"), an empty bag and after an order ("Your
- * next match").
- */
-function Suggestions({ exclude, title: heading, source, savedFirst = false }: { exclude: string[]; title: string; source: AddSource; savedFirst?: boolean }) {
-  const showMatch = useShowMatch();
-  const vector = useTasteStore((s) => s.preferenceVector);
-  const likedIds = useTasteStore((s) => s.likedIds);
-  const lastOrder = useCartStore((s) => s.lastOrder);
-  const key = exclude.join(",");
-  const { picks, title } = useMemo(() => {
-    const skip = familiesOf([...exclude, ...(lastOrder?.items.map((l) => l.id) ?? [])]);
-    const pool = (list: ShirtProduct[]) => dedupeByFamily(list.filter((s) => !skip.has(s.family)).map((shirt) => ({ shirt }))).map((x) => x.shirt);
-    // An empty bag starts from what was saved (F05).
-    const saved = pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
-    if (savedFirst && saved.length) return { picks: saved, title: "From your Saved" };
-    const fromTaste = showMatch
-      ? topPicks(vector, 3, { excludeFamilies: skip })
-      : pool([...likedIds].reverse().map((id) => getShirtById(id)).filter((s): s is ShirtProduct => !!s)).slice(0, 3);
-    if (fromTaste.length) return { picks: fromTaste, title: heading };
-    // No taste yet and nothing saved: nothing — an empty bag stays quiet.
-    return { picks: [] as ShirtProduct[], title: "" };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, lastOrder, showMatch, vector, likedIds, heading, savedFirst]);
-  if (picks.length === 0) return null;
-  return (
-    <section className="mt-8 w-full text-left">
-      <h2 className="mb-3 text-sm font-semibold">{title}</h2>
-      <ShirtStrip shirts={picks} layout="grid" quickAdd label={title} source={source} />
-    </section>
+  for (const l of lines) units.set(printOf(l), (units.get(printOf(l)) ?? 0) + l.qty);
+  return lines.map((l) =>
+    itemOf(l.shirt, { color: l.color, size: l.size, quantity: l.qty, custom: l.custom, upload: l.upload, discount: saving.has(printOf(l)) ? saving.get(printOf(l))! / units.get(printOf(l))! : undefined }),
   );
 }
 
-function Summary({
-  subtotal,
-  discount,
-  pairCount,
-  shipping,
-  total,
-  compact,
-  itemCount,
-}: {
-  subtotal: number;
-  discount: number;
-  pairCount: number;
-  shipping: number;
-  total: number;
-  compact?: boolean;
-  itemCount?: number;
-}) {
+/** "$10 · free with 2 tees" for one tee, "Free" from two (the one shipping line, bag and checkout). */
+export const shippingValue = (shipping: number) => (shipping === 0 ? "Free" : `${formatPrice(shipping)} · free with ${FREE_SHIPPING_TEES} tees`);
+
+function Summary({ subtotal, discount, pairCount, shipping, total }: { subtotal: number; discount: number; pairCount: number; shipping: number; total: number }) {
   return (
-    <div className="mt-5 space-y-2 rounded-2xl bg-white/[0.03] p-4 text-sm ring-1 ring-white/10">
-      {compact && itemCount !== undefined && (
-        <Row label={`${itemCount} item${itemCount === 1 ? "" : "s"}`} value={`${formatPrice(subtotal)}`} />
-      )}
-      {!compact && <Row label="Subtotal" value={`${formatPrice(subtotal)}`} />}
+    <div className="mt-4 space-y-2 text-sm">
+      <Row label="Subtotal" value={formatPrice(subtotal)} />
       {discount > 0 && <Row label={`The pair${pairCount > 1 ? ` ×${pairCount}` : ""} · black + white`} value={`−${formatPrice(discount)}`} />}
-      <Row label="Shipping" value={shipping === 0 ? "Free" : `${formatPrice(shipping)}`} />
+      <Row label="Shipping" value={shippingValue(shipping)} />
       <div className="border-t border-white/10 pt-2">
-        <Row label="Total" value={`${formatPrice(total)}`} bold />
+        <Row label="Total" value={formatPrice(total)} strong />
       </div>
     </div>
   );
 }
 
-function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={`flex items-center justify-between ${bold ? "font-semibold text-white" : "text-neutral-400"}`}>
+    <div className={`flex items-center justify-between ${strong ? "font-medium text-white" : "text-muted"}`}>
       <span>{label}</span>
-      <span className="font-mono">{value}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }
 
-type Field = "name" | "email" | "address" | "city" | "zip" | "country";
+type Field = "email" | "name" | "country" | "address" | "city" | "zip";
 
-const FIELDS: { key: Field; label: string; type: string; autoComplete: string; enterKeyHint: "next" | "done"; inputMode?: "email" | "text" }[] = [
-  { key: "name", label: "Full name", type: "text", autoComplete: "name", enterKeyHint: "next" },
-  { key: "email", label: "Email", type: "email", autoComplete: "email", enterKeyHint: "next", inputMode: "email" },
-  { key: "address", label: "Street address", type: "text", autoComplete: "street-address", enterKeyHint: "next" },
-  { key: "city", label: "City", type: "text", autoComplete: "address-level2", enterKeyHint: "next" },
-  { key: "zip", label: "Postcode / ZIP", type: "text", autoComplete: "postal-code", enterKeyHint: "done" },
+type FieldSpec = {
+  key: Exclude<Field, "country">;
+  label: string;
+  type: string;
+  autoComplete: string;
+  inputMode?: "email" | "text";
+  autoCapitalize?: "none" | "words" | "characters";
+  extra?: React.InputHTMLAttributes<HTMLInputElement>;
+};
+/** In the order people fill them: email, name, country (a select), address, city, postcode. */
+const FIELDS: FieldSpec[] = [
+  { key: "email", label: "Email", type: "email", autoComplete: "email", inputMode: "email", autoCapitalize: "none", extra: { autoCorrect: "off", spellCheck: false } },
+  { key: "name", label: "Full name", type: "text", autoComplete: "shipping name", autoCapitalize: "words" },
+  { key: "address", label: "Address", type: "text", autoComplete: "shipping address-line1" },
+  { key: "city", label: "City", type: "text", autoComplete: "shipping address-level2", autoCapitalize: "words" },
+  { key: "zip", label: "Postcode / ZIP", type: "text", autoComplete: "shipping postal-code", autoCapitalize: "characters" },
 ];
+const ORDER: Field[] = ["email", "name", "country", "address", "city", "zip"];
 
-function validate(v: Record<Field, string>): Record<Field, string> {
+/** Each field's problem, and the rule it broke (analytics names the rule, never the value). */
+function validate(v: Record<Field, string>): Record<Field, { message: string; rule: string } | null> {
+  const bad = (message: string, rule: string) => ({ message, rule });
   return {
-    name: v.name.trim().length < 2 ? "Enter your name" : "",
-    email: isEmail(v.email) ? "" : "Enter a valid email",
-    address: v.address.trim().length < 4 ? "Enter a street address" : "",
-    city: v.city.trim().length < 2 ? "Enter a city" : "",
-    zip: /^[A-Za-z0-9][A-Za-z0-9 -]{1,9}$/.test(v.zip.trim()) ? "" : "Enter a postcode",
-    country: v.country ? "" : "Choose a country",
+    email: !v.email.trim() ? bad("Enter your email", "required") : isEmail(v.email) ? null : bad("Enter a valid email", "format"),
+    name: v.name.trim().length < 2 ? bad("Enter your name", "required") : null,
+    country: v.country ? null : bad("Select a country", "required"),
+    address: v.address.trim().length < 4 ? bad("Enter an address", "required") : null,
+    city: v.city.trim().length < 2 ? bad("Enter a city", "required") : null,
+    zip: /^[A-Za-z0-9][A-Za-z0-9 -]{1,9}$/.test(v.zip.trim()) ? null : bad("Enter a postcode or ZIP", v.zip.trim() ? "format" : "required"),
   };
 }
 
 /** Express checkout (Apple Pay / Google Pay…) appears only once a provider is configured. */
 const EXPRESS_PAY = process.env.NEXT_PUBLIC_EXPRESS_PAY ?? "";
 
-const EMPTY_DETAILS: Record<Field, string> = { name: "", email: "", address: "", city: "", zip: "", country: "US" };
+const EMPTY_DETAILS: Record<Field, string> = { email: "", name: "", country: "", address: "", city: "", zip: "" };
+
+/** The visitor's country among those offered: the time zone's biggest city (the place list Make uses), else the browser's language region; null when neither is offered. */
+async function guessCountry(): Promise<string | null> {
+  let zone = "";
+  try {
+    zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    /* no zone */
+  }
+  const places = zone ? await import("@/lib/custom/data").then((m) => m.loadCities()).catch(() => null) : null;
+  const city = places?.list.filter((c) => c.tz === zone).sort((a, b) => b.pop - a.pop)[0];
+  return codeOfCountry(city?.country) ?? countryFromLanguages(typeof navigator === "undefined" ? [] : navigator.languages?.length ? navigator.languages : [navigator.language]);
+}
+
+/** The offered countries a typed city is in (the place list; none when it isn't known). */
+function useCityCountries(city: string): CountryCode[] {
+  const [codes, setCodes] = useState<CountryCode[]>([]);
+  useEffect(() => {
+    const name = city.trim().toLowerCase();
+    if (name.length < 3) return setCodes([]);
+    let live = true;
+    void import("@/lib/custom/data")
+      .then((m) => m.loadCities())
+      .then((places) => {
+        if (!live) return;
+        const found = places.list.filter((c) => c.name.toLowerCase() === name || c.ascii.toLowerCase() === name).map((c) => codeOfCountry(c.country));
+        setCodes([...new Set(found.filter((c): c is CountryCode => !!c))]);
+      })
+      .catch(() => live && setCodes([]));
+    return () => {
+      live = false;
+    };
+  }, [city]);
+  return codes;
+}
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 
@@ -380,9 +434,8 @@ function DetailsForm({
   setValues,
   touched,
   setTouched,
-  total,
   lines,
-  summary,
+  summaryLine,
   onSubmit,
 }: {
   values: Record<Field, string>;
@@ -390,127 +443,156 @@ function DetailsForm({
   /** Each field shows its error once it has been left (or on submit). */
   touched: Partial<Record<Field, boolean>>;
   setTouched: Setter<Partial<Record<Field, boolean>>>;
-  total: number;
   lines: ReturnType<typeof cartLines>;
-  summary: React.ReactNode;
+  /** The order in one line: "2 tees · $90 · Arrives …". */
+  summaryLine: string;
   onSubmit: (c: Customer) => void;
 }) {
   const form = useRef<HTMLFormElement>(null);
   const errors = validate(values);
-  const arrives = formatArrival(arrivalRange());
+  const [summary, setSummary] = useState<number | null>(null);
+  // The country, guessed until one is chosen; a typed city known in exactly one offered country sets it too.
+  const chosen = useRef(false);
+  useEffect(() => {
+    let live = true;
+    void guessCountry().then((code) => live && code && !chosen.current && setValues((v) => (v.country ? v : { ...v, country: code })));
+    return () => {
+      live = false;
+    };
+  }, [setValues]);
+  const cityCountries = useCityCountries(values.city);
+  useEffect(() => {
+    if (!chosen.current && cityCountries.length === 1 && values.country !== cityCountries[0]) setValues((v) => ({ ...v, country: cityCountries[0] }));
+  }, [cityCountries, values.country, setValues]);
+  const conflict = countryConflicts(values.country, values.zip, cityCountries);
 
-  const field = (f: (typeof FIELDS)[number]) => {
-    const err = touched[f.key] && errors[f.key];
+  const describe = (k: Field, err: boolean) => [err ? `err-${k}` : "", k === "country" && conflict ? "country-check" : ""].filter(Boolean).join(" ") || undefined;
+  const input = (f: FieldSpec, last: boolean) => {
+    const err = touched[f.key] ? errors[f.key] : null;
     return (
-      <label key={f.key} className="block">
-        <span className="mb-1 block text-xs text-neutral-400">{f.label}</span>
+      <div key={f.key}>
+        <label htmlFor={`f-${f.key}`} className="mb-1 block text-xs text-muted">
+          {f.label}
+        </label>
         <input
+          id={`f-${f.key}`}
           name={f.key}
           type={f.type}
           autoComplete={f.autoComplete}
-          enterKeyHint={f.enterKeyHint}
+          autoCapitalize={f.autoCapitalize}
+          enterKeyHint={last ? "go" : "next"}
           inputMode={f.inputMode}
+          {...f.extra}
           value={values[f.key]}
           onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
           onBlur={() => setTouched((t) => ({ ...t, [f.key]: true }))}
           aria-invalid={!!err}
-          aria-describedby={err ? `err-${f.key}` : undefined}
-          className={`h-12 w-full rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none transition placeholder:text-neutral-600 ${
-            err ? "ring-2 ring-white" : "ring-1 ring-white/10 focus:ring-white/50"
-          }`}
+          aria-describedby={describe(f.key, !!err)}
+          className={`h-12 w-full rounded-control bg-transparent px-3 text-base text-white outline-none ring-1 ring-inset transition-shadow duration-150 ${err ? "ring-white" : "ring-white/25 focus:ring-white/60"}`}
         />
-        {/* Monochrome errors: a thick white ring plus a marked message, no red. */}
         {err && (
-          <span id={`err-${f.key}`} role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-white">
-            <span aria-hidden className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[11px] font-black text-black">!</span>
-            {err}
-          </span>
+          <p id={`err-${f.key}`} className="mt-1 text-xs text-neutral-200">
+            {err.message}
+          </p>
         )}
-      </label>
+      </div>
     );
   };
+  const countryErr = touched.country ? errors.country : null;
 
   return (
     <form
+      id="checkout-form"
       ref={form}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
-        setTouched({ name: true, email: true, address: true, city: true, zip: true, country: true });
-        const first = (Object.keys(errors) as Field[]).find((k) => errors[k]);
-        if (first) {
-          // Take the shopper to the first thing to fix.
-          form.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
+        setTouched({ email: true, name: true, country: true, address: true, city: true, zip: true });
+        const bad = ORDER.filter((k) => errors[k]);
+        if (bad.length) {
+          for (const k of bad) track("form_error", { field: k, rule: errors[k]!.rule });
+          // One summary, then the first thing to fix.
+          setSummary(bad.length);
+          form.current?.querySelector<HTMLElement>(`[name="${bad[0]}"]`)?.focus();
           return;
         }
+        setSummary(null);
         const t = (k: Field) => values[k].trim();
         onSubmit({ name: t("name"), email: t("email"), address: t("address"), city: t("city"), zip: t("zip").toUpperCase(), country: values.country });
       }}
     >
-      {/* Large screens: details on the left, the order + pay button on the right (sticky). */}
-      <div className="lg:grid lg:grid-cols-[1fr_340px] lg:items-start lg:gap-8">
-      <div>
+      {/* The order, in one line. */}
+      <p className="mb-5 text-sm text-neutral-300">{summaryLine}</p>
+      <p role="alert" className="text-sm text-white empty:hidden">
+        {summary ? `${summary} ${summary === 1 ? "field needs" : "fields need"} attention` : ""}
+      </p>
       {EXPRESS_PAY && (
         <>
-          <button type="button" className="flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black">
+          <button type="button" className={`w-full ${BUTTON_PRIMARY}`}>
             Express checkout · {EXPRESS_PAY}
           </button>
-          <p className="my-4 text-center text-xs text-neutral-400">or enter your details</p>
+          <p className="my-4 text-center text-xs text-muted">or enter your details</p>
         </>
       )}
+      <h2 className="mb-3 text-xs text-muted">Delivery</h2>
       <div className="grid gap-3">
-        {FIELDS.slice(0, 4).map(field)}
-        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
-          {field(FIELDS[4])}
-          <label className="block">
-            <span className="mb-1 block text-xs text-neutral-400">Country</span>
-            <select
-              name="country"
-              autoComplete="country"
-              value={values.country}
-              onChange={(e) => setValues((v) => ({ ...v, country: e.target.value }))}
-              className="h-12 w-full rounded-xl bg-white/[0.05] px-3 text-sm text-white outline-none ring-1 ring-white/10 focus:ring-white/50"
-            >
-              {STORE_POLICY.countries.map(([code, name]) => (
-                <option key={code} value={code} className="bg-ink-900">
-                  {name}
-                </option>
-              ))}
-            </select>
+        {input(FIELDS[0], false)}
+        {input(FIELDS[1], false)}
+        <div>
+          <label htmlFor="f-country" className="mb-1 block text-xs text-muted">
+            Country
           </label>
+          <select
+            id="f-country"
+            name="country"
+            autoComplete="shipping country"
+            value={values.country}
+            onChange={(e) => {
+              chosen.current = true;
+              setValues((v) => ({ ...v, country: e.target.value }));
+            }}
+            onBlur={() => setTouched((t) => ({ ...t, country: true }))}
+            aria-invalid={!!countryErr || conflict}
+            aria-describedby={describe("country", !!countryErr)}
+            className={`h-12 w-full rounded-control bg-transparent px-3 text-base text-white outline-none ring-1 ring-inset ${countryErr || conflict ? "ring-white" : "ring-white/25 focus:ring-white/60"}`}
+          >
+            <option value="" className="bg-ink-900">
+              Select a country
+            </option>
+            {STORE_POLICY.countries.map(([code, name]) => (
+              <option key={code} value={code} className="bg-ink-900">
+                {name}
+              </option>
+            ))}
+          </select>
+          {countryErr && (
+            <p id="err-country" className="mt-1 text-xs text-neutral-200">
+              {countryErr.message}
+            </p>
+          )}
+          {/* Never silently at odds with the city or postcode typed. */}
+          {conflict && !countryErr && (
+            <p id="country-check" className="mt-1 text-xs text-neutral-200">
+              Check your country
+            </p>
+          )}
         </div>
+        {input(FIELDS[2], false)}
+        {input(FIELDS[3], false)}
+        {input(FIELDS[4], true)}
       </div>
-
-      </div>
-      <div className="lg:sticky lg:top-4">
       {/* What's being ordered, at a glance. */}
-      {/* pt-2: room for the quantity badges, which sit above the thumbnails. */}
-      <ul className="mt-3 flex gap-2 overflow-x-auto pr-1 pt-2" aria-label="Items">
+      <ul className="mt-5 flex gap-2 overflow-x-auto pr-1 pt-2" aria-label="Items">
         {lines.map((l) => (
-          <li key={`${l.id}-${l.size}-${l.color}`} className={`relative w-14 shrink-0 rounded-lg p-1 ${STAGE_BG}`}>
-            <TeeMockup shirt={l.shirt} color={l.color} sizes={SIZES.thumb} className="w-full" />
-            {l.qty > 1 && <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 font-mono text-xs font-bold text-black">{l.qty}</span>}
+          <li key={lineKey(l)} className="relative w-14 shrink-0">
+            <LineMockup line={l} className="w-full" />
+            {l.qty > 1 && <span className="absolute -right-1 -top-1 bg-white px-1.5 text-xs tabular-nums text-black">{l.qty}</span>}
             <span className="sr-only">
               {l.qty} × {lineTitle(l)}, {COLOR_LABELS[l.color]}, {SIZE_LABELS[l.size]}
             </span>
           </li>
         ))}
       </ul>
-      {summary}
-      <p className="mt-3 flex items-center justify-center gap-1.5 text-sm text-neutral-300">
-        <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Arrives {arrives}
-      </p>
-      <p className="mt-2 text-center text-xs text-neutral-400">
-        Demo store — no payment is taken and nothing ships.{" "}
-        <Link href="/about/#this-site" className="underline underline-offset-2 hover:text-white">
-          About this site
-        </Link>
-      </p>
-      <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98]">
-        Place demo order · {formatPrice(total)}
-      </button>
-      </div>
-      </div>
     </form>
   );
 }
@@ -528,78 +610,72 @@ function Confirmation({ order }: { order: Order }) {
   }, [order.number]);
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mx-auto flex max-w-md flex-col items-center px-4 pb-28 pt-8 text-center">
-        <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
-          <Icon name="check-circle" className="h-14 w-14" />
-        </motion.div>
-        <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight outline-none">
-          Order placed
+      <div className="mx-auto flex max-w-md flex-col px-4 pb-16 pt-8">
+        <h1 ref={heading} tabIndex={-1} className="break-words text-[28px] font-medium leading-tight outline-none [overflow-wrap:anywhere]">
+          Thank you, {order.customer.name.split(" ")[0]}.
         </h1>
-        <p className="mt-1 text-sm text-neutral-400">
-          Thanks, {order.customer.name.split(" ")[0]}. Demo order <span className="whitespace-nowrap font-mono text-white">{order.number}</span> — a confirmation would go to{" "}
-          {order.customer.email}.
+        <p className="mt-2 text-base text-neutral-200">
+          Order <span className="whitespace-nowrap font-mono text-sm">{order.number}</span> is confirmed.
         </p>
-        {/* Icon and text wrap as one centred group; the city never splits. */}
-        <p className="mt-2 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-neutral-300">
-          <Icon name="truck" className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-          <span>Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })}</span>
-          <span className="whitespace-nowrap">in {order.customer.city}</span>
+        <p className="mt-1 break-words text-sm text-muted [overflow-wrap:anywhere]">
+          Arrives {formatArrival({ from: new Date(order.arrives.from), to: new Date(order.arrives.to) })} in {order.customer.city}
         </p>
-        <div className="mt-6 flex w-full justify-center -space-x-3">
+        <div className="mt-6 flex w-full gap-2">
           {lines.slice(0, 4).map((l) => (
-            <div key={lineKey(l)} className={`w-24 rounded-2xl p-2 ring-2 ring-ink-950 ${STAGE_BG}`}>
+            <div key={lineKey(l)} className="w-24">
               <LineMockup line={l} className="w-full" />
             </div>
           ))}
         </div>
-        <ul className="mt-6 w-full space-y-1 text-left text-sm">
+        <ul className="mt-6 w-full space-y-1 text-sm">
           {lines.map((l) => (
-            <li key={lineKey(l)} className="flex justify-between text-neutral-300">
+            <li key={lineKey(l)} className="flex justify-between gap-3 text-neutral-300">
               <span>
                 {l.qty}× {lineTitle(l)} · {COLOR_LABELS[l.color]} · {SIZE_LABELS[l.size]}
               </span>
-              <span className="font-mono">{formatPrice(l.lineTotal)}</span>
+              <span className="tabular-nums">{formatPrice(l.lineTotal)}</span>
             </li>
           ))}
           {!!order.discount && (
             <li className="flex justify-between text-neutral-300">
               <span>The pair · black + white</span>
-              <span className="font-mono">−{formatPrice(order.discount)}</span>
+              <span className="tabular-nums">−{formatPrice(order.discount)}</span>
             </li>
           )}
           <li className="flex justify-between text-neutral-300">
             <span>Shipping</span>
-            <span className="font-mono">{order.shipping === 0 ? "Free" : formatPrice(order.shipping)}</span>
+            <span className="tabular-nums">{order.shipping === 0 ? "Free" : formatPrice(order.shipping)}</span>
           </li>
-          <li className="flex justify-between border-t border-white/10 pt-2 font-semibold">
+          <li className="flex justify-between border-t border-white/10 pt-2 font-medium">
             <span>Total</span>
-            <span className="font-mono">{formatPrice(order.total)}</span>
+            <span className="tabular-nums">{formatPrice(order.total)}</span>
           </li>
         </ul>
+
+        <UploadReviews order={order.number} />
 
         {first && (
           <button
             type="button"
-            onClick={() => useUiStore.getState().openShare(first.id, first.color)}
-            className="mt-6 h-10 text-sm text-neutral-300 underline underline-offset-4 hover:text-white"
+            onClick={() => useUiStore.getState().openShare(first.id, first.color, first.custom ? encodeMake(first.custom) : undefined, first.upload?.id)}
+            className={`${TEXT_ACTION} mt-6 justify-start text-neutral-200 underline`}
           >
             Share {new Set(lines.map((l) => l.id)).size > 1 ? "a tee you picked" : "your tee"}
           </button>
         )}
 
-
         {referral && (
-          <section className="mt-6 w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/10">
-            <h2 className="text-sm font-semibold">Give $10, get $10</h2>
-            <p className="mt-1 text-xs text-neutral-400">Share your code; you both get $10 off.</p>
+          <section className="mt-6 w-full border-t border-white/10 pt-4">
+            <h2 className="text-sm font-medium">Give $10, get $10</h2>
+            <p className="mt-1 text-xs text-muted">Share your code; you both get $10 off.</p>
             <p className="mt-2 font-mono text-sm">{referral.code}</p>
           </section>
         )}
 
-        <Link href="/shop/" className="mt-8 flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-black">
-          Back to the shop
+        <Link href="/shop/" className={`mt-8 w-full ${BUTTON_PRIMARY}`}>
+          Continue shopping
         </Link>
-      </motion.div>
+      </div>
     </div>
   );
 }

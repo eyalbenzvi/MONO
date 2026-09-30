@@ -1,13 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useLayoutEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MotionConfig } from "framer-motion";
-import { AlgoDebugPanel } from "@/components/AlgoDebugPanel";
 import { Header } from "@/components/Header";
-import { LikedDrawer } from "@/components/LikedDrawer";
+import { TabBar } from "@/components/TabBar";
 import { MiniBag } from "@/components/shop/MiniBag";
-import { ShareSheet } from "@/components/ShareSheet";
 import { Toast } from "@/components/Toast";
 import { useCartStore } from "@/store/cartStore";
 import { migrateLegacySession, removeRetiredKeys } from "@/store/legacySession";
@@ -15,28 +13,66 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
-import { catalogReady, isCatalogReady } from "@/lib/catalog";
+import { catalogReady, isCatalogFailed, isCatalogReady } from "@/lib/catalog";
+import { updateQuery } from "@/lib/url";
+import { whenIdle } from "@/lib/preload";
 import { captureLanding, track } from "@/lib/analytics";
+import { BUTTON_PRIMARY } from "@/components/ui";
 
-/** Suspends (keeping the server HTML) until the catalog index has loaded. */
+/** Suspends (keeping the server HTML) until the catalog index has loaded; says so, with a reload, if it can't. */
 function CatalogGate({ children }: { children: React.ReactNode }) {
+  if (isCatalogFailed()) return <LoadFailed />;
   if (!isCatalogReady()) throw catalogReady();
   return <>{children}</>;
 }
 
+function LoadFailed() {
+  return (
+    <div role="alert" className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center" data-load-failed>
+      <p className="text-base text-neutral-200">Something went wrong.</p>
+      <button type="button" onClick={() => window.location.reload()} className={BUTTON_PRIMARY}>
+        Try again
+      </button>
+    </div>
+  );
+}
+
+/** The Open Call sheet loads only when it's opened (from an upload's review status). */
+// Loaded when first needed: the debug panel (?debug=1) and the share sheet (with its image renderer).
+const AlgoDebugPanel = lazy(() => import("@/components/AlgoDebugPanel").then((m) => ({ default: m.AlgoDebugPanel })));
+const ShareSheet = lazy(() => import("@/components/ShareSheet").then((m) => ({ default: m.ShareSheet })));
+const OfferSheet = lazy(() => import("@/components/upload/OfferSheet").then((m) => ({ default: m.OfferSheet })));
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const savedOpen = useUiStore((s) => s.savedOpen);
-  const setSavedOpen = useUiStore((s) => s.setSavedOpen);
+  const offerOpen = useUiStore((s) => !!s.offer);
   const pathname = usePathname();
   const hydrated = useUiStore((s) => s.hydrated);
+  const debug = useUiStore((s) => s.debug);
+  // Kept mounted once opened, so the sheet's close animation still plays.
+  const sharing = useUiStore((s) => s.share != null);
+  const [shareLoaded, setShareLoaded] = useState(false);
+  if (sharing && !shareLoaded) setShareLoaded(true);
 
   // How this visit arrived (UTM, ref, a shared taste or list), recorded
   // before any page removes those tags from the address bar: layout
   // effects run before every page's passive effects.
   useLayoutEffect(() => void captureLanding(), []);
 
+  // Framed by another site (clickjacking: the static host can't send frame-ancestors): the page steps aside and offers itself in its own window.
+  const [framed, setFramed] = useState(false);
+  useLayoutEffect(() => {
+    try {
+      setFramed(window.top !== window.self);
+    } catch {
+      setFramed(true);
+    }
+  }, []);
+
   // One page_view per page, client-side navigations included.
   useEffect(() => track("page_view", { page_path: pathname }), [pathname]);
+
+  // The share sheet's code, fetched while idle: the first Share opens at once, and the page's first load doesn't carry it.
+  useEffect(() => (hydrated ? whenIdle(() => void import("@/components/ShareSheet").catch(() => {})) : undefined), [hydrated]);
 
   // Leaving the shop area forgets where a product page was opened from;
   // any navigation closes the zoom view.
@@ -59,13 +95,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
     // Stored state is checked against the catalog, so it loads after it.
-    void catalogReady().then(async () => {
-      migrateLegacySession();
-      removeRetiredKeys();
-      await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate()]);
-      useTasteStore.getState().fillDeck();
-      useUiStore.getState().setHydrated();
-    });
+    void catalogReady()
+      .then(async () => {
+        try {
+          migrateLegacySession();
+          removeRetiredKeys();
+          // "From yours" (the mono-make store) loads apart, so its code isn't on every page.
+          await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), import("@/store/makeStore").then((m) => m.useMakeStore.persist.rehydrate())]);
+          useTasteStore.getState().fillDeck();
+        } catch (e) {
+          // One bad stored value mustn't leave every button disabled: the page carries on with what did load.
+          track("app_error", { where: "rehydrate", message: String(e).slice(0, 120) });
+        } finally {
+          useUiStore.getState().setHydrated();
+        }
+        // Uploads: a bag line whose file is gone from this device leaves the bag; old rasters go.
+        void import("@/lib/upload/prune").then((m) => m.pruneUploads()).catch(() => {});
+      })
+      .catch(() => {
+        /* the index didn't load: CatalogGate says so */
+      });
 
     // A friend's taste link (/?taste=…): kept for this session so the taste
     // test can end with "Compare with a friend"; removed from the address bar.
@@ -77,16 +126,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem("mono-friend-taste", code);
         useUiStore.setState({ friendTaste: friend });
       }
-      if (q.has("taste")) {
-        q.delete("taste");
-        const rest = q.toString();
-        window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
-      }
+      if (q.has("taste")) updateQuery((p) => p.delete("taste"));
     } catch {
       /* storage unavailable */
     }
 
-    // Debug panel is opt-in: ?debug=1 (remembered for the tab) or 5 taps on the logo.
+    // Debug panel is opt-in: ?debug=1 (remembered for the tab).
     try {
       const param = new URLSearchParams(window.location.search).get("debug");
       if (param === "1") useUiStore.getState().setDebug(true);
@@ -97,9 +142,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  if (framed)
+    return (
+      <div className="flex h-[100dvh] items-center justify-center bg-[#0a0a0a] p-6 text-center" data-framed>
+        <a href={typeof window === "undefined" ? "/" : window.location.href} target="_top" rel="noopener" className="text-sm font-medium text-white underline underline-offset-4">
+          Open MONO
+        </a>
+      </div>
+    );
+
   return (
     <MotionConfig reducedMotion="user">
-    <div className="app-backdrop relative flex h-[100dvh] flex-col overflow-hidden" data-hydrated={hydrated ? "" : undefined}>
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0a]" data-hydrated={hydrated ? "" : undefined}>
       <Header />
       {/* The header floats over the top of main (it slides away with a
           transform, never by changing the layout); main keeps its space.
@@ -111,9 +165,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <CatalogGate>{children}</CatalogGate>
         </Suspense>
       </main>
-      <AlgoDebugPanel />
-      <LikedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
-      <ShareSheet />
+      {/* In the layout's flow at the bottom: nothing ever sits behind it. */}
+      <TabBar />
+      {debug && (
+        <Suspense fallback={null}>
+          <AlgoDebugPanel />
+        </Suspense>
+      )}
+      {shareLoaded && (
+        <Suspense fallback={null}>
+          <ShareSheet />
+        </Suspense>
+      )}
+      {offerOpen && (
+        <Suspense fallback={null}>
+          <OfferSheet />
+        </Suspense>
+      )}
       <MiniBag />
       <Toast />
     </div>

@@ -10,7 +10,7 @@
  * Commerce events follow GA4's shape (currency, value, items[]); the rest
  * are product events. Nothing personal is sent (no name, email or address).
  */
-import { STORE_POLICY } from "@/lib/store-policy";
+import { MAKE_PRICE } from "@/lib/prices";
 import type { BaseColor, ShirtProduct, ShirtSize } from "@/types/shirt";
 import { CATEGORY_LABELS } from "@/types/shirt";
 
@@ -22,6 +22,7 @@ export type CommerceEvent =
   | "remove_from_cart"
   | "view_cart"
   | "begin_checkout"
+  | "add_shipping_info"
   | "purchase";
 
 export type AnalyticsEvent =
@@ -41,9 +42,39 @@ export type AnalyticsEvent =
   | "save"
   | "share"
   | "share_taste"
-  // "Make it yours": the template only, never what was chosen.
-  | "customize_open"
-  | "customize_apply";
+  // Buying: the steps between a tee and the bag (no personal data; a form error names the field and rule only).
+  | "buy_sheet_open"
+  | "buy_sheet_dismiss"
+  | "size_required"
+  | "size_guide_open"
+  | "pair_select"
+  | "minibag_checkout"
+  | "sticky_checkout_click"
+  | "form_error"
+  | "share_banner_action"
+  // Make: the product or template only, never what was typed, drawn or said.
+  | "make_open"
+  | "make_filter"
+  | "customize_apply"
+  | "line_draw"
+  | "voice_record"
+  | "upload_start"
+  | "upload_preview"
+  | "upload_refused"
+  | "offer_submit"
+  | "offer_result"
+  | "yours_view"
+  | "yours_start_tile"
+  | "yours_step"
+  | "upload_fix_offered"
+  | "upload_fix_applied"
+  | "upload_edit"
+  | "upload_compare"
+  | "upload_hold_original"
+  | "upload_rights_confirm"
+  | "upload_another"
+  // Something failed that the page recovered from (where, and a short message; never user data).
+  | "app_error";
 
 export type AnalyticsProps = Record<string, unknown>;
 
@@ -75,7 +106,7 @@ export interface EcomItem {
   item_name: string;
   item_category: string;
   /** The tee colour. */
-  item_variant: BaseColor | `${BaseColor}-custom`;
+  item_variant: BaseColor | `${BaseColor}-custom` | `${BaseColor}-upload`;
   size?: ShirtSize;
   price: number;
   quantity: number;
@@ -89,14 +120,14 @@ export interface EcomItem {
  * made-for-you price; its name stays the design's own (the place, date or
  * year a customer chose never reaches analytics).
  */
-export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown } = {}): EcomItem {
+export function itemOf(shirt: ShirtProduct, { color = shirt.baseColor, size, quantity = 1, discount, index, custom, upload }: { color?: BaseColor; size?: ShirtSize; quantity?: number; discount?: number; index?: number; custom?: unknown; upload?: unknown } = {}): EcomItem {
   return {
     item_id: shirt.id,
     item_name: shirt.title,
     item_category: CATEGORY_LABELS[shirt.category],
-    item_variant: custom ? `${color}-custom` : color,
+    item_variant: upload ? `${color}-upload` : custom ? `${color}-custom` : color,
     ...(size ? { size } : {}),
-    price: custom ? STORE_POLICY.customPrice : shirt.price,
+    price: custom || upload ? MAKE_PRICE : shirt.price,
     quantity,
     ...(discount ? { discount } : {}),
     ...(index !== undefined ? { index } : {}),
@@ -115,9 +146,6 @@ export function trackEcommerce(event: CommerceEvent, { items, value, ...rest }: 
 /* ------------------------------------------------------------------ */
 
 const FIRST_TOUCH_KEY = "mono-first-touch";
-
-/** Query parameters that are read once and then removed from the address bar. */
-export const LANDING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "ref", "taste", "list"] as const;
 
 export interface Landing {
   utm_source: string | null;
@@ -139,6 +167,15 @@ let landed = false;
  * address bar: a `landing` event, and the first touch of the session (kept
  * in sessionStorage, attached to a purchase). Runs once per page load.
  */
+/** A URL's origin only (null for none, or a value that isn't a URL). */
+const originOf = (u: string) => {
+  try {
+    return u ? new URL(u).origin : null;
+  } catch {
+    return null;
+  }
+};
+
 export function captureLanding(loc: Pick<Location, "search" | "pathname"> = window.location, referrer = document.referrer): Landing | null {
   if (landed) return null;
   landed = true;
@@ -152,7 +189,8 @@ export function captureLanding(loc: Pick<Location, "search" | "pathname"> = wind
     has_list: q.has("list"),
     has_make: q.has("make"),
     landing_path: loc.pathname,
-    referrer: referrer || null,
+    // The referring site, not its page's address (which can carry another site's query).
+    referrer: originOf(referrer),
   };
   track("landing", { ...landing });
   try {

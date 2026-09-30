@@ -13,8 +13,10 @@ const other = photo.baseColor === "black" ? "white" : "black";
 test("a photo tee: credit and source link; the whole greyscale photograph, on its own tee only, never inverted", async ({ page }) => {
   await page.goto(`shop/${photo.id}/`);
   await hydrated(page);
-  // The credit sits behind ⓘ (About this design).
-  await page.getByRole("button", { name: "About this design" }).tap();
+  // The credit sits behind the "Details" disclosure.
+  const details = page.getByRole("button", { name: "Details", exact: true });
+  await details.tap();
+  await expect(details).toHaveAttribute("aria-expanded", "true");
   const credit = page.getByText(`Photo: ${photo.photo!.credit}`);
   await expect(credit).toBeVisible();
   // Named after its subject, which isn't repeated above the name.
@@ -24,9 +26,9 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   // On the tee: one baked picture, on its own tee colour.
   const tee = page.locator("main img[data-mockup]").first();
   await expect.poll(() => tee.evaluate((i: HTMLImageElement) => i.currentSrc)).toContain(`/img/m/${photo.n}-${photo.baseColor}-`);
-  // The print alone.
-  await page.getByRole("button", { name: `More for ${photo.title}` }).tap();
-  await page.getByRole("button", { name: "Show the print only" }).tap();
+  // The print alone: the gallery's second slide (its dot "Print").
+  await page.getByRole("button", { name: "Print", exact: true }).tap();
+  await expect(page.getByRole("button", { name: "Print", exact: true })).toHaveAttribute("aria-pressed", "true");
   const print = page.locator(`main img[alt="${photo.title} print"]`).first();
   await expect(print).toHaveAttribute("src", new RegExp(`/img/p/${photo.n}-${photo.baseColor}-1500\\.webp$`));
   // T3: a photograph is sold on its own tee only — no colour choice, never inverted.
@@ -62,20 +64,22 @@ test("someone who took the taste test before the photographs: not sent back into
   );
   await page.goto("");
   await hydrated(page);
-  await expect(page.getByText(/^Rate \d+ tees/)).toHaveCount(0);
+  // Not the taste test again: no first-card line, no "Learning your taste", no progress bar.
+  await expect(page.locator("[data-strip]:visible")).not.toContainText(/Ten tees\. Keep or pass|Learning your taste|Last one\./);
+  await expect(page.getByRole("progressbar", { name: "Taste test progress" })).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const title = (await page.locator('[aria-roledescription="card"] h2').first().textContent())?.trim();
   expect(ALL_PHOTOS.map((s) => s.title)).toContain(title);
   const state = await storedTaste(page);
   expect(state.preferenceVector).toMatchObject({ wit: 0.8, photographic: 0.5 });
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(5);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).version)).toBe(6);
 });
 
 test("sizes: XXL and kids' sizes on the product page, labelled in the bag", async ({ page }) => {
   await page.goto(`shop/${W1}/`);
   await hydrated(page);
   await page.getByRole("radio", { name: "XXL" }).tap();
-  await page.getByRole("button", { name: "Kids' sizes" }).tap();
+  await page.getByRole("button", { name: "Kids’ sizes" }).tap();
   await page.getByRole("radio", { name: "Kids 5–6" }).tap();
   await page.getByRole("button", { name: /^Add to bag/ }).last().tap();
   await page.goto("cart/");
@@ -83,22 +87,31 @@ test("sizes: XXL and kids' sizes on the product page, labelled in the bag", asyn
   await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
 });
 
-test("T5 / U6: the logo opens About — three words, one line, an honest note; the bag links to it", async ({ page }) => {
+test("T5 / U6: the wordmark goes home; About (from You) is one image, three words, one line, no small print", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("");
+  await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("link", { name: "About MONO" }).tap();
+  // The header's only link, the wordmark, leads home (not to About).
+  await page.getByRole("link", { name: "MONO, home" }).tap();
+  await expect(page).toHaveURL(/127\.0\.0\.1:\d+\/$/);
+  // About is reached from You's "About" row.
+  await page.goto("me/");
+  await hydrated(page);
+  await page.getByRole("link", { name: "About", exact: true }).tap();
   await expect(page).toHaveURL(/\/about\/$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Black.White.One ink.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Black. White. One ink.");
+  // One image, one paragraph, one way in.
+  await expect(page.locator("main article img")).toHaveCount(1);
+  await expect(page.locator("main article p")).toHaveCount(1);
   // Short on purpose: well under a hundred words on the page.
   const words = (await page.locator("main article").innerText()).split(/\s+/).filter(Boolean).length;
   expect(words).toBeLessThan(80);
-  await expect(page.locator("#this-site")).toHaveText("About this site");
-  await expect(page.getByText(/nothing is charged/)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Start swiping" })).toHaveAttribute("href", /\/$/);
+  await expect(page.locator("#this-site")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Start the taste test" })).toHaveAttribute("href", /\/$/);
   await page.evaluate((id) => localStorage.setItem("mono-cart", JSON.stringify({ state: { cart: [{ id, size: "M", color: "black", qty: 1 }], preferredSize: "M" }, version: 3 })), W1);
   await page.goto("cart/");
   await hydrated(page);
   await page.getByRole("button", { name: /^Checkout/ }).first().tap();
-  await expect(page.getByRole("link", { name: "About this site" })).toHaveAttribute("href", /\/about\/#this-site$/);
+  // Checkout still says it's a preview store, where it matters: under the order button.
+  await expect(page.getByText("Preview store. No payment is taken and nothing ships.")).toBeVisible();
 });

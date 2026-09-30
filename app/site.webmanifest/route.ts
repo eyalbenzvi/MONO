@@ -8,14 +8,14 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export function GET() {
   return Response.json(
     {
-      name: "MONO — Monochrome Tee Discovery",
+      name: "MONO · Black and white tees, one ink",
       short_name: "MONO",
-      description: "Swipe black & white monochrome tees; the shop learns your taste.",
+      description: "One-ink tees in black and white, edited to your taste.",
       start_url: `${BASE}/`,
       scope: `${BASE}/`,
       display: "standalone",
-      background_color: "#050505",
-      theme_color: "#050505",
+      background_color: "#0a0a0a",
+      theme_color: "#0a0a0a",
       icons: [{ src: `${BASE}/icon.svg`, sizes: "any", type: "image/svg+xml" }],
     },
     { headers: { "content-type": "application/manifest+json" } },

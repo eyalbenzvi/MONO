@@ -9,7 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import nodePath from "node:path";
-import { DEG, INK, caption, circle, dot, f1, julian, line, longDate, norm360, path, polyline, shortMonth, text, type Set7Design } from "./kit";
+import { DEG, caption, circle, dot, julian, line, longDate, path, polyline, shortMonth, text, type Set7Design } from "./kit";
 import { latLon, skyChart } from "../../../lib/custom/templates/sky";
 import { moonBody } from "../../../lib/custom/templates/moon";
 import { planetsBody } from "../../../lib/custom/templates/planets";

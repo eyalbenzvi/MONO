@@ -301,7 +301,7 @@ export function facetLabel(index: SearchIndex, f: Facet): string {
   if (f.kind === "tee") return f.value === "black" ? "Black tee" : "White tee";
   if (f.kind === "new") return "New this week";
   if (f.kind === "seen") return "Not seen yet";
-  if (f.kind === "match") return "Top matches";
+  if (f.kind === "match") return "Top picks";
   if (f.kind === "like") return "Like this";
   const e = (TABLE_KINDS as readonly string[]).includes(f.kind) ? index.file.tables[f.kind as (typeof TABLE_KINDS)[number]].find((x) => x.id === f.value) : undefined;
   return e?.label ?? f.value;

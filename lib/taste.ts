@@ -1,5 +1,6 @@
-import { centeredCosine, profileSharpness, topTraits } from "@/lib/recommendation";
+import { topTraits } from "@/lib/recommendation";
 import { FEATURE_KEYS, createInitialVector, type FeatureKey, type UserProfileVector } from "@/types/shirt";
+import { clamp01 } from "@/lib/math";
 
 /**
  * A name for a taste profile, from its strongest trait (then the second, to
@@ -28,6 +29,94 @@ const ARCHETYPE: Record<FeatureKey, string> = {
 
 export const ARCHETYPE_NAMES = Object.values(ARCHETYPE);
 
+/**
+ * Each trait in words, the one wording people see (the stylist note, Why and
+ * Because lines, the reveal, Your taste, a friend's comparison): never the
+ * engine's own labels ("Halftone", "Density").
+ */
+export const TRAIT_WORDS: Record<FeatureKey, string> = {
+  geometric: "geometric shapes",
+  typography: "lettering",
+  architectural: "architecture",
+  abstract: "abstract forms",
+  line_art: "line drawings",
+  halftone_raster: "printed-dot textures",
+  density: "dense prints",
+  contrast: "high contrast",
+  dark_industrial: "industrial subjects",
+  clean_minimal: "minimal prints",
+  pictorial: "scenes",
+  wit: "wit",
+  retro: "retro",
+  nature: "nature",
+  figurative: "figures",
+  classic: "classic art",
+  photographic: "photographs",
+};
+
+/** Traits in words, as a list: "dense prints, nature" (`sep` between them). */
+export const traitWords = (keys: readonly FeatureKey[], sep = ", ") => keys.map((k) => TRAIT_WORDS[k]).join(sep);
+
+/** The same list, first letter up: "Dense prints · nature". */
+export const traitLine = (keys: readonly FeatureKey[]) => {
+  const s = traitWords(keys, " · ");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+/**
+ * How a trait reads inside the taste's one sentence: most as a word before
+ * "prints" ("dense, high-contrast prints"), some as a phrase after it
+ * ("drawn from nature"). The sentence's words, not a second list of labels.
+ */
+const SENTENCE: Record<FeatureKey, { before: string } | { after: string }> = {
+  geometric: { before: "geometric" },
+  typography: { after: "built on lettering" },
+  architectural: { before: "architectural" },
+  abstract: { before: "abstract" },
+  line_art: { before: "line-drawn" },
+  halftone_raster: { after: "in printed dots" },
+  density: { before: "dense" },
+  contrast: { before: "high-contrast" },
+  dark_industrial: { before: "industrial" },
+  clean_minimal: { before: "minimal" },
+  pictorial: { before: "pictorial" },
+  wit: { after: "with a sense of humour" },
+  retro: { before: "retro" },
+  nature: { after: "drawn from nature" },
+  figurative: { before: "figurative" },
+  classic: { after: "from the classic archive" },
+  photographic: { after: "made from photographs" },
+};
+
+/**
+ * The taste in one sentence, from its strongest traits (up to three):
+ * "Dense, high-contrast prints drawn from nature."
+ */
+export function tasteSentence(vector: UserProfileVector): string {
+  const traits = topTraits(vector, 3);
+  if (!traits.length) return "Open to anything, for now.";
+  const before = traits.flatMap((k) => ("before" in SENTENCE[k] ? [(SENTENCE[k] as { before: string }).before] : []));
+  const after = traits.flatMap((k) => ("after" in SENTENCE[k] ? [(SENTENCE[k] as { after: string }).after] : []));
+  const s = `${before.join(", ")}${before.length ? " prints" : "Prints"}${after.length ? ` ${after.join(" and ")}` : ""}.`;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** The traits two tastes both lean to (strongest of yours first), up to three. */
+export function sharedTraits(a: UserProfileVector, b: UserProfileVector): FeatureKey[] {
+  const theirs = topTraits(b, 5);
+  return topTraits(a, 5).filter((k) => theirs.includes(k)).slice(0, 3);
+}
+
+/**
+ * The one stylist note during the taste test ("Noted: dense prints"): the
+ * trait the answers so far lean to most, only when the lean is clear.
+ */
+export const NOTE_MIN = 0.62;
+export function noteOf(vector: UserProfileVector): string | null {
+  const [k] = topTraits(vector, 1);
+  return k && vector[k] >= NOTE_MIN ? `Noted: ${TRAIT_WORDS[k]}` : null;
+}
+
 export function archetypeOf(vector: UserProfileVector): { name: string; traits: FeatureKey[] } {
   const traits = topTraits(vector, 3);
   return { name: traits.length ? ARCHETYPE[traits[0]] : "The Open Mind", traits };
@@ -43,7 +132,7 @@ export function archetypeOf(vector: UserProfileVector): { name: string; traits: 
  * they don't carry read as neutral (0.5), so old links keep working.
  */
 export function encodeTaste(vector: UserProfileVector): string {
-  return FEATURE_KEYS.map((k) => Math.round(Math.min(1, Math.max(0, vector[k])) * 100).toString(36).padStart(2, "0")).join("");
+  return FEATURE_KEYS.map((k) => Math.round(clamp01(vector[k]) * 100).toString(36).padStart(2, "0")).join("");
 }
 
 /** Code lengths of earlier builds: 16 features (before "photographic"). */
@@ -58,11 +147,6 @@ export function decodeTaste(code: string | null | undefined): UserProfileVector 
     v[FEATURE_KEYS[i]] = n / 100;
   }
   return v;
-}
-
-/** How alike two tastes are, 0–100 (centered cosine: same leanings vs opposite). */
-export function tasteOverlap(a: UserProfileVector, b: UserProfileVector): number {
-  return Math.round(((centeredCosine(a, b) + 1) / 2) * 100);
 }
 
 /* ------------------------------------------------------------------ */
@@ -87,66 +171,3 @@ export function latestDrop(shirts: readonly { dropDate: number }[]): number {
  * weekly rebuild refreshes the pre-rendered pages). No invented urgency.
  */
 export const isNew = (dropDate: number, now = Date.now()) => now >= dropDate && now < dropDate + WEEK;
-
-/* ------------------------------------------------------------------ */
-/* Daily 5                                                             */
-/* ------------------------------------------------------------------ */
-
-export const DAILY_GOAL = 5;
-
-export interface Daily {
-  /** Local date (YYYY-MM-DD) the count belongs to. */
-  day: string;
-  /** New tees swiped that day. */
-  count: number;
-  /** Consecutive days the goal was reached, up to `last`. */
-  streak: number;
-  /** Last day the goal was reached. */
-  last: string | null;
-}
-
-export const today = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-const prevDay = (day: string) => {
-  const [y, m, d] = day.split("-").map(Number);
-  return today(new Date(y, m - 1, d - 1));
-};
-
-export const emptyDaily = (): Daily => ({ day: today(), count: 0, streak: 0, last: null });
-
-/** One more new tee swiped on `day`. The streak grows the first time a day reaches the goal. */
-export function countSwipe(d: Daily, day = today()): Daily {
-  const count = d.day === day ? d.count + 1 : 1;
-  let { streak, last } = d;
-  if (count === DAILY_GOAL && last !== day) {
-    streak = last === prevDay(day) ? streak + 1 : 1;
-    last = day;
-  }
-  return { day, count, streak, last };
-}
-
-/**
- * The streak as it stands today (broken if yesterday's goal was missed).
- * One day isn't a streak yet: it counts from the second day in a row.
- */
-export function currentStreak(d: Daily, day = today()): number {
-  const alive = d.last === day || d.last === prevDay(day);
-  return alive && d.streak >= 2 ? d.streak : 0;
-}
-
-/* ------------------------------------------------------------------ */
-/* How defined the taste profile is, in one word                       */
-/* ------------------------------------------------------------------ */
-
-export const TASTE_LEVELS = ["Sharpening", "Focused", "Dialled in"] as const;
-export type TasteLevel = (typeof TASTE_LEVELS)[number];
-
-/**
- * The one source for the level word (the strip above the card, Your taste,
- * milestones): from how far the profile has moved from neutral — never a
- * percentage or a count of swipes.
- */
-export function tasteLevel(vector: UserProfileVector): TasteLevel {
-  const sharp = profileSharpness(vector);
-  return sharp < 0.4 ? "Sharpening" : sharp < 0.75 ? "Focused" : "Dialled in";
-}

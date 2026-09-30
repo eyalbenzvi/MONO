@@ -7,9 +7,7 @@
  * device share sheet with an image file (see lib/shareImage), or by saving the
  * image and posting it from the app.
  */
-import { STORE_POLICY } from "@/lib/store-policy";
-import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
-import { formatPrice } from "@/lib/format";
+import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { productHref } from "@/lib/catalog";
 
 export type ShareChannel = "native" | "whatsapp" | "instagram" | "facebook" | "tiktok" | "telegram" | "x" | "email" | "sms" | "copy" | "download";
@@ -46,13 +44,13 @@ export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: Shar
 }
 
 export function shareTitle(shirt: ShirtProduct) {
-  return `${shirt.title} — MONO`;
+  return `${shirt.title} · MONO`;
 }
 
 /** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
 export function shareMessage(shirt: ShirtProduct, color: BaseColor, make?: string) {
-  if (make) return `Made this on MONO ✨ “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(STORE_POLICY.customPrice)}.`;
-  return `Found this tee on MONO 👀 “${shirt.title}” — ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[color].toLowerCase()} tee, ${formatPrice(shirt.price)}.`;
+  if (make) return `Made on MONO: “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee.`;
+  return `“${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee. MONO`;
 }
 
 /** Web share intents. Each opens in a new tab / the app when installed. */

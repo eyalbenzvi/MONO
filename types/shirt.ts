@@ -294,10 +294,20 @@ export interface CartItem {
   qty: number;
   /** A personalised print's inputs ("Make it yours", lib/custom): the only place they're kept. */
   custom?: CustomSpec;
+  /** An uploaded print ("From yours", lib/upload): its raster stays in IndexedDB under `id`; `hash` names the print. */
+  upload?: UploadRef;
 }
 
-/** A line of a stored order: a personalised one keeps only which template it was, never its inputs. */
-export type OrderItem = Omit<CartItem, "custom"> & { custom?: { t: TemplateId } };
+export type UploadMode = "dots" | "lines" | "line" | "vector";
+export interface UploadRef {
+  id: string;
+  mode: UploadMode;
+  size: "full" | "small";
+  hash: string;
+}
+
+/** A line of a stored order: a personalised one keeps only which template it was, an uploaded one its mode; never the inputs. */
+export type OrderItem = Omit<CartItem, "custom" | "upload"> & { custom?: { t: TemplateId }; upload?: { mode: UploadMode } };
 
 export const COLOR_LABELS: Record<BaseColor, string> = { black: "Black", white: "White" };
 export const COLORS: readonly BaseColor[] = ["black", "white"];

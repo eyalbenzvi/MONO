@@ -14,24 +14,46 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { ShirtCard } from "@/components/ShirtCard";
+import { BUTTON_PRIMARY } from "@/components/ui";
 import { useInPlaceZoom } from "@/hooks/useInPlaceZoom";
 import { getShirtById } from "@/lib/catalog";
-import { matchScore, biggestShift } from "@/lib/recommendation";
-import { startOverWithUndo, tasteKnown, useTasteStore, type DeckEntry } from "@/store/tasteStore";
+import { matchScore } from "@/lib/recommendation";
+import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
-import { CATEGORY_LABELS, type SwipeAction, FEATURE_LABELS, type UserProfileVector } from "@/types/shirt";
+
+/** A mouse or trackpad (not touch): keyboard hints are for these. */
+function useFinePointer() {
+  const [fine, setFine] = useState(false);
+  useEffect(() => setFine(window.matchMedia("(pointer: fine)").matches), []);
+  return fine;
+}
+
+/** A short haptic tick, once the page has been touched (before that, browsers refuse and log an error). */
+const buzz = (ms: number) => {
+  if ((navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive === false) return;
+  navigator.vibrate?.(ms);
+};
+import { CATEGORY_LABELS, COLOR_LABELS, type SwipeAction } from "@/types/shirt";
 
 /** Pointer travel that commits a swipe on release. */
 const SWIPE_DISTANCE = 110;
 /** Sideways drag elasticity: the card moves this share of the pointer travel. */
 const ELASTIC_X = 0.9;
-/** Card travel at the commit point, where the LIKE / NOPE stamp locks in. */
+/** Card travel at the commit point, where the tint locks in. */
 const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
 const FLIP_DISTANCE = 80;
+/** The spring a card returns to the centre on (a cancelled drag, an undo). */
+const SNAP_BACK = { type: "spring", stiffness: 500, damping: 32 } as const;
 /** Button / keyboard swipes: short and snappy. */
 const BUTTON_FLY_S = 0.26;
+/** The most a card leans while dragged or flung (degrees). */
+const MAX_TILT = 6;
+/** Reduced motion: the card fades out instead of flying (ms). */
+const REDUCED_FADE_MS = 150;
+/** An upward drag flips to details only when it's this much more vertical than sideways. */
+const VERTICAL_DOMINANCE = 1.5;
 
 // Framer's tap gesture listens natively, so React's stopPropagation on child
 // controls doesn't stop it — filter taps that start on interactive elements.
@@ -43,18 +65,17 @@ export function CardStack() {
   const deck = useTasteStore((s) => s.deck);
   const vector = useTasteStore((s) => s.preferenceVector);
   const isFlipped = useUiStore((s) => s.isFlipped);
-  // "Start over" wipes taste and Saved: offer an Undo that restores it all.
+  // "Reset taste" wipes taste and Saved: offer an Undo that restores it all.
   const startOver = startOverWithUndo;
-  const likedCount = useTasteStore((s) => s.likedIds.length);
   const [hearts, setHearts] = useState<{ id: number; from: DOMRect; to: DOMRect }[]>([]);
   const reduceMotion = useReducedMotion();
 
   const visible = deck.slice(0, 3);
 
-  // A like sends a small heart from the card to the Saved icon in the header.
+  // A save sends a small heart from the card to the You tab.
   const onLiked = useCallback(
     (cardRect: DOMRect) => {
-      navigator.vibrate?.(8);
+      buzz(8);
       if (reduceMotion) return;
       const target = document.querySelector("[data-saved-target]");
       if (!target) return;
@@ -66,23 +87,13 @@ export function CardStack() {
   if (visible.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-          <Icon name="refresh-cw" className="h-7 w-7 text-neutral-400" />
-        </div>
-        <h2 className="text-lg font-semibold">You&apos;ve seen the whole drop</h2>
-        <p className="max-w-xs text-sm text-neutral-400">
-          {likedCount > 0
-            ? `${likedCount} tee${likedCount === 1 ? "" : "s"} saved. Your shop is ranked by everything you swiped.`
-            : "Nothing caught your eye yet — the shop is still ranked by what you passed on."}
-        </p>
-        <Link
-          href="/shop/"
-          className="mt-2 flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black active:scale-95"
-        >
-          See my shop <Icon name="arrow-right" className="h-4 w-4" />
+        <h2 className="text-xl font-medium">You&rsquo;ve seen the whole drop</h2>
+        <p className="max-w-xs text-sm text-neutral-400">Your edit is ranked by every swipe.</p>
+        <Link href="/shop/" className={`mt-2 w-full max-w-xs ${BUTTON_PRIMARY}`}>
+          See your edit
         </Link>
-        <button type="button" onClick={startOver} className="h-11 rounded-full px-5 text-sm font-medium text-neutral-400 hover:text-white">
-          Start over
+        <button type="button" onClick={startOver} className="h-11 min-w-11 px-5 text-sm text-neutral-400 hover:text-white">
+          Reset taste
         </button>
       </div>
     );
@@ -162,24 +173,24 @@ function TopCard({
   const firstEver = useTasteStore((s) => s.seen.length === 0);
   const undoFx = useUiStore((s) => (s.undoFx?.id === entry.id ? s.undoFx : null));
   const reduceMotion = useReducedMotion();
+  const finePointer = useFinePointer();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotate = useTransform(x, [-240, 0, 240], [-16, 0, 16]);
-  const likeOpacity = useTransform(x, [20, STAMP_LOCK], [0, 1]);
-  const nopeOpacity = useTransform(x, [-STAMP_LOCK, -20], [1, 0]);
-  // Crossing the commit point: the stamp pops and the phone ticks once, so
-  // you know letting go now counts. Back under, it settles again.
-  const [locked, setLocked] = useState<SwipeAction | null>(null);
+  // A gentle lean (never more than MAX_TILT), and a tint instead of words:
+  // a light wash towards Save, a dim towards Pass.
+  const rotate = useTransform(x, [-240, 0, 240], [-MAX_TILT, 0, MAX_TILT]);
+  const saveTint = useTransform(x, [20, STAMP_LOCK], [0, 0.14]);
+  const passTint = useTransform(x, [-STAMP_LOCK, -20], [0.4, 0]);
+  // Crossing the commit point: the phone ticks once, so you know letting go
+  // now counts.
   const lockedRef = useRef<SwipeAction | null>(null);
   useMotionValueEvent(x, "change", (v) => {
     const next: SwipeAction | null = v >= STAMP_LOCK ? "like" : v <= -STAMP_LOCK ? "dislike" : null;
     if (next === lockedRef.current) return;
     lockedRef.current = next;
-    setLocked(next);
-    if (next && !leaving.current) navigator.vibrate?.(4);
+    if (next && !leaving.current) buzz(4);
   });
-  const infoOpacity = useTransform(y, [-14, -3], [1, 0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const leaving = useRef(false);
@@ -197,7 +208,7 @@ function TopCard({
       leaving.current = true;
       setIsLeaving(true);
       if (action === "like" && cardRef.current) onLiked(cardRef.current.getBoundingClientRect());
-      else navigator.vibrate?.(8);
+      else buzz(8);
       const dir = action === "like" ? 1 : -1;
       const width = typeof window !== "undefined" ? window.innerWidth : 500;
       const targetX = dir * (width + 200);
@@ -214,9 +225,7 @@ function TopCard({
         if (committed) return;
         committed = true;
         if (fallback.current) clearTimeout(fallback.current);
-        const before = useTasteStore.getState().preferenceVector;
         commitSwipe(entry.id, action, fromQueue);
-        noteLearning(before, action);
       };
       fallback.current = setTimeout(commit, duration * 1000 + 150);
       const el = cardRef.current;
@@ -225,30 +234,35 @@ function TopCard({
         // Fly out on the compositor (Web Animations): a busy main thread —
         // React re-rendering, the next card mounting — can't stall or skip
         // it, so the card always visibly leaves. Framer's own release spring
-        // is stopped so x stays put (and the LIKE / NOPE stamp stays lit).
+        // is stopped so x stays put (and the tint stays on).
         x.stop();
         y.stop();
-        const from = getComputedStyle(el).transform;
-        const to = `translateX(${targetX}px) translateY(${targetY}px) rotate(${dir * 22}deg)`;
-        const anim = el.animate([{ transform: from === "none" ? "none" : from }, { transform: to }], {
-          duration: duration * 1000,
-          easing: "cubic-bezier(0.2, 0.7, 0.4, 1)",
-          fill: "forwards",
-        });
+        // Reduced motion: the card fades where it is, no flight or turn.
+        const anim = reduceMotion
+          ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_FADE_MS, easing: "ease-out", fill: "forwards" })
+          : el.animate([{ transform: getComputedStyle(el).transform }, { transform: `translateX(${targetX}px) translateY(${targetY}px) rotate(${dir * MAX_TILT}deg)` }], {
+              duration: duration * 1000,
+              easing: "cubic-bezier(0.2, 0.7, 0.4, 1)",
+              fill: "forwards",
+            });
+        if (reduceMotion && fallback.current) {
+          clearTimeout(fallback.current);
+          fallback.current = setTimeout(commit, REDUCED_FADE_MS + 150);
+        }
         anim.onfinish = commit;
       } else {
         animate(y, targetY, { duration, ease: "easeOut" });
         animate(x, targetX, { duration, ease: [0.2, 0.7, 0.4, 1], onComplete: commit });
       }
     },
-    [commitSwipe, entry.id, onLiked, x, y],
+    [commitSwipe, entry.id, onLiked, x, y, reduceMotion],
   );
 
   // Pinch zooms the picture in place; the card lets go of the finger and
   // settles, and swipes wait until the picture is back to its whole.
   const zoom = useInPlaceZoom(cardRef, !isFlipped && !isLeaving, () => {
-    animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-    animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+    animate(x, 0, SNAP_BACK);
+    animate(y, 0, SNAP_BACK);
   });
   const { reset: resetZoom } = zoom;
   // Flipping or leaving shows the whole picture again.
@@ -277,8 +291,8 @@ function TopCard({
     });
   }, [undoFx, x]);
 
-  // First-run hint: one gentle wiggle so LIKE / NOPE reveal themselves.
-  // With reduced motion only the legend below explains the gestures.
+  // First-run hint: one gentle wiggle, so the card shows it moves.
+  // With reduced motion the strip's words explain it alone.
   const hinted = useRef(false);
   useEffect(() => {
     if (onboardingSeen || !firstEver || reduceMotion || hinted.current) return;
@@ -294,16 +308,17 @@ function TopCard({
     const { offset, velocity } = info;
     // A drag that turned into a pinch never swipes: the card settles.
     if (zoom.zoomed || zoom.moved()) {
-      animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-      animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+      animate(x, 0, SNAP_BACK);
+      animate(y, 0, SNAP_BACK);
       return;
     }
     if (offset.x > SWIPE_DISTANCE || velocity.x > SWIPE_VELOCITY) return flyOut("like", velocity);
     if (offset.x < -SWIPE_DISTANCE || velocity.x < -SWIPE_VELOCITY) return flyOut("dislike", velocity);
-    if ((offset.y < -FLIP_DISTANCE || velocity.y < -500) && Math.abs(offset.x) < SWIPE_DISTANCE) toggleFlip();
+    // Details only for a clearly vertical flick: a thumb arc must not flip the card.
+    if ((offset.y < -FLIP_DISTANCE || velocity.y < -500) && Math.abs(offset.y) > VERTICAL_DOMINANCE * Math.abs(offset.x)) toggleFlip();
     // Snap back.
-    animate(x, 0, { type: "spring", stiffness: 500, damping: 32 });
-    animate(y, 0, { type: "spring", stiffness: 500, damping: 32 });
+    animate(x, 0, SNAP_BACK);
+    animate(y, 0, SNAP_BACK);
   };
 
   return (
@@ -312,15 +327,16 @@ function TopCard({
       // will-change: the card is its own compositor layer, so dragging and
       // flying it moves a cached bitmap instead of repainting the tee.
       // Keyboard users reach the card itself: ← / → / space act on it (see
-      // app/page.tsx), and the ring follows the card's corners.
+      // DiscoverPage); the keys are described only where there's a keyboard.
       tabIndex={0}
       role="group"
       aria-roledescription="card"
-      aria-label={`${shirt.title}: ${CATEGORY_LABELS[shirt.category]}, ${shirt.baseColor} tee. Left arrow passes, right arrow likes, space shows details.`}
-      className={`absolute inset-0 rounded-[28px] outline-none will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
+      aria-label={`${shirt.title}, ${CATEGORY_LABELS[shirt.category]}, ${COLOR_LABELS[shirt.baseColor].toLowerCase()} tee`}
+      aria-describedby={finePointer ? "card-keys" : undefined}
+      className={`absolute inset-0 outline-none will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
-      initial={{ scale: 0.95, y: 16 }}
-      animate={{ scale: 1, y: 0 }}
+      initial={{ scale: 0.95 }}
+      animate={{ scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       // Drag is disabled while flipped so the details panel can scroll natively.
       // No direction lock: a thumb arc that starts slightly upward used to
@@ -341,7 +357,7 @@ function TopCard({
         dragged.current = false;
       }}
       onTap={(e) => {
-        // On the details face taps do nothing — flip back via Back / ⓘ / Esc.
+        // The details face handles its own taps (an empty spot flips back).
         if (isFlipped || leaving.current || dragged.current || fromControl(e)) return;
         // Zoomed: a tap brings the whole picture back. Otherwise a second tap
         // soon after zooms in there; a single tap shows the details.
@@ -353,43 +369,14 @@ function TopCard({
         {zoom.announce}
       </span>
 
-      {/* Swipe stamps: monochrome — LIKE solid white, NOPE an outline. */}
-      <motion.div
-        style={{ opacity: likeOpacity, rotate: -12 }}
-        animate={{ scale: locked === "like" ? 1.1 : 1 }}
-        transition={{ type: "spring", stiffness: 600, damping: 18 }}
-        className="pointer-events-none absolute left-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-white bg-white px-3 py-1.5 text-2xl font-black tracking-widest text-black will-change-[opacity]"
-      >
-        <Icon name="heart" className="h-6 w-6 fill-current" /> LIKE
-      </motion.div>
-      <motion.div
-        style={{ opacity: nopeOpacity, rotate: 12 }}
-        animate={{ scale: locked === "dislike" ? 1.1 : 1 }}
-        transition={{ type: "spring", stiffness: 600, damping: 18 }}
-        className="pointer-events-none absolute right-6 top-16 flex items-center gap-1.5 rounded-xl border-[3px] border-neutral-200 bg-black/70 px-3 py-1.5 text-2xl font-black tracking-widest text-neutral-100 will-change-[opacity]"
-      >
-        <Icon name="x" className="h-6 w-6" strokeWidth={3} /> NOPE
-      </motion.div>
-      <motion.div
-        style={{ opacity: infoOpacity }}
-        className="pointer-events-none absolute inset-x-0 bottom-24 mx-auto w-fit rounded-full bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-black"
-      >
-        {isFlipped ? "Back" : "Details"}
-      </motion.div>
-
+      {/* The swipe's tint: no words, just light or shade over the card. */}
+      <motion.div aria-hidden style={{ opacity: saveTint }} className="pointer-events-none absolute inset-0 bg-white will-change-[opacity]" />
+      <motion.div aria-hidden style={{ opacity: passTint }} className="pointer-events-none absolute inset-0 bg-black will-change-[opacity]" />
+      {finePointer && (
+        <span id="card-keys" className="sr-only">
+          Left arrow passes, right arrow saves, space shows details.
+        </span>
+      )}
     </motion.div>
   );
-}
-
-/** Every NOTE_EVERY swipes after the taste test: a quiet line saying what the last swipe taught (the real change). */
-const NOTE_EVERY = 5;
-let swipesSinceNote = 0;
-function noteLearning(before: UserProfileVector, action: SwipeAction) {
-  const state = useTasteStore.getState();
-  const { preferenceVector } = state;
-  if (!tasteKnown(state) || ++swipesSinceNote < NOTE_EVERY) return;
-  const k = biggestShift(before, preferenceVector, action);
-  if (!k) return;
-  swipesSinceNote = 0;
-  useUiStore.getState().showToast(`Noted: ${action === "like" ? "more" : "less"} ${FEATURE_LABELS[k].toLowerCase()}`);
 }

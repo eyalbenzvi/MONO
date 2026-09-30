@@ -9,10 +9,11 @@ import type { FeatureVector, ShirtProduct, UserProfileVector } from "@/types/shi
  */
 export type MatchTier = "top" | "strong" | "good";
 
+/** The one tier word shown: "Top pick" (the other tiers stay internal; the Why line says "For you"). */
 export const TIER_LABEL: Record<MatchTier, string> = {
   top: "Top pick",
-  strong: "Strong match",
-  good: "Good match",
+  strong: "For you",
+  good: "For you",
 };
 
 /** Share of the catalog (from the top) each tier covers. */

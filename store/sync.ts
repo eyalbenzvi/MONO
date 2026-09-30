@@ -17,7 +17,9 @@ export async function syncFromStorage(key: string | null) {
     { store: useTasteStore, initial: initialTaste },
     { store: useCartStore, initial: initialCart },
   ] as const;
-  for (const { store, initial } of stores) {
+  // "From yours" loads apart (it isn't on every page); its entry is followed the same way.
+  const make = await import("@/store/makeStore");
+  for (const { store, initial } of [...stores, { store: make.useMakeStore, initial: make.initialMake }]) {
     const name = store.persist.getOptions().name!;
     if (key !== null && key !== name) continue;
     let stored: string | null = null;

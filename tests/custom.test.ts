@@ -61,7 +61,9 @@ describe("personalised prints: the templates are the catalogue's", () => {
   it("templateFor: only the made-for-you products; no catalogue design is personalised", () => {
     expect(CATALOGUE.filter((s) => templateFor(s))).toEqual([]);
     expect(MADE.map((m) => templateFor(getShirtById(m.id)!))).toEqual(MADE.map((m) => m.template));
-    expect(MADE.map((m) => m.template).sort()).toEqual(["moon", "night", "planets", "sky"]);
+    // Every product takes a different kind of input: one template each, the four dated ones among them.
+    expect(new Set(MADE.map((m) => m.template)).size).toBe(MADE.length);
+    expect(MADE.map((m) => m.template)).toEqual(expect.arrayContaining(["moon", "night", "planets", "sky"]));
   });
 
   it("each made product is its base design's tee: its photos, taste and price; its own id, name and page", () => {
@@ -116,7 +118,7 @@ describe("personalised prints: a spec", () => {
 
   it("the words: tidied, at most WORDS_MAX characters the print's font can set; anything else and the spec is null", () => {
     expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w: "  Noa,   welcome " } })).toEqual({ t: "night", v: 1, p: { d: "2021-11-19", w: "Noa, welcome" } });
-    expect(validate({ t: "moon", v: 1, p: { y: 2020, w: "Ça va · 2020!" } })?.p.w).toBe("Ça va · 2020!");
+    expect((validate({ t: "moon", v: 1, p: { y: 2020, w: "Ça va · 2020!" } })?.p as { w?: string } | undefined)?.w).toBe("Ça va · 2020!");
     expect(cleanWords("x".repeat(WORDS_MAX))).toBe("x".repeat(WORDS_MAX));
     for (const w of ["x".repeat(WORDS_MAX + 1), "", "   ", "נועה", "<b>hi</b>", "a\u0000b", 42]) expect(validate({ t: "night", v: 1, p: { d: "2021-11-19", w } }), String(w)).toBeNull();
     expect(sky({ c: TLV.id, d: "1991-03-14", w: "The night we met" })).toEqual({ t: "sky", v: 1, p: { c: TLV.id, d: "1991-03-14", w: "The night we met" } });
@@ -201,12 +203,14 @@ describe("personalised prints: the data", () => {
   const gz = (s: string) => gzipSync(s).length / 1024;
   const published = publishedCustom();
 
-  it("fits its budgets: cities ≤ 80 KB and the sky ≤ 30 KB gzipped, published under their content hashes", () => {
+  it("fits its budgets: cities ≤ 80 KB, the sky ≤ 30 KB, the countries ≤ 40 KB, and the airports ≤ 80 KB gzipped, published under their content hashes", () => {
     expect(gz(published.cities.json)).toBeLessThanOrEqual(80);
     expect(gz(published.sky.json)).toBeLessThanOrEqual(30);
+    expect(gz(published.countries.json)).toBeLessThanOrEqual(40);
+    expect(gz(published.airports.json)).toBeLessThanOrEqual(80);
     const m = readJson("data/custom.manifest.json");
-    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file });
-    expect(readFileSync(path.join(ROOT, "public", "data", m.cities), "utf8")).toBe(published.cities.json);
+    expect(m).toEqual({ cities: published.cities.file, sky: published.sky.file, countries: published.countries.file, airports: published.airports.file });
+    for (const k of ["cities", "sky", "countries", "airports"] as const) expect(readFileSync(path.join(ROOT, "public", "data", m[k]), "utf8")).toBe(published[k].json);
   });
 
   it("the place list is sorted by id, credits its source, and every zone is one this runtime knows", () => {

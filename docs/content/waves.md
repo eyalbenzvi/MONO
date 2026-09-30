@@ -40,3 +40,7 @@ The owner delegated the selection ("do what you think; don't ask"). No picture i
 - What worked: scientific plates (Haeckel, the Challenger) print clean as line work and pass the checks at a high rate. What didn't: general museum searches bring scenes whose tags mention a fish; the title rule and the scene filter were needed. AIC images need the `AIC-User-Agent` header its API asks for; Wikimedia rate-limits hard (one download at a time).
 - Next: wave 2, seafaring and navigation (LoC HABS/HAER measured drawings of lighthouses and ships, af Chapman's ship plans on Commons, nautical charts).
 
+
+## Make artwork (the Make prints' wave 4)
+
+Retired. The two Make prints that drew traced pictures (Your Dinosaur's plates from Marsh, Osborn, Gilmore, Hatcher and Eaton; Your Landmarks from public-domain Commons photographs, screened) looked poor on a tee: speckle from the scans, fragments of printed captions, photographs that read as noise at 3 cm. Both now draw their pictures in code (`lib/custom/draw/dinosaurs.ts`, `lib/custom/draw/landmarks.ts`; README, Make artwork), so the tracing pipeline (`makeArt.ts`, `artSets.ts`, `vectorise.py`, `dots.py`, the review page and `data/art/`) was removed with the pictures it made. Landmarks that are modern buildings are drawn as generic line illustrations, not copied from any photograph.

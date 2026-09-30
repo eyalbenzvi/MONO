@@ -4,8 +4,8 @@ import { pageMeta } from "@/lib/seo";
 
 export const metadata: Metadata = pageMeta({
   path: "/make/",
-  title: "Made for you — MONO",
-  description: "The night sky, the moon or the planets on the day you choose, with your words. Computed, not drawn. One ink, black or white.",
+  title: "Make | MONO",
+  description: "Our prints, made yours from a date, a name, a place or your people. One ink, black or white.",
 });
 
 export default function MakeIndexPage() {

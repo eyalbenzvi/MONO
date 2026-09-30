@@ -4,11 +4,14 @@ import { describe, expect, it } from "vitest";
 import shirts from "../data/shirts.json";
 import { renderCustomSvg, FIRST_YEAR, LAST_YEAR, PLANETS_LAST_YEAR, TITLE_MAX, WORDS_MAX, cleanWords, type City, type CustomSpec } from "@/lib/custom";
 import { MADE } from "@/lib/custom/products";
+import { loadRenderer } from "@/lib/custom/renderers";
 import { getShirtById } from "@/lib/catalog";
 import { decodeCities } from "@/lib/custom/data";
 import { customModelIds } from "@/lib/custom/models";
 import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../scripts/gen/quality";
 import { mulberry32 } from "../scripts/gen/core";
+// Each text measured in its own face (the Make prints set serif, condensed and blackletter beside the mono), as the gate measures it.
+import { wideTexts } from "./make/fuzz";
 import { modelFor } from "@/lib/models";
 
 const ROOT = path.resolve(__dirname, "..");
@@ -16,21 +19,11 @@ const readJson = (f: string) => JSON.parse(readFileSync(path.join(ROOT, f), "utf
 const SKY = { stars: readJson("data/sky/stars.json"), lines: (readJson("data/sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
 const places = decodeCities(readJson("data/cities/cities.json"));
 
-/** What the audit measures, the monospace way: a text's width in print units (DejaVu Sans Mono's advance is 0.602 em). */
-function textWidths(svg: string): { text: string; width: number }[] {
-  return [...svg.matchAll(/<text([^>]*)>([^<]*)<\/text>/g)].map(([, attrs, t]) => {
-    const size = Number(/font-size="([\d.]+)"/.exec(attrs)?.[1] ?? 0);
-    const spacing = Number(/letter-spacing="([\d.]+)"/.exec(attrs)?.[1] ?? 0);
-    const chars = [...t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")].length;
-    return { text: t, width: chars * (0.602 * size + spacing) };
-  });
-}
-
 /** A print that may be applied: not a solid block, and not weak by the catalogue's own line. */
 function check(svg: string, color: "black" | "white") {
   const raster = svgInk(svg, color);
   const a = assessPrint(raster);
-  return { solid: solidBlock(raster).reject, quality: a.quality, flags: a.flags, wide: textWidths(svg).filter((t) => t.width > 292) };
+  return { solid: solidBlock(raster).reject, quality: a.quality, flags: a.flags, wide: wideTexts(svg) };
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -109,15 +102,18 @@ describe("personalised prints: every input makes a printable print", () => {
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
 
-  it("each made product's example (what the Make pages show first) passes", () => {
+  it("each made product's example (what the Make pages show first) passes", async () => {
     for (const m of MADE) {
       const city = m.example.t === "sky" ? places.byId(m.example.p.c) : undefined;
+      const render = await loadRenderer(m.template);
       for (const color of ["black", "white"] as const) {
-        const r = check(renderCustomSvg(m.example, color, { sky: SKY, city }), color);
+        // The place list too: Your Journey's globe draws the world's cities (its prepare() loads them on the site).
+        const r = check(render(m.example, color, { sky: SKY, city, places: places.list }), color);
         expect({ id: m.id, color, ...r, ok: !r.solid && r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
       }
     }
-  });
+    // Thirty-one products on two tees, each measured with resvg.
+  }, 120_000);
 });
 
 describe("personalised prints: the model photos they're drawn on", () => {

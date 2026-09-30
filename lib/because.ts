@@ -3,10 +3,10 @@ import { centeredCosine } from "@/lib/recommendation";
 import type { ShirtProduct } from "@/types/shirt";
 
 /** How alike (centered cosine) a saved design must be to be named as the reason. */
-export const BECAUSE_MIN = 0.55;
+export const BECAUSE_MIN = 0.7;
 
 /**
- * "Because you liked …": the saved design this one is most like (another
+ * "Because you saved …": the saved design this one is most like (another
  * family, alike enough), or null. The reason is real — the closest thing
  * the visitor actually liked — never a stock line.
  */

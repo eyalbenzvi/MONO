@@ -6,9 +6,9 @@ import { CUSTOM_LIKE, LIKE_RATE, matchScore, nudgeVector, updateUserVector } fro
 import { CALIBRATION_IDS, CALIBRATION_TOTAL, DECK_SIZE, buildDeck as dealDeck, calibrationDone, type DeckEntry } from "@/lib/deck";
 import { getShirtById } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
-import { useUiStore } from "@/store/useUiStore";
+import { useUiStore, SWIPE_QUEUE_MAX } from "@/store/useUiStore";
 import { FEATURE_KEYS, createInitialVector, type RecommendationStrategy, type SwipeAction, type SwipeEvent, type UserProfileVector } from "@/types/shirt";
-import { TASTE_LEVELS, countSwipe, emptyDaily, tasteLevel, type Daily, type TasteLevel } from "@/lib/taste";
+import { clamp01, nonce } from "@/lib/math";
 
 export { DECK_SIZE, type DeckEntry };
 
@@ -41,24 +41,39 @@ export interface TasteProgress {
 type Evidence = Pick<TasteState, "likedIds" | "dislikedIds" | "seen" | "calibrationAcknowledged">;
 
 export function tasteProgress(s: Evidence): TasteProgress {
-  const done = calibrationDone(CALIBRATION_IDS, s.seen);
-  const tested = s.calibrationAcknowledged || done >= CALIBRATION_TOTAL;
-  const likes = s.likedIds.length;
-  const passes = s.dislikedIds.length;
+  return progressFrom(calibrationDoneOf(s.seen), s.calibrationAcknowledged, s.likedIds.length, s.dislikedIds.length);
+}
+
+function progressFrom(done: number, acknowledged: boolean, likes: number, passes: number): TasteProgress {
+  const tested = acknowledged || done >= CALIBRATION_TOTAL;
   const likesNeeded = Math.max(0, MIN_LIKES - likes);
   const passesNeeded = Math.max(0, MIN_PASSES - passes);
   return { done, total: CALIBRATION_TOTAL, likes, passes, likesNeeded, passesNeeded, phase: !tested ? "test" : likesNeeded || passesNeeded ? "more" : "known" };
 }
 
+/** Calibration prints seen, per family; remembered for the last `seen` array (the store keeps it until a swipe changes it). */
+let doneCache: { seen: readonly string[]; done: number } | null = null;
+function calibrationDoneOf(seen: string[]) {
+  if (doneCache?.seen !== seen) doneCache = { seen, done: calibrationDone(CALIBRATION_IDS, seen) };
+  return doneCache.done;
+}
+
 export const tasteKnown = (s: Evidence) => tasteProgress(s).phase === "known";
+
+/**
+ * What the taste still needs, in words (the strip above the card, You):
+ * "Almost there. Keep 2 you’d wear." — likes first, then passes.
+ */
+export function needLine({ likesNeeded, passesNeeded }: Pick<TasteProgress, "likesNeeded" | "passesNeeded">): string {
+  if (likesNeeded) return `Almost there. Keep ${likesNeeded} you’d wear.`;
+  return `Almost there. Pass on ${passesNeeded} you wouldn’t wear.`;
+}
 
 export interface LastUpdate {
   shirtId: string;
   action: SwipeAction;
   before: UserProfileVector;
   after: UserProfileVector;
-  /** The Daily 5 before this swipe (Undo puts it back). */
-  daily?: Daily;
 }
 
 /** Everything about the user's taste that survives a reload. */
@@ -76,10 +91,6 @@ export interface TasteState {
   calibrationAcknowledged: boolean;
   /** First-run coach marks dismissed (after the first swipe). */
   onboardingSeen: boolean;
-  /** "Daily 5": new tees swiped today (after the taste test), and the streak of days that reached five. */
-  daily: Daily;
-  /** Taste levels already reached (announced once, never again after an undo). */
-  milestones: TasteLevel[];
   /** Designs made personal ("Use this"): each nudged the taste once (CUSTOM_LIKE). Ids only, never the inputs. */
   customLiked: string[];
 }
@@ -95,6 +106,8 @@ interface TasteActions {
   toggleSaved: (id: string) => void;
   /** "Use this" on a personalised print: a weak like of its design, once per design. */
   likeCustom: (id: string) => void;
+  /** An upload nudges the taste once (CUSTOM_LIKE), on the axes measured from it only; `key` is the upload's id. */
+  likeUpload: (key: string, measured: Partial<UserProfileVector>) => void;
   removeLiked: (id: string) => void;
   /** Put a removed tee back in Saved without training on it again. */
   /** Put a removed id back (at its old position in likedIds, when given). */
@@ -131,7 +144,7 @@ export function unlearn(s: Pick<TasteState, "preferenceVector" | "swipeHistory">
     return { preferenceVector: v, swipeHistory };
   }
   const v = { ...s.preferenceVector };
-  for (const k of Object.keys(v) as (keyof UserProfileVector)[]) v[k] = Math.min(1, Math.max(0, (v[k] - LIKE_RATE * shirt.features[k]) / (1 - LIKE_RATE)));
+  for (const k of Object.keys(v) as (keyof UserProfileVector)[]) v[k] = clamp01((v[k] - LIKE_RATE * shirt.features[k]) / (1 - LIKE_RATE));
   return { preferenceVector: v, swipeHistory };
 }
 
@@ -148,8 +161,6 @@ export const initialTaste = (): TasteState => ({
   lastUpdate: null,
   calibrationAcknowledged: false,
   onboardingSeen: false,
-  daily: emptyDaily(),
-  milestones: [],
   customLiked: [],
 });
 
@@ -163,8 +174,6 @@ export const tasteOf = (s: TasteState): TasteState => ({
   lastUpdate: s.lastUpdate,
   calibrationAcknowledged: s.calibrationAcknowledged,
   onboardingSeen: s.onboardingSeen,
-  daily: s.daily,
-  milestones: s.milestones,
   customLiked: s.customLiked,
 });
 
@@ -197,7 +206,7 @@ function vectorOf(x: unknown): UserProfileVector {
   if (x && typeof x === "object")
     for (const k of FEATURE_KEYS) {
       const n = (x as Record<string, unknown>)[k];
-      if (typeof n === "number" && Number.isFinite(n)) v[k] = Math.min(1, Math.max(0, n));
+      if (typeof n === "number" && Number.isFinite(n)) v[k] = clamp01(n);
     }
   return v;
 }
@@ -222,8 +231,7 @@ function eventOf(x: unknown): SwipeEvent | null {
 }
 
 export function sanitizeTaste(raw: unknown): TasteState {
-  const d = initialTaste();
-  if (!raw || typeof raw !== "object") return d;
+  if (!raw || typeof raw !== "object") return initialTaste();
   const r = raw as Partial<Record<keyof TasteState, unknown>>;
   const history = Array.isArray(r.swipeHistory) ? r.swipeHistory.map(eventOf).filter((e): e is SwipeEvent => !!e).slice(-HISTORY_LIMIT) : [];
   const seen = ids(r.seen);
@@ -240,40 +248,29 @@ export function sanitizeTaste(raw: unknown): TasteState {
       : [],
     lastUpdate:
       lu && isStr(lu.shirtId) && isAction(lu.action)
-        ? { shirtId: lu.shirtId, action: lu.action, before: vectorOf(lu.before), after: vectorOf(lu.after), ...(lu.daily ? { daily: dailyOf(lu.daily) } : {}) }
+        ? { shirtId: lu.shirtId, action: lu.action, before: vectorOf(lu.before), after: vectorOf(lu.after) }
         : null,
     calibrationAcknowledged: r.calibrationAcknowledged === true,
     onboardingSeen: r.onboardingSeen === true,
-    daily: dailyOf(r.daily),
-    milestones: Array.isArray(r.milestones) ? TASTE_LEVELS.filter((l) => (r.milestones as unknown[]).includes(l)) : [],
-    customLiked: ids(r.customLiked),
+    customLiked: [...ids(r.customLiked), ...(Array.isArray(r.customLiked) ? (r.customLiked as unknown[]).filter((x): x is string => typeof x === "string" && /^upload:[a-z0-9]{4,24}$/.test(x)) : [])],
   };
 }
 
-const isDay = (x: unknown): x is string => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x);
-function dailyOf(x: unknown): Daily {
-  const d = x as Partial<Daily> | null | undefined;
-  if (!d || !isDay(d.day)) return emptyDaily();
-  const n = (v: unknown) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : 0);
-  return { day: d.day, count: n(d.count), streak: n(d.streak), last: isDay(d.last) ? d.last : null };
-}
-
 /**
- * v1 → v2 adds the Daily 5 counter (starting empty); v2 → v3 adds the
- * taste levels already reached (none yet: the next one is announced once);
- * v3 → v4 adds the "photographic" dimension, at neutral: nobody has rated
+ * v1 → v2 and v2 → v3 added the Daily 5 counter and the taste levels
+ * reached (both since removed: v6 drops them); v3 → v4 adds the "photographic" dimension, at neutral: nobody has rated
  * a photograph yet, so it isn't guessed from the drawn prints they liked
  * (the photographs in the taste test are dealt next and measure it);
  * v4 → v5 (the content overhaul chose new taste-test prints): whoever had
  * already answered a whole test's worth of cards stays finished, even if
  * the result screen was never acknowledged — the new test prints are
- * dealt, but the test doesn't start over.
+ * dealt, but the test doesn't start over; v5 → v6 drops the Daily 5,
+ * streak and taste levels (gamification, removed): the taste itself, Saved
+ * and the history are untouched.
  */
 export function migrateTaste(persisted: unknown, version: number): unknown {
   if (!persisted || typeof persisted !== "object") return persisted;
   const s = { ...(persisted as Record<string, unknown>) };
-  if (version < 2) s.daily = emptyDaily();
-  if (version < 3) s.milestones = [];
   if (version < 4) {
     const neutral = (v: unknown) => (v && typeof v === "object" ? { ...(v as object), photographic: 0.5 } : v);
     s.preferenceVector = neutral(s.preferenceVector);
@@ -285,6 +282,14 @@ export function migrateTaste(persisted: unknown, version: number): unknown {
   if (version < 5) {
     const answered = (Array.isArray(s.likedIds) ? s.likedIds.length : 0) + (Array.isArray(s.dislikedIds) ? s.dislikedIds.length : 0);
     if (answered >= CALIBRATION_TOTAL) s.calibrationAcknowledged = true;
+  }
+  if (version < 6) {
+    delete s.daily;
+    delete s.milestones;
+    if (s.lastUpdate && typeof s.lastUpdate === "object") {
+      const { daily: _daily, ...lu } = s.lastUpdate as Record<string, unknown>;
+      s.lastUpdate = lu;
+    }
   }
   return s;
 }
@@ -301,8 +306,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
 
       requestSwipe: (action) => {
         const ui = useUiStore.getState();
-        if (get().deck.length === 0 || ui.swipeQueue.length >= 5) return;
-        useUiStore.setState({ swipeQueue: [...ui.swipeQueue, { action, nonce: Date.now() + Math.random() }] });
+        if (get().deck.length === 0 || ui.swipeQueue.length >= SWIPE_QUEUE_MAX) return;
+        useUiStore.setState({ swipeQueue: [...ui.swipeQueue, { action, nonce: nonce() }] });
       },
 
       commitSwipe: (shirtId, action, fromQueue = false) => {
@@ -325,24 +330,15 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         const deck = buildDeck(state.deck.slice(1, 2), after, seen, evidence);
         // The taste just became known (enough cards, likes and passes): the result screen.
         const calibrationJustDone = !state.calibrationAcknowledged && !tasteKnown(state) && tasteKnown(evidence);
-
-        // The Daily 5 counts new tees swiped after the taste test — not the
-        // test itself, and not a card brought back by Undo (Undo restores it).
-        const daily = state.calibrationAcknowledged && !state.seen.includes(shirtId) ? countSwipe(state.daily) : state.daily;
-        // A taste level reached for the first time (after the taste test).
-        const level = tasteLevel(after);
-        const milestone = state.calibrationAcknowledged && level !== TASTE_LEVELS[0] && !state.milestones.includes(level) ? level : null;
         set({
           preferenceVector: after,
           swipeHistory,
           seen,
-          daily,
-          milestones: milestone ? [...state.milestones, milestone] : state.milestones,
           // Never list an id twice (it may already be saved from the shop).
           likedIds,
           dislikedIds,
           deck,
-          lastUpdate: { shirtId, action, before, after, daily: state.daily },
+          lastUpdate: { shirtId, action, before, after },
           // The gesture legend stays until the first real swipe (flipping or
           // zooming doesn't count as having learned to swipe).
           onboardingSeen: true,
@@ -351,6 +347,8 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         useUiStore.setState({
           isFlipped: false,
           undoFx: null,
+          // The strip above the card says what just happened ("Saved · Undo").
+          swiped: { id: shirtId, action, nonce: Date.now() },
           // The taste test just finished: drop queued button swipes so they
           // don't keep playing behind the "taste test complete" screen.
           swipeQueue: calibrationJustDone ? [] : fromQueue ? ui.swipeQueue.slice(1) : ui.swipeQueue,
@@ -375,10 +373,9 @@ export const useTasteStore = create<TasteState & TasteActions>()(
           likedIds: last.action === "like" ? drop(state.likedIds) : state.likedIds,
           dislikedIds: last.action === "dislike" ? drop(state.dislikedIds) : state.dislikedIds,
           deck: [restored, ...state.deck.filter((e) => e.id !== restored.id)].slice(0, DECK_SIZE),
-          daily: state.lastUpdate.daily ?? state.daily,
           lastUpdate: null,
         });
-        useUiStore.setState({ isFlipped: false, swipeQueue: [], undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() } });
+        useUiStore.setState({ isFlipped: false, swipeQueue: [], swiped: null, undoFx: { id: last.shirtId, action: last.action, nonce: Date.now() } });
         track("undo", { id: last.shirtId, action: last.action });
       },
 
@@ -415,6 +412,15 @@ export const useTasteStore = create<TasteState & TasteActions>()(
         });
         if (!alreadySeen && !topStays.length) useUiStore.setState({ isFlipped: false });
         track("save", { id });
+      },
+
+      likeUpload: (key, measured) => {
+        const s = get();
+        const id = `upload:${key}`;
+        if (s.customLiked.includes(id)) return;
+        const v = { ...s.preferenceVector };
+        for (const [k, target] of Object.entries(measured) as [keyof UserProfileVector, number][]) if (Number.isFinite(target)) v[k] = clamp01(v[k] + CUSTOM_LIKE * (target - v[k]));
+        set({ preferenceVector: v, customLiked: [...s.customLiked, id] });
       },
 
       likeCustom: (id) => {
@@ -472,7 +478,7 @@ export const useTasteStore = create<TasteState & TasteActions>()(
     }),
     {
       name: TASTE_KEY,
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => localStorage),
       migrate: migrateTaste,
       skipHydration: true,
@@ -492,13 +498,13 @@ export const useTasteStore = create<TasteState & TasteActions>()(
 export function useCalibrationProgress() {
   // Counted per family: saving a sibling of a calibration print in the shop
   // also counts. Primitive selectors, so the result only changes with them.
-  const done = useTasteStore((s) => calibrationDone(CALIBRATION_IDS, s.seen));
+  const done = useTasteStore((s) => calibrationDoneOf(s.seen));
   const acknowledged = useTasteStore((s) => s.calibrationAcknowledged);
   const likes = useTasteStore((s) => s.likedIds.length);
   const passes = useTasteStore((s) => s.dislikedIds.length);
-  const p = tasteProgress({ likedIds: Array(likes), dislikedIds: Array(passes), seen: [], calibrationAcknowledged: acknowledged || done >= CALIBRATION_TOTAL });
+  const p = progressFrom(done, acknowledged, likes, passes);
   // `complete`: the taste is known — the one gate for everything personal.
-  return { ...p, done, complete: p.phase === "known" };
+  return { ...p, complete: p.phase === "known" };
 }
 
 /** Reset taste and Saved, with an Undo toast that restores it all. */
@@ -506,5 +512,5 @@ export function startOverWithUndo() {
   const { snapshot, reset, restore } = useTasteStore.getState();
   const before = snapshot();
   reset();
-  useUiStore.getState().showToast("Started over", { label: "Undo", run: () => restore(before) });
+  useUiStore.getState().showToast("Taste reset", { label: "Undo", run: () => restore(before) });
 }

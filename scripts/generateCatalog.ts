@@ -28,13 +28,13 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, otherColor, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type ShirtProduct, type SourceCategory } from "../types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { checkPrint } from "./tools/blockCheck";
-import { firstSentence, isWordTitled, plainTitles } from "./gen/titles";
+import { firstSentence, houseTitle, isWordTitled, plainTitles } from "./gen/titles";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
-import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, solidBlock, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
+import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
 import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
@@ -883,6 +883,8 @@ async function main() {
   }
   // Titles set by hand (data/curation/titles.json): a maker's or brand's name gives way to what the picture shows.
   const titled = curatedTitles();
+  // The titles as generated (an archive work's is its record's name, which is also its subject).
+  const generated = new Map(shirts.map((s) => [s.id, s.title]));
   for (const s of shirts) if (titled.has(s.id)) s.title = titled.get(s.id)!;
   const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
   for (const [id, why] of curated) if (!retired.has(id)) retired.set(id, why);
@@ -922,14 +924,34 @@ async function main() {
     if (isWordTitled(s.source)) s.base = firstSentence(s.base);
   }
   for (const [id, why] of plain.retire) retired.set(id, why);
-  // A colour in the title ("Scarlet Globe Mallow"): the description says the print is one ink.
-  for (const s of remaining) if (COLOUR_WORD.test(s.title) && !/one[- ]ink/i.test(s.base)) s.base = `${sentence(s.base)} Printed in one ink; the colour is only in the name.`;
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
     if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
     shirts.splice(k, 1);
     sigs.splice(k, 1);
   }
+  // The house style for titles (scripts/gen/titles houseTitle), on what's left, so no retirement goes by it.
+  // A title set by hand (data/curation/titles.json) is written in it already. A subject that was the
+  // title (a photograph named by its subject, an archive work by its record, whose sentence starts
+  // with it) follows the title — for an archive work also a title set by hand, completing a record's
+  // name that was cut short (not a patent model's, whose subject keeps the record's words).
+  for (const s of shirts) {
+    const t = titled.get(s.id) ?? houseTitle(s.title);
+    const follows = s.subject === s.title || (titled.has(s.id) && s.source === "archive" && s.variant !== "archive-patent" && s.subject === generated.get(s.id));
+    if (follows && s.subject !== t) {
+      if (s.base.startsWith(s.subject)) s.base = t + s.base.slice(s.subject.length);
+      s.subject = t;
+    }
+    s.title = t;
+  }
+  const byTitle = new Map<string, string>();
+  for (const s of shirts) {
+    const k = s.title.toLowerCase();
+    if (byTitle.has(k)) throw new Error(`two designs titled "${s.title}": ${byTitle.get(k)} and ${s.id}`);
+    byTitle.set(k, s.id);
+  }
+  // A colour in the title ("Scarlet Globe Mallow"): the description says the print is one ink.
+  for (const s of shirts) if (COLOUR_WORD.test(s.title) && !/one[- ]ink/i.test(s.base)) s.base = `${sentence(s.base)} Printed in one ink; the colour is only in the name.`;
   const perCategory: Partial<Record<ShirtCategory, number>> = {};
   for (const s of shirts) s.no = perCategory[s.category] = (perCategory[s.category] ?? 0) + 1;
 

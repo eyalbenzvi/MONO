@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/shop/`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/make/`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/make/two/`, changeFrequency: "monthly", priority: 0.7 },
     ...MADE.map((m) => ({ url: `${SITE_URL}/make/${m.slug}/`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${SITE_URL}/about/`, changeFrequency: "monthly", priority: 0.5 },
     ...PRERENDERED.map((s) => ({ url: `${SITE_URL}/shop/${s.id}/`, changeFrequency: "monthly" as const, priority: 0.6 })),

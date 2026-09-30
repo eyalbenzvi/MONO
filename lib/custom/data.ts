@@ -52,6 +52,90 @@ export function loadSky(): Promise<SkyData> {
   return sky;
 }
 
+/** data/countries/countries.json: Natural Earth's countries in Equal Earth (scripts/tools/buildCountries.ts), in columns. */
+export interface CountriesFile {
+  a2: string[];
+  a3: string[];
+  name: string[];
+  /** A label point (or the country itself, when it's too small for an outline), thousandths of a unit, y down. */
+  point: [number, number][];
+  /** The outline's area, square thousandths (0 for a point). */
+  area: number[];
+  /** Outer rings, each x, y, x, y… in thousandths of a unit, y down. */
+  rings: number[][][];
+}
+export interface Country {
+  /** ISO 3166-1 alpha-2 ("" for a country without one), then alpha-3 (Natural Earth's, always set: the id). */
+  a2: string;
+  a3: string;
+  name: string;
+  point: [number, number];
+  area: number;
+  rings: number[][];
+}
+export interface Countries {
+  list: Country[];
+  byA3: (a3: string) => Country | undefined;
+}
+export function decodeCountries(f: CountriesFile): Countries {
+  const list = f.a3.map((a3, i) => ({ a2: f.a2[i], a3, name: f.name[i], point: f.point[i], area: f.area[i], rings: f.rings[i] }));
+  const map = new Map(list.map((c) => [c.a3, c]));
+  return { list, byA3: (a3) => map.get(a3) };
+}
+
+/** data/airports/airports.json: OurAirports' airports with an IATA code (scripts/tools/buildAirports.ts), in columns. */
+export interface AirportsFile {
+  iata: string[];
+  name: string[];
+  city: string[];
+  country: string[];
+  lat: number[];
+  lon: number[];
+}
+export interface Airport {
+  iata: string;
+  name: string;
+  city: string;
+  country: string;
+  lat: number;
+  lon: number;
+}
+export interface Airports {
+  list: Airport[];
+  byCode: (iata: string) => Airport | undefined;
+}
+export function decodeAirports(f: AirportsFile): Airports {
+  const list = f.iata.map((iata, i) => ({ iata, name: f.name[i], city: f.city[i], country: f.country[i], lat: f.lat[i], lon: f.lon[i] }));
+  const map = new Map(list.map((a) => [a.iata, a]));
+  return { list, byCode: (c) => map.get(c.toUpperCase()) };
+}
+
+let countries: Promise<Countries> | null = null;
+let airports: Promise<Airports> | null = null;
+export function loadCountries(): Promise<Countries> {
+  countries ??= get<CountriesFile>(manifest.countries).then(decodeCountries);
+  countries.catch(() => (countries = null));
+  return countries;
+}
+export function loadAirports(): Promise<Airports> {
+  airports ??= get<AirportsFile>(manifest.airports).then(decodeAirports);
+  airports.catch(() => (airports = null));
+  return airports;
+}
+
+
+/** Up to n airports for what's typed: its code first ("nrt"), then word starts of its city or name ("tokyo", "heathrow"), accents folded; the biggest names first. */
+export function searchAirports(list: Airports, q: string, n = 6): Airport[] {
+  const code = q.trim().toUpperCase();
+  const exact = /^[A-Z]{3}$/.test(code) ? list.byCode(code) : undefined;
+  const qs = clean(q).split(" ").filter(Boolean);
+  if (!qs.length) return [];
+  const hits = list.list.filter((a) => a !== exact && qs.every((x) => clean(`${a.city} ${a.name}`).split(" ").some((y) => y.startsWith(x))));
+  // A city's own airport first ("London" before London's smaller fields' namesakes elsewhere), then by name.
+  hits.sort((a, b) => Number(!clean(a.city).startsWith(qs[0])) - Number(!clean(b.city).startsWith(qs[0])) || (a.name < b.name ? -1 : 1));
+  return [...(exact ? [exact] : []), ...hits].slice(0, n);
+}
+
 /**
  * Up to n cities for what's typed: every word of it starts a word of the
  * city's name or country ("tel" → Tel Aviv; "york" → New York), accents

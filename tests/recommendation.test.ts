@@ -4,13 +4,10 @@ import {
   cosineSimilarity,
   explainMatch,
   getCalibrationQueue,
-  getNextCard,
   matchScore,
   rankShirts,
-  similarShirts,
   topTraits,
   profileSharpness,
-  biggestShift,
   updateUserVector,
 } from "@/lib/recommendation";
 import { SHIRTS } from "@/lib/catalog";
@@ -122,34 +119,6 @@ describe("getCalibrationQueue", () => {
   });
 });
 
-describe("getNextCard", () => {
-  const userVec = SHIRTS[0].features;
-
-  it("greedy picks the highest match among unseen", () => {
-    const res = getNextCard(userVec, SHIRTS, [], "greedy")!;
-    expect(res.shirt.id).toBe(SHIRTS[0].id);
-    const others = SHIRTS.filter((s) => s.id !== res.shirt.id);
-    for (const s of others) expect(matchScore(userVec, s.features)).toBeLessThanOrEqual(res.score);
-  });
-
-  it("skips seen ids and returns null when exhausted", () => {
-    const res = getNextCard(userVec, SHIRTS, [SHIRTS[0].id], "greedy")!;
-    expect(res.shirt.id).not.toBe(SHIRTS[0].id);
-    expect(getNextCard(userVec, SHIRTS, SHIRTS.map((s) => s.id))).toBeNull();
-  });
-
-  it("explore picks the most orthogonal shirt", () => {
-    const res = getNextCard(userVec, SHIRTS, [], "explore")!;
-    const minAbs = Math.min(...SHIRTS.map((s) => Math.abs(centeredCosine(userVec, s.features))));
-    expect(Math.abs(centeredCosine(userVec, res.shirt.features))).toBeCloseTo(minAbs, 10);
-  });
-
-  it("rolls ~80/20 greedy/explore when strategy is omitted", () => {
-    expect(getNextCard(userVec, SHIRTS, [], undefined, () => 0.1)!.strategy).toBe("explore");
-    expect(getNextCard(userVec, SHIRTS, [], undefined, () => 0.5)!.strategy).toBe("greedy");
-  });
-});
-
 describe("shop ranking", () => {
   const userVec = SHIRTS[3].features;
 
@@ -167,16 +136,6 @@ describe("shop ranking", () => {
     expect(popular[0]).toBe(0);
     const weeks = rankShirts(userVec, SHIRTS, "new").map((r) => r.shirt.dropDate);
     expect(weeks).toEqual([...weeks].sort((a, b) => b - a));
-  });
-
-  it("similarShirts excludes the shirt itself and returns the closest styles", () => {
-    const base = SHIRTS[0];
-    const sim = similarShirts(base, SHIRTS, 4);
-    expect(sim).toHaveLength(4);
-    expect(sim.map((s) => s.id)).not.toContain(base.id);
-    const worst = Math.min(...sim.map((s) => centeredCosine(base.features, s.features)));
-    const rest = SHIRTS.filter((s) => s.id !== base.id && !sim.includes(s));
-    for (const s of rest) expect(centeredCosine(base.features, s.features)).toBeLessThanOrEqual(worst);
   });
 
   it("explainMatch only names traits the user actually leans towards", () => {
@@ -201,13 +160,5 @@ describe("display helpers (no effect on scores)", () => {
     for (let i = 0; i < 5; i++) v = updateUserVector(v, SHIRTS[0].features, "like");
     expect(profileSharpness(v)).toBeGreaterThan(s0);
     expect(profileSharpness(vec(() => 1))).toBe(1);
-  });
-
-  it("biggestShift names the most-moved trait in the swipe's direction", () => {
-    const before = createInitialVector();
-    const shirt = { ...createInitialVector(0.5), typography: 1, halftone_raster: 0.9 };
-    expect(biggestShift(before, updateUserVector(before, shirt, "like"), "like")).toBe("typography");
-    expect(biggestShift(before, updateUserVector(before, shirt, "dislike"), "dislike")).toBe("typography");
-    expect(biggestShift(before, before, "like")).toBeNull();
   });
 });

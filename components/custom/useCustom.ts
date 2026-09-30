@@ -21,16 +21,48 @@ export interface DrawnPrint {
   summary: string;
 }
 
-export async function drawPrint(spec: CustomSpec, color: BaseColor): Promise<DrawnPrint> {
+/** Prints already drawn this visit (the same spec in the same colour draws the same), most recent last. */
+const drawn = new Map<string, Promise<DrawnPrint>>();
+const DRAWN_MAX = 48;
+/** One print drawn at a time, each in its own task: a page of prints never freezes the tab (and a tap in between is answered). */
+let queue: Promise<unknown> = Promise.resolve();
+const nextTask = () => new Promise<void>((r) => setTimeout(r, 0));
+
+/** A print for a colour, drawn once per visit (a second look, e.g. back to a page, reuses it). */
+export function drawPrint(spec: CustomSpec, color: BaseColor): Promise<DrawnPrint> {
+  const key = `${color}|${JSON.stringify(spec)}`;
+  let p = drawn.get(key);
+  if (p) {
+    drawn.delete(key);
+    drawn.set(key, p);
+    return p;
+  }
+  p = queue.then(nextTask).then(() => drawNow(spec, color));
+  queue = p.catch(() => {});
+  drawn.set(key, p);
+  p.catch(() => drawn.delete(key));
+  if (drawn.size > DRAWN_MAX) drawn.delete(drawn.keys().next().value!);
+  return p;
+}
+
+async function drawNow(spec: CustomSpec, color: BaseColor): Promise<DrawnPrint> {
   const m = await loadRender();
-  const data: { sky?: Awaited<ReturnType<Render["loadSky"]>>; city?: City } = {};
+  const data: { sky?: Awaited<ReturnType<Render["loadSky"]>>; city?: City; places?: City[] } = {};
   if (spec.t === "sky") {
     const [sky, places] = await Promise.all([m.loadSky(), m.loadCities()]);
     const city = places.byId(spec.p.c);
     if (!city) throw new Error("unknown city");
     Object.assign(data, { sky, city });
   }
-  return { spec, color, svg: m.renderCustomSvg(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };
+  // Your Place draws the world's cities (and is named by one).
+  if (spec.t === "place") {
+    const places = await m.loadCities();
+    Object.assign(data, { places: places.list, city: spec.p.c !== undefined ? places.byId(spec.p.c) : undefined });
+  }
+  // A later template loads its own data (lib/custom/renderers prepareData).
+  Object.assign(data, await m.prepareData(spec));
+  const render = await m.loadRenderer(spec.t);
+  return { spec, color, svg: render(spec, color, data), city: data.city, summary: m.customSummary(spec, data.city) };
 }
 
 /**

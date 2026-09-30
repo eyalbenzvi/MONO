@@ -29,8 +29,6 @@ function setup(over: Partial<SearchBoxProps> = {}) {
     literal: false,
     tasteKnown: false,
     focusNonce: 0,
-    leading: null,
-    trailing: null,
     onQuery: vi.fn(),
     onFacets: vi.fn(),
     onLiteral: vi.fn(),
@@ -52,18 +50,18 @@ describe("search: the open search box", () => {
     expect(groups).toEqual(expect.arrayContaining(["Look", "Subject", "Made", "Era"]));
     // The tee colour stays on the row's dots, not repeated here.
     expect(groups).not.toContain("Tee");
-    expect(groups).not.toContain("For me");
+    expect(groups).not.toContain("Your edit");
     expect(groups).not.toContain("Recent");
     // Every chip comes from the index: a LOOK chip for each look tag with designs.
     for (const t of index.file.tables.look) screen.getByRole("button", { name: t.label });
   });
 
-  it("with the taste known, For me appears; a recent search is listed and can be forgotten", () => {
+  it("with the taste known, Your edit appears; a recent search is listed and can be forgotten", () => {
     mod.pushRecent("waves");
     const { field } = setup({ tasteKnown: true });
     fireEvent.focus(field);
     const groups = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(groups).toContain("For me");
+    expect(groups).toContain("Your edit");
     expect(groups).toContain("Recent");
     fireEvent.click(screen.getByRole("button", { name: "Forget waves" }));
     expect(screen.queryByRole("button", { name: "waves" })).toBeNull();
@@ -127,14 +125,14 @@ describe("search: the open search box", () => {
     const word = SHIRTS.map((s) => s.title.split(" ")[0].toLowerCase()).find((w) => /^[a-z]{7,}$/.test(w))!;
     const typo = `${word.slice(0, 2)}${word[3]}${word[2]}${word.slice(4)}`;
     const t = setup({ query: `${typo} ` });
-    const offer = screen.getByRole("button", { name: `Search “${typo}” instead` });
+    const offer = screen.getByRole("button", { name: `Search for “${typo}”` });
     fireEvent.click(offer);
     expect(t.props.onLiteral).toHaveBeenCalled();
     cleanup();
     const z = setup({ query: "zzqxv " });
-    screen.getByText(/No match for/);
-    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
-    expect(z.props.onClear).toHaveBeenCalled();
+    screen.getByText(/No exact match for “zzqxv”\. Closest:/);
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(z.props.onQuery).toHaveBeenCalledWith("");
   });
 });
 

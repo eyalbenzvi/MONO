@@ -1,26 +1,42 @@
 import { expect, test, type Page } from "@playwright/test";
-import { hydrated } from "./helpers";
+import { captionLine, hydrated } from "./helpers";
 import { MOON, OTHERS, PLANETS, SKY, TEL_AVIV, TLV_1991, make } from "./fixtures/custom";
+import { MADE, MAKE_GROUPS } from "../lib/custom/products";
 
 // The visitor's zone decides the place a sky starts from.
 test.use({ timezoneId: "Asia/Jerusalem" });
 
-test("Made for you is in plain sight: a header tab, the shop's first card, and a way in from the designs it's drawn like", async ({ page }) => {
-  await page.goto("");
+test("Make is in plain sight: a main tab and a way in from the designs it's drawn like; the shop is only the shop", async ({ page }) => {
+  // The bottom tab bar (hidden on Discover until the taste test is done, so from the shop).
+  await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("link", { name: "Make", exact: true }).tap();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Make", exact: true }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
-  await expect(page.locator("h1")).toHaveText("Made for you");
-  for (const name of ["Your Night Sky", "Your Moon", "Your Planets", "Your Year of Moons"]) await expect(page.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
-  // Each card is a real print, drawn in the browser.
-  await expect(page.locator("canvas[data-custom]")).toHaveCount(4);
+  await expect(page.locator("h1")).toHaveText("Our prints, made yours. Or print your own.");
+  // The two tracks behind one switch; From ours grouped by what you arrive with.
+  await expect(page.locator('[data-make-switch] a[aria-current="page"]')).toHaveText("Personalise");
+  const groups = await page.locator("section h2").allTextContents();
+  expect(groups.map((g) => g.trim())).toEqual(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).map((g) => g.label));
+  // For two is a card among the dated prints, to its page.
+  await expect(page.locator('ul[data-group="date"] a[data-for-two]')).toHaveAttribute("href", /\/make\/two\/$/);
+  // Cards name the product without its leading "Your" (its page and the bag keep it).
+  const cards = MAKE_GROUPS.flatMap((g) => [...MADE.filter((m) => m.group === g.id).map((m) => m.name.replace(/^Your /, "")), ...(g.id === "date" ? ["For two"] : [])]);
+  expect((await page.locator('[data-from="ours"] li a').allTextContents()).map((t) => t.trim())).toEqual(cards);
+  // Each card says what it takes (Your Taste's, what the swipes have made of it).
+  const lines = await page.locator('[data-from="ours"] li:not(:has([data-for-two])) p').allTextContents();
+  MADE.forEach((m, i) => (m.slug === "taste" ? expect(lines[i]).toMatch(/^Ten swipes first$|^Your swipes/) : expect(lines[i], m.slug).toBe(m.from)));
+  // From yours is the other page, not further down this one.
+  await expect(page.getByText("Start with a file")).toHaveCount(0);
+  await expect(page.locator("[data-make-switch]").getByRole("link", { name: "Upload" })).toHaveAttribute("href", /\/make\/yours\/$/);
+  // Each card is a real print (For two's too), baked at build time: the index draws nothing itself.
+  await expect(page.locator("img[data-card-baked]")).toHaveCount(lines.length + 1);
+  await expect(page.locator("canvas[data-custom]")).toHaveCount(0);
 
   await page.goto("shop/");
   await hydrated(page);
-  const first = page.locator("main a").first();
-  await expect(first).toHaveAttribute("data-made-tile");
-  await first.tap();
-  await expect(page).toHaveURL(/\/make\/$/);
+  // No card in the shop's grid leads to Make.
+  await expect(page.locator("main a").first()).toBeVisible();
+  await expect(page.locator('main a[href$="/make/"]')).toHaveCount(0);
 
   for (const [s, slug] of [
     [SKY, "sky"],
@@ -48,23 +64,23 @@ async function drawn(page: Page) {
 test("Your Moon: words and a night, drawn as you go; into the bag as its own line, with its own title, price and returns", async ({ page }) => {
   await page.goto("make/moon/");
   await hydrated(page);
-  await page.getByLabel("Your words").fill("Noa, welcome");
+  await (await captionLine(page, 0)).fill("Noa, welcome");
   await page.getByLabel("Night", { exact: true }).fill("2021-11-19");
   await drawn(page);
   await expect(page.locator("h1")).toHaveText("Your Moon");
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
   await page.getByRole("button", { name: /^Add to bag · M · \$75$/ }).tap();
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
-  await expect(page).toHaveURL(/\/cart\/$/);
-  // Checkout opens on the delivery form; the bag is one step back.
-  await page.getByRole("button", { name: "Bag", exact: true }).tap();
+  // Checkout opens on the delivery form (a step in the history); the bag is one step back.
+  await expect(page).toHaveURL(/\/cart\/#details$/);
+  await page.getByRole("button", { name: "← Bag", exact: true }).tap();
   await expect(page.getByText("Your Moon · 19 November 2021")).toBeVisible();
-  await expect(page.getByText("Made for you: size exchanges only")).toBeVisible();
+  await expect(page.locator("[data-policy]")).toContainText("Made-for-you tees: free size exchanges within 30 days.");
   await expect(page.locator("canvas[data-custom]").first()).toBeAttached();
   // Edit goes back to that very print.
   await page.getByRole("link", { name: "Edit" }).tap();
   await expect(page).toHaveURL(/\/make\/moon\/\?make=/);
-  await expect(page.getByLabel("Your words")).toHaveValue("Noa, welcome");
+  await expect(await captionLine(page, 0)).toHaveValue("Noa, welcome");
   await expect(page.getByLabel("Night", { exact: true })).toHaveValue("2021-11-19");
 });
 
@@ -84,13 +100,14 @@ test("Your Night Sky: the place comes from your time zone and can be changed; a 
   await page.goto(`make/sky/?make=${TLV_1991}`);
   await hydrated(page);
   await expect(page.locator("[data-place]")).toContainText("Tel Aviv");
-  await expect(page.getByLabel("Your words")).toHaveValue("The night we met");
+  // A link from before captions: its words open as the visitor's title.
+  await expect(await captionLine(page, 0)).toHaveValue("The night we met");
   await expect(page.getByLabel("Night", { exact: true })).toHaveValue("1991-03-14");
   for (const bad of ["garbage!", make({ t: "sky", v: 2, p: { c: TEL_AVIV, d: "1991-03-14" } }), make({ t: "moon", v: 1, p: { y: 1991 } })]) {
     await page.goto(`make/sky/?make=${bad}`);
     await hydrated(page);
     await expect(page.locator("[data-place]")).toContainText("(your time zone)");
-    await expect(page.getByLabel("Your words")).toHaveValue("");
+    await expect(page.locator("[data-caption] > button")).toHaveAttribute("aria-expanded", "false");
   }
   await ctx.close();
 });
@@ -143,5 +160,28 @@ test("privacy: the date, place and words stay on the device: never in analytics,
   );
   expect(leaks).toEqual([]);
   const cart = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart")!).state.cart);
-  expect(cart).toEqual([expect.objectContaining({ id: "make-sky", custom: { t: "sky", v: 1, p: { c: TEL_AVIV, d: "1991-03-14", w: "The night we met" } } })]);
+  // A link from before captions carries its words as w; reopened, they're the visitor's title line (cap[0]), printed the same.
+  expect(cart).toEqual([expect.objectContaining({ id: "make-sky", custom: { t: "sky", v: 1, p: { c: TEL_AVIV, d: "1991-03-14", cap: ["The night we met"] } } })]);
+});
+
+test("Your words go through the lexicon: a brand or a slur is refused in one line, and nothing is drawn or added", async ({ page }) => {
+  await page.goto("make/moon/");
+  await hydrated(page);
+  await page.getByLabel("Night", { exact: true }).fill("2021-11-19");
+  // The address carries this very night before anything is typed.
+  await expect(page).toHaveURL(new RegExp(`make=${make({ t: "night", v: 1, p: { d: "2021-11-19" } })}$`));
+  const url = page.url();
+  const title = await captionLine(page, 0);
+  await title.fill("n1k3");
+  await expect(page.getByText("Those words name a brand.")).toBeVisible();
+  await title.fill("1 4 8 8");
+  await expect(page.getByText("We don’t print that.")).toBeVisible();
+  // The address keeps the last printable print.
+  await page.waitForTimeout(400);
+  expect(page.url()).toBe(url);
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await page.getByRole("button", { name: /^Add to bag/ }).tap();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("mono-cart") ?? '{"state":{"cart":[]}}').state.cart.length)).toBe(0);
+  await title.fill("Noa, welcome");
+  await expect(page.getByText(/name a brand|don't print/)).toHaveCount(0);
 });

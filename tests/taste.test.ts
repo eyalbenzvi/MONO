@@ -1,19 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ARCHETYPES as CARICATURES } from "../scripts/gen/copy3";
 import { SHIRTS } from "@/lib/catalog";
-import {
-  ARCHETYPE_NAMES,
-  DAILY_GOAL,
-  latestDrop,
-  archetypeOf,
-  countSwipe,
-  currentStreak,
-  decodeTaste,
-  emptyDaily,
-  encodeTaste,
-  isNew,
-  tasteOverlap,
-} from "@/lib/taste";
+import { ARCHETYPE_NAMES, TRAIT_WORDS, latestDrop, archetypeOf, decodeTaste, encodeTaste, isNew, noteOf, sharedTraits, tasteSentence, traitLine } from "@/lib/taste";
+import { FEATURE_KEYS } from "@/types/shirt";
 import { createInitialVector } from "@/types/shirt";
 
 describe("taste archetypes (F3)", () => {
@@ -53,27 +42,36 @@ describe("taste codes", () => {
     expect(decodeTaste("<>".repeat(16))).toBeNull();
   });
 
-  it("overlap is 100 for the same taste and low for opposites", () => {
-    const a = { ...createInitialVector(0.3), geometric: 0.9 };
-    const b = { ...createInitialVector(0.7), geometric: 0.1 };
-    expect(tasteOverlap(a, a)).toBe(100);
-    expect(tasteOverlap(a, b)).toBeLessThan(10);
-  });
 });
 
-describe("Daily 5 (F10)", () => {
-  it("counts per day and grows the streak on consecutive days", () => {
-    let d = { ...emptyDaily(), day: "2026-09-24" };
-    for (let i = 0; i < DAILY_GOAL; i++) d = countSwipe(d, "2026-09-24");
-    expect(d).toMatchObject({ count: 5, streak: 1, last: "2026-09-24" });
-    d = countSwipe(d, "2026-09-24"); // a sixth doesn't count twice
-    expect(d.streak).toBe(1);
-    for (let i = 0; i < DAILY_GOAL; i++) d = countSwipe(d, "2026-09-25");
-    expect(d).toMatchObject({ count: 5, streak: 2, last: "2026-09-25" });
-    expect(currentStreak(d, "2026-09-26")).toBe(2); // still alive today
-    expect(currentStreak(d, "2026-09-27")).toBe(0); // missed a day
-    for (let i = 0; i < DAILY_GOAL; i++) d = countSwipe(d, "2026-09-28");
-    expect(d.streak).toBe(1); // restarts after a gap
+describe("the taste in words (1.6)", () => {
+  it("every trait has words, lower-case, never the engine's label", () => {
+    for (const k of FEATURE_KEYS) {
+      expect(TRAIT_WORDS[k], k).toMatch(/^[a-z]/);
+    }
+    expect(TRAIT_WORDS.density).toBe("dense prints");
+    expect(TRAIT_WORDS.halftone_raster).toBe("printed-dot textures");
+    expect(TRAIT_WORDS.photographic).toBe("photographs");
+    expect(traitLine(["density", "nature"])).toBe("Dense prints · nature");
+  });
+
+  it("one sentence from the top traits", () => {
+    const v = { ...createInitialVector(0.3), density: 0.95, contrast: 0.9, nature: 0.85 };
+    expect(tasteSentence(v)).toBe("Dense, high-contrast prints drawn from nature.");
+    expect(tasteSentence({ ...createInitialVector(0.3), nature: 0.9 })).toBe("Prints drawn from nature.");
+    expect(tasteSentence(createInitialVector())).toBe("Open to anything, for now.");
+  });
+
+  it("a friend's comparison names what's shared, or nothing", () => {
+    const a = { ...createInitialVector(0.3), geometric: 0.9, retro: 0.8 };
+    const b = { ...createInitialVector(0.3), geometric: 0.8, nature: 0.9 };
+    expect(sharedTraits(a, b)).toEqual(["geometric"]);
+    expect(sharedTraits(a, { ...createInitialVector(0.3), nature: 0.9 })).toEqual([]);
+  });
+
+  it("the stylist note speaks only when the lean is clear", () => {
+    expect(noteOf(createInitialVector())).toBeNull();
+    expect(noteOf({ ...createInitialVector(), density: 0.7 })).toBe("Noted: dense prints");
   });
 });
 

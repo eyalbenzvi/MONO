@@ -39,10 +39,13 @@ test("I04: every page runs under its CSP (script hashes, no 'unsafe-inline' for 
   // Client-side navigation too.
   await page.goto("shop/");
   await hydrated(page);
-  await page.locator('main a[href*="/shop/mono-"]').first().click();
-  await page.waitForURL(/\/shop\/mono-\d+\/$/);
-  await page.getByRole("link", { name: "Discover" }).click();
-  await page.waitForTimeout(800);
+  await page.locator('[data-product-card] a[href*="mono-"]').first().click();
+  await page.waitForURL(/\/shop\/(mono-\d+\/|p\/\?id=mono-\d+)$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  // The product page has no tab bar: the wordmark leads home (Discover).
+  await page.getByRole("link", { name: "MONO, home" }).click();
+  await page.waitForURL(/127\.0\.0\.1:\d+\/$/);
+  await page.locator("[data-strip]").first().waitFor();
   seen.push(...(await problems()));
   expect(seen).toEqual([]);
 });

@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { getShirtById } from "@/lib/catalog";
 import { channelLink, productShareUrl, shareFileName, shareMessage, shareTitle, type ShareChannel } from "@/lib/share";
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
-import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { Sheet } from "@/components/Sheet";
+import { BUTTON_PRIMARY } from "@/components/ui";
 import { useUiStore } from "@/store/useUiStore";
 import { decodeMake } from "@/lib/custom/spec";
-import { STORE_POLICY } from "@/lib/store-policy";
 import { COLOR_LABELS, COLORS, teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 import { track } from "@/lib/analytics";
 import { copyText, downloadBlob } from "@/lib/clipboard";
@@ -70,12 +70,15 @@ const HOW_TO: Partial<Record<ShareChannel, string>> = {
 // Generated images are reused while the page lives (same tee, colour, format).
 const cache = new Map<string, Promise<Blob>>();
 // A made-for-you print's picture is drawn here (its code loads only then).
-const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, make?: string) => {
-  const key = `${shirt.id}|${color}|${format}|${make ?? ""}`;
+const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, make?: string, upload?: string) => {
+  const key = `${shirt.id}|${color}|${format}|${make ?? ""}|${upload ?? ""}`;
   const spec = make ? decodeMake(make) : null;
   if (!cache.has(key)) {
-    const p = spec
-      ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)), price: STORE_POLICY.customPrice })
+    const p = upload
+      ? // An uploaded print: its picture only (the link goes to /make/yours/, never to the file).
+        renderShareImage(shirt, color, format, { tee: import("@/components/upload/UploadMockup").then((m) => m.drawUploadTee(shirt, upload, color)) })
+      : spec
+      ? renderShareImage(shirt, color, format, { tee: import("@/components/custom/useCustom").then((m) => m.drawTee(shirt, spec, color)) })
       : renderShareImage(shirt, color, format);
     p.catch(() => cache.delete(key));
     cache.set(key, p);
@@ -87,26 +90,45 @@ const imageFor = (shirt: ShirtProduct, color: BaseColor, format: ShareFormat, ma
 /** What a made-for-you link gives away, said before it's sent. */
 function makeNote(make: string) {
   const spec = decodeMake(make);
-  const what = spec?.t === "moon" ? "the year" : spec?.t === "sky" ? "the date and place" : "the date";
-  return `This link includes ${what}${spec?.p.w ? " and your words" : ""}`;
+  const WHAT: Record<string, string> = {
+    moon: "the year",
+    sky: "the date and place",
+    taste: "your taste",
+    code: "your name",
+    line: "your line",
+    voice: "the numbers from your voice (never the sound)",
+    house: "your house’s floors, windows and number",
+    number: "your number and its label",
+    place: "the place (to about a kilometre) and the day",
+    ascii: "your letters",
+  };
+  const what = (spec && WHAT[spec.t]) ?? "the date";
+  const cap = spec ? ((spec.p as { cap?: (string | null)[] }).cap ?? []) : [];
+  const words = (spec && "w" in spec.p && spec.p.w) || cap.some((c) => !!c);
+  return `This link includes ${what}${words ? " and your words" : ""}`;
 }
 
 export function ShareSheet() {
   const share = useUiStore((s) => s.share);
   const close = useUiStore((s) => s.closeShare);
   const shirt = share ? getShirtById(share.id) : undefined;
-  return <AnimatePresence>{share && shirt && <Sheet key={shirt.id} shirt={shirt} initialColor={share.color} make={share.make} onClose={close} />}</AnimatePresence>;
+  // The last tee stays rendered while the sheet animates away.
+  const [last, setLast] = useState(share && shirt ? { share, shirt } : null);
+  if (share && shirt && (last?.share !== share)) setLast({ share, shirt });
+  return (
+    <Sheet open={!!(share && shirt)} onClose={close} historyKey="share" title="Share this tee">
+      {last && <ShareBody key={last.shirt.id} shirt={last.shirt} initialColor={last.share.color} make={last.share.make} upload={last.share.upload} />}
+    </Sheet>
+  );
 }
 
-function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; onClose: () => void }) {
+function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; upload?: string }) {
   const showToast = useUiStore((s) => s.showToast);
   const [color, setColor] = useState<BaseColor>(teeColor(shirt, initialColor));
   const [format, setFormat] = useState<ShareFormat>("story");
   const [blob, setBlob] = useState<Blob | null>(null);
   const [failed, setFailed] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
-  const panel = useRef<HTMLDivElement>(null);
-  useFocusTrap(panel, true, onClose);
 
   // Render the image as soon as the sheet opens (and on colour / format
   // change), so the File is ready when the user taps: navigator.share must
@@ -115,14 +137,14 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
     let live = true;
     setBlob(null);
     setFailed(false);
-    imageFor(shirt, color, format, make).then(
+    imageFor(shirt, color, format, make, upload).then(
       (b) => live && setBlob(b),
       () => live && setFailed(true),
     );
     return () => {
       live = false;
     };
-  }, [shirt, color, format, make]);
+  }, [shirt, color, format, make, upload]);
 
   const preview = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob]);
   useEffect(() => () => {
@@ -142,7 +164,7 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
       track("share", { id: shirt.id, channel: ref, color, format, withImage: withFile });
       return true;
     } catch (e) {
-      if ((e as Error)?.name !== "AbortError") showToast("Couldn't open the share menu");
+      if ((e as Error)?.name !== "AbortError") showToast("Couldn’t open the share menu");
       return false;
     }
   };
@@ -153,7 +175,7 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
     const url = productShareUrl(shirt, color, ch, undefined, make);
     if (ch === "copy") {
       const copied = await copyText(url);
-      showToast(copied ? "Link copied" : "Couldn't copy the link");
+      showToast(copied ? "Link copied" : "Couldn’t copy the link");
       if (copied) done("copied");
       return;
     }
@@ -184,38 +206,17 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
   };
 
   return (
-    <motion.div className="fixed inset-0 z-[75] flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <button type="button" aria-label="Close" tabIndex={-1} onClick={onClose} className="absolute inset-0 bg-black/70" />
-      <motion.div
-        ref={panel}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Share ${shirt.title}`}
-        className="relative max-h-[94dvh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-ink-900 px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-3 ring-1 ring-white/10 sm:rounded-[28px]"
-        initial={{ y: 40 }}
-        animate={{ y: 0 }}
-        exit={{ y: 40 }}
-        transition={{ type: "spring", stiffness: 380, damping: 34 }}
-      >
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20 sm:hidden" aria-hidden />
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-lg font-bold">Share this tee</h2>
-            <p className="truncate text-sm text-neutral-400">{shirt.title}</p>
-            {/* The link opens this very print: the date and place ride in it (lib/custom spec). */}
-            {make && <p className="mt-0.5 text-xs text-neutral-400" data-share-note>{makeNote(make)}</p>}
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close share" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/15">
-            <Icon name="x" className="h-5 w-5" />
-          </button>
-        </div>
+    <div className="pb-2">
+        <p className="truncate text-sm text-muted">{shirt.title}</p>
+        {/* The link opens this very print: the date and place ride in it (lib/custom spec). */}
+        {make && <p className="mt-0.5 text-xs text-muted" data-share-note>{makeNote(make)}</p>}
 
         {/* Preview + options */}
         {/* Narrowest phones: preview above the options. Short (landscape)
             screens: a smaller preview so the channels stay in reach. */}
         <div className="mt-4 flex gap-4 max-[339px]:flex-col max-[339px]:items-center">
           <div
-            className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 ${
+            className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-control bg-black ring-1 ring-white/10 ${
               format === "story" ? "h-[196px] w-[110px] [@media(max-height:500px)]:h-[128px] [@media(max-height:500px)]:w-[72px]" : "h-[150px] w-[150px] [@media(max-height:500px)]:h-[110px] [@media(max-height:500px)]:w-[110px]"
             }`}
           >
@@ -225,12 +226,12 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
             ) : failed ? (
               <span className="px-2 text-center text-xs text-neutral-400">Preview unavailable</span>
             ) : (
-              <Icon name="loader" className="h-6 w-6 animate-spin text-neutral-400" aria-label="Preparing image" />
+              <span className="px-2 text-center text-xs text-muted">Preparing image…</span>
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tee</p>
+              <p className="mb-1.5 text-xs text-muted">Tee</p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tee colour">
                 {COLORS.filter((c) => shirt.colors.includes(c)).map((c) => (
                   <button
@@ -239,7 +240,7 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
                     role="radio"
                     aria-checked={color === c}
                     onClick={() => setColor(c)}
-                    className={`flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium ring-1 ${color === c ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15"}`}
+                    className={`flex h-11 min-w-11 items-center gap-2 rounded-control px-3 text-sm font-medium ring-1 ring-inset ${color === c ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/20"}`}
                   >
                     <span className={`h-4 w-4 rounded-full ${c === "black" ? "bg-black ring-1 ring-white/60" : "bg-white ring-1 ring-black/20"}`} />
                     {COLOR_LABELS[c]}
@@ -248,7 +249,7 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
               </div>
             </div>
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">Image</p>
+              <p className="mb-1.5 text-xs text-muted">Image</p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Image format">
                 {(["story", "square"] as const).map((f) => (
                   <button
@@ -257,7 +258,7 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
                     role="radio"
                     aria-checked={format === f}
                     onClick={() => setFormat(f)}
-                    className={`h-10 rounded-full px-3.5 text-sm font-medium ring-1 ${format === f ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/15"}`}
+                    className={`h-11 min-w-11 rounded-control px-3.5 text-sm font-medium ring-1 ring-inset ${format === f ? "bg-white text-black ring-white" : "text-neutral-300 ring-white/20"}`}
                   >
                     {f === "story" ? "Story" : "Post"}
                   </button>
@@ -270,19 +271,20 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
         {canShare && (
           <button
             type="button"
-            data-autofocus
+            // Only once it can be pressed: a disabled button takes no focus (the first control does instead).
+            data-autofocus={file || failed ? "" : undefined}
             disabled={!file && !failed}
             onClick={() => nativeShare("native", canShareFiles)}
-            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black active:scale-[0.98] disabled:opacity-60"
+            className={`mt-5 w-full ${BUTTON_PRIMARY}`}
           >
-            <Icon name="share-2" className="h-4 w-4" /> Share…
+            Share…
           </button>
         )}
 
         <div className="mt-5 grid grid-cols-3 gap-x-1 gap-y-4 min-[340px]:grid-cols-4 min-[400px]:grid-cols-5">
           {CHANNELS.map((c) => (
             <button key={c.id} type="button" onClick={() => act(c.id)} disabled={(c.id === "download" || c.id === "instagram" || c.id === "tiktok") && !blob} className="group flex flex-col items-center gap-1.5 disabled:opacity-40">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10 transition-colors group-hover:bg-white/20 group-active:scale-95">{c.icon}</span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full ring-1 ring-inset ring-white/20 transition-colors group-hover:bg-white/10">{c.icon}</span>
               <span className="w-full truncate text-center text-xs leading-tight text-neutral-300">{c.label}</span>
             </button>
           ))}
@@ -290,12 +292,11 @@ function Sheet({ shirt, initialColor, make, onClose }: { shirt: ShirtProduct; in
 
         <AnimatePresence>
           {hint && (
-            <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4 rounded-2xl bg-white/5 p-3 text-sm text-neutral-200 ring-1 ring-white/10" role="status">
+            <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4 bg-white/5 p-3 text-sm text-neutral-200" role="status">
               {hint}
             </motion.p>
           )}
         </AnimatePresence>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }

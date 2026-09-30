@@ -7,7 +7,7 @@
 import { CATEGORY_LABELS, FEATURE_KEYS, type CatalogEntry } from "@/types/shirt";
 import { FIELDS, Q64, SEARCH_VERSION, VISUAL_KEYS, idsHash, type SearchIndexFile, type TableEntry } from "./format";
 import { eraLabel } from "./facets";
-import { ARTIST_PREFIXES, ARTIST_SUFFIXES, LOOK_TAGS, MEDIUM_LABELS, TAG_HIGH, TAG_LOW, TAG_MAX_SHARE, UNTAGGED_KEYS, hasVariantLabel, humanizeId, sourceOf, variantLabel } from "./labels";
+import { ARTIST_PREFIXES, ARTIST_SUFFIXES, LOOK_TAGS, MEDIUM_LABELS, TAG_HIGH, TAG_LOW, TAG_MAX_SHARE, UNTAGGED_KEYS, hasVariantLabel, humanizeId, labelCase, sourceOf, typographic, variantLabel } from "./labels";
 import { LEXICON } from "./lexicon";
 import { STOPWORDS, clean, stem, terms, words } from "./normalize";
 
@@ -128,11 +128,12 @@ export function buildSearchIndex(catalog: readonly SearchEntry[], visual: Readon
   const artists = catalog.map((e) => artistOf(e));
   const sources = catalog.map((e) => sourceOfEntry(e));
   const years = catalog.map((e) => yearOf(e));
-  const style = table(catalog.map((e) => [slug(e.style), e.style.replace(/-/g, " ")] as const));
+  // Labels read in sentence case like every other chip ("Line-Art" → "Line art", "ASCII-Art" → "ASCII art").
+  const style = table(catalog.map((e) => [slug(e.style), labelCase(e.style.replace(/-/g, " ").toLowerCase())] as const));
   const source = table(sources.map((s) => (s ? ([s.id, s.label] as const) : null)));
-  const artist = table(artists.map((a) => (a ? ([slug(a), a] as const) : null)));
+  const artist = table(artists.map((a) => (a ? ([slug(a), typographic(a)] as const) : null)));
   const variant = table(catalog.map((e) => [e.variant, variantLabel(e.variant)] as const));
-  const category = table(catalog.map((e) => [e.category, (CATEGORY_LABELS as Record<string, string>)[e.category] ?? humanizeId(e.category)] as const));
+  const category = table(catalog.map((e) => [e.category, typographic((CATEGORY_LABELS as Record<string, string>)[e.category] ?? humanizeId(e.category))] as const));
   const medium = table(catalog.map((e) => [e.medium, MEDIUM_LABELS[e.medium] ?? humanizeId(e.medium)] as const));
   const era = years.map((y) => (y === undefined ? -1 : Math.floor(y / 10)));
   // Era values: the centuries and decades that occur.

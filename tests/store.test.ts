@@ -158,17 +158,16 @@ describe("taste store", () => {
   });
 });
 
-describe("taste store v2 (F10)", () => {
-  it("migrates v1 → v2 with an empty Daily 5 and counts Discover swipes after the taste test", async () => {
+describe("taste store migration (F10, v6)", () => {
+  it("migrates v1 → v6 and keeps swiping after the taste test", async () => {
     storage.setItem("mono-taste", JSON.stringify({ state: { likedIds: [W1], onboardingSeen: true, calibrationAcknowledged: true }, version: 1 }));
     const { useTasteStore } = await fresh();
     await useTasteStore.persist.rehydrate();
     expect(useTasteStore.getState().likedIds).toEqual([W1]);
-    expect(useTasteStore.getState().daily).toMatchObject({ count: 0, streak: 0, last: null });
     useTasteStore.getState().fillDeck(); // as AppShell does after hydration
     useTasteStore.getState().commitSwipe(useTasteStore.getState().deck[0].id, "like");
-    expect(useTasteStore.getState().daily.count).toBe(1);
-    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(5);
+    expect(useTasteStore.getState().likedIds).toHaveLength(2);
+    expect(JSON.parse(storage.getItem("mono-taste")!).version).toBe(6);
   });
 });
 
@@ -203,7 +202,7 @@ describe("cart store", () => {
     const { useCartStore } = await fresh();
     await useCartStore.persist.rehydrate();
     expect(useCartStore.getState().preferredSize).toBe("XL");
-    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(5);
+    expect(JSON.parse(storage.getItem("mono-cart")!).version).toBe(6);
     storage.setItem("mono-cart", JSON.stringify({ state: { cart: [], selectedSizes: { [B1]: "M" } }, version: 1 }));
     const again = await fresh();
     await again.useCartStore.persist.rehydrate();
@@ -277,7 +276,7 @@ describe("cart store", () => {
     expect(JSON.stringify(o)).not.toContain("Ada");
     const saved = storage.getItem("mono-cart")!;
     expect(saved).not.toContain("ada@example.com");
-    expect(JSON.parse(saved).version).toBe(5);
+    expect(JSON.parse(saved).version).toBe(6);
   });
 });
 
@@ -323,7 +322,7 @@ describe("stage-1 fixes", () => {
     useCartStore.getState().addToCart(W1, "M", "black", 8);
     useCartStore.getState().addToCart(W1, "M", "black", 3);
     expect(useCartStore.getState().cart[0].qty).toBe(9);
-    expect(useUiStore.getState().toast?.message).toMatch(/max 9/i);
+    expect(useUiStore.getState().toast?.message).toBe("Limit of 9 per tee.");
   });
 
   it("R20: a size change that would merge past 9 is refused", async () => {
@@ -332,7 +331,7 @@ describe("stage-1 fixes", () => {
     useCartStore.getState().addToCart(W1, "L", "black", 5);
     useCartStore.getState().changeCartItem({ id: W1, size: "M", color: "black" }, { size: "L" });
     expect(useCartStore.getState().cart.map((l) => [l.size, l.qty])).toEqual([["M", 6], ["L", 5]]);
-    expect(useUiStore.getState().toast?.message).toMatch(/max 9/i);
+    expect(useUiStore.getState().toast?.message).toBe("Limit of 9 per tee.");
   });
 
   it("I15: Start over can be undone (snapshot / restore brings Saved back)", async () => {

@@ -6,6 +6,8 @@ import { W1 } from "../tests/fixtures";
 type Ev = Record<string, any> & { event: string };
 const layer = (page: Page) => page.evaluate(() => (window.dataLayer ?? []) as Ev[]);
 const count = (evs: Ev[], name: string) => evs.filter((e) => e.event === name).length;
+/** The product page's buy button on a phone (the page's own bottom bar; the desktop copy is hidden). */
+const buyButton = (page: Page) => page.getByRole("button", { name: /^(Add to bag|Add the pair|Complete the pair|In your bag)/ }).filter({ visible: true });
 
 test("R02/R06: a whole funnel sends each event once, with attribution carried to the purchase", async ({ page }) => {
   await seed(page);
@@ -16,25 +18,31 @@ test("R02/R06: a whole funnel sends each event once, with attribution carried to
   await card.tap();
   await page.waitForURL(/\/shop\/mono-\d+\/$/);
   await page.getByRole("radio", { name: /^M\b/ }).first().tap();
-  await page.locator(".sticky.bottom-0").getByRole("button").last().tap();
-  // The confirmation's Checkout goes straight to the delivery form.
+  await expect(buyButton(page)).toHaveText(`Add to bag · M · $${PRICE}`);
+  await buyButton(page).tap();
+  // The confirmation's Checkout goes straight to the checkout form.
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
-  await page.waitForURL(/\/cart\/$/);
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await page.waitForURL(/\/cart\/(#details)?$/);
+  await expect(page.getByRole("heading", { name: "Checkout", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Delivery" })).toBeVisible();
   for (const [label, value] of [
-    ["Full name", "Ada Lovelace"],
     ["Email", "ada@example.com"],
-    ["Street address", "12 Analytical St"],
+    ["Full name", "Ada Lovelace"],
+    ["Address", "12 Analytical St"],
     ["City", "Tel Aviv"],
     ["Postcode / ZIP", "6100001"],
   ])
-    await page.getByLabel(label).fill(value);
-  await page.getByRole("button", { name: /Place demo order/ }).tap();
-  await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
+    await page.getByLabel(label, { exact: true }).fill(value);
+  await page.getByLabel("Country").selectOption("IL");
+  // $50 + $10 shipping (free from two tees).
+  await page.getByRole("button", { name: /^Place order · \$\d+$/ }).tap();
+  await expect(page.getByRole("heading", { name: "Thank you, Ada." })).toBeVisible();
 
   const evs = await layer(page);
-  const once = ["landing", "shop_view", "view_item_list", "select_item", "view_item", "add_to_cart", "view_cart", "begin_checkout", "purchase"];
+  const once = ["landing", "shop_view", "view_item_list", "select_item", "view_item", "add_to_cart", "begin_checkout", "purchase"];
   for (const name of once) expect(count(evs, name), name).toBe(1);
+  // The mini bag's Checkout opens the form directly: the bag itself was never on screen, so no view_cart.
+  expect(count(evs, "view_cart")).toBe(0);
   expect(evs.find((e) => e.event === "landing")).toMatchObject({ utm_source: "news", utm_medium: "email", utm_campaign: "drop", ref: "friend", landing_path: "/shop/" });
   expect(evs.find((e) => e.event === "shop_view")).toMatchObject({ sort: "match" });
   expect(evs.find((e) => e.event === "add_to_cart")).toMatchObject({ source: "product", value: PRICE, currency: "USD" });
@@ -63,8 +71,9 @@ test("R06: a dismissed share sheet sends nothing; a copied link counts once", as
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto(`shop/${W1}/`);
   await hydrated(page);
-  await page.getByRole("button", { name: /^More for / }).tap();
-  await page.getByRole("button", { name: "Share", exact: true }).tap();
+  // Share sits beside the title (no ⋯ menu any more).
+  await expect(page.getByRole("button", { name: /^More for / })).toHaveCount(0);
+  await page.getByRole("button", { name: /^Share / }).tap();
   const sheet = page.getByRole("dialog", { name: /^Share / });
   await sheet.getByRole("button", { name: "Share…" }).tap();
   await page.waitForTimeout(300);

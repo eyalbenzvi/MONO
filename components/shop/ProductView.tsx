@@ -1,90 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import type { IconName } from "@/lib/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { MoreMenu } from "@/components/MoreMenu";
 import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
+import { TasteSheet } from "@/components/TasteSheet";
 import { SIZES } from "@/lib/images";
 import { ZoomViewer } from "@/components/ZoomViewer";
-import { SaveButton, SizeSelector, Spec, STAGE_BG, radioKeys, useShowMatch } from "@/components/ui";
+import { BUTTON_PRIMARY, SaveButton, SizeSelector, Spec, TeeChoice, TrustLine, useShowMatch, useSizeRequired } from "@/components/ui";
+import { useDock } from "@/hooks/useDock";
 import { familyMembers, getShirtById } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { whyMatch } from "@/lib/why";
-import { useWhyId, WhyMatchRows, WhyPanel, WhyToggle } from "@/components/Why";
-import { isNew } from "@/lib/taste";
+import { traitWords } from "@/lib/taste";
 import { SHARE_PARAMS, parseShareParams } from "@/lib/share";
 import { sizeFor, useCartStore } from "@/store/cartStore";
-import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
-import { makeHeaderScrollHandler, scrollIntoViewQuietly, useUiStore, useHydrated } from "@/store/useUiStore";
-import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_LABELS, SIZE_SHORT, printSizeLabel, skuFor, teeColor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
-import { formatPrice } from "@/lib/format";
-import { PAIR_PRICE, pairLabel, pairStatus } from "@/lib/cart";
-import { STORE_POLICY, type TrustKey } from "@/lib/store-policy";
-import { CALIBRATION_TOTAL } from "@/lib/deck";
-import { itemOf, trackEcommerce } from "@/lib/analytics";
-import { madeFor } from "@/lib/custom/products";
+import { useTasteStore } from "@/store/tasteStore";
+import { useUiStore, useHydrated } from "@/store/useUiStore";
+import { ADULT_SIZES, CATEGORY_LABELS, COLOR_LABELS, KID_SIZES, SIZE_GUIDE, SIZE_SHORT, printSizeLabel, skuFor, teeColor, type BaseColor, type ShirtDetails, type ShirtProduct } from "@/types/shirt";
+import { ctaLabel, pairStatus } from "@/lib/cart";
+import { STORE_POLICY } from "@/lib/store-policy";
+import { itemOf, track, trackEcommerce } from "@/lib/analytics";
+import { madeAllFor } from "@/lib/custom/products";
+import { acceptedDesigns, creditLine } from "@/lib/upload/designs";
+import { updateQuery } from "@/lib/url";
+import { isUploadDesign } from "@/lib/upload/keys";
+import { SHARED_SEED_KEY } from "@/components/DiscoverPage";
+import { PRODUCT_FALLBACK_TITLE } from "@/lib/seo";
 
 type View = "tee" | "print";
 type RelatedLink = { href: string; title: string };
 
-type Choice = BaseColor | "both";
-const CHOICES: readonly Choice[] = ["black", "white", "both"];
-
-/**
- * The one tee picker, on the picture: black, white, or both (the pair, with
- * its price anchor); the original is marked in the label. A design sold in
- * one colour only (T3) shows that colour, and no choice.
- */
-export function TeeChoice({ value, original, colors, onChange }: { value: Choice; original: BaseColor; colors: BaseColor[]; onChange: (c: Choice) => void }) {
-  const keys = radioKeys(CHOICES, value, onChange);
-  // Sold in one colour (T3): no choice to make — say so, plainly.
-  if (colors.length < 2)
-    return (
-      <p className="flex h-10 items-center gap-2 rounded-full bg-black/55 py-1 pl-1 pr-3 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-md">
-        <span aria-hidden className={`h-8 w-8 rounded-full ring-1 ${original === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} />
-        {COLOR_LABELS[original]} tee only
-      </p>
-    );
-  return (
-    <div className="flex items-center gap-1 rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md" role="radiogroup" aria-label="Tee colour">
-      {CHOICES.map((c, i) => {
-        const active = value === c;
-        const common = { type: "button" as const, role: "radio", "aria-checked": active, onClick: () => onChange(c), ...keys(i) };
-        if (c === "both")
-          return (
-            <button
-              key={c}
-              {...common}
-              aria-label="Both tees, black and white"
-              className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full pl-1 pr-2.5 text-xs font-semibold transition ${active ? "bg-white text-black" : "text-white hover:bg-white/10"}`}
-            >
-              <span aria-hidden className="h-6 w-6 shrink-0 rounded-full bg-[linear-gradient(90deg,#000_50%,#fff_50%)] ring-1 ring-white/40" />
-              Both
-            </button>
-          );
-        const label = `${COLOR_LABELS[c]} tee${c === original ? " (original)" : ""}`;
-        return (
-          <button
-            key={c}
-            {...common}
-            aria-label={label}
-            title={label}
-            className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-shadow before:absolute before:-inset-1 before:content-[''] ${active ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""}`}
-          >
-            <span aria-hidden className={`h-6 w-6 rounded-full ring-1 ${c === "black" ? "bg-black ring-white/50" : "bg-white ring-black/20"}`} />
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /**
  * `details` come as props from the pre-rendered page (/shop/<id>/); the
@@ -101,7 +52,9 @@ export function ProductView({
   related?: { variations: RelatedLink[]; similar: RelatedLink[] };
 }) {
   const shirt = getShirtById(id);
-  const details = useShirtDetails(shirt ? id : null, initialDetails);
+  // An Open Call design (this device only) has no shard of details: its credit is its story.
+  const openCall = isUploadDesign(id) ? acceptedDesigns().find((d) => d.id === id) : undefined;
+  const details = useShirtDetails(shirt && !openCall ? id : null, initialDetails);
   const router = useRouter();
   const hydrated = useHydrated();
   const showMatch = useShowMatch();
@@ -114,9 +67,8 @@ export function ProductView({
   const addToCart = useCartStore((s) => s.addToCart);
   const addPair = useCartStore((s) => s.addPair);
   const cart = useCartStore((s) => s.cart);
-  // After adding: "✓ Added" for a moment, then the button leads to the bag
-  // (until the size or colour changes).
-  const [added, setAdded] = useState<{ key: string; phase: "added" | "view" } | null>(null);
+  // What was just added (size and colour, or both): the buy button then leads to the bag, until either changes.
+  const [addedKey, setAddedKey] = useState<string | null>(null);
   const productOrigin = useUiStore((s) => s.productOrigin);
   const setProductOrigin = useUiStore((s) => s.setProductOrigin);
   const clearOrigin = useCallback(() => setProductOrigin(null), [setProductOrigin]);
@@ -124,52 +76,59 @@ export function ProductView({
   const zoom = useUiStore((s) => s.zoomId === id);
   const setZoom = (open: boolean) => useUiStore.getState().setZoom(open ? id : null);
   const [guideOpen, setGuideOpen] = useState(false);
-  const [nudge, setNudge] = useState(0);
-  const sizeRow = useRef<HTMLDivElement>(null);
-  const onScroll = useMemo(() => makeHeaderScrollHandler(), []);
+  const [tasteOpen, setTasteOpen] = useState(false);
+  const { nudge, groupRef, require: requireSize, status: sizeStatus } = useSizeRequired("product");
 
   // Arriving via ".../#variations" (e.g. from a Discover card): jump to them.
   const variationsRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (hydrated && window.location.hash === "#variations")
-      requestAnimationFrame(() => scrollIntoViewQuietly(variationsRef.current, { behavior: "smooth", block: "start" }));
+    if (hydrated && window.location.hash === "#variations") requestAnimationFrame(() => variationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, [hydrated]);
 
   // Opened from a shared link (?c=white&ref=whatsapp): show the tee in the
-  // colour it was shared in, and greet the visitor.
+  // colour it was shared in, and say so in one line. If it's then saved and
+  // the taste test follows, the test starts from it (Discover's first line).
   const [sharedVia, setSharedVia] = useState<string | null>(null);
-  const calibrated = useCalibrationProgress().complete;
   useEffect(() => {
     if (!hydrated || !shirt) return;
     const { color: c, ref } = parseShareParams(window.location.search);
     if (c) setColor(shirt.id, c);
-    if (ref) setSharedVia(ref);
-    // Clean the URL so a reload or a re-share doesn't carry the tag along.
-    if (c || ref) {
-      const q = new URLSearchParams(window.location.search);
-      for (const k of SHARE_PARAMS) q.delete(k);
-      const rest = q.toString();
-      window.history.replaceState(window.history.state, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
+    if (ref) {
+      setSharedVia(ref);
+      try {
+        sessionStorage.setItem(SHARED_SEED_KEY, shirt.id);
+      } catch {
+        /* storage unavailable */
+      }
     }
+    // Clean the URL so a reload or a re-share doesn't carry the tag along.
+    if (c || ref) updateQuery((q) => SHARE_PARAMS.forEach((k) => q.delete(k)));
   }, [hydrated, shirt, setColor]);
 
   useEffect(() => {
-    if (shirt) trackEcommerce("view_item", { items: [itemOf(shirt)] });
+    if (shirt) trackEcommerce("view_item", { item_list_id: productOrigin?.id === shirt.id ? "shop" : undefined, items: [itemOf(shirt)] });
+    // Once per product shown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shirt]);
+
+  // The client route (/shop/p/?id=) starts with a stand-in title: the design's own, once known.
+  useEffect(() => {
+    if (shirt && document.title === PRODUCT_FALLBACK_TITLE) document.title = `${shirt.title} | MONO`;
   }, [shirt]);
 
   // Details start closed (everywhere).
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [whyOpen, setWhyOpen] = useState(false);
-  const whyId = useWhyId();
   const likedIds = useTasteStore((s) => s.likedIds);
   // "Both": the black + white pair, picked in the same picker as the colour.
   const [pickBoth, setBoth] = useState(false);
 
   if (!shirt) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-400">
-        This tee doesn&apos;t exist.
-        <Link href="/shop/" className="font-semibold text-white underline">Back to shop</Link>
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-muted">
+        This tee doesn&rsquo;t exist.
+        <Link href="/shop/" className="text-white underline underline-offset-4">
+          Back to the shop
+        </Link>
       </div>
     );
   }
@@ -181,7 +140,7 @@ export function ProductView({
   const black = color === "black";
   const size = hydrated ? selected : undefined;
   const why = showMatch ? whyMatch(vector, shirt, likedIds) : null;
-  const made = madeFor(shirt.variant);
+  const makes = madeAllFor(shirt.variant);
   const members = familyMembers(shirt);
   // "Similar" = related but *different* designs: never this family (those are
   // the variations above) and at most one per algorithm. Precomputed by the
@@ -190,392 +149,377 @@ export function ProductView({
     .map(getShirtById)
     .filter((s): s is ShirtProduct => !!s)
     .slice(0, 4);
-
-  const addedKey = `${size}-${both ? "both" : color}`;
-  const phase = added?.key === addedKey ? added.phase : null;
-  const confirmAdded = (key: string) => {
-    setAdded({ key, phase: "added" });
-    // The header comes back so the bag (and its count) is in view.
-    useUiStore.getState().setHeaderHidden(false);
-    setTimeout(() => setAdded((a) => (a?.key === key ? { key, phase: "view" } : a)), 1200);
-  };
-  const needSize = () => {
-    scrollIntoViewQuietly(sizeRow.current);
-    setNudge((n) => n + 1);
-  };
+  const alt = details?.description ? `${shirt.title}: ${shortDescription(details.description)}, printed on the back of a ${COLOR_LABELS[color].toLowerCase()} tee` : undefined;
 
   // What "Both" would add now, given the bag (this size): only what's missing.
   const pair = both && size ? pairStatus(cart, shirt.id, size) : null;
-  const pairComplete = !!pair && pair.missing.length === 0;
-  // Never a dead, disabled button: without a size it guides you to the sizes.
+  const choiceKey = `${size}-${both ? "both" : color}`;
+  // In the bag already (just added, or the whole pair there): the button leads to checkout and never adds again silently.
+  const inBag = (addedKey === choiceKey && !!size) || (!!pair && pair.missing.length === 0);
   const onBuy = () => {
-    if (!size) return needSize();
-    if (phase === "view" || pairComplete) return router.push("/cart/");
-    if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) confirmAdded(addedKey);
+    if (inBag) {
+      track("sticky_checkout_click", { id: shirt.id });
+      useUiStore.getState().requestCheckout();
+      return router.push("/cart/");
+    }
+    if (!size) return requireSize();
+    if (both ? addPair(shirt.id, size, { source: "product" }) : addToCart(shirt.id, size, color, 1, { source: "product" })) setAddedKey(choiceKey);
   };
-  // "Add to bag · M" → "✓ Added" → "View bag" (until the size or choice changes).
-  const sizeText = size ? SIZE_LABELS[size] : "";
-  // The price shows here only — where money changes hands (plus the bag).
-  const idleLabel = pair ? (pair.missing.length === 2 ? `Add both · ${formatPrice(PAIR_PRICE)}` : pairLabel(pair, shirt.price)) : `Add to bag · ${formatPrice(shirt.price)}`;
-  const buyLabel = !size ? "Choose size" : phase === "added" ? "Added" : phase === "view" ? "View bag" : idleLabel;
-  const shortLabel = !size || phase ? buyLabel : pair ? (pair.missing.length === 2 ? `Both · ${formatPrice(PAIR_PRICE)}` : pairComplete ? "In your bag ✓" : `Complete +${formatPrice(PAIR_PRICE - shirt.price)}`) : `Add · ${formatPrice(shirt.price)}`;
-
-  const goBack = () => {
-    // Return to the exact shop state (filters + scroll) when this product was
-    // opened from the grid; after moving on to another product, history
-    // holds that one, so go to the shop instead.
-    if (productOrigin?.id === shirt.id) {
-      setProductOrigin(null);
-      router.back();
-    } else router.push("/shop/");
-  };
+  // One pattern everywhere: "[verb] · [size] · [price]", the price always in it.
+  const buyLabel = inBag ? "In your bag · Checkout" : ctaLabel({ size, price: shirt.price, both, status: pair });
 
   return (
     // Reaches up under the floating header (see ShopView).
-    <div onScroll={onScroll} className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
-      <div className="mx-auto max-w-5xl px-4 pb-8 pt-1 2xl:max-w-6xl">
-        <div className="mb-2 flex items-center justify-between">
-          <button type="button" onClick={goBack} className="inline-flex h-10 items-center gap-1.5 text-sm text-neutral-400 hover:text-white">
-            <Icon name="arrow-left" className="h-4 w-4" /> Shop
-          </button>
-          {/* Everything secondary, in one menu. */}
-          <MoreMenu
-            label={`More for ${shirt.title}`}
-            className="-mr-2"
-            items={[
-              { label: "Zoom in on the print", icon: "zoom-in", onSelect: () => setZoom(true) },
-              view === "print"
-                ? { label: "Show on the tee", icon: "layers", onSelect: () => setView("tee") }
-                : { label: "Show the print only", icon: "layers", onSelect: () => setView("print") },
-              { label: "Share", icon: "share-2", onSelect: () => useUiStore.getState().openShare(shirt.id, color) },
-              ...(made ? [{ label: "Make your own", icon: "pencil" as const, onSelect: () => router.push(`/make/${made.slug}/`) }] : []),
-            ]}
-          />
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="no-scrollbar relative -mt-[var(--header-h)] min-h-0 flex-1 overflow-y-auto pt-[var(--header-h)]">
+        <div className="mx-auto max-w-6xl pb-8 md:grid md:grid-cols-[58%_42%] md:gap-8 md:px-6">
+          {/* The picture, full-bleed: swipe from the tee to the flat print. */}
+          <Gallery shirt={shirt} color={color} view={view} setView={setView} onZoom={() => setZoom(true)} alt={alt} />
+          <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} onClose={() => setZoom(false)} />}</AnimatePresence>
 
-        <AnimatePresence>
-          {sharedVia && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="mb-3 flex items-center gap-3 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10"
-              role="status"
-            >
-              <Icon name="share-2" className="h-5 w-5 shrink-0 text-neutral-300" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold">A friend shared this tee with you</p>
-                <p className="text-xs text-neutral-400">{calibrated ? "Save it and see what else fits your taste." : `Save it, then swipe ${CALIBRATION_TOTAL} tees starting from it.`}</p>
+          {/* Info (desktop: sticky beside the pictures). */}
+          <div className="px-4 pt-3 md:sticky md:top-[calc(var(--header-h)+16px)] md:self-start md:px-0">
+            {sharedVia && (
+              <div className="-mt-1 flex items-center justify-between text-xs text-muted">
+                <span>Shared with you</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    track("share_banner_action", { action: "dismiss", ref: sharedVia });
+                    setSharedVia(null);
+                  }}
+                  aria-label="Dismiss"
+                  className="-mr-3 flex h-11 w-11 items-center justify-center text-muted hover:text-white"
+                >
+                  <Icon name="x" className="h-4 w-4" />
+                </button>
               </div>
-              {/* Stays here until asked: the one way on saves the tee first. */}
+            )}
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="pt-2 text-xl font-medium leading-snug md:text-[28px]">{shirt.title}</h1>
               <button
                 type="button"
-                onClick={() => {
-                  // Saving trains the taste on this tee: the test (or the
-                  // shop's "For you") starts from it.
-                  if (!useTasteStore.getState().likedIds.includes(shirt.id)) useTasteStore.getState().toggleSaved(shirt.id);
-                  setSharedVia(null);
-                  router.push(calibrated ? "/shop/" : "/");
-                }}
-                className="flex h-9 shrink-0 items-center rounded-full bg-white px-3.5 text-xs font-bold text-black"
+                onClick={() => useUiStore.getState().openShare(shirt.id, color)}
+                aria-label={`Share ${shirt.title}`}
+                className="-mr-3 flex h-11 w-11 shrink-0 items-center justify-center text-neutral-300 hover:text-white"
               >
-                Save &amp; find more like it
+                <Icon name="share-2" className="h-5 w-5" />
               </button>
-              <button type="button" onClick={() => setSharedVia(null)} aria-label="Dismiss" className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:text-white">
-                <Icon name="x" className="h-4 w-4" />
+            </div>
+            {openCall && (
+              <p className="text-sm text-muted" data-credit>
+                {creditLine(openCall)}
+              </p>
+            )}
+            {/* The learning, felt: one line, only when it's true; the whole line opens Your taste. */}
+            {why && (
+              <button type="button" onClick={() => setTasteOpen(true)} aria-haspopup="dialog" className="-ml-1 flex min-h-11 items-center px-1 text-left text-sm text-muted hover:text-white">
+                {why.tier === "top" ? "Top pick" : "For you"} · {traitWords(why.shared.slice(0, 2))}
               </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Visual */}
-          <div className={`relative flex aspect-square max-h-[60dvh] w-full items-center justify-center overflow-hidden rounded-[28px] ring-1 ring-white/10 md:aspect-[4/5] md:max-h-none ${STAGE_BG}`}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${view}-${color}`}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.2 }}
-                className="flex h-full w-full cursor-zoom-in items-center justify-center p-5 pb-14"
-                onClick={() => setZoom(true)}
-                role="button"
-                tabIndex={0}
-                aria-label="Zoom in on the print"
-                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setZoom(true))}
-              >
-                {view === "print" ? (
-                  <div className="aspect-[3/4] h-[88%] overflow-hidden rounded-[3px] shadow-2xl shadow-black/60">
-                    <PrintImage shirt={shirt} color={color} priority sizes={SIZES.product} />
-                  </div>
+            )}
+            {/* The computed skies lead to their made-for-you tee; a design several products are drawn like names each. */}
+            {makes.length > 0 && (
+              <p className="flex flex-wrap items-center text-sm text-muted" data-make-your-own-list={makes.length > 1 ? "" : undefined}>
+                {makes.length === 1 ? (
+                  <Link href={`/make/${makes[0].slug}/`} className="-ml-1 inline-flex min-h-11 items-center px-1 hover:text-white" data-make-your-own>
+                    Make your own →
+                  </Link>
                 ) : (
-                  <TeeMockup shirt={shirt} color={color} priority sizes={SIZES.product} className="h-full max-h-full" />
+                  <>
+                    <span className="mr-1">Make your own:</span>
+                    {makes.map((m, i) => (
+                      <span key={m.slug} className="inline-flex items-center">
+                        {i > 0 && <span aria-hidden>·</span>}
+                        <Link href={`/make/${m.slug}/`} className="inline-flex min-h-11 items-center px-1 underline-offset-2 hover:text-white hover:underline" data-make-your-own={i === 0 ? "" : undefined}>
+                          {m.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </>
                 )}
-              </motion.div>
-            </AnimatePresence>
-            {/* Tee colour (or both), right on the picture: visible without scrolling. */}
-            <div className="absolute bottom-3 left-3">
+              </p>
+            )}
+
+            <div className="mt-3">
               <TeeChoice
                 value={both ? "both" : color}
                 original={shirt.baseColor}
                 colors={shirt.colors}
                 onChange={(c) => {
                   setBoth(c === "both");
-                  if (c !== "both") setColor(shirt.id, c);
+                  if (c === "both") track("pair_select", { id: shirt.id, source: "product" });
+                  else setColor(shirt.id, c);
                 }}
               />
             </div>
-            <AnimatePresence>{zoom && <ZoomViewer shirt={shirt} color={color} initialView={view} printCm={details?.printCm} onClose={() => setZoom(false)} />}</AnimatePresence>
-          </div>
 
-          {/* Info */}
-          <div>
-            {/* Just the name; everything about the design sits behind ⓘ. */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{shirt.title}</h1>
-                {/* The computed skies lead to their made-for-you tee (Your Night Sky, Your Planets, Your Year of Moons). */}
-                {made && (
-                  <Link href={`/make/${made.slug}/`} className="-my-1.5 inline-flex h-10 items-center gap-1 text-sm text-neutral-400 transition-colors hover:text-white" data-make-your-own>
-                    Make your own <Icon name="arrow-right" className="h-3.5 w-3.5" />
-                  </Link>
-                )}
-                {/* The learning, felt: said only when it's true (a top or strong match, with traits in
-                    common), and the line itself opens why. */}
-                {why && (
-                  <WhyToggle
-                    text={why.tier === "top" ? "Top pick for you" : "A strong match for you"}
-                    open={whyOpen}
-                    controls={whyId}
-                    onToggle={(o) => {
-                      setWhyOpen(o);
-                      if (o) setDetailsOpen(false);
+            <div className="mt-2">
+              <SizeSelector
+                key={nudge}
+                value={size}
+                onChange={(s) => setSize(shirt.id, s)}
+                highlight={nudge > 0 && !size}
+                groupRef={groupRef}
+                aside={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!guideOpen) track("size_guide_open", { id: shirt.id });
+                      setGuideOpen((o) => !o);
                     }}
-                    className="mt-0.5"
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setDetailsOpen((o) => !o);
-                  setWhyOpen(false);
-                }}
-                aria-expanded={detailsOpen}
-                aria-label="About this design"
-                title="About this design"
-                className={`-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/10 ${detailsOpen ? "text-white" : "text-neutral-400"}`}
-              >
-                <Icon name="info" className="h-5 w-5" />
-              </button>
-            </div>
-            {why && (
-              <WhyPanel id={whyId} open={whyOpen}>
-                <WhyMatchRows why={why} />
-              </WhyPanel>
-            )}
-            <AnimatePresence initial={false}>
-              {detailsOpen && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                  <p className="mt-2 text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">{details?.description}</p>
-                  <dl className="mt-2 border-t border-white/10 pb-2">
-                  <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
-                  <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · halftone photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
-                  <Spec label="Print" value={printSizeLabel(details?.printCm)} />
-                  <Spec label="Fabric" value="100% organic cotton, 220 gsm" />
-                  <Spec label="Fit" value="Regular" />
-                  <Spec label="SKU" value={skuFor(shirt.sku, color)} />
-                  {details?.photo && (
-                    <p className="py-2 text-xs text-neutral-400">
-                      {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · {details.photo.source ?? "Smithsonian Open Access"}, {details.photo.license ?? "CC0"} ·{" "}
-                      <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
-                        Source record
-                      </a>
-                    </p>
-                  )}
-                </dl>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-
-            <div className="relative mt-5" ref={sizeRow}>
-              {/* The size guide: an icon on the "Kids' sizes" line, not a row of its own. */}
-              <div className="absolute right-0 top-[2.875rem] z-10">
-                <button
-                  type="button"
-                  onClick={() => setGuideOpen((o) => !o)}
-                  aria-expanded={guideOpen}
-                  aria-label="Size guide"
-                  title="Size guide"
-                  className={`-mr-2 flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${guideOpen ? "text-white" : "text-neutral-400"}`}
-                >
-                  <Icon name="ruler" className="h-4 w-4" />
-                </button>
-              </div>
-              <SizeSelector key={nudge} value={size} onChange={(s) => setSize(shirt.id, s)} highlight={nudge > 0 && !size} />
+                    aria-expanded={guideOpen}
+                    className="-mr-1 flex h-11 min-w-11 items-center px-1 text-sm text-muted underline-offset-4 hover:text-white hover:underline"
+                  >
+                    Size guide
+                  </button>
+                }
+              />
+              {sizeStatus}
               <AnimatePresence initial={false}>
                 {guideOpen && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                  <p className="mt-3 text-xs text-neutral-300">{STORE_POLICY.fit}</p>
-                  {([["Adults", ADULT_SIZES], ["Kids (print 20 × 26 cm)", KID_SIZES]] as const).map(([label, group]) => (
-                    <table key={label} className="mt-2 w-full text-left font-mono text-xs text-neutral-300">
-                      <caption className="py-1 text-left font-sans text-neutral-400">{label}</caption>
-                      <thead className="text-neutral-400">
-                        <tr>
-                          <th className="py-1 font-normal">cm</th>
-                          {group.map((s) => <th key={s} className="py-1 font-normal">{SIZE_SHORT[s]}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="py-1 text-neutral-400">Chest ½</td>
-                          {group.map((s) => <td key={s}>{SIZE_GUIDE[s].chest}</td>)}
-                        </tr>
-                        <tr>
-                          <td className="py-1 text-neutral-400">Length</td>
-                          {group.map((s) => <td key={s}>{SIZE_GUIDE[s].length}</td>)}
-                        </tr>
-                      </tbody>
-                    </table>
-                  ))}
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
+                    <p className="mt-3 text-xs text-neutral-300">{STORE_POLICY.fit}</p>
+                    {(
+                      [
+                        ["Adults", ADULT_SIZES],
+                        ["Kids (print 20 × 26 cm)", KID_SIZES],
+                      ] as const
+                    ).map(([label, group]) => (
+                      <table key={label} className="mt-2 w-full text-left font-mono text-xs text-neutral-300">
+                        <caption className="py-1 text-left font-sans text-muted">{label}</caption>
+                        <thead className="text-muted">
+                          <tr>
+                            <th className="py-1 font-normal">cm</th>
+                            {group.map((s) => (
+                              <th key={s} className="py-1 font-normal">
+                                {SIZE_SHORT[s]}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="py-1 text-muted">Chest ½</td>
+                            {group.map((s) => (
+                              <td key={s}>{SIZE_GUIDE[s].chest}</td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <td className="py-1 text-muted">Length</td>
+                            {group.map((s) => (
+                              <td key={s}>{SIZE_GUIDE[s].length}</td>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
+            {/* One quiet line of what's promised: delivery, returns, fabric (lib/store-policy, lib/delivery). */}
+            <TrustLine className="mt-3" />
 
-            {/* Desktop: inline buy row (mobile uses the sticky bar below) */}
+            {/* Everything about the design, one tap away. */}
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((o) => !o)}
+              aria-expanded={detailsOpen}
+              className="mt-2 flex h-11 w-full items-center justify-between border-t border-white/10 text-sm text-neutral-200 hover:text-white"
+            >
+              Details
+              <Icon name="chevron-down" className={`h-4 w-4 transition-transform duration-150 ${detailsOpen ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {detailsOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
+                  <p className="text-sm text-muted">{CATEGORY_LABELS[shirt.category]}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">{details?.description}</p>
+                  <dl className="mt-2 border-t border-white/10 pb-2">
+                    <Spec label="Tee" value={both ? "Black + White" : COLOR_LABELS[color]} />
+                    <Spec label="Ink" value={`${black ? "White" : "Black"}, 1 colour${shirt.medium === "photo" ? " · halftone photo" : shirt.medium === "ink" ? " · from the original" : ""}`} />
+                    <Spec label="Print" value={printSizeLabel(details?.printCm)} mono />
+                    <Spec label="Fabric" value={STORE_POLICY.fabric} />
+                    <Spec label="Fit" value="Regular" />
+                    <Spec label="SKU" value={skuFor(shirt.sku, color)} mono />
+                    {details?.photo && (
+                      <p className="py-2 text-xs text-muted">
+                        {shirt.medium === "photo" ? "Photo" : "Original"}: {details.photo.credit} · {details.photo.source ?? "Smithsonian Open Access"}, {details.photo.license ?? "CC0"} ·{" "}
+                        <a href={details.photo.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">
+                          Source record
+                        </a>
+                      </p>
+                    )}
+                  </dl>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Desktop: the buy row inline (phones use the sticky bar below). */}
             <div className="mt-4 hidden gap-2 md:flex">
-              <BuyButton label={buyLabel} phase={phase} onClick={onBuy} disabled={!hydrated} />
-              <SaveButton id={shirt.id} size="lg" />
+              <SaveButton id={shirt.id} title={shirt.title} size="lg" />
+              <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} />
             </div>
-
           </div>
         </div>
 
-        {/* Before the page runs (and in the static HTML crawlers read):
-            plain links onward. Replaced by the visual rows below. */}
-        {!hydrated && related && (related.variations.length > 0 || related.similar.length > 0) && (
-          <nav aria-label="More like this" className="mt-10 space-y-3 text-sm">
-            {[
-              ["Variations", related.variations],
-              ["More like this", related.similar],
-            ].map(([label, links]) =>
-              (links as RelatedLink[]).length ? (
-                <div key={label as string}>
-                  <h2 className="mb-1 text-base font-semibold">{label as string}</h2>
-                  <ul className="flex flex-wrap gap-x-4 gap-y-1 text-neutral-300">
-                    {(links as RelatedLink[]).map((l) => (
-                      <li key={l.href}>
-                        <Link href={l.href} className="underline underline-offset-4 hover:text-white">
-                          {l.title}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null,
-            )}
-          </nav>
-        )}
+        <div className="mx-auto max-w-6xl px-4 md:px-6">
+          {/* Before the page runs (and in the static HTML crawlers read):
+              plain links onward. Replaced by the visual rows below. */}
+          {!hydrated && related && (related.variations.length > 0 || related.similar.length > 0) && (
+            <nav aria-label="More like this" className="mt-10 space-y-3 text-sm">
+              {[
+                ["Variations", related.variations],
+                ["More like this", related.similar],
+              ].map(([label, links]) =>
+                (links as RelatedLink[]).length ? (
+                  <div key={label as string}>
+                    <h2 className="mb-1 text-base font-medium">{label as string}</h2>
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-neutral-300">
+                      {(links as RelatedLink[]).map((l) => (
+                        <li key={l.href}>
+                          <Link href={l.href} className="underline underline-offset-4 hover:text-white">
+                            {l.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null,
+              )}
+            </nav>
+          )}
 
-        {/* Client-only: keeps the pre-rendered product pages small. */}
-        {hydrated && members.length > 1 && (
-          <section ref={variationsRef} id="variations" className="mt-10 scroll-mt-4">
-            <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-base font-semibold">Variations</h2>
-            </div>
-            {/* Variations replace this page in history, so Back still reaches the grid. */}
-            <ShirtStrip
-              shirts={members}
-              label="Variations"
-              color={color}
-              currentId={shirt.id}
-              replace
-              onOpen={(m) => {
-                // Keep the tee colour the user is looking at.
-                setColor(m.id, color);
-                if (productOrigin?.id === shirt.id) setProductOrigin({ ...productOrigin, id: m.id });
-              }}
-            />
-          </section>
-        )}
+          {/* Client-only: keeps the pre-rendered product pages small. */}
+          {hydrated && members.length > 1 && (
+            <section ref={variationsRef} id="variations" className="mt-10 scroll-mt-4">
+              <h2 className="mb-3 text-base font-medium">Variations</h2>
+              {/* Variations replace this page in history, so Back still reaches the grid. */}
+              <ShirtStrip
+                shirts={members}
+                label="Variations"
+                color={color}
+                currentId={shirt.id}
+                replace
+                onOpen={(m) => {
+                  // Keep the tee colour the user is looking at.
+                  setColor(m.id, color);
+                  if (productOrigin?.id === shirt.id) setProductOrigin({ ...productOrigin, id: m.id });
+                }}
+              />
+            </section>
+          )}
 
-        {hydrated && similar.length > 0 && (
-          <section className="mt-10">
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 className="text-base font-semibold">Similar prints</h2>
-              {/* The whole shop, ordered by closeness to this one (a "Like this" search). */}
-              <Link href={`/shop/?like=${shirt.id}`} className="-my-3 inline-flex h-11 items-center text-xs font-semibold text-neutral-300 underline underline-offset-4 hover:text-white">
-                More like this
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 gap-x-3 gap-y-6 min-[340px]:grid-cols-2 sm:grid-cols-4">
-              {similar.map((s) => (
-                <ProductCard key={s.id} shirt={s} onOpen={clearOrigin} />
-              ))}
-            </div>
-          </section>
-        )}
+          {hydrated && similar.length > 0 && (
+            <section className="mt-10 pb-8">
+              <div className="mb-3 flex items-baseline justify-between gap-3">
+                <h2 className="text-base font-medium">Similar prints</h2>
+                {/* The whole shop, ordered by closeness to this one (a "Like this" search). */}
+                <Link href={`/shop/?like=${shirt.id}`} className="-my-3 inline-flex h-11 items-center text-sm text-neutral-300 underline underline-offset-4 hover:text-white">
+                  See all
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-6 sm:grid-cols-4">
+                {similar.map((s) => (
+                  <ProductCard key={s.id} shirt={s} onOpen={clearOrigin} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
 
-      {/* Mobile: sticky buy bar, always visible, never disabled */}
-      {/* Narrow phones: tighter gaps below 360 px, and below 400 px Share
-          moves up to the image toolbar so price, save and the buy button fit. */}
-      <div className="sticky bottom-0 z-30 flex items-center gap-3 border-t border-white/10 bg-[#050505]/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-md max-[359px]:gap-2 max-[359px]:px-3 md:hidden">
-        {/* Just save and buy (the price is in the button). */}
-        <SaveButton id={shirt.id} size="lg" />
-        <BuyButton label={buyLabel} short={shortLabel} phase={phase} onClick={onBuy} disabled={!hydrated} compact />
+      {/* Phones: the sticky buy bar (it replaces the tab bar here), always visible, never disabled. */}
+      <StickyBar>
+        <SaveButton id={shirt.id} title={shirt.title} size="lg" />
+        <BuyButton label={buyLabel} onClick={onBuy} disabled={!hydrated} />
+      </StickyBar>
+      <TasteSheet open={tasteOpen} onClose={() => setTasteOpen(false)} />
+    </div>
+  );
+}
+
+/** The first sentence of a description, for alt text (the rest is in Details). */
+function shortDescription(text: string) {
+  const first = text.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, "");
+  return first.charAt(0).toLowerCase() + first.slice(1);
+}
+
+/**
+ * The product page's pictures, full-bleed and square-cornered: the tee
+ * worn, then the flat print, side by side to swipe, with thin dots. A tap
+ * opens the zoom in the one on screen. On a phone, never taller than leaves
+ * the title, colour and sizes above the fold.
+ */
+function Gallery({ shirt, color, view, setView, onZoom, alt }: { shirt: ShirtProduct; color: BaseColor; view: View; setView: (v: View) => void; onZoom: () => void; alt?: string }) {
+  const strip = useRef<HTMLDivElement>(null);
+  const views: View[] = ["tee", "print"];
+  const go = (v: View) => {
+    const el = strip.current;
+    if (el) el.scrollTo({ left: views.indexOf(v) * el.clientWidth, behavior: "smooth" });
+    setView(v);
+  };
+  return (
+    <div className="relative mx-auto aspect-[4/5] max-h-[min(125vw,calc(100dvh-300px))] w-full max-w-[calc(min(125vw,calc(100dvh-300px))*0.8)] md:max-h-none md:max-w-none">
+      <div
+        ref={strip}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          const v = views[Math.round(el.scrollLeft / Math.max(1, el.clientWidth))];
+          if (v && v !== view) setView(v);
+        }}
+        className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto"
+      >
+        {views.map((v) => (
+          <div
+            key={v}
+            role="button"
+            tabIndex={0}
+            aria-label={v === "tee" ? "Zoom in on the tee" : "Zoom in on the print"}
+            onClick={onZoom}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onZoom())}
+            className="relative h-full w-full shrink-0 cursor-zoom-in snap-center overflow-hidden"
+          >
+            {v === "tee" ? (
+              <TeeMockup shirt={shirt} color={color} priority sizes={SIZES.product} alt={alt} className="absolute left-0 top-1/2 w-full -translate-y-1/2" />
+            ) : (
+              <div className={`flex h-full w-full items-center justify-center ${color === "black" ? "bg-black" : "bg-white"}`}>
+                <div className="aspect-[3/4] h-[82%]">
+                  <PrintImage shirt={shirt} color={color} sizes={SIZES.product} />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {/* Thin dots: which of the two is on screen (each a 44px target). */}
+      <div className="absolute inset-x-0 bottom-1 flex justify-center">
+        {views.map((v) => (
+          <button key={v} type="button" onClick={() => go(v)} aria-label={v === "tee" ? "On the tee" : "Print"} aria-pressed={view === v} className="flex h-11 w-11 items-center justify-center">
+            <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${view === v ? "bg-white" : "bg-white/40"} ring-1 ring-black/20`} />
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function BuyButton({
-  label,
-  short,
-  phase,
-  onClick,
-  disabled,
-  compact,
-}: {
-  label: string;
-  /** Narrow phones (< 400 px): a shorter label. */
-  short?: string;
-  phase: "added" | "view" | null;
-  onClick: () => void;
-  disabled?: boolean;
-  compact?: boolean;
-}) {
-  const icon: IconName = phase === "added" ? "check" : phase === "view" ? "arrow-right" : "shopping-bag";
+/** Phones: the page's own bottom bar (the tab bar gives way to it), counted in the dock so a toast sits above it. */
+function StickyBar({ children }: { children: React.ReactNode }) {
+  const bar = useRef<HTMLDivElement>(null);
+  useDock(bar, true, true);
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      // The full label, whichever one is shown.
-      aria-label={label}
-      aria-live="polite"
-      className={`flex h-12 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-bold text-black transition active:scale-[0.98] ${
-        compact ? "flex-1 px-5 max-[359px]:px-4" : "flex-1"
-      }`}
-    >
-      <Icon name={icon} className="h-4 w-4 shrink-0" strokeWidth={phase === "added" ? 3 : 2} />
-      {short && short !== label ? (
-        <>
-          <span className="truncate max-[399px]:hidden">{label}</span>
-          <span className="truncate min-[400px]:hidden">{short}</span>
-        </>
-      ) : (
-        <span className="truncate">{label}</span>
-      )}
-    </button>
+    <div ref={bar} className="z-header flex shrink-0 items-center gap-2 border-t border-white/10 bg-[#0a0a0a] px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),12px)] pt-3 md:hidden">
+      {children}
+    </div>
   );
 }
 
-const TRUST_ICONS: Record<TrustKey, IconName> = { exchange: "repeat", shipping: "truck", fabric: "leaf" };
-
-
+function BuyButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onClick} aria-live="polite" className={`min-w-0 flex-1 whitespace-nowrap ${BUTTON_PRIMARY}`}>
+      <span className="truncate tabular-nums">{label}</span>
+    </button>
+  );
+}

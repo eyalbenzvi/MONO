@@ -1,4 +1,4 @@
-import { CALIBRATION_IDS, SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
+import { SHIRTS, familiesOf, familyOf, getShirtById } from "@/lib/catalog";
 import { centeredCosine, makeScorer } from "@/lib/recommendation";
 import type { RecommendationStrategy, ShirtProduct, UserProfileVector } from "@/types/shirt";
 
@@ -76,7 +76,8 @@ export function buildDeck(
     const fresh = allowed.filter((s) => s.medium !== "drawn" || !usedTemplates.has(s.variant));
     const base = fresh.length ? fresh : allowed;
     const paced = base.filter((s) => !recent.has(s.variant) && !recentCats.has(s.category));
-    const pool = paced.length ? paced : base.filter((s) => !recent.has(s.variant)).length ? base.filter((s) => !recent.has(s.variant)) : base;
+    const unrepeated = paced.length ? paced : base.filter((s) => !recent.has(s.variant));
+    const pool = unrepeated.length ? unrepeated : base;
     const pick = probe
       ? // Still short of likes: every other card is a best guess from the passes so far.
         probe.needLikes && rng() < 0.5

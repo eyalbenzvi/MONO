@@ -7,7 +7,8 @@
 import { readFileSync } from "node:fs";
 import type { FeatureKey } from "../../../types/shirt";
 import nodePath from "node:path";
-import { INK, caption, circle, dot, f1, line, rect, text, type Set7Design } from "./kit";
+import { INK, caption, circle, f1, line, rect, text, type Set7Design } from "./kit";
+import { BRAILLE, MORSE, brailleCell, morseMarks } from "../../../lib/custom/draw/code";
 
 const FEAT = { typography: 0.9, clean_minimal: 0.75, geometric: 0.35, line_art: 0.3, abstract: 0.15, density: 0.35, contrast: 0.8, classic: 0.3, retro: 0.15 };
 
@@ -134,32 +135,22 @@ function periodicTable(): string {
 }
 
 function morse(): string {
-  const code: [string, string][] = Object.entries({ A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-", Y: "-.--", Z: "--..", "1": ".----", "2": "..---", "3": "...--", "4": "....-", "5": ".....", "6": "-....", "7": "--...", "8": "---..", "9": "----.", "0": "-----" }).sort((a, b) => (/\d/.test(a[0]) ? 1 : 0) - (/\d/.test(b[0]) ? 1 : 0) || (a[0] === "0" ? 1 : b[0] === "0" ? -1 : a[0].localeCompare(b[0])));
+  const code = Object.entries(MORSE).sort((a, b) => (/\d/.test(a[0]) ? 1 : 0) - (/\d/.test(b[0]) ? 1 : 0) || (a[0] === "0" ? 1 : b[0] === "0" ? -1 : a[0].localeCompare(b[0])));
   let s = "";
   code.forEach(([ch, m], i) => {
     const col = Math.floor(i / 18), row = i % 18;
     const x = 36 + col * 124, y = 46 + row * 14;
-    s += text(x, y + 3, ch, 8, { bold: true, anchor: "start" });
-    let cx = x + 16;
-    for (const sym of m) {
-      if (sym === ".") (s += dot(cx + 1.8, y, 1.8)), (cx += 7);
-      else (s += `<rect x="${f1(cx)}" y="${f1(y - 1.8)}" width="11" height="3.6" rx="1.8" fill="${INK}"/>`), (cx += 15);
-    }
+    s += text(x, y + 3, ch, 8, { bold: true, anchor: "start" }) + morseMarks(x + 16, y, m).svg;
   });
   return s;
 }
 
 function braille(): string {
-  const dots: Record<string, string> = { a: "1", b: "12", c: "14", d: "145", e: "15", f: "124", g: "1245", h: "125", i: "24", j: "245", k: "13", l: "123", m: "134", n: "1345", o: "135", p: "1234", q: "12345", r: "1235", s: "234", t: "2345", u: "136", v: "1236", w: "2456", x: "1346", y: "13456", z: "1356" };
   let s = "";
-  Object.entries(dots).forEach(([ch, d], i) => {
+  Object.entries(BRAILLE).forEach(([ch, d], i) => {
     const col = i % 6, row = Math.floor(i / 6);
     const x = 50 + col * 40, y = 52 + row * 50;
-    for (let k = 1; k <= 6; k++) {
-      const [dx, dy] = [k <= 3 ? 0 : 9, ((k - 1) % 3) * 9];
-      s += d.includes(String(k)) ? dot(x + dx, y + dy, 3) : circle(x + dx, y + dy, 1.2, 0.5);
-    }
-    s += text(x + 4.5, y + 33, ch.toUpperCase(), 7, { bold: true });
+    s += brailleCell(x, y, d) + text(x + 4.5, y + 33, ch.toUpperCase(), 7, { bold: true });
   });
   return s;
 }
@@ -260,7 +251,7 @@ export function typeSet(): Set7Design[] {
   }
 
   add("Pi to 500 Places", "pi", digitBlock("3.", piDigits(498), 25, 20), "The first 500 digits of π, computed from Machin's formula and set 25 to a line.", ["π", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Pi");
-  add("e to 500 Places", "e", digitBlock("2.", eDigits(498), 25, 20), "The first 500 digits of Euler's number e, computed from its series and set 25 to a line.", ["e", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Euler's Number");
+  add("Euler’s e to 500 Places", "e", digitBlock("2.", eDigits(498), 25, 20), "The first 500 digits of Euler's number e, computed from its series and set 25 to a line.", ["e", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Euler's Number");
   add("Square Root of Two to 500 Places", "sqrt2", digitBlock("1.", sqrt2Digits(498), 25, 20), "The first 500 digits of the square root of two, computed and set 25 to a line.", ["√2", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of the Square Root of Two");
   add("Golden Ratio to 500 Places", "phi", digitBlock("1.", phiDigits(498), 25, 20), "The first 500 digits of the golden ratio φ, (1 + √5) / 2, computed and set 25 to a line.", ["φ", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of the Golden Ratio");
 

@@ -6,5 +6,7 @@
 import { renderCustomSvg } from "@/lib/custom";
 import { drawSvg, loadCanvasFonts, printCanvas } from "@/lib/custom/canvasSvg";
 import { drawMockup, loadFontCss, loadImage, svgImage, withFonts } from "@/lib/custom/raster";
+import { loadRenderer, prepareData } from "@/lib/custom/renderers";
+import { MADE } from "@/lib/custom/products";
 
-(window as unknown as { __custom: unknown }).__custom = { renderCustomSvg, drawMockup, drawSvg, printCanvas, loadCanvasFonts, loadFontCss, loadImage, svgImage, withFonts };
+(window as unknown as { __custom: unknown }).__custom = { renderCustomSvg, drawMockup, drawSvg, printCanvas, loadCanvasFonts, loadFontCss, loadImage, svgImage, withFonts, loadRenderer, prepareData, MADE };

@@ -61,6 +61,8 @@ describe("match tiers (I11)", () => {
     expect(share("top")).toBeLessThan(0.05);
     expect(share("top") + share("strong") + share("good")).toBeLessThan(0.3);
     expect(TIER_LABEL.top).toBe("Top pick");
+    // "Top pick" is the only tier word people see.
+    expect(Object.values(TIER_LABEL).join(" ")).not.toMatch(/match/i);
   });
 
   it("is monotonic: a higher score never gets a lower tier", () => {

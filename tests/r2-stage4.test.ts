@@ -19,13 +19,12 @@ import { TOTAL } from "../scripts/gen/constants";
 import { W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
-const byId = new Map(FULL.map((s) => [s.id, s]));
 
 describe("I01: names that say what the print shows", () => {
-  it("every design has a subject, and the SEO title reads 'Name — Subject Style Tee | MONO'", () => {
+  it("every design has a subject, and the SEO title reads 'Name · Subject Style Tee | MONO'", () => {
     for (const s of FULL) expect(s.subject.length, s.id).toBeGreaterThan(2);
     const orion = FULL.find((s) => s.title === "Orion, the Hunter")!;
-    expect(productTitle(orion)).toBe("Orion, the Hunter — Orion Constellation Star-Chart Tee | MONO");
+    expect(productTitle(orion)).toBe("Orion, the Hunter · Orion Constellation Star-Chart Tee | MONO");
     // A title that is its subject isn't said twice.
     const eclipse = FULL.find((s) => s.subject === "Solar Eclipse")!;
     expect(productTitle(eclipse)).toBe("Solar Eclipse Line-Art Tee | MONO");
@@ -138,7 +137,7 @@ describe("R21: the index head describes the data", () => {
     const dir = path.resolve(__dirname, "..", "public", "data");
     const files = readdirSync(dir).sort();
     // (Empty shards — a range of retired or unused numbers — are one file: same content, same hash.)
-    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file, searchManifest.file, customManifest.cities, customManifest.sky])].sort());
+    expect(files).toEqual([...new Set([...index.shards.map((_, k) => path.basename(shardFile(k))), manifest.file, searchManifest.file, customManifest.cities, customManifest.sky, customManifest.countries, customManifest.airports])].sort());
     const search = readFileSync(path.join(dir, searchManifest.file), "utf8");
     expect(searchManifest.file).toBe(`search.${createHash("sha256").update(search).digest("hex").slice(0, 10)}.json`);
     index.shards.forEach((hash, k) => {

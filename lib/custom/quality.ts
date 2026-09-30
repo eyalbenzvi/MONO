@@ -98,7 +98,11 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
     for (let x = 0; x < w; x++)
       if (ink[y * w + x] > ON) {
         on[y * w + x] = 1;
-        [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+        // Plain comparisons: this runs for every ink pixel (a destructured array here was a new array each time).
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
       }
   const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0, slab: 0 };
   if (x1 < 0) return none;
@@ -232,20 +236,13 @@ export const SLIVER = 0.3;
  * (ink crowding the box's outline around an empty middle), a flat picture
  * (almost no change in density: a dim interior snapshot).
  */
-export function assessPrint({ w, h, ink }: InkRaster): Assessment {
-  let sum = 0;
-  let [x0, y0, x1, y1] = [w, h, -1, -1];
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const a = ink[y * w + x];
-      sum += a;
-      if (a > ON) [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
-    }
-  const cover = sum / (w * h);
-  const bw = x1 < 0 ? 0 : (x1 - x0 + 1) / w;
-  const bh = y1 < 0 ? 0 : (y1 - y0 + 1) / h;
-  const extent = bw * bh;
-  // Coarse density map: 4 × 4 px cells (~4 mm on the tee).
+/**
+ * Detail: how much the ink's density changes across a coarse map (4 × 4 px
+ * cells, ~4 mm on the tee), per cell of the ink's own box (`extent`, its
+ * share of the print), so a small dense print isn't penalised twice. Shared
+ * with the upload checks (lib/upload/measure detailOf).
+ */
+export function densityDetail(ink: ArrayLike<number>, w: number, h: number, extent: number): number {
   const C = 4;
   const cw = Math.floor(w / C);
   const ch = Math.floor(h / C);
@@ -257,9 +254,28 @@ export function assessPrint({ w, h, ink }: InkRaster): Assessment {
       const d = dens[y * cw + x];
       grad += Math.abs(dens[y * cw + x + 1] - d) + Math.abs(dens[(y + 1) * cw + x] - d);
     }
-  // Change per cell of the ink's own box (not the print): a small dense print isn't penalised twice.
-  const boxCells = Math.max(1, extent * cw * ch);
-  const detail = grad / boxCells;
+  return grad / Math.max(1, extent * cw * ch);
+}
+
+export function assessPrint({ w, h, ink }: InkRaster): Assessment {
+  let sum = 0;
+  let [x0, y0, x1, y1] = [w, h, -1, -1];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const a = ink[y * w + x];
+      sum += a;
+      if (a > ON) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  const cover = sum / (w * h);
+  const bw = x1 < 0 ? 0 : (x1 - x0 + 1) / w;
+  const bh = y1 < 0 ? 0 : (y1 - y0 + 1) / h;
+  const extent = bw * bh;
+  const detail = densityDetail(ink, w, h, extent);
   // Sparse line work (a star chart, a diagram) is full marks from 4% ink; a print mostly ink loses them.
   const coverScore = cover < 0.04 ? cover / 0.04 : cover <= 0.32 ? 1 : Math.max(0.2, 1 - (cover - 0.32) / 0.4);
   const extentScore = Math.min(1, Math.sqrt(extent) / 0.72);

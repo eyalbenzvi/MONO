@@ -17,8 +17,8 @@ export const VARIANT_LABELS: Record<string, string> = {
   "sky-night": "Night sky",
   "moon-year": "Moon phases",
   "planets-date": "Planets",
-  "orbit-halley": "Halley's orbit",
-  "orbit-moons": "Jupiter's moons",
+  "orbit-halley": "Halley’s orbit",
+  "orbit-moons": "Jupiter’s moons",
   "smith-chart": "Smith chart",
   "slide-rule": "Slide rule",
   "logic-gates": "Logic gates",
@@ -58,17 +58,70 @@ export const VARIANT_LABELS: Record<string, string> = {
   schematic: "Circuit schematic",
 };
 
+/* Label case ------------------------------------------------------------ */
+
+/**
+ * Words whose case isn't "first letter up": acronyms and the like. Only ones
+ * the lexicon or the catalogue's ids actually use (a label is made from a
+ * lexicon phrase or an id, both lower-case); keyed by the lower-case word.
+ * ("US" is left out on purpose: as a label word "us" is the pronoun.)
+ */
+export const LABEL_WORDS: Record<string, string> = {
+  nasa: "NASA",
+  nyc: "NYC",
+  ascii: "ASCII",
+  bbc: "BBC",
+  ibm: "IBM",
+  led: "LED",
+};
+
+/**
+ * Place names in the lexicon (lower case), title-cased wherever they occur in a
+ * label: "new york" → "New York", never "New york". Multi-word names keep
+ * their particles lower-case (PLACE_PARTICLES: "Rio de Janeiro").
+ */
+export const PLACES = ["new york", "new england", "manhattan", "brooklyn", "hudson", "japan", "china", "asia", "italy", "rome", "venice", "florence", "tivoli", "france", "paris", "normandy", "honfleur", "england", "britain", "london", "thames", "sussex", "maine", "massachusetts", "vermont", "connecticut", "boston", "nantucket", "fuji", "edo"];
+/** Small words that stay lower-case inside a title-cased name. */
+export const PLACE_PARTICLES = new Set(["de", "del", "della", "da", "di", "do", "dos", "du", "des", "la", "le", "les", "el", "of", "the", "and", "upon", "on", "en", "sur", "am", "im", "van", "von", "y"]);
+
+/** Straight apostrophes in label text → typographic ones ("Halley's" → "Halley’s"). */
+export const typographic = (s: string) => s.replace(/(\p{L})'(?=\p{L})/gu, "$1’").replace(/(\p{L}s)'(?=\s|$)/gu, "$1’");
+
+const capital = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+
+/** "rio de janeiro" → "Rio de Janeiro", "stratford upon avon" → "Stratford upon Avon" (the first word always up). */
+export function titleCase(phrase: string): string {
+  return phrase
+    .split(/(\s+|-)/)
+    .map((w, i) => (/^\s+$|^-$/.test(w) ? w : LABEL_WORDS[w.toLowerCase()] ?? (i > 0 && PLACE_PARTICLES.has(w.toLowerCase()) ? w.toLowerCase() : capital(w.toLowerCase()))))
+    .join("");
+}
+
+const PLACE_RE = new RegExp(`(?<![\\p{L}\\p{N}])(${[...PLACES].sort((a, b) => b.length - a.length).map((p) => p.replace(/ /g, "\\s+")).join("|")})(?![\\p{L}\\p{N}])`, "giu");
+
+/**
+ * A lower-case phrase or humanized id as a label, in sentence case: the first
+ * letter up, acronyms (LABEL_WORDS) and places (PLACES) in their own case,
+ * typographic apostrophes. "nasa" → "NASA", "new york" → "New York",
+ * "ascii art" → "ASCII art". Words already capitalised are kept.
+ */
+export function labelCase(text: string): string {
+  let s = text.trim().replace(/\s+/g, " ");
+  s = s.replace(/[\p{L}\p{N}]+/gu, (w) => LABEL_WORDS[w] ?? w);
+  s = s.replace(PLACE_RE, (m) => titleCase(m));
+  return typographic(capital(s));
+}
+
 /** Id parts that only say where a design came from, dropped when humanizing. */
 const ID_PREFIXES = ["archive-", "photo-", "lsystem-", "ascii-"];
 const ID_SUFFIXES = ["-object"];
 
-/** "archive-etching" → "Etching"; "lsystem-fern" → "Fern". */
+/** "archive-etching" → "Etching"; "lsystem-fern" → "Fern"; "nasa-probe" would read "NASA probe". */
 export function humanizeId(id: string): string {
   let s = id;
   for (const p of ID_PREFIXES) if (s.startsWith(p) && s.length > p.length) s = s.slice(p.length);
   for (const x of ID_SUFFIXES) if (s.endsWith(x) && s.length > x.length) s = s.slice(0, -x.length);
-  s = s.replace(/-/g, " ");
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return labelCase(s.replace(/-/g, " "));
 }
 
 export const variantLabel = (id: string) => VARIANT_LABELS[id] ?? humanizeId(id);
@@ -136,7 +189,6 @@ export const TAG_HIGH = 0.85;
 export const TAG_LOW = 0.15;
 
 export const MEDIUM_LABELS: Record<string, string> = { drawn: "Drawn", ink: "Archive print", photo: "Photograph" };
-export const TEE_LABELS: Record<string, string> = { black: "Black tee", white: "White tee" };
 
 /** Words that ride along after an artist's name in museum records (nationality). */
 export const ARTIST_SUFFIXES = ["Scottish", "Swiss", "Bohemian", "Flemish", "French", "German", "Dutch", "Italian", "English", "American", "Japanese", "Chinese", "British", "Austrian", "Spanish"];

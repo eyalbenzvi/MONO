@@ -17,7 +17,8 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import full from "../../data/shirts.json";
-import { homeJsonLd, jsonLd, productJsonLd } from "../../lib/structuredData";
+import { homeJsonLd, jsonLd, makeJsonLd, productJsonLd } from "../../lib/structuredData";
+import { MADE } from "../../lib/custom/products";
 import { contentSecurityPolicy } from "../../lib/csp";
 import { customModelIds } from "../../lib/custom/models";
 import type { CatalogEntry } from "../../types/shirt";
@@ -124,6 +125,17 @@ function main() {
       `<meta property="og:type" content="product"/><meta property="product:price:amount" content="${shirt.price.toFixed(2)}"/><meta property="product:price:currency" content="USD"/>`,
     );
     writeFileSync(file, intoHead(html, ld(productJsonLd(shirt))));
+  }
+
+  // Make products: their structured data, typed as products (their link-preview images are the examples, npm run og).
+  for (const m of MADE) {
+    const file = path.join(OUT, "make", m.slug, "index.html");
+    if (!existsSync(file)) continue;
+    let html = readFileSync(file, "utf8");
+    if (html.includes('type="application/ld+json"')) continue;
+    if (!existsSync(path.join(og, `make-${m.slug}.jpg`)) && hasDefault) html = html.replace(new RegExp(`/og/make-${m.slug}\\.jpg`, "g"), "/og/default.jpg");
+    html = html.replace(/<meta property="og:type" content="website"\/>/, `<meta property="og:type" content="product"/>`);
+    writeFileSync(file, intoHead(html, ld(makeJsonLd(m))));
   }
 
   const home = path.join(OUT, "index.html");

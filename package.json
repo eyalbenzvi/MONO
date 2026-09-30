@@ -18,8 +18,9 @@
     "sprites": "tsx scripts/tools/sprites.tsx",
     "postbuild": "tsx --tsconfig tsconfig.scripts.json scripts/tools/postbuild.ts",
     "prebuild": "tsx scripts/tools/publishIndex.ts && tsx scripts/tools/publishCustom.ts && npm run search:index && npm run images",
+    "print-file": "tsx --tsconfig tsconfig.scripts.json scripts/tools/printFile.ts",
     "search:index": "tsx --tsconfig tsconfig.scripts.json scripts/tools/searchIndex.ts",
-    "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts"
+    "images": "tsx --tsconfig tsconfig.scripts.json scripts/images/bake.ts && tsx --tsconfig tsconfig.scripts.json scripts/images/bakeMake.ts"
   },
   "dependencies": {
     "framer-motion": "^13.4.4",
@@ -41,8 +42,9 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
     "jsdom": "^25.0.1",
+    "jsqr": "^1.4.0",
     "postcss": "^8.5.28",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",

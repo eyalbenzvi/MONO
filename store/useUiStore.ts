@@ -4,7 +4,8 @@ import type { CustomSpec } from "@/lib/custom/spec";
 import type { UIEvent } from "react";
 import { create } from "zustand";
 import type { Facet } from "@/lib/search/facetCodec";
-import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UserProfileVector } from "@/types/shirt";
+import type { BaseColor, ShirtCategory, ShirtSize, SwipeAction, UploadRef, UserProfileVector } from "@/types/shirt";
+import { nonce } from "@/lib/math";
 
 export interface ToastState {
   message: string;
@@ -25,12 +26,14 @@ interface UiState {
   /** The Discover card shows its details face. */
   isFlipped: boolean;
   /**
-   * Button/keyboard swipes waiting to run. Rapid taps queue up (max 5) and
+   * Button/keyboard swipes waiting to run. Rapid taps queue up (max SWIPE_QUEUE_MAX) and
    * play one after another instead of being dropped mid-animation.
    */
   swipeQueue: { action: SwipeAction; nonce: number }[];
   /** Set by undo so the restored card flies back in from where it left. */
   undoFx: { id: string; action: SwipeAction; nonce: number } | null;
+  /** The last Discover swipe, for a moment: the strip above the card says it, with Undo. */
+  swiped: { id: string; action: SwipeAction; nonce: number } | null;
   toast: ToastState | null;
   /** Open dialogs (zoom, share, sheets, the taste-test screen): while any is, the page's shortcuts stand down. */
   dialogs: number;
@@ -42,8 +45,6 @@ interface UiState {
   lastCity: number | null;
   /** The Discover card's picture is zoomed in place (swipe keys wait). */
   cardZoomed: boolean;
-  /** The Saved drawer is open (opened from the personal area). */
-  savedOpen: boolean;
 
   debug: boolean;
   headerHidden: boolean;
@@ -68,7 +69,9 @@ interface UiState {
   productOrigin: ProductOrigin | null;
   /** The tee the share sheet is open for (and in which colourway). */
   /** The share sheet's tee; `make` is a made-for-you print's link payload (lib/custom encodeMake). */
-  share: { id: string; color: BaseColor; make?: string } | null;
+  share: { id: string; color: BaseColor; make?: string; upload?: string } | null;
+  /** The upload the Open Call sheet is open for. */
+  offer: string | null;
   /** The last add to the bag (drives the mini bag confirmation). */
   added: AddedNote | null;
   /** "Buy now" / the confirmation's Checkout: the bag opens on the delivery form (once). */
@@ -84,13 +87,14 @@ interface UiState {
   setCustom: (id: string, spec: CustomSpec | null) => void;
   setLastCity: (id: number) => void;
   setCardZoomed: (on: boolean) => void;
-  setSavedOpen: (open: boolean) => void;
   setDebug: (on: boolean) => void;
   setHeaderHidden: (hidden: boolean) => void;
   setShop: (patch: Partial<UiState["shop"]>) => void;
   setProductOrigin: (origin: ProductOrigin | null) => void;
-  openShare: (id: string, color: BaseColor, make?: string) => void;
+  /** `upload`: an uploaded print's id (its picture is shared, never the file or a link to it). */
+  openShare: (id: string, color: BaseColor, make?: string, upload?: string) => void;
   closeShare: () => void;
+  openOffer: (uploadId: string | null) => void;
   noteAdded: (note: Omit<AddedNote, "nonce">) => void;
   clearAdded: () => void;
 }
@@ -111,6 +115,8 @@ export interface AddedNote {
   pair?: boolean;
   /** A personalised print: Undo takes back its lines, not the original's. */
   custom?: CustomSpec;
+  /** An uploaded print: Undo takes back its lines. */
+  upload?: UploadRef;
   nonce: number;
 }
 
@@ -122,20 +128,22 @@ export const SHOP_PAGE_SIZE = 24;
  * it's only read to restore the position when coming back to the grid.
  */
 export const shopScroll = { top: 0 };
+/** Make, from ours, the same way: where the list was, and the card opened from it by keyboard (its link gets the focus back). */
+export const makeScroll: { top: number; focus: string | null } = { top: 0, focus: null };
 
 export const useUiStore = create<UiState>()((set) => ({
   hydrated: false,
   isFlipped: false,
   swipeQueue: [],
   undoFx: null,
+  swiped: null,
   toast: null,
   dialogs: 0,
   zoomId: null,
   cardZoomed: false,
-  savedOpen: false,
   setHydrated: () => set({ hydrated: true }),
   toggleFlip: (value) => set((s) => ({ isFlipped: value ?? !s.isFlipped })),
-  showToast: (message, action) => set({ toast: { message, action, nonce: Date.now() + Math.random() } }),
+  showToast: (message, action) => set({ toast: { message, action, nonce: nonce() } }),
   setZoom: (zoomId) => set({ zoomId }),
   custom: {},
   lastCity: null,
@@ -146,12 +154,12 @@ export const useUiStore = create<UiState>()((set) => ({
     }),
   setLastCity: (lastCity) => set({ lastCity }),
   setCardZoomed: (cardZoomed) => set({ cardZoomed }),
-  setSavedOpen: (savedOpen) => set({ savedOpen }),
   debug: false,
   headerHidden: false,
   shop: { tee: null, cats: [], limit: SHOP_PAGE_SIZE, query: "", facets: [] },
   productOrigin: null,
   share: null,
+  offer: null,
   added: null,
   checkoutRequested: false,
   requestCheckout: (on = true) => set({ checkoutRequested: on }),
@@ -169,9 +177,10 @@ export const useUiStore = create<UiState>()((set) => ({
   setHeaderHidden: (headerHidden) => set({ headerHidden }),
   setShop: (patch) => set((s) => ({ shop: { ...s.shop, ...patch } })),
   setProductOrigin: (productOrigin) => set({ productOrigin }),
-  openShare: (id, color, make) => set({ share: { id, color, ...(make ? { make } : {}) } }),
+  openShare: (id, color, make, upload) => set({ share: { id, color, ...(make ? { make } : {}), ...(upload ? { upload } : {}) } }),
   closeShare: () => set({ share: null }),
-  noteAdded: (note) => set({ added: { ...note, nonce: Date.now() + Math.random() } }),
+  openOffer: (offer) => set({ offer }),
+  noteAdded: (note) => set({ added: { ...note, nonce: nonce() } }),
   clearAdded: () => set({ added: null }),
 }));
 
@@ -195,13 +204,21 @@ let programmaticUntil = 0;
  */
 export function scrollIntoViewQuietly(el: Element | null | undefined, options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" }) {
   if (!el) return;
-  programmaticUntil = Date.now() + 900;
+  programmaticUntil = Date.now() + QUIET_SCROLL_MS;
   useUiStore.getState().setHeaderHidden(false);
   el.scrollIntoView(options);
 }
 
+/** How long a scroll started by the page (a smooth scrollIntoView) is ignored by the header. */
+const QUIET_SCROLL_MS = 900;
+/** Button/keyboard swipes waiting at most (tasteStore drops taps past this). */
+export const SWIPE_QUEUE_MAX = 5;
 /** Downward travel (px, one direction) before the header slides away… */
 const HIDE_AFTER = 48;
+/** …never while still this close to the top (px)… */
+const HIDE_BELOW = 120;
+/** …and always back within this distance of the top (px). */
+const SHOW_ABOVE = 40;
 /** …upward travel before it comes back… */
 const SHOW_AFTER = 24;
 /** …and a pause while it animates, so momentum jitter can't flip it back. */
@@ -232,11 +249,11 @@ export function makeHeaderScrollHandler() {
     if (dy === 0 || now < settleUntil) return;
     travel = Math.sign(dy) === Math.sign(travel) ? travel + dy : dy;
     const { headerHidden, setHeaderHidden } = useUiStore.getState();
-    if (!headerHidden && travel > HIDE_AFTER && y > 120) {
+    if (!headerHidden && travel > HIDE_AFTER && y > HIDE_BELOW) {
       setHeaderHidden(true);
       settleUntil = now + SETTLE_MS;
       travel = 0;
-    } else if (headerHidden && (travel < -SHOW_AFTER || y < 40)) {
+    } else if (headerHidden && (travel < -SHOW_AFTER || y < SHOW_ABOVE)) {
       setHeaderHidden(false);
       settleUntil = now + SETTLE_MS;
       travel = 0;

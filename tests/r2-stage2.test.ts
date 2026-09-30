@@ -78,7 +78,7 @@ describe("R09: no email is kept anywhere", () => {
 });
 
 describe("R01 / F01: the taste test shows no toasts", () => {
-  it("ten taste-test swipes and a level-up after it raise no toast", async () => {
+  it("ten taste-test swipes and twenty after it raise no toast", async () => {
     vi.resetModules();
     const { useTasteStore } = await import("@/store/tasteStore");
     const { useUiStore } = await import("@/store/useUiStore");
@@ -89,7 +89,6 @@ describe("R01 / F01: the taste test shows no toasts", () => {
       useTasteStore.getState().commitSwipe(top.id, "like");
       if (i === 9) useTasteStore.getState().acknowledgeCalibration();
     }
-    expect(useTasteStore.getState().milestones.length).toBeGreaterThan(0);
     expect(toasts).toEqual([]);
   });
 });

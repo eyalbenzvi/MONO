@@ -8,23 +8,10 @@
   --header-h: 62px;
 }
 
-/*
- * The app's backdrop (a soft glow at the top, fading to near-black), for
- * surfaces that sit over scrolling content at the top of the screen (the
- * header, the shop's filter bar): fixed to the viewport, so they show the
- * same slice of the backdrop as the page around them — solid, but seamless.
- */
-.app-backdrop {
-  background-color: #050505;
-  background-image: radial-gradient(ellipse at top, #161616 0%, #050505 60%);
-  background-size: 100vw 100dvh;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-
 html,
 body {
-  background: #050505;
+  /* Flat black and near-white: the brand's two colours, no glow. */
+  background: #0a0a0a;
   color: #f5f5f5;
   height: 100%;
   overscroll-behavior: none;
@@ -37,6 +24,14 @@ body {
   outline-offset: 2px;
 }
 
+/* A field brought into view (focus, an error) clears the fixed header above and a phone's sticky button bar below. */
+input,
+textarea,
+select {
+  scroll-margin-top: calc(var(--header-h, 64px) + 16px);
+  scroll-margin-bottom: 112px;
+}
+
 /* No double-tap-zoom delay on controls; pinch-zoom stays available. */
 button,
 a,
@@ -46,7 +41,19 @@ label {
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Reduced motion: movement becomes a short fade or nothing (framer-motion follows MotionConfig; this covers CSS). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer utilities {

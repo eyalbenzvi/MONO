@@ -49,6 +49,6 @@ export async function shareOrCopy({ title, text, url, image }: { title: string; 
   }
   if (image) downloadBlob(image.blob, image.name);
   const copied = await copyText(url);
-  useUiStore.getState().showToast(copied ? (image ? "Image saved · link copied" : "Link copied") : "Couldn't copy the link");
+  useUiStore.getState().showToast(copied ? (image ? "Image saved · link copied" : "Link copied") : "Couldn’t copy the link");
   return copied ? "copied" : "failed";
 }

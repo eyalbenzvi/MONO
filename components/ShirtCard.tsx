@@ -1,27 +1,21 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
-import { MoreMenu } from "@/components/MoreMenu";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
-import { STAGE_BG, useShowMatch } from "@/components/ui";
-import { tierOf } from "@/lib/match";
+import { BUTTON_PRIMARY, useShowMatch } from "@/components/ui";
 import { becauseOf } from "@/lib/because";
+import { explainMatch } from "@/lib/recommendation";
+import { traitLine } from "@/lib/taste";
 import { productHref } from "@/lib/catalog";
 import { useShirtDetails } from "@/lib/details";
 import { canUndo, useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import type { InPlaceZoom } from "@/hooks/useInPlaceZoom";
-import {
-  CATEGORY_LABELS,
-  COLOR_LABELS,
-  printSizeLabel,
-  type RecommendationStrategy,
-  type ShirtProduct,
-} from "@/types/shirt";
+import { CATEGORY_LABELS, type RecommendationStrategy, type ShirtProduct } from "@/types/shirt";
 
 interface ShirtCardProps {
   shirt: ShirtProduct;
@@ -40,10 +34,20 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const showDetails = isFlipped && isTop;
   const reduceMotion = useReducedMotion();
   const showMatch = useShowMatch();
-  const vector = useTasteStore((s) => s.preferenceVector);
-  const tier = showMatch ? tierOf(vector, score) : null;
   const likedIds = useTasteStore((s) => s.likedIds);
-  const because = useMemo(() => (showMatch ? becauseOf(shirt, likedIds) : null), [showMatch, shirt, likedIds]);
+  const vector = useTasteStore((s) => s.preferenceVector);
+  // The learning, felt (once the taste is known): the closest tee you saved,
+  // else the traits in common, in words; the explore cards say they're a change.
+  const reason = useMemo(() => {
+    if (!showMatch) return null;
+    if (strategy === "explore") return "Something different";
+    const because = becauseOf(shirt, likedIds);
+    if (because) return `Because you saved ${because.title}`;
+    const shared = explainMatch(vector, shirt.features, 2);
+    return shared.length ? traitLine(shared) : null;
+    // The vector is read when the card is dealt, not re-read on every swipe behind it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMatch, shirt, likedIds, strategy]);
   // backface-visibility hides a face visually but not from hit-testing, so the
   // face turned away must also stop taking pointer events.
   const hiddenFace = "pointer-events-none";
@@ -53,7 +57,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
   const turn = useMotionValue(showDetails && !reduceMotion ? 180 : 0);
   const frontVisibility = useTransform(turn, (r) => (r < 90 ? "visible" : "hidden"));
   const backVisibility = useTransform(turn, (r) => (r < 90 ? "hidden" : "visible"));
-  const face = "absolute inset-0 overflow-hidden rounded-[28px] bg-ink-900 shadow-2xl shadow-black/70 ring-1 ring-white/10";
+  // Square, full-bleed: the photo is the card (no frame, no stage behind it).
+  const face = "absolute inset-0 overflow-hidden bg-ink-900";
 
   return (
     <div className="relative h-full w-full [perspective:1400px]">
@@ -74,9 +79,9 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
           {...inert(showDetails)}
         >
           {/* The frame: a pinch zooms the picture inside it (useInPlaceZoom). */}
-          <div data-zoom-stage className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${STAGE_BG}`}>
+          <div data-zoom-stage className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             <motion.div
-              className="flex min-h-0 flex-1 items-center justify-center px-3 pb-2 pt-6 [container-type:size]"
+              className="flex min-h-0 flex-1 items-center justify-center [container-type:size]"
               style={zoom ? { scale: zoom.scale, x: zoom.x, y: zoom.y } : undefined}
             >
               <TeeMockup shirt={shirt} priority={isTop} sizes={SIZES.card} zoomed={zoomed} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
@@ -85,13 +90,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
 
           <div className={`flex items-end justify-between gap-3 px-5 pb-4 pt-3 transition-opacity duration-200 ${zoomed ? "opacity-40" : ""}`}>
             <div className="min-w-0">
-              <h2 className="truncate text-xl font-bold tracking-tight">{shirt.title}</h2>
-              {/* The learning, felt: the closest thing you liked (once the taste is known). */}
-              {because && (
-                <p className="mt-0.5 truncate text-xs text-neutral-400">
-                  Because you liked {because.title}
-                </p>
-              )}
+              <h2 className="truncate text-xl font-medium tracking-tight">{shirt.title}</h2>
+              {reason && <p className="mt-0.5 truncate text-xs text-muted">{reason}</p>}
             </div>
           </div>
         </motion.div>
@@ -120,80 +120,66 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
  */
 const inert = (on: boolean) => (on ? ({ inert: "" } as Record<string, string>) : {});
 
-function CardDetails({ shirt, score }: { shirt: ShirtProduct; score: number }) {
+function CardDetails({ shirt }: { shirt: ShirtProduct; score: number }) {
   const toggleFlip = useUiStore((s) => s.toggleFlip);
-  const black = shirt.baseColor === "black";
   const details = useShirtDetails(shirt.id);
   const openShare = useUiStore((s) => s.openShare);
   const undoable = useTasteStore(canUndo);
+  const scroller = useRef<HTMLDivElement>(null);
+  const start = useRef<{ x: number; y: number; top: number } | null>(null);
+  const round = "flex h-12 w-12 shrink-0 items-center justify-center rounded-control ring-1 ring-inset ring-white/25 hover:bg-white/5";
+
+  // An empty spot tapped, or a drag down from the top of the text, turns back to the tee.
+  const onPointerDown = (e: React.PointerEvent) => {
+    start.current = { x: e.clientX, y: e.clientY, top: scroller.current?.scrollTop ?? 0 };
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    const s = start.current;
+    start.current = null;
+    if (!s || (e.target instanceof Element && e.target.closest("button, a"))) return;
+    const dx = e.clientX - s.x;
+    const dy = e.clientY - s.y;
+    if (Math.hypot(dx, dy) < TAP_SLOP || (dy > FLIP_BACK_DRAG && s.top <= 0 && dy > Math.abs(dx))) toggleFlip(false);
+  };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* Fades at the bottom so text scrolling under the footer never looks cut. */}
-      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4 [mask-image:linear-gradient(#000_calc(100%-24px),transparent)]">
-        <div className="flex items-center justify-between">
-          <span />
-          <div className="flex items-center gap-1">
-          {/* Direct actions, same round buttons as the close: share, and undo when there's a swipe to undo. */}
-          {undoable && (
-            <button
-              type="button"
-              onClick={() => useTasteStore.getState().undoLast()}
-              aria-label="Undo last swipe"
-              title="Undo last swipe"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
-            >
-              <Icon name="rotate-ccw" className="h-5 w-5" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => openShare(shirt.id, shirt.baseColor)}
-            aria-label={`Share ${shirt.title}`}
-            title="Share"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
-          >
-            <Icon name="share-2" className="h-5 w-5" />
-          </button>
-          {/* Closes the details. */}
-          <button
-            type="button"
-            onClick={() => toggleFlip(false)}
-            aria-label="Back to the tee"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/15"
-          >
+      <div ref={scroller} className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4 [mask-image:linear-gradient(#000_calc(100%-24px),transparent)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 pt-2">
+            <h2 className="text-xl font-medium leading-tight">{shirt.title}</h2>
+            <p className="mt-0.5 text-sm text-muted">{CATEGORY_LABELS[shirt.category]}</p>
+          </div>
+          {/* Closes the details (as a tap on an empty spot, Esc, or a drag down). */}
+          <button type="button" onClick={() => toggleFlip(false)} aria-label="Back to the tee" className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-neutral-300 hover:text-white">
             <Icon name="x" className="h-5 w-5" />
           </button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex gap-4">
-          {/* Short screens (phones sideways) skip the thumbnail: room for the text. */}
-          <div className={`w-24 shrink-0 rounded-2xl p-2 [@media(max-height:500px)]:hidden ${STAGE_BG}`}>
-            <TeeMockup shirt={shirt} sizes={SIZES.thumb} className="w-full" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-xl font-bold leading-tight tracking-tight">{shirt.title}</h2>
-            <p className="mt-0.5 text-sm text-neutral-400">{CATEGORY_LABELS[shirt.category]}</p>
-          </div>
         </div>
 
         {/* Fetched with the card (lib/details); the space is held so nothing jumps. */}
         <p className="mt-4 min-h-[4.5rem] text-sm leading-relaxed text-neutral-300">{details?.description}</p>
-
-
       </div>
 
-      {/* One action here: Like / Pass sit on the buttons below the card. */}
-      <div className="border-t border-white/10 bg-ink-900 px-4 py-3">
-        <Link
-          href={productHref(shirt.id)}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black"
-        >
-          View tee <Icon name="arrow-right" className="h-4 w-4" />
+      {/* Within the thumb: undo, share and the tee's page (Save / Pass sit on the buttons below the card). */}
+      <div className="flex items-center gap-2 border-t border-white/10 bg-ink-900 px-4 py-3">
+        {undoable && (
+          <button type="button" onClick={() => useTasteStore.getState().undoLast()} aria-label="Undo last swipe" title="Undo last swipe" className={round}>
+            <Icon name="rotate-ccw" className="h-5 w-5" />
+          </button>
+        )}
+        <button type="button" onClick={() => openShare(shirt.id, shirt.baseColor)} aria-label={`Share ${shirt.title}`} className={`${round} w-auto px-4 text-sm font-medium`}>
+          Share
+        </button>
+        <Link href={productHref(shirt.id)} className={`flex-1 ${BUTTON_PRIMARY}`}>
+          View tee →
         </Link>
       </div>
     </div>
   );
 }
 
+/** A pointer that moved less than this (px) tapped. */
+const TAP_SLOP = 8;
+/** A drag down this far (px) from the top of the details turns back to the tee. */
+const FLIP_BACK_DRAG = 80;

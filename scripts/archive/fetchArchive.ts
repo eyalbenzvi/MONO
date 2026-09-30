@@ -25,10 +25,12 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
+import type { Sharp } from "sharp";
 import { BUCKET } from "../photos/source";
 import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveAddition, type ArchiveGroup, type ArchiveMode, type ArchiveSource, type ArchiveUnit } from "./source";
 import { NAMES, REVIEWED, archiveOrder } from "./curation";
 import { mulberry32, shuffle } from "../gen/core";
+import { trimDangling } from "../gen/titles";
 
 sharp.cache(false);
 sharp.concurrency(2);
@@ -228,7 +230,7 @@ const cutFile = (key: string) => path.join(CACHE, "cut", `${key}.png`);
 const prepFile = (key: string) => path.join(CACHE, "prep", `${key}.webp`);
 
 /** The picture fitted whole into the print area (never cropped), greyscale + alpha of where it is. */
-async function placed(input: sharp.Sharp, fit: number): Promise<{ gray: Uint8Array; alpha: Uint8Array }> {
+async function placed(input: Sharp, fit: number): Promise<{ gray: Uint8Array; alpha: Uint8Array }> {
   const meta = await input.clone().metadata();
   const swap = (meta.orientation ?? 1) >= 5;
   const bw = (swap ? meta.height : meta.width) ?? 1;
@@ -580,7 +582,8 @@ export function archiveName(title: string, group: ArchiveGroup): string | null {
   t = t.replace(/[.;:,\s-]+$/, "").trim();
   if (t.length > 44) t = t.split(/\s*[,;(]\s*|\s+--\s+/)[0];
   if (t.length > 44) t = t.split(" ").slice(0, 6).join(" ");
-  t = t.replace(/[.;:,\s-]+$/, "").trim();
+  // Never on a dangling word ("Design for a Window for the"): a name cut short is shorter still, else set by hand (curation NAMES).
+  t = trimDangling(t.replace(/[.;:,\s-]+$/, "").trim());
   if (t.length < 3 || /^(photograph|untitled|study|sketch|flower study|plant study|drawing)$/i.test(t)) return null;
   return t[0].toUpperCase() + t.slice(1);
 }

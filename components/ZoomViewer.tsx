@@ -13,6 +13,7 @@ const CustomPrint = lazy(() => import("@/components/custom/CustomPrint").then((m
 import { zoomStep } from "@/components/Sharper";
 import { SIZES } from "@/lib/images";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useHistorySheet } from "@/hooks/useHistorySheet";
 import { clampPan, zoomAt as zoomAtPoint, type ZoomTransform } from "@/lib/zoom";
 import { PRINT_SIZE_CM, printSizeLabel, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
@@ -60,7 +61,9 @@ export function ZoomViewer({
   const gesture = useRef<{ dist: number; mid: { x: number; y: number }; start: Transform } | null>(null);
   const lastTap = useRef(0);
   const moved = useRef(false);
-  useFocusTrap(panel, true, onClose, returnFocusTo);
+  // A step in the history (#zoom): Back closes it; X closes through it.
+  const { close } = useHistorySheet("zoom", true, onClose);
+  useFocusTrap(panel, true, close, returnFocusTo);
 
   // The print's on-screen width, for the scale bar.
   const printBox = useRef<HTMLDivElement>(null);
@@ -157,14 +160,14 @@ export function ZoomViewer({
       role="dialog"
       aria-modal="true"
       aria-label={`${shirt.title} — zoom`}
-      className="fixed inset-0 z-[80] flex flex-col bg-black"
+      className="fixed inset-0 z-sheet flex flex-col bg-black"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
     >
       <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(12px,env(safe-area-inset-top))]">
-        <div className="flex rounded-full bg-white/10 p-0.5 ring-1 ring-white/15" role="group" aria-label="View">
+        <div className="flex rounded-control bg-white/10 p-0.5 ring-1 ring-white/15" role="group" aria-label="View">
           {/* Same order as everywhere: On the tee | Print. */}
           {(["tee", "print"] as const).map((v) => (
             <button
@@ -175,7 +178,7 @@ export function ZoomViewer({
                 setView(v);
                 setT({ s: 1, x: 0, y: 0 });
               }}
-              className={`h-9 rounded-full px-4 text-xs font-semibold ${view === v ? "bg-white text-black" : "text-neutral-200"}`}
+              className={`h-11 rounded-control px-4 text-xs font-medium ${view === v ? "bg-white text-black" : "text-neutral-200"}`}
             >
               {v === "print" ? "Print" : "On the tee"}
             </button>
@@ -183,10 +186,10 @@ export function ZoomViewer({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={close}
           data-autofocus
           aria-label="Close zoom"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15 hover:bg-white/20"
+          className="flex h-11 w-11 items-center justify-center text-neutral-200 hover:text-white"
         >
           <Icon name="x" className="h-5 w-5" />
         </button>

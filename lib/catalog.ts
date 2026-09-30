@@ -1,5 +1,7 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
 import { madeById } from "@/lib/custom/products";
+import { uploadProduct } from "@/lib/upload/designs";
+import { YOURS_ID, isUploadDesign } from "@/lib/upload/keys";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
@@ -109,13 +111,21 @@ function init(index: CatalogIndex) {
 }
 
 let ready = false;
+let failed = false;
 const loading = (() => {
   const src = loadIndex();
   if (src instanceof Promise)
-    return src.then((index) => {
-      init(index);
-      ready = true;
-    });
+    return src.then(
+      (index) => {
+        init(index);
+        ready = true;
+      },
+      (e) => {
+        // Offline, or an index renamed by a newer deploy: the page says so and offers a reload (AppShell).
+        failed = true;
+        throw e;
+      },
+    );
   init(src);
   ready = true;
   return Promise.resolve();
@@ -124,6 +134,8 @@ const loading = (() => {
 /** Resolves once the catalog is filled in (at once on the server). */
 export const catalogReady = () => loading;
 export const isCatalogReady = () => ready;
+/** The index couldn't be loaded. */
+export const isCatalogFailed = () => failed;
 
 /**
  * Made-for-you tees (lib/custom/products): not in SHIRTS, but resolved by id,
@@ -143,7 +155,28 @@ function madeProduct(id: string): ShirtProduct | undefined {
   return made;
 }
 
-export const getShirtById = (id: string) => BY_ID.get(id) ?? madeProduct(id);
+/**
+ * Uploaded prints (lib/upload/designs): the bag's `make-yours`, and designs
+ * the Open Call accepted on this device (`mono-u-…`), each built on a
+ * catalogue design for its model photo.
+ */
+function yoursProduct(id: string): ShirtProduct | undefined {
+  if (id === YOURS_ID) {
+    let made = MADE_BY_ID.get(id);
+    const base = made ?? SHIRTS.find((s) => s.category === "photographs");
+    if (!made && base) {
+      made = { ...base, id, title: "Your file", variant: "upload", family: id, colors: ["black", "white"], rank: Number.MAX_SAFE_INTEGER, weak: false };
+      MADE_BY_ID.set(id, made);
+    }
+    return made;
+  }
+  if (!isUploadDesign(id)) return undefined;
+  patternBase ??= SHIRTS.find((s) => s.category === "pattern") ?? SHIRTS[0];
+  return uploadProduct(id, patternBase);
+}
+let patternBase: ShirtProduct | undefined;
+
+export const getShirtById = (id: string) => BY_ID.get(id) ?? madeProduct(id) ?? yoursProduct(id);
 
 /** Each detail shard's file (named by its content hash, from the index head). */
 export const shardFile = (k: number) => `/data/details-${k}.${shardHashes[k]}.json`;
@@ -181,6 +214,9 @@ export function isPrerendered(shirt: ShirtProduct) {
 export function productHref(id: string, hash = "") {
   const made = madeById(id);
   if (made) return `/make/${made.slug}/${hash}`;
+  if (id === YOURS_ID) return `/make/yours/${hash}`;
+  // An Open Call design lives on this device only: no pre-rendered page.
+  if (isUploadDesign(id)) return `/shop/p/?id=${id}${hash}`;
   const shirt = BY_ID.get(id);
   return !shirt || isPrerendered(shirt) ? `/shop/${id}/${hash}` : `/shop/p/?id=${id}${hash}`;
 }

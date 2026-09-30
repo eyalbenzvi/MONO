@@ -9,7 +9,6 @@ import { assetUrl } from "@/lib/catalog";
 import { MODEL_ASPECT, mockupPath } from "@/lib/images";
 import { siteRoot } from "@/lib/share";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
-import { formatPrice } from "@/lib/format";
 
 export type ShareFormat = "story" | "square";
 export const SHARE_SIZES: Record<ShareFormat, { w: number; h: number }> = {
@@ -83,8 +82,8 @@ function logo(ctx: CanvasRenderingContext2D, cx: number, y: number, scale: numbe
   ctx.restore();
 }
 
-/** `tee` is the picture when it isn't the baked one (a made-for-you print, drawn in the browser); `price` the tee's when it isn't the design's. */
-export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, format: ShareFormat, { tee: drawn, price = shirt.price }: { tee?: Promise<CanvasImageSource>; price?: number } = {}): Promise<Blob> {
+/** `tee` is the picture when it isn't the baked one (a made-for-you print, drawn in the browser). No price: prices are shown only where money changes hands. */
+export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, format: ShareFormat, { tee: drawn }: { tee?: Promise<CanvasImageSource> } = {}): Promise<Blob> {
   const { w, h } = SHARE_SIZES[format];
   const canvas = document.createElement("canvas");
   canvas.width = w;
@@ -115,7 +114,7 @@ export async function renderShareImage(shirt: ShirtProduct, color: BaseColor, fo
   fitFont(ctx, shirt.title, w - 120, story ? 84 : 58, 800);
   ctx.fillText(shirt.title, w / 2, y);
   y += story ? 70 : 48;
-  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee  ·  ${formatPrice(price)}`;
+  const meta = `${CATEGORY_LABELS[shirt.category]}  ·  ${COLOR_LABELS[color]} tee`;
   fitFont(ctx, meta, w - 120, story ? 40 : 30, 500);
   ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.fillText(meta, w / 2, y);
@@ -198,7 +197,7 @@ export async function renderTasteImage(name: string, traits: string[], picks: Sh
     ctx.fillText(s.title, x0 + i * (teeW + colGap) + teeW / 2, 1250);
   });
 
-  const cta = "What's yours? Swipe 10 tees →";
+  const cta = "What’s yours? Swipe 10 tees →";
   ctx.fillStyle = "#ffffff";
   fitFont(ctx, cta, w - 280, 44, 700);
   const cw = ctx.measureText(cta).width + 110;

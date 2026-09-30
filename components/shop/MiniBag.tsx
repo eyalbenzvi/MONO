@@ -1,25 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { TeeMockup } from "@/components/TeeMockup";
-import { SIZES } from "@/lib/images";
-import { STAGE_BG } from "@/components/ui";
 import { getShirtById } from "@/lib/catalog";
+import { track } from "@/lib/analytics";
 import { useUiStore, type AddedNote } from "@/store/useUiStore";
 import { SIZE_LABELS } from "@/types/shirt";
 
-const SHOW_MS = 2500;
+/** How long the confirmation stays (held while the pointer or focus is on it). */
+const SHOW_MS = 5000;
 
 /**
- * The one confirmation after any add to the bag (product page, quick add on
- * a card, Discover, Saved): a single row under the header — the tee,
- * "Added · M" and "Checkout" (straight to the delivery form; the bag, one
- * step back from there, is where to take it back). Leaves by itself after 2.5 s, not while
- * the pointer or focus is on it. Not modal, and up top so it never covers
- * the sizes, the buy bar or the card being rated.
+ * The one confirmation after any add to the bag (product page, Discover,
+ * You, the bag's picks): a single line at the bottom, just above the tab bar
+ * or the sticky button (--dock): "✓ Added · M" and Checkout (straight to the
+ * delivery form). Leaves by itself after 5 s; not modal.
  */
 export function MiniBag() {
   const added = useUiStore((s) => s.added);
@@ -53,32 +49,29 @@ export function MiniBag() {
           key={note.nonce}
           role="region"
           aria-label="Added to bag"
-          initial={{ y: -16, opacity: 0 }}
+          initial={{ y: 8, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -16, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+          exit={{ y: 8, opacity: 0 }}
+          transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
           onPointerEnter={() => setHeld(true)}
           onPointerLeave={() => setHeld(false)}
           onFocus={() => setHeld(true)}
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) setHeld(false);
           }}
-          className="fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-[45] flex items-center gap-2 rounded-2xl bg-ink-900/95 p-2 pr-2 max-[399px]:pl-3 shadow-2xl shadow-black ring-1 ring-white/15 backdrop-blur-md md:left-auto md:right-6 md:w-[380px]"
+          className="fixed inset-x-3 bottom-[max(calc(var(--dock-bag,0px)+8px),calc(env(safe-area-inset-bottom)+8px))] z-toast mx-auto flex h-14 max-w-lg items-center justify-between gap-3 rounded-control bg-white pl-4 pr-1.5 text-black shadow-2xl shadow-black"
         >
-          <div className={`w-10 shrink-0 rounded-lg p-0.5 max-[399px]:hidden ${STAGE_BG}`}>
-            <TeeMockup shirt={shirt} color={note.color} sizes={SIZES.thumb} className="w-full" />
-          </div>
-          <p className="min-w-0 flex-1 truncate text-sm font-semibold" aria-live="polite">
-            <Icon name="check" className="-mt-0.5 mr-1 inline h-4 w-4" strokeWidth={3} />
-            {note.pair ? "Added the pair" : "Added"} · {SIZE_LABELS[note.size]}
+          <p className="min-w-0 truncate text-sm font-medium" aria-live="polite">
+            ✓ {note.pair ? "Added the pair" : "Added"} · {SIZE_LABELS[note.size]}
           </p>
           <Link
             href="/cart/"
             onClick={() => {
+              track("minibag_checkout", { id: note.id });
               useUiStore.getState().requestCheckout();
               close();
             }}
-            className="flex h-10 shrink-0 items-center rounded-full bg-white px-4 text-sm font-bold text-black"
+            className="flex h-11 min-w-11 shrink-0 items-center justify-center rounded-control bg-black px-4 text-sm font-medium text-white"
           >
             Checkout
           </Link>
