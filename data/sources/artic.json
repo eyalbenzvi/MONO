@@ -2860,7 +2860,7 @@
   "flags": [],
   "n": 10050,
   "wave": 2,
-  "name": "Night scence aboard a pleasure boat"
+  "name": "Night Scene Aboard a Pleasure Boat"
  },
  {
   "source": "artic",
@@ -3343,59 +3343,6 @@
   "n": 10059,
   "wave": 2,
   "name": "Pleasure Boats, Chelsea"
- },
- {
-  "source": "artic",
-  "key": "artic-55250",
-  "record": "55250",
-  "recordUrl": "https://www.artic.edu/artworks/55250",
-  "imageUrl": "https://www.artic.edu/iiif/2/32ecdaed-9261-7065-144b-d401b705077a/full/1686,/0/default.jpg",
-  "title": "My Model and my Boat",
-  "maker": "Anders Zorn",
-  "date": "1894",
-  "credit": "Anders Zorn, Art Institute of Chicago",
-  "classification": "Print, etching, print, prints and drawing, Etching on ivory laid paper",
-  "tags": [
-   "etching",
-   "paper (fiber product)",
-   "print",
-   "prints and drawing",
-   "Prints and Drawings"
-  ],
-  "description": "",
-  "width": 2047,
-  "height": 3000,
-  "mode": "ink",
-  "license": "CC0",
-  "score": 0.704,
-  "matched": [
-   "boat"
-  ],
-  "screen": "line",
-  "tone": 0.522,
-  "contrast": 0.231,
-  "coverage": 0.155,
-  "detail": 1,
-  "box": [
-   0.072,
-   0.032,
-   0.927,
-   0.97
-  ],
-  "sha": "bd31f0330bd2ab89",
-  "assess": {
-   "quality": 77,
-   "ink": 0.082,
-   "extent": 0.298,
-   "flags": []
-  },
-  "solid": null,
-  "weak": false,
-  "tee": "white",
-  "flags": [],
-  "n": 10060,
-  "wave": 2,
-  "name": "My Model and my Boat"
  },
  {
   "source": "artic",

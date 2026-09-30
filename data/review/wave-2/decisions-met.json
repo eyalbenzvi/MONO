@@ -39,7 +39,10 @@
   "decision": "reject",
   "reason": "solid slab"
  },
- "met-788420": "keep",
+ "met-788420": {
+  "decision": "reject",
+  "reason": "content review: a novel's character climbing the ship's side, a caricature scene: figures are the subject"
+ },
  "met-384228": "keep",
  "met-380853": "keep",
  "met-366528": {
@@ -131,8 +134,8 @@
   "reason": "category full (etched)"
  },
  "met-345414": {
-  "decision": "keep",
-  "title_override": "A History of the Amistad Captives: Being a Circumstantial Account of the Capture of the Sp"
+  "decision": "reject",
+  "reason": "content review: a book on the Amistad captives: real people, a slave-ship story"
  },
  "met-285980": {
   "decision": "reject",

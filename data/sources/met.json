@@ -3025,59 +3025,6 @@
  },
  {
   "source": "met",
-  "key": "met-788420",
-  "record": "788420",
-  "recordUrl": "https://www.metmuseum.org/art/collection/search/788420",
-  "imageUrl": "https://images.metmuseum.org/CRDImages/dp/original/DP884197.jpg",
-  "title": "Don Michele Getting Up the Ship's Side",
-  "maker": "Thomas Rowlandson",
-  "date": "June 1, 1815",
-  "credit": "Thomas Rowlandson, The Metropolitan Museum of Art",
-  "classification": "Prints, Hand-colored etching and aquatint, Print",
-  "tags": [
-   "Men",
-   "Boats",
-   "Ships",
-   "Drawings and Prints"
-  ],
-  "description": "",
-  "width": null,
-  "height": null,
-  "mode": "ink",
-  "license": "CC0",
-  "score": 0.702,
-  "matched": [
-   "ship",
-   "boat"
-  ],
-  "screen": "tonal",
-  "tone": 0.521,
-  "contrast": 0.224,
-  "coverage": 0.151,
-  "detail": 1,
-  "box": [
-   0.057,
-   0.033,
-   0.912,
-   0.469
-  ],
-  "sha": "54657d4281efb5a8",
-  "assess": {
-   "quality": 78,
-   "ink": 0.079,
-   "extent": 0.296,
-   "flags": []
-  },
-  "solid": null,
-  "weak": false,
-  "tee": "black",
-  "flags": [],
-  "n": 9059,
-  "wave": 2,
-  "name": "Don Michele Getting Up the Ship's Side"
- },
- {
-  "source": "met",
   "key": "met-37071",
   "record": "37071",
   "recordUrl": "https://www.metmuseum.org/art/collection/search/37071",
@@ -3285,56 +3232,6 @@
   "n": 9063,
   "wave": 2,
   "name": "Harbor Scene"
- },
- {
-  "source": "met",
-  "key": "met-345414",
-  "record": "345414",
-  "recordUrl": "https://www.metmuseum.org/art/collection/search/345414",
-  "imageUrl": "https://images.metmuseum.org/CRDImages/dp/original/DP140867.jpg",
-  "title": "A History of the Amistad Captives: Being a Circumstantial Account of the Capture of the Spanish Schooner Amistad, by the Africans on Board; Their Voyage, and Capture near Long Island, New York; with Biographical Sketches of Each of the Surviving Africans.",
-  "maker": "John Warner Barber",
-  "date": "1840",
-  "credit": "John Warner Barber, The Metropolitan Museum of Art",
-  "classification": "Books, Illustrations: wood engraving with hand-coloring and letterpress, Book",
-  "tags": [
-   "Slavery",
-   "Drawings and Prints"
-  ],
-  "description": "",
-  "width": null,
-  "height": null,
-  "mode": "ink",
-  "license": "CC0",
-  "score": 0.606,
-  "matched": [
-   "schooner"
-  ],
-  "screen": "line",
-  "tone": 0.462,
-  "contrast": 0.203,
-  "coverage": 0.177,
-  "detail": 1,
-  "box": [
-   0.169,
-   0.067,
-   0.895,
-   0.954
-  ],
-  "sha": "141d224aa1e7e87a",
-  "assess": {
-   "quality": 74,
-   "ink": 0.079,
-   "extent": 0.557,
-   "flags": []
-  },
-  "solid": null,
-  "weak": false,
-  "tee": "white",
-  "flags": [],
-  "n": 9064,
-  "wave": 2,
-  "name": "A History of the Amistad Captives: Being a Circumstantial Account of the Capture of the Sp"
  },
  {
   "source": "met",

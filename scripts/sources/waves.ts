@@ -48,7 +48,15 @@ const MAP = /\bmap\b|\bchart\b|atlas|bathymetr|coast survey/i;
 const BRUSH = /woodblock|ukiyo|surimono|hanging scroll|handscroll|album leaf|ink on (?:paper|silk)|japan|china|korea/i;
 const PLATE = /plate|specimen|natural history|zoolog|botan|illustration|kunstformen|challenger|haeckel|lithograph.*(?:fish|shell|coral)|chromolith/i;
 const TECH = /patent|technical drawing|mechanical|machine|engine|diagram/i;
-const SHIP_PLAN = /lines plan|sail plan|ship ?plan|architectura navalis|construction plan|shipbuilding|half model|profile of the|plan of a ship/i;
+/** From wave 2 on: a chart named in French or in the plural (Commons' "18th-century French nautical charts", "maps of …"). */
+const MAP_2 = /\bmaps?\b|\bcharts?\b|\bcarte\b|atlas|bathymetr|coast survey/i;
+/** From wave 2 on: a building's drawing (a lighthouse elevation on Commons) is architecture. */
+const BUILDING_2 = /architectural (?:elevation|drawing|plan)s?|drawings of [\w\s]+ lighthouse/i;
+/** From wave 2 on: East Asian work named by its culture ("Chinese (culture or style)") too. */
+const BRUSH_2 = new RegExp(`${BRUSH.source}|chinese|japanese|korean`, "i");
+/** From wave 2 on: natural history by name only ("plate", "illustration" or a fishing boat's lithograph don't make a specimen). */
+const NATURE_2 = /specimen|natural history|zoolog|botan|kunstformen|challenger|haeckel/i;
+const SHIP_PLAN = /lines plan|sail plan|cross sections? of ships|ship ?plan|architectura navalis|construction plan|shipbuilding|half model|profile of the|plan of a ship/i;
 const VESSEL = /\b(?:ship|vessel|schooner|lightship|steamer|steamboat|boat|barge|ferry|tug)\b/i;
 const MEASURED = /measured drawing|architectural drawing/i;
 
@@ -56,17 +64,18 @@ const MEASURED = /measured drawing|architectural drawing/i;
 export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: ShirtCategory } {
   const text = [s.classification, s.title, ...s.tags].join(" · ");
   if (s.mode !== "ink" || PHOTO.test(s.classification)) return { group: "art-photo", category: "photographs" };
-  if (MAP.test(text)) return { group: "etching", category: "sky" };
+  const later = s.wave !== undefined && s.wave >= 2;
+  if ((later ? MAP_2 : MAP).test(text)) return { group: "etching", category: "sky" };
   // Ship plans and a vessel's measured drawing are technical line work; a building's is architecture.
   // A HABS/HAER sheet on Commons is a measured drawing too (its title names the survey).
   const measured = MEASURED.test(s.classification) || /\b(?:HABS|HAER)\b/.test(s.title);
   if (SHIP_PLAN.test(text) || (measured && VESSEL.test(s.title))) return { group: "etching", category: "systems" };
-  if (measured) return { group: "etching", category: "architecture" };
+  if (measured || (later && BUILDING_2.test(text))) return { group: "etching", category: "architecture" };
   if (TECH.test(text)) return { group: "etching", category: "systems" };
-  if (BRUSH.test(text)) return { group: "ukiyo-e", category: "brush" };
+  if ((later ? BRUSH_2 : BRUSH).test(text)) return { group: "ukiyo-e", category: "brush" };
   // Commons files are all classed "Plate" by the adapter: after the first (natural-history) wave, only their own words count.
   const plateText = s.source === "wikimedia" && s.wave !== 1 ? [s.title, ...s.tags].join(" · ") : text;
-  if (PLATE.test(plateText) || (s.source === "wikimedia" && s.wave === 1)) return { group: "natural-history", category: "specimens" };
+  if ((later ? NATURE_2 : PLATE).test(plateText) || (s.source === "wikimedia" && s.wave === 1)) return { group: "natural-history", category: "specimens" };
   return { group: "etching", category: "etched" };
 }
 

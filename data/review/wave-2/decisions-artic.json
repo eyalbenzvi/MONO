@@ -89,7 +89,10 @@
  },
  "artic-63756": "keep",
  "artic-133358": "keep",
- "artic-55250": "keep",
+ "artic-55250": {
+  "decision": "reject",
+  "reason": "content review: Zorn's model beside the boat: a nude"
+ },
  "artic-59927": {
   "decision": "reject",
   "reason": "category full (etched)"

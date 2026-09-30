@@ -412,13 +412,6 @@
 "sha": "2d37aef1d5fcd46c",
 "src": "cab902118d7b2ce9"
 },
-"10060": {
-"mode": "halftone",
-"paper": 0,
-"recipe": 2,
-"sha": "11c0e539f0e35779",
-"src": "fee007ca12b26bc0"
-},
 "10061": {
 "mode": "halftone",
 "paper": 0,
@@ -18500,13 +18493,6 @@
 "sha": "5ca7fddd6c008114",
 "src": "50857cf3426ae778"
 },
-"9059": {
-"mode": "halftone",
-"paper": 0,
-"recipe": 2,
-"sha": "e90da313053d288d",
-"src": "2f718e8b2fbade16"
-},
 "9060": {
 "mode": "halftone",
 "paper": 0,
@@ -18534,13 +18520,6 @@
 "recipe": 2,
 "sha": "cc82726f2fc6ac9e",
 "src": "64dad6a0a95c0d27"
-},
-"9064": {
-"mode": "halftone",
-"paper": 0,
-"recipe": 2,
-"sha": "329dfb144e26b7b3",
-"src": "1bd25f3a8878904b"
 },
 "9065": {
 "mode": "halftone",
