@@ -103,6 +103,18 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-message-t1")).toHaveValue("It was. Sorry about your shoes."),
   },
+  {
+    slug: "birth",
+    fill: async (page) => {
+      await page.locator("#make-birth-name").fill("Noa");
+      await page.locator("#make-birth-date").fill("2021-11-19");
+      await page.locator("#make-birth-kg").fill("3.4");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-birth-name")).toHaveValue("Noa");
+      await expect(page.locator("#make-birth-kg")).toHaveValue("3.4");
+    },
+  },
 ];
 
 for (const c of CASES)
