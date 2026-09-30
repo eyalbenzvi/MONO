@@ -47,8 +47,14 @@ const live = (on: boolean) => {
     /* storage unavailable */
   }
 };
-const saveLive = (c: Client, src: Source, s: Settings) => (live(true), c.saveDraft(src, s));
-const clearLive = (c: Client) => (live(false), c.clearDraft());
+/** The draft's latest settings in this tab, kept at once: back here before the stored draft has caught up, they win (same file). */
+let latest: { name: string; settings: Settings } | null = null;
+const saveLive = (c: Client, src: Source, s: Settings) => {
+  latest = { name: src.name, settings: s };
+  live(true);
+  return c.saveDraft(src, s);
+};
+const clearLive = (c: Client) => ((latest = null), live(false), c.clearDraft());
 /** The status when the converter's code can't be loaded. */
 const LOAD_FAILED = "Couldn’t load. Check your connection and try again.";
 /** The draft is saved this long after the last change. */
@@ -200,6 +206,7 @@ function Yours() {
         }
       }
       const d = await c.reopen(c.DRAFT);
+      if (d && latest?.name === d.name) d.settings = latest.settings;
       if (d) {
         setDraftName(d.name);
         // Left for another page of the site and back (this tab, the draft still in hand): straight back to it.
@@ -324,6 +331,7 @@ function Yours() {
       void loadClient().then((c) => saveLive(c, source, settings));
     };
     pendingSave.current = editId ? null : saveNow;
+    if (!editId) latest = { name: source.name, settings };
     const save = editId ? undefined : setTimeout(saveNow, DRAFT_SAVE_MS);
     return () => clearTimeout(save);
     // `last` is only read for the status.
