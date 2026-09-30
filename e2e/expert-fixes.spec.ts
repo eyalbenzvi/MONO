@@ -2,24 +2,24 @@ import { expect, test } from "@playwright/test";
 import { captionLine, hydrated, seed } from "./helpers";
 import { B1 } from "../tests/fixtures";
 
-test("checkout: the phone's Back on Delivery details returns to the bag, and Forward keeps what was typed", async ({ page }) => {
+test("checkout: the phone's Back on Checkout returns to the bag, and Forward keeps what was typed", async ({ page }) => {
   await seed(page, {}, [{ id: B1, size: "M", color: "black", qty: 1 }]);
   await page.goto("shop/");
   await hydrated(page);
   await page.goto("cart/");
   await hydrated(page);
-  await page.getByRole("button", { name: /^Checkout/ }).tap();
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await page.getByRole("button", { name: /^Checkout · \$\d+$/ }).tap();
+  await expect(page.getByRole("heading", { level: 1, name: "Checkout" })).toBeVisible();
   await expect(page).toHaveURL(/#details$/);
   await page.getByLabel("Full name").fill("Noa Levin");
   await page.goBack();
   await expect(page).toHaveURL(/\/cart\/$/);
   await expect(page.getByRole("heading", { name: "Your bag" })).toBeVisible();
   await page.goForward();
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Checkout" })).toBeVisible();
   await expect(page.getByLabel("Full name")).toHaveValue("Noa Levin");
   // The on-page link does the same as Back.
-  await page.getByRole("button", { name: "Bag" }).tap();
+  await page.getByRole("button", { name: "← Bag" }).tap();
   await expect(page.getByRole("heading", { name: "Your bag" })).toBeVisible();
 });
 
@@ -35,7 +35,10 @@ test("a catalogue that won't load says so, with a reload, instead of a page that
   await page.route(/\/data\/index\.\w+\.json/, (r) => r.abort());
   await page.goto("shop/");
   await expect(page.locator("[data-load-failed]")).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole("button", { name: "Reload" })).toBeVisible();
+  // The brand's error line and one way on (the overhaul's copy).
+  await expect(page.locator("[data-load-failed]")).toHaveAttribute("role", "alert");
+  await expect(page.locator("[data-load-failed]")).toContainText("Something went wrong.");
+  await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
 });
 
 test("Make: a character the print can't set is named (never 'too long'), and Add brings the field into view with the focus", async ({ page }) => {

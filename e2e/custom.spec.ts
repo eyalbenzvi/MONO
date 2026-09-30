@@ -6,10 +6,11 @@ import { MADE, MAKE_GROUPS } from "../lib/custom/products";
 // The visitor's zone decides the place a sky starts from.
 test.use({ timezoneId: "Asia/Jerusalem" });
 
-test("Make is in plain sight: a header tab and a way in from the designs it's drawn like; the shop is only the shop", async ({ page }) => {
-  await page.goto("");
+test("Make is in plain sight: a main tab and a way in from the designs it's drawn like; the shop is only the shop", async ({ page }) => {
+  // The bottom tab bar (hidden on Discover until the taste test is done, so from the shop).
+  await page.goto("shop/");
   await hydrated(page);
-  await page.getByRole("link", { name: "Make", exact: true }).tap();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Make", exact: true }).tap();
   await expect(page).toHaveURL(/\/make\/$/);
   await expect(page.locator("h1")).toHaveText("Our prints, made yours. Or print your own.");
   // The two tracks behind one switch; From ours grouped by what you arrive with.
@@ -72,9 +73,9 @@ test("Your Moon: words and a night, drawn as you go; into the bag as its own lin
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
   // Checkout opens on the delivery form (a step in the history); the bag is one step back.
   await expect(page).toHaveURL(/\/cart\/#details$/);
-  await page.getByRole("button", { name: "Bag", exact: true }).tap();
+  await page.getByRole("button", { name: "← Bag", exact: true }).tap();
   await expect(page.getByText("Your Moon · 19 November 2021")).toBeVisible();
-  await expect(page.getByText("Made for you: size exchanges only")).toBeVisible();
+  await expect(page.locator("[data-policy]")).toContainText("Made-for-you tees: free size exchanges within 30 days.");
   await expect(page.locator("canvas[data-custom]").first()).toBeAttached();
   // Edit goes back to that very print.
   await page.getByRole("link", { name: "Edit" }).tap();

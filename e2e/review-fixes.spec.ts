@@ -8,7 +8,7 @@ test.describe.configure({ timeout: 120_000 });
 
 const night = (d: string) => `make/moon/?make=${make({ t: "night", v: 1, p: { d } })}`;
 /** The phone's buy bar on a Make page. */
-const buy = (page: Page) => page.locator("div.sticky button").filter({ hasText: /Add|Save|Choose|Added/ });
+const buy = (page: Page) => page.locator("div.sticky button").filter({ hasText: /Add|Save|Select|In your bag/ });
 const cartItems = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("mono-cart") ?? "{}").state?.cart ?? []) as { size: string; qty: number; color: string; upload?: { id: string } }[]);
 
 async function addNight(page: Page, d: string, size = "M") {
@@ -22,8 +22,10 @@ async function addNight(page: Page, d: string, size = "M") {
 
 test("B1: Edit from the bag replaces the Make line and keeps its quantity", async ({ page }) => {
   await addNight(page, "2021-11-19");
-  await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 5_000 });
-  await buy(page).tap();
+  // Once added, the button leads to checkout rather than adding again silently.
+  await expect(buy(page)).toHaveText(/^In your bag · Checkout$/, { timeout: 5_000 });
+  // The same print again (the page opened afresh): a second of it, on the same line.
+  await addNight(page, "2021-11-19");
   expect(await cartItems(page)).toEqual([expect.objectContaining({ size: "M", qty: 2 })]);
   await page.goto("cart/");
   await hydrated(page);

@@ -33,24 +33,29 @@ test("the Make index's filter shows only the groups chosen, keeps them in the ad
   page.on("crash", () => (crashed = true));
   await page.goto("make/");
   await hydrated(page);
-  await page.getByRole("button", { name: "Categories" }).tap();
+  // The filter is the bottom row's "Filter" button: a sheet titled "Categories".
+  await page.getByRole("button", { name: "Filter", exact: true }).tap();
+  await expect(page.getByRole("dialog", { name: "Categories" })).toBeVisible();
   await page.getByRole("checkbox", { name: /^From a name/ }).tap();
   await expect(page.getByRole("checkbox", { name: /^From a name/ })).toBeChecked();
-  await expect(page).toHaveURL(/[?&]g=name$/);
+  await expect(page).toHaveURL(/[?&]g=name(#filter)?$/);
   await expect(page.locator("ul[data-group]")).toHaveCount(1);
   await expect(page.locator('ul[data-group="name"]')).toHaveCount(1);
   await page.getByRole("checkbox", { name: /^From a place/ }).tap();
   await expect(page.getByRole("checkbox", { name: /^From a place/ })).toBeChecked();
-  await expect(page).toHaveURL(/[?&]g=name\.place$/);
+  await expect(page).toHaveURL(/[?&]g=name\.place(#filter)?$/);
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Categories, 2 selected" })).toBeVisible();
+  // Closing the sheet steps back off #filter; the address keeps the groups.
+  await expect(page).toHaveURL(/[?&]g=name\.place$/);
+  await expect(page.getByRole("dialog", { name: "Categories" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Filter · 2" })).toBeVisible();
   // A reload (or a shared link) opens with the same groups.
   await page.reload();
   await hydrated(page);
   await expect(page.locator("ul[data-group]")).toHaveCount(2);
-  await page.getByRole("button", { name: "Categories, 2 selected" }).tap();
+  await page.getByRole("button", { name: "Filter · 2" }).tap();
   await page.getByRole("checkbox", { name: /^All/ }).tap();
-  await expect(page).toHaveURL(/\/make\/$/);
+  await expect(page).toHaveURL(/\/make\/(#filter)?$/);
   await expect(page.locator("ul[data-group]")).toHaveCount(MAKE_GROUPS.filter((g) => MADE.some((m) => m.group === g.id)).length);
   expect(crashed).toBe(false);
 });
@@ -60,7 +65,7 @@ test("the Make index survives a filter changed again and again (each card's canv
   page.on("crash", () => (crashed = true));
   await page.goto("make/?g=date");
   await hydrated(page);
-  await page.getByRole("button", { name: /^Categories/ }).tap();
+  await page.getByRole("button", { name: /^Filter/ }).tap();
   // Eight cards appear and go, twenty times: before the fix, the tab ran out of canvas memory within a few.
   for (let i = 0; i < 20; i++) {
     await page.getByRole("checkbox", { name: /^From a name/ }).tap();

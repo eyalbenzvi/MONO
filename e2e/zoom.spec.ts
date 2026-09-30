@@ -28,6 +28,21 @@ async function pinch(page: Page, cx: number, cy: number, from: number, to: numbe
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 }
 
+/**
+ * A quick double tap at a point of the card, through the browser's touch
+ * input. The four touch events are queued at once (in order): awaited one by
+ * one, a loaded machine can space the taps past the app's double-tap window
+ * (DOUBLE_TAP_MS, 260 ms), and so can locator.tap's actionability checks.
+ */
+async function doubleTap(page: Page, card: import("@playwright/test").Locator, x: number, y: number) {
+  const box = (await card.boundingBox())!;
+  const cdp = await page.context().newCDPSession(page);
+  const touchPoints = [{ x: box.x + x, y: box.y + y, id: 1 }];
+  const start = { type: "touchStart" as const, touchPoints };
+  const end = { type: "touchEnd" as const, touchPoints: [] as typeof touchPoints };
+  await Promise.all([start, end, start, end].map((e) => cdp.send("Input.dispatchTouchEvent", e)));
+}
+
 test.describe("U5: zoom in place on the Discover card", () => {
   test("a pinch zooms the picture itself — no dialog, no swipe; pinching back out returns the card, ready to swipe", async ({ page }) => {
     await seed(page);
@@ -61,11 +76,8 @@ test.describe("U5: zoom in place on the Discover card", () => {
     // A double tap needs the card settled (its entrance done): taps during it can land as one.
     await expect(card).toBeVisible();
     await page.waitForTimeout(500);
-    await card.tap({ position: { x: 180, y: 250 } });
-    await page.waitForTimeout(60);
-    await card.tap({ position: { x: 180, y: 250 } });
-    await page.waitForTimeout(600);
-    expect(await scaleOf(page)).toBeCloseTo(2.5, 1);
+    await doubleTap(page, card, 180, 250);
+    await expect.poll(() => scaleOf(page)).toBeCloseTo(2.5, 1);
     await expect(page.getByText(/Zoomed 2.5×/)).toBeAttached();
 
     await card.tap({ position: { x: 180, y: 250 } });
@@ -78,18 +90,17 @@ test.describe("U5: zoom in place on the Discover card", () => {
     await expect(card.getByRole("link", { name: /View tee/ })).toBeVisible();
   });
 
-  test("Like while zoomed: the picture comes back and the card goes", async ({ page }) => {
+  test("Save while zoomed: the picture comes back and the card goes", async ({ page }) => {
     await seed(page);
     await page.goto("");
     await hydrated(page);
     const card = page.locator('[aria-roledescription="card"]').first();
     const title = await card.locator("h2").first().textContent();
-    await card.tap({ position: { x: 180, y: 250 } });
-    await page.waitForTimeout(60);
-    await card.tap({ position: { x: 180, y: 250 } });
+    await expect(card).toBeVisible();
     await page.waitForTimeout(500);
-    expect(await scaleOf(page)).toBeGreaterThan(2);
-    await page.getByRole("button", { name: "Like", exact: true }).tap();
+    await doubleTap(page, card, 180, 250);
+    await expect.poll(() => scaleOf(page)).toBeGreaterThan(2);
+    await page.getByRole("button", { name: "Save", exact: true }).tap();
     await page.waitForTimeout(800);
     await expect(page.locator('[aria-roledescription="card"]').first().locator("h2").first()).not.toHaveText(title!);
     expect(await scaleOf(page)).toBe(1);
@@ -149,6 +160,6 @@ test("recording: the flipped card's picture never shows through its details (hid
   expect(await faces()).toEqual(["visible", "hidden"]);
   await card.tap({ position: { x: 180, y: 250 } });
   await expect.poll(faces).toEqual(["hidden", "visible"]);
-  await page.getByRole("button", { name: /close|back/i }).first().tap();
+  await page.getByRole("button", { name: "Back to the tee" }).tap();
   await expect.poll(faces).toEqual(["visible", "hidden"]);
 });

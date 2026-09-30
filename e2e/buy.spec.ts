@@ -1,16 +1,23 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed } from "./helpers";
 
-const cardTitle = async (page: import("@playwright/test").Page) => (await page.locator('[aria-roledescription="card"]').first().locator("h2").first().textContent())!;
+const cardTitle = async (page: Page) => (await page.locator('[aria-roledescription="card"]').first().locator("h2").first().textContent())!;
+/** The checkout step of /cart/ (#details): "Checkout" and its Delivery section. */
+async function expectCheckout(page: Page) {
+  await page.waitForURL(/\/cart\/(#details)?$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Checkout" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Delivery" })).toBeVisible();
+}
+const tab = (page: Page, name: string | RegExp) => page.getByRole("navigation", { name: "Main" }).getByRole("link", { name });
 
-test("V1: Buy between Pass and Like opens a sheet in place: size, then Buy now goes straight to the delivery form", async ({ page }) => {
+test("V1: Buy between Pass and Save opens a sheet in place: size, then Buy now goes straight to checkout", async ({ page }) => {
   await seed(page);
   await page.goto("");
   await hydrated(page);
   const title = await cardTitle(page);
-  const buttons = page.locator("button[aria-label='Pass'], button[aria-label^='Buy '], button[aria-label='Like']");
+  const buttons = page.locator("button[aria-label='Pass'], button[aria-label^='Buy '], button[aria-label='Save']");
   await expect(buttons).toHaveCount(3);
-  // Order on screen: Pass · Buy · Like.
+  // Order on screen: Pass · Buy · Save.
   const xs = await buttons.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().x));
   expect(xs[0]).toBeLessThan(xs[1]);
   expect(xs[1]).toBeLessThan(xs[2]);
@@ -19,17 +26,19 @@ test("V1: Buy between Pass and Like opens a sheet in place: size, then Buy now g
   const sheet = page.getByRole("dialog", { name: `Buy ${title}` });
   await expect(sheet).toBeVisible();
   await expect(page).not.toHaveURL(/\/shop\//);
-  // No size yet: the button asks for one and nothing is added.
-  await sheet.getByRole("button", { name: "Choose size" }).tap();
+  await expect(page).toHaveURL(/#buy$/);
+  // No size yet: the button (with the price, no size) highlights the sizes and moves focus there; nothing is added.
+  await sheet.getByRole("button", { name: /^Buy now · \$\d+$/ }).tap();
   await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole("radiogroup", { name: "Size" }).getByRole("radio").first()).toBeFocused();
+  await expect(sheet.getByRole("status")).toHaveText("Select your size.");
   await sheet.getByRole("radio", { name: /^M\b/ }).tap();
   await sheet.getByRole("button", { name: /^Buy now · M · \$\d+$/ }).tap();
-  await page.waitForURL(/\/cart\/$/);
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await expectCheckout(page);
   await expect(page.getByRole("list", { name: "Items" })).toContainText(title);
 });
 
-test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you on the same card; Details opens the page", async ({ page }) => {
+test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you on the same card; View tee opens the page", async ({ page }) => {
   await seed(page);
   await page.goto("");
   await hydrated(page);
@@ -38,16 +47,16 @@ test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you
   await page.getByRole("button", { name: `Buy ${title}` }).tap();
   let sheet = page.getByRole("dialog", { name: `Buy ${title}` });
   await sheet.getByRole("radio", { name: /^L\b/ }).tap();
-  await sheet.getByRole("button", { name: "Add to bag, keep swiping" }).tap();
+  await sheet.getByRole("button", { name: "Add to bag", exact: true }).tap();
   await expect(sheet).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText("Added · L");
+  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText("✓ Added · L");
   // The deck didn't move.
   expect(await cardTitle(page)).toBe(title);
 
   await page.getByRole("button", { name: `Buy ${title}` }).tap();
   sheet = page.getByRole("dialog", { name: `Buy ${title}` });
   await expect(sheet.getByRole("button", { name: /^Buy now · L · / })).toBeVisible();
-  await sheet.getByRole("link", { name: "Details" }).tap();
+  await sheet.getByRole("link", { name: /^View tee/ }).tap();
   await page.waitForURL(/\/shop\/(mono-\d+\/|p\/\?id=)/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
 
@@ -56,38 +65,69 @@ test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you
   title = await cardTitle(page);
   await page.getByRole("button", { name: `Buy ${title}` }).tap();
   await page.getByRole("dialog", { name: `Buy ${title}` }).getByRole("button", { name: /^Buy now · L · / }).tap();
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await expectCheckout(page);
 });
 
-test("personal area: with a bag, Checkout comes first (to the delivery form); saved tees add in one tap", async ({ page }) => {
+test("You: no Checkout CTA (the Bag tab counts the bag); a saved tee without a size opens its page, then adds in one tap", async ({ page }) => {
   await seed(page, {}, [{ id: "mono-0004", size: "M", color: "black", qty: 1 }]);
   await page.goto("me/");
   await hydrated(page);
-  const checkout = page.getByRole("link", { name: /^Checkout · 1 tee · \$\d+$/ });
-  await expect(checkout).toBeVisible();
-  // Saved (the taste test's likes): quick add right on the tile (no size remembered yet: pick one).
+  await expect(page.getByRole("heading", { level: 1, name: "You" })).toBeVisible();
+  // The old "Checkout · 1 tee" CTA is gone: the bag is one tab away.
+  await expect(page.getByRole("link", { name: /^Checkout/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Checkout/ })).toHaveCount(0);
+  await expect(tab(page, /^Bag/)).toHaveAccessibleName("Bag 1");
+
   const saved = page.getByRole("list", { name: "Saved" });
-  await saved.getByRole("button", { name: /^Quick add / }).first().tap();
-  await saved.getByRole("button", { name: "Size M" }).tap();
-  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText("Added · M");
-  await expect(page.getByRole("link", { name: /^Checkout · 2 tees · \$\d+$/ })).toBeVisible();
-  await page.getByRole("link", { name: /^Checkout · 2 tees/ }).tap();
+  await expect(saved.getByRole("button", { name: /^Quick add / })).toHaveCount(0);
+  // No size remembered yet: "+" is "Select size for …" and opens the tee to select one.
+  const first = saved.getByRole("button", { name: /^Select size for / }).first();
+  const title = (await first.getAttribute("aria-label"))!.replace(/^Select size for /, "");
+  await first.tap();
+  await page.waitForURL(/\/shop\/(mono-\d+\/|p\/\?id=)/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await page.getByRole("button", { name: /^Add to bag · M · \$\d+$/ }).tap();
+  await expect(page.getByRole("button", { name: "In your bag · Checkout" })).toBeVisible();
+
+  // Back on You, with the size remembered: every "+" adds in one tap.
+  await page.goBack();
+  await page.waitForURL(/\/me\/$/);
+  await expect(tab(page, /^Bag/)).toHaveAccessibleName("Bag 2");
+  const add = saved.getByRole("button", { name: /^Add .+ to bag, size M$/ });
+  await expect(add.first()).toBeVisible();
+  await add.last().tap();
+  // (The previous confirmation may still be animating out: the newest one is last.)
+  await expect(page.getByRole("region", { name: "Added to bag" }).last()).toContainText("Added · M");
+  await expect(tab(page, /^Bag/)).toHaveAccessibleName("Bag 3");
+  await tab(page, /^Bag/).tap();
   await page.waitForURL(/\/cart\/$/);
-  await expect(page.getByRole("heading", { name: "Delivery details" })).toBeVisible();
+  await page.getByRole("button", { name: /^Checkout · \$\d+$/ }).tap();
+  await expectCheckout(page);
 });
 
-test("personal area: a long remembered size (Kids 3–4) keeps each add button inside its tile", async ({ page }) => {
+test("You: a long remembered size (Kids 3–4) keeps each row's buttons inside the row", async ({ page }) => {
   await seed(page, {}, [{ id: "mono-0004", size: "K4", color: "black", qty: 1 }]);
   await page.addInitScript(() => {
     const c = JSON.parse(localStorage.getItem("mono-cart") ?? "{}");
     if (c.state) (c.state.preferredSize = "K4"), localStorage.setItem("mono-cart", JSON.stringify(c));
+    // No first-open swipe hint: it slides the first row aside (e2e/saved-swipe covers it).
+    localStorage.setItem("mono-saved-hint", "1");
   });
   await page.goto("me/");
   await hydrated(page);
-  const tiles = page.getByRole("list", { name: "Saved" }).locator("li");
-  await expect(tiles.first().getByRole("button", { name: /size Kids 3–4$/ })).toBeVisible();
-  for (const li of await tiles.all()) {
-    const [tile, button] = await Promise.all([li.boundingBox(), li.getByRole("button").boundingBox()]);
-    expect(button!.x + button!.width).toBeLessThanOrEqual(tile!.x + tile!.width + 0.5);
+  const rows = page.getByRole("list", { name: "Saved" }).locator("li");
+  await expect(rows.first().getByRole("button", { name: /size Kids 3–4$/ })).toBeVisible();
+  expect(await rows.count()).toBeGreaterThan(0);
+  for (const li of await rows.all()) {
+    await expect(li.getByRole("button")).toHaveCount(2);
+    await expect(async () => {
+      const row = (await li.boundingBox())!;
+      for (const b of await li.getByRole("button").all()) {
+        const button = (await b.boundingBox())!;
+        expect(button.x).toBeGreaterThanOrEqual(row.x - 0.5);
+        expect(button.x + button.width).toBeLessThanOrEqual(row.x + row.width + 0.5);
+      }
+    }).toPass();
   }
 });

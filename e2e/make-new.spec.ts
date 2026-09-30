@@ -288,7 +288,7 @@ for (const [slug, fill] of [
     await hydrated(page);
     await fill(page);
     await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });
-    await page.getByRole("button", { name: "Kids' sizes" }).first().tap();
+    await page.getByRole("button", { name: "Kids’ sizes" }).first().tap();
     await page.getByRole("radio", { name: "Kids 5–6" }).first().tap();
     await page.getByRole("button", { name: /^Add to bag · Kids 5–6/ }).tap();
     await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();

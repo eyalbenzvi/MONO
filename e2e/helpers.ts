@@ -53,13 +53,15 @@ export async function hydrated(page: Page) {
   await page.locator("[data-hydrated]").waitFor({ state: "attached" });
 }
 
-/** Saved lives in the personal area now: the person icon, then "Edit" (the Saved drawer). */
+/** Saved lives on You (/me/), in full: the You tab (or the address when the tab bar is hidden), then the list. */
 export async function openSaved(page: import("@playwright/test").Page, { hint = false } = {}) {
   // The first-open swipe hint moves the first row: tests that swipe turn it off (e2e/saved-swipe covers it).
   if (!hint) await page.evaluate(() => localStorage.setItem("mono-saved-hint", "1"));
-  await page.getByRole("link", { name: "You: taste, saved, orders" }).click();
+  const tab = page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "You" });
+  if (await tab.count()) await tab.click();
+  else await page.goto("me/");
   await page.waitForURL(/\/me\/$/);
-  await page.getByRole("button", { name: "Edit saved" }).click();
+  await page.getByRole("list", { name: "Saved" }).waitFor();
 }
 
 /** A taste that leans somewhere (pictures of nature, classic, figurative), for personal lines. */
@@ -67,9 +69,9 @@ export const LEANING: Record<string, number> = Object.fromEntries(
   index.keys.map((k: string) => [k, { nature: 0.82, pictorial: 0.78, classic: 0.74, figurative: 0.7 }[k] ?? 0.42]),
 );
 
-/** Opens the shop's filter, ticks these categories and closes it. */
+/** Opens the shop's filter (the bottom row's "Filter"), ticks these categories and closes it. */
 export async function pickCategories(page: Page, labels: string[]) {
-  await page.getByRole("button", { name: /^Categories/ }).click();
+  await page.getByRole("button", { name: /^Filter/ }).click();
   const sheet = page.getByRole("dialog", { name: "Categories" });
   for (const l of labels) await sheet.getByRole("checkbox", { name: new RegExp(`^${l}`) }).click();
   await page.keyboard.press("Escape");

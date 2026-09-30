@@ -7,7 +7,7 @@ const cart = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getIte
 /** Drags a row sideways by `dx`, stopping halfway to look, then lets go. */
 async function swipe(page: Page, id: string, dx: number, look?: () => Promise<void>) {
   const row = page.locator(`[data-saved-row="${id}"] > div`).last();
-  // The drawer slides in: measure the row once it has stopped moving.
+  // The list may still be settling (layout animation): measure the row once it has stopped moving.
   let box = (await row.boundingBox())!;
   await expect
     .poll(async () => {
@@ -66,7 +66,7 @@ test("Saved: a short drag springs back and does nothing", async ({ page }) => {
 });
 
 test("Saved: the first time it opens, the first row slides aside once to show the swipe; never again", async ({ page }) => {
-  await page.getByRole("button", { name: /Close/ }).first().click().catch(() => {});
+  // Saved is a list on You now (no drawer to close): start again from the shop with the hint unseen.
   await page.evaluate(() => localStorage.removeItem("mono-saved-hint"));
   await page.goto("shop/");
   await hydrated(page);

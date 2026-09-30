@@ -10,10 +10,12 @@ const html = (route: string) => readFileSync(path.join(OUT, route, route.endsWit
 const ldTypes = (page: string) => [...page.matchAll(/"@type":"([A-Za-z]+)"/g)].map((m) => m[1]);
 
 test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
-  test("home: an H1, how it works, canonical, Organization + WebSite", () => {
+  test("home: an H1 that says what the ten cards are for, the description, canonical, Organization + WebSite", () => {
     const page = html("");
-    expect(page).toMatch(/<h1[^>]*>Swipe (<!-- -->)?10(<!-- -->)? tees\. Get a shop ranked for you\.<\/h1>/);
-    expect(page).toContain("swipes → your shop.");
+    // The H1 is the strip's first line; the description says how it works.
+    expect(page).toMatch(/<h1[^>]*>Ten tees\. Keep or pass\. We’ll edit the shop to your taste\.<\/h1>/);
+    expect(page).toContain('<meta name="description" content="One-ink tees in black and white. Swipe ten and the shop edits itself to your taste."/>');
+    expect(page).toContain("<title>MONO · Black and white tees, one ink</title>");
     expect(page).toMatch(/<link rel="canonical" href="[^"]+\/"\/>/);
     expect(page).toMatch(/<meta property="og:url" content="[^"]+\/"\/>/);
     expect(page).toContain('<link rel="sitemap" type="application/xml"');
@@ -22,7 +24,8 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
 
   test("shop: an H1, a real 'Show more' link, canonical", () => {
     const page = html("shop");
-    expect(page).toMatch(/<h1[^>]*>Shop /);
+    // The static H1 is the default order's name (no personal data before the page runs).
+    expect(page).toMatch(/<h1[^>]*>Our pick<\/h1>/);
     expect(page).toContain('href="/shop/?page=2"');
     expect(page).toMatch(/<link rel="canonical" href="[^"]+\/shop\/"\/>/);
   });
@@ -30,7 +33,8 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
   test("product: links onward, ProductGroup with offers and policies, breadcrumb, og:type product", () => {
     const page = html(`shop/${W1}`);
     const nav = page.match(/aria-label="More like this"[\s\S]*?<\/nav>/)?.[0] ?? "";
-    const links = [...nav.matchAll(/href="(\/shop\/mono-\d{4}\/)"/g)];
+    // Pre-rendered designs link to their page, the rest to the client route (/shop/p/?id=).
+    const links = [...nav.matchAll(/href="(\/shop\/mono-\d{4}\/|\/shop\/p\/\?id=mono-\d{4})"/g)];
     expect(links.length).toBeGreaterThanOrEqual(4);
     expect(links.length).toBeLessThanOrEqual(8);
     const types = ldTypes(page);
@@ -58,35 +62,53 @@ test.describe("static HTML (what crawlers read) — R08, R22, F03, R32", () => {
 });
 
 test.describe("shared links (F04) and the empty bag (F05)", () => {
-  test("a shared tee: the page stays until asked; 'Save & find more like it' saves and starts the test", async ({ page }) => {
-    await page.goto(`shop/${B9}/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
+  test("a shared tee: one quiet line (Shared with you, Dismiss) and the page stays; saving it starts the taste test from it", async ({ page }) => {
+    // B2 is not one of the ten test cards (B9 is card 1: saving it would count as that answer).
+    expect(CALIBRATION_IDS).not.toContain(B2);
+    await page.goto(`shop/${B2}/?c=white&ref=whatsapp&utm_source=whatsapp&utm_medium=share&utm_campaign=tee_share`);
     await hydrated(page);
-    const banner = page.getByRole("status").filter({ hasText: "A friend shared this tee" });
-    await expect(banner).toBeVisible();
-    await page.waitForTimeout(800);
-    await expect(page).toHaveURL(new RegExp(`/shop/${B9}/$`));
-    await expect(banner.getByRole("link")).toHaveCount(0);
-    await banner.getByRole("button", { name: "Save & find more like it" }).tap();
-    await page.waitForURL((u) => u.pathname === "/" || u.pathname.endsWith("/MONO/"));
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).state.likedIds);
-    expect(saved).toContain(B9);
+    const line = page.getByText("Shared with you", { exact: true });
+    await expect(line).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/shop/${B2}/$`));
+    // No "Save & find more like it": the line only says where the tee came from.
+    await expect(page.getByRole("button", { name: /Save & find more like it/ })).toHaveCount(0);
+    await expect(page.getByRole("radio", { name: /^White tee/ })).toBeChecked();
+    // Saving is the tee's own heart; Discover then starts from it.
+    await page.getByRole("button", { name: /^Save / }).filter({ visible: true }).tap();
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).state.likedIds)).toContain(B2);
+    await page.getByRole("button", { name: "Dismiss" }).tap();
+    await expect(line).toHaveCount(0);
+    await page.goto("");
+    await hydrated(page);
+    await expect(page.locator("[data-strip]:visible")).toHaveText(/^Saved .+\. Ten more and your edit is ready\.$/);
   });
 
   test("a friend's taste link greets with their archetype", async ({ page }) => {
     await page.goto(`?taste=${"2i" + "0a".repeat(15)}`);
     await hydrated(page);
-    await expect(page.getByText(/^Your friend is The [A-Za-z ]+ — swipe 10 to compare$/)).toBeVisible();
+    await expect(page.locator("[data-strip]:visible")).toHaveText(/^Your friend is The [A-Za-z ]+\. Swipe ten to compare\.$/);
   });
 
-  test("an empty bag starts from Saved: three with quick add", async ({ page }) => {
+  test("an empty bag says so and leads on: the taste test before it, your edit after — no Picked for you", async ({ page }) => {
     await seed(page, { likedIds: [B9, B1, B2, B3], calibrated: false });
     await page.goto("cart/");
     await hydrated(page);
-    const section = page.locator("section", { has: page.getByRole("heading", { name: "Picked for you" }) });
-    await expect(section).toBeVisible();
-    await expect(section.locator('a[href*="/shop/mono-"]')).toHaveCount(3);
-    await expect(section.getByRole("button", { name: /^Quick add|^Add / })).toHaveCount(3);
+    await expect(page.getByText("Your bag is empty.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Picked for you" })).toHaveCount(0);
+    await expect(page.locator('main a[href*="/shop/mono-"]')).toHaveCount(0);
+    const start = page.getByRole("link", { name: "Start the taste test" });
+    await expect(start).toHaveAttribute("href", /\/$/);
+    await expect(page.getByRole("link", { name: "See your edit" })).toHaveCount(0);
     expect(CALIBRATION_IDS.length).toBe(10);
+  });
+
+  test("an empty bag after the taste test leads to your edit", async ({ page }) => {
+    await seed(page);
+    await page.goto("cart/");
+    await hydrated(page);
+    await expect(page.getByText("Your bag is empty.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "See your edit" })).toHaveAttribute("href", /\/shop\/$/);
+    await expect(page.getByRole("link", { name: "Start the taste test" })).toHaveCount(0);
   });
 
   test("shop/?page=2 opens with two pages of tees", async ({ page }) => {

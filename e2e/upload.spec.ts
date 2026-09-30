@@ -26,16 +26,20 @@ async function checkoutFromMiniBag(page: Page) {
   await page.getByRole("region", { name: "Added to bag" }).getByRole("link", { name: "Checkout" }).tap();
   // Checkout opens on the delivery form, a step in the history (#details).
   await page.waitForURL(/\/cart\/(#details)?$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Checkout" })).toBeVisible();
   for (const [label, value] of [
-    ["Full name", "Ada Lovelace"],
     ["Email", "ada@example.com"],
-    ["Street address", "12 Analytical St"],
+    ["Full name", "Ada Lovelace"],
+    ["Address", "12 Analytical St"],
     ["City", "Tel Aviv"],
     ["Postcode / ZIP", "6100001"],
   ])
-    await page.getByLabel(label).fill(value);
-  await page.getByRole("button", { name: /Place demo order/ }).tap();
-  await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
+    await page.getByLabel(label, { exact: true }).fill(value);
+  await page.getByLabel("Country", { exact: true }).selectOption({ label: "Israel" });
+  // The one demo disclosure, under the order button.
+  await expect(page.getByText("Preview store. No payment is taken and nothing ships.")).toBeVisible();
+  await page.getByRole("button", { name: /^Place order · \$/ }).tap();
+  await expect(page.getByRole("heading", { level: 1, name: "Thank you, Ada." })).toBeVisible();
 }
 
 test("Make: From ours and From yours are two pages behind one switch; Back leaves Make", async ({ page }) => {
@@ -219,15 +223,25 @@ test("From yours, Edit from the bag of a line removed meanwhile: saving adds it 
 });
 
 test("From yours: left for the shop mid-way and back, the picture is there as it was (no draft left by an edit)", async ({ page }) => {
+  // The taste test already done, so Discover shows the tab bar.
+  await page.addInitScript((ids) => {
+    if (localStorage.getItem("mono-taste")) return;
+    localStorage.setItem("mono-taste", JSON.stringify({ state: { likedIds: ids.slice(0, 5), dislikedIds: ids.slice(5, 10), seen: ids.slice(0, 10), calibrationAcknowledged: true, onboardingSeen: true }, version: 6 }));
+  }, CALIBRATION_IDS);
   await page.goto("make/yours/");
   await hydrated(page);
   await choose(page, "rings.png", await drawing());
   await ready(page);
   await page.getByRole("radiogroup", { name: "Print size" }).getByRole("radio", { name: /^Small/ }).tap();
   await ready(page);
-  await page.getByRole("link", { name: "Shop", exact: true }).first().tap();
+  // Upload has its own bottom bar (no tab bar): away by the wordmark, then the tab bar (Discover shows it once the taste test is done).
+  await page.getByRole("link", { name: "MONO, home" }).tap();
+  await page.waitForURL(/127\.0\.0\.1:\d+\/$/);
+  const tabs = page.getByRole("navigation", { name: "Main" });
+  await tabs.getByRole("link", { name: "Shop", exact: true }).tap();
   await page.waitForURL(/\/shop\//);
-  await page.getByRole("link", { name: "Make", exact: true }).first().tap();
+  await tabs.getByRole("link", { name: "Make", exact: true }).tap();
+  await page.waitForURL(/\/make\/$/);
   await page.locator("[data-make-switch]").getByRole("link", { name: "Upload" }).tap();
   await expect(page).toHaveURL(/\/make\/yours\/#print$/);
   await ready(page);
@@ -259,7 +273,8 @@ test("From yours, after the order: checking → cleared; offered → accepted; i
   await checkoutFromMiniBag(page);
   await expect(page.locator("[data-upload-reviews] [data-review]")).toHaveAttribute("data-review", "queued");
   await expect(page.getByText("Checking your file. Up to 2 days.")).toBeVisible();
-  await expect(page.getByText("Reviews are simulated in this demo.")).toBeVisible();
+  // One demo disclosure only (in checkout): the review status carries no demo line of its own.
+  await expect(page.getByText(/simulated/i)).toHaveCount(0);
   await page.clock.fastForward(21_000);
   await expect(page.getByText("Cleared. Printing next.")).toBeVisible();
   await page.getByRole("button", { name: "Offer to the catalogue →" }).tap();
@@ -371,7 +386,8 @@ test("Analytics carry the kind and the tier, never the file's name, title or pix
   const layer = await page.evaluate(() => JSON.stringify(window.dataLayer ?? []));
   for (const e of ["upload_start", "upload_preview", "yours_step", "upload_rights_confirm"]) expect(layer).toContain(`"${e}"`);
   expect(layer).toContain("white-upload");
-  expect(layer.toLowerCase()).not.toMatch(/grandma|garden|1987|data:image/);
+  // Timestamps left out: a millisecond clock can contain "1987" by chance.
+  expect(layer.toLowerCase().replace(/"ts":\d+/g, "")).not.toMatch(/grandma|garden|1987|data:image/);
 });
 
 test("From yours by keyboard: tiles, choices and size without a pointer", async ({ page }) => {
@@ -384,8 +400,12 @@ test("From yours by keyboard: tiles, choices and size without a pointer", async 
   // Small is converted afresh: the last print stays "ready" on the stage meanwhile, so wait for Next itself (enabled only once it's done).
   await expect(primary(page)).toBeEnabled({ timeout: 25_000 });
   await expect(primary(page)).toHaveText(/^Next/);
-  await primary(page).focus();
-  await page.keyboard.press("Enter");
+  // Under load a fresh conversion can still start as Next is pressed (Next then waits): press again until Size opens.
+  await expect(async () => {
+    await primary(page).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-step="size"]')).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 30_000 });
   await expect(page.locator('[data-step="size"]')).toBeFocused();
   await page.getByRole("radio", { name: /^M\b/ }).first().focus();
   await page.keyboard.press("Enter");
