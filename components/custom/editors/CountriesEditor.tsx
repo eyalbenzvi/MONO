@@ -8,6 +8,7 @@ import { COUNTRIES_NAME_MAX, COUNTRY_CODES, NOT_COUNTED, OF, PRODUCT, counted, p
 import { Field, useLexicon } from "./Field";
 import { yearOf } from "./RowsField";
 import { TextField, useText } from "./TextField";
+import { previewOf, usePreviewKey } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Letters without their accents, lower case: how the filter matches ("cote" finds Côte d'Ivoire). */
@@ -41,12 +42,16 @@ export default function CountriesEditor({ arrival, touched, onChange }: EditorPr
   const ok = picked.size > 0 && name.ok && (!name.text.trim() || !!lex) && y !== null;
   const spec: CustomSpec | null = ok ? { t: "countries", v: 1, p: { x: packCountries([...picked]), ...(name.value ? { n: name.value } : {}), ...(y ? { y } : {}) } } : null;
 
+  // No country ticked yet: the example's, under the name and the year as typed.
+  const preview: CustomSpec | null = !spec && !picked.size && name.ok && (!name.text.trim() || !!lex) && y !== null ? { t: "countries", v: 1, p: { x: ex.x, ...(name.value ? { n: name.value } : {}), ...(y ? { y } : {}) } } : null;
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: countries ? { countries } : {} });
-  }, [key, countries]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: countries ? { countries } : {}, ...previewOf(previewKey) });
+  }, [key, previewKey, countries]);
 
   const toggle = (a3: string) => setPicked((s) => {
     const next = new Set(s);

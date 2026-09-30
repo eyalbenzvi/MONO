@@ -6,7 +6,8 @@ import { FORMATIONS, FORMATION_NAMES, PLAYER_MAX, POSITIONS, PRODUCT, SEASON_MAX
 import { Field, useLexicon } from "./Field";
 import { RowsField, type Row } from "./RowsField";
 import { Stepper, Switch } from "./Segmented";
-import { TextField, allOk, checkText, useText } from "./TextField";
+import { TextField, allOk, checkText, noProblem, useText } from "./TextField";
+import { orExample, previewOf, usePreviewKey } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Rows for a formation: the ones typed kept in order, blanks after. */
@@ -35,14 +36,18 @@ export default function LineupEditor({ arrival, touched, onChange }: EditorProps
   const take = Math.min(count, n);
   const batch = spec && whole ? Array.from({ length: take }, (_, i) => ({ ...spec, p: { ...spec.p, me: i } }) as CustomSpec) : undefined;
 
+  // The team not yet named: the example's, with the players as typed.
+  const preview: CustomSpec | null = !spec && noProblem(team, season) && cells.every((c) => c.n.value !== null && c.k !== null) ? { t: "lineup", v: 1, p: { f, t: orExample(team.value, ex.t)!, ...(season.value ? { s: season.value } : {}), x, ...(whole ? {} : me) } } : null;
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify([spec, batch?.length ?? 0]) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current(key ? { spec: JSON.parse(key)[0] as CustomSpec, ...(batch ? { batch } : {}) } : { spec: null });
+    report.current(key ? { spec: JSON.parse(key)[0] as CustomSpec, ...(batch ? { batch } : {}) } : { spec: null, ...previewOf(previewKey) });
     // batch follows the key (the spec and how many).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, previewKey]);
 
   return (
     <>

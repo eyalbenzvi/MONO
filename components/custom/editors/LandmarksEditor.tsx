@@ -11,6 +11,7 @@ import { yearOf } from "./RowsField";
 import { Segmented } from "./Segmented";
 import { TextField, allOk, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
+import { previewOf, usePreviewKey } from "./useReportSpec";
 
 const LINK = "h-11 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
@@ -28,12 +29,17 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
   const x: Visit[] = rows.map((r, i) => (years[i] ? [r.id, years[i]!] : [r.id]));
   const spec: CustomSpec | null = ok ? { t: "landmarks", v: 1, p: { ...(name.value ? { n: name.value } : {}), x } } : null;
 
+  // Fewer than three picked yet: the example's after them, to three (none picked: the example's journal).
+  const px: Visit[] = x.length ? [...x, ...ex.x.filter(([id]) => !rows.some((r) => r.id === id))].slice(0, Math.max(LANDMARKS_MIN, x.length)) : ex.x;
+  const preview: CustomSpec | null = !spec && allOk(lex, name) && years.every((y) => y !== null) ? { t: "landmarks", v: 1, p: { ...(name.value ? { n: name.value } : {}), x: px } } : null;
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
-  }, [key]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, ...previewOf(previewKey) });
+  }, [key, previewKey]);
 
   const [region, setRegion] = useState<Region | typeof ALL>(ALL);
   const [filter, setFilter] = useState("");

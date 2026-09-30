@@ -39,9 +39,11 @@ export default function CodeEditor({ made, arrival, touched, onChange }: EditorP
         ? `Up to ${CODE_MAX} characters.`
         : `${CODE_NAMES[kind]} has no "${problem.ch}".${problem.instead ? ` Try "${problem.instead}".` : ""}`
       : refused;
-  const spec: CustomSpec | null = x && !problem && lex && !refused ? { t: "code", v: 1, p: { x, k: kind, ...(secret ? { h: 1 as const } : {}) } } : null;
+  const make = (x: string): CustomSpec => ({ t: "code", v: 1, p: { x, k: kind, ...(secret ? { h: 1 as const } : {}) } });
+  const spec: CustomSpec | null = x && !problem && lex && !refused ? make(x) : null;
 
-  useReportSpec(spec, onChange);
+  // No name yet: the example's, in the code and the way chosen.
+  useReportSpec(spec, onChange, !x && made.example.t === "code" && make(made.example.p.x));
 
   return (
     <>

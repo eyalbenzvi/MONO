@@ -57,14 +57,25 @@ export default function RingsEditor({ arrival, touched, onChange }: EditorProps)
   const goodError = typeof g === "string" ? g : null;
   const hardError = typeof h === "string" ? h : both !== undefined ? `${both} can’t be good and hard.` : null;
   const scarError = typeof sc === "string" ? sc : sc.length > SCARS_MAX ? `Up to ${SCARS_MAX} scars.` : null;
+  const rings = (b: number, c: number, g: number[], h: number[], s: number[]): CustomSpec => {
+    const m = Array.from({ length: c - b + 1 }, (_, i) => (g.includes(b + i) ? MARK_DIGIT.good : h.includes(b + i) ? MARK_DIGIT.hard : MARK_DIGIT.normal)).join("");
+    return { t: "rings", v: 1, p: { b, c, m, ...(s.length ? { s } : {}) } };
+  };
   let spec: CustomSpec | null = null;
-  if (spanOk && !goodError && !hardError && !scarError) {
-    const m = Array.from({ length: c - b + 1 }, (_, i) => ((g as number[]).includes(b + i) ? MARK_DIGIT.good : (h as number[]).includes(b + i) ? MARK_DIGIT.hard : MARK_DIGIT.normal)).join("");
-    const s = sc as number[];
-    spec = { t: "rings", v: 1, p: { b, c, m, ...(s.length ? { s } : {}) } };
+  if (spanOk && !goodError && !hardError && !scarError) spec = rings(b, c, g as number[], h as number[], sc as number[]);
+  // Before both ends of the span are given: the example's end for a missing one, the years typed so far marked on it (none typed: the example as it is).
+  let preview: CustomSpec | null = null;
+  if (!spec && (!from || !to) && (!from || yearOk(from)) && (!to || yearOk(to))) {
+    const [pb, pc] = [from ? b : ex.b, to ? c : ex.c];
+    const typed = [good, hard, scars].map((t) => parseYears(t, pb, pc));
+    if (!spanProblem(pb, pc) && typed.every(Array.isArray)) {
+      const [pg, ph, ps] = typed as number[][];
+      if (!good.trim() && !hard.trim() && !scars.trim() && pb === ex.b && pc === ex.c) preview = { t: "rings", v: 1, p: ex };
+      else if (!pg.some((y) => ph.includes(y)) && ps.length <= SCARS_MAX) preview = rings(pb, pc, pg, ph, ps);
+    }
   }
 
-  useReportSpec(spec, onChange);
+  useReportSpec(spec, onChange, preview);
 
   const year = (id: string, value: string, set: (v: string) => void, invalid: boolean, placeholder: string) => (
     <input id={id} inputMode="numeric" maxLength={4} autoComplete="off" placeholder={placeholder} value={value} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} aria-invalid={invalid} className={`${INPUT} font-mono`} />

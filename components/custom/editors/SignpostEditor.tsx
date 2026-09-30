@@ -5,12 +5,13 @@ import { CityField } from "@/components/custom/CityField";
 import { loadCities, type Places } from "@/lib/custom/data";
 import type { City, CustomSpec } from "@/lib/custom/spec";
 import { FIRST_YEAR, LAST_YEAR, packPlaces, unpackPlaces } from "@/lib/custom/specKit";
-import { SIGNPOST_MAX } from "@/lib/custom/specs/signpost";
+import { PRODUCT, SIGNPOST_MAX } from "@/lib/custom/specs/signpost";
 import { Field } from "./Field";
 import { PlacesField, draftsOf, rowsOf, type PlaceDraft } from "./PlacesField";
 import { yearOf } from "./RowsField";
 import { Segmented, Switch } from "./Segmented";
 import { INPUT, type EditorProps } from "./types";
+import { previewOf, usePreviewKey } from "./useReportSpec";
 
 /** Your Signpost: home and up to six places; or, since, two cities and a year. Kilometres or miles. */
 export default function SignpostEditor({ arrival, touched, onChange }: EditorProps) {
@@ -44,12 +45,28 @@ export default function SignpostEditor({ arrival, touched, onChange }: EditorPro
     if (!since && rows && rows.length >= 1) spec = { t: "signpost", v: 1, p: { h: home.id, x: packPlaces(rows.map((r) => ({ c: r.c }))), ...(miles ? { mi: 1 as const } : {}) } };
   }
 
+  // Anything not yet chosen: the example's (home, its places; "since", its first place and the placeholder's year).
+  const ex = PRODUCT.example;
+  const exRows = unpackPlaces(ex.x, { min: 1, max: SIGNPOST_MAX, years: false }) ?? [];
+  const ph = homeId ?? ex.h;
+  let preview: CustomSpec | null = null;
+  if (!spec && y !== null && (!homeId || home)) {
+    if (since) {
+      const po = otherId ?? exRows.find((r) => r.c !== ph)?.c;
+      if (po && po !== ph && (!otherId || other)) preview = { t: "signpost", v: 1, p: { k: "since", h: ph, x: packPlaces([{ c: po }]), y: y || 2016, ...(miles ? { mi: 1 as const } : {}) } };
+    } else if (rows) {
+      const px = rows.length ? rows : exRows.filter((r) => r.c !== ph);
+      if (px.length && !px.some((r) => r.c === ph) && new Set(px.map((r) => r.c)).size === px.length) preview = { t: "signpost", v: 1, p: { h: ph, x: packPlaces(px.map((r) => ({ c: r.c }))), ...(miles ? { mi: 1 as const } : {}) } };
+    }
+  }
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list } });
-  }, [key, places]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: { places: places?.list }, ...previewOf(previewKey) });
+  }, [key, previewKey, places]);
 
   return (
     <>

@@ -7,8 +7,8 @@ import { FIRST_YEAR, LAST_YEAR, parseDate } from "@/lib/custom/specKit";
 import { LABEL_CREDITS, LABEL_LINE_MAX, LABEL_MEDIUMS, LABEL_NAME_MAX, LABEL_PLACE_MAX, PRODUCT, creditFit, mediumFit } from "@/lib/custom/specs/label";
 import { Field, useLexicon } from "./Field";
 import { yearOf } from "./RowsField";
-import { TextField, allOk, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, allOk, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** The next of our lines after the one shown (or the first). */
@@ -30,11 +30,11 @@ export default function LabelEditor({ arrival, touched, onChange }: EditorProps)
   const crLong = credit.value && !creditFit(credit.value) ? TOO_LONG : null;
   const dateOk = !date || !!parseDate(date);
   const ok = allOk(lex, name, place, medium, credit) && !!name.value && !!medium.value && b !== null && dateOk && !mdLong && !crLong;
-  const spec: CustomSpec | null = ok
-    ? { t: "label", v: 1, p: { n: name.value!, ...(b ? { b } : {}), ...(place.value ? { pl: place.value } : {}), md: medium.value!, ...(credit.value ? { cr: credit.value } : {}), ...(date ? { d: date } : {}) } }
-    : null;
+  const make = (n: string | null, md: string | null): CustomSpec => ({ t: "label", v: 1, p: { n: n!, ...(b ? { b } : {}), ...(place.value ? { pl: place.value } : {}), md: md!, ...(credit.value ? { cr: credit.value } : {}), ...(date ? { d: date } : {}) } });
+  const spec: CustomSpec | null = ok ? make(name.value!, medium.value!) : null;
 
-  useReportSpec(spec, onChange);
+  // The name or the medium not yet typed: the example's.
+  useReportSpec(spec, onChange, noProblem(name, place, medium, credit) && b !== null && dateOk && !mdLong && !crLong && make(orExample(name.value, ex.n), orExample(medium.value, ex.md)));
 
   const another = (state: typeof medium, list: readonly string[]) => (
     <button type="button" onClick={() => state.setText(next(list, state.text))} className="text-xs text-neutral-300 underline underline-offset-4 hover:text-white">

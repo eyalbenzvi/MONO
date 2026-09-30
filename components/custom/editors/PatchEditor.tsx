@@ -8,8 +8,8 @@ import { parseDate } from "@/lib/custom/specKit";
 import { CREW_LINE_MAX, CREW_MAX, CREW_NAME_MAX, MISSION_MAX, PRODUCT, crewLine } from "@/lib/custom/specs/patch";
 import { Field, useLexicon } from "./Field";
 import { RowsField, type Row } from "./RowsField";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Your Mission Patch: the mission, the crew (one to six), the emblem, the day. */
@@ -26,9 +26,12 @@ export default function PatchEditor({ arrival, touched, onChange }: EditorProps)
   const tooLong = crew.length && crewLine(crew).length > CREW_LINE_MAX ? TOO_LONG : null;
   const dateOk = !date || !!parseDate(date);
   const ok = !!lex && !!mission.value && crew.length > 0 && cells.every((c) => c.value !== null) && !tooLong && dateOk;
-  const spec: CustomSpec | null = ok ? { t: "patch", v: 1, p: { m: mission.value!, x: crew, e, ...(date ? { d: date } : {}) } } : null;
+  const make = (m: string | null, x: string[]): CustomSpec => ({ t: "patch", v: 1, p: { m: m!, x, e, ...(date ? { d: date } : {}) } });
+  const spec: CustomSpec | null = ok ? make(mission.value!, crew) : null;
 
-  useReportSpec(spec, onChange);
+  // The mission or the crew not yet typed: the example's.
+  const crewOk = cells.every((c) => c.value !== null) && !tooLong;
+  useReportSpec(spec, onChange, noProblem(mission) && crewOk && dateOk && make(orExample(mission.value, ex.m), crew.length ? crew : ex.x));
 
   return (
     <>

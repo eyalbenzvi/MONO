@@ -7,7 +7,8 @@
  * a day). Each name runs along its own orbit, letter by letter, the orbit
  * broken under it as a chart breaks a line for its label; on the lower half
  * the letters turn to read left to right. Orbits are concentric and at
- * least a label's height apart, so no two names can meet.
+ * least a label's height apart, so no two names can meet. The sun's own
+ * birthday is marked on the dial with the sun's sign.
  */
 import { INK, STROKE, caption, circle, dot, f1, line, text, captionLines, type Lines, house } from "../kit";
 import { titleWords } from "../specKit";
@@ -116,6 +117,9 @@ function orbitsDraw(p: Params): [string, Lines, number] {
     const [x0, y0] = at(15.5, a), [x1, y1] = at(k % 2 ? 18.5 : 20.5, a);
     s += line(x0, y0, x1, y1, STROKE.fine);
   }
+  // The sun's own birthday on the dial, just inside it, as the sun's sign (a ring and its dot): the day is theirs too.
+  const [sx, sy] = at(DIAL - 4.6, birthdayAngle(S.date[1], S.date[2]));
+  s += circle(sx, sy, 2.3, STROKE.fine) + dot(sx, sy, 0.9);
   const sunText = `${S.name.toUpperCase()} · ${S.date[0]}`;
   s += arcLabel(sunText, SUN_LABEL, -((sunText.length * adv(SIZE)) / SUN_LABEL / DEG) / 2, false, SIZE, true).svg;
 

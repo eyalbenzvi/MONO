@@ -10,6 +10,7 @@ import { Field, useLexicon } from "./Field";
 import { Segmented, Switch } from "./Segmented";
 import { TextField, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
+import { orExample, previewOf, usePreviewKey } from "./useReportSpec";
 
 const HELLO_NAMES: Record<Hello, string> = { girl: "It’s a girl", boy: "It’s a boy", hello: "Hello, world" };
 
@@ -61,20 +62,22 @@ export default function BirthEditor({ arrival, touched, onChange }: EditorProps)
   const dateOk = !!parseDate(date);
   const timeOk = !time || !!parseTime(time);
   const ok = !!lex && !!name.value && !shortName && dateOk && timeOk && wtOk && lnOk;
-  const spec: CustomSpec | null = ok
-    ? {
-        t: "birth",
-        v: 1,
-        p: { h: hello, n: name.value!, d: date, ...(time ? { t: time } : {}), ...(imperial ? { u: "i" as const } : {}), ...(wt ? { wt } : {}), ...(ln ? { ln } : {}), ...(city ? { c: city.id } : {}), ...(moon ? { mo: 1 as const } : {}) },
-      }
-    : null;
+  const make = (n: string, d: string): CustomSpec => ({
+    t: "birth",
+    v: 1,
+    p: { h: hello, n, d, ...(time ? { t: time } : {}), ...(imperial ? { u: "i" as const } : {}), ...(wt ? { wt } : {}), ...(ln ? { ln } : {}), ...(city ? { c: city.id } : {}), ...(moon ? { mo: 1 as const } : {}) },
+  });
+  const spec: CustomSpec | null = ok ? make(name.value!, date) : null;
+  // The name or the day not yet given: the example's, with everything else as chosen.
+  const preview = !spec && !!lex && name.value !== null && !shortName && (!date || dateOk) && timeOk && wtOk && lnOk && (cityId === null || city) ? make(orExample(name.value, ex.n)!, date || ex.d) : null;
 
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: city ? { city } : {} });
-  }, [key, city]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: city ? { city } : {}, ...previewOf(previewKey) });
+  }, [key, previewKey, city]);
 
   const w = WEIGHT[sys], l = LENGTH[sys];
   const weightError = wtOk ? null : imperial ? `Between ${Math.floor(w[0] / 16)} lb ${w[0] % 16} oz and ${Math.floor(w[1] / 16)} lb ${w[1] % 16} oz.` : `Between ${w[0] / 1000} and ${w[1] / 1000} kg.`;

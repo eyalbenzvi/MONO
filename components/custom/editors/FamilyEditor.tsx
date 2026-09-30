@@ -44,7 +44,13 @@ export default function FamilyEditor({ arrival, touched, onChange }: EditorProps
   const anyYears = ys.some(([b, d]) => b !== null || d !== null);
   const spec: CustomSpec | null = ok ? { t: "family", v: 1, p: { n: rows.map((r) => r.nm), ...(anyYears ? { y: packInts(packYears(ys)) } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // Your own name not yet typed: the example's in the middle, everyone else as typed.
+  const preview: CustomSpec | null =
+    !rows[0].nm && (lex || rows.every((r) => !r.nm)) && rows.every((r, i) => !r.nameError && (i === 0 || !r.yearsError))
+      ? { t: "family", v: 1, p: { n: [ex.n[0], ...rows.slice(1).map((r) => r.nm)], ...(anyYears ? { y: packInts(packYears(ys)) } : {}) } }
+      : null;
+
+  useReportSpec(spec, onChange, preview);
 
   const set = (i: number, v: string, which: "n" | "y") => (which === "n" ? setNames : setYears)((xs) => xs.map((x, j) => (j === i ? v : x)));
   /** One person: the name (the example's as its placeholder), and the years beside it (no label of their own: the placeholder says what they are). */

@@ -55,7 +55,17 @@ export default function OrbitsEditor({ arrival, touched, onChange }: EditorProps
       ? { t: "orbits", v: 1, p: { n: names as string[], b: packDays(dates as string[]), ...(sun >= 0 && sun !== eldest(days) ? { s: sun } : {}) } }
       : null;
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: the example's, row by row (its names are the placeholders).
+  const exDays = unpackDays(ex.b) ?? [];
+  const pn = rows.map((r, i) => (r.name.trim() ? (nameError(i) ? null : names[i]) : (ex.n[i] ?? null)));
+  const pd = rows.map((r, i) => (r.date ? dates[i] : exDays[i] !== undefined ? iso(exDays[i]) : null));
+  let preview: CustomSpec | null = null;
+  if (!spec && (lex || rows.every((r) => !r.name.trim())) && pn.every(Boolean) && pd.every(Boolean)) {
+    const pdays = (pd as string[]).map(dayOf);
+    preview = { t: "orbits", v: 1, p: { n: pn as string[], b: packDays(pd as string[]), ...(sun >= 0 && sun !== eldest(pdays) ? { s: sun } : {}) } };
+  }
+
+  useReportSpec(spec, onChange, preview);
 
   const set = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const remove = (i: number) => {

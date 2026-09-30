@@ -8,8 +8,8 @@ import { PRODUCT, SAYER_MAX, SAYINGS_MAX, SAYINGS_MIN, SAYING_MAX, WORD_MAX, say
 import { Field, useLexicon } from "./Field";
 import { RowsField, type Row } from "./RowsField";
 import { Segmented } from "./Segmented";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, rowsOrExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 /** Things They Say: who says them and their sayings (3 to 7); or first words, the word and the day. */
@@ -35,7 +35,18 @@ export default function SayingsEditor({ arrival, touched, onChange }: EditorProp
     else spec = !short && !tooLong && cells.every((c) => c.value !== null) ? { t: "sayings", v: 1, p: { n: who.value, x: said } } : null;
   }
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: the example's (as the placeholders say); first words, the placeholders' own.
+  let preview: CustomSpec | null = null;
+  if (!spec && noProblem(who, word) && cells.every((c) => c.value !== null)) {
+    const n = orExample(who.value, first ? "Noa" : ex.n)!;
+    if (first) preview = dateOk ? { t: "sayings", v: 1, p: { k: "first", n, o: orExample(word.value, "Banana")!, ...(date ? { d: date } : {}) } } : null;
+    else {
+      const x = rowsOrExample(cells.map((c) => c.value), ex.x!);
+      preview = x.length >= SAYINGS_MIN && sayingsFit(x) ? { t: "sayings", v: 1, p: { n, x } } : null;
+    }
+  }
+
+  useReportSpec(spec, onChange, preview);
 
   return (
     <>

@@ -7,8 +7,8 @@ import { parseDate, parseTime } from "@/lib/custom/specKit";
 import { MESSAGES_MAX, MESSAGES_MIN, MESSAGE_MAX, PRODUCT, WITH_MAX, threadFit, type Message } from "@/lib/custom/specs/message";
 import { Field, useLexicon } from "./Field";
 import { RowsField, type Row } from "./RowsField";
-import { TextField, checkText, useText } from "./TextField";
-import { useReportSpec } from "./useReportSpec";
+import { TextField, checkText, noProblem, useText } from "./TextField";
+import { orExample, useReportSpec } from "./useReportSpec";
 import { INPUT, type EditorProps } from "./types";
 
 const SIDES = [
@@ -38,7 +38,13 @@ export default function MessageEditor({ arrival, touched, onChange }: EditorProp
   const ok = !!lex && !few && !half && !tooLong && dateOk && who.value !== null && cells.every((c) => c.t.value !== null && c.h !== null);
   const spec: CustomSpec | null = ok ? { t: "message", v: 1, p: { m, ...(who.value ? { n: who.value } : {}), ...(date ? { d: date } : {}) } } : null;
 
-  useReportSpec(spec, onChange);
+  // Anything not yet typed: the example's, cell by cell (as the placeholders say).
+  const px: Message[] = rows.flatMap((r, i) => {
+    const [t, h] = [orExample(cells[i].t.value, ex.m[i]?.[1]), cells[i].h === undefined ? ex.m[i]?.[2] : cells[i].h];
+    return t && h ? [[r.s === "1" ? 1 : 0, t, h] as Message] : [];
+  });
+  const cellsOk = cells.every((c) => c.t.value !== null && c.h !== null);
+  useReportSpec(spec, onChange, !!lex && noProblem(who) && cellsOk && dateOk && px.length >= MESSAGES_MIN && threadFit(px) && { t: "message", v: 1, p: { m: px, ...(who.value ? { n: who.value } : {}), ...(date ? { d: date } : {}) } });
 
   return (
     <>

@@ -8,7 +8,8 @@ import { COUNTRY_CODES } from "@/lib/custom/specs/countries";
 import { PASSPORT_MAX, PASSPORT_NAME_MAX, PRODUCT, type Stamp } from "@/lib/custom/specs/passport";
 import { useLexicon } from "./Field";
 import { RowsField, type Column, type Row } from "./RowsField";
-import { TextField, allOk, useText } from "./TextField";
+import { TextField, allOk, noProblem, useText } from "./TextField";
+import { orExample, previewOf, usePreviewKey } from "./useReportSpec";
 import type { EditorProps } from "./types";
 
 const BY = [
@@ -49,12 +50,18 @@ export default function PassportEditor({ arrival, touched, onChange }: EditorPro
   const ok = allOk(lex, name) && !!name.value && !!stamps && stamps.length > 0;
   const spec: CustomSpec | null = ok ? { t: "passport", v: 1, p: { n: name.value!, x: stamps! } } : null;
 
+  // The name or the stamps not yet given: the example's (a row without its country yet is left out).
+  const chosen = rows.filter((r) => r.c).map((r): Stamp => (r.by === "train" ? [r.c, r.d || 0, 1] : r.d ? [r.c, r.d] : [r.c]));
+  const datesOk = rows.every((r) => !r.d || parseDate(r.d));
+  const preview: CustomSpec | null = !spec && !!lex && noProblem(name) && datesOk ? { t: "passport", v: 1, p: { n: orExample(name.value, ex.n)!, x: chosen.length ? chosen : ex.x } } : null;
+
   const report = useRef(onChange);
   report.current = onChange;
   const key = spec ? JSON.stringify(spec) : "";
+  const previewKey = usePreviewKey(spec, preview);
   useEffect(() => {
-    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: countries ? { countries } : {} });
-  }, [key, countries]);
+    report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null, data: countries ? { countries } : {}, ...previewOf(previewKey) });
+  }, [key, previewKey, countries]);
 
   return (
     <>
