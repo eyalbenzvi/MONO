@@ -254,6 +254,13 @@ function Maker({ made }: { made: MadeProduct }) {
     };
   }, [made.template]);
   const slow = useRef(false);
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   /** Draws the print now (fonts loaded) and checks it: at once, or (`later`) in the next task, so the picture paints first. */
   const draw = useCallback(
     (spec: CustomSpec, color: BaseColor, later = false): Shown | null => {
@@ -269,8 +276,10 @@ function Maker({ made }: { made: MadeProduct }) {
       const real = spec === state.spec && !state.blocked;
       const checked = (check: PrintCheck) => {
         if (performance.now() - start > SLOW_MS) slow.current = true;
-        // The address carries a print once it's known to print.
-        if (check.ok && real) {
+        // The address carries a print once it's known to print — this page's address only: a check that ends after the
+        // page has moved on (Save changes goes to the bag) never writes into the next page's.
+        const here = window.location.pathname.replace(/\/?$/, "/").endsWith(`/make/${made.slug}/`);
+        if (check.ok && real && alive.current && here) {
           updateQuery((q) => q.set("make", encodeMake(spec)));
         }
         return check;
@@ -288,7 +297,7 @@ function Maker({ made }: { made: MadeProduct }) {
       }, 0);
       return first;
     },
-    [renderer, state.data, state.blocked, state.spec, made.hints],
+    [renderer, state.data, state.blocked, state.spec, made.hints, made.slug],
   );
   useEffect(() => {
     if (!spec || !renderer) return;
