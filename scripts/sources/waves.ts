@@ -4,6 +4,7 @@
  */
 import type { ArchiveGroup } from "../archive/source";
 import type { ShirtCategory } from "../../types/shirt";
+import { trimDangling } from "../gen/titles";
 import { LICENSE_LABEL, type License } from "./_license";
 import type { Selected } from "./_types";
 import type { SourceId } from "./ranges";
@@ -65,6 +66,7 @@ export function shortName(t: string, max = 60): string {
   const s = t.replace(/\s+/g, " ").replace(/^\d+\.\s+/, "").trim();
   if (s.length <= max) return s;
   const clause = /^(.{12,}?)\s*(?:[:;,(]| - | — )/.exec(s)?.[1];
-  if (clause && clause.length <= max) return clause.trim();
-  return s.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,.;:-]+$/, "");
+  if (clause && clause.length <= max) return trimDangling(clause);
+  // Cut at a word, never on a dangling one ("… between 35th and").
+  return trimDangling(s.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,.;:-]+$/, ""));
 }

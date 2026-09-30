@@ -251,7 +251,7 @@ export function typeSet(): Set7Design[] {
   }
 
   add("Pi to 500 Places", "pi", digitBlock("3.", piDigits(498), 25, 20), "The first 500 digits of π, computed from Machin's formula and set 25 to a line.", ["π", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Pi");
-  add("e to 500 Places", "e", digitBlock("2.", eDigits(498), 25, 20), "The first 500 digits of Euler's number e, computed from its series and set 25 to a line.", ["e", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Euler's Number");
+  add("Euler’s e to 500 Places", "e", digitBlock("2.", eDigits(498), 25, 20), "The first 500 digits of Euler's number e, computed from its series and set 25 to a line.", ["e", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of Euler's Number");
   add("Square Root of Two to 500 Places", "sqrt2", digitBlock("1.", sqrt2Digits(498), 25, 20), "The first 500 digits of the square root of two, computed and set 25 to a line.", ["√2", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of the Square Root of Two");
   add("Golden Ratio to 500 Places", "phi", digitBlock("1.", phiDigits(498), 25, 20), "The first 500 digits of the golden ratio φ, (1 + √5) / 2, computed and set 25 to a line.", ["φ", "The first 500 digits"], { geometric: 0.45, density: 0.55 }, "Digits of the Golden Ratio");
 

@@ -30,6 +30,7 @@ import { BUCKET } from "../photos/source";
 import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_UNITS, ARCHIVE_W, type ArchiveAddition, type ArchiveGroup, type ArchiveMode, type ArchiveSource, type ArchiveUnit } from "./source";
 import { NAMES, REVIEWED, archiveOrder } from "./curation";
 import { mulberry32, shuffle } from "../gen/core";
+import { trimDangling } from "../gen/titles";
 
 sharp.cache(false);
 sharp.concurrency(2);
@@ -581,7 +582,8 @@ export function archiveName(title: string, group: ArchiveGroup): string | null {
   t = t.replace(/[.;:,\s-]+$/, "").trim();
   if (t.length > 44) t = t.split(/\s*[,;(]\s*|\s+--\s+/)[0];
   if (t.length > 44) t = t.split(" ").slice(0, 6).join(" ");
-  t = t.replace(/[.;:,\s-]+$/, "").trim();
+  // Never on a dangling word ("Design for a Window for the"): a name cut short is shorter still, else set by hand (curation NAMES).
+  t = trimDangling(t.replace(/[.;:,\s-]+$/, "").trim());
   if (t.length < 3 || /^(photograph|untitled|study|sketch|flower study|plant study|drawing)$/i.test(t)) return null;
   return t[0].toUpperCase() + t.slice(1);
 }
