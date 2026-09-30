@@ -13,7 +13,7 @@ export const LINK_MAX = 300;
  * their own tests: a drawn route is its points, a family its fifteen names, a
  * game its moves, a map its stations, a tune its notes.
  */
-export const OWN_LINK_MAX: Record<string, number> = { route: 1200, family: 1000, metro: 700, chess: 600, musicbox: 400, orbits: 335, crossword: 310, editions: 560, sayings: 900, label: 440, credits: 1040 };
+export const OWN_LINK_MAX: Record<string, number> = { route: 1200, family: 1000, metro: 700, chess: 600, musicbox: 400, orbits: 335, crossword: 310, editions: 560, sayings: 900, label: 440, credits: 1040, card: 420 };
 /**
  * What the visitor's three caption lines at their longest (24, 36 and 36
  * characters, about 130 in the link's base64) may add to any link: the caption

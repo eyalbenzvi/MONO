@@ -68,6 +68,19 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-credits-n1")).toHaveValue("Savta"),
   },
+  {
+    slug: "card",
+    fill: async (page) => {
+      await page.getByRole("radio", { name: "Modern" }).tap();
+      await page.locator("#make-card-name").fill("Maya Cohen");
+      await page.locator("#make-card-title").fill("Head of Snacks");
+      await page.locator("#make-card-company").fill("The Kitchen");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-card-title")).toHaveValue("Head of Snacks");
+      await expect(page.getByRole("radio", { name: "Modern" })).toHaveAttribute("aria-checked", "true");
+    },
+  },
 ];
 
 for (const c of CASES)
