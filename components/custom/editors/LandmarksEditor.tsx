@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { artThumbPath } from "@/lib/custom/art";
 import type { CustomSpec } from "@/lib/custom/spec";
 import { FIRST_YEAR, LAST_YEAR } from "@/lib/custom/specKit";
-import { JOURNAL_NAME_MAX, LANDMARKS, LANDMARKS_MAX, LANDMARKS_MIN, LANDMARK_IDS, PRODUCT, type Landmark, type Visit } from "@/lib/custom/specs/landmarks";
+import { JOURNAL_NAME_MAX, LANDMARKS, LANDMARKS_MAX, LANDMARKS_MIN, LANDMARK_IDS, PRODUCT, REGIONS, shownLandmarks, type Landmark, type Region, type Visit } from "@/lib/custom/specs/landmarks";
 import { assetUrl } from "@/lib/catalog";
 import { Field, useLexicon } from "./Field";
 import { yearOf } from "./RowsField";
+import { Segmented } from "./Segmented";
 import { TextField, allOk, useText } from "./TextField";
 import { INPUT, type EditorProps } from "./types";
 
 const LINK = "h-11 px-1 text-xs text-neutral-300 underline underline-offset-4 hover:text-white";
 
-/** Your Landmarks: whose journal, and three to nine landmarks (picked from their drawings), each with the year you were there. */
+const ALL = "All" as const;
+
+/** Your Landmarks: whose journal, and three to nine of the fifty landmarks (picked from their drawings, by region or found by name), each with the year you were there. */
 export default function LandmarksEditor({ arrival, touched, onChange }: EditorProps) {
   const a = arrival?.t === "landmarks" ? arrival.p : null;
   const ex = PRODUCT.example;
@@ -32,15 +35,24 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
     report.current({ spec: key ? (JSON.parse(key) as CustomSpec) : null });
   }, [key]);
 
+  const [region, setRegion] = useState<Region | typeof ALL>(ALL);
+  const [filter, setFilter] = useState("");
+  const shown = useMemo(() => shownLandmarks(region, filter), [region, filter]);
+
   const toggle = (id: Landmark) => setRows((rs) => (rs.some((r) => r.id === id) ? rs.filter((r) => r.id !== id) : rs.length < LANDMARKS_MAX ? [...rs, { id, year: "" }] : rs));
   const move = (i: number) => setRows((rs) => rs.map((r, j) => (j === i - 1 ? rs[i] : j === i ? rs[i - 1] : r)));
 
   return (
     <>
       <TextField id="make-landmarks-name" label="Whose journal" hint="optional" state={name} max={JOURNAL_NAME_MAX} placeholder={ex.n} />
-      <Field label="Landmarks" hint={`${rows.length} of ${LANDMARKS_MIN} to ${LANDMARKS_MAX}`} error={touched && rows.length < LANDMARKS_MIN ? `Choose at least ${LANDMARKS_MIN}.` : null} htmlFor="make-landmarks-pick">
-        <div id="make-landmarks-pick" role="group" aria-label="Landmarks" className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {LANDMARK_IDS.map((id) => {
+      <Field label="Landmarks" hint={`${rows.length} of ${LANDMARKS_MIN} to ${LANDMARKS_MAX}`} error={touched && rows.length < LANDMARKS_MIN ? `Choose at least ${LANDMARKS_MIN}.` : null} htmlFor="make-landmarks-filter">
+        <input id="make-landmarks-filter" type="search" value={filter} placeholder={`Find one of the ${LANDMARK_IDS.length}, or a place`} autoComplete="off" onChange={(e) => setFilter(e.target.value)} className={INPUT} />
+      </Field>
+      <Segmented label="Region" options={[ALL, ...REGIONS]} value={region} onChange={setRegion} />
+      <div>
+        {shown.length === 0 && <p className="py-2 text-sm text-neutral-400">No landmark matches{region === ALL ? "" : ` in ${region}`}.</p>}
+        <div id="make-landmarks-pick" role="group" aria-label="Landmarks" className="grid max-h-[26rem] grid-cols-3 gap-2 overflow-y-auto rounded-control p-px sm:grid-cols-4">
+          {shown.map((id) => {
             const on = rows.some((r) => r.id === id);
             return (
               <button key={id} type="button" aria-pressed={on} onClick={() => toggle(id)} disabled={!on && rows.length >= LANDMARKS_MAX} className={`flex flex-col items-center gap-1 rounded-control p-2 text-center text-[11px] leading-tight ring-1 transition disabled:opacity-40 ${on ? "bg-white/15 text-white ring-white" : "text-neutral-300 ring-white/10 hover:bg-white/5"}`}>
@@ -51,7 +63,7 @@ export default function LandmarksEditor({ arrival, touched, onChange }: EditorPr
             );
           })}
         </div>
-      </Field>
+      </div>
       {rows.length > 0 && (
         <div className="space-y-2">
           {rows.map((r, i) => (

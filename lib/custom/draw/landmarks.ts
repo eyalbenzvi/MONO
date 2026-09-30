@@ -1,5 +1,5 @@
 /**
- * Your Landmarks' drawings: 24 landmarks as pen-and-ink line illustrations,
+ * Your Landmarks' drawings: 50 landmarks as pen-and-ink line illustrations,
  * drawn in code. Each is authored in its own box (its larger side 100 units,
  * the ground along its bottom) as path data with absolute commands only, and
  * fitted into place by arithmetic: every point scaled and moved (no
@@ -8,204 +8,14 @@
  * Three weights: the outline, the detail (a little over half the outline)
  * and the fine detail, which is left out when the drawing is small enough
  * that it would only fill in (its lines sit closer together).
+ *
+ * The first 24 are here, the other 26 in landmarksMore; both are drawn with
+ * landmarkPen (the path mapping and the shapes they share).
  */
 import { INK } from "../kit";
 import type { Landmark } from "../specs/landmarks";
-
-type Pt = [number, number];
-
-/** A number for path data (three decimals; never exponent notation). */
-const n3 = (v: number) => (Math.abs(v) < 1e-9 ? "0" : String(Math.round(v * 1000) / 1000));
-const n2 = (v: number) => (Math.abs(v) < 1e-9 ? "0" : String(Math.round(v * 100) / 100));
-
-interface PathMap {
-  pt: (x: number, y: number) => Pt;
-  /** A length (an arc's radius). */
-  len?: (r: number) => number;
-  /** Degrees added to an arc's axis (a turn). */
-  turn?: number;
-  /** A mirror image: arcs sweep the other way. */
-  flip?: boolean;
-  fmt?: (v: number) => string;
-}
-
-/** Path data (absolute M L H V Q C A Z) with every point mapped; H and V become L. */
-export function mapPath(d: string, m: PathMap): string {
-  const toks = d.match(/[MLHVQCAZ]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) ?? [];
-  const f = m.fmt ?? n3;
-  const len = m.len ?? ((r: number) => r);
-  let out = "";
-  let cmd = "";
-  let [cx, cy, sx, sy] = [0, 0, 0, 0];
-  let i = 0;
-  const num = () => Number(toks[i++]);
-  const put = (x: number, y: number) => {
-    const [X, Y] = m.pt(x, y);
-    return `${f(X)} ${f(Y)}`;
-  };
-  while (i < toks.length) {
-    if (/[A-Z]/.test(toks[i])) {
-      cmd = toks[i++];
-      if (cmd === "Z") {
-        out += "Z";
-        [cx, cy] = [sx, sy];
-        continue;
-      }
-    }
-    switch (cmd) {
-      case "M": {
-        const [x, y] = [num(), num()];
-        out += `M${put(x, y)}`;
-        [cx, cy, sx, sy] = [x, y, x, y];
-        cmd = "L";
-        break;
-      }
-      case "L": {
-        const [x, y] = [num(), num()];
-        out += `L${put(x, y)}`;
-        [cx, cy] = [x, y];
-        break;
-      }
-      case "H": {
-        const x = num();
-        out += `L${put(x, cy)}`;
-        cx = x;
-        break;
-      }
-      case "V": {
-        const y = num();
-        out += `L${put(cx, y)}`;
-        cy = y;
-        break;
-      }
-      case "Q": {
-        const [x1, y1, x, y] = [num(), num(), num(), num()];
-        out += `Q${put(x1, y1)} ${put(x, y)}`;
-        [cx, cy] = [x, y];
-        break;
-      }
-      case "C": {
-        const [x1, y1, x2, y2, x, y] = [num(), num(), num(), num(), num(), num()];
-        out += `C${put(x1, y1)} ${put(x2, y2)} ${put(x, y)}`;
-        [cx, cy] = [x, y];
-        break;
-      }
-      case "A": {
-        const [rx, ry, rot, large, sweep, x, y] = [num(), num(), num(), num(), num(), num(), num()];
-        out += `A${f(len(rx))} ${f(len(ry))} ${n3(rot + (m.turn ?? 0))} ${large} ${m.flip ? 1 - sweep : sweep} ${put(x, y)}`;
-        [cx, cy] = [x, y];
-        break;
-      }
-      default:
-        throw new Error(`landmarks: path command ${cmd}`);
-    }
-  }
-  return out;
-}
-
-/* ------------------------------------------------------------------ */
-/* Drawing in the local box                                             */
-/* ------------------------------------------------------------------ */
-
-/** An open line through the points (x, y, x, y, …). */
-const P = (...xy: number[]) => xy.reduce((s, v, i) => s + (i % 2 ? ` ${n3(v)}` : `${i ? "L" : "M"}${n3(v)}`), "");
-/** A closed shape through the points. */
-const Pz = (...xy: number[]) => `${P(...xy)}Z`;
-/** A line through points. */
-const line = (pts: Pt[]) => P(...pts.flat());
-const R = (x: number, y: number, w: number, h: number) => Pz(x, y, x + w, y, x + w, y + h, x, y + h);
-/** A rectangle with rounded corners (a Cycladic house). */
-const RR = (x: number, y: number, w: number, h: number, r: number) =>
-  `M${n3(x)} ${n3(y + h)}V${n3(y + r)}Q${n3(x)} ${n3(y)} ${n3(x + r)} ${n3(y)}H${n3(x + w - r)}Q${n3(x + w)} ${n3(y)} ${n3(x + w)} ${n3(y + r)}V${n3(y + h)}Z`;
-const ring = (cx: number, cy: number, r: number) => `M${n3(cx - r)} ${n3(cy)}A${n3(r)} ${n3(r)} 0 1 0 ${n3(cx + r)} ${n3(cy)}A${n3(r)} ${n3(r)} 0 1 0 ${n3(cx - r)} ${n3(cy)}`;
-/** A round-headed arch, open at the foot: its left side x, foot yb, width w, springing ys. */
-const arch = (x: number, yb: number, w: number, ys: number, ry = w / 2) => `M${n3(x)} ${n3(yb)}V${n3(ys)}A${n3(w / 2)} ${n3(ry)} 0 0 1 ${n3(x + w)} ${n3(ys)}V${n3(yb)}`;
-/** A pointed arch: springing ys, apex h above it. */
-const garch = (x: number, yb: number, w: number, ys: number, h: number) =>
-  `M${n3(x)} ${n3(yb)}V${n3(ys)}Q${n3(x)} ${n3(ys - h * 0.62)} ${n3(x + w / 2)} ${n3(ys - h)}Q${n3(x + w)} ${n3(ys - h * 0.62)} ${n3(x + w)} ${n3(ys)}V${n3(yb)}`;
-/** A mirror image about the line x = cx. */
-const mir = (d: string, cx: number) => mapPath(d, { pt: (x, y) => [2 * cx - x, y], flip: true });
-/** A shape and its mirror image. */
-const sym = (d: string, cx: number) => d + mir(d, cx);
-
-/** A point on a quadratic Bézier. */
-const qAt = (a: Pt, c: Pt, b: Pt, t: number): Pt => [(1 - t) ** 2 * a[0] + 2 * t * (1 - t) * c[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * t * (1 - t) * c[1] + t * t * b[1]];
-/** A quadratic Bézier as points. */
-const qPts = (a: Pt, c: Pt, b: Pt, n = 24): Pt[] => Array.from({ length: n + 1 }, (_, i) => qAt(a, c, b, i / n));
-/** Where a quadratic Bézier (monotonic in y) crosses height y: its x. */
-function qxAt(a: Pt, c: Pt, b: Pt, y: number): number {
-  let [lo, hi] = [0, 1];
-  const up = b[1] > a[1];
-  for (let k = 0; k < 40; k++) {
-    const m = (lo + hi) / 2;
-    if ((qAt(a, c, b, m)[1] < y) === up) lo = m;
-    else hi = m;
-  }
-  return qAt(a, c, b, (lo + hi) / 2)[0];
-}
-/** Where two segments cross (the parameter along the first), or null. */
-function segCross(p: Pt, p2: Pt, q: Pt, q2: Pt): number | null {
-  const [rx, ry, sx, sy] = [p2[0] - p[0], p2[1] - p[1], q2[0] - q[0], q2[1] - q[1]];
-  const den = rx * sy - ry * sx;
-  if (Math.abs(den) < 1e-12) return null;
-  const t = ((q[0] - p[0]) * sy - (q[1] - p[1]) * sx) / den;
-  const u = ((q[0] - p[0]) * ry - (q[1] - p[1]) * rx) / den;
-  return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? t : null;
-}
-/** A line of points up to where it first meets another (hidden behind what's in front). */
-function cutAt(pts: Pt[], other: Pt[]): Pt[] {
-  for (let i = 0; i + 1 < pts.length; i++)
-    for (let j = 0; j + 1 < other.length; j++) {
-      const t = segCross(pts[i], pts[i + 1], other[j], other[j + 1]);
-      if (t !== null) return [...pts.slice(0, i + 1), [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t]];
-    }
-  return pts;
-}
-/** A smooth line through points (Catmull–Rom, as points). */
-function smooth(pts: Pt[], per = 8): Pt[] {
-  const out: Pt[] = [];
-  for (let i = 0; i + 1 < pts.length; i++) {
-    const [p0, p1, p2, p3] = [pts[Math.max(0, i - 1)], pts[i], pts[i + 1], pts[Math.min(pts.length - 1, i + 2)]];
-    for (let k = 0; k < per; k++) {
-      const t = k / per, t2 = t * t, t3 = t2 * t;
-      const c = (a: number, b: number, cc: number, d: number) => 0.5 * (2 * b + (-a + cc) * t + (2 * a - 5 * b + 4 * cc - d) * t2 + (-a + 3 * b - 3 * cc + d) * t3);
-      out.push([c(p0[0], p1[0], p2[0], p3[0]), c(p0[1], p1[1], p2[1], p3[1])]);
-    }
-  }
-  out.push(pts[pts.length - 1]);
-  return out;
-}
-/** The height of a line of points at x (linear between them). */
-function yOn(pts: Pt[], x: number): number {
-  for (let i = 0; i + 1 < pts.length; i++) {
-    const [a, b] = [pts[i], pts[i + 1]];
-    if ((x >= a[0] && x <= b[0]) || (x <= a[0] && x >= b[0])) return a[1] + ((b[1] - a[1]) * (x - a[0])) / (b[0] - a[0] || 1);
-  }
-  return x < pts[0][0] ? pts[0][1] : pts[pts.length - 1][1];
-}
-/** A zigzag between two edges (x of y each), from y0 to y1 in n steps: lattice. */
-function lattice(outer: (y: number) => number, inner: (y: number) => number, y0: number, y1: number, n: number): string {
-  const a: Pt[] = [], b: Pt[] = [];
-  for (let i = 0; i <= n; i++) {
-    const y = y0 + ((y1 - y0) * i) / n;
-    a.push([i % 2 ? inner(y) : outer(y), y]);
-    b.push([i % 2 ? outer(y) : inner(y), y]);
-  }
-  return line(a) + line(b);
-}
-
-/** What a drawing puts down: outlines, detail, fine detail, dots (x, y, r). */
-interface Pen {
-  o: (...d: string[]) => void;
-  d: (...d: string[]) => void;
-  f: (...d: string[]) => void;
-  dot: (x: number, y: number, r: number) => void;
-}
-interface Drawing {
-  w: number;
-  h: number;
-  draw: (g: Pen) => void;
-}
+import { type Pt, n3, n2, type PathMap, mapPath, P, Pz, line, R, RR, ring, arch, garch, mir, sym, qAt, qPts, qxAt, cutAt, smooth, yOn, lattice, type Pen, type Drawing } from "./landmarkPen";
+import { MORE_DRAWINGS } from "./landmarksMore";
 
 /* ------------------------------------------------------------------ */
 /* The drawings                                                         */
@@ -1084,6 +894,7 @@ const santorini: Drawing = {
 const DRAWINGS: Record<Landmark, Drawing> = {
   eiffel, colosseum, bigben, tajmahal, giza, machupicchu, greatwall, sydneyopera, goldengate, liberty, westernwall, petra,
   acropolis, sagrada, towerbridge, pisa, redeemer, fuji, angkor, brandenburg, burjkhalifa, empirestate, neuschwanstein, santorini,
+  ...MORE_DRAWINGS,
 };
 
 /** Each drawing's parts in its own box, drawn once. */

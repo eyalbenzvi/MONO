@@ -1,5 +1,5 @@
 /**
- * Your Landmarks: a page of a travel journal. Three to nine landmarks, each
+ * Your Landmarks: a page of a travel journal. Three to nine of fifty landmarks, each
  * a line drawing (lib/custom/draw/landmarks) in a small taped-in frame with
  * its name and the year you were there, and the name and the
  * years under the page ("NOA · 2009–2026"). Drawn by
@@ -34,9 +34,102 @@ export const LANDMARKS = {
   empirestate: "Empire State Building",
   neuschwanstein: "Neuschwanstein",
   santorini: "Santorini",
+  arc: "Arc de Triomphe",
+  stbasils: "St Basil’s Cathedral",
+  stonehenge: "Stonehenge",
+  atomium: "Atomium",
+  stpeters: "St Peter’s Basilica",
+  hagiasophia: "Hagia Sophia",
+  matterhorn: "Matterhorn",
+  kinderdijk: "Kinderdijk Windmills",
+  chichenitza: "Chichén Itzá",
+  spaceneedle: "Space Needle",
+  cntower: "CN Tower",
+  chrysler: "Chrysler Building",
+  gatewayarch: "Gateway Arch",
+  petronas: "Petronas Towers",
+  heaven: "Temple of Heaven",
+  kinkakuji: "Golden Pavilion",
+  itsukushima: "Itsukushima Shrine",
+  marinabay: "Marina Bay Sands",
+  taipei101: "Taipei 101",
+  table: "Table Mountain",
+  kilimanjaro: "Kilimanjaro",
+  abusimbel: "Abu Simbel",
+  djenne: "Great Mosque of Djenné",
+  uluru: "Uluru",
+  harbour: "Sydney Harbour Bridge",
+  moai: "Easter Island Moai",
 } as const;
 export type Landmark = keyof typeof LANDMARKS;
 export const LANDMARK_IDS = Object.keys(LANDMARKS) as Landmark[];
+
+/** The picker's regions, in its order. */
+export const REGIONS = ["Europe", "Asia", "Africa", "Americas", "Oceania"] as const;
+export type Region = (typeof REGIONS)[number];
+
+/** Each landmark's region (the picker's groups) and where it is (what the picker's filter also matches: "paris", "japan"). */
+export const LANDMARK_PLACES: Record<Landmark, [region: Region, where: string]> = {
+  eiffel: ["Europe", "Paris, France"],
+  colosseum: ["Europe", "Rome, Italy"],
+  bigben: ["Europe", "London, United Kingdom"],
+  tajmahal: ["Asia", "Agra, India"],
+  giza: ["Africa", "Giza, Egypt"],
+  machupicchu: ["Americas", "Cusco, Peru"],
+  greatwall: ["Asia", "China"],
+  sydneyopera: ["Oceania", "Sydney, Australia"],
+  goldengate: ["Americas", "San Francisco, United States"],
+  liberty: ["Americas", "New York, United States"],
+  westernwall: ["Asia", "Jerusalem"],
+  petra: ["Asia", "Jordan"],
+  acropolis: ["Europe", "Athens, Greece"],
+  sagrada: ["Europe", "Barcelona, Spain"],
+  towerbridge: ["Europe", "London, United Kingdom"],
+  pisa: ["Europe", "Pisa, Italy"],
+  redeemer: ["Americas", "Rio de Janeiro, Brazil"],
+  fuji: ["Asia", "Japan"],
+  angkor: ["Asia", "Siem Reap, Cambodia"],
+  brandenburg: ["Europe", "Berlin, Germany"],
+  burjkhalifa: ["Asia", "Dubai, United Arab Emirates"],
+  empirestate: ["Americas", "New York, United States"],
+  neuschwanstein: ["Europe", "Bavaria, Germany"],
+  santorini: ["Europe", "Greece"],
+  arc: ["Europe", "Paris, France"],
+  stbasils: ["Europe", "Moscow, Russia"],
+  stonehenge: ["Europe", "Wiltshire, United Kingdom"],
+  atomium: ["Europe", "Brussels, Belgium"],
+  stpeters: ["Europe", "Vatican City"],
+  hagiasophia: ["Europe", "Istanbul, Turkey"],
+  matterhorn: ["Europe", "Zermatt, Switzerland"],
+  kinderdijk: ["Europe", "Netherlands"],
+  chichenitza: ["Americas", "Yucatán, Mexico"],
+  spaceneedle: ["Americas", "Seattle, United States"],
+  cntower: ["Americas", "Toronto, Canada"],
+  chrysler: ["Americas", "New York, United States"],
+  gatewayarch: ["Americas", "St Louis, United States"],
+  petronas: ["Asia", "Kuala Lumpur, Malaysia"],
+  heaven: ["Asia", "Beijing, China"],
+  kinkakuji: ["Asia", "Kyoto, Japan"],
+  itsukushima: ["Asia", "Miyajima, Japan"],
+  marinabay: ["Asia", "Singapore"],
+  taipei101: ["Asia", "Taipei, Taiwan"],
+  table: ["Africa", "Cape Town, South Africa"],
+  kilimanjaro: ["Africa", "Tanzania"],
+  abusimbel: ["Africa", "Aswan, Egypt"],
+  djenne: ["Africa", "Djenné, Mali"],
+  uluru: ["Oceania", "Northern Territory, Australia"],
+  harbour: ["Oceania", "Sydney, Australia"],
+  moai: ["Oceania", "Rapa Nui, Chile"],
+};
+
+/** Letters without their accents, lower case, one kind of apostrophe: how the picker's filter matches ("chichen" finds Chichén Itzá). */
+const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/’/g, "'").toLowerCase();
+
+/** The landmarks the picker shows: in one region (or all), matching the filter by name or by where it is. */
+export function shownLandmarks(region: Region | "All", filter: string): Landmark[] {
+  const q = fold(filter.trim());
+  return LANDMARK_IDS.filter((id) => (region === "All" || LANDMARK_PLACES[id][0] === region) && (!q || fold(`${LANDMARKS[id]} ${LANDMARK_PLACES[id][1]}`).includes(q)));
+}
 
 /** A visit: the landmark, and the year (optional). */
 export type Visit = [id: Landmark, year?: number];
