@@ -2,5 +2,15 @@
   "cities": "cities.8ed0c8b07c.json",
   "sky": "sky.ba7aeee58f.json",
   "countries": "countries.b7b88d219d.json",
-  "airports": "airports.7987284dd1.json"
+  "airports": "airports.7987284dd1.json",
+  "art": {
+    "dinosaurs/allosaurus": "art-dinosaurs-allosaurus.5ada4784e7.json",
+    "dinosaurs/brontosaurus": "art-dinosaurs-brontosaurus.d5096dc10f.json",
+    "dinosaurs/diplodocus": "art-dinosaurs-diplodocus.b51474c520.json",
+    "dinosaurs/iguanodon": "art-dinosaurs-iguanodon.bbddd21923.json",
+    "dinosaurs/pteranodon": "art-dinosaurs-pteranodon.c84cf1a466.json",
+    "dinosaurs/stegosaurus": "art-dinosaurs-stegosaurus.75edf92fa8.json",
+    "dinosaurs/triceratops": "art-dinosaurs-triceratops.9913e23dc6.json",
+    "dinosaurs/tyrannosaurus": "art-dinosaurs-tyrannosaurus.d1fab912c2.json"
+  }
 }

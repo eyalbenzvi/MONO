@@ -124,7 +124,7 @@ export function drawSvg(ctx: CanvasRenderingContext2D, svg: string, w: number, h
     else if (tag === "line") (p.moveTo(n("x1"), n("y1")), p.lineTo(n("x2"), n("y2")));
     else p.addPath(new Path2D(a.d ?? ""));
     // SVG's default fill is black; the templates always say what they mean.
-    if (fill || (a.fill === undefined && tag !== "line")) (ctx.fillStyle = fill ?? "#000"), ctx.fill(p);
+    if (fill || (a.fill === undefined && tag !== "line")) (ctx.fillStyle = fill ?? "#000"), ctx.fill(p, a["fill-rule"] === "evenodd" ? "evenodd" : "nonzero");
     if (stroke) (ctx.strokeStyle = stroke), ctx.stroke(p);
   }
   ctx.restore();

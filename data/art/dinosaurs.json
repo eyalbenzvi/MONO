@@ -1,0 +1,334 @@
+[
+ {
+  "id": "triceratops",
+  "name": "Triceratops",
+  "source": {
+   "title": "The dinosaurs of North America",
+   "author": "O. C. Marsh",
+   "year": 1896,
+   "plate": "Plate LXXI",
+   "record": "https://archive.org/details/dinosaursofnort00mars/page/n400",
+   "ia": "dinosaursofnort00mars",
+   "page": 400
+  },
+  "license": "US-Gov",
+  "licenseLabel": "Public domain (US government work)",
+  "rights": "US government work (USGS, Sixteenth Annual Report, part 1, 1896); public domain",
+  "turned": 270,
+  "traced": {
+   "w": 565,
+   "h": 227,
+   "rings": 396,
+   "points": 3782,
+   "inked": 0.1346
+  },
+  "bytes": 28471,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 52,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 52,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   }
+  ],
+  "passes": false
+ },
+ {
+  "id": "stegosaurus",
+  "name": "Stegosaurus",
+  "source": {
+   "title": "The dinosaurs of North America",
+   "author": "O. C. Marsh",
+   "year": 1896,
+   "plate": "Plate LII",
+   "record": "https://archive.org/details/dinosaursofnort00mars/page/n324",
+   "ia": "dinosaursofnort00mars",
+   "page": 324
+  },
+  "license": "US-Gov",
+  "licenseLabel": "Public domain (US government work)",
+  "rights": "US government work (USGS, Sixteenth Annual Report, part 1, 1896); public domain",
+  "turned": 270,
+  "traced": {
+   "w": 589,
+   "h": 364,
+   "rings": 692,
+   "points": 6038,
+   "inked": 0.1178
+  },
+  "bytes": 48342,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 61,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 61,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true
+ },
+ {
+  "id": "brontosaurus",
+  "name": "Brontosaurus",
+  "source": {
+   "title": "The dinosaurs of North America",
+   "author": "O. C. Marsh",
+   "year": 1896,
+   "plate": "Plate XLII",
+   "record": "https://archive.org/details/dinosaursofnort00mars/page/n284",
+   "ia": "dinosaursofnort00mars",
+   "page": 284
+  },
+  "license": "US-Gov",
+  "licenseLabel": "Public domain (US government work)",
+  "rights": "US government work (USGS, Sixteenth Annual Report, part 1, 1896); public domain",
+  "turned": 270,
+  "traced": {
+   "w": 599,
+   "h": 168,
+   "rings": 349,
+   "points": 2864,
+   "inked": 0.1408
+  },
+  "bytes": 21267,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 49,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 49,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   }
+  ],
+  "passes": false
+ },
+ {
+  "id": "iguanodon",
+  "name": "Iguanodon",
+  "source": {
+   "title": "The dinosaurs of North America",
+   "author": "O. C. Marsh",
+   "year": 1896,
+   "plate": "Plate LXXXV",
+   "record": "https://archive.org/details/dinosaursofnort00mars/page/n456",
+   "ia": "dinosaursofnort00mars",
+   "page": 456
+  },
+  "license": "US-Gov",
+  "licenseLabel": "Public domain (US government work)",
+  "rights": "US government work (USGS, Sixteenth Annual Report, part 1, 1896); public domain",
+  "turned": 270,
+  "traced": {
+   "w": 649,
+   "h": 434,
+   "rings": 392,
+   "points": 4286,
+   "inked": 0.0676
+  },
+  "bytes": 34283,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 44,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 44,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": false
+ },
+ {
+  "id": "tyrannosaurus",
+  "name": "Tyrannosaurus",
+  "source": {
+   "title": "Ornitholestes, Struthiomimus, Tyrannosaurus",
+   "author": "H. F. Osborn",
+   "year": 1916,
+   "plate": "Fig. 18",
+   "record": "https://archive.org/details/bulletin-american-museum-natural-history-35-733-771/page/n31",
+   "ia": "bulletin-american-museum-natural-history-35-733-771",
+   "page": 31
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "rights": "Public domain (published in the United States in 1916)",
+  "turned": 90,
+  "traced": {
+   "w": 693,
+   "h": 361,
+   "rings": 560,
+   "points": 4217,
+   "inked": 0.1043
+  },
+  "bytes": 33559,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 51,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 51,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": false
+ },
+ {
+  "id": "allosaurus",
+  "name": "Allosaurus",
+  "source": {
+   "title": "Osteology of the carnivorous Dinosauria in the United States National museum : with special reference to the genera Antrodemus (Allosaurus) and Ceratosaurus",
+   "author": "C. W. Gilmore",
+   "year": 1920,
+   "plate": "Plate 16",
+   "record": "https://archive.org/details/osteologyofcarni00gilm/page/n187",
+   "ia": "osteologyofcarni00gilm",
+   "page": 187
+  },
+  "license": "US-Gov",
+  "licenseLabel": "Public domain (US government work)",
+  "rights": "US government work (US National Museum Bulletin 110, 1920); public domain",
+  "turned": 0,
+  "traced": {
+   "w": 702,
+   "h": 846,
+   "rings": 1202,
+   "points": 9482,
+   "inked": 0.0669
+  },
+  "bytes": 77451,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 58,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 58,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": true
+ },
+ {
+  "id": "diplodocus",
+  "name": "Diplodocus",
+  "source": {
+   "title": "Diplodocus (Marsh) : its osteology, taxonomy, and probable habits, with a restoration of the skeleton",
+   "author": "J. B. Hatcher",
+   "year": 1901,
+   "plate": "Plate XIII",
+   "record": "https://archive.org/details/diplodocusmarshi11hatc/page/n89",
+   "ia": "diplodocusmarshi11hatc",
+   "page": 89
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "rights": "Public domain (published in the United States in 1901)",
+  "turned": 0,
+  "traced": {
+   "w": 635,
+   "h": 160,
+   "rings": 203,
+   "points": 1916,
+   "inked": 0.1141
+  },
+  "bytes": 14240,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 42,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 42,
+    "flags": [
+     "sliver"
+    ],
+    "solid": null
+   }
+  ],
+  "passes": false
+ },
+ {
+  "id": "pteranodon",
+  "name": "Pteranodon",
+  "source": {
+   "title": "Osteology of pteranodon",
+   "author": "G. F. Eaton",
+   "year": 1910,
+   "plate": "Plate XXXI",
+   "record": "https://archive.org/details/osteologyofptera00eatorich/page/n170",
+   "ia": "osteologyofptera00eatorich",
+   "page": 170
+  },
+  "license": "PD",
+  "licenseLabel": "Public domain",
+  "rights": "Public domain (published in the United States in 1910)",
+  "turned": 90,
+  "traced": {
+   "w": 668,
+   "h": 439,
+   "rings": 307,
+   "points": 2952,
+   "inked": 0.0602
+  },
+  "bytes": 23253,
+  "checks": [
+   {
+    "color": "black",
+    "quality": 45,
+    "flags": [],
+    "solid": null
+   },
+   {
+    "color": "white",
+    "quality": 45,
+    "flags": [],
+    "solid": null
+   }
+  ],
+  "passes": false
+ }
+]

@@ -83,6 +83,7 @@ const EDITORS: Partial<Record<TemplateId, ComponentType<EditorProps>>> = {
   route: lazy(() => import("@/components/custom/editors/RouteEditor")),
   island: lazy(() => import("@/components/custom/editors/IslandEditor")),
   qr: lazy(() => import("@/components/custom/editors/QrEditor")),
+  dinosaur: lazy(() => import("@/components/custom/editors/DinosaurEditor")),
   frontpage: lazy(() => import("@/components/custom/editors/FrontpageEditor")),
   passport: lazy(() => import("@/components/custom/editors/PassportEditor")),
   flights: lazy(() => import("@/components/custom/editors/FlightsEditor")),

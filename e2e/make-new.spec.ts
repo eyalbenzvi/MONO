@@ -222,6 +222,18 @@ const CASES: Case[] = [
     },
     again: async (page) => expect(page.locator("#make-frontpage-headline")).toHaveValue("Local girl turns ten, takes it well"),
   },
+  {
+    slug: "dinosaur",
+    fill: async (page) => {
+      await page.locator("#make-dinosaur-name").fill("Maya");
+      await page.locator("#make-dinosaur-plate").selectOption("stegosaurus");
+      await page.locator("#make-dinosaur-height").fill("112");
+    },
+    again: async (page) => {
+      await expect(page.locator("#make-dinosaur-name")).toHaveValue("Maya");
+      await expect(page.locator("#make-dinosaur-plate")).toHaveValue("stegosaurus");
+    },
+  },
 ];
 
 for (const c of CASES)
@@ -246,6 +258,25 @@ for (const c of CASES)
     await expect(p2).toHaveURL(link);
     await other.close();
     expect(errors).toEqual([]);
+  });
+
+// Kids' sizes are sold (KID_SIZES): the two products made for children go into the bag in one.
+for (const [slug, fill] of [
+  ["dinosaur", async (page: Page) => page.locator("#make-dinosaur-name").fill("Maya")],
+  ["birth", async (page: Page) => (await page.locator("#make-birth-name").fill("Noa"), page.locator("#make-birth-date").fill("2021-11-19"))],
+] as const)
+  test(`${slug}: made in a kids' size, labelled so in the bag`, async ({ page }) => {
+    await page.goto(`make/${slug}/`);
+    await hydrated(page);
+    await fill(page);
+    await expect(page).toHaveURL(/[?&]make=/, { timeout: 15_000 });
+    await page.getByRole("button", { name: "Kids' sizes" }).first().tap();
+    await page.getByRole("radio", { name: "Kids 5–6" }).first().tap();
+    await page.getByRole("button", { name: /^Add to bag · Kids 5–6/ }).tap();
+    await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
+    await page.goto("cart/");
+    await hydrated(page);
+    await expect(page.getByRole("combobox", { name: "Size" }).first()).toHaveValue("K6");
   });
 
 test("lineup: for the whole team, three shirts go into the bag in one step, each its own line", async ({ page }) => {

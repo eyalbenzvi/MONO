@@ -138,7 +138,7 @@ export async function getJson<T = any>(source: SourceId, url: string, { tries = 
 }
 export const UA = "MONO-catalogue/1.0 (https://github.com/eyalbenzvi/mono; public-domain works for one-ink tees)";
 
-async function download(url: string, file: string, tries = 6): Promise<boolean> {
+export async function download(url: string, file: string, tries = 6): Promise<boolean> {
   if (existsSync(file)) return true;
   for (let i = 0; ; i++) {
     let wait = 1000 * 2 ** i;

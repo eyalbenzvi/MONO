@@ -6,6 +6,7 @@
 import type { BaseColor } from "@/types/shirt";
 import type { Lines } from "./kit";
 import type { City, CustomSpec, TemplateId } from "./spec";
+import type { ArtFile } from "./art";
 import type { Airports, Countries } from "./data";
 import type { SkyData } from "./templates/sky";
 
@@ -19,6 +20,8 @@ export interface RenderData {
   countries?: Countries;
   /** The airports (data/airports): Your Flights' codes and cities. */
   airports?: Airports;
+  /** Traced pictures (data/art), by "<set>/<id>": Your Dinosaur's plate, Your Landmarks' drawings. */
+  art?: Record<string, ArtFile>;
 }
 export type Renderer = (spec: CustomSpec, color: BaseColor, data: RenderData) => string;
 
@@ -79,6 +82,7 @@ const OWN: Partial<Record<TemplateId, () => Promise<TemplateModule>>> = {
   flights: () => import("./templates/flights"),
   passport: () => import("./templates/passport"),
   frontpage: () => import("./templates/frontpage"),
+  dinosaur: () => import("./templates/dinosaur"),
   telegram: () => import("./templates/telegram"),
 };
 

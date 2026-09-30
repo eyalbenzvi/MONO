@@ -10,6 +10,8 @@ import { decodeCities } from "@/lib/custom/data";
 import { customModelIds } from "@/lib/custom/models";
 import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../scripts/gen/quality";
 import { mulberry32 } from "../scripts/gen/core";
+// Each text measured in its own face (the Make prints set serif, condensed and blackletter beside the mono), as the gate measures it.
+import { wideTexts } from "./make/fuzz";
 import { modelFor } from "@/lib/models";
 
 const ROOT = path.resolve(__dirname, "..");
@@ -17,21 +19,11 @@ const readJson = (f: string) => JSON.parse(readFileSync(path.join(ROOT, f), "utf
 const SKY = { stars: readJson("data/sky/stars.json"), lines: (readJson("data/sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
 const places = decodeCities(readJson("data/cities/cities.json"));
 
-/** What the audit measures, the monospace way: a text's width in print units (DejaVu Sans Mono's advance is 0.602 em). */
-function textWidths(svg: string): { text: string; width: number }[] {
-  return [...svg.matchAll(/<text([^>]*)>([^<]*)<\/text>/g)].map(([, attrs, t]) => {
-    const size = Number(/font-size="([\d.]+)"/.exec(attrs)?.[1] ?? 0);
-    const spacing = Number(/letter-spacing="([\d.]+)"/.exec(attrs)?.[1] ?? 0);
-    const chars = [...t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")].length;
-    return { text: t, width: chars * (0.602 * size + spacing) };
-  });
-}
-
 /** A print that may be applied: not a solid block, and not weak by the catalogue's own line. */
 function check(svg: string, color: "black" | "white") {
   const raster = svgInk(svg, color);
   const a = assessPrint(raster);
-  return { solid: solidBlock(raster).reject, quality: a.quality, flags: a.flags, wide: textWidths(svg).filter((t) => t.width > 292) };
+  return { solid: solidBlock(raster).reject, quality: a.quality, flags: a.flags, wide: wideTexts(svg) };
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");

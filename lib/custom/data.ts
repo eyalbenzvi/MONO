@@ -6,6 +6,7 @@
 import manifest from "@/data/custom.manifest.json";
 import { assetUrl } from "@/lib/catalog";
 import { clean } from "@/lib/search/normalize";
+import type { ArtFile } from "./art";
 import type { City } from "./spec";
 import type { SkyData } from "./templates/sky";
 
@@ -121,6 +122,19 @@ export function loadAirports(): Promise<Airports> {
   airports ??= get<AirportsFile>(manifest.airports).then(decodeAirports);
   airports.catch(() => (airports = null));
   return airports;
+}
+
+const art = new Map<string, Promise<ArtFile>>();
+/** A traced picture of the Make prints ("dinosaurs/triceratops"), fetched once; rejected when there's none by that name. */
+export function loadArt(key: string): Promise<ArtFile> {
+  const file = (manifest.art as Record<string, string>)[key];
+  if (!file) return Promise.reject(new Error(`no picture ${key}`));
+  if (!art.has(key)) {
+    const p = get<ArtFile>(file);
+    p.catch(() => art.delete(key));
+    art.set(key, p);
+  }
+  return art.get(key)!;
 }
 
 /** Up to n airports for what's typed: its code first ("nrt"), then word starts of its city or name ("tokyo", "heathrow"), accents folded; the biggest names first. */
