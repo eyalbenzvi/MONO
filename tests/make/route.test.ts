@@ -135,7 +135,8 @@ describe("Your Route: the print", () => {
     expect(s).not.toBeNull();
     const n = encodeMake(s).length;
     console.log(`Your Route: longest ?make= ${n} characters (example ${encodeMake({ t: "route", v: 1, p: ex } as CustomSpec).length})`);
-    expect(n).toBeLessThan(1200);
+    // 882 at its longest: with the caption's 160 more, still within the 1,200 ?make= reads (tests/make/captions.ts OWN_LINK_MAX).
+    expect(n).toBeLessThan(1040);
   });
   it("fuzz: straight lines to scribbles, files and drawings, every field or none: all pass the gate", () => {
     const rnd = mulberry32(0x40e7e);
