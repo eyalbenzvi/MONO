@@ -70,5 +70,277 @@
  "met-362592": {
   "decision": "keep",
   "title_override": "Ionic Capital, Elevation"
+ },
+ "wikimedia-7895176": {
+  "decision": "reject",
+  "reason": "title read: an instrument's data image, not a drawn map"
+ },
+ "wikimedia-81559052": {
+  "decision": "reject",
+  "reason": "title read: a figure as the subject (a genius)"
+ },
+ "wikimedia-93855461": {
+  "decision": "reject",
+  "reason": "title read: the same Bayer plate as wikimedia-91200764 (a later edition)"
+ },
+ "wikimedia-35096201": {
+  "decision": "reject",
+  "reason": "title read: a title page"
+ },
+ "wikimedia-5228417": {
+  "decision": "reject",
+  "reason": "title read: a frontispiece"
+ },
+ "wikimedia-91787475": {
+  "decision": "reject",
+  "reason": "title read: a figure constellation (Hercules) as the subject"
+ },
+ "wikimedia-121128252": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (likely its frontispiece)"
+ },
+ "wikimedia-121753166": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (which plate is unknown)"
+ },
+ "wikimedia-186412267": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (which plate is unknown)"
+ },
+ "wikimedia-165819624": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (which plate is unknown)"
+ },
+ "wikimedia-138457557": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (likely its title page)"
+ },
+ "wikimedia-60299614": {
+  "decision": "reject",
+  "reason": "title read: a dedicatory page (text)"
+ },
+ "wikimedia-79696144": {
+  "decision": "reject",
+  "reason": "title read: a Dutch ABC print (pictures of figures per letter, unseen)"
+ },
+ "wikimedia-85478754": {
+  "decision": "reject",
+  "reason": "title read: the same Cellarius plate as wikimedia-88460182"
+ },
+ "wikimedia-60859039": {
+  "decision": "reject",
+  "reason": "title read: the same Dürer woodcut as AIC's The Second Knot"
+ },
+ "wikimedia-76148061": {
+  "decision": "reject",
+  "reason": "title read: the same Dürer woodcut as Cleveland's Third Knot"
+ },
+ "wikimedia-151674044": {
+  "decision": "reject",
+  "reason": "title read: no name (an inventory number)"
+ },
+ "wikimedia-151674009": {
+  "decision": "reject",
+  "reason": "title read: no name (an inventory number)"
+ },
+ "wikimedia-85673127": {
+  "decision": "keep",
+  "title_override": "Rectangular Pendant with Alphabet"
+ },
+ "wikimedia-48104642": {
+  "decision": "keep",
+  "title_override": "Drawing Book of Siberia, Map 4"
+ },
+ "wikimedia-48104632": {
+  "decision": "keep",
+  "title_override": "Drawing Book of Siberia, Map 3"
+ },
+ "wikimedia-48151229": {
+  "decision": "keep",
+  "title_override": "Drawing Book of Siberia, Map 13"
+ },
+ "wikimedia-60299991": {
+  "decision": "keep",
+  "title_override": "Modelbuch aller Art Nehens und Stickens, Page 6r"
+ },
+ "wikimedia-88460182": {
+  "decision": "keep",
+  "title_override": "Haemisphaerium Stellatum Australe"
+ },
+ "wikimedia-85474763": {
+  "decision": "keep",
+  "title_override": "Sizes of the Stars and Planets"
+ },
+ "wikimedia-17999689": {
+  "decision": "keep",
+  "title_override": "Moon Map, Southern Polar Region"
+ },
+ "wikimedia-17999685": {
+  "decision": "keep",
+  "title_override": "Moon Map, Northern Polar Region"
+ },
+ "wikimedia-60286980": {
+  "decision": "keep",
+  "title_override": "Essempio di Recammi, Page 3 Recto"
+ },
+ "wikimedia-60286979": {
+  "decision": "keep",
+  "title_override": "Essempio di Recammi, Page 3 Verso"
+ },
+ "wikimedia-7338824": {
+  "decision": "keep",
+  "title_override": "Broken Column House, Désert de Retz, Cross Section"
+ },
+ "wikimedia-860483": {
+  "decision": "keep",
+  "title_override": "San Rocco"
+ },
+ "wikimedia-94011331": {
+  "decision": "keep",
+  "title_override": "Cygnus"
+ },
+ "wikimedia-15890958": {
+  "decision": "keep",
+  "title_override": "Portal mit Sonnenuhr"
+ },
+ "wikimedia-91200764": {
+  "decision": "keep",
+  "title_override": "Eridanus"
+ },
+ "wikimedia-32862660": {
+  "decision": "keep",
+  "title_override": "Schloss Kalkum, Elevation"
+ },
+ "wikimedia-20320430": {
+  "decision": "keep",
+  "title_override": "Lunar Chart LAC 98"
+ },
+ "wikimedia-20324904": {
+  "decision": "keep",
+  "title_override": "Lunar Chart LAC 111"
+ },
+ "wikimedia-20324907": {
+  "decision": "keep",
+  "title_override": "Lunar Chart LAC 112"
+ },
+ "wikimedia-14860580": {
+  "decision": "keep",
+  "title_override": "Lustgarten Meersburg, Design"
+ },
+ "wikimedia-25556515": {
+  "decision": "keep",
+  "title_override": "Pardies Star Atlas, Plate 5"
+ },
+ "wikimedia-25556487": {
+  "decision": "keep",
+  "title_override": "Pardies Star Atlas, Plate 4"
+ },
+ "wikimedia-25556439": {
+  "decision": "keep",
+  "title_override": "Pardies Star Atlas, Plate 2"
+ },
+ "wikimedia-62037376": {
+  "decision": "keep",
+  "title_override": "Geologic Map of the Moon"
+ },
+ "wikimedia-91787476": {
+  "decision": "keep",
+  "title_override": "Scorpio and Libra"
+ },
+ "wikimedia-93645620": {
+  "decision": "keep",
+  "title_override": "Canis Major"
+ },
+ "wikimedia-91243452": {
+  "decision": "keep",
+  "title_override": "Cetus"
+ },
+ "wikimedia-97646003": {
+  "decision": "keep",
+  "title_override": "Crater"
+ },
+ "wikimedia-22391272": {
+  "decision": "keep",
+  "title_override": "Konzerthaus Ravensburg, Section"
+ },
+ "wikimedia-151674072": {
+  "decision": "keep",
+  "title_override": "Red Lion Square, London"
+ },
+ "wikimedia-64039910": {
+  "decision": "keep",
+  "title_override": "Palazzo Farnese, Rome"
+ },
+ "wikimedia-32944464": {
+  "decision": "keep",
+  "title_override": "Château de Madrid, Front Facade"
+ },
+ "wikimedia-32945279": {
+  "decision": "keep",
+  "title_override": "La Muette, Front Facade"
+ },
+ "wikimedia-91253119": {
+  "decision": "keep",
+  "title_override": "Atlas Novus Coelestis, Plate 8"
+ },
+ "wikimedia-94514577": {
+  "decision": "keep",
+  "title_override": "Northern Hemisphere of the Ancient Greeks and Romans"
+ },
+ "wikimedia-94514828": {
+  "decision": "keep",
+  "title_override": "Southern Hemisphere of the Ancient Greeks and Romans"
+ },
+ "wikimedia-61969535": {
+  "decision": "keep",
+  "title_override": "Celestial Globe Gores 18"
+ },
+ "wikimedia-61968601": {
+  "decision": "keep",
+  "title_override": "Celestial Globe Gores 8"
+ },
+ "wikimedia-61969297": {
+  "decision": "keep",
+  "title_override": "Celestial Globe Gores 15"
+ },
+ "wikimedia-10732885": {
+  "decision": "keep",
+  "title_override": "Berezovye Vorota, Project"
+ },
+ "wikimedia-26407263": {
+  "decision": "keep",
+  "title_override": "Salle Favart"
+ },
+ "wikimedia-36967433": {
+  "decision": "keep",
+  "title_override": "Essai sur l'architecture théâtrale, Plate 1"
+ },
+ "wikimedia-16623638": {
+  "decision": "keep",
+  "title_override": "Riccioli's Moon Map, 1651"
+ },
+ "wikimedia-91167833": {
+  "decision": "keep",
+  "title_override": "Hémisphère Boréal"
+ },
+ "wikimedia-91167661": {
+  "decision": "keep",
+  "title_override": "Le Taureau"
+ },
+ "wikimedia-14693263": {
+  "decision": "keep",
+  "title_override": "The Constellations, October to December"
+ },
+ "wikimedia-91130144": {
+  "decision": "keep",
+  "title_override": "Stereographic Projection of the Northern Sky"
+ },
+ "wikimedia-196310366": {
+  "decision": "keep",
+  "title_override": "Édifices de la Rome Moderne"
+ },
+ "wikimedia-97697249": {
+  "decision": "reject",
+  "reason": "title read: the book's title only (likely its title page)"
  }
 }

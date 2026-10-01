@@ -65,26 +65,48 @@
   "final": 8
  },
  "wikimedia": {
-  "found": 4364,
-  "licensed": 3698,
-  "filtered": 1575,
+  "found": 3951,
+  "licensed": 3453,
+  "filtered": 1502,
   "refusedLicense": {
-   "CC BY (needs the owner's approval)": 222,
-   "share-alike": 320,
-   "unclear licence": 121,
-   "in copyright": 3
+   "CC BY (needs the owner's approval)": 129,
+   "share-alike": 260,
+   "unclear licence": 108,
+   "in copyright": 1
   },
   "removed": {
-   "low-res": 1537,
-   "narrative": 151,
-   "brand": 32,
+   "low-res": 1408,
+   "narrative": 145,
    "off-world": 592,
-   "people": 109,
-   "text": 193,
-   "strip": 69,
-   "unsuitable": 18,
+   "text": 139,
+   "strip": 61,
+   "people": 31,
+   "unsuitable": 11,
+   "brand": 22,
    "no-image": 6
   },
-  "final": 1575
+  "final": 1502
+ },
+ "loc": {
+  "found": 1142,
+  "licensed": 962,
+  "filtered": 626,
+  "refusedLicense": {
+   "unclear licence": 93,
+   "map division": 77,
+   "in copyright": 9,
+   "non-commercial": 1
+  },
+  "removed": {
+   "text": 191,
+   "strip": 11,
+   "unsuitable": 83,
+   "narrative": 29,
+   "low-res": 1,
+   "brand": 3,
+   "people": 7,
+   "off-world": 47
+  },
+  "final": 400
  }
 }

@@ -26,6 +26,8 @@ export const CATEGORY_SEARCHES: Record<number, string[]> = {
 const LINE_WORK = /\bplans?\b|lines|chart|drawing|architectura navalis|cross sections|chapman|atlas|carta|encyclop|engraving|plates?\b|in art\b|kunstformen|challenger|haeckel|radiolarien|medusen|cephalopoden|illustrations|invertebrates|uranometria|coelest|celestial|planispher|selenograph|maps? of the moon|elevations?\b|édifices|vitruvius|antiquities of athens|leçons d'architecture|type specimens|printing types|alphabets?\b|knots\b/i;
 /** …and not a photograph collection, a museum's object photographs, one ship's or class's page, or a HABS/HAER set (copies of the LoC's own sheets, which the LoC adapter reads at the source). */
 const NOT_LINE_WORK = /photograph|\bHABS\b|\bHAER\b|sail amsterdam|rijksmuseum|full sail|proposed or planned|^Category:PLANS |\(ship, \d{4}\)|\bIMO \d|trawler|type \d+ frigate|svg\b|fossil|isotype|idae\b|\baves\b|by (?:taxon|locality|institution)|on stamps|heraldry|^Category:Flags|sculpture|statues?\b|monuments|\bin art of\b|hevelius in art|celebrities|alphabet books|old friends|edward lear|magazine|plensa|untier|roses by|\btomb\b|gravimetric|by background|stamps\b/i;
+/** Knots as drawn or printed patterns: the other knot categories are objects photographed (a bracelet's Hercules knot, a Chinese knot, a sword knot). */
+const KNOT_PLATES = /knots in art and decoration|decorative knots|leonardo da vinci's knots|square knot in art/i;
 /** A HABS/HAER/HALS sheet (its call number, the survey's name, or the LoC's photo division as the credit). */
 const SURVEY_COPY = /\b(?:HABS|HAER|HALS)\b|Historic American (?:Buildings|Engineering|Landscapes)|loc\.gov\/pictures/i;
 /** A file that is a photograph by its own categories (press photos, a photographer's own upload). */
@@ -45,7 +47,7 @@ export const wikimedia: Adapter = {
       for (const m of r?.query?.categorymembers ?? []) cats.add(m.title);
     }
     // From the second wave on (the first's searches named plate series only): line work only.
-    if (world.wave >= 2) for (const c of [...cats]) if (!LINE_WORK.test(c) || NOT_LINE_WORK.test(c)) cats.delete(c);
+    if (world.wave >= 2) for (const c of [...cats]) if (!LINE_WORK.test(c) || NOT_LINE_WORK.test(c) || (world.wave >= 3 && /knot/i.test(c) && !KNOT_PLATES.test(c))) cats.delete(c);
     log(`wikimedia: ${cats.size} categories: ${[...cats].join(" | ")}`);
     const out = new Map<number, Raw>();
     for (const c of cats) {

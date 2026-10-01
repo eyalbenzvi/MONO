@@ -8,11 +8,13 @@
  * record (file-name debris out; nothing invented). Writes data/review/wave-<n>/decisions-<source>.json
  * (the same format as the review page's export) and prints counts.
  *
- *   tsx scripts/review/autoDecide.ts <wave> <source…> [--max <source>=<n>…]
+ *   tsx scripts/review/autoDecide.ts <wave> <source…> [--max <source>=<n>…] [--per-series <n>]
  *
  * --max: at most n keeps from that source, the best by quality (from wave 3: a chart office's
  * charts are one kind of picture, and seventy harbours in one drop is one design repeated, which
- * the brand book's catalogue rules refuse).
+ * the brand book's catalogue rules refuse). --per-series: at most n keeps from one Commons category
+ * (the category the adapter found the file in, its first tag): twenty plates of one star atlas, or
+ * twenty sheets of one Siberian atlas, are one design repeated too.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -53,7 +55,7 @@ export const CATEGORY_SHARE = 0.29;
 /** A title as the catalogue will print it (cut to 60, the house style), lowercased: two that match are one title. */
 const titleKey = (t: string) => houseTitle(shortName(t)).toLowerCase();
 
-export function decide(wave: number, sources: SourceId[], max: Partial<Record<SourceId, number>> = {}) {
+export function decide(wave: number, sources: SourceId[], max: Partial<Record<SourceId, number>> = {}, perSeries = Infinity) {
   // The catalogue's titles and categories, except this wave's own (a re-run).
   const shirtsFile = path.join(ROOT, "data", "shirts.json");
   const catalogue = (existsSync(shirtsFile) ? (JSON.parse(readFileSync(shirtsFile, "utf8")) as { title: string; category: string; wave?: number }[]) : []).filter((s) => s.wave !== wave);
@@ -64,6 +66,7 @@ export function decide(wave: number, sources: SourceId[], max: Partial<Record<So
     const list = readPrepped(src, wave).sort((a, b) => b.assess.quality - a.assess.quality || b.score - a.score);
     const d: Record<string, unknown> = {};
     let keptHere = 0;
+    const series = new Map<string, number>();
     for (const p of list) {
       const title = tidyTitle(p.title);
       // No name at all: a bare "drawing" word, or a file name (author-year-book-page).
@@ -71,11 +74,13 @@ export function decide(wave: number, sources: SourceId[], max: Partial<Record<So
       const clean = !nameless && !p.weak && !p.solid && !p.flags.includes("dup") && p.assess.flags.length === 0 && p.assess.quality >= AUTO_QUALITY && title.length >= 3;
       const repeat = titles.has(titleKey(title));
       if (clean && !repeat) titles.add(titleKey(title));
-      const capped = clean && !repeat && max[src] !== undefined && keptHere >= max[src]!;
-      const keep = clean && !repeat && !capped;
-      if (keep) keptHere++;
+      const group = src === "wikimedia" ? p.tags[0] ?? "" : "";
+      const crowded = clean && !repeat && !!group && (series.get(group) ?? 0) >= perSeries;
+      const capped = clean && !repeat && !crowded && max[src] !== undefined && keptHere >= max[src]!;
+      const keep = clean && !repeat && !capped && !crowded;
+      if (keep) (keptHere++, series.set(group, (series.get(group) ?? 0) + 1));
       if (keep) keeps.push({ p, src, category: filing({ ...p, wave }).category });
-      d[p.key] = title !== p.title && keep ? { decision: "keep", title_override: title } : keep ? "keep" : { decision: "reject", reason: nameless ? "no name" : repeat ? "repeated title" : capped ? `source full (${max[src]})` : p.solid ? `solid ${p.solid}` : p.flags.includes("dup") ? "duplicate" : `quality ${p.assess.quality}${p.assess.flags.length ? ` ${p.assess.flags.join(" ")}` : ""}` };
+      d[p.key] = title !== p.title && keep ? { decision: "keep", title_override: title } : keep ? "keep" : { decision: "reject", reason: nameless ? "no name" : repeat ? "repeated title" : crowded ? `series full (${group})` : capped ? `source full (${max[src]})` : p.solid ? `solid ${p.solid}` : p.flags.includes("dup") ? "duplicate" : `quality ${p.assess.quality}${p.assess.flags.length ? ` ${p.assess.flags.join(" ")}` : ""}` };
     }
     decisions.set(src, { list, d });
   }
@@ -115,11 +120,13 @@ if (require.main === module) {
   const [wave, ...rest] = process.argv.slice(2);
   const max: Partial<Record<SourceId, number>> = {};
   const sources: SourceId[] = [];
+  let perSeries = Infinity;
   for (let i = 0; i < rest.length; i++) {
-    if (rest[i] === "--max") {
+    if (rest[i] === "--per-series") perSeries = Number(rest[++i]);
+    else if (rest[i] === "--max") {
       const [src, n] = rest[++i].split("=");
       max[src as SourceId] = Number(n);
     } else sources.push(rest[i] as SourceId);
   }
-  console.log(decide(Number(wave), sources, max));
+  console.log(decide(Number(wave), sources, max, perSeries));
 }
