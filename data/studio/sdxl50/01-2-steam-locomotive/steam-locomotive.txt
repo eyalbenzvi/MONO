@@ -1,0 +1,10 @@
+Title: Steam Locomotive
+Category: Engravings
+Subject: An early steam locomotive in side elevation: a long round boiler, tall chimney and two domes on top, three spoked wheels joined by a rod, buffers at both ends, standing on a thin ground line
+Style: Technical side elevation, engraved line with a fine screen
+Medium: Drawn (illustration)
+Description: An early steam engine stands side on, its tall chimney at the front and three spoked wheels linked by a single rod. It looks ready to leave on time, which is more than can be said for most of its descendants.
+Tee colours: Black, White
+Print size: 25.2 × 18.2 cm
+Keywords: steam locomotive, steam engine, railway, train, side elevation, technical drawing, engineering, vintage, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
