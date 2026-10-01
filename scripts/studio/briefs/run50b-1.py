@@ -23,7 +23,7 @@ PROMPTS = {
     },
     4: {
         "backup": "One nautilus shell cut in half, side view. A single round coiled shell sliced through the middle, showing the "
-                  "spiral of pearly chambers inside, each chamber a curved wall growing larger towards the wide opening, a thin tube "
+                  "spiral of chambers inside, each chamber a curved wall growing larger towards the wide opening, a thin tube "
                   "linking the chambers, the outer wall whole, no animal, no tentacles. Fine black ink line drawing in the style of a "
                   "natural history plate, every chamber wall drawn, delicate hatching on the outer shell. Even flat light, crisp contrast. "
                   "Centred, the whole subject with wide white margins, plain white paper. "
