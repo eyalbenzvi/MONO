@@ -1,0 +1,12 @@
+Prompt: One nautilus shell, side view of the spiral. A single chambered shell, the smooth logarithmic spiral clearly visible, tiger stripes on the outer whorl, opening at the bottom, no tentacles. Fine black ink line drawing in the style of a natural history plate, clean outlines and delicate hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1200-1203 (four, main); chosen 1202 (the third)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+
+Why 1202: 1200 and 1201 are smooth grey balls with no spiral; 1203 a fan of ribs folded into a kidney shape. 1202 is the only clear coiled shell, whole, centred, with ribs and a fine centre.
+It is ribbed and unstriped, closer to an ammonite or a moon snail than a nautilus, so the title is SPIRAL SHELL, not NAUTILUS.
+One ink: line mode broke the pale ribs into black blotches; pen mode keeps them as engraved lines.
+python3 scripts/studio/oneink.py <image> data/studio/run50/01-2-spiral-shell spiral-shell --mode pen --title "SPIRAL SHELL" --sub "Marine life · Natural history plate"

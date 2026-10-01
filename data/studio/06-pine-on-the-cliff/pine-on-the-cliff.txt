@@ -1,0 +1,10 @@
+Title: Pine on the Cliff
+Category: Botanical & Nature
+Subject: Tree
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: An old wind-bent pine grows alone from a rocky ledge above a calm bay, with headlands on either side. It has chosen the view over the soil, and seems content with the bargain.
+Tee colours: Both
+Print size: 21.8 × 35.0 cm (white tee); 21.3 × 33.6 cm (black tee)
+Keywords: pine, tree, cliff, coast, sea, bay, landscape, engraving, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

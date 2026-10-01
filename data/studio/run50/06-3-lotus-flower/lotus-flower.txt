@@ -1,0 +1,10 @@
+Title: Lotus Flower
+Category: Botanical
+Subject: A lotus in full bloom seen from the front, layered pointed petals on a single stem
+Style: Pen-and-ink line drawing, petals ruled with fine parallel lines
+Medium: Drawn (illustration)
+Description: A lotus opens in tiers of pointed petals, each ruled from tip to base. It rises out of the mud and still manages to look like this.
+Tee colours: Black (lotus-flower.png, printed in white ink)
+Print size: 26.0 x 29.5 cm
+Keywords: lotus, lotus flower, flower, bloom, botanical, petals, water plant, natural history, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

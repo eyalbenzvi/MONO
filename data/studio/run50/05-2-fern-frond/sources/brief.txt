@@ -1,0 +1,10 @@
+Prompt: One fern frond, curling tip, front view. A single upright fern frond, the tip rolled into a tight spiral fiddlehead, paired leaflets on both sides of one stem, symmetrical and complete from base to tip. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and light hatching. Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5201
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5201, the second of four (5200-5203). One clean symmetrical frond, every leaflet separate, no frame or marks; the model drew it green, and one ink takes only its darkness. The tip does not curl, so the title says only FERN FROND. 5200 had a doubled stem in the middle.
+python3 scripts/studio/oneink.py K2-fern-frond-s5201.png data/studio/run50/05-2-fern-frond fern-frond --mode line --title "FERN FROND" --sub "Botanical · Natural history plate"

@@ -1,0 +1,70 @@
+{
+ "helper": 5,
+ "branch": "studio/run50-5",
+ "started": "12:23 UTC",
+ "finished": "13:34 UTC",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "maple-leaf",
+   "passed": true,
+   "which": "backup",
+   "images": 5,
+   "chosen": "K1-maple-leaf-s5150.png",
+   "mode": "line",
+   "ink_coverage": 0.0671,
+   "note": "Main OAK LEAF AND ACORNS failed all 4 (no oak leaf, acorns missing or without cups); backup seed 5150, the first of 4 backup seeds, taken and the run stopped after it; levels stretched 0.30-0.80."
+  },
+  {
+   "slot": 2,
+   "slug": "fern-frond",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-fern-frond-s5201.png",
+   "mode": "line",
+   "ink_coverage": 0.0912,
+   "note": "Clean symmetrical frond, no curled tip (title says only FERN FROND); 5200 doubled stem, 5202 pale, 5203 leaning."
+  },
+  {
+   "slot": 3,
+   "slug": "pine-cone",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K3-pine-cone-s5301.png",
+   "mode": "line",
+   "ink_coverage": 0.1345,
+   "note": "Bold-outlined closed cone; levels stretched 0.25-0.62 (mass 0.048 to 0.010); 5300 mottled screen (pen failed dense area), 5303 distorted."
+  },
+  {
+   "slot": 4,
+   "slug": "artichoke",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-artichoke-s5400.png",
+   "mode": "line",
+   "ink_coverage": 0.1111,
+   "note": "Whole symmetrical artichoke on a cut stem; levels stretched 0.25-0.62 to drop the blotchy grey screen; 5401 cut at the bottom, 5402/5403 rose- or lotus-like."
+  },
+  {
+   "slot": 5,
+   "slug": "sunflower-head",
+   "passed": true,
+   "which": "main",
+   "images": 1,
+   "chosen": "K5-sunflower-head-s5500.png",
+   "mode": "line",
+   "ink_coverage": 0.1289,
+   "note": "First seed was good; the other 3 were stopped so the slot-1 backup could run in time. Two-zone levels (disc 0.25-0.62, petals 0.30-0.80) to keep the seed spiral open and petal outlines whole."
+  }
+ ],
+ "minutes": {
+  "install": 1,
+  "generate": 68,
+  "process": 3
+ },
+ "minutes_note": "Generation 12:24-13:32 on 4 CPU threads (about 3.3 min an image, 18 images). Choosing and one-ink processing ran during generation as each image landed (about 25 minutes of it in all); process counts only the time after the last image.",
+ "total_images": 18
+}

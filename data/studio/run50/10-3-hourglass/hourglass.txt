@@ -1,0 +1,10 @@
+Title: Hourglass
+Category: Geometric
+Subject: A tall glass hourglass between a turned wooden cap and base, sand heaped in both bulbs and a thin stream at the waist
+Style: Engraving-style line work, hatching on the wood and stipple in the sand, white lines on the tee
+Medium: Drawn (illustration)
+Description: A tall hourglass stands between a turned cap and base, its sand piled in both bulbs and a thin stream running at the waist. It is the only clock that never needs its batteries changed, only turning over.
+Tee colours: Black and white (hourglass.png prints white on black tees and black on white tees)
+Print size: 23.2 x 35.0 cm
+Keywords: hourglass, sand glass, time, sand, glass, antique, object, engraving, timer
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -1,0 +1,10 @@
+Title: Fishing Hut on Stilts
+Category: Architecture
+Subject: A gabled wooden hut with a balcony standing on tall stilts over still water, a jetty beside it and its reflection below
+Style: Engraving-style vignette, clustered-dot tone fading to nothing at the edges
+Medium: Drawn (illustration)
+Description: A plank hut with a balcony stands on tall stilts above flat water, a jetty at its side and its reflection beneath. Commute: one ladder.
+Tee colours: Black and white (fishing-hut-on-stilts-black.png for black tees, fishing-hut-on-stilts-white.png for white tees)
+Print size: Black tee 24.9 x 29.5 cm; white tee 24.5 x 29.9 cm
+Keywords: fishing hut, stilt house, hut, jetty, lake, still water, reflection, wooden cabin, waterside, maritime
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

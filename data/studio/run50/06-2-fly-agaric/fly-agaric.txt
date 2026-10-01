@@ -1,0 +1,10 @@
+Title: Fly Agaric
+Category: Nature
+Subject: Three fly agaric mushrooms, two tall and one small, with spotted caps and gills, growing in a tuft of grass
+Style: Engraving-style line drawing with fine hatching on the gills
+Medium: Drawn (illustration)
+Description: Three fly agarics stand in the grass, caps spotted, gills finely ruled. Lovely to look at and best left exactly there.
+Tee colours: Black (fly-agaric.png, printed in white ink)
+Print size: 19.1 x 35.0 cm
+Keywords: fly agaric, mushroom, toadstool, Amanita, fungi, forest floor, woodland, nature, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

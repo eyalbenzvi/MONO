@@ -1,0 +1,7 @@
+Prompt: One dragonfly, wings spread flat, seen from directly above. Exactly four long clear wings, symmetrical left and right, one long thin segmented body, a round head with two large eyes, fine lace veins in the wings. Black ink line drawing on white paper, fine even pen lines with light hatching, like a natural history engraving. Flat even light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Seed: 3300 (chosen from seeds 3300, 3301, 3302, 3303; brief: main)
+Size: 960x1088
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8)
+One ink: scripts/studio/oneink.py --mode pen
+Why this one: Four separate veined wings, one long segmented body, two eyes, symmetrical, crisp lace veins and no grey wash. Taken from the first seed alone: the main queue was lost once (out of memory when the slot 2 backup ran beside it) and restarted at minute 73, one seed per slot in turn, so 3301-3303 were not ready in time to compare.

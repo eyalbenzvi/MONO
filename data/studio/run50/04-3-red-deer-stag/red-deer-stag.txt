@@ -1,0 +1,10 @@
+Title: Red Deer Stag
+Category: Botanical & Nature
+Subject: A red deer stag head and neck with two branching antlers, front view
+Style: Engraving-style pen portrait, fur and antlers in fine strokes
+Medium: Drawn (illustration)
+Description: A red deer stag faces out under a full set of branching antlers, drawn in fine pen strokes. He grows them fresh every year and still looks smug about it.
+Tee colours: Black and white (one file, red-deer-stag.png, prints on both)
+Print size: 20.0 x 35.0 cm
+Keywords: red deer, stag, antlers, deer, animal portrait, head, wildlife, Highlands, nature, pen and ink
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

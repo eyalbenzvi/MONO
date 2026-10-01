@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4301
+Size: 832x1216
+Prompt (main, 81 words): One red deer stag head, front view, looking straight out. Head and neck only, two large branching antlers, symmetrical, two ears, two eyes. Fine black ink line drawing, crisp contour lines and short hatching for the fur, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights on the fur. Centred, the whole subject with both antlers inside wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4301, from seeds 4300, 4301, 4302, 4303. 4300 has the antler tips at the top edge; 4302 has the antlers at the side edges and a cartoonish face; 4303 grows both antlers from the middle of the forehead; 4301 has two plausible branching antlers on pedicles, symmetrical, inside the margins. Line mode left blotchy screen patches on the face and neck, so pen mode.
+oneink: --mode pen --title "RED DEER STAG" --sub "Nature · Portrait"

@@ -1,0 +1,9 @@
+Prompt: One kingfisher, head and shoulders, side portrait. One bird only, one long straight dagger beak, one round dark eye, a pale patch behind the eye and a pale throat, the crown finely barred, the portrait ending softly at the chest. Black ink line drawing on white paper, crisp outlines, short fine strokes for the small feathers, the beak left clean. Light from the left, high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2451
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: backup (KINGFISHER), seed 2451, the second backup image. All four puffin mains failed (2400 and 2401 not a puffin's beak and cut at the edge, 2402 two beaks, 2403 not a puffin, cut at the edge). Backup 2450: a broken branch floating behind the body and a long tail; 2451: dagger beak, crest, white throat, short tail, the whole bird inside white margins (it came out as the whole upper body rather than head and shoulders). The last two backup seeds were stopped at minute 91 (time).
+One ink: scripts/studio/oneink.py --mode line. fails: [].

@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, guidance 1.0, CPU
+Which: backup (all four DIVING HELMET mains, seeds 10200-10203, were rejected: three sat inside a porthole-like oval frame, one with fake lettering; 10200 read as a smiling robot face and printed as blotchy grey mass)
+Seed: 10250
+Size: 832x1216
+Chosen: backup image 1 (seeds 10250-10253; the run's time limit meant the first passable one was taken). A clear lantern: finial and domed cap, glass with guard bars, oil font, turned base; no flame, and the handle is at the side, not on top.
+Prompt: One old oil lantern, front view, standing upright. One glass chimney in the middle with a small flame inside, a pierced metal cap and one wire carrying handle on top, four thin metal guard bars around the glass, a round metal base, symmetrical left and right. No hand, no table, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching on the metal, crisp and high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --title "OIL LANTERN" --sub "Maritime · Deep water"

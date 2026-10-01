@@ -1,0 +1,10 @@
+Title: Sea Stacks
+Category: Engravings
+Subject: Three tall rock sea stacks rising from the sea off a rocky shore, surf around boulders in the foreground
+Style: Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges
+Medium: Drawn (illustration)
+Description: Three weathered sea stacks stand off a rocky shore with the surf working at their feet. The sea has been carving them for millennia and shows no sign of finishing.
+Tee colours: Black and white (sea-stacks-black.png for black tees, sea-stacks-white.png for white tees)
+Print size: Black tee 21.2 x 35.0 cm; white tee 20.1 x 35.0 cm
+Keywords: sea stacks, coast, cliffs, rock, sea, surf, shoreline, seaside, landscape, etching
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

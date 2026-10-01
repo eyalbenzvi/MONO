@@ -1,0 +1,10 @@
+Title: Alpine Lake
+Category: Botanical & Nature
+Subject: Mountains
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: A still mountain lake holds the reflection of the snowy peaks behind it, framed by dark pines on both shores. The water is perfectly calm, which is more than can be said for anyone who has tried swimming in it.
+Tee colours: Both
+Print size: 26.0 × 33.6 cm (white tee); 20.5 × 32.3 cm (black tee)
+Keywords: alpine lake, mountain lake, reflection, pine trees, Alps, mountains, still water, landscape, hiking, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

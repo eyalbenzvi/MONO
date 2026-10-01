@@ -1,0 +1,12 @@
+Prompt: One pufferfish, front view, fully inflated. A round spiky ball body covered in short spines, two big eyes, small pouting mouth, two little side fins, symmetrical, a single fish. Fine black ink line drawing in the style of a natural history plate, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1400-1403 (four, main); chosen 1402 (the third)
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+
+Why 1402: all four are a round spined ball seen head on. 1400 has a frown line rather than a mouth; 1401 no mouth at all, the eyes fringed with spines; 1403 lips but no nostrils. 1402 has the clearest pufferfish face: two big ringed eyes, two nostrils, a pouting mouth, the spines whole all round and clear of the edges.
+No fins show, as in the other three. No species named: the spotted pattern does not pin one down.
+One ink: line mode screened the lower body into a heavy grey; pen keeps the spines crisp and the face graphic.
+python3 scripts/studio/oneink.py <image> data/studio/run50/01-4-pufferfish pufferfish --mode pen --title "PUFFERFISH" --sub "Marine life · Natural history plate"

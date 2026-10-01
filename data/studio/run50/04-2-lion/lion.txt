@@ -1,0 +1,10 @@
+Title: Lion
+Category: Botanical & Nature
+Subject: A male lion head with full mane, front view, looking straight out
+Style: Engraving-style line portrait, flowing mane strokes
+Medium: Drawn (illustration)
+Description: A male lion looks straight out from a full, flowing mane, drawn in fine ink strokes. The hair took longer than the hunting.
+Tee colours: Black and white (one file, lion.png, prints on both)
+Print size: 22.8 x 35.0 cm
+Keywords: lion, mane, big cat, animal portrait, head, wildlife, nature, line art, king of beasts
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -1,0 +1,10 @@
+Title: Spiral Shell
+Category: Botanical & Nature
+Subject: A single coiled sea shell seen side on, its ribbed whorls winding in to a fine centre
+Style: Natural history plate, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A coiled shell winds in on itself in ribbed whorls, each turn a little smaller than the last. Its owner built it one chamber at a time and never once needed planning permission.
+Tee colours: Black, White
+Print size: 25.8 × 34.4 cm
+Keywords: shell, spiral shell, seashell, marine life, ocean, natural history, spiral, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

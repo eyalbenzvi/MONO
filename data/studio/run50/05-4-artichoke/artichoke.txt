@@ -1,0 +1,10 @@
+Title: Artichoke
+Category: Botanical & Nature
+Subject: A single globe artichoke in front view on a short cut stem, its pointed bracts overlapping in rows, a ruff of leaves at the base
+Style: Natural history plate, engraving-style line work
+Medium: Drawn (illustration)
+Description: One globe artichoke stands on its cut stem, the pointed bracts closing in over the heart. It is, strictly speaking, a thistle that never got round to flowering.
+Tee colours: Black, White
+Print size: 23.0 × 34.9 cm
+Keywords: artichoke, globe artichoke, vegetable, botanical, natural history, kitchen garden, line art, scientific illustration, thistle
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

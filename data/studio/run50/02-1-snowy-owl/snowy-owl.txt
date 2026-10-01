@@ -1,0 +1,10 @@
+Title: Snowy Owl
+Category: Botanical & Nature
+Subject: A snowy owl perched on a bare branch, facing the viewer
+Style: Natural history portrait in fine ink line, spotted plumage and light screened shading
+Medium: Drawn (illustration)
+Description: A snowy owl sits square on a bare branch, both yellow eyes fixed on you and both feet locked round the wood. It has the calm of a bird that has never once been cold.
+Tee colours: Black and white (one file, snowy-owl.png: white ink on black tees, black ink on white tees)
+Print size: 23.7 x 34.9 cm (heading included)
+Keywords: snowy owl, owl, arctic, bird of prey, wildlife, natural history, bird, winter, branch
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

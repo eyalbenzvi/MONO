@@ -1,0 +1,10 @@
+Title: Pomegranate
+Category: Botanical
+Subject: A pomegranate cut in half, the open face with its chambers of red flesh and the crown at the top
+Style: Engraving-style line drawing, fine hatching on the rind
+Medium: Drawn (illustration)
+Description: A pomegranate sliced clean through the middle, its crown standing up like a small, slightly surprised hat. Considerably tidier than eating one.
+Tee colours: Black (pomegranate.png, printed in white ink)
+Print size: 25.9 x 32.1 cm
+Keywords: pomegranate, fruit, cut fruit, botanical, garden, crown, natural history, line art, Mediterranean
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

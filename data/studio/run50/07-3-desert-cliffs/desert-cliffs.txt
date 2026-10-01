@@ -1,0 +1,10 @@
+Title: Desert Cliffs
+Category: Botanical & Nature
+Subject: Landscapes
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: A long wall of flat-topped sandstone cliffs runs into a dry valley dotted with desert scrub. The rock was laid down one thin layer at a time, which is one way to avoid being rushed.
+Tee colours: Both
+Print size: 25.0 × 33.0 cm (white tee); 23.5 × 34.0 cm (black tee)
+Keywords: desert, cliffs, sandstone, canyon, mesa, butte, scrub, landscape, American West, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

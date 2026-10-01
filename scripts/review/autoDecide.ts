@@ -71,7 +71,7 @@ export function decide(wave: number, sources: SourceId[], max: Partial<Record<So
       const title = tidyTitle(p.title);
       // No name at all: a bare "drawing" word, or a file name (author-year-book-page).
       const nameless = /^(?:teckning|ritning|drawing|plate|untitled)$/i.test(title) || /^[\p{L}]+-\d{4}-.+-\d+$/u.test(title);
-      const clean = !nameless && !p.weak && !p.solid && !p.flags.includes("dup") && p.assess.flags.length === 0 && p.assess.quality >= AUTO_QUALITY && title.length >= 3;
+      const clean = !nameless && !p.weak && !p.solid && !p.flags.includes("dup") && !p.flags.includes("dense") && p.assess.flags.length === 0 && p.assess.quality >= AUTO_QUALITY && title.length >= 3;
       const repeat = titles.has(titleKey(title));
       if (clean && !repeat) titles.add(titleKey(title));
       const group = src === "wikimedia" ? p.tags[0] ?? "" : "";
@@ -80,7 +80,7 @@ export function decide(wave: number, sources: SourceId[], max: Partial<Record<So
       const keep = clean && !repeat && !capped && !crowded;
       if (keep) (keptHere++, series.set(group, (series.get(group) ?? 0) + 1));
       if (keep) keeps.push({ p, src, category: filing({ ...p, wave }).category });
-      d[p.key] = title !== p.title && keep ? { decision: "keep", title_override: title } : keep ? "keep" : { decision: "reject", reason: nameless ? "no name" : repeat ? "repeated title" : crowded ? `series full (${group})` : capped ? `source full (${max[src]})` : p.solid ? `solid ${p.solid}` : p.flags.includes("dup") ? "duplicate" : `quality ${p.assess.quality}${p.assess.flags.length ? ` ${p.assess.flags.join(" ")}` : ""}` };
+      d[p.key] = title !== p.title && keep ? { decision: "keep", title_override: title } : keep ? "keep" : { decision: "reject", reason: nameless ? "no name" : repeat ? "repeated title" : crowded ? `series full (${group})` : capped ? `source full (${max[src]})` : p.solid ? `solid ${p.solid}` : p.flags.includes("dup") ? "duplicate" : p.flags.includes("dense") ? "dense area (rule f)" : `quality ${p.assess.quality}${p.assess.flags.length ? ` ${p.assess.flags.join(" ")}` : ""}` };
     }
     decisions.set(src, { list, d });
   }

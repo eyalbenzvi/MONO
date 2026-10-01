@@ -63,6 +63,8 @@ export interface BlockCheck {
   solid: number;
   /** The largest connected patch of solid ink, as a share of the print. */
   slab: number;
+  /** The largest connected dense area (rule f), as a share of the print. */
+  mass: number;
 }
 
 /** Rule (a): ink fills over this share of its own bounding box… */
@@ -81,6 +83,22 @@ export const EDGE_SOLID = 0.9;
 export const SLAB_SOLID = 0.1;
 /** …or one connected patch of it does (a filled bar among outlines); bold letters and small filled cells stay far below. */
 export const SLAB_REGION = 0.03;
+/**
+ * Rule (f), a dense area: ink averaged over a window MASS_MM across (the box with the variance of oneink.py's
+ * Gaussian of σ 3 mm, so the two agree) (mesh and dots included) above
+ * MASS_DENSE, in one connected piece larger than MASS_AREA of the print. It lands on the tee as a slab of light
+ * (or dark) though no part of it is solid: a pale sky printed in white ink on a black tee, an oval of mesh round a
+ * scene (Design Guidelines, section 04: "Dense areas"; the studio's oneink.py uses the same rule).
+ */
+export const MASS_MM = 10;
+export const MASS_DENSE = 0.55;
+export const MASS_AREA = 0.15;
+/**
+ * A new design with a dense area (rule f) is held back: the studio's prints, the content waves' candidates and an
+ * upload offered to the catalogue. Not a refusal of the catalogue already on sale (84 of its prints, mostly dark
+ * archive etchings, have one; whether they stay is the owner's call) nor of an upload printed for its owner.
+ */
+export const denseArea = (c: Pick<BlockCheck, "mass">) => c.mass > MASS_AREA;
 /** A pixel counts as ink from this much (0–1). */
 const ON = 0.35;
 
@@ -104,7 +122,7 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
         if (y < y0) y0 = y;
         if (y > y1) y1 = y;
       }
-  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0, slab: 0 };
+  const none: BlockCheck = { reject: null, boxFill: 0, perimeter: 0, panel: { area: 0, perimeter: 0, solid: 0 }, edges: [0, 0, 0, 0], solid: 0, slab: 0, mass: 0 };
   if (x1 < 0) return none;
   // Solid ink: the pixel and its whole 5×5 neighbourhood at the check's size (scaled with size: at a raster print's own
   // size the window is wider than a halftone cell, so a mesh of dots is never solid) are ink. Summed-area table: O(1) a pixel.
@@ -190,6 +208,48 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
       slab = Math.max(slab, n / (w * h));
     }
   }
+  // Rule (f): dense areas, on a grid of about 1 mm (the raster spans the 28 cm print area), each cell the ink's mean
+  // over a window MASS_MM across (the summed-area table), then the largest connected dense piece (4-neighbour).
+  const pxMm = w / (PRINT_CM.width * 10);
+  const step = Math.max(1, Math.round(pxMm));
+  const half = Math.max(1, Math.round((MASS_MM / 2) * pxMm));
+  const gw = Math.ceil(w / step);
+  const gh = Math.ceil(h / step);
+  const dense = new Uint8Array(gw * gh);
+  // The ink's own strength (a downsampled mesh is grey, not on or off), summed.
+  const isat = new Float64Array(W1 * (h + 1));
+  for (let y = 0; y < h; y++) {
+    let row = 0;
+    for (let x = 0; x < w; x++) (row += ink[y * w + x]), (isat[(y + 1) * W1 + x + 1] = isat[y * W1 + x + 1] + row);
+  }
+  for (let gy = 0; gy < gh; gy++)
+    for (let gx = 0; gx < gw; gx++) {
+      const [cx, cy] = [Math.min(w - 1, gx * step), Math.min(h - 1, gy * step)];
+      const [ax, ay, bx, by] = [Math.max(0, cx - half), Math.max(0, cy - half), Math.min(w, cx + half + 1), Math.min(h, cy + half + 1)];
+      const sum = isat[by * W1 + bx] - isat[ay * W1 + bx] - isat[by * W1 + ax] + isat[ay * W1 + ax];
+      if (sum > MASS_DENSE * (bx - ax) * (by - ay)) dense[gy * gw + gx] = 1;
+    }
+  let mass = 0;
+  {
+    const seen = new Uint8Array(gw * gh);
+    const q: number[] = [];
+    for (let s0 = 0; s0 < gw * gh; s0++) {
+      if (!dense[s0] || seen[s0]) continue;
+      let n = 0;
+      seen[s0] = 1;
+      q.push(s0);
+      while (q.length) {
+        const p = q.pop()!;
+        n++;
+        const x = p % gw;
+        if (x > 0 && dense[p - 1] && !seen[p - 1]) (seen[p - 1] = 1), q.push(p - 1);
+        if (x < gw - 1 && dense[p + 1] && !seen[p + 1]) (seen[p + 1] = 1), q.push(p + 1);
+        if (p >= gw && dense[p - gw] && !seen[p - gw]) (seen[p - gw] = 1), q.push(p - gw);
+        if (p < gw * (gh - 1) && dense[p + gw] && !seen[p + gw]) (seen[p + gw] = 1), q.push(p + gw);
+      }
+      mass = Math.max(mass, n / (gw * gh));
+    }
+  }
   const reject =
     boxFill > BLOCK_FILL && perimeter >= BLOCK_PERIMETER
       ? "block"
@@ -200,7 +260,7 @@ export function solidBlock({ w, h, ink }: InkRaster): BlockCheck {
           : solidShare >= SLAB_SOLID || slab >= SLAB_REGION
             ? "slab"
             : null;
-  return { reject, boxFill, perimeter, panel, edges, solid: solidShare, slab };
+  return { reject, boxFill, perimeter, panel, edges, solid: solidShare, slab, mass };
 }
 
 /* ------------------------------------------------------------------ */

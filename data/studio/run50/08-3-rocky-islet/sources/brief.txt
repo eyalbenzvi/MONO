@@ -1,0 +1,7 @@
+Prompt (main, 87 words): One small rocky islet with one tree, distant view. A small island of rounded rocks in a calm sea, a single windswept pine tree growing on top, gentle ripples on the water, no boats, no buildings. Fine black ink etching with soft hatched tones and delicate detail. Soft evening light, a calm empty sky. The islet sits in the middle of the picture and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 8300
+Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
+One ink: scripts/studio/oneink.py /tmp/run50/K3-rocky-islet-s8300.png data/studio/run50/08-3-rocky-islet rocky-islet --mode tone --title ROCKY ISLET --sub Places · The island --fade
+Chosen: Seed 8300, the first of four, taken as soon as it ran: one clear windswept pine on a heap of boulders with its reflection, everything inside the frame, and it prints cleanly on both tees. A second small tree stands behind (the brief asked for one); it reads as background and the text says so. fails [] on both files.

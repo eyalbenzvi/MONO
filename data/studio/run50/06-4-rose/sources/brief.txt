@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6401
+Size: 960x1088
+Chosen: seed 6401 of 6400-6403 (main prompt), chosen when 6400 and 6401 were ready. 6400's outer petals end in sharp spikes and read more like a succulent than a rose; 6401 is a rose seen head on, the petals spiralling into a tight centre, the whole bloom inside the margins, two sepals showing at the base. Pen mode turned the shaded ring into a band of screen; line mode is cleaner and was used.
+Prompt: One rose bloom, front view, seen head on. One flower only, symmetrical, petals spiralling tightly into the centre, outer petals curling open, a few leaves showing behind the bloom. Fine black ink line drawing with crisp contour lines and delicate hatching in the folds, like a natural history plate. Even soft light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode line --title "ROSE" --sub "Botanical · Natural history plate"

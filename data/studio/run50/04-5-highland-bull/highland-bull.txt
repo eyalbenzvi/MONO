@@ -1,0 +1,10 @@
+Title: Highland Bull
+Category: Botanical & Nature
+Subject: A Highland bull head with two long curved horns and a shaggy coat, front view
+Style: Engraving-style pen portrait, long hair in flowing strokes
+Medium: Drawn (illustration)
+Description: A Highland bull stares out from under a shaggy fringe between two wide curved horns, drawn in long pen strokes. The hairstyle is entirely deliberate and not up for discussion.
+Tee colours: Black and white (one file, highland-bull.png, prints on both)
+Print size: 25.9 x 30.4 cm
+Keywords: highland cow, highland bull, Scottish, cattle, horns, animal portrait, head, Highlands, pen and ink, shaggy
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

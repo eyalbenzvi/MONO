@@ -1,0 +1,70 @@
+{
+ "helper": 2,
+ "branch": "studio/run50-2",
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "snowy-owl",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-snowy-owl-s2103.png",
+   "mode": "line",
+   "ink_coverage": 0.0711,
+   "note": "frontal owl on a branch; tone filled the paper beside the branch on the black tee, so line"
+  },
+  {
+   "slot": 2,
+   "slug": "golden-eagle",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-golden-eagle-s2202.png",
+   "mode": "line",
+   "ink_coverage": 0.2157,
+   "note": "symmetrical heraldic eagle, wings raised; feet small"
+  },
+  {
+   "slot": 3,
+   "slug": null,
+   "passed": false,
+   "which": "backup",
+   "images": 8,
+   "chosen": null,
+   "mode": null,
+   "ink_coverage": null,
+   "note": "empty: no peacock eye spot in any main, no pheasant crossbars in any backup; the model draws only a plain feather"
+  },
+  {
+   "slot": 4,
+   "slug": "kingfisher",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "K4-kingfisher-s2451.png",
+   "mode": "line",
+   "ink_coverage": 0.1452,
+   "note": "all four puffins failed (wrong beak, two beaks, cut); kingfisher upper body, crest and dagger beak"
+  },
+  {
+   "slot": 5,
+   "slug": "birds-nest",
+   "passed": true,
+   "which": "main",
+   "images": 2,
+   "chosen": "K5-birds-nest-s2501.png",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.2542,
+    "black": 0.2746
+   },
+   "note": "five eggs from above (prompt said three); line made the eggs black holes on the black tee, so tone; last two seeds stopped to free time for backups"
+  }
+ ],
+ "minutes": {
+  "install": 1.1,
+  "generate": 91.0,
+  "process": "interleaved with generation (about 1 min of oneink per try)",
+  "total": 92.2
+ }
+}

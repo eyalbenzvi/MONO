@@ -1,0 +1,12 @@
+Prompt: One quartz crystal cluster, front view, standing upright, a group of clear six-sided pointed crystals growing from a rough rock base. Sharp straight facets, pointed tips, each crystal a clean hexagonal prism, the tallest in the middle. Bold clean black ink outlines, fine parallel hatching on the facets, a natural history mineral plate. Light from the upper left, bright facets and dark facets. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 9402
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: the third of four (seed 9402). All four came out as grey studio photographs rather than drawings. The first was a single faceted lump; the second a narrow bundle of prisms; the fourth one wide block with pitted faces. The third is a real cluster, one tall point with smaller crystals round it on a rock base.
+Processing before one ink: the grey studio ground cut away (OpenCV GrabCut round the cluster, largest region kept, set to white paper); levels stretched (40 to black, 225 to white). The thin tip of the tallest crystal fell outside the cut; the prism still ends in its point.
+python3 scripts/studio/oneink.py <cut-out image> data/studio/run50/09-4-quartz-crystal-cluster quartz-crystal-cluster --mode line --title "QUARTZ CRYSTAL CLUSTER" --sub "Science · Mineral plate"
+Tone also passed, but on a black tee the dark central crystal vanished; pen failed (1.0% of ink thinner than 0.4 mm).

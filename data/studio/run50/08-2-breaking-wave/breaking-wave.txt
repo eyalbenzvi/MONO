@@ -1,0 +1,10 @@
+Title: Breaking Wave
+Category: Brush & Woodblock
+Subject: One tall curling ocean wave breaking, its hollow barrel and curled foam crest over a rolling sea
+Style: Woodblock-style wave in flowing lines, clustered-dot tone fading to nothing at the edges
+Medium: Drawn (illustration)
+Description: A single tall wave curls over into a hollow barrel, its crest breaking into fingers of foam above a rolling sea. Surfers call this ideal, sailors rather less so.
+Tee colours: Black and white (breaking-wave-black.png for black tees, breaking-wave-white.png for white tees)
+Print size: Black tee 21.8 x 29.1 cm; white tee 25.9 x 29.7 cm
+Keywords: breaking wave, wave, ocean, sea, surf, foam, woodblock, maritime, open water, coast
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
