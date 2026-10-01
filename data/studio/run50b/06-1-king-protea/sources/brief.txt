@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6100
+Size: 832x1216
+Chosen: seed 6100 of 6100-6101 (main prompt; 6102-6103 dropped to save time once 6100 passed). 6100 reads as a king protea: a wide cup of pointed bracts round a domed centre, leathery leaves and a stem, whole inside the page. 6101 was more artichoke-like and its leaves ran off the bottom edge. Line mode turned the pale bracts into blotches of screen; pen keeps the contours and ruling as lines, so pen was used.
+Prompt: One king protea flower head, front view, upright. One flower only, a wide open cup of pointed pink bracts around a domed centre of fine silky florets, a short thick stem with a few leathery leaves below. Fine black ink line drawing with crisp contour lines, delicate hatching on every bract and dense texture in the centre, like a natural history plate. Even soft light from the left. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode pen --title "KING PROTEA" --sub "Botanical · Natural history plate"
