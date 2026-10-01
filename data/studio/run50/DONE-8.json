@@ -1,0 +1,19 @@
+{
+ "helper": 8,
+ "branch": "studio/run50-8",
+ "started": "2026-10-01T12:23:13Z",
+ "finished": "2026-10-01T13:26:00Z",
+ "designs": [
+  {"slot": 1, "slug": "sea-stacks", "passed": true, "which": "main", "images": 4, "chosen": "K1-sea-stacks-s8102.png", "mode": "tone --fade", "ink_coverage": {"black": 0.2555, "white": 0.2016},
+   "note": "All four sound; 8102 has the clearest rock and whole stacks (8100 sparse, 8101 a stack cut at the edge, 8103 near-black stacks). fails [], 21.2 x 35.0 / 20.1 x 35.0 cm. Category Engravings (the one allowed)."},
+  {"slot": 2, "slug": "breaking-wave", "passed": true, "which": "main", "images": 4, "chosen": "K2-breaking-wave-s8201.png", "mode": "tone --fade", "ink_coverage": {"black": 0.195, "white": 0.1617},
+   "note": "One curling wave with a hollow barrel, woodblock look; 8200 sandy foam, 8202 a rectangular panel. fails [], 21.8 x 29.1 / 25.9 x 29.7 cm."},
+  {"slot": 3, "slug": "rocky-islet", "passed": true, "which": "main", "images": 1, "chosen": "K3-rocky-islet-s8300.png", "mode": "tone --fade", "ink_coverage": {"black": 0.2808, "white": 0.2127},
+   "note": "The first seed was strong and passed, so the other three were skipped to save time (run restarted for slots 4-5). A small second tree behind; the text says so. fails [], 23.1 x 34.7 / 24.2 x 35.0 cm."},
+  {"slot": 4, "slug": "chalk-cliffs", "passed": true, "which": "main", "images": 4, "chosen": "K4-chalk-cliffs-s8402.png", "mode": "tone --fade", "ink_coverage": {"black": 0.2058, "white": 0.2025},
+   "note": "Pale sheer layered cliffs; the small clifftop village fades out. 8400 grey cliff, frame line and fake marks; 8401 castle and lighthouse fused in; 8403 grey slopes and a building. fails [], 21.4 x 32.9 / 23.5 x 35.0 cm."},
+  {"slot": 5, "slug": "fishing-hut-on-stilts", "passed": true, "which": "main", "images": 2, "chosen": "K5-fishing-hut-on-stilts-s8501.png", "mode": "tone --fade", "ink_coverage": {"black": 0.1968, "white": 0.2024},
+   "note": "Clear gabled hut on tall stilts with a jetty; 8500 passed too but its reflection read as a second storey. Last two seeds stopped. fails [], 24.9 x 29.5 / 24.5 x 29.9 cm."}
+ ],
+ "minutes": {"install": 1, "generate": 61, "process": 14, "total": 63}
+}
