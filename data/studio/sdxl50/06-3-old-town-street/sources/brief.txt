@@ -1,0 +1,14 @@
+Prompt: Dense old town street of gabled houses and church spires, front view, pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Tall narrow old houses with steep red-tiled gables, shuttered windows, balconies, flower boxes and arcades, two gothic spires rising behind. Fine hatching and cross-hatching, drawn edge to edge. The ground ends in a clean straight line, empty white sky above.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 30630-30632 (three, main); chosen 30630 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (both CreativeML Open RAIL++-M), EulerDiscreteScheduler trailing, 8 steps, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30630: all three are good cobbled streets. 30632 carries a large fake shop sign on the right (rejected). 30631 has fine twin gothic spires but a small lettered sign and a grey sky wash. 30630 has no lettering anywhere: a curving cobbled street between tall old houses with balconies, pipes and deep windows, a tall tiered tower and a thin spire behind, a gate at the end, drawn edge to edge in fine pen hatching.
+Truth rule: the slot was PRAGUE OLD TOWN, but the street and tower are not recognisably Prague (no Tyn spires, no Old Town Hall), so the title is the generic OLD TOWN STREET.
+No clean-up needed: no frame, no text. The faint horizontal sky hatching is the model's own and is kept.
+Edge: horizon (a scene; the street ends in a straight cut with a thin rule under it, the sky left as tee).
+One ink: pen (keeps the fine hatching).
+python3 scripts/studio/oneink.py /tmp/sdxl50/K3-prague-old-town-s30630.png data/studio/sdxl50/06-3-old-town-street old-town-street --mode pen --edge horizon --title "OLD TOWN STREET" --sub "Places · Town"
