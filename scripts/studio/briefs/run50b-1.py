@@ -22,6 +22,12 @@ PROMPTS = {
                 "paper. No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     4: {
+        "backup": "One nautilus shell cut in half, side view. A single round coiled shell sliced through the middle, showing the "
+                  "spiral of pearly chambers inside, each chamber a curved wall growing larger towards the wide opening, a thin tube "
+                  "linking the chambers, the outer wall whole, no animal, no tentacles. Fine black ink line drawing in the style of a "
+                  "natural history plate, every chamber wall drawn, delicate hatching on the outer shell. Even flat light, crisp contrast. "
+                  "Centred, the whole subject with wide white margins, plain white paper. "
+                  "No text, no frame, no border, no ornaments, no colour, no grey wash.",
         "main": "One conch shell, side view, pointed spire. A single large sea shell, a tall spiral spire of knobbed whorls on top, a wide "
                 "flared lip, a long open aperture down one side, ridges and growth lines across the surface, no animal, no sand. Fine "
                 "black ink line drawing in the style of a natural history plate, clean outlines and engraved hatching for shading. Even "
