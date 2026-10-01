@@ -12,6 +12,11 @@ PROMPTS = {
                 "no colour. A single slender tower standing alone, square shaft of stone blocks, one round clock face without numbers "
                 "near the top, an open belfry with arches, a pointed roof and spire, thin construction lines and a thin ground line. "
                 "Precise black ink architectural drawing, clean ruled lines, light hatching. Centred, the whole tower with wide white margins.",
+        "backup": "One tall steel lattice radio tower, side elevation, standing alone on plain white paper, no text, no lettering, "
+                  "no frame, no border, no colour, no buildings, no trees. A single slender tapering mast of criss-crossed girders, "
+                  "small platforms and dish aerials near the top, thin guy wires running down to the ground on both sides, a thin "
+                  "straight ground line. Precise black ink technical drawing, clean ruled lines. Centred, the whole tower with wide "
+                  "white margins and empty white sky.",
     },
     3: {
         "main": "One long stone stairway climbing to a hilltop temple, front view, on plain white paper, no text, no lettering, "
@@ -26,5 +31,10 @@ PROMPTS = {
                 "taut fabric panels, a long tail of tied bows curling below, around it small detail circles of the spar joint, "
                 "the bridle knot and a reel of string. Fine white technical line drawing, crisp thin lines, "
                 "centred with wide black margins.",
+        "backup": "One large wooden boomerang patent drawing, top view, white chalk line drawing on a plain black background, "
+                  "no text, no lettering, no frame, no border, no colour. A single smooth curved boomerang in the centre, "
+                  "two rounded arms meeting at an elbow, fine wood grain lines along each arm, around it three small detail "
+                  "circles of the rounded tip, the arm cross-section and the elbow joint. Fine white technical line drawing, "
+                  "crisp thin lines, centred with wide black margins.",
     },
 }
