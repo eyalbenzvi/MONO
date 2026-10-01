@@ -4,4 +4,4 @@ Seed: 3300 (chosen from seeds 3300, 3301, 3302, 3303; brief: main)
 Size: 960x1088
 Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8)
 One ink: scripts/studio/oneink.py --mode pen
-Why this one: Four separate veined wings, one long segmented body, two eyes, symmetrical, crisp lace veins and no grey wash. Chosen as the first seed of four: the main queue was lost once (out of memory when the slot 2 backup ran beside it) and restarted at minute 73, so the later seeds came after the minute-85 cut-off for choosing.
+Why this one: Four separate veined wings, one long segmented body, two eyes, symmetrical, crisp lace veins and no grey wash. Taken from the first seed alone: the main queue was lost once (out of memory when the slot 2 backup ran beside it) and restarted at minute 73, one seed per slot in turn, so 3301-3303 were not ready in time to compare.
