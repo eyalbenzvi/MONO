@@ -62,6 +62,15 @@ PROMPTS = {
             "white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One old iron padlock, front view, closed. One heavy rounded lock body with one "
+            "keyhole in the middle, one curved shackle on top, symmetrical left and right, one "
+            "padlock only. No key, no chain, no door, no hand. Bold confident black pen and ink "
+            "engraving lines with fine cross-hatching on the pitted iron, crisp and high "
+            "contrast. Even bright light from the front. Centred, the whole subject with wide "
+            "white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     5: {
         "main": (
