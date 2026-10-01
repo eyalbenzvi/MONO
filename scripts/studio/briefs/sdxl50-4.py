@@ -29,5 +29,10 @@ PROMPTS = {
                 "no lettering, no frame, no border, no colour. One triangular frame with a curved graduated arc, "
                 "mirrors, a small telescope and a handle. Around it its parts drawn separately: mirrors, filters, "
                 "the arm, screws, and two small detail circles. Fine white engraved lines, a patent drawing. "
-                "Centred, the whole sextant with wide black margins."},
+                "Centred, the whole sextant with wide black margins.",
+        "backup": "One wooden ship's wheel, front view, white chalk line drawing on a plain black background, no "
+                  "text, no lettering, no frame, no border, no colour. One round wheel with eight turned spokes and "
+                  "handles, a brass hub and a ring of wooden rim segments. Around it its parts drawn separately: one "
+                  "spoke, the hub, a bolt, and two small detail circles of the joints. Fine white engraved lines, a "
+                  "patent drawing. Centred, the whole wheel with wide black margins."},
 }
