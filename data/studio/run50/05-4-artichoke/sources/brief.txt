@@ -1,0 +1,11 @@
+Prompt: One artichoke, upright, front view. A single globe artichoke on a short cut stem, layered pointed bracts overlapping in neat rows, symmetrical, round and complete, two small leaves at the base. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and light hatching on each bract. Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5400
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5400, the first of four (5400-5403). A whole, symmetrical artichoke with clearly overlapping bracts, a ruff of leaves and a straight stem, nothing cut at the edges.
+Processing before one ink: levels stretched (grey 0.25 to black, 0.62 to white; K4-artichoke-s5400-stretched.png) so the model's pale grey hatching on each bract drops out and the outlines and dark hatching print as line. Unstretched, line mode passed but the grey broke into a blotchy screen across the bracts (mass 0.122; stretched 0.048).
+python3 scripts/studio/oneink.py K4-artichoke-s5400-stretched.png data/studio/run50/05-4-artichoke artichoke --mode line --title "ARTICHOKE" --sub "Botanical · Natural history plate"
