@@ -1,0 +1,10 @@
+Title: Pufferfish
+Category: Botanical & Nature
+Subject: A spotted pufferfish seen head on, fully inflated, a round ball of spines with two big eyes and a pouting mouth
+Style: Natural history plate, bold pen line work and spotted pattern
+Medium: Drawn (illustration)
+Description: A pufferfish faces the viewer fully inflated, its spotted body a ball of spines round two wide eyes and a pout. It swallows water to treble its size, which settles most arguments before they start.
+Tee colours: Black, White
+Print size: 26.0 × 27.0 cm
+Keywords: pufferfish, puffer, blowfish, marine life, ocean, fish, natural history, line art, spines
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
