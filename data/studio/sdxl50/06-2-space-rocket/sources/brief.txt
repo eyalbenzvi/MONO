@@ -1,0 +1,13 @@
+Prompt: One space rocket standing upright, side elevation, technical drawing in black ink on plain white paper, no text, no lettering, no frame, no border, no colour. A single tall rocket with three stages, fins, nose cone, panel lines and rivets, a thin ground line under it, faint construction lines and thin columns of tiny marks beside it. Clean precise pen line, lots of empty white space. Centred, the whole subject with wide white margins.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 30620-30622 (three, main); chosen 30622 (the third)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (both CreativeML Open RAIL++-M), EulerDiscreteScheduler trailing, 8 steps, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30622: 30620 is a clean single rocket but ringed by a dozen blocks of fake handwritten annotation; 30621 is grey paper with a side panel of three more rockets and fake headings. 30622 is one whole rocket in side elevation, nose cone, two strap-on boosters, swept fins and landing feet, standing on a thin ground line, with plenty of white paper round it.
+The model left out the spec columns, so the design is the rocket alone. Its stages are drawn as one core with boosters; it is plainly a space rocket, title SPACE ROCKET.
+Clean-up before one ink: cropped inside the drawn double frame (x 46-781, y 45-1182); a small fake monogram at the bottom right (x 700-785, y 1150-1186) painted to paper; the ground shadow, which ran off to the right, trimmed to x 148-560 of the crop so it sits evenly under the rocket. A few tiny marks on the hull (a "9", a "1") are left as panel markings: too small to read as lettering.
+One ink: line and pen both pass; line kept cleaner outlines. Edge: none (single subject).
+python3 scripts/studio/oneink.py <prepared image> data/studio/sdxl50/06-2-space-rocket space-rocket --mode line --title "SPACE ROCKET" --sub "Maps & Sky · Elevation"
