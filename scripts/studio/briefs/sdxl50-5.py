@@ -7,6 +7,12 @@ PROMPTS = {
         "and two tentacles, a W-shaped pupil, mottled skin pattern. Around it small sketches: the oval cuttlebone, one "
         "eye in detail, thin scale lines. Fine black ink line drawing like an old engraving, hatching on the mantle. "
         "Centred, wide white margins."
+    ), "backup": (
+        "One argonaut in its shell, side view, a naturalist's drawing on plain white paper, no text, no lettering, no "
+        "frame, no border, no colour. A single paper nautilus: a thin white spiral shell with fine radiating ribs and "
+        "a double row of small knobs along the keel, a small octopus inside with big eyes and curling arms. One empty "
+        "shell drawn small beside it. Fine black ink line drawing like an old engraving, delicate hatching. Centred, "
+        "the whole animal with wide white margins."
     )},
     2: {"main": (
         "One brass telescope on a tripod, side view, a technical drawing on plain white paper, no text, no lettering, "
