@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4402
+Size: 832x1216
+Prompt (main, 79 words): One brown bear head, front view, looking straight out. Head and shoulders only, round ears, symmetrical face, two small eyes, one broad nose. Fine black ink line drawing, crisp contour lines and short hatching for the thick fur, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights on the fur. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4402, from seeds 4400, 4401, 4402, 4403. All four were clean frontal bear heads. 4400 is egg-shaped and soft; 4401 has the ears at the side edges; 4403 has the best muzzle, but in line mode the crown vanished and the chin broke into spots, and pen mode failed (coverage 36%, a dense slab); 4402 keeps clear ears, muzzle and outline in line mode, check clean.
+oneink: --mode line --title "BROWN BEAR" --sub "Nature · Portrait"

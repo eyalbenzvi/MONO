@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4103
+Size: 832x1216
+Prompt (main, 76 words): One grey wolf head, front view, looking straight out. Head and shoulders only, symmetrical face, two ears, two eyes, one nose. Fine black ink line drawing, crisp contour lines and short hatching for the fur, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights on the fur. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4103, from seeds 4100, 4101, 4102, 4103. All four were clean frontal symmetrical heads; 4100 and 4102 have the ear tips at the top edge, 4101 is close at the sides; 4103 has the whole head inside clear margins and the cleanest fur.
+oneink: --mode line --title "WOLF" --sub "Nature · Portrait"

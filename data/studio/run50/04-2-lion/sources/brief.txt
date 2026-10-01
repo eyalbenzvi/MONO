@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4201
+Size: 832x1216
+Prompt (main, 77 words): One male lion head, front view, looking straight out. Head and shoulders only, full thick mane, symmetrical face, two eyes, one nose. Fine black ink line drawing, crisp contour lines and flowing strokes for the mane, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights in the mane. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4201, from seeds 4200, 4201, 4202, 4203. 4200 and 4203 run the mane off the edges of the frame; 4202 touches the sides and its ears are vague; 4201 has the whole mane inside clear margins, two clear ears and a crisp symmetrical face.
+oneink: --mode line --title "LION" --sub "Nature · Portrait"
