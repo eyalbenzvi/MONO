@@ -1,0 +1,10 @@
+Title: Weeping Willow
+Category: Botanical & Nature
+Subject: A single weeping willow drawn whole, a straight ridged trunk, long hanging strands of thin leaves falling in two curtains, roots spread over a small patch of grass
+Style: Natural history plate, engraving-style pen work
+Medium: Drawn (illustration)
+Description: One weeping willow lets its long strands fall in two curtains either side of a straight trunk. It looks sad only to those who have never sat under one in July.
+Tee colours: Black, White
+Print size: 21.3 × 35.0 cm
+Keywords: weeping willow, willow, salix, tree, botanical, natural history, river tree, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
