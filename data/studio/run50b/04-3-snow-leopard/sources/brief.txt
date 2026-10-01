@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4300
+Size: 832x1216
+Prompt (main, 86 words): One snow leopard head, front view, looking straight out. Head and shoulders only, round ears, pale eyes, symmetrical face, thick spotted fur with rosettes, long whiskers. Fine black ink line drawing, crisp contour lines and short strokes for the dense fur, clear dark rosette spots, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights on the fur. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4300, from seeds 4300, 4301, 4302, 4303. 4300 is a symmetrical snow leopard head, pale eyes, round ears and the spotted ruff all inside the page, the chest ending in a rounded edge; 4301 fills the page from side to side and runs into the bottom edge.
+oneink: --mode pen --title "SNOW LEOPARD" --sub "Nature · Portrait" (line lost the fur and left a dark gap under the nose; pen keeps the fur strokes)
