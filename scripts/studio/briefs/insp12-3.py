@@ -21,5 +21,8 @@ PROMPTS = {
         "main": "Old Kyoto street, front view, a pagoda behind. "
                 "Two-storey wooden machiya houses with lattice fronts, sloping tiled roofs, paper lanterns without writing, "
                 "potted plants by the doors, a five-tier pagoda rising behind the roofs, a stone-paved street at the foot. " + PEN,
+        "backup": "Old Hanoi shophouses, front view, a row of narrow houses. "
+                  "Tall thin townhouses side by side, each with small balconies, louvred shutters, potted plants and hanging vines, "
+                  "a tangle of thin wires overhead, a small tree and a bicycle on the pavement, no shop signs. " + PEN,
     },
 }
