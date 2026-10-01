@@ -1,0 +1,13 @@
+{
+ "helper": 4,
+ "designs": [
+  {"slot": 1, "slug": "skateboard-study", "passed": true, "which": "backup", "images": 8, "chosen": "K1-skateboard-study-s24153.png", "mode": "line", "ink_coverage": 0.0665,
+   "note": "All four surfboards were solid slabs edge to edge; skateboard 24153 is a parts sheet in white line on black, fake letters and labels painted out, fills set to paper and outlines traced."},
+  {"slot": 2, "slug": "compass-study", "passed": true, "which": "backup", "images": 11, "chosen": "K2-compass-study-s24255.png", "mode": "line", "ink_coverage": 0.0625,
+   "note": "Pocket watches were framed ovals with numerals; first compass run stretched to the sides; a second compass prompt (3 seeds) gave 24255, a clean circular compass card, one object rather than a full sheet."},
+  {"slot": 3, "slug": "roller-skate-study", "passed": true, "which": "main", "images": 4, "chosen": "K3-roller-skate-study-s24301.png", "mode": "pen", "ink_coverage": 0.2427,
+   "note": "Only frameless seed, whole quad skate in engraved line; a fake-letter seal and two cuff emblems inpainted and re-hatched; pen mode; one object, no parts row."}
+ ],
+ "tee": "black (line/pen: one file, printed white on black)",
+ "minutes": {"install": 1.5, "generate": 77, "process": 30}
+}
