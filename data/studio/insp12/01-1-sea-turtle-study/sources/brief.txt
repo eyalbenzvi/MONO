@@ -1,0 +1,14 @@
+Prompt: One sea turtle, seen from above, study sheet. Four flippers, one head, one shell with clear scute plates, symmetrical, the living animal large in the centre, its skeleton smaller below, small sketches of a flipper and the head around it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seeds: 21100-21103 (four, main); chosen 21103 (the fourth)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Edge: none (not a scene)
+
+Why 21103: all four came out as study sheets. 21100's main turtle has no clear head and the flippers grow from odd places; 21101 has a good turtle but the sketches round it are land flowers and a wreath; 21102 is crowded with junk shapes, a signature-like scrawl and ruled boxes. 21103 has the clearest sea turtle: one head, one eye, long front flippers, plated shell, whole and clear of the edges, with smaller turtles, a shell and urchins round it, and no text.
+The model drew no skeleton (it ignores layout asks); the sheet reads as a study of the living animal in several views. Two of the small turtles show no head (seen from behind); left as sketches.
+Title: the long front flippers and plated shell are a sea turtle; no species named.
+One ink: line mode dropped the faint scute lines and turned the small sketches into dotted grey; pen keeps the plates and urchin rays as lines.
+python3 scripts/studio/oneink.py <image> data/studio/insp12/01-1-sea-turtle-study sea-turtle-study --mode pen --title "SEA TURTLE STUDY" --sub "Marine life · Study sheet"
