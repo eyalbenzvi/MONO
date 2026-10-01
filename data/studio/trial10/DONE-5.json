@@ -1,0 +1,40 @@
+{
+ "helper": 5,
+ "designs": [
+  {
+   "slug": "kitesurf",
+   "nn": "09",
+   "passed": false,
+   "backup": false,
+   "attempts": 3,
+   "mode": "pen",
+   "ink_coverage": null,
+   "note": "Rejected 3 times by eye: (1) no crescent kite, rider walking with no board, lines not joined, sea to the edges, green tint; (2) no rider, kite cut at the edge as a grey slab, birds; (3) rider with no board, a small hand kite on a stick, sea to the edges. Replaced by the backup in slot 09."
+  },
+  {
+   "slug": "grapevine",
+   "nn": "10",
+   "passed": false,
+   "backup": false,
+   "attempts": 3,
+   "mode": "line",
+   "ink_coverage": null,
+   "note": "Rejected 3 times by eye: (1) stray pod or bud at the top, simple serrated leaves (not lobed vine leaves), too many, grey halftone; (2) heap of leaves with one loose dangling grape, makes no sense; (3) rectangular wall of grey grapes framed by leaves, stem pointing down. The backup was already used for slot 09."
+  },
+  {
+   "slug": "cep-mushroom",
+   "nn": "09",
+   "passed": false,
+   "backup": true,
+   "attempts": 3,
+   "mode": "line",
+   "ink_coverage": null,
+   "note": "Backup for slot 09, rejected 3 times by eye: (1) five mushrooms, caps floating above stems, not porcini; (2) two caps stacked on one stem; (3) clean and coherent, but a tall thin-stemmed parasol-type mushroom, not a cep, plus two small extra mushrooms and grass. Under the truth rule it cannot carry the title CEP MUSHROOM, so not delivered."
+  }
+ ],
+ "minutes": {
+  "install": 2.8,
+  "generate": 45.2,
+  "process": 0.0
+ }
+}
