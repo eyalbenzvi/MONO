@@ -1,0 +1,11 @@
+Prompt: One sunflower head, seen face on, front view. A single round sunflower bloom, a large disc of seeds in a spiral pattern at the centre, one ring of pointed petals all around, symmetrical, no stem, no leaves. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and light stippling in the seed disc. Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5500
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5500, the first of four (5500-5503), taken while the rest were still generating. A whole, symmetrical sunflower head face on, a clear spiral seed disc and two rings of petals, no stem, nothing cut at the edges.
+Processing before one ink (K5-sunflower-head-s5500-levels.png): levels stretched in two zones joined by a soft circular mask round the seed disc (centre 481,533, radius about 175 px): inside, grey 0.25 to black and 0.62 to white, so the seed spiral prints as open line; outside, grey 0.30 to black and 0.80 to white, so the petal outlines stay whole and the pale grey on the petals drops out. Unstretched, line mode passed but the disc printed as a mass with blotches on the petals; with the stronger stretch everywhere the petal outlines broke up.
+python3 scripts/studio/oneink.py K5-sunflower-head-s5500-levels.png data/studio/run50/05-5-sunflower-head sunflower-head --mode line --title "SUNFLOWER HEAD" --sub "Botanical · Seen head on"

@@ -1,0 +1,10 @@
+Title: Sunflower Head
+Category: Botanical & Nature
+Subject: A single sunflower head seen face on: a round disc of seeds in crossing spirals, ringed by two rows of pointed petals
+Style: Natural history plate, engraving-style line work
+Medium: Drawn (illustration)
+Description: A sunflower seen head on, its seeds packed in crossing spirals inside a double ring of petals. The spirals follow the Fibonacci numbers, though the sunflower has never been asked to show its working.
+Tee colours: Black, White
+Print size: 25.9 × 29.7 cm
+Keywords: sunflower, flower, seed head, botanical, natural history, Fibonacci spiral, summer, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
