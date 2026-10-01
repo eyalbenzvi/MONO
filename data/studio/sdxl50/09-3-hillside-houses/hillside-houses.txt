@@ -1,0 +1,10 @@
+Title: Hillside Houses
+Category: Architecture
+Subject: Dozens of old houses with pitched roofs, shutters, balconies and chimneys crowded up a steep slope, drawn edge to edge
+Style: Dense pen-and-ink townscape, fine hatching
+Medium: Drawn (illustration)
+Description: Old houses climb a steep hill shoulder to shoulder, each roof tucked under the next one's windows. Somewhere at the top is the one with the view, and the longest walk home.
+Tee colours: White
+Print size: 20.3 × 35.3 cm
+Keywords: hillside town, houses, rooftops, old town, village, street, architecture, pen and ink, urban sketch, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
