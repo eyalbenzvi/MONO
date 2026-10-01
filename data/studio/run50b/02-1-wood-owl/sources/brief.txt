@@ -1,0 +1,11 @@
+Prompt: One tawny owl perched on a branch, front view. One owl only, symmetrical, round face disc, two large dark eyes looking straight out, one small hooked beak, no ear tufts, two feathered feet gripping one bare horizontal branch, wings folded. Mottled brown plumage with streaks, bars and fine feather texture on the breast and wings, drawn in black ink with rich tonal shading. Soft moonlight from the upper left, deep gentle shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2102
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2102, the third of four (main). 2100 signature mark bottom right, foliage and branches cut at the edges; 2101 grey leafy panel behind the owl; 2103 a birch trunk running top to bottom and the branch cut at the edge; 2102 frontal, symmetrical, two feet on one branch, but a tree at the right and twigs running off the page.
+Clean-up (sources/fade.py and a hand mask): cropped to 60,140,710,1150 to drop the tree trunk, the crop's edges faded into the paper, the fine background twigs whitened (on the black tee the paper they enclosed printed as light slabs), paper above 236 set to white. Result: sources/K1-tawny-owl-s2102-cleaned.png.
+Title: the bird is a grey round-faced Strix owl with a streaked breast; it could be a tawny or a Ural owl, so by the truth rule the title is WOOD OWL, not TAWNY OWL.
+One ink: scripts/studio/oneink.py --mode tone (as briefed; line hollowed the eyes on the black tee). fails: [] on both files.

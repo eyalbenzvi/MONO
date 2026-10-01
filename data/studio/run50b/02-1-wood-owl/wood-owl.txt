@@ -1,0 +1,10 @@
+Title: Wood Owl
+Category: Botanical & Nature
+Subject: A round-faced wood owl perched on a bare branch, facing the viewer
+Style: Natural history portrait in fine screened tone, streaked plumage and soft shading
+Medium: Drawn (illustration)
+Description: A round-faced owl sits square on a bare branch, both dark eyes fixed on you and both feet locked round the wood. It looks like it has already decided what you are and is merely waiting to be proved right.
+Tee colours: Black and white (wood-owl-black.png for black tees, wood-owl-white.png for white tees)
+Print size: 20.0 x 34.9 cm (heading included)
+Keywords: owl, wood owl, bird of prey, night, wildlife, natural history, bird, woodland, branch
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
