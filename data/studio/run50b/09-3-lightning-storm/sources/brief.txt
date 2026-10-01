@@ -1,0 +1,13 @@
+Prompt: One lightning storm over a flat plain, wide view, a single forked bolt striking the ground. One bright jagged bolt with branching forks, under a heavy rolling storm cloud with detailed billows, rain shafts falling in fine lines. Black ink engraving, the cloud in rich crosshatching and stippling, the plain in fine horizontal hatching with grass and a fence. Dramatic light, the bolt white against the dark cloud. The ground ends in a clean straight line, empty white sky above the cloud. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+
+Seed: 9303
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+Ending: --edge horizon (the plain ends in a straight cut with a rule; the storm sky above).
+
+Chosen: the 4th of 4 (seed 9303). A forked bolt striking the plain under a heavy, detailed storm cloud, a road leading to the horizon. All four drew lightning; s9300 had a fake signature in the corner; s9301 (tried first) lost its pale bolt in the levels stretch and its sky turned into flat bands; s9302's bolt was faint.
+Processing before one ink: a mild levels stretch 0.10-0.90 (the 0.25-0.62 stretch washed the bolt out).
+python3 scripts/studio/oneink.py <processed image> data/studio/run50b/09-3-lightning-storm lightning-storm --mode tone --edge horizon --title "LIGHTNING STORM" --sub "Science · Weather"
+Delivered white tee only: on the black-tee positive the lit middle of the sky printed as one continuous bright area, so the black file is not delivered. Preview: the white-tee file on a white tee.
