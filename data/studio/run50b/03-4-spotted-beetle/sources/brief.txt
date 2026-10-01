@@ -1,0 +1,7 @@
+Prompt: One ladybird beetle, seen from directly above, large. A round domed shell split down the middle, seven bold black spots, a small head with two eyes, two short antennae, six jointed legs, fine stippled shine on the shell. Black ink line drawing on white paper, clean confident outlines with fine hatching inside, like a natural history engraving. Flat even light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Seed: 3401 (chosen from seeds 3400, 3401, 3402, 3403; brief: main)
+Size: 960x1088
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8)
+One ink: scripts/studio/oneink.py --mode line
+Why this one: 3401 is the only one with a head, two antennae and legs on both sides, and the whole beetle sits inside the page; 3400 and 3402 have no head, 3403 sits on a grey wash. It has far more spots than a ladybird, so the title is the general SPOTTED BEETLE.

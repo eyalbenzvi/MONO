@@ -1,0 +1,10 @@
+Title: Spotted Beetle
+Category: Botanical & Nature
+Subject: A round spotted beetle seen from directly above, shell closed
+Style: Natural history plate, bold line with a polka-dot domed shell
+Medium: Drawn (illustration)
+Description: A round beetle seen from above, its domed shell split down the middle and covered in dots of every size. It did not count its spots and would rather you did not either.
+Tee colours: Black and white (spotted-beetle.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 23.5 x 34.9 cm (heading included)
+Keywords: beetle, ladybird, insect, spots, natural history, symmetry, entomology, nature, coleoptera
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
