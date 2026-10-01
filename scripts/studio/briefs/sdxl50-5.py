@@ -32,5 +32,11 @@ PROMPTS = {
         "no lettering, no frame, no border, no colour. A single brass trumpet large in the centre, flared bell, three "
         "piston valves, looped tubing, mouthpiece. Around it a few separate parts: one valve piston, the mouthpiece, small "
         "detail circles. Thin clean white lines, fine hatching. Centred, wide black margins."
+    ), "backup": (
+        "One saxophone, side view, white chalk line drawing on a plain black background, no text, no lettering, no "
+        "frame, no border, no colour. A single alto saxophone large in the centre, curved neck and mouthpiece, the "
+        "long conical body with rows of round key pads and rods, the upturned flared bell. Beside it two or three "
+        "loose parts drawn small: the mouthpiece, one key, a reed. Thin clean white lines, fine hatching. Centred, "
+        "wide black margins."
     )},
 }
