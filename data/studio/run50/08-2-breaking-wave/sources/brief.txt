@@ -1,0 +1,7 @@
+Prompt (main, 88 words): One big breaking ocean wave, side view. A single tall curling wave with a hollow barrel and white foam on its crest, spray in the air, open sea behind, no boats, no people. Fine black ink etching in the style of a Japanese woodblock print, clean flowing lines and soft hatching. Bright daylight on the foam. The wave fills the middle of the picture and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 8201
+Size: 960x1088
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
+One ink: scripts/studio/oneink.py /tmp/run50/K2-breaking-wave-s8201.png data/studio/run50/08-2-breaking-wave breaking-wave --mode tone --title BREAKING WAVE --sub Maritime · Open water --fade
+Chosen: Seed 8201, the second of four. One clear wave with a hollow barrel and curled foam, the woodblock look asked for. 8200 had mottled sandy foam and many crests; 8202 sat in a hard rectangular panel with mottled foam; 8201 was taken before 8203 finished, being the plainly better read. fails [] on both files.
