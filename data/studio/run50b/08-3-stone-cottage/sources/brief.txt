@@ -1,0 +1,10 @@
+Slot 3 (main): STONE COTTAGE — Villages · Home
+Ending: --edge horizon (chosen before the prompt: one house on open ground).
+Prompt (main, 98 words): One old stone cottage in a meadow, front view. A small weathered cottage of rough fieldstone with a slate roof, a chimney, two small windows and a wooden door, a low dry-stone wall, a garden gate, a young tree beside it, no people. Fine black ink etching with soft hatched tones and rich texture on the stones, slates and grass. Soft afternoon light from the left. The cottage sits whole in the middle; the ground ends in a clean straight line, empty white sky above. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seeds: 8300-8303. Size: 960x1088
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --jobs --lcm --steps 8), CPU
+Pre-process: levels stretch 0.10-0.78 (sky streaks to paper, grass kept)
+One ink: scripts/studio/oneink.py K3-stone-cottage-s8301-lev.png data/studio/run50b/08-3-stone-cottage stone-cottage --mode tone --edge horizon --title "STONE COTTAGE" --sub "Villages · Home"
+Chosen: seed 8301, the second; picked from the first three while the fourth was still rendering. All three were sound; 8301 has the roughest, most varied fieldstone and the most character (two chimneys, a crooked roofline) and stands whole in the middle. 8300 a neater house running nearly edge to edge; 8302 tidy and symmetrical between two trees, less texture.
+Tee: white only — on the black tee the empty sky round the house becomes a bright continuous halo. fails [] on both files.
