@@ -1,0 +1,10 @@
+Title: Grass Plume
+Category: Botanical
+Subject: A feathery plume of grass on three bare stalks, long fine blades fanning out at the top
+Style: Line drawing in one ink, every blade a fine line
+Medium: Drawn (illustration)
+Description: A plume of grass on three bare stalks, its long blades fanning upwards like a quill. Asked for wheat, it chose to stay wild.
+Tee colours: Black (grass-plume.png, printed in white ink)
+Print size: 16.6 x 35.0 cm
+Keywords: grass, grass plume, ornamental grass, plume, botanical, meadow, natural history, line art, fine line
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
