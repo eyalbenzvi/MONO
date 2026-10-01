@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import full from "@/data/shirts.json";
-import { solidBlock, svgInk } from "../scripts/gen/quality";
+import { MASS_AREA, denseArea, rasterInk, solidBlock, svgInk } from "../scripts/gen/quality";
 import { checkPrint } from "../scripts/tools/blockCheck";
 import type { CatalogEntry } from "@/types/shirt";
 
@@ -16,6 +16,28 @@ describe("Part 0: no print lands on the tee as a solid block of ink", () => {
     // A filled panel behind a motif, a slab covering the print's edges.
     expect(solidBlock(svgInk(svg("#FFFFFF", `<rect x="40" y="120" width="220" height="180" fill="#000000"/>`), "white")).reject).not.toBeNull();
     expect(solidBlock(svgInk(svg("#FFFFFF", `<rect width="300" height="400" fill="#000000"/><circle cx="150" cy="200" r="60" fill="#FFFFFF"/>`), "white")).reject).not.toBeNull();
+  });
+
+  it("rule f: a continuous dense area (a pale sky as an oval of mesh) is measured and holds a new design back; a scene with a keyline is not", () => {
+    // A 1500 × 2000 raster (the 28 × 37 cm print area): an oval of 60% dot mesh over a third of the print, no solid ink in it.
+    const [w, h] = [1500, 2000];
+    const rgba = new Uint8Array(w * h * 4);
+    const ink = (x: number, y: number) => ((rgba[(y * w + x) * 4 + 3] = 255), undefined);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const inOval = ((x - 750) / 600) ** 2 + ((y - 1000) / 700) ** 2 <= 1;
+        if (inOval && (x % 10 < 8) && (y % 10 < 8)) ink(x, y);
+      }
+    const oval = solidBlock(rasterInk(rgba, w, h, "ink", "white"));
+    expect(oval.mass).toBeGreaterThan(MASS_AREA);
+    expect(denseArea(oval)).toBe(true);
+    // Not a refusal of what's on sale (the catalogue's dark etchings are the owner's call): reject stays as before.
+    expect(oval.reject).toBeNull();
+    // The studio's plate ending: a 0.7 mm keyline 2.5 mm round an open scene of lines. Neither dense nor a panel.
+    const plate = svg("#FFFFFF", `<rect x="30" y="40" width="240" height="320" fill="none" stroke="#000000" stroke-width="0.8"/>` + Array.from({ length: 30 }, (_, k) => `<path d="M40 ${60 + k * 10} Q150 ${40 + k * 10} 260 ${60 + k * 10}" fill="none" stroke="#000000" stroke-width="1.2"/>`).join(""));
+    const framed = solidBlock(svgInk(plate, "white"));
+    expect(framed.reject).toBeNull();
+    expect(denseArea(framed)).toBe(false);
   });
 
   it("the check refuses solid towers with windows cut out, whatever their outline (rule d, slab)", () => {

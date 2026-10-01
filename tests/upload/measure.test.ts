@@ -88,6 +88,11 @@ describe("uploads: the quality bar, every boundary of the table (brief 6.4)", ()
     expect(t({})).toEqual({ tier: "catalogue", near: false });
   });
 
+  it("a continuous dense area (rule f) prints for its owner but is not offered to the catalogue", () => {
+    expect(t({ mass: 0.15 }).tier).toBe("catalogue");
+    expect(t({ mass: 0.16 }).tier).toBe("print");
+  });
+
   it("solidBlock: any refusal refuses", () => {
     expect(t({ solid: "slab" })).toMatchObject({ tier: "refuse", reason: REASONS.solid });
     expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: REASONS.solidDots });

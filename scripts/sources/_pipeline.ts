@@ -18,7 +18,7 @@ import { appendFileSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSy
 import path from "node:path";
 import sharp from "sharp";
 import { prepImage } from "../archive/fetchArchive";
-import { WEAK_QUALITY, assessPrint, rasterInk, solidBlock } from "../gen/quality";
+import { WEAK_QUALITY, assessPrint, denseArea, rasterInk, solidBlock } from "../gen/quality";
 import { judgeLicense, type LicenseFields } from "./_license";
 import { countReasons, metaFilter, type MetaDecision, type MetaInput } from "./_metaFilter";
 import type { Candidate, Prepped, Selected } from "./_types";
@@ -238,12 +238,13 @@ export async function prep(source: SourceId, wave: number, { concurrency = 4, li
     const { data, info } = await sharp(file).resize(300, 400, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     const raster = rasterInk(data, info.width, info.height, c.mode === "ink" ? "ink" : "photo", tee);
     const a = assessPrint(raster);
-    const solid = solidBlock(raster).reject;
+    const block = solidBlock(raster);
+    const solid = block.reject;
     const weak = a.quality < WEAK_QUALITY || a.flags.length > 0;
     const sha = shas[c.key] ?? "";
     const dup = sha && firstBySha.has(sha) ? firstBySha.get(sha)! : null;
     if (sha && !dup) firstBySha.set(sha, c.key);
-    const flags = [...(weak ? ["weak"] : []), ...(solid ? ["solid"] : []), ...(dup ? ["dup"] : []), ...(c.mode === "cut" && !existsSync(cut(c.key)) ? ["no-cutout"] : []), ...a.flags];
+    const flags = [...(weak ? ["weak"] : []), ...(solid ? ["solid"] : []), ...(denseArea(block) ? ["dense"] : []), ...(dup ? ["dup"] : []), ...(c.mode === "cut" && !existsSync(cut(c.key)) ? ["no-cutout"] : []), ...a.flags];
     out.push({ ...c, ...meta, sha, assess: { quality: a.quality, ink: Math.round(a.ink * 1000) / 1000, extent: Math.round(a.extent * 1000) / 1000, flags: a.flags }, solid, weak, tee, flags });
   }
   writeJson(path.join(dir, `prepped-wave-${wave}.json`), out);
