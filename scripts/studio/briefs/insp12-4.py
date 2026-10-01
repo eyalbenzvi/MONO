@@ -20,6 +20,12 @@ PROMPTS = {
         black background, like a vintage patent drawing, clean outlines, fine hatching. Even flat light, crisp
         contrast. Centred, the whole sheet with wide black margins. No text, no frame, no border, no ornaments, no
         colour, no grey wash.""",
+        "backup": """One brass compass, top view, with parts around. A round compass in the middle of the page, a
+        clear compass rose with a long needle, only small tick marks, no letters; around it on the black page a
+        separate needle, a gimbal ring and a lid drawn small, a row of small round detail circles along the
+        bottom. Thin white chalk outlines on a black background, like a vintage patent drawing, fine hatching.
+        Flat light. The compass small and centred, lots of empty black around it. No text,
+        no frame, no border, no ornaments, no colour, no grey wash.""",
     },
     3: {
         "main": """One vintage roller skate study sheet, side view. A large old leather lace-up roller skate boot
