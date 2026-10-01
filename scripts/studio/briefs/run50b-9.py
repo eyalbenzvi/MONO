@@ -18,6 +18,14 @@ PROMPTS = {
             "The ground ends in a clean straight line, empty white sky above the tail. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "A meteor shower in the night sky over rolling hills, wide view, many shooting stars. "
+            "Dozens of long thin bright streaks crossing the sky diagonally, all from one point high on the left, stars as tiny dots between them. "
+            "Black ink engraving, the sky in fine horizontal hatching lines with the white streaks cut through it, the hills below in crosshatching with a few dark trees. "
+            "Night light. "
+            "The ground ends in a clean straight line along the bottom. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     3: {
         "main": (
