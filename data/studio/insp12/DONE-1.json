@@ -1,0 +1,16 @@
+{
+ "helper": 1,
+ "branch": "studio/insp12-1",
+ "started": "2026-10-01T19:59:03Z",
+ "finished": "2026-10-01T20:55:00Z",
+ "designs": [
+  {"slot": 1, "slug": "sea-turtle-study", "passed": true, "which": "main", "images": 4, "chosen": "s21103", "mode": "pen", "ink_coverage": 0.1794,
+   "note": "21103 the clearest sea turtle (long front flippers, plated shell, one head), smaller turtles, a shell and urchins round it; no skeleton drawn. Pen over line (line lost the scute lines). fails [], 22.4 x 34.9 cm."},
+  {"slot": 2, "slug": "shark-study", "passed": true, "which": "backup", "images": 12, "chosen": "s21263", "mode": "pen", "ink_coverage": 0.0878,
+   "note": "No hammerhead in the main four, no sawfish in the backup four; a third set of four with a plain-shark prompt, titled SHARK STUDY (truth rule). 21263 with a faulty middle row cut out, one near-letter scribble and the vignette border painted to paper. fails [], 25.8 x 35.0 cm."},
+  {"slot": 3, "slug": "octopus-study", "passed": true, "which": "main", "images": 4, "chosen": "s21300", "mode": "pen", "ink_coverage": 0.1366,
+   "note": "21300 the best octopus (one mantle, two eyes, sucker-edged arms, six round sketches); its page keyline and two signature-like scrawls painted to paper. 21303 had four eyes. fails [], 22.1 x 35.0 cm."}
+ ],
+ "minutes": {"install": 1, "generate": 51, "process": 8, "total": 56},
+ "issues": "Generation ran about 2.5 minutes an image. Every run went one at a time (backup queued behind the main batch). The model drew no skeletons on any sheet; slot 2's third set went beyond main and backup because there was time before minute 85."
+}
