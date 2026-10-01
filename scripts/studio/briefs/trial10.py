@@ -41,7 +41,7 @@ stock narrows smoothly before the wide flukes, which are seen edge-on as a thin 
 a fine engraving: clean contour lines, light parallel hatching along the back for the darker upper body,
 open white skin on the pale underside, a few tiny stipple dots for mottling. Soft light from above. The whole
 whale is in the picture, centred, with large white margins above, below and at both ends, isolated on plain
-white paper, like a museum diagram. No water, no waves, no other animals.""")
+white paper. No water, no waves, no other animals.""")
 
 D["sea-turtle"] = ("02", "SEA TURTLE", "Marine life · Natural history plate", "line", False, "960x1088", "both", 102, """
 A single green sea turtle, one animal only, seen from directly above, swimming with its flippers spread,
