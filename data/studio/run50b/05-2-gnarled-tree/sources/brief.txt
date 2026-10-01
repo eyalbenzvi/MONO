@@ -1,0 +1,13 @@
+Main design ANCIENT OLIVE TREE. Truth rule: none of the four seeds drew olive leaves (all four carry tufts of needles, more pine than olive), so the design is titled with a general name, GNARLED TREE, not ANCIENT OLIVE TREE.
+
+Prompt: One ancient olive tree, whole, side view. A single gnarled olive tree with a thick twisted hollow trunk, knotted furrowed bark, a rounded open crown of small narrow leaves, one trunk only. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines, hatching on the bark and leaf clusters drawn leaf by leaf. Soft light from the left. Centred, the whole tree with wide white margins, its roots on a small patch of ground that breaks off into plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5200
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5200 of 5200-5203. The most characterful of the four: one twisted, knotted trunk with hollows and deep furrowed bark, a low crooked branch, the whole tree inside the page on a patch of ground with grass. 5201 is a straighter tree with a dense crown filling the page edge to edge; 5202 and 5203 are upright pine-like trees with less movement, 5203's crown reaching both sides. Pen mode (not line) keeps the pale bark and needle lines, as in slot 1.
+Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
+python3 scripts/studio/oneink.py K2-ancient-olive-tree-s5200.png data/studio/run50b/05-2-gnarled-tree gnarled-tree --mode pen --title "GNARLED TREE" --sub "Botanical · One tree"

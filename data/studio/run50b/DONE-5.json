@@ -1,0 +1,71 @@
+{
+ "helper": 5,
+ "branch": "studio/run50b-5",
+ "started": "15:54 UTC",
+ "finished": "17:10 UTC",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "baobab",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-baobab-s5102.png",
+   "mode": "pen",
+   "ink_coverage": 0.1611,
+   "note": "Most baobab-like of the four (massive columnar trunk, short crooked branches); pen instead of line keeps the bark lines; 5100/5101 generic broad-crowned trees."
+  },
+  {
+   "slot": 2,
+   "slug": "gnarled-tree",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-ancient-olive-tree-s5200.png",
+   "mode": "pen",
+   "ink_coverage": 0.2069,
+   "note": "No seed drew olive leaves (all needle tufts), so titled GNARLED TREE by the truth rule; 5200 the most twisted, knotted trunk, whole in the page; pen mode."
+  },
+  {
+   "slot": 3,
+   "slug": "weeping-willow",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K3-weeping-willow-s5303.png",
+   "mode": "pen",
+   "ink_coverage": 0.2321,
+   "note": "Clear weeping willow, whole in the page on its own patch of grass; 5301/5302 landscape behind, 5300 crown and meadow cut at the edge; pen mode."
+  },
+  {
+   "slot": 4,
+   "slug": "bonsai-pine",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-bonsai-pine-s5400.png",
+   "mode": "pen",
+   "ink_coverage": 0.1873,
+   "note": "Twisting pine in bonsai style on a rock, no pot, whole in the page; 5401 stray plant on its slab, 5402/5403 green tint; pen mode."
+  },
+  {
+   "slot": 5,
+   "slug": "palm-tree",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K5-date-palm-s5503.png",
+   "mode": "line",
+   "ink_coverage": 0.1553,
+   "note": "No dates or leaf-base trunk drawn, so titled PALM TREE by the truth rule; 5501/5502 horizon across the page, 5500 signature mark; pen failed the dense-area check, line passes (mass 0.148)."
+  }
+ ],
+ "minutes": {
+  "install": 2,
+  "generate": 71,
+  "process": 3
+ },
+ "minutes_note": "Generation 15:56-17:07 on 4 CPU threads (about 3 min an image, 20 images); the first run was killed by the container's memory limit after 2 images while a test oneink ran beside the VAE decode, and was restarted at 16:07 on the remaining 18. Choosing and one-ink processing ran during generation as each slot landed; process counts only the time after the last image.",
+ "total_images": 20,
+ "lesson": "For trees, pen keeps the pale bark and needle lines that line mode drops; a full palm crown fails the dense-area check in pen but passes in line. The model gave pine-needle foliage to the olive and no dates on the date palm, so those two carry general titles."
+}

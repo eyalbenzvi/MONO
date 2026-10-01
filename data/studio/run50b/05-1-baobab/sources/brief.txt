@@ -1,0 +1,11 @@
+Prompt: One old baobab tree, whole, side view. A single African baobab with a massive swollen trunk, deeply wrinkled bark, short stubby branches spreading like roots at the top, a few small leaves, one trunk only. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and hatching on the bark. Soft light from the left. Centred, the whole tree with wide white margins, its roots on a small patch of ground that breaks off into plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5102
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5102 of 5100-5103. The most baobab-like of the four: one massive columnar trunk with knotholes and furrowed bark, short crooked branches near the top, the whole tree inside the page on a thin patch of ground. 5100 and 5101 are broad-crowned generic old trees with a tapering trunk (not clearly baobabs), 5101's grey trunk shading printed as a mottled screen; 5103 is also baobab-like but its wide crown runs close to both sides of the page and a pale smudge sits in the upper branches. Line mode dropped the pale bark lines (even after a levels stretch); pen keeps them.
+Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
+python3 scripts/studio/oneink.py K1-baobab-s5102.png data/studio/run50b/05-1-baobab baobab --mode pen --title "BAOBAB" --sub "Botanical · One tree"

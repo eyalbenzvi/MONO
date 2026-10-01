@@ -1,0 +1,10 @@
+Title: Bonsai Pine
+Category: Botanical & Nature
+Subject: A single pine grown in bonsai style, drawn whole, a twisting trunk of furrowed bark, flat layered pads of needles on crooked branches, roots gripping a rock
+Style: Natural history plate, engraving-style pen work
+Medium: Drawn (illustration)
+Description: One pine in the bonsai manner winds up from a rock, its needles held in flat, layered pads. Centuries of patience have gone into a tree that fits on a table.
+Tee colours: Black, White
+Print size: 20.4 × 35.0 cm
+Keywords: bonsai, bonsai pine, pine, tree, japanese garden, botanical, natural history, line art, rock
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
