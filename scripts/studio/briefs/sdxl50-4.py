@@ -4,7 +4,12 @@ PROMPTS = {
                 "paper, no text, no lettering, no frame, no border, no colour. One long flat sword bill, tall "
                 "curved dorsal fin, crescent tail, both fins whole. Below it a small skeleton of the fish and two "
                 "small sketches of the bill and the eye. Fine engraved pen lines and hatching on the scales. "
-                "Centred, the whole fish with wide white margins, plain white paper."},
+                "Centred, the whole fish with wide white margins, plain white paper.",
+        "backup": "One single marlin leaping, curved body, side view, a natural-history study sheet in black ink on "
+                  "plain white paper, no text, no lettering, no frame, no border, no colour. Only one fish: one long "
+                  "spear bill, tall sail-like dorsal fin, deep forked tail, one eye. A tiny skeleton of its spine "
+                  "and two small detail sketches of the bill and the tail beside it. Fine engraved pen lines and "
+                  "hatching. Centred, the whole fish with wide white margins, plain white paper."},
     2: {"main": "One submarine, side elevation, a technical drawing in black ink on plain white paper, no text, "
                 "no lettering, no frame, no border, no colour. One long riveted hull with hull plates, a conning "
                 "tower with a periscope, propeller and rudder at the stern. Thin construction lines, a thin "
