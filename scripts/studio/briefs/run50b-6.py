@@ -37,6 +37,12 @@ PROMPTS = {
                 "Even soft light from the left. "
                 "Centred, the whole subject with wide white margins, plain white paper. "
                 "No text, no frame, no border, no ornaments, no colour, no grey wash.",
+        "backup": "One cocoa pod cut in half lengthwise, front view of the open face. "
+                  "One pod only, a ridged oval shell with deep grooves, the cut face showing rows of plump cocoa beans packed in pale pulp around the centre, a short woody stalk at the top. "
+                  "Fine black ink line drawing with crisp contour lines and delicate hatching on every ridge and bean, like a natural history plate. "
+                  "Even soft light from the left. "
+                  "Centred, the whole subject with wide white margins, plain white paper. "
+                  "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     5: {
         "main": "One hop bine with hop cones, upright view. "
