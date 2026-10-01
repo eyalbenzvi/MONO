@@ -1,0 +1,10 @@
+Title: Lemon Branch
+Category: Botanical
+Subject: A lemon branch with two ripe lemons hanging among glossy leaves
+Style: Engraving-style botanical plate in clustered-dot tone
+Medium: Drawn (illustration)
+Description: Two lemons hang from a single leafy branch, drawn in the manner of an old botanical plate. Life handed it lemons and it made a print.
+Tee colours: Black and white (lemon-branch-black.png for black tees, lemon-branch-white.png for white tees)
+Print size: Black tee 20.6 x 35.0 cm; white tee 19.5 x 34.9 cm
+Keywords: lemon, lemon branch, citrus, fruit, botanical, Mediterranean, garden, leaves, natural history
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

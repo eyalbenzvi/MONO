@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6550
+Size: 832x1216
+Chosen: backup. The main (OLIVE BRANCH, seeds 6500-6502) failed: 6500's broad leaves and olives merge into a muddle, 6501 and 6502 have no olives at all (the 4th seed, 6503, was dropped to leave time for the backup). Backup LEMON BRANCH, seed 6550, the first of 6550-6553 (the rest were stopped once it passed): one branch, two whole lemons and glossy leaves, whole inside the margins. (The blossom of the prompt did not appear.) Line mode left the smooth lemons as hollow crescents; tone mode keeps them round and was used.
+Prompt: One lemon branch with lemons, upright view. One single branch, glossy oval leaves along the stem, two or three whole round lemons hanging from it, one small white blossom, the stem cut cleanly at the bottom. Fine black ink line drawing with crisp contour lines and delicate hatching, like a natural history plate. Even soft light from the left. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode tone --title "LEMON BRANCH" --sub "Botanical · Natural history plate"
