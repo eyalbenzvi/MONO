@@ -3,7 +3,7 @@ Generate an illustration on this machine's CPU with an open model (no outside
 service): Segmind SSD-1B (Apache 2.0), optionally with the LCM LoRA
 (openrail++) for a few-step draft. Both licences allow commercial use.
 
-  python scripts/studio/generate.py <out.png> "<subject>" [--steps 30] [--seed 1] [--lcm] [--size 832x1216]
+  python scripts/studio/generate.py <out.png> "<subject>" [--steps 30] [--seed 1] [--lcm] [--size 832x1216] [--style plate|realistic]
   python scripts/studio/generate.py --batch <jobs.tsv> [--steps 8] [--lcm]   (lines: out<TAB>seed<TAB>subject)
 
 The house style (docs/content/studio.md) is put before the subject, and the
@@ -13,11 +13,19 @@ import sys, time
 import torch
 from diffusers import StableDiffusionXLPipeline, LCMScheduler
 
-STYLE = (
+STYLES = {
+    "plate": (
     "detailed black and white engraving illustration, 19th century scientific plate, "
     "bold confident pen and ink line work, cross-hatching and stippling, high contrast, crisp lines, "
     "isolated on plain white paper, vertical composition, "
-)
+    ),
+    # Closer to life: true proportions, light and texture, still ink on paper.
+    "realistic": (
+        "hyperrealistic black and white pen and ink drawing, photorealistic detail, true proportions, "
+        "natural light and deep shadows, rich realistic textures, masterful fine cross-hatching and stippling, "
+        "high contrast, on plain white paper, vertical composition, "
+    ),
+}
 NEGATIVE = (
     "text, letters, words, labels, caption, signature, watermark, logo, frame, border, "
     "colour, color, grey wash, gradient, blurry, photo, 3d render, low contrast, cropped, deformed"
@@ -31,6 +39,7 @@ def main():
     seed = int(opt("--seed", "1"))
     w, h = (int(v) for v in opt("--size", "832x1216").split("x"))
     lcm = "--lcm" in a
+    style = STYLES[opt("--style", "plate")]
     torch.set_num_threads(4)
     pipe = StableDiffusionXLPipeline.from_pretrained("segmind/SSD-1B", torch_dtype=torch.float32, use_safetensors=True, variant="fp16")
     guidance = 7.0
@@ -46,7 +55,7 @@ def main():
     for out, seed, subject in jobs:
         t = time.time()
         img = pipe(
-            prompt=STYLE + subject,
+            prompt=style + subject,
             negative_prompt=None if lcm else NEGATIVE,
             num_inference_steps=steps,
             guidance_scale=guidance,
