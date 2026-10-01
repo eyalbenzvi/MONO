@@ -1,0 +1,6 @@
+Prompt: One vintage 1920s open touring car in exact side view, a technical elevation drawing on plain white paper, no text, no lettering, no frame, no border, no colour. One car only: two large spoked wheels, long bonnet, upright radiator, running board, folded hood, curved mudguards. Thin black ink lines, clean construction lines, one thin ground line under the wheels. Centred, the whole car with wide white margins and a lot of empty paper. No shading, no grey wash.
+Seed: 30321 (chosen from seeds 30320, 30321, 30322; brief: main)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (scripts/studio/generate_sdxl.py, 8 steps, guidance 0)
+One ink: scripts/studio/oneink.py --mode line
+Why this one: all three seeds drew a row of copies (30320 one car cropped huge off the page, 30321 three cars stacked, 30322 four cars on grey paper). 30321's top car is whole and clean, in true side view with spoked wheels and its own ground line, so it was cut out on its own: crop (10,55)-(810,375) of the 832x1216 image, enlarged 3x (Lanczos), paper flattened to white. Two small fake captions (top right and under the car) were painted to paper before oneink. Not dated to a make, so the title stays VINTAGE CAR.

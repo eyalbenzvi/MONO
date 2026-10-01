@@ -6,6 +6,11 @@ no text, no lettering, no frame, no border, no colour. One domed horseshoe-shape
 small spines, a hinged middle plate, one long straight tail spike. Around it a few small sketches: the
 underside with jointed legs, a leg, an eye. Black ink line drawing, fine hatching, like an engraving.
 Centred, the whole subject with wide white margins. No grey wash.""",
+        "backup": """One red king crab seen from directly above, a natural history study sheet on plain white paper,
+no text, no lettering, no frame, no border, no colour. One spiny round shell, two claws, six long jointed
+walking legs spread evenly, all inside the page. Around it a few small sketches: a claw, a leg joint, the
+underside. Black ink line drawing, clean outlines with fine hatching, like an engraving. Centred, the whole
+crab with wide white margins. No grey wash.""",
     },
     2: {
         "main": """One vintage 1920s open touring car in exact side view, a technical elevation drawing on plain
@@ -13,6 +18,11 @@ white paper, no text, no lettering, no frame, no border, no colour. One car only
 long bonnet, upright radiator, running board, folded hood, curved mudguards. Thin black ink lines, clean
 construction lines, one thin ground line under the wheels. Centred, the whole car with wide white margins
 and a lot of empty paper. No shading, no grey wash.""",
+        "backup": """A single vintage 1930s flatbed truck in exact side view, one technical elevation drawing on plain
+white paper, no text, no lettering, no frame, no border, no colour. Only one truck, never repeated: rounded
+cab, long bonnet, upright grille, two spoked wheels, running board, wooden flatbed. Thin black ink lines,
+clean construction lines, one thin ground line under the wheels. Centred, the whole truck with wide white
+margins and empty paper above and below.""",
     },
     3: {
         "main": """Dense Paris rooftops seen from a high window, a pen and ink drawing on plain white paper, no
