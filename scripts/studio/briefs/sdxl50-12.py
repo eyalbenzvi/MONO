@@ -18,5 +18,10 @@ edge to edge. The ground ends in a clean straight line, empty white sky above. N
 background, no text, no lettering, no frame, no border, no colour. A patent study sheet: the reel in the
 centre with its spool, handle, crank and line, and around it its parts exploded, gears, screws, a spinning
 lure and a fishing fly, two small round detail circles. Fine white line, centred with wide black margins.
+No ornaments, no grey wash.""",
+        "backup": """One large salmon fishing fly, side view, white chalk line drawing on a plain black background,
+no text, no lettering, no frame, no border, no colour. A patent study sheet: the fly in the centre, its
+curved hook, eye, wrapped body, feather wing, hackle and tail, every fibre drawn in fine white line; around
+it smaller flies and a bare hook, two small round detail circles. Centred with wide black margins.
 No ornaments, no grey wash."""},
 }
