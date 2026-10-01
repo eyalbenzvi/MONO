@@ -1,0 +1,10 @@
+Title: Flowering Stem
+Category: Botanical
+Subject: Three open five-petalled flowers on a slender branching stem, petals ruled with fine veins
+Style: Pen-and-ink line drawing, every petal ruled from tip to centre with fine parallel lines
+Medium: Drawn (illustration)
+Description: Three open blooms on one slender stem, each petal ruled vein by vein from the tip to the heart. No name was given, and the flowers have not asked for one.
+Tee colours: Black (flowering-stem.png, printed in white ink)
+Print size: 18.9 x 35.0 cm
+Keywords: flower, flowering stem, blossom, bloom, botanical, petals, natural history, line art, fine line
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
