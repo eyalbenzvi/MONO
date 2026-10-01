@@ -1,0 +1,10 @@
+Title: Sea Urchin
+Category: Botanical & Nature
+Subject: A single sea urchin seen from above, a knobbed centre ringed by hundreds of long radiating spines
+Style: Natural history plate, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A sea urchin seen from above, its knobbed centre ringed by long spines radiating out in every direction. It has no brain to speak of and still manages never to be stepped on twice.
+Tee colours: Black, White
+Print size: 26.0 × 29.5 cm
+Keywords: sea urchin, urchin, echinoderm, marine life, ocean, natural history, radial, seen from above, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

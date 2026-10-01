@@ -1,0 +1,10 @@
+Title: Coiled Fossil
+Category: Botanical & Nature
+Subject: A single coiled fossil shell seen side on, thick ribs radiating across its whorls to a small tight centre
+Style: Natural history plate, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A fossil shell coils in on itself, its ribs fanning out across each whorl to a thick rounded rim. It has kept its shape for rather longer than most of us keep a New Year's resolution.
+Tee colours: Black, White
+Print size: 25.9 × 30.2 cm
+Keywords: fossil, coiled shell, ammonite-like, palaeontology, natural history, spiral, science, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
