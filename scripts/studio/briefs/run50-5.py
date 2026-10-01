@@ -6,6 +6,12 @@ PROMPTS = {
         "an old botanical engraving, clean contour lines and light hatching. Even flat light, no shadows. Centred, the whole "
         "subject with wide white margins, plain white paper. "
         "No text, no frame, no border, no ornaments, no colour, no grey wash."
+    ), "backup": (
+        "One maple leaf, flat, front view. A single sugar maple leaf with five pointed lobes, symmetrical, every lobe and "
+        "vein clear, a short straight stalk at the bottom, complete and whole, nothing overlapping. Fine black ink line "
+        "drawing in the manner of an old botanical engraving, clean contour lines and light hatching between the veins. "
+        "Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. "
+        "No text, no frame, no border, no ornaments, no colour, no grey wash."
     )},
     2: {"main": (
         "One fern frond, curling tip, front view. A single upright fern frond, the tip rolled into a tight spiral "
