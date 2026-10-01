@@ -1,0 +1,11 @@
+Prompt: One peregrine falcon, head and shoulders, side portrait. One bird only, one dark eye with a bare yellow ring, one short strongly hooked beak with a notch, a dark hood and a bold moustache stripe under the eye, pale barred chest, the portrait ending softly at the shoulders. Clean confident black ink outlines with feather-by-feather line work and fine hatching on the hood and back. Light from the left, high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2201
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2201, the second of four (main). All four are clean pale falcons in profile running off the bottom edge; 2200 and 2203 shoulders touch the side edges; 2202 a weaker, flatter head; 2201 the strongest head and beak, the whole bird inside the sides.
+Title: none of the four has the peregrine's dark hood and moustache stripe (the bird is pale and spotted, closer to a gyrfalcon), so by the truth rule the title is FALCON, not PEREGRINE FALCON.
+Clean-up: cropped to 20,110,832,1216; the body cut off on a smooth convex curve near the bottom so the bust ends cleanly instead of running off the page (a soft fade printed as ragged drips on the black tee); paper above 238 set to white. Result: sources/K2-peregrine-falcon-s2201-cut.png.
+One ink: scripts/studio/oneink.py --mode tone (brief said line; line on the black tee printed the eye as a hollow ring and the beak dark, so tone, as the brief allows: line <-> tone). fails: [] on both files.
