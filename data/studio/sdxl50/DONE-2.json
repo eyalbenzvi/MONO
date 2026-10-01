@@ -1,0 +1,59 @@
+{
+ "helper": 2,
+ "branch": "studio/sdxl50-2",
+ "started": "2026-10-01T22:37:43Z",
+ "finished": "2026-10-01T23:27:00Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "lobster-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30210 (image 1)",
+   "mode": "line",
+   "ink_coverage": 0.1204,
+   "note": "One whole lobster from above, claws, legs, antennae and tail fan; no side sketches came out. Frame lines and a row of small fake lettering painted to paper. fails [], 22.0 x 34.9 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "airship",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30220 (image 1)",
+   "mode": "pen",
+   "ink_coverage": 0.1862,
+   "note": "No real zeppelin in any seed: 30220 is a gridded balloon lifting a ship's hull, so titled AIRSHIP (truth rule). Double frame and a block of fake text painted out; pen kept the envelope grid that line lost. fails [], 24.6 x 35.0 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "domes-and-minarets",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30232 (image 3)",
+   "mode": "pen",
+   "ink_coverage": 0.2395,
+   "note": "Ottoman-style mosque, four minarets, old town in hatching; not a recognisable Istanbul view, so DOMES AND MINARETS. --edge horizon; a small cloud painted out. White tee only. fails [], 21.7 x 35.3 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "gramophone",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "s30247 (backup image 3)",
+   "mode": "line",
+   "ink_coverage": 0.2016,
+   "note": "Turntable mains all rejected (panel grids, fake text, chaos). Gramophone backup drawn dark on cream despite the prompt; line prints it white on black. Signature and floor shadow painted out; no parts sketches, so not called a study. Black tee. fails [], 17.8 x 35.0 cm."
+  }
+ ],
+ "minutes": {
+  "install": 1.2,
+  "generate": 44.3,
+  "process": 12.0,
+  "total": 50
+ },
+ "issues": "None with generate_sdxl.py (about 2.8 min an image on this machine, one process at a time). SDXL-Lightning ignored 'on a black background' for slot 4 and added frames or fake text to most seeds."
+}
