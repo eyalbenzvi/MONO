@@ -29,5 +29,13 @@ PROMPTS = {
             "Centred, the whole aircraft with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One vintage seaplane on floats, side view, technical drawing. One small propeller aeroplane with one long straight wing on top, "
+            "one propeller at the nose, a tail fin at the back, resting on two long boat-shaped floats on thin struts. "
+            "Fine even black ink line, like an engineer's elevation drawing, thin construction lines. "
+            "Flat even light. A thin straight water line under the floats, small faint tick marks in narrow columns at both sides. "
+            "Centred, the whole aircraft with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
 }
