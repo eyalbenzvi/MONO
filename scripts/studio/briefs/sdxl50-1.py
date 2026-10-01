@@ -23,5 +23,9 @@ PROMPTS = {
                 "A single large guitar standing upright in the centre, round sound hole, bridge, six strings, long neck with frets, "
                 "headstock with tuning pegs. Around it small exploded parts: tuning pegs, bridge, and two small round detail circles. "
                 "Thin crisp white lines, fine hatching. Centred with wide black margins.",
+        "backup": "One violin with its separate parts, white chalk line drawing on a plain black background, no text, no labels, no handwriting, no numbers, no frame, no border, no colour. "
+                  "A single large violin upright in the centre, front view, two f-holes, bridge, four strings, scroll and pegs at the top. "
+                  "Around it on empty black: the bow, a loose peg, the bridge, and two small round close-up circles of the scroll. "
+                  "Thin crisp white lines, fine hatching. Wide black margins.",
     },
 }
