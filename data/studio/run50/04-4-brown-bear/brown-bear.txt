@@ -1,0 +1,10 @@
+Title: Brown Bear
+Category: Botanical & Nature
+Subject: A brown bear head and shoulders, front view, looking straight out
+Style: Engraving-style line portrait, fur strokes and screened mid-tones
+Medium: Drawn (illustration)
+Description: A brown bear looks straight out with round ears and a broad muzzle, drawn in fine fur strokes. It has the calm of something that sleeps through winter on purpose.
+Tee colours: Black and white (one file, brown-bear.png, prints on both)
+Print size: 22.8 x 33.0 cm
+Keywords: brown bear, bear, grizzly, animal portrait, head, wildlife, nature, fur, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
