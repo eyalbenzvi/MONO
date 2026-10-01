@@ -6,6 +6,6 @@ Seed: 5102
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
 
-Chosen: seed 5102 of 5100-5103. The most baobab-like of the four: one massive columnar trunk with knotholes and furrowed bark, short crooked branches near the top, the whole tree inside the page on a thin patch of ground. 5100 and 5101 are broad-crowned generic old trees with a tapering trunk (not clearly baobabs), 5101's grey trunk shading printed as a mottled screen; 5103 seen after the choice. Line mode dropped the pale bark lines (even after a levels stretch); pen keeps them.
+Chosen: seed 5102 of 5100-5103. The most baobab-like of the four: one massive columnar trunk with knotholes and furrowed bark, short crooked branches near the top, the whole tree inside the page on a thin patch of ground. 5100 and 5101 are broad-crowned generic old trees with a tapering trunk (not clearly baobabs), 5101's grey trunk shading printed as a mottled screen; 5103 is also baobab-like but its wide crown runs close to both sides of the page and a pale smudge sits in the upper branches. Line mode dropped the pale bark lines (even after a levels stretch); pen keeps them.
 Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
 python3 scripts/studio/oneink.py K1-baobab-s5102.png data/studio/run50b/05-1-baobab baobab --mode pen --title "BAOBAB" --sub "Botanical · One tree"
