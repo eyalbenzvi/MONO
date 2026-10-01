@@ -1,0 +1,9 @@
+Prompt (79 words): Green rice terraces on a hillside, front view. Many curved stepped paddy terraces follow the contours of a steep valley, thin water lines on each step, a few palm trees and a small hut, no people, no road. Fine black ink engraving with crisp parallel hatching along every terrace curve, rich texture and detail. Soft daylight from above. A complete rectangular scene, filled to every side. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 7202 (of 7200, 7201, 7202, 7203; main)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
+Ending: --edge rect (chosen before the prompt: rect, for a busy scene filled to the sides (a plate with a keyline))
+Processing before one ink: levels stretched (grey 0.25 to black, 0.62 to white; K2-terraced-valley-s7202-stretched.png) so the model's pale grey line work prints as line and screen.
+python3 scripts/studio/oneink.py K2-terraced-valley-s7202-stretched.png data/studio/run50b/07-2-terraced-valley terraced-valley --mode tone --edge rect --title "TERRACED VALLEY" --sub "Places · Worked land"
+Chosen: s7202, the third of four. All four came out as grey line-work hills rather than flooded rice paddies: s7200 and s7201 are rolling grassy hills with no steps, s7203 is a valley with a stream and no terraces. s7202 alone shows stepped, contoured field terraces on the valley floor and strips of fields by a small village under the mountains. After the levels stretch it reads as a crisp engraving on both tees. Titled TERRACED VALLEY, not RICE TERRACES: there is no water in the steps and nothing that says rice.
