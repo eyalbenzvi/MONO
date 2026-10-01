@@ -1,0 +1,6 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, guidance 1.0, CPU
+Seed: 10301
+Size: 832x1216
+Chosen: image 2 of 4 (seeds 10300-10303). 10300 had candle flames inside both bulbs, 10302 had a three-lobed glass and no sand, 10303 had a stray rod through the glass; 10301 is a clean hourglass with sand heaped in both bulbs and a thin stream at the waist (no pillars, a little floor hatching under the base).
+Prompt: One hourglass, front view, standing upright. Two glass bulbs joined at a narrow waist, held between two flat wooden end plates by three slim turned pillars, sand falling into the lower bulb, symmetrical left and right. No hand, no table, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching on the wood, crisp and high contrast. Even bright light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --title "HOURGLASS" --sub "Objects · Time"
