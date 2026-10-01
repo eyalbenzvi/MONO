@@ -1,0 +1,18 @@
+{
+ "helper": 3,
+ "branch": "studio/run50-3",
+ "designs": [
+  {"slot": 1, "slug": "swallowtail-butterfly", "passed": true, "which": "main", "images": 4, "chosen": "s3100", "mode": "line", "ink_coverage": 0.087,
+   "note": "s3100 crisp veins and two tails; s3101-s3103 soft and grey."},
+  {"slot": 2, "slug": "moth", "passed": true, "which": "backup", "images": 8, "chosen": "s3252", "mode": "line", "ink_coverage": 0.076,
+   "note": "Luna moth s3200-s3203 all grey masses with shadows; atlas moth backup kept s3252, titled MOTH as no atlas window spots or hooked tips show."},
+  {"slot": 3, "slug": "dragonfly", "passed": true, "which": "main", "images": 2, "chosen": "s3300", "mode": "pen", "ink_coverage": 0.0615,
+   "note": "Four lace wings, one body; chosen from the first seed after the queue restart."},
+  {"slot": 4, "slug": "honeybee", "passed": false, "which": "main", "images": 2, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "s3400 and s3401: cartoon faces, butterfly-like wings, legs from the abdomen. No time left for the bumblebee backup."},
+  {"slot": 5, "slug": "bat", "passed": true, "which": "main", "images": 2, "chosen": "s3501", "mode": "line", "ink_coverage": 0.0678,
+   "note": "s3501 clean wings and head; s3500 had spindly legs."}
+ ],
+ "minutes": {"install": 2, "generate": 87, "process": 12},
+ "incident": "The main queue died at 12:56 (minute 33) when the slot 2 backup was started beside it on 4 CPUs, probably out of memory, with no traceback; it was only noticed at 13:36 and restarted for slots 3-5, one seed per slot in turn, then stopped at minute 95."
+}

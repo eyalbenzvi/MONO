@@ -1,0 +1,10 @@
+Title: Bat
+Category: Botanical & Nature
+Subject: A bat seen from the front with both wings spread wide
+Style: Natural history plate, fine pen line and hatched wing membranes
+Medium: Drawn (illustration)
+Description: A bat facing you with its wings stretched to their full span, the membrane pulled taut between long finger bones. It would prefer you saw it at dusk, from a distance.
+Tee colours: Black and white (bat.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 22.2 cm (heading included)
+Keywords: bat, wings, mammal, night, nocturnal, natural history, symmetry, halloween, nature
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
