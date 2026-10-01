@@ -1,0 +1,10 @@
+Title: Fern Frond
+Category: Botanical & Nature
+Subject: A single upright fern frond in front view: one straight stem with paired, finely toothed leaflets tapering to the tip
+Style: Natural history plate, engraving-style line work
+Medium: Drawn (illustration)
+Description: One fern frond stands straight up its stem, its paired leaflets narrowing evenly to a point. Ferns were here long before flowers and have never seen the need to catch up.
+Tee colours: Black, White
+Print size: 11.9 × 34.9 cm
+Keywords: fern, frond, leaf, botanical, natural history, plant, line art, scientific illustration, forest
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
