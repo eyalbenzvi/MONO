@@ -1,0 +1,123 @@
+{
+  "model": "sdxl-lightning",
+  "model_ids": {
+    "base": "stabilityai/stable-diffusion-xl-base-1.0 (text_encoder, text_encoder_2, tokenizers, vae, scheduler + unet config)",
+    "unet": "ByteDance/SDXL-Lightning / sdxl_lightning_8step_unet.safetensors"
+  },
+  "licences": {
+    "stabilityai/stable-diffusion-xl-base-1.0": "CreativeML Open RAIL++-M",
+    "ByteDance/SDXL-Lightning": "CreativeML Open RAIL++-M (inherits SDXL base licence)"
+  },
+  "fallback_used": null,
+  "settings": {
+    "steps": 8,
+    "scheduler": "EulerDiscreteScheduler(timestep_spacing='trailing')",
+    "guidance_scale": 0.0,
+    "width": 832,
+    "height": 1216,
+    "dtype": "float32",
+    "device": "cpu",
+    "vae_tiling": true,
+    "torch_threads": 4,
+    "negative_prompt": "not used: guidance 0 (Lightning is CFG-free), so the negative has no effect",
+    "negatives_recorded": {
+      "octopus": "text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background",
+      "biplane": "text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background",
+      "canal": "text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads"
+    },
+    "prompt_tokens_clip": {
+      "octopus": 104,
+      "biplane": 97,
+      "canal": 100
+    },
+    "prompt_truncation": "SDXL's CLIP encoders read 77 tokens; prompt text beyond that is dropped"
+  },
+  "load_seconds": 18.3,
+  "load_breakdown": {
+    "download_seconds_excluded": 0.6,
+    "text_encoders_load_and_encode_seconds": 7.3,
+    "unet_vae_load_seconds": 11.0,
+    "peak_ram_gb_text_encode": 3.18,
+    "peak_ram_gb_unet_load": 13.3
+  },
+  "process_maxrss_gb": 13.31,
+  "images": [
+    {
+      "subject": "octopus",
+      "seed": 7001,
+      "file": "octopus-s7001.png",
+      "seconds": 284.9,
+      "peak_ram_gb": 13.31
+    },
+    {
+      "subject": "biplane",
+      "seed": 7001,
+      "file": "biplane-s7001.png",
+      "seconds": 302.4,
+      "peak_ram_gb": 13.3
+    },
+    {
+      "subject": "canal",
+      "seed": 7001,
+      "file": "canal-s7001.png",
+      "seconds": 284.0,
+      "peak_ram_gb": 13.3
+    },
+    {
+      "subject": "octopus",
+      "seed": 7002,
+      "file": "octopus-s7002.png",
+      "seconds": 298.7,
+      "peak_ram_gb": 13.31
+    },
+    {
+      "subject": "biplane",
+      "seed": 7002,
+      "file": "biplane-s7002.png",
+      "seconds": 322.7,
+      "peak_ram_gb": 13.31
+    },
+    {
+      "subject": "canal",
+      "seed": 7002,
+      "file": "canal-s7002.png",
+      "seconds": 290.9,
+      "peak_ram_gb": 13.31
+    }
+  ],
+  "oneink": {
+    "octopus": {
+      "seed": 7001,
+      "mode": "line",
+      "dir": "octopus/",
+      "fails": []
+    },
+    "biplane": {
+      "seed": 7001,
+      "mode": "line",
+      "dir": "biplane/",
+      "fails": []
+    },
+    "canal": {
+      "seed": 7002,
+      "mode": "pen",
+      "edge": "horizon",
+      "dir": "canal/",
+      "fails": [
+        "coverage 33.0% (4–32%)"
+      ]
+    }
+  },
+  "seed_choice": {
+    "octopus": "7001: fewer fake-text blocks than 7002 (7002 has suckers but a page of pseudo-script)",
+    "biplane": "7001: less fake text; 7002 has a large fake heading and caption block",
+    "canal": "7002: has the empty sky the horizon edge needs; 7001 fills to the top edge"
+  },
+  "quality_note": "Clean, convincing engraving texture and anatomy (octopus 8-ish arms but no suckers on 7001, no beak sketch); prompt following is loose: biplane gives 3-4 stacked planes in front view instead of one side elevation, and every plate draws a frame and cream paper because 'No text, no frame...' falls past CLIP's 77 tokens and the negative is inert at guidance 0. Fake text appears on all four plates (headings, captions, corner marks) and survives one ink along with the plate border lines, so it needs cropping/cleanup; canal prints dense but slightly over the 32% coverage limit.",
+  "notes": [
+    "8-step checkpoint used (no fallback to 4-step or DMD2 needed)",
+    "~4.9 min/image on 4 CPU threads; peak RSS 13.3 GB against a ~14 GB cgroup cap — first attempt OOM'd when casting fp16->fp32, fixed by streaming tensors",
+    "VAE decoded with tiling to stay under the memory cap",
+    "load_seconds excludes the one-time Hugging Face download (recorded separately)"
+  ]
+}
