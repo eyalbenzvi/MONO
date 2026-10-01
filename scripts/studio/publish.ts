@@ -1,6 +1,7 @@
 /**
  * The studio's designs into the catalogue (docs/content/studio.md, step 5):
- * each delivered folder (data/studio/<NN>-<slug>, data/studio/run50/<KK>-<slot>-<slug>)
+ * each delivered folder (data/studio/<NN>-<slug>, data/studio/run50/<KK>-<slot>-<slug>,
+ * data/studio/run50b/<KK>-<slot>-<slug>)
  * becomes a print the shop serves, public/prints/print_<n>.webp (1500 × 2000, black
  * ink whose alpha is the ink, as the archive's), and an entry in
  * data/studio/catalogue.json that scripts/generateCatalog.ts reads (studioSet).
@@ -9,7 +10,8 @@
  *
  * Line work is one file, offered on both tees. Tonal work has two positives and the
  * shop one print a design: it is offered on the black tee (its -black positive), as
- * the studio's previews show it. Numbers are fixed by the folder's order (20001 on,
+ * the studio's previews show it; a scene its maker delivered for the white tee alone
+ * (only a -white positive: on black its ending reads as a bright patch) on the white tee. Numbers are fixed by the folder's order (20001 on,
  * scripts/sources/ranges.ts), so a re-run gives the same ids.
  */
 import { createHash } from "node:crypto";
@@ -61,6 +63,11 @@ const CATEGORY: Record<string, ShirtCategory> = {
   "sea-stacks": "etched", "breaking-wave": "brush", "rocky-islet": "etched", "chalk-cliffs": "etched", "fishing-hut-on-stilts": "architecture",
   "full-moon": "sky", jupiter: "sky", iceberg: "etched", glacier: "etched",
   anchor: "etched", "oil-lantern": "etched", hourglass: "etched",
+  // run50b
+  volcano: "etched", "terraced-valley": "etched", savanna: "etched", "rock-pinnacles": "etched", "aurora-over-mountains": "etched",
+  "lightning-storm": "etched", "meteor-shower": "sky", "total-solar-eclipse": "sky", "rocky-planet": "sky",
+  windmill: "architecture", "hilltop-monastery": "architecture", "stone-cottage": "architecture", "old-castle": "architecture", "mountain-hut": "architecture",
+  "vintage-camera": "etched", "coffee-pot": "etched", "aviator-goggles": "etched", "rope-knot": "etched",
 };
 
 /** The details file (guidelines, section 08) as fields. */
@@ -73,13 +80,14 @@ function details(file: string): Record<string, string> {
   return out;
 }
 
-/** The delivered folders, in a fixed order: the trial's, then the run of fifty's. */
+/** The delivered folders, in a fixed order: the trial's, then the run of fifty's, then the second run's. */
 export function folders(): string[] {
   const trial = readdirSync(STUDIO).filter((d) => /^\d{2}-/.test(d)).sort().map((d) => path.join("data", "studio", d));
-  const run = existsSync(path.join(STUDIO, "run50"))
-    ? readdirSync(path.join(STUDIO, "run50")).filter((d) => /^\d{2}-\d-/.test(d)).sort().map((d) => path.join("data", "studio", "run50", d))
-    : [];
-  return [...trial, ...run];
+  const run = (name: string) =>
+    existsSync(path.join(STUDIO, name))
+      ? readdirSync(path.join(STUDIO, name)).filter((d) => /^\d{2}-\d-/.test(d)).sort().map((d) => path.join("data", "studio", name, d))
+      : [];
+  return [...trial, ...run("run50"), ...run("run50b")];
 }
 
 async function main() {
@@ -93,11 +101,13 @@ async function main() {
     if (!txt) throw new Error(`${dir}: no details file`);
     const d = details(path.join(abs, txt));
     const slug = txt.replace(/\.txt$/, "");
-    const tone = files.includes(`${slug}-black.png`);
-    const src = path.join(abs, tone ? `${slug}-black.png` : `${slug}.png`);
+    // A tonal design's positive: the black tee's, or the white tee's when that is all its maker delivered.
+    const whiteOnly = !files.includes(`${slug}-black.png`) && files.includes(`${slug}-white.png`);
+    const tone = whiteOnly || files.includes(`${slug}-black.png`);
+    const src = path.join(abs, whiteOnly ? `${slug}-white.png` : tone ? `${slug}-black.png` : `${slug}.png`);
     if (!existsSync(src)) throw new Error(`${dir}: no print file`);
     const n = STUDIO_FIRST_N + k;
-    // The print area (28 × 37 cm at 300 DPI) to the shop's 1500 × 2000: ink is the alpha, the colour black.
+    // The print area (28 × 37 cm at 300 DPI) to the shop's 1500 × 2000: ink is the alpha (either positive), the colour black.
     const alpha = await sharp(src).ensureAlpha().extractChannel("alpha").resize(1500, 2000, { fit: "fill", kernel: "lanczos3" }).raw().toBuffer();
     const rgba = Buffer.alloc(1500 * 2000 * 4);
     // Ink or no ink, nothing between (the catalogue's rule for a raster print): the resampled edge thresholded at half.
@@ -129,7 +139,7 @@ async function main() {
       style: d.style || "Illustration",
       description: d.description,
       keywords,
-      baseColor: "black",
+      baseColor: whiteOnly ? "white" : "black",
       // Tonal work, or line work its maker offered on black only ("Black (printed in white …)").
       single: tone || /^black$/i.test((d["tee colours"] ?? "").replace(/\s*\(.*$/, "").trim()),
       mode: tone ? "tone" : "line",
@@ -138,7 +148,7 @@ async function main() {
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
     });
-    console.log(`${n} ${dir} ${tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${a.quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
+    console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${a.quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
   }
   writeFileSync(STUDIO_MANIFEST, `${JSON.stringify(entries, null, 1)}\n`);
   // The record is scripts/photos/halftone.py's (json.dump, indent 0, keys sorted as strings, floats as 0.0): every other

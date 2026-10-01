@@ -52,8 +52,8 @@ describe("I01: names that say what the print shows", () => {
 
   it("a name's noun repeats at most 15 times within a kind of print", () => {
     const counts = new Map<string, number>();
-    // Generated names only: an archive work keeps its own title ("Harbor", "Twilight").
-    for (const s of FULL.filter((x) => !x.variant.startsWith("archive-"))) {
+    // Generated names only: an archive work keeps its own title ("Harbor", "Twilight"), a studio design its maker's ("Volcano").
+    for (const s of FULL.filter((x) => !x.variant.startsWith("archive-") && !x.variant.startsWith("studio-"))) {
       const key = `${s.variant}|${s.title.split(" ").slice(1).join(" ")}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
