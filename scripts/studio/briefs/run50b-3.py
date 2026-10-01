@@ -21,6 +21,9 @@ PROMPTS = {
         "main": "One cicada, wings open, seen from directly above. "
                 "Four long clear wings spread flat, symmetrical left and right, a net of fine black veins in every wing, "
                 "a broad textured head with two round eyes, a ridged body, six small legs. " + PEN,
+        "backup": "One green lacewing, wings open, seen from directly above. "
+                  "Four long clear oval wings held flat, symmetrical left and right, a dense lace net of fine veins in every wing, "
+                  "one slender segmented body, two round eyes, two long thin antennae, six thin legs. " + PEN,
     },
     3: {
         "main": "One morpho butterfly, wings open, seen from directly above. "

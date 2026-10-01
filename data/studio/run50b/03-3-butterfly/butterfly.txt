@@ -1,0 +1,10 @@
+Title: Butterfly
+Category: Botanical & Nature
+Subject: A butterfly with its four wings open, seen from directly above
+Style: Natural history plate, clean line with fine veins and a scalloped border
+Medium: Drawn (illustration)
+Description: A butterfly pinned open, broad veined wings with a dark scalloped border and a row of pale spots. It has been seen from above all its life and has made its peace with that.
+Tee colours: Black and white (butterfly.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.8 x 26.4 cm (heading included)
+Keywords: butterfly, insect, wings, lepidoptera, natural history, symmetry, entomology, nature, veins
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
