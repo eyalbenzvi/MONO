@@ -1,0 +1,6 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, guidance 1.0, CPU
+Seed: 10102
+Size: 832x1216
+Chosen: image 3 of 4 (seeds 10100-10103). 10100 came out as a pair of scales, 10101 had its arms and a ground line in the wrong places, 10103 was a cross with no arms; 10102 is plainly an anchor (shank, two curved arms, stock), though it has a second stock and its ring sits beside the shank instead of at the head.
+Prompt: One ship's anchor, front view, standing upright. One curved shank with two arms, two pointed triangular flukes, one straight stock across the top, one round ring at the head, symmetrical left and right. No rope, no chain, no water, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching on the worn iron, crisp and high contrast. Even bright light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --title "ANCHOR" --sub "Maritime · Ground tackle"
