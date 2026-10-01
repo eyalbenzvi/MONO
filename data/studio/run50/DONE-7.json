@@ -1,0 +1,19 @@
+{
+ "helper": 7,
+ "branch": "studio/run50-7",
+ "started": "2026-10-01T12:23:07Z",
+ "finished": "2026-10-01T13:40:00Z",
+ "designs": [
+  {"slot": 1, "slug": "alpine-peak", "passed": true, "which": "main", "images": 4, "chosen": "s7100", "mode": "tone --fade", "ink_coverage": {"white": 0.187, "black": 0.2072},
+   "note": "Titled ALPINE PEAK, not MATTERHORN: a generic pyramid peak without the Matterhorn's hooked summit. s7101 frame and fake signature, s7102/s7103 fake lettering in a corner. fails [] both; the black tee shows a soft glow round the peak."},
+  {"slot": 2, "slug": "alpine-lake", "passed": true, "which": "main", "images": 4, "chosen": "s7200", "mode": "tone --fade", "ink_coverage": {"white": 0.204, "black": 0.1937},
+   "note": "s7201 grey-wash water and faint frame, s7203 ruled panel, s7202 bare outline peak and a grey blotch on black. s7200 peaks, pines, reflection; fails [] both, the reflection a little blotchy on black."},
+  {"slot": 3, "slug": "desert-cliffs", "passed": true, "which": "backup", "images": 7, "chosen": "s7351", "mode": "tone --fade", "ink_coverage": {"white": 0.1595, "black": 0.2351},
+   "note": "All four DESERT DUNES rejected (photographic grey, frame edges, a figure; one ink gave a grey slab on black). Backup MESAS: s7350 muddy, s7352 fake signature, s7353 stopped unfinished once s7351 passed. Titled DESERT CLIFFS: a flat-topped cliff wall, not separate mesas. fails [] both."},
+  {"slot": 4, "slug": "waterfall", "passed": true, "which": "main", "images": 4, "chosen": "s7400", "mode": "tone --fade", "ink_coverage": {"white": 0.2288, "black": 0.2339},
+   "note": "All four dense jungle-and-cliff engravings; s7401/s7402 thin border lines, s7401 masonry-like rock. s7400 one fall, pool, natural rock; fails [] both; the fade reads as an oval because the picture is full to its edges."},
+  {"slot": 5, "slug": "pine-forest-in-mist", "passed": true, "which": "main", "images": 4, "chosen": "s7500", "mode": "tone --fade", "ink_coverage": {"white": 0.2593, "black": 0.1617},
+   "note": "Chosen from s7500-s7502 (s7503 not reviewed): s7501 has a path and a faint edge line, s7502 tufted pine tops. s7500 dark trunks into mist; fails [] both, the mist prints as light on black."}
+ ],
+ "minutes": {"install": 2, "generate": 73, "process": 20, "total": 77}
+}

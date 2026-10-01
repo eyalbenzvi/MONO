@@ -1,0 +1,6 @@
+Prompt (92 words): One tall narrow waterfall, front view. A single long ribbon of falling water dropping down a high dark cliff into a small pool, wet rocks and ferns at the sides, mist at the base, no people, no bridge. Fine black ink engraving with dense hatching for the rock and long white streaks for the water. Soft light from above. The waterfall stands in the centre of the page and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 7400 (of 7400, 7401, 7402, 7403; main)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
+Chosen: s7400. All four are dense jungle-and-cliff engravings; s7401 and s7402 show a thin border line at the edges and s7401's cliff reads as masonry blocks; s7403 is close but busier. s7400 has the cleanest single fall, a visible plunge pool and natural rock, with no border; both positives pass.

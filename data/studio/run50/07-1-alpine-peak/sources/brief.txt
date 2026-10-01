@@ -1,0 +1,6 @@
+Prompt (90 words): One lone pyramid mountain peak, front view. The Matterhorn: a single sharp four-sided rock horn, steep north and east faces, snow in the gullies, a lower ridge on each side, no second summit. Fine black ink engraving with dense parallel hatching for the shadowed faces and clean white for the snow. Soft morning light from the left. The peak stands in the centre of the page and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 7100 (of 7100, 7101, 7102, 7103; main)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
+Chosen: s7100. s7101 has a thin frame line and fake signature marks; s7102 and s7103 have fake lettering in the bottom right corner. s7100 is clean, one pyramid peak with a clear lit and shadowed face. Titled ALPINE PEAK, not MATTERHORN: the peak is a generic pyramid without the Matterhorn's hooked summit.

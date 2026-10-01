@@ -1,0 +1,10 @@
+Title: Waterfall
+Category: Botanical & Nature
+Subject: Landscapes
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: A single tall fall drops between walls of dense fern and rock into a misty pool. The water has been taking the same route down for a very long time and sees no reason to change.
+Tee colours: Both
+Print size: 22.4 × 34.4 cm (white tee); 22.0 × 35.0 cm (black tee)
+Keywords: waterfall, falling water, ferns, jungle, cliff, rainforest, landscape, nature, hiking, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
