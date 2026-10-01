@@ -27,6 +27,13 @@ PROMPTS = {
         Flat light. The compass small and centred, lots of empty black around it. No text,
         no frame, no border, no ornaments, no colour, no grey wash.""",
     },
+    # Second backup for slot 2 (seeds 24254-24256, jobs written directly; the first backup's compass faces
+    # stretched into ovals touching the sides of the portrait page).
+    "2b": """One small round compass, top view, a perfect circle. The compass drawn small in the upper half of the
+        page, a clear four-point compass rose and a needle, tick marks only, no letters; below it a neat row of
+        separate parts drawn apart: a needle, a pivot, a glass ring and a hinged lid. Thin white chalk outlines on
+        a black background, like a vintage patent drawing, fine hatching. Flat light. Wide empty black margins
+        on every side. No text, no frame, no border, no ornaments, no colour, no grey wash.""",
     3: {
         "main": """One vintage roller skate study sheet, side view. A large old leather lace-up roller skate boot
         on a metal plate with four wheels in the centre; around it separate wheels, a toe stop, the plate and
