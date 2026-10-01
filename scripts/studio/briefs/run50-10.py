@@ -31,6 +31,15 @@ PROMPTS = {
             "subject with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One old oil lantern, front view, standing upright. One glass chimney in the middle "
+            "with a small flame inside, a pierced metal cap and one wire carrying handle on top, "
+            "four thin metal guard bars around the glass, a round metal base, symmetrical left "
+            "and right. No hand, no table, nothing else. Bold confident black pen and ink "
+            "engraving lines with fine cross-hatching on the metal, crisp and high contrast. "
+            "Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     3: {
         "main": (
