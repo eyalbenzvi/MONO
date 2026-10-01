@@ -1,0 +1,14 @@
+Prompt: One planet Mars, a single sphere, front view, the whole round planet in the middle of the page. One globe only, a small white polar cap at the top, dark surface markings, craters, the long canyon of Valles Marineris across the middle. Fine black ink engraving, the surface in stippling and fine hatching, crisp detail across the disc. Light from the left, the right edge of the sphere in shadow. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+
+Seed: 9401
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+Ending: none (one globe, centred; not a scene).
+Slot 4, main MARS. Title changed to ROCKY PLANET under the truth rule: none of the four shows a polar cap or Valles Marineris, so nothing in the image says Mars.
+
+Chosen: the 2nd of 4 (seed 9401). One shaded sphere lit from the upper left, with craters and long canyon-like rifts. s9400 split the globe into a sky and a sea (a landscape inside a ball); s9402 drew a landscape inside a porthole on a grey square; s9403 was a plain sphere with scribbled lines and little else. No backup was run: there was no time before minute 85 once the slot 2 backup was queued.
+Processing before one ink: everything outside the sphere (a circle fitted with a Hough transform, centre 475,520, radius 421) set to white paper, which removes the thin orbit-like arcs and the cast shadow under it; then a levels stretch 0.15-0.85 (0.25-0.62 put a continuous dense area on the black-tee positive).
+python3 scripts/studio/oneink.py <processed image> data/studio/run50b/09-4-rocky-planet rocky-planet --mode tone --title "ROCKY PLANET" --sub "Maps & Sky · The planets"
+Delivered white tee only: on the black-tee positive the lit side became a bright, nearly blank egg shape, so the black file is not delivered. Preview: the white-tee file on a white tee.
