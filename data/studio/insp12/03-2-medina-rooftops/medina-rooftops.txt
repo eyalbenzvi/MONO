@@ -1,0 +1,10 @@
+Title: Medina Rooftops
+Category: Architecture
+Subject: A packed old town of low flat-roofed houses seen from above, one slender minaret rising over them and a tall palm in front
+Style: Dense pen-and-ink street sketch, fine hatching, edge to edge with a ground line
+Medium: Drawn (illustration)
+Description: Flat roofs crowd together as far as the hills, broken only by one slender minaret and a palm that has grown well above its station. Every roof is somebody's terrace, and none of them is the quiet one.
+Tee colours: White
+Print size: 21.8 × 35.3 cm
+Keywords: medina, rooftops, minaret, palm tree, old town, street scene, pen and ink, architecture, travel
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
