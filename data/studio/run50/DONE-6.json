@@ -13,5 +13,5 @@
   {"slot": 5, "slug": "lemon-branch", "passed": true, "which": "backup", "images": 4, "chosen": "s6550", "mode": "tone", "ink_coverage": {"black": 0.17, "white": 0.1599},
    "note": "Olive main failed (3 images: no olives or a muddle; 4th dropped for time). Lemon backup 6550 passed first; line left hollow crescents, tone used. 6551-6553 stopped"}
  ],
- "minutes": {"install": 2, "generate": 64, "process": 10}
+ "minutes": {"install": 2, "generate": 70, "process": 12, "total": 75, "note": "processing ran while generation continued"}
 }
