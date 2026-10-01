@@ -1,0 +1,48 @@
+{
+ "helper": 3,
+ "branch": "studio/trial10-3",
+ "designs": [
+  {
+   "nn": "05",
+   "slug": "patagonia",
+   "passed": true,
+   "backup": false,
+   "attempts": 3,
+   "mode": "tone --fade --size 0.9",
+   "ink_coverage": {
+    "white": 0.1712,
+    "black": 0.2781
+   },
+   "note": "Seeds 301 (one spire, mismatched reflection) and 311 (five spires, cartoon cloud) rejected; brief rewritten to lead with 'three granite towers and nothing else', seed 321 kept. --size 0.9 so the tip of the left tower is not cut flat by the fade on the black positive. A faint outline cloud remains near the middle tower."
+  },
+  {
+   "nn": "06",
+   "slug": "alpine-village",
+   "passed": false,
+   "backup": false,
+   "attempts": 3,
+   "mode": "tone --fade",
+   "ink_coverage": null,
+   "note": "Seed 302: border frame, grey sky, no church, mushy town. Seed 312: no church, fused stacked lodge, snow, stray figure. Seed 331: church present but fake signature and text at the bottom right, tower growing out of a chalet roof. Replaced by the stand-in."
+  },
+  {
+   "nn": "06",
+   "slug": "pine-on-the-cliff",
+   "passed": true,
+   "backup": true,
+   "attempts": 1,
+   "mode": "tone --fade",
+   "ink_coverage": {
+    "white": 0.1406,
+    "black": 0.2784
+   },
+   "note": "Seed 303 kept first time. Check passes on both files. Caveat: on the black-tee positive the white sky becomes a large white oval with the tree dark inside it, close to a knockout look; the white-tee file is the stronger. Worth a human look before offering it on black."
+  }
+ ],
+ "minutes": {
+  "install": 1.4,
+  "generate": 30.7,
+  "process": 10.0
+ },
+ "note": "Install order changed: CPU torch first, so accelerate would not pull the CUDA build. Generation ran sequentially (7 images, about 3.8 min each). check.json files kept out of the commit."
+}
