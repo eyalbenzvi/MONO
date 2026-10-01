@@ -1,0 +1,10 @@
+Prompt: One coiled snake, natural history study sheet, three-quarter view, black ink on plain white paper, no text, no lettering, no frame, no border, no colour. One snake only, a single head with one eye and a forked tongue, the body coiled in thick loops covered in fine overlapping scales. Around it, small sketches: the long snake skeleton with many thin ribs, a skull, a scale detail. Fine pen line with crisp hatching, centred, the whole subject with wide white margins. No text, no ornaments, no grey wash.
+
+Seeds: 31010-31012 (three, main); chosen 31012 (the third)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 31012: 31010 is a fine coil inside a ruled frame, but its head is a malformed mask and its tail ends in a second head-like knob; 31011 grew clawed legs out of the body and a crocodile head. 31012 is one snake, one head, whole on the page, no frame, no text, no fake lettering (nothing painted out).
+The skeleton and detail sketches asked for did not appear; the head reads bony, but the picture is one coiled snake, not a species, so the title is the generic SNAKE STUDY.
+One ink: line passes (pen left 1.1% of the ink under 0.4 mm).
+python3 scripts/studio/oneink.py <image> data/studio/sdxl50/10-1-snake-study snake-study --mode line --title "SNAKE STUDY" --sub "Nature · Study sheet"
