@@ -1,0 +1,18 @@
+{
+ "helper": 12,
+ "branch": "studio/sdxl50-12",
+ "started": "2026-10-01T22:38:00Z",
+ "finished": "2026-10-01T23:56:04Z",
+ "designs": [
+  {"slot": 1, "slug": "fox-study", "passed": true, "which": "main", "images": 3, "chosen": "s31212", "mode": "pen", "ink_coverage": 0.1579,
+   "note": "31212 one whole sitting fox, fine fur; no skull or paw sketches drawn by any seed. Small fake signature painted to paper, cream paper edges cropped. fails [], 19.4 x 34.9 cm."},
+  {"slot": 2, "slug": "vintage-tractor", "passed": true, "which": "main", "images": 3, "chosen": "s31221", "mode": "pen", "ink_coverage": 0.115,
+   "note": "Every seed repeated the tractor 2-3 times; cropped the top tractor of 31221, painted out fake text and a frame rule. Pen over line (line blotched the tread). fails [], 26.0 x 17.3 cm."},
+  {"slot": 3, "slug": "old-town-bridge", "passed": true, "which": "main", "images": 3, "chosen": "s31231", "mode": "pen", "ink_coverage": 0.3054,
+   "note": "Houses stand beside the bridge, not on it, so titled OLD TOWN BRIDGE (truth rule). --edge horizon. Pen over line (line made flat grey masses). fails [], 21.7 x 35.3 cm."},
+  {"slot": 4, "slug": "fishing-fly-study", "passed": true, "which": "backup", "images": 6, "chosen": "s31245", "mode": "line", "ink_coverage": 0.0649,
+   "note": "Main reels (31240-42) were wheels and pulleys with fake labels. Backup 31245 is one whole fly with a hook and no text, on grey; ground lifted to paper. Black tee. fails [], 19.2 x 35.0 cm."}
+ ],
+ "minutes": {"install": 1.3, "generate": 74.5, "process": 8.0, "total": 78},
+ "issues": "Running oneink (fox) while the main batch generated got the generator OOM-killed (cgroup, 13.9 GB anon) after 3 images, about 20 minutes lost; the batch was restarted (finished files skipped) and all later oneink runs waited until generation had stopped. generate_sdxl.py itself was not changed."
+}
