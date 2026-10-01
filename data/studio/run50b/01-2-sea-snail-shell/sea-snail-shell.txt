@@ -1,0 +1,10 @@
+Title: Sea Snail Shell
+Category: Botanical & Nature
+Subject: A single round sea snail shell seen from above, its body whorl curling in to a small spire, the surface lined with fine growth marks
+Style: Natural history plate, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A round sea snail shell curls in on itself, fine growth lines running out from the spire to the rim. It is the kind of house that moves with its owner and never needs a removal van.
+Tee colours: Black, White
+Print size: 25.8 × 29.5 cm
+Keywords: sea shell, snail shell, seashell, marine life, ocean, natural history, spiral, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
