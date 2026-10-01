@@ -18,5 +18,57 @@
  "noaa-LC00124_10_1902_LS": {
   "decision": "keep",
   "title_override": "Lake Huron, North Coast, Scammon Cove to Lougheed Point"
+ },
+ "met-659741": {
+  "decision": "reject",
+  "reason": "title read: a selection of a book's prints, no one subject"
+ },
+ "met-45613": {
+  "decision": "reject",
+  "reason": "title read: a figure as the subject (a guardian deity)"
+ },
+ "met-39872": {
+  "decision": "reject",
+  "reason": "title read: an object (an inkstone), not a print or drawing"
+ },
+ "met-394310": {
+  "decision": "reject",
+  "reason": "title read: 'Architecture' as a print's title is a personification (an allegory)"
+ },
+ "artic-26703": {
+  "decision": "reject",
+  "reason": "title read: a figure as the subject (a genius)"
+ },
+ "artic-77855": {
+  "decision": "reject",
+  "reason": "title read: a printed textile (a handkerchief), not a print"
+ },
+ "artic-23430": {
+  "decision": "reject",
+  "reason": "title read: needlework, not a print"
+ },
+ "artic-28143": {
+  "decision": "reject",
+  "reason": "title read: a painting of a story (Belisarius)"
+ },
+ "cleveland-168954": {
+  "decision": "reject",
+  "reason": "title read: a person as the subject (D is for Dandy)"
+ },
+ "met-357626": {
+  "decision": "keep",
+  "title_override": "A Survey of the Cities of London and Westminster"
+ },
+ "met-365695": {
+  "decision": "keep",
+  "title_override": "Two Alternate Designs for a Wall Elevation"
+ },
+ "met-360532": {
+  "decision": "keep",
+  "title_override": "Palazzo Alberini-Cicciaporci, Half Elevation"
+ },
+ "met-362592": {
+  "decision": "keep",
+  "title_override": "Ionic Capital, Elevation"
  }
 }
