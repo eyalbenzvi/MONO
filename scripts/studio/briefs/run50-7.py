@@ -16,6 +16,11 @@ PROMPTS = {
         "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     3: {
+        "backup": "Three flat-topped desert mesas, front view. Tall rock buttes with flat tops and steep layered cliffs, "
+        "scree slopes at their feet, a dry desert floor with a few small shrubs, an empty sky, no people, no road. "
+        "Pen and ink line drawing, a fine black engraving with crisp parallel hatching for the cliff layers and shadows, not a photograph. "
+        "Hard sunlight from the left. The mesas sit in the centre of the page and the scene fades softly into white paper at every edge. "
+        "No text, no frame, no border, no ornaments, no colour, no grey wash.",
         "main": "Three large desert sand dunes, front view. Smooth curving dune crests with sharp knife-edge ridges, "
         "one side lit and one side in shadow, ripples in the sand, an empty sky, no people, no camels, no plants. "
         "Fine black ink engraving with flowing parallel hatching along the dune curves. Low warm sunlight from the right. "
