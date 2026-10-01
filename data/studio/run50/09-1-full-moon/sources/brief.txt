@@ -1,0 +1,11 @@
+Prompt: One full moon, a single round disc, front view, the whole near side lit evenly, a perfect circle with a clean edge. Craters, dark maria and bright rays drawn in fine black ink stippling and dots, crisp detail across the surface. Flat even light, no shadow side, no halo, no glow. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 9103
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: the fourth of four (seed 9103). The first and second drew a small moon inside a larger dotted disc running to the edges; the third was a pale disc with almost no detail. The fourth is one clean disc with maria and craters, on a black ground.
+Processing before one ink: the black ground outside the disc (an ellipse fitted to the bright disc, 3 px inside its edge) set to white paper, so only the moon prints.
+python3 scripts/studio/oneink.py <masked image> data/studio/run50/09-1-full-moon full-moon --mode tone --title "FULL MOON" --sub "Maps & Sky · The near side"
