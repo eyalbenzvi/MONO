@@ -60,9 +60,9 @@ const SHIP_PLAN = /lines plan|sail plan|cross sections? of ships|ship ?plan|arch
 const VESSEL = /\b(?:ship|vessel|schooner|lightship|steamer|steamboat|boat|barge|ferry|tug)\b/i;
 const MEASURED = /measured drawing|architectural drawing/i;
 /** From wave 3 on: the sky's charts and atlases go with the maps (a star atlas, a planisphere, a map of the moon). */
-const SKY_3 = /celestial|c[eé]leste?\b|coelestis|constellation|planisph|star (?:chart|map|atlas)|uranometria|coelest|firmament|hemispher|selenograph|\bmoon\b|lunar|\bkarte\b|\bkaart\b|\bmappa\b|nautical chart|coast survey/i;
+const SKY_3 = /celestial|c[eé]leste?\b|coelestis|constellation|planisph|star (?:chart|map|atlas)|uranometria|coelest|firmament|hemispher|selenograph|(?:map|chart|surface) of the moon|maps? of the moon|lunar (?:map|chart)|moon map|\bkarte\b|\bkaart\b|\bmappa\b|nautical chart|coast survey/i;
 /** From wave 3 on: lettering and type (an alphabet, a type specimen, ornamental letters) is Type. */
-const TYPE_3 = /\balphabets?\b|type specimens?|specimens? of (?:printing )?types?|typefaces?|\blettering\b|ornamental letters?|decorated initials?/i;
+const TYPE_3 = /\balphabets?\b|\balfabet\b|lettres ornées|specimens? of (?:printing )?types?|specimen books? of type|typefaces?|\blettering\b|ornamental letters?|decorated initials?/i;
 /** From wave 3 on: a building's elevation, plan or section in line work is architecture. */
 const BUILDING_3 = /\belevations?\b|ground plan|floor plan|\bsections?\b|fa[cç]ade|architectur|cornice|entablature|orders? of architecture|\b(?:doric|ionic|corinthian|tuscan) order|vitruvius|édifices/i;
 /** From wave 3 on: knots and signal codes are technical line work. */

@@ -40,12 +40,13 @@ async function getText(url: string): Promise<string | null> {
 const SMALL = new Set(["of", "and", "the", "to", "in", "on", "at", "from", "with", "for", "a", "an", "de", "la", "le"]);
 /** "PART OF CAPE COD BAY" → "Part of Cape Cod Bay"; initials and state abbreviations stay ("N.Y.", "R.I."). */
 export function chartTitle(t: string): string {
-  const s = t.replace(/\s+/g, " ").trim();
-  if (/[a-z]/.test(s)) return s;
+  // The office's own name before the chart's ("U.S. Coast Survey Part of James River") is the credit's, not the title's.
+  const s = t.replace(/\s+/g, " ").trim().replace(/^u\.?\s?s[.,]?\s*coast (?:and geodetic )?survey\b[\s,:.-]*/i, "");
+  if (/[a-z]/.test(s)) return s.charAt(0).toUpperCase() + s.slice(1);
   return s
     .toLowerCase()
     .split(" ")
-    .map((w, i) => (/^(?:[a-z]\.)+[a-z]?\.?$/.test(w) ? w.toUpperCase() : i > 0 && SMALL.has(w) ? w : w.replace(/(^|[-(/'])(\p{L})/gu, (_, p, c) => p + c.toUpperCase())))
+    .map((w, i) => (/^(?:[a-z]\.)+[a-z]?\.?,?$|^us$/.test(w) ? w.toUpperCase() : i > 0 && SMALL.has(w) ? w : w.replace(/(^|[-(/'])(\p{L})/gu, (_, p, c) => p + c.toUpperCase())))
     .join(" ")
     .replace(/\b(Mc|Mac)(\p{L})/gu, (_, p, c) => p + c.toUpperCase());
 }
@@ -55,9 +56,10 @@ const cell = (s: string) => s.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").rep
 /** One search page's rows: [file id, file type, title, place, chart type, year, edition, chart number, scale]. */
 export function parseRows(html: string) {
   const out: { id: string; ext: string; title: string; place: string; type: string; year: number | null; chart: string; scale: string }[] = [];
-  for (const m of html.matchAll(/<tr class=(?:even|odd)>([\s\S]*?)<\/tr>(?=<tr class=|<\/tbody>)/g)) {
-    const row = m[1].replace(/<table class = 'mobonly'>[\s\S]*?<\/table>/g, "");
-    const id = /id=d([^\s>]+) name=(\w+)/.exec(m[1]);
+  // A row holds a small table of its own (the phone layout), so rows are split at their openings.
+  for (const chunk of html.split(/<tr class=(?:even|odd)>/).slice(1)) {
+    const row = chunk.replace(/<table class = 'mobonly'>[\s\S]*?<\/table>/g, "");
+    const id = /id=d([^\s>]+) name=(\w+)/.exec(chunk);
     const tds = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((x) => cell(x[1]));
     if (!id || tds.length < 10) continue;
     out.push({ id: id[1], ext: tds[11] || id[2], title: tds[3], place: tds[4], type: tds[5], year: Number(/\d{4}/.exec(tds[6])?.[0]) || null, chart: tds[8], scale: tds[9] });

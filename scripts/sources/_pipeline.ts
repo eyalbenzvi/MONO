@@ -45,6 +45,8 @@ export interface World {
   /** The words each source's own search is asked for (fewer and plainer than the keywords). */
   queries: string[];
   signalFlags?: boolean;
+  /** Prints, drawings and plates only (from wave 3): a photograph is refused as "classification". */
+  inkOnly?: boolean;
   /**
    * A source's own searches (from wave 3 on): its queries replace the world's, its keywords add to
    * them for that source only (a HABS sheet named "… Bridge" is the world's at the LoC, not a museum's
@@ -109,6 +111,10 @@ export async function candidates(adapter: Adapter, wholeWorld: World, cap: numbe
     }
     licensed++;
     const input: MetaInput = { ...r, photo: r.mode !== "ink" };
+    if (world.inkOnly && r.mode !== "ink") {
+      decisions.push({ keep: false, reasons: ["classification"], score: 0, matched: [], key: r.key });
+      continue;
+    }
     const d = metaFilter(input, { keywords: world.keywords, signalFlags: world.signalFlags, titleMatch: TITLE_MATCH.has(adapter.source) && !WHOLE_WORLD.test(r.classification) }, seen);
     decisions.push({ ...d, key: r.key });
     if (!d.keep) continue;

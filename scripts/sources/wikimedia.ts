@@ -2,8 +2,9 @@
  * Wikimedia Commons: files in the world's categories (found by a category search, one level of
  * subcategories), with their licence from extmetadata and their sha1 (exact duplicates).
  * Plates, drawings and charts only: a category search drifts into photograph collections (a "Sail
- * plans" search finds "SAIL Amsterdam"), so categories and files that name photographs, objects
- * photographed in a museum, or a single modern ship are left out by their names.
+ * plans" search finds "SAIL Amsterdam"; a "Type specimens" search finds fossils), so categories and
+ * files that name photographs, objects photographed in a museum, a single modern ship, a taxon's type
+ * specimens, stamps, heraldry, sculpture or a children's alphabet book are left out by their names.
  */
 import { getJson, type Adapter, type Raw } from "./_pipeline";
 
@@ -24,7 +25,9 @@ export const CATEGORY_SEARCHES: Record<number, string[]> = {
 /** A category a wave keeps from the search: one that names line work (plans, charts, drawings, plates). */
 const LINE_WORK = /\bplans?\b|lines|chart|drawing|architectura navalis|cross sections|chapman|atlas|carta|encyclop|engraving|plates?\b|in art\b|kunstformen|challenger|haeckel|radiolarien|medusen|cephalopoden|illustrations|invertebrates|uranometria|coelest|celestial|planispher|selenograph|maps? of the moon|elevations?\b|édifices|vitruvius|antiquities of athens|leçons d'architecture|type specimens|printing types|alphabets?\b|knots\b/i;
 /** …and not a photograph collection, a museum's object photographs, one ship's or class's page, or a HABS/HAER set (copies of the LoC's own sheets, which the LoC adapter reads at the source). */
-const NOT_LINE_WORK = /photograph|\bHABS\b|\bHAER\b|sail amsterdam|rijksmuseum|full sail|proposed or planned|^Category:PLANS |\(ship, \d{4}\)|\bIMO \d|trawler|type \d+ frigate|svg\b/i;
+const NOT_LINE_WORK = /photograph|\bHABS\b|\bHAER\b|sail amsterdam|rijksmuseum|full sail|proposed or planned|^Category:PLANS |\(ship, \d{4}\)|\bIMO \d|trawler|type \d+ frigate|svg\b|fossil|isotype|idae\b|\baves\b|by (?:taxon|locality|institution)|on stamps|heraldry|^Category:Flags|sculpture|statues?\b|monuments|\bin art of\b|hevelius in art|celebrities|alphabet books|old friends|edward lear|magazine|plensa|untier|roses by|\btomb\b|gravimetric|by background|stamps\b/i;
+/** A HABS/HAER/HALS sheet (its call number, the survey's name, or the LoC's photo division as the credit). */
+const SURVEY_COPY = /\b(?:HABS|HAER|HALS)\b|Historic American (?:Buildings|Engineering|Landscapes)|loc\.gov\/pictures/i;
 /** A file that is a photograph by its own categories (press photos, a photographer's own upload). */
 const PHOTO_FILE = /photographs? taken on|\bphotographs? (?:of|by|from)\b|self-published work|images from anefo|images from nationaal archief|\bphotos? (?:of|by)\b/i;
 
@@ -56,6 +59,8 @@ export const wikimedia: Adapter = {
           const m = ii.extmetadata ?? {};
           const v = (k: string) => strip(m[k]?.value);
           if (world.wave >= 2 && PHOTO_FILE.test(v("Categories"))) continue;
+          // From wave 3: a HABS/HAER sheet copied to Commons is left to the LoC adapter (the sheet at its source).
+          if (world.wave >= 3 && SURVEY_COPY.test(`${p.title} ${v("Categories")} ${v("Credit")}`)) continue;
           const title = v("ObjectName") || String(p.title).replace(/^File:/, "").replace(/\.[a-z0-9]+$/i, "");
           out.set(p.pageid, {
             source: "wikimedia",

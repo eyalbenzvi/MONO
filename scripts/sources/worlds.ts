@@ -36,24 +36,28 @@ export const WORLDS: Record<number, World> = {
       "survey", "soundings", "carte", "karte", "kaart", "carta", "mappa", "plan de", "plan von", "hydrographic", "topographic",
       // The sky.
       "celestial", "constellation", "planisphere", "star chart", "star map", "star atlas", "uranometria", "atlas coelestis", "coelestis", "firmament", "hemisphere", "zodiac", "astronomical", "astronomy",
-      "moon", "lunar", "selenographia", "eclipse", "comet", "armillary", "globe", "orrery",
+      "selenographia", "armillary", "orrery",
       // Architecture in line work.
-      "elevation", "elevations", "ground plan", "floor plan", "section", "facade", "façade", "architectural", "architecture", "cornice", "entablature", "order of architecture", "doric", "ionic", "corinthian", "observatory",
+      "elevation", "elevations", "ground plan", "floor plan", "facade", "façade", "architectural", "architecture", "cornice", "entablature", "order of architecture", "doric", "ionic", "corinthian", "observatory",
       // Type and lettering.
-      "alphabet", "type specimen", "specimen of printing types", "typeface", "lettering", "letters", "ornamental letters", "initials",
+      "alphabet", "alfabet", "specimen of printing types", "printing types", "typeface", "lettering", "letters", "ornamental letters", "initials",
       // Knots and signals.
       "knot", "knots", "splice", "hitch", "signal flags", "signal code", "code of signals",
     ],
     // What every source's own search is asked for (a source's own list below replaces it).
-    queries: ["map", "chart", "nautical chart", "celestial", "constellation", "planisphere", "moon", "comet", "eclipse", "architectural elevation", "elevation", "ground plan", "section", "facade", "alphabet", "lettering", "type specimen", "knot"],
+    // A museum's moon, comet or "section" is a scene's (a Hiroshige full moon, "The Hundred Guilder Print, central section"): those words are the libraries' only.
+    queries: ["map", "chart", "nautical chart", "celestial", "constellation", "planisphere", "architectural elevation", "elevation", "ground plan", "facade", "alphabet", "lettering", "type specimen", "knot"],
     signalFlags: true,
+    // Line work only: a photograph of a façade is a Photograph, and its people can't be read from a title.
+    inkOnly: true,
     sources: {
       // The Geography and Map Division's charts and sky maps; and HABS/HAER sheets of buildings whose names are the world's (an observatory, a capitol's dome, a bridge).
       loc: {
         queries: ["observatory", "capitol", "cathedral", "bridge", "windmill"],
         maps: ["nautical chart", "chart of the coast", "coast survey", "harbor chart", "celestial", "constellations", "star chart", "planisphere", "moon"],
-        keywords: ["capitol", "cathedral", "bridge", "windmill", "dome"],
+        keywords: ["capitol", "cathedral", "bridge", "windmill", "dome", "moon", "lunar", "section"],
       },
+      wikimedia: { keywords: ["moon", "lunar", "eclipse", "comet", "section", "globe"] },
       // The Office of Coast Survey's historical nautical charts, by chart type (its own search).
       noaa: { queries: ["Nautical Chart", "Nautical Chart--Sketch"] },
     },

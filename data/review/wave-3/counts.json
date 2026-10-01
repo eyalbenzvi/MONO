@@ -1,0 +1,90 @@
+{
+ "noaa": {
+  "found": 5099,
+  "licensed": 5099,
+  "filtered": 5074,
+  "refusedLicense": {},
+  "removed": {
+   "narrative": 20,
+   "people": 9,
+   "unsuitable": 1
+  },
+  "final": 150
+ },
+ "met": {
+  "found": 1743,
+  "licensed": 1424,
+  "filtered": 58,
+  "refusedLicense": {
+   "not public domain": 319
+  },
+  "removed": {
+   "classification": 137,
+   "off-world": 1133,
+   "narrative": 792,
+   "people": 306,
+   "brand": 132,
+   "unsuitable": 70,
+   "text": 141
+  },
+  "final": 58
+ },
+ "artic": {
+  "found": 2890,
+  "licensed": 2890,
+  "filtered": 67,
+  "refusedLicense": {},
+  "removed": {
+   "off-world": 2554,
+   "classification": 1262,
+   "people": 608,
+   "text": 183,
+   "narrative": 776,
+   "low-res": 481,
+   "unsuitable": 476,
+   "strip": 91,
+   "no-image": 58,
+   "brand": 23
+  },
+  "final": 67
+ },
+ "cleveland": {
+  "found": 189,
+  "licensed": 189,
+  "filtered": 8,
+  "refusedLicense": {},
+  "removed": {
+   "off-world": 141,
+   "text": 16,
+   "people": 26,
+   "narrative": 93,
+   "unsuitable": 4,
+   "low-res": 5,
+   "classification": 21
+  },
+  "final": 8
+ },
+ "wikimedia": {
+  "found": 4364,
+  "licensed": 3698,
+  "filtered": 1575,
+  "refusedLicense": {
+   "CC BY (needs the owner's approval)": 222,
+   "share-alike": 320,
+   "unclear licence": 121,
+   "in copyright": 3
+  },
+  "removed": {
+   "low-res": 1537,
+   "narrative": 151,
+   "brand": 32,
+   "off-world": 592,
+   "people": 109,
+   "text": 193,
+   "strip": 69,
+   "unsuitable": 18,
+   "no-image": 6
+  },
+  "final": 1575
+ }
+}
