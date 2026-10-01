@@ -1,0 +1,68 @@
+{
+ "helper": 4,
+ "branch": "studio/run50-4",
+ "started": "2026-10-01T12:23:10Z",
+ "finished": "2026-10-01T13:38:27Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "wolf",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-wolf-s4103.png",
+   "mode": "line",
+   "ink_coverage": 0.1568,
+   "note": "Seed 4103: whole head inside the margins (4100/4102 ears at the top edge). Line, check clean."
+  },
+  {
+   "slot": 2,
+   "slug": "lion",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-lion-s4201.png",
+   "mode": "line",
+   "ink_coverage": 0.0727,
+   "note": "Seed 4201: whole mane inside the frame (4200/4203 mane off the edges, 4202 touches the sides). Line, check clean."
+  },
+  {
+   "slot": 3,
+   "slug": "red-deer-stag",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K3-red-deer-stag-s4301.png",
+   "mode": "pen",
+   "ink_coverage": 0.1309,
+   "note": "Seed 4301: two plausible antlers on pedicles (4303 antlers from mid-forehead, 4300/4302 at the edges). Line left blotches, pen clean."
+  },
+  {
+   "slot": 4,
+   "slug": "brown-bear",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-brown-bear-s4402.png",
+   "mode": "line",
+   "ink_coverage": 0.1195,
+   "note": "Seed 4402: line keeps ears, muzzle and outline; 4403 lost its crown in line and failed pen (36%, slab). Check clean."
+  },
+  {
+   "slot": 5,
+   "slug": "highland-bull",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K5-highland-bull-s4501.png",
+   "mode": "pen",
+   "ink_coverage": 0.176,
+   "note": "Seed 4501: two symmetrical horns with room above (4503 horns at top edge). Line went grainy, pen keeps the hair as strokes."
+  }
+ ],
+ "minutes": {
+  "install": 1.1,
+  "generate": 73.8,
+  "process": 12.3
+ }
+}
