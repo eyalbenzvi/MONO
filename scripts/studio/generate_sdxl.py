@@ -61,8 +61,15 @@ def main():
         if j["prompt"] not in embeds:
             pe, pooled, _ = encode(enc, j["prompt"])
             embeds[j["prompt"]] = (pe, pooled)
+    for m in (enc.text_encoder, enc.text_encoder_2):  # really free them (a plain del left ~3 GB held: OOM at 14.3 GB)
+        m.to("meta")
     del enc
     gc.collect()
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
 
     # 2. The Lightning UNet, upcast tensor by tensor (fp16 file and fp32 model never both in memory).
     with init_empty_weights():
