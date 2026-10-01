@@ -1,0 +1,10 @@
+Title: Rocky Islet
+Category: Botanical & Nature
+Subject: A small islet of rounded boulders in a calm sea, one tall windswept pine on top and a smaller one behind, reflected in the still water
+Style: Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges
+Medium: Drawn (illustration)
+Description: A windswept pine grows from a heap of rounded boulders in a flat calm sea, with a younger one keeping it company behind. Room for two, no ferry.
+Tee colours: Black and white (rocky-islet-black.png for black tees, rocky-islet-white.png for white tees)
+Print size: Black tee 23.1 x 34.7 cm; white tee 24.2 x 35.0 cm
+Keywords: rocky islet, island, pine tree, rocks, sea, calm water, reflection, coast, landscape, solitude
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
