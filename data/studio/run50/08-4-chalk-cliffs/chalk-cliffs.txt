@@ -1,0 +1,10 @@
+Title: Chalk Cliffs
+Category: Botanical & Nature
+Subject: Pale sheer sea cliffs in stepped layers running down to a calm sea, a scatter of rocks in the shallows
+Style: Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges
+Medium: Drawn (illustration)
+Description: Pale cliffs fall in sheer stepped walls to a flat sea, with a few dark rocks scattered in the shallows. The coastline retreats a little every winter and never asks permission.
+Tee colours: Black and white (chalk-cliffs-black.png for black tees, chalk-cliffs-white.png for white tees)
+Print size: Black tee 21.4 x 32.9 cm; white tee 23.5 x 35.0 cm
+Keywords: chalk cliffs, white cliffs, coast, sea, headland, cliff, shoreline, seaside, landscape
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

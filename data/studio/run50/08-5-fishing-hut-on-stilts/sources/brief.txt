@@ -1,0 +1,7 @@
+Prompt (main, 93 words): One wooden fishing hut on stilts, front view over water. A small plank hut with a pitched roof standing on tall wooden stilts in a calm lagoon, a short ladder and a little jetty, its reflection in the still water, no people. Fine black ink etching with soft hatched tones and clean lines. Quiet morning light, a calm empty sky. The hut stands in the middle of the picture and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 8501
+Size: 960x1088
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
+One ink: scripts/studio/oneink.py /tmp/run50/K5-fishing-hut-on-stilts-s8501.png data/studio/run50/08-5-fishing-hut-on-stilts fishing-hut-on-stilts --mode tone --title FISHING HUT ON STILTS --sub Maritime · Still water --fade
+Chosen: Seed 8501, the second of four. A clear gabled hut with a balcony on tall stilts, a jetty and a readable reflection, nothing cut by the edges. 8500 also passed but its reflection read as a second storey in one ink, so the hut looked stacked; 8501 was taken at minute 65 and the last two seeds were stopped. fails [] on both files.

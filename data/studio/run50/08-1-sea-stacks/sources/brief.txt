@@ -1,0 +1,7 @@
+Prompt (main, 86 words): Three tall sea stacks, coastal view from the beach. Three rock pillars standing in calm sea, rugged layered rock, a little surf at their feet, a clear sky. Fine black ink etching with soft cross-hatched tones and crisp detail on the rock. Soft morning light from the left, gentle shadows on the cliffs. The stacks stand in the middle of the picture and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 8102
+Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
+One ink: scripts/studio/oneink.py /tmp/run50/K1-sea-stacks-s8102.png data/studio/run50/08-1-sea-stacks sea-stacks --mode tone --title SEA STACKS --sub Places · The coast --fade
+Chosen: Seed 8102, the third of four. All four were sound; 8102 has the clearest rock structure and the stacks stand whole inside the frame (8100 sparse and grey, 8101 a stack cut by the right edge, 8103 centred but the stacks print near-black on the white tee and its sky halo went lobed). fails [] on both files.
