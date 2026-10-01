@@ -1,0 +1,14 @@
+Prompt: One octopus, seen from above, arms spread, study sheet. One round head, two eyes, eight curling arms with rows of suckers, the living animal large in the centre, small sketches of its beak and of a sucker row around it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seeds: 21300-21303 (four, main); chosen 21300 (the first)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Edge: none (not a scene)
+
+Why 21300: 21301 turned the two top arms into horns and filled the page with loose squiggles; 21302 has a ruled panel and lines of fake script at the foot; 21303 is clean but has four eyes. 21300 has the best octopus: one mantle, two eyes, arms spread symmetrically and edged with suckers, six round sketches above and below. Its faults were a thin rectangular keyline round the page and two small signature-like scrawls (right of the arms and under the bottom-right roundel).
+Clean-up (sources/01-3-octopus-study-s21300-clean.png, the file processed): the keyline strips at the four edges and the two scrawls painted out with the plain paper colour; nothing drawn added. The two left arm curls touched the keyline and keep a slightly flat outer edge.
+The model ignores counting: the arms are not exactly eight, and the round sketches read as anemones or sucker rosettes rather than a beak; the sheet reads as a study of the living animal.
+One ink: pen keeps the sucker beads and arm hatching as lines.
+python3 scripts/studio/oneink.py sources/01-3-octopus-study-s21300-clean.png data/studio/insp12/01-3-octopus-study octopus-study --mode pen --title "OCTOPUS STUDY" --sub "Marine life · Study sheet"

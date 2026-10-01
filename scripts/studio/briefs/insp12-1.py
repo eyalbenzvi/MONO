@@ -8,6 +8,11 @@ PROMPTS = {
                 "Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     2: {
+        "backup": "One sawfish, seen from above, study sheet. One long saw snout toothed along each side, "
+                  "two wide pectoral fins, two dorsal fins, one tail, symmetrical, the living animal large in "
+                  "the centre, small sketches of the saw teeth around it, thin scale lines and tiny faint note "
+                  "marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain "
+                  "white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.",
         "main": "One hammerhead shark, side view, study sheet. One wide hammer-shaped head, one tall dorsal fin, one tail, "
                 "the living animal large in the centre, its skeleton smaller below facing the same way, small sketches of "
                 "the open jaw and teeth around it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the "
