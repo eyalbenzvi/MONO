@@ -1,0 +1,70 @@
+{
+ "helper": 1,
+ "branch": "studio/run50b-1",
+ "started": "2026-10-01T15:54:06Z",
+ "finished": "2026-10-01T17:18:00Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "coiled-fossil",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s1101",
+   "mode": "pen",
+   "ink_coverage": 0.2402,
+   "note": "1101 the only clear coil with ribbed whorls; rings more than a true ammonite spiral, so titled COILED FOSSIL. Line screened the ribs into blotches, pen kept them. fails [], 25.9 x 30.2 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "sea-snail-shell",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s1201",
+   "mode": "pen",
+   "ink_coverage": 0.1218,
+   "note": "1201 a round coiled shell with growth marks on pale grey paper (levelled cleanly); not clearly a moon snail, so SEA SNAIL SHELL. 1200's cast shadow printed as a ground band. fails [], 25.8 x 29.5 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "sea-urchin",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s1303",
+   "mode": "pen",
+   "ink_coverage": 0.2763,
+   "note": "All four drew spines, not the bare test; 1303 the only one with a knobbed body, so titled SEA URCHIN. Pale cast shadow lifted to white outside the outline (feathered) before oneink. fails [], 26.0 x 29.5 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "chambered-shell",
+   "passed": true,
+   "which": "backup",
+   "images": 8,
+   "chosen": "s1451",
+   "mode": "pen",
+   "ink_coverage": 0.1912,
+   "note": "Main conch: four leaf or blob shapes, no spire. Backup nautilus: 1451 a whole coiled shell with chambered whorls (not cut open), so CHAMBERED SHELL. fails [], 25.9 x 30.6 cm."
+  },
+  {
+   "slot": 5,
+   "slug": "bladderwrack",
+   "passed": false,
+   "which": "backup",
+   "images": 8,
+   "chosen": null,
+   "mode": "line",
+   "ink_coverage": null,
+   "note": "Main kelp: four land-plant sprigs or feathers, no ribbon blades or bladders. Backup bladderwrack: a sprig with a pencil and a ground line, a feather, fused plumes, two ferns; no bladders. Done at minute 83, so no third try. Slot empty."
+  }
+ ],
+ "minutes": {
+  "install": 1.3,
+  "generate": 81.5,
+  "process": 16.0,
+  "total": 84
+ },
+ "issues": "Fronds and seaweed came out as land plants or feathers both times (the model has no idea of kelp or wrack). Spiral shells came best as round coils; all four delivered in pen, which kept the ribs as engraved lines where line mode blotched them. Mains and backups ran one at a time, no memory trouble."
+}
