@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6201
+Size: 832x1216
+Chosen: seed 6201 of 6200-6203 (main prompt), chosen when 6200 and 6201 were ready. 6200 has a fourth, white cap floating behind the middle mushroom with no stem of its own. 6201 is clean: three fly agarics (the brief asked for two; the model does not count) with spotted caps, gills and speckled stems in a tuft of grass, every cap whole and inside the margins.
+Prompt: Two fly agaric mushrooms, side view, standing together. Exactly two mushrooms, one tall and one short, domed caps covered with white spots, gills under the caps, a ring on each stem, a small tuft of moss at the base. Fine black ink line drawing with crisp contour lines and delicate hatching, like a natural history plate. Even soft light from the left. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode line --title "FLY AGARIC" --sub "Nature · Forest floor"

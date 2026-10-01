@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6100
+Size: 960x1088
+Chosen: 1 of 4 (seeds 6100-6103, main prompt). Seed 6100 is the only one that reads as a pomegranate: a round fruit cut open with the crown at the top and the red flesh in chambers. 6101 is an apple-like fruit with leaves and a stalk, 6102 and 6103 have a green stem growing out of the cut face, which makes no sense.
+Prompt: One pomegranate cut in half, front view of the open face. One fruit only, the cut face round and whole, packed with glossy seeds in chambers, thin pith walls, the crown at the top edge. Fine black ink line drawing with crisp contour lines and delicate hatching, like a natural history engraving. Even soft light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode line --title "POMEGRANATE" --sub "Botanical · Cut open"

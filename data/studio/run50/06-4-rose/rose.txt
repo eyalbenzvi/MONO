@@ -1,0 +1,10 @@
+Title: Rose
+Category: Botanical
+Subject: A single rose bloom seen head on, petals spiralling into a tight centre
+Style: Engraving-style line drawing with a fine screen in the shaded folds
+Medium: Drawn (illustration)
+Description: One rose seen straight on, petals turning inward to a tight spiral at its heart. No thorns were included, which is more than most roses can say.
+Tee colours: Black (rose.png, printed in white ink)
+Print size: 25.9 x 30.4 cm
+Keywords: rose, flower, bloom, botanical, garden, petals, natural history, line art, romantic
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

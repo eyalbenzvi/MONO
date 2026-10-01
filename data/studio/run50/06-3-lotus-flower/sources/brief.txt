@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 6300
+Size: 960x1088
+Chosen: seed 6300 of 6300-6303 (main prompt), chosen when 6300 and 6301 were ready; both were sound. 6300 is the more symmetrical: a lotus in full bloom, front view, layered pointed petals finely ruled, whole inside the margins. (The leaf and seed pod of the prompt did not appear.) Line mode broke the fine ruling into blotches of screen; pen mode keeps the ruling as lines, so pen was used.
+Prompt: One lotus flower in full bloom, front view. One flower only, symmetrical, layered pointed petals opening around a seed pod in the centre, a short stem and one round leaf below. Fine black ink line drawing with crisp contour lines and delicate hatching along the petal veins, like a natural history plate. Even soft light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+oneink: --mode pen --title "LOTUS FLOWER" --sub "Botanical · Natural history plate"

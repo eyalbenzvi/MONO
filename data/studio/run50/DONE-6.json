@@ -1,0 +1,17 @@
+{
+ "helper": 6,
+ "branch": "studio/run50-6",
+ "slots": [
+  {"slot": 1, "slug": "pomegranate", "passed": true, "which": "main", "images": 4, "chosen": "s6100", "mode": "line", "ink_coverage": 0.2171,
+   "note": "Only 6100 reads as a pomegranate (crown, chambers); the other three have stems growing out of the cut face or are apple-like"},
+  {"slot": 2, "slug": "fly-agaric", "passed": true, "which": "main", "images": 2, "chosen": "s6201", "mode": "line", "ink_coverage": 0.1621,
+   "note": "Three mushrooms, not two; clean. 6200 had a floating cap. Seeds 6202-6203 dropped to save time once 6201 passed"},
+  {"slot": 3, "slug": "lotus-flower", "passed": true, "which": "main", "images": 2, "chosen": "s6300", "mode": "pen", "ink_coverage": 0.1483,
+   "note": "Front view, symmetrical; line mode blotched the fine ruling, pen keeps it. 6302-6303 dropped to save time"},
+  {"slot": 4, "slug": "rose", "passed": true, "which": "main", "images": 2, "chosen": "s6401", "mode": "line", "ink_coverage": 0.1239,
+   "note": "Head-on bloom; 6400 looked like a succulent. Line cleaner than pen. 6402-6403 dropped to save time"},
+  {"slot": 5, "slug": "lemon-branch", "passed": true, "which": "backup", "images": 4, "chosen": "s6550", "mode": "tone", "ink_coverage": {"black": 0.17, "white": 0.1599},
+   "note": "Olive main failed (3 images: no olives or a muddle; 4th dropped for time). Lemon backup 6550 passed first; line left hollow crescents, tone used. 6551-6553 stopped"}
+ ],
+ "minutes": {"install": 2, "generate": 70, "process": 12, "total": 75, "note": "processing ran while generation continued"}
+}
