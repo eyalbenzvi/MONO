@@ -1,0 +1,10 @@
+Title: Stone Cottage
+Category: Architecture
+Subject: An old two-storey cottage of rough fieldstone with a tiled roof and two tall stone chimneys, a cobbled path through long grass to the door, bare trees behind
+Style: Engraving-style landscape, clustered-dot tone, the ground ending in a straight line under an open sky
+Medium: Drawn (illustration)
+Description: A fieldstone cottage with two chimneys and a crooked roof stands at the end of a cobbled path through long grass. Built to last several centuries, and so far managing it.
+Tee colours: White
+Print size: 24.9 x 31.6 cm
+Keywords: stone cottage, cottage, fieldstone, chimney, countryside, rural, home, old building, etching
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

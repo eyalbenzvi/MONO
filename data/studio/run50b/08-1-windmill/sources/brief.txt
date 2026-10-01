@@ -1,0 +1,10 @@
+Slot 1 (main): WINDMILL — Architecture · Old work
+Ending: --edge horizon (chosen before the prompt: one building standing on open ground).
+Prompt (main, 100 words): One old stone windmill on a hill, front view. A weathered round tower mill with a conical thatched cap and four lattice sails, small windows and a wooden door, rough stones and moss, wild grass and a dirt path around it, no people, no other buildings. Fine black ink etching with soft hatched tones and rich texture on the stone and timber. Soft afternoon light from the left. The mill stands whole in the middle; the ground ends in a clean straight line, empty white sky above. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seeds: 8100-8103. Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --jobs --lcm --steps 8), CPU
+Pre-process: levels stretch 0.10-0.80 (clears the faint sky streaks into paper; the stricter 0.25-0.62 washed out the grass)
+One ink: scripts/studio/oneink.py K1-windmill-s8103-lev.png data/studio/run50b/08-1-windmill windmill --mode tone --edge horizon --title "WINDMILL" --sub "Architecture · Old work"
+Chosen: seed 8103, the fourth of four. The only one that clearly reads as a windmill: three long sails over the cap, the whole mill inside the page, rich stone and grass texture. 8100 only two stub sails; 8101 one bent arm, reads as a tower; 8102 no sails at all, a stone tower with an annex. The mill shows three sails, not four; the text does not claim four.
+Tee: white only — on the black tee the empty sky round the mill becomes a bright continuous halo. fails [] on both files.

@@ -1,0 +1,10 @@
+Slot 5 (main): MOUNTAIN HUT — Villages · Under the peaks
+Ending: --edge rect (chosen before the prompt: a full scene of hut, pines and peaks).
+Prompt (main, 92 words): One old wooden mountain hut below peaks, front view. A small weathered log cabin with a steep shingled roof weighted with stones, a stone chimney and a little porch, on an alpine meadow with boulders and pine trees, snowy mountain peaks rising behind, no people. Fine black ink etching with soft hatched tones and rich texture on the logs, rocks and slopes. Soft morning light from the left. A complete rectangular scene with the hut in the lower middle. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seeds: 8500-8503. Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --jobs --lcm --steps 8), CPU
+Pre-process: levels stretch 0.10-0.78
+One ink: scripts/studio/oneink.py K5-mountain-hut-s8501-lev.png data/studio/run50b/08-5-mountain-hut mountain-hut --mode tone --edge rect --title "MOUNTAIN HUT" --sub "Villages · Under the peaks"
+Chosen: seed 8501, the second; picked from the first three (the fourth finished after minute 85 and was not reviewed in detail). The hut stands whole in the middle with peaks above it, which suits a rectangle. 8500 the hut cut by the left edge and a scribble like a signature at bottom right; 8502 sound but the hut sits low and small. The prompt asked for logs and a stone-weighted roof; the hut is of planks, and the text says planks.
+Tee: white only — on the black tee the boulders and the sky band become bright continuous areas and the hut goes dark. fails [] on both files.
