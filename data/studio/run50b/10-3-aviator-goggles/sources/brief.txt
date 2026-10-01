@@ -1,0 +1,6 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 10301
+Size: 960x1088
+Chosen: image 2 of 4 (seeds 10300-10303), main. 10300 was a three-quarter photo with flat dark lenses; 10302 was a pair of sunglasses, not goggles; 10303 was good goggles but its dark lenses and their shadows printed as filled discs and blobs. 10301 is a symmetrical front view with rimmed lenses, a padded mask and the strap; the lower band of the strap is not visibly joined at the sides, read as the back of the loop.
+Prompt: One pair of aviator goggles, front view. Two round glass lenses in thick brass rims, a padded leather nose bridge between them, soft stitched leather cushions, a wide worn leather strap curving out at both sides, symmetrical left and right, one pair only. No face, no head, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching on the leather and brass, crisp and high contrast. Even bright light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --title "AVIATOR GOGGLES" --sub "Objects · Open road"
