@@ -13,7 +13,7 @@ UNet is filled tensor by tensor and the VAE decodes in tiles, to stay under 15 G
 About 5 minutes an image on 4 cores. Licences: SDXL base and SDXL-Lightning, CreativeML
 Open RAIL++-M (commercial use allowed).
 """
-import argparse, gc, json, os, sys, time
+import argparse, ctypes, gc, json, os, sys, time
 
 import torch
 from huggingface_hub import hf_hub_download, snapshot_download
@@ -28,6 +28,17 @@ from generate import encode  # noqa: E402  (long prompts in 77-token windows)
 
 BASE = "stabilityai/stable-diffusion-xl-base-1.0"
 LIGHTNING = "ByteDance/SDXL-Lightning"
+
+
+def trim():
+    """Hand freed heap back to the OS (glibc keeps it otherwise; the peak must stay under the memory limit)."""
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
+
+
 CKPT = {8: "sdxl_lightning_8step_unet.safetensors", 4: "sdxl_lightning_4step_unet.safetensors"}
 
 
@@ -62,7 +73,7 @@ def main():
             pe, pooled, _ = encode(enc, j["prompt"])
             embeds[j["prompt"]] = (pe, pooled)
     del enc
-    gc.collect()
+    trim()
 
     # 2. The Lightning UNet, upcast tensor by tensor (fp16 file and fp32 model never both in memory).
     with init_empty_weights():
@@ -71,13 +82,14 @@ def main():
         for k in f.keys():
             set_module_tensor_to_device(unet, k, "cpu", value=f.get_tensor(k).to(dt))
     unet = unet.eval()
-    gc.collect()
+    trim()
     vae = AutoencoderKL.from_pretrained(base, subfolder="vae", torch_dtype=dt)
     vae.enable_tiling()
     sched = EulerDiscreteScheduler.from_pretrained(base, subfolder="scheduler", timestep_spacing="trailing")
     pipe = StableDiffusionXLPipeline(vae=vae, text_encoder=None, text_encoder_2=None, tokenizer=None,
                                      tokenizer_2=None, unet=unet, scheduler=sched)
     pipe.set_progress_bar_config(disable=True)
+    pipe.enable_attention_slicing()
 
     for j in jobs:
         w, h = (int(x) for x in (j.get("size") or "832x1216").split("x"))
