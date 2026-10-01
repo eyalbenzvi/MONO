@@ -29,5 +29,11 @@ PROMPTS = {
                 "with a record on the platter and a tonearm, large in the centre; around it small separate "
                 "drawings of the tonearm, the stylus cartridge and the platter, and small circular detail "
                 "roundels. Fine white lines, a patent drawing study sheet. Wide black margins. No ornaments.",
+        "backup": "One antique gramophone with a big flared horn, side view, white chalk line drawing on a plain "
+                  "black background, no text, no lettering, no frame, no border, no panels, no colour. Exactly one "
+                  "gramophone: a wooden box with a crank handle, a turntable with a record, a tone arm and one large "
+                  "fluted brass horn, every part drawn in fine white lines with delicate hatching. Two small "
+                  "circles beside it show the needle and the crank. Centred, the whole gramophone with wide black "
+                  "margins. No ornaments.",
     },
 }
