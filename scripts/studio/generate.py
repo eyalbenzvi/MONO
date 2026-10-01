@@ -5,12 +5,18 @@ service): Segmind SSD-1B (Apache 2.0), optionally with the LCM LoRA
 
   python scripts/studio/generate.py <out.png> "<subject>" [--steps 30] [--seed 1] [--lcm] [--size 832x1216] [--style plate|realistic]
   python scripts/studio/generate.py --batch <jobs.tsv> [--steps 8] [--lcm]   (lines: out<TAB>seed<TAB>subject)
+  python scripts/studio/generate.py --jobs <jobs.json> [--steps 22]   ([{"out", "seed", "prompt", "negative"?, "size"?}])
+
+The text encoders read 77 tokens at a time; a long prompt (a full brief of
+200 words or more) is encoded in 77-token chunks with Compel and read whole,
+not cut off. A --jobs prompt is the whole prompt: no house style is put before it.
 
 The house style (docs/content/studio.md) is put before the subject, and the
 negative prompt keeps out text, frames, colour and grey wash.
 """
-import sys, time
+import json, sys, time
 import torch
+from compel import Compel, ReturnedEmbeddingsType
 from diffusers import StableDiffusionXLPipeline, LCMScheduler
 
 STYLES = {
@@ -47,24 +53,41 @@ def main():
         pipe.load_lora_weights("latent-consistency/lcm-lora-ssd-1b")
         pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
         guidance = 1.0
-    if "--batch" in a:
+    if "--jobs" in a:
+        jobs = [(j["out"], int(j["seed"]), j["prompt"], j.get("negative", NEGATIVE), j.get("size")) for j in json.load(open(opt("--jobs", "")))]
+    elif "--batch" in a:
         jobs = [l.rstrip("\n").split("\t") for l in open(opt("--batch", "")) if l.strip()]
-        jobs = [(o, int(s), subj) for o, s, subj in jobs]
+        jobs = [(o, int(s), style + subj, NEGATIVE, None) for o, s, subj in jobs]
     else:
-        jobs = [(a[0], seed, a[1])]
-    for out, seed, subject in jobs:
+        jobs = [(a[0], seed, style + a[1], NEGATIVE, None)]
+    compel = Compel(
+        tokenizer=[pipe.tokenizer, pipe.tokenizer_2],
+        text_encoder=[pipe.text_encoder, pipe.text_encoder_2],
+        returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+        requires_pooled=[False, True],
+        truncate_long_prompts=False,
+    )
+    for out, seed, prompt, negative, size in jobs:
+        jw, jh = (int(v) for v in size.split("x")) if size else (w, h)
         t = time.time()
+        with torch.no_grad():
+            cond, pooled = compel(prompt)
+            if lcm:
+                kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled)
+            else:
+                ncond, npooled = compel(negative)
+                cond, ncond = compel.pad_conditioning_tensors_to_same_length([cond, ncond])
+                kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled, negative_prompt_embeds=ncond, negative_pooled_prompt_embeds=npooled)
         img = pipe(
-            prompt=style + subject,
-            negative_prompt=None if lcm else NEGATIVE,
+            **kw,
             num_inference_steps=steps,
             guidance_scale=guidance,
-            width=w,
-            height=h,
+            width=jw,
+            height=jh,
             generator=torch.Generator().manual_seed(seed),
         ).images[0]
         img.save(out)
-        print(f"{out}: {w}x{h}, {steps} steps, {time.time() - t:.0f} s", flush=True)
+        print(f"{out}: {jw}x{jh}, {steps} steps, {time.time() - t:.0f} s", flush=True)
 
 
 if __name__ == "__main__":
