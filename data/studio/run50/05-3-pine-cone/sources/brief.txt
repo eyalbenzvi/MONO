@@ -1,0 +1,11 @@
+Prompt: One pine cone, upright, front view. A single closed pine cone standing upright, overlapping woody scales in a neat spiral pattern, symmetrical, short stalk at the top, complete and whole. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and light hatching on each scale. Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5301
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5301, the second of four (5300-5303). One symmetrical closed cone with bold outlines on every scale and little grey; in one ink it keeps the scales clear and its mass unstretched is half that of 5300 (0.048 against 0.104). 5300 was also a good cone but its grey shading broke into a mottled screen; in pen mode it failed (continuous dense area 15.6%). The cone has no stalk, only a short point at the base.
+Processing before one ink: levels stretched (grey 0.25 to black, 0.62 to white; K3-pine-cone-s5301-stretched.png) so the pale grey on the scale faces drops out; mass 0.048 unstretched, 0.010 stretched.
+python3 scripts/studio/oneink.py K3-pine-cone-s5301-stretched.png data/studio/run50/05-3-pine-cone pine-cone --mode line --title "PINE CONE" --sub "Botanical · Natural history plate"
