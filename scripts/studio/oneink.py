@@ -3,7 +3,7 @@ One ink from an illustration (the studio's raster path): a tonal or line
 illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
-  python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9] [--mode line|tone]
+  python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9] [--mode line|tone] [--fade]
 
 Writes, at 300 DPI on the 28 x 37 cm print area (3307 x 4370 px):
   <slug>-white.png   black ink for a white tee: the picture's dark parts are ink;
@@ -11,6 +11,9 @@ Writes, at 300 DPI on the 28 x 37 cm print area (3307 x 4370 px):
                      (the picture stays a positive, never a negative);
   <slug>-preview.png 1500 px wide, the design on both tees;
   <slug>-check.json  the measures and anything that fails.
+
+--fade is for a full-bleed picture (a scene to the edges): it fades to nothing
+at the edges, as the guidelines ask of a picture with its background.
 
 Every pixel is ink or nothing (alpha 0 or 255). Tone is a clustered-dot
 screen whose dots and gaps are never under 0.4 mm; lines dark enough print
@@ -40,26 +43,52 @@ def load(path, crop=None):
     return np.asarray(img).astype(np.float32) / 255.0
 
 
-def darkness(grey):
-    """Ink amount 0..1 with the paper taken off: the light end of the picture is paper."""
+def darkness(grey, full_bleed=False):
+    """Ink amount 0..1 with the paper taken off: the light end of the picture is paper
+    (a full-bleed picture has no paper, so only its lightest tone is taken off)."""
     k = 1.0 - grey
-    lo = np.percentile(k, 35)  # the paper's own tone
+    lo = np.percentile(k, 2 if full_bleed else 35)  # the paper's own tone
     hi = np.percentile(k, 99.7)
     return np.clip((k - lo) / max(1e-3, hi - lo), 0, 1)
 
 
-def autocrop(k):
-    """Trim the paper around the picture (its marks' bounding box, crumbs ignored)."""
+def fade(k, seed=7):
+    """Fade a full-bleed picture to nothing at its edges, as an engraver's vignette: an
+    oval whose edge wanders (so it never reads as a shape) with a soft fall-off, the
+    bottom left a little longer than the top, so the scene sits on the tee, not in a box."""
+    h, w = k.shape
+    y, x = np.mgrid[0:h, 0:w].astype(np.float32)
+    nx, ny = (x - w / 2) / (w / 2), (y - h * 0.48) / (h / 2)
+    r = np.sqrt(nx * nx + ny * ny)
+    th = np.arctan2(ny, nx)
+    rnd = np.random.default_rng(seed)
+    wobble = sum(rnd.uniform(0.02, 0.05) / f * np.sin(f * th + rnd.uniform(0, 6.3)) for f in (3, 5, 8, 13))
+    grain = cv2.GaussianBlur(rnd.random((h, w)).astype(np.float32), (0, 0), max(2, w / 120)) - 0.5
+    edge = 0.92 + wobble + 0.6 * grain
+    m = np.clip((edge - r) / 0.38, 0, 1)
+    m = m * m * (3 - 2 * m)
+    return m
+
+
+def crop_box(k):
+    """The paper trimmed off around the picture: its marks' bounding box, crumbs ignored."""
     m = (cv2.GaussianBlur(k, (0, 0), 2) > 0.12)
     rows, cols = np.nonzero(m.mean(1) > 0.004)[0], np.nonzero(m.mean(0) > 0.004)[0]
     if not len(rows) or not len(cols):
-        return k
-    return k[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
+        return np.s_[:, :]
+    return np.s_[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
 
 
 def fit(k, size):
-    """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned."""
-    k = autocrop(k)
+    """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned.
+    A stack of layers is cropped by the first and placed the same."""
+    if k.ndim == 3:
+        box = crop_box(np.maximum(k[0], k[1] * 0.999))
+        return np.stack([fit_one(l[box], size) for l in k])
+    return fit_one(k[crop_box(k)], size)
+
+
+def fit_one(k, size):
     h, w = k.shape
     s = min(DESIGN_W * size / w, DESIGN_H * size / h)
     nw, nh = int(w * s), int(h * s)
@@ -241,21 +270,32 @@ def main():
     crop = None
     size = 1.0
     mode = args[args.index("--mode") + 1] if "--mode" in args else "line"
+    bleed = "--fade" in args
     if "--crop" in args:
         crop = tuple(int(v) for v in args[args.index("--crop") + 1].split(","))
     if "--size" in args:
         size = float(args[args.index("--size") + 1])
     os.makedirs(out, exist_ok=True)
-    k = fit(darkness(load(src, crop)), size)
+    k = darkness(load(src, crop), bleed)
+    m = fade(k) if bleed else None
+    if bleed:
+        # The vignette fades both positives: the dark parts on white, the light parts on black.
+        both = fit(np.stack([k * m, (1 - k) * m]), size)
+        k, light = both[0], both[1]
+    else:
+        k = fit(k, size)
     if mode == "line":
         # Line art: one file; the same lines print white on black and black on white (guidelines, 03).
         white = fit_coverage(k, 1.0, inker=line_ink)
         black = white
     else:
         # Tonal work: two positives; on a black tee the subject's light parts are the ink.
-        mask = subject_mask(k)
         white = fit_coverage(k, 1.0)
-        black = fit_coverage(np.clip(1 - k, 0, 1), mask.astype(np.float32))
+        if bleed:
+            black = fit_coverage(light, 1.0)
+        else:
+            mask = subject_mask(k)
+            black = fit_coverage(np.clip(1 - k, 0, 1), mask.astype(np.float32))
     save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
     save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
     a, b = mockup(black, "black"), mockup(white, "white")
