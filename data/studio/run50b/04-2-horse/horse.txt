@@ -1,0 +1,10 @@
+Title: Horse
+Category: Botanical & Nature
+Subject: A pale horse head and neck, front view, ears pricked, forelock and loose mane
+Style: Pen portrait, flowing hair strokes for the mane and screened mid-tones
+Medium: Drawn (illustration)
+Description: A pale horse faces straight out, ears up, its mane loose at both sides of the neck. It has been told there are no apples and does not believe it.
+Tee colours: Black and white (one file, horse.png, prints on both)
+Print size: 15.7 x 35.0 cm
+Keywords: horse, animal portrait, head, equine, mane, wildlife, nature, pen drawing, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
