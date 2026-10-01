@@ -24,6 +24,15 @@ PROMPTS = {
             "white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One old enamel coffee pot, side view, standing. One tall tapering body, one long "
+            "curved spout on the left, one single looped handle on the right, a hinged domed lid "
+            "with a round knob, chipped enamel and dents on the plain smooth surface, one coffee "
+            "pot only, one spout, one handle. No cups, no steam, nothing else. Bold confident "
+            "black pen and ink engraving lines with fine cross-hatching on the metal, crisp and "
+            "high contrast. Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     3: {
         "main": (
