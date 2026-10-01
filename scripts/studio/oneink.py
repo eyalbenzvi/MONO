@@ -4,7 +4,7 @@ illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
   python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
-      [--mode line|tone] [--fade] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
+      [--mode line|pen|tone] [--fade] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
 
 Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
 the 28 x 37 cm print area (3307 x 4370 px):
@@ -206,6 +206,24 @@ def line_ink(tone):
     return cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
 
 
+def pen_ink(tone):
+    """Fine pen drawing (hairlines, technical drawings): a hairline enlarged from a small
+    picture is a faint grey streak, not a dark line, so lines are found by local contrast
+    (darker than their surroundings) rather than by darkness, then drawn at 0.4 mm or more."""
+    local = cv2.GaussianBlur(tone, (0, 0), 1.2 * PX_MM)
+    ridge = ((tone - local) > 0.035) & (tone > 0.08)
+    ink = (ridge | (tone > 0.5)).astype(np.uint8)
+    ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(1.0))
+    thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
+    ink = np.maximum(ink, cv2.dilate(ink & (1 - thick), disc(1.6)))
+    # Crumbs: pieces smaller than about 0.8 mm across are noise, not line.
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(ink)
+    keep = np.zeros(n, bool)
+    keep[1:] = stats[1:, cv2.CC_STAT_AREA] > (0.8 * PX_MM) ** 2
+    ink = keep[lab].astype(np.uint8)
+    return hold_slabs(ink)
+
+
 def hold_slabs(ink):
     """Any solid patch still wider than 4 mm (lines merged in the enlargement) is opened into mesh."""
     core = cv2.erode(ink, disc(2 * PX_MM))
@@ -317,7 +335,11 @@ def main():
         k, light = both[0], both[1]
     else:
         k = fit(k, size)
-    if mode == "line":
+    if mode == "pen":
+        white = pen_ink(k)
+        black = white
+        mode = "line"
+    elif mode == "line":
         # Line art: one file; the same lines print white on black and black on white (guidelines, 03).
         white = fit_coverage(k, 1.0, inker=line_ink)
         black = white
