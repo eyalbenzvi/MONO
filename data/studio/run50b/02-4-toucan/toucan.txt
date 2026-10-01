@@ -1,0 +1,10 @@
+Title: Toucan
+Category: Botanical & Nature
+Subject: A toucan perched on a broken stump, seen from the side with its great curved beak raised
+Style: Natural history plate in fine screened tone, glossy dark body and pale throat
+Medium: Drawn (illustration)
+Description: A toucan sits on a broken stump, its huge curved beak tipped up over a pale throat and a dark, glossy body. The beak is mostly air, which is more than can be said for most statements.
+Tee colours: Black and white (toucan-black.png for black tees, toucan-white.png for white tees)
+Print size: 20.0 x 34.9 cm (heading included)
+Keywords: toucan, bird, tropical, rainforest, beak, wildlife, natural history, perched, jungle
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
