@@ -1,0 +1,6 @@
+Prompt (89 words): One calm alpine lake with peaks, front view. A still mountain lake in the foreground with a clear mirror reflection, two or three snowy peaks behind it, a few pine trees on the near shore, no boats, no buildings. Fine black ink engraving with crisp parallel hatching for rock and water. Soft even daylight from above. The lake sits in the centre of the page and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 7200 (of 7200, 7201, 7202, 7203; main)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
+Chosen: s7200. s7201 has a flat grey-wash lake and a faint frame; s7203 is drawn inside a ruled panel; s7202 is clean but its peak is a bare outline and on the black tee the open middle prints as a grey blotch. s7200 has the most drawing: snowy peaks, pines either side, a mirror reflection; both positives pass and read cleanly.
