@@ -1,0 +1,13 @@
+Prompt (backup, SAXOPHONE STUDY): One saxophone, side view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A single alto saxophone large in the centre, curved neck and mouthpiece, the long conical body with rows of round key pads and rods, the upturned flared bell. Beside it two or three loose parts drawn small: the mouthpiece, one key, a reed. Thin clean white lines, fine hatching. Centred, wide black margins.
+
+Seed: 30545
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, scripts/studio/generate_sdxl.py
+
+Main (TRUMPET STUDY), seeds 30540-30542, all rejected: 30540 a pipe contraption on black, not a trumpet, with fake handwriting all over; 30541 a sheet of loose tubes and bells on cream paper, lettered everywhere, no whole trumpet; 30542 a tall bell and a tuba-like coil on cream paper with fake labels. The prompt's "patent study sheet" brought in lettering and the black background was ignored twice. Main prompt: One trumpet, side view, a patent study sheet as white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A single brass trumpet large in the centre, flared bell, three piston valves, looped tubing, mouthpiece. Around it a few separate parts: one valve piston, the mouthpiece, small detail circles. Thin clean white lines, fine hatching. Centred, wide black margins.
+
+Backup (SAXOPHONE STUDY), seeds 30545-30547: chosen 30545, one whole saxophone with crook, mouthpiece, keys and bell, no text, no frame; 30546 also clean but its bell is stretched long and straight (less true to a saxophone).
+Black background: the model drew dark ink on a grey vignetted ground instead of white on black. So the ground was flattened (background estimated by a 41 px closing and a blur, the image divided by it, then levels 0.25-0.85) to dark line on white paper (K4-s30545-clean.png); one ink makes the drawing the ink, and on a black tee it prints as white line on black, as the D family asks.
+Title: no loose parts or detail roundels were drawn, so it is titled SAXOPHONE, not SAXOPHONE STUDY.
+Ending: none (one object).
+python3 scripts/studio/oneink.py K4-s30545-clean.png data/studio/sdxl50/05-4-saxophone saxophone --crop 30,30,802,1186 --mode line --title "SAXOPHONE" --sub "Objects · Instrument"
