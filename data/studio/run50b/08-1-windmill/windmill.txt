@@ -1,0 +1,10 @@
+Title: Windmill
+Category: Architecture
+Subject: An old stone tower windmill with three long wooden sails and a cottage beside it, a cobbled path through long grass in front
+Style: Engraving-style landscape, clustered-dot tone, the ground ending in a straight line under an open sky
+Medium: Drawn (illustration)
+Description: A tapering stone windmill stands over long grass, a low cottage and trees at its side and a worn path to the door. It has lost a sail somewhere along the way and carries on regardless.
+Tee colours: White
+Print size: 21.7 x 35.3 cm
+Keywords: windmill, mill, stone tower, countryside, rural, cottage, old building, landscape, etching
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
