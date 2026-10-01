@@ -39,5 +39,11 @@ PROMPTS = {
                 "Even soft light from the left. "
                 "Centred, the whole subject with wide white margins, plain white paper. "
                 "No text, no frame, no border, no ornaments, no colour, no grey wash.",
+        "backup": "One lemon branch with lemons, upright view. "
+                  "One single branch, glossy oval leaves along the stem, two or three whole round lemons hanging from it, one small white blossom, the stem cut cleanly at the bottom. "
+                  "Fine black ink line drawing with crisp contour lines and delicate hatching, like a natural history plate. "
+                  "Even soft light from the left. "
+                  "Centred, the whole subject with wide white margins, plain white paper. "
+                  "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
 }
