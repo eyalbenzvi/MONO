@@ -1,0 +1,17 @@
+Main prompt (SURFBOARD STUDY, seeds 24100-24103, all four rejected): One surfboard study sheet, side and top views. A large longboard drawn in plan view in the centre, the same board in profile below it, three separate fins and a small rail cross-section beside it, a row of small round detail circles along the bottom. White chalk line drawing on a black background, like a vintage patent drawing, clean outlines, fine hatching. Even flat light, crisp contrast. Centred, the whole sheet with wide black margins. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Backup prompt (SKATEBOARD STUDY, used): One skateboard study sheet, exploded view from above. A skateboard deck seen from below in the centre, two trucks and four wheels drawn apart around it, bolts, bearings and a side profile of the deck, a row of small round detail circles along the bottom. Thin white chalk outlines only on a black background, every shape hollow and black inside, like a vintage patent drawing, fine hatching. Even flat light, crisp contrast. Centred, the whole sheet with wide black margins. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used by the LCM pipeline at guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seeds: main 24100-24103, backup 24150-24153; chosen backup 24153 (the fourth)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why the backup: every surfboard seed drew two to four boards as plain solid white or grey slabs running from the top edge to the bottom, with no fins, rails or parts round them (24103 also had a column of fake glyphs).
+Why 24153: 24150 has a ruled frame, fake labels and a grey slab for a deck; 24151 a frame line, bone-like blobs for trucks and a deck filled with pseudo-gears; 24152 three grey slabs edge to edge. 24153 is the only one in the study-sheet language: white line on black, a long central deck with smaller decks in plan round it, each with truck bolt holes at the ends, and trucks with wheels drawn apart, all inside the page.
+Clean-up before oneink: a column of fake letters down the central deck was inpainted away and nine small fake caption labels painted out to the background. The model's light pills are filled; for chalk line on a black tee the background was set to paper, the fills pushed to white (levels 140-218) and a 2 px outline traced round every piece, so only the drawing is ink.
+The pieces are simplified (no grip tape, no kicktail profile); the title stays SKATEBOARD STUDY because the decks with paired bolt holes and the trucks with wheels are what the sheet shows.
+One ink: line mode; one file, the lines print white on a black tee (Tee colours: Black).
+python3 scripts/studio/oneink.py <cleaned image> data/studio/insp12/04-1-skateboard-study skateboard-study --mode line --title "SKATEBOARD STUDY" --sub "Objects · Study sheet"

@@ -1,0 +1,10 @@
+Title: Skateboard Study
+Category: Geometric
+Subject: A parts sheet of skateboard decks in plan, each with its truck bolt holes, laid out round a long central deck, with trucks and wheel assemblies drawn apart beside them
+Style: Patent-style study sheet in white chalk-like outline on black
+Medium: Drawn (illustration)
+Description: Rounded decks and loose trucks lie in tidy ranks, as if someone took a skateboard apart and then forgot how many they had started with. Assembly instructions not included.
+Tee colours: Black
+Print size: 20.4 × 34.9 cm
+Keywords: skateboard, skate deck, trucks, skateboarding, patent drawing, exploded view, parts, line art, chalk, study sheet
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
