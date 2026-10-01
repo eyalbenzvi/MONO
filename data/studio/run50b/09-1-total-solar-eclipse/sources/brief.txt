@@ -11,3 +11,4 @@ Chosen: the 4th of 4 (seed 9103). One black disc with a corona of fine radiating
 Processing before one ink: the dark square sky removed: around the disc (centre 472,522, radius 170, kept as drawn) a levels stretch 0.22-0.62, then a radial fade to white paper from radius 200 to 420, so the corona's streaks thin out into paper and no sky edge is left.
 python3 scripts/studio/oneink.py <processed image> data/studio/run50b/09-1-total-solar-eclipse total-solar-eclipse --mode tone --title "TOTAL SOLAR ECLIPSE" --sub "Maps & Sky · The sun hidden"
 Delivered white tee only: on the black-tee positive the corona became one continuous bright ring with a hard edge, so the black file is not delivered.
+Preview: the white-tee file on a white tee (the only file delivered).
