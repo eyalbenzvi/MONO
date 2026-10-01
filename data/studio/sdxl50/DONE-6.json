@@ -1,0 +1,57 @@
+{
+ "helper": 6,
+ "branch": "studio/sdxl50-6",
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "chameleon-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "30610",
+   "mode": "pen",
+   "note": "One whole chameleon on a branch; frame cropped, small fake text painted out; downscaled 0.5x before pen so the fine scale texture passes the 0.4 mm check; no skull/detail sketches drawn.",
+   "ink_coverage": 0.2052
+  },
+  {
+   "slot": 2,
+   "slug": "space-rocket",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "30622",
+   "mode": "line",
+   "note": "One rocket in side elevation on a ground line; frame cropped, tiny monogram painted out, ground shadow trimmed even; no spec columns drawn.",
+   "ink_coverage": 0.0676
+  },
+  {
+   "slot": 3,
+   "slug": "old-town-street",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "30630",
+   "mode": "pen",
+   "note": "Slot PRAGUE OLD TOWN; titled OLD TOWN STREET (truth rule: not recognisably Prague). Cobbled street, tower and spire, no text; --edge horizon.",
+   "ink_coverage": 0.2418
+  },
+  {
+   "slot": 4,
+   "slug": "espresso-machine",
+   "passed": true,
+   "which": "main",
+   "images": 6,
+   "chosen": "30642",
+   "mode": "pen",
+   "note": "Backup moka pot (3 seeds) all rejected for large fake headings; main 30642 used. Titled ESPRESSO MACHINE (no exploded parts drawn). Model ignored the black background; dark lines print white on a black tee. Tee colours: Black.",
+   "ink_coverage": 0.2075
+  }
+ ],
+ "minutes": {
+  "install": 1.2,
+  "generate": 57.9,
+  "process": 0.7,
+  "total": 59.8
+ },
+ "generator": "scripts/studio/generate_sdxl.py unchanged (no fix needed); 15 images: 12 main + 3 backup (slot 4)"
+}
