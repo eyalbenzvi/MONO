@@ -1,0 +1,10 @@
+Title: Oil Lantern
+Category: Photographs
+Subject: An old metal oil lantern with a domed cap and finial, a glass chimney behind turned guard bars, an oil font inside and a broad turned base
+Style: Engraving-style line work with screened shading on the metal, white lines on the tee
+Medium: Drawn (illustration)
+Description: An old metal lantern stands on its turned base, the glass held behind slim guard bars beneath a domed cap. It is waiting, with some patience, for somebody to bring a match.
+Tee colours: Black and white (oil-lantern.png prints white on black tees and black on white tees)
+Print size: 16.4 x 34.6 cm
+Keywords: lantern, oil lamp, maritime, ship's lamp, light, antique, metal, engraving
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

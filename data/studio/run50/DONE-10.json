@@ -1,0 +1,18 @@
+{
+ "helper": 10,
+ "branch": "studio/run50-10",
+ "slots": [
+  {"slot": 1, "slug": "anchor", "passed": true, "which": "main", "images": 4, "chosen": "s10102 (2 of 4 seeds; image 3)", "mode": "line", "ink_coverage": 0.0673,
+   "note": "Clear anchor (shank, two curved arms, stock); a second stock and the ring beside the shank. The other three came out as scales, a cross and a misjoined anchor. Category Engravings (the one allowed)."},
+  {"slot": 2, "slug": "oil-lantern", "passed": true, "which": "backup", "images": 8, "chosen": "s10250 (backup image 1)", "mode": "line", "ink_coverage": 0.1435,
+   "note": "All four diving helmets rejected (porthole-like oval frames, fake lettering, a robot face). Backup lantern reads well; the screened metal is a little blotchy. Category Photographs (nearest of the ten for an object; the cap kept Engravings to one)."},
+  {"slot": 3, "slug": "hourglass", "passed": true, "which": "main", "images": 4, "chosen": "s10301 (image 2)", "mode": "line", "ink_coverage": 0.068,
+   "note": "Clean hourglass with sand in both bulbs; the others had flames, a three-lobed glass or a rod through the glass. Category Geometric (nearest of the ten)."},
+  {"slot": 4, "slug": "antique-key", "passed": false, "which": "main", "images": 4, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "All four were grey photographs of rods and crosses, none a key. The padlock backup (prompt in run50-10.py) would have started after minute 85, so it was not run."},
+  {"slot": 5, "slug": "chess-knight", "passed": false, "which": "main", "images": 4, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "The model drew whole horse statues on plinths, as grey or colour photographs, malformed; never a chess piece. No time for the rook backup."}
+ ],
+ "minutes": {"install": 2, "generate": 92, "process": 10},
+ "lessons": "For objects the model drifts to photographs ('pitted iron', 'wood grain') and to frames ('porthole'); 'chess knight' means a horse statue to it."
+}

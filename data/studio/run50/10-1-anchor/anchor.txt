@@ -1,0 +1,10 @@
+Title: Anchor
+Category: Engravings
+Subject: An old iron ship's anchor standing upright, with two curved arms at the crown, a double stock near the top and a ring on its shank
+Style: Engraving-style line work, cross-hatching on the iron, white lines on the tee
+Medium: Drawn (illustration)
+Description: An iron anchor stands upright, its two arms curving out from the crown below a long shank and a pair of stocks. It has never once been the life of the party, which is rather the point.
+Tee colours: Black and white (anchor.png prints white on black tees and black on white tees)
+Print size: 16.8 x 34.9 cm
+Keywords: anchor, maritime, ship, sailor, nautical, iron, ground tackle, engraving, sea
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
