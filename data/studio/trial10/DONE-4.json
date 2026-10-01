@@ -1,0 +1,22 @@
+{
+ "helper": 4,
+ "branch": "studio/trial10-4",
+ "started": "2026-10-01T10:47:59Z",
+ "finished": "2026-10-01T11:32Z",
+ "designs": [
+  {
+   "nn": "07", "slug": "volcano", "passed": false, "backup": false, "attempts": 3, "mode": "line", "ink_coverage": null,
+   "note": "Rejected 3 times, never processed. 1 (seed 401, trial brief): the cone sat in a full landscape boxed by a hard rectangle, a panel, slopes a grey mass. 2 (seed 4117, rewritten 'exactly one cone, one crater, one ash column', isolated vignette, no ground): still a plain to the bottom edge, a grey mass with a solid black slab, and the cloud floated apart from the crater instead of rising from it. 3 (seed 90731, small cone, column joined to crater): cone and column fused into one vase-like shape, no structural logic. SSD-1B with LCM at 8 steps keeps turning this brief into a landscape."
+  },
+  {
+   "nn": "08", "slug": "lighthouse", "passed": true, "backup": false, "attempts": 1, "mode": "tone --fade", "ink_coverage": {"white": 0.1511, "black": 0.2884},
+   "note": "Seed 402, trial brief unchanged. Check fails: [] on both files. The first oneink run's vignette cut off the lantern (tower stands top left), so the generated image was padded with its own sky tone (260 px top, 200 px left, soft blend at the old left edge) before oneink; noted in sources/brief.txt. Print 20.6 x 32.9 cm (black tee), 23.4 x 35.0 cm (white tee)."
+  },
+  {
+   "nn": "07", "slug": "stone-bridge", "passed": false, "backup": true, "attempts": 3, "mode": "line", "ink_coverage": null,
+   "note": "Stand-in for the volcano, rejected 3 times, never processed. 1 (seed 403, trial brief): a perspective view down a river with floating arches, trees, black water, full-bleed. 2 (seed 55211, 'flat side elevation', no landscape): again one-point perspective down a canal with buildings. 3 (seed 7703, orthographic elevation, no water words): one pointed arch instead of three round, perspective, incoherent walls. The model will not draw a side elevation of a bridge at this step count."
+  }
+ ],
+ "delivered": ["08-lighthouse"],
+ "minutes": {"install": 3.0, "generate": 27.0, "process": 3.0}
+}
