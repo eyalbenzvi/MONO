@@ -1,0 +1,18 @@
+{
+ "helper": 13,
+ "branch": "studio/sdxl50-13",
+ "started": "2026-10-01T22:37:55Z",
+ "finished": "2026-10-01T23:42:00Z",
+ "designs": [
+  {"slot": 1, "slug": "mushroom-study", "passed": true, "which": "main", "images": 3, "chosen": "s31311", "mode": "pen", "ink_coverage": 0.2231,
+   "note": "31311 one big spotted mushroom with five smaller ones, no frame or text; 31310/31312 were framed sheets with fake labels. No cut sections or spores drawn, species unsure, so general MUSHROOM STUDY. Line blotched, pen kept the gills. fails [], 22.8 x 35.0 cm."},
+  {"slot": 2, "slug": "lattice-tower", "passed": true, "which": "backup", "images": 6, "chosen": "s31325", "mode": "line", "ink_coverage": 0.0722,
+   "note": "Clock tower main: perspective, background streets, fake text, no real clock. Backup radio tower 31325: one lattice tower side-on with guy wires and much air; cross-arms like a pylon, no aerials, so LATTICE TOWER. Cropped off paper edge and tiny text. fails [], 21.7 x 35.0 cm."},
+  {"slot": 3, "slug": "temple-stairs", "passed": true, "which": "main", "images": 3, "chosen": "s31330", "mode": "pen", "ink_coverage": 0.2865,
+   "note": "31330 symmetrical stone stairs to a three-roofed temple between pines, no haze; tiny signature and edge line cropped. Pen failed thin ink (1.1%), line blotched; pen on a 2x upscale with lines thickened (MinFilter 3) passes. Edge horizon. fails [], 21.6 x 35.3 cm."},
+  {"slot": 4, "slug": "kite-study", "passed": true, "which": "main", "images": 6, "chosen": "s31340", "mode": "line", "ink_coverage": 0.0669,
+   "note": "Boomerang backup: large fake lettering on all three. Kite 31340: diamond kite with spars, bridle and tail, four roundels, white on dark; frame, ornaments and six small fake labels painted out, inverted for oneink. Black tee. fails [], 23.6 x 35.0 cm."}
+ ],
+ "minutes": {"install": 1.0, "generate": 59.0, "process": 14.0, "total": 64},
+ "issues": "generate_sdxl.py unchanged; ~2.7 min an image (not 5). Running oneink while the generator held 13.9 GB got the generator OOM-killed once (restarted, it skipped done images); after that oneink only ran after generation. One queue mistake briefly started a second generator (pgrep matched two PIDs); it was killed within seconds by PID, before loading models, and the main run was not affected. Lightning again added frames, cream paper and fake text; patent sheets came with the most lettering."
+}
