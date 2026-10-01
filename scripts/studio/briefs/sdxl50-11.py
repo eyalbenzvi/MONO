@@ -9,7 +9,12 @@ margins, plain white paper."""},
 no text, no lettering, no frame, no border, no colour. A single bridge with two tall towers, one long sagging
 main cable and thin vertical hangers, a straight deck, a thin ground and water line below. Faint thin columns
 of tiny spec marks at the side. Crisp black ink lines, lots of white space. Centred, the whole bridge with
-wide white margins."""},
+wide white margins.""",
+        "backup": """One old stone arch bridge, flat side elevation, technical line drawing on plain white paper, no
+text, no lettering, no frame, no border, no colour. A single bridge with three round stone arches, cut voussoir
+stones, a straight parapet and two sturdy piers, seen exactly from the side. A thin straight water line and
+ground line below. Faint thin columns of tiny spec marks at the side. Crisp black ink lines, lots of white space,
+the whole bridge centred with wide white margins."""},
     3: {"main": """A dense old fishing harbour town, front view, pen and ink drawing on plain white paper, no
 text, no lettering, no frame, no border, no colour. Tall old stone houses with balconies, shutters, tiled
 roofs and potted plants crowd round a small harbour, wooden fishing boats moored on the water in front. Fine
