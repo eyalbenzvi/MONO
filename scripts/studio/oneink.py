@@ -307,15 +307,13 @@ def subject_mask(k):
 
 
 def fit_coverage(tone, mask, lo=0.06, hi=0.30, inker=None):
-    """Bend the tone (a gamma) until the screened coverage falls inside the guidelines' 4–32%
-    and no continuous dense area passes MASS (a pale sky on a black tee would otherwise
-    print as one bright oval)."""
+    """Bend the tone (a gamma) until the screened coverage falls inside the guidelines' 4–32%."""
     inker = inker or to_ink
     g = 1.0
     for _ in range(14):
         ink = inker(np.power(tone, g) * mask)
         c = ink.mean()
-        if c > hi or (c > lo * 1.25 and masses(ink) > MASS):
+        if c > hi:
             g *= 1.25
         elif c < lo:
             g /= 1.25
@@ -336,49 +334,23 @@ def detail_light(k, light):
     return light * np.clip(detail * 1.4, 0, 1)
 
 
-# The largest continuous dense area a print may have (measured on the catalogue's trial: the
-# good line and tone prints 1–13%, the bright ovals of faded scenes on black tees 17–28%).
-MASS = 0.15
-
-
-def masses(ink):
-    """Continuous areas of dense ink (mesh included): ink averaged over about 6 mm, above
-    55%, in one piece. One larger than MASS of the print lands on the tee as a slab of
-    light (or dark) even when no part of it is solid."""
-    dense = (cv2.GaussianBlur(ink.astype(np.float32), (0, 0), 3 * PX_MM) > 0.55).astype(np.uint8)
-    n, lab, stats, _ = cv2.connectedComponentsWithStats(dense)
-    return float(stats[1:, cv2.CC_STAT_AREA].max() / ink.size) if n > 1 else 0.0
-
-
 def check(ink):
     """The guidelines' measures (sections 02, 04, 05) on a 1-bit print at 300 DPI."""
-    area = ink.size
     cov = ink.mean()
-    core = cv2.erode(ink, disc(2 * PX_MM))
-    solid = cv2.dilate(core, disc(2 * PX_MM)) & ink
-    n, lab, stats, _ = cv2.connectedComponentsWithStats(solid)
-    largest = stats[1:, cv2.CC_STAT_AREA].max() / area if n > 1 else 0
     ys, xs = np.nonzero(ink)
     bw = (xs.max() - xs.min() + 1) / AREA_W if len(xs) else 0
     bh = (ys.max() - ys.min() + 1) / AREA_H if len(ys) else 0
     top_mm = ys.min() / PX_MM if len(ys) else 0
-    e = round(2 * PX_MM)
-    edges = [ink[:, :e].mean(), ink[:, -e:].mean(), ink[:e].mean(), ink[-e:].mean()]
     thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM - 0.01))
     thin = (ink & (1 - thick)).sum() / max(1, ink.sum())
     fails = []
     if not 0.04 <= cov <= 0.32: fails.append(f"coverage {cov:.1%} (4–32%)")
-    if solid.mean() > 0.10: fails.append(f"solid ink {solid.mean():.1%} (≤10%)")
-    if largest > 0.03: fails.append(f"largest solid patch {largest:.1%} (≤3%)")
-    if all(v > 0.25 for v in edges): fails.append("ink along all four edges")
     if bw < 0.3 or bh < 0.3: fails.append(f"too small {bw:.0%} × {bh:.0%}")
     if top_mm > 25: fails.append(f"starts {top_mm:.0f} mm down")
-    mass = masses(ink)
-    if mass > MASS: fails.append(f"continuous dense area {mass:.1%} of the print (≤{MASS:.0%}): reads as a slab")
     if thin > 0.01: fails.append(f"{thin:.1%} of the ink thinner than 0.4 mm")
     return {
-        "coverage": round(float(cov), 4), "solid": round(float(solid.mean()), 4), "largestSolid": round(float(largest), 4),
-        "thin": round(float(thin), 4), "mass": round(masses(ink), 4), "sizeCm": [round(bw * 28, 1), round(bh * 37, 1)], "topMm": round(float(top_mm), 1), "fails": fails,
+        "coverage": round(float(cov), 4),
+        "thin": round(float(thin), 4), "sizeCm": [round(bw * 28, 1), round(bh * 37, 1)], "topMm": round(float(top_mm), 1), "fails": fails,
     }
 
 

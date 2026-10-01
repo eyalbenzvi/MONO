@@ -46,4 +46,4 @@ The print is 300 × 400 units (1 unit ≈ 0.93 mm on the tee). The live area run
 
 ## Ink
 
-One ink, no solid slabs (the gate's solid-block check), no transforms except letters turned on their own (`arcText`, `turnedText`), no clip paths, masks, patterns, gradients or opacity: what the preview shows is what the screen prints.
+One ink, no transforms except letters turned on their own (`arcText`, `turnedText`), no clip paths, masks, patterns, gradients or opacity: what the preview shows is what the screen prints.

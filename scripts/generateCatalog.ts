@@ -31,10 +31,9 @@ import path from "node:path";
 import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
-import { checkPrint } from "./tools/blockCheck";
 import { firstSentence, houseTitle, isWordTitled, plainTitles } from "./gen/titles";
 import { STYLE, SUBJECT_NOUN_CATEGORIES, subjectOf } from "./gen/subject";
-import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, svgInk, type Assessment, type BlockCheck } from "./gen/quality";
+import { CHECK_H, CHECK_W, FAINT, WEAK_QUALITY, assessPrint, isWeak, measurePrint, rasterInk, svgInk, type Assessment } from "./gen/quality";
 import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
@@ -743,17 +742,10 @@ async function inkOfPrint(s: Pick<Draft, "backPrintUrl" | "baseColor" | "medium"
   return rasterInk(data, CHECK_W, CHECK_H, s.medium, s.baseColor);
 }
 
-/**
- * Every print measured from its own ink: the solid-block check (Part 0: a
- * print that lands as a slab of ink is refused, whatever it shows) and its
- * quality, real size and flags (Part 6).
- */
-async function measureAll(list: Draft[]): Promise<Map<string, { check: BlockCheck; assessment: Assessment }>> {
-  const out = new Map<string, { check: BlockCheck; assessment: Assessment }>();
-  for (const s of list) {
-    const ink = await inkOfPrint(s);
-    out.set(s.id, { check: await checkPrint(s), assessment: assessPrint(ink) });
-  }
+/** Every print measured from its own ink: its quality, real size and flags (Part 6). */
+async function measureAll(list: Draft[]): Promise<Map<string, { assessment: Assessment }>> {
+  const out = new Map<string, { assessment: Assessment }>();
+  for (const s of list) out.set(s.id, { assessment: assessPrint(await inkOfPrint(s)) });
   return out;
 }
 
@@ -939,7 +931,7 @@ async function main() {
   // titles and prints. Their prints (drawn) are removed; `no` renumbers.
   // (It knows the first four sets: their source categories, their photographs.)
   // Every print still in play is measured from its own ink first (quality,
-  // real size, the solid-block check): the retirement rules pick by it.
+  // real size): the retirement rules pick by it.
   const curated = curatedRetirements();
   const measures = await measureAll(shirts.filter((s) => !curated.has(s.id) && !alwaysRetired(s.variant)));
   for (const s of shirts) {
@@ -959,7 +951,6 @@ async function main() {
   for (const s of shirts) if (titled.has(s.id)) s.title = titled.get(s.id)!;
   const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
   for (const [id, why] of curated) if (!retired.has(id)) retired.set(id, why);
-  for (const [id, { check }] of measures) if (check.reject && !retired.has(id)) retired.set(id, `solid ink ${check.reject} (Part 0)`);
   // The content overhaul's removals (Part 1), on what's left: families first (near-duplicates go by them).
   const alive = shirts.map((s, i) => ({ s, sig: sigs[i] })).filter(({ s }) => !retired.has(s.id));
   const preFamilies = assignFamilies(alive.map((x) => x.sig));

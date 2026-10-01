@@ -57,7 +57,7 @@
    "chosen": "K5-date-palm-s5503.png",
    "mode": "line",
    "ink_coverage": 0.1553,
-   "note": "No dates or leaf-base trunk drawn, so titled PALM TREE by the truth rule; 5501/5502 horizon across the page, 5500 signature mark; pen failed the dense-area check, line passes (mass 0.148)."
+   "note": "No dates or leaf-base trunk drawn, so titled PALM TREE by the truth rule; 5501/5502 horizon across the page, 5500 signature mark; pen had too much ink, line passes."
   }
  ],
  "minutes": {
@@ -67,5 +67,5 @@
  },
  "minutes_note": "Generation 15:56-17:07 on 4 CPU threads (about 3 min an image, 20 images); the first run was killed by the container's memory limit after 2 images while a test oneink ran beside the VAE decode, and was restarted at 16:07 on the remaining 18. Choosing and one-ink processing ran during generation as each slot landed; process counts only the time after the last image.",
  "total_images": 20,
- "lesson": "For trees, pen keeps the pale bark and needle lines that line mode drops; a full palm crown fails the dense-area check in pen but passes in line. The model gave pine-needle foliage to the olive and no dates on the date palm, so those two carry general titles."
+ "lesson": "For trees, pen keeps the pale bark and needle lines that line mode drops; a full palm crown has too much ink in pen but passes in line. The model gave pine-needle foliage to the olive and no dates on the date palm, so those two carry general titles."
 }

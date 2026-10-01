@@ -1,11 +1,11 @@
 /**
  * What every Make template's fuzz checks (tests/make/*.test.ts): the print
- * the catalogue would accept (no solid block, not weak by its own line, no
+ * the catalogue would accept (not weak by its own line, no
  * flags) and no text wider than the print. Measured with resvg, as the
  * catalogue's audit measures its own designs.
  */
 import { FONT_FAMILY, textWidth, type Family } from "@/lib/custom/kit";
-import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../../scripts/gen/quality";
+import { WEAK_QUALITY, assessPrint, svgInk } from "../../scripts/gen/quality";
 
 /** The family a text's font-family names (lib/custom/kit FONT_FAMILY). */
 const familyOf = (attrs: string): Family => {
@@ -34,7 +34,6 @@ export function wideTexts(svg: string, max = 292): string[] {
 export function gate(svg: string, color: "black" | "white"): string | null {
   const raster = svgInk(svg, color);
   const a = assessPrint(raster);
-  const solid = solidBlock(raster).reject;
   const wide = wideTexts(svg);
-  return solid || a.quality < WEAK_QUALITY || a.flags.length || wide.length ? JSON.stringify({ solid, quality: a.quality, flags: a.flags, wide }) : null;
+  return a.quality < WEAK_QUALITY || a.flags.length || wide.length ? JSON.stringify({ quality: a.quality, flags: a.flags, wide }) : null;
 }

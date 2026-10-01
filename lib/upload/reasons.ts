@@ -18,8 +18,6 @@ export const REASONS = {
   // A crop of a picture big enough on its own: the crop is what's too small.
   smallCrop: "This crop is too small to print. Try a larger crop.",
   /** The print (measure.ts tier): what's wrong, never an action (the fixes offered are the actions). */
-  solidDots: "Too much ink: it would print as a solid patch.",
-  solid: "Too much ink: it would print as a solid patch.",
   faint: "Too faint: it would print as a grey haze.",
   denseDots: "Too much ink: the tee would be mostly ink.",
   dense: "Too much ink: the tee would be mostly ink.",

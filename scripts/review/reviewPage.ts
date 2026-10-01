@@ -251,7 +251,7 @@ async function catalogue(only: string[]) {
 }
 
 async function source(src: SourceId, wave: number) {
-  const list = readPrepped(src, wave).sort((a, b) => Number(a.weak || !!a.solid) - Number(b.weak || !!b.solid) || b.score - a.score);
+  const list = readPrepped(src, wave).sort((a, b) => Number(a.weak) - Number(b.weak) || b.score - a.score);
   const dir = cacheDir(src);
   const items: ReviewItem[] = [];
   for (const p of list) {
@@ -267,11 +267,11 @@ async function source(src: SourceId, wave: number) {
       print: await inkThumb(path.join(dir, "screen", `print_${p.key}.webp`), p.mode === "ink" ? "ink" : "photo", p.tee),
       original: await originalThumb(path.join(dir, "prep", `print_${p.key}.webp`)),
       numbers: [["Q", p.assess.quality], ["ink", p.assess.ink], ["extent", p.assess.extent], ["score", p.score]],
-      flags: [...p.flags, ...(p.solid ? [`solid-${p.solid}`] : [])].filter((f, i, a) => a.indexOf(f) === i),
+      flags: p.flags,
       note: p.classification,
     });
   }
-  const files = writePages(path.join(OUT, `wave-${wave}`, src), { title: `MONO wave ${wave} ${src}`, heading: `Wave ${wave} · ${src} · ${items.length} candidates (failed checks last)`, storageKey: `mono-review-w${wave}-${src}`, note: "Keep what goes on a tee. Items that failed a check (weak, solid) are at the end, marked." }, items);
+  const files = writePages(path.join(OUT, `wave-${wave}`, src), { title: `MONO wave ${wave} ${src}`, heading: `Wave ${wave} · ${src} · ${items.length} candidates (failed checks last)`, storageKey: `mono-review-w${wave}-${src}`, note: "Keep what goes on a tee. Items that failed a check (weak) are at the end, marked." }, items);
   console.log(`${src} wave ${wave}: ${items.length} → ${files.map((f) => path.relative(ROOT, f)).join(", ")}`);
 }
 

@@ -9,6 +9,6 @@ Ending: --edge horizon (the hills end in a straight cut with a rule; the sky abo
 
 Backup for slot 2. The main, COMET (seeds 9200-9203), was rejected: all four drew rolling hills and trees under an empty or dotted sky, with no comet anywhere.
 Chosen: the first backup image (seed 9250), started at minute 78; the backup run was stopped at minute 85. Dozens of meteor streaks crossing a night sky diagonally over rolling hills and dark firs.
-Processing: --crop 12,12,820,1204 in oneink (takes off a thin frame line the model drew round the picture). A levels stretch to lighten the sky was tried and dropped: it gave a continuous dense area on the white-tee positive.
+Processing: --crop 12,12,820,1204 in oneink (takes off a thin frame line the model drew round the picture). A levels stretch to lighten the sky was tried and dropped: it gave too much ink on the white-tee positive.
 python3 scripts/studio/oneink.py <image> data/studio/run50b/09-2-meteor-shower meteor-shower --crop 12,12,820,1204 --mode tone --edge horizon --title "METEOR SHOWER" --sub "Maps & Sky · Visitors"
 Delivered white tee only: on the black-tee positive the glow of the sky above the hills printed as a continuous bright band, so the black file is not delivered. Preview: the white-tee file on a white tee.

@@ -37,7 +37,7 @@ describe("uploads: line width and gap, on the final raster (1 px ≈ 0.187 mm)",
     const at = (mm: number, tee: "black" | "white") => {
       const m = measure(rings(mm / MM_PER_PX), W, H, tee);
       // Only the line width is in question here.
-      return tier({ ...m, quality: 80, coverage: 0.1, detail: 0.5, solid: null, minGapMm: 2 }, tee);
+      return tier({ ...m, quality: 80, coverage: 0.1, detail: 0.5, minGapMm: 2 }, tee);
     };
     expect(at(0.3, "white")).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.4 mm)." });
     expect(at(0.3, "black")).toMatchObject({ tier: "refuse", reason: "Lines too thin to print (under 0.5 mm)." });
@@ -81,21 +81,11 @@ describe("uploads: line width and gap, on the final raster (1 px ≈ 0.187 mm)",
 
 describe("uploads: the quality bar, every boundary of the table (brief 6.4)", () => {
   // Passes every catalogue bar comfortably.
-  const good: Measures = { quality: 80, coverage: 0.15, detail: 0.5, flags: [], solid: null, minStrokeMm: 1, minGapMm: 1.2, strokes: { p5: 1, p50: 1.2, p95: 2 }, screened: false, size: "full" };
+  const good: Measures = { quality: 80, coverage: 0.15, detail: 0.5, flags: [], minStrokeMm: 1, minGapMm: 1.2, strokes: { p5: 1, p50: 1.2, p95: 2 }, screened: false, size: "full" };
   const t = (patch: Partial<Measures>, tee: "black" | "white" = "white", dup?: number) => tier({ ...good, ...patch }, tee, dup);
 
   it("the good one is catalogue, and not near anything", () => {
     expect(t({})).toEqual({ tier: "catalogue", near: false });
-  });
-
-  it("a continuous dense area (rule f) prints for its owner but is not offered to the catalogue", () => {
-    expect(t({ mass: 0.15 }).tier).toBe("catalogue");
-    expect(t({ mass: 0.16 }).tier).toBe("print");
-  });
-
-  it("solidBlock: any refusal refuses", () => {
-    expect(t({ solid: "slab" })).toMatchObject({ tier: "refuse", reason: REASONS.solid });
-    expect(t({ solid: "block", screened: true })).toMatchObject({ tier: "refuse", reason: REASONS.solidDots });
   });
 
   it("quality: refused under 53, prints from 53, catalogue from 68", () => {

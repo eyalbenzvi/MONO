@@ -2,12 +2,11 @@
  * An upload's print, measured on the final 1500 × 2000 raster (1 px ≈
  * 0.187 mm at Full and Small alike), and its tier (brief 6.4): refused,
  * printed for the customer, or good enough to offer to the catalogue.
- * Pure. The quality score and the solid-block check are the catalogue's own
- * (lib/custom/quality), read the way the catalogue reads a raster print:
- * the score on the print averaged down to 300 × 400 (about 1 mm a pixel),
- * the block check at the print's own size, so a mesh of dots stays dots.
+ * Pure. The quality score is the catalogue's own (lib/custom/quality), read
+ * the way the catalogue reads a raster print: on the print averaged down to
+ * 300 × 400 (about 1 mm a pixel).
  */
-import { assessPrint, CHECK_H, CHECK_W, denseArea, densityDetail, solidBlock, type Assessment, type InkRaster } from "@/lib/custom/quality";
+import { assessPrint, CHECK_H, CHECK_W, densityDetail, type Assessment, type InkRaster } from "@/lib/custom/quality";
 import { MM_PER_PX, type PrintSize, type Tee } from "./convert";
 import { REASONS, strokeReason, gapReason } from "./reasons";
 
@@ -19,10 +18,6 @@ export interface Measures {
   /** assessPrint's detail: how much the ink's density changes across its box (before scoring). */
   detail: number;
   flags: Assessment["flags"];
-  /** solidBlock's refusal, or null. */
-  solid: string | null;
-  /** The largest continuous dense area (solidBlock's rule f), as a share of the print: over MASS_AREA keeps it out of the catalogue. */
-  mass?: number;
   /** The thinnest line and the narrowest gap between ink (5th percentiles, mm), or null when not measured (a dot screen, or nothing to measure). */
   minStrokeMm: number | null;
   minGapMm: number | null;
@@ -236,11 +231,8 @@ export function measure(ink: Uint8Array, w: number, h: number, tee: Tee, opts: {
   const screened = !!opts.screened;
   const raster = checkRaster(ink, w, h);
   const a = assessPrint(raster);
-  const full = new Float32Array(ink.length);
   let count = 0;
-  for (let i = 0; i < ink.length; i++) (full[i] = ink[i]), (count += ink[i]);
-  const block = solidBlock({ w, h, ink: full });
-  const solid = block.reject;
+  for (let i = 0; i < ink.length; i++) count += ink[i];
   let [minStrokeMm, minGapMm, strokes] = [null as number | null, null as number | null, null as Measures["strokes"]];
   // Strokes and gaps: of the shapes as drawn (line work whose solid areas print as a mesh: the mesh's holes aren't gaps).
   const shapes = opts.shapes ?? ink;
@@ -256,7 +248,7 @@ export function measure(ink: Uint8Array, w: number, h: number, tee: Tee, opts: {
     const gw = widths(ground, w, h, box, true);
     if (gw.length) minGapMm = quantile(gw, 0.05) * MM_PER_PX;
   }
-  return { quality: a.quality, coverage: count / ink.length, detail: detailOf(raster), flags: a.flags, solid, mass: block.mass, minStrokeMm, minGapMm, strokes, screened, size: opts.size ?? "full" };
+  return { quality: a.quality, coverage: count / ink.length, detail: detailOf(raster), flags: a.flags, minStrokeMm, minGapMm, strokes, screened, size: opts.size ?? "full" };
 }
 
 /* ------------------------------------------------------------------ */
@@ -300,7 +292,6 @@ export function tier(m: Measures, tee: Tee, dupDistance?: number): { tier: Tier;
   if (judged && m.minGapMm !== null) near ||= m.minGapMm < BAR.gap[0] * (1 + NEAR);
   if (dupDistance !== undefined) near ||= dupDistance <= BAR.nearDuplicate;
   const refuse = (reason: string) => ({ tier: "refuse" as const, reason, near });
-  if (m.solid) return refuse(m.screened ? REASONS.solidDots : REASONS.solid);
   if (m.coverage < lo) return refuse(REASONS.faint);
   if (m.coverage > hi) return refuse(m.screened ? REASONS.denseDots : REASONS.dense);
   if (m.detail < BAR.detail[0]) return refuse(REASONS.plain);
@@ -314,8 +305,6 @@ export function tier(m: Measures, tee: Tee, dupDistance?: number): { tier: Tier;
     m.coverage >= clo &&
     m.coverage <= chi &&
     m.detail >= BAR.detail[1] &&
-    // A continuous dense area (a pale sky on a black tee) prints for its owner but isn't offered to the catalogue.
-    !denseArea({ mass: m.mass ?? 0 }) &&
     (!judged || m.minStrokeMm === null || m.minStrokeMm >= BAR.stroke[tee][1]) &&
     (!judged || m.minGapMm === null || m.minGapMm >= BAR.gap[1]);
   return { tier: catalogue ? "catalogue" : "print", near };

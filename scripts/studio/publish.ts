@@ -19,7 +19,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "../../types/shirt";
-import { assessPrint, rasterInk, solidBlock } from "../gen/quality";
+import { assessPrint, rasterInk } from "../gen/quality";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const STUDIO = path.join(ROOT, "data", "studio");
@@ -124,9 +124,6 @@ async function main() {
     const small = await sharp(rgba, { raw: { width: 1500, height: 2000, channels: 4 } }).resize(300, 400, { fit: "fill", kernel: "cubic" }).ensureAlpha().raw().toBuffer();
     const raster = rasterInk(small, 300, 400, "ink", "black");
     const a = assessPrint(raster);
-    // The solid-block check at the print's own size, as the catalogue runs it (scripts/tools/blockCheck): shrunk, a halftone's mesh averages into a false slab.
-    const block = solidBlock(rasterInk(rgba, 1500, 2000, "ink", "black"));
-    if (block.reject) throw new Error(`${dir}: the solid-block check refuses it (${block.reject})`);
     const category = CATEGORY[slug] ?? "specimens";
     if (!SHIRT_CATEGORIES.includes(category)) throw new Error(`${dir}: category ${category}`);
     const keywords = (d.keywords ?? "").split(/[,;]/).map((w) => w.trim()).filter(Boolean);

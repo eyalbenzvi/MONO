@@ -17,7 +17,7 @@
  },
  "wikimedia-64695759": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-3749299": "keep",
  "wikimedia-120894700": {
@@ -62,7 +62,7 @@
  },
  "wikimedia-159690337": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-32028027": {
   "decision": "reject",

@@ -13,7 +13,7 @@ import { cleanTitle } from "@/lib/upload/title";
 import { currentPriors } from "../../scripts/tools/uploadPriors";
 import { fromGrey, logo, photo, rings, scan } from "./fixtures";
 
-const M = (patch: Partial<Measures>): Measures => ({ quality: 70, coverage: 0.15, detail: 0.4, flags: [], solid: null, minStrokeMm: 1, minGapMm: 1, strokes: null, screened: false, size: "full", ...patch });
+const M = (patch: Partial<Measures>): Measures => ({ quality: 70, coverage: 0.15, detail: 0.4, flags: [], minStrokeMm: 1, minGapMm: 1, strokes: null, screened: false, size: "full", ...patch });
 const conv = (patch: Partial<Converted>): Converted => ({ cls: "line", mode: "line", size: "full", w: OUT_W, h: OUT_H, ink: new Uint8Array(0), tone: null, midtones: 0, darkOnLight: true, ...patch });
 const TONE = { lum: new Float32Array(0), alpha: new Float32Array(0) };
 

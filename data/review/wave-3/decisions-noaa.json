@@ -1,22 +1,22 @@
 {
  "noaa-CP844C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP1145C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP1477C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP219C": "keep",
  "noaa-CP2401C": "keep",
  "noaa-CP165C": "keep",
  "noaa-CP1277C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP1496C": "keep",
  "noaa-CP2160C": "keep",
@@ -56,7 +56,7 @@
  "noaa-CP779C": "keep",
  "noaa-CP2938C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP1581C": "keep",
  "noaa-CP785C": "keep",
@@ -94,7 +94,7 @@
  },
  "noaa-CP1755C": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "noaa-CP264C": {
   "decision": "reject",

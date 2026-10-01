@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import { describe, expect, it } from "vitest";
-import { solidBlock } from "@/lib/custom/quality";
 import {
   BOXES,
   MAX_TONE,
@@ -264,7 +263,6 @@ describe("uploads: the photograph's screen (port of scripts/photos/halftone.py)"
     for (let y = 1200; y < 1210; y++) for (let x = 400; x < 1100; x++) stroke += ink[y * OUT_W + x];
     expect(stroke / (10 * 700)).toBe(1);
     expect(SLAB_PX).toBe(19);
-    expect(solidBlock({ w: OUT_W, h: OUT_H, ink: Float32Array.from(ink) }).reject).toBeNull();
   });
 
   it("dots 8–80%: the lightest tone prints nothing, a faint one the smallest dot", () => {

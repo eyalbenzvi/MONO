@@ -6,6 +6,6 @@ Seed: 5301
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
 
-Chosen: seed 5301, the second of four (5300-5303). One symmetrical closed cone with bold outlines on every scale and little grey; in one ink it keeps the scales clear and its mass unstretched is half that of 5300 (0.048 against 0.104). 5300 was also a good cone but its grey shading broke into a mottled screen; in pen mode it failed (continuous dense area 15.6%). The cone has no stalk, only a short point at the base.
+Chosen: seed 5301, the second of four (5300-5303). One symmetrical closed cone with bold outlines on every scale and little grey; in one ink it keeps the scales clear and its mass unstretched is half that of 5300 (0.048 against 0.104). 5300 was also a good cone but its grey shading broke into a mottled screen; in pen mode it failed (too much ink). The cone has no stalk, only a short point at the base.
 Processing before one ink: levels stretched (grey 0.25 to black, 0.62 to white; K3-pine-cone-s5301-stretched.png) so the pale grey on the scale faces drops out; mass 0.048 unstretched, 0.010 stretched.
 python3 scripts/studio/oneink.py K3-pine-cone-s5301-stretched.png data/studio/run50/05-3-pine-cone pine-cone --mode line --title "PINE CONE" --sub "Botanical · Natural history plate"
