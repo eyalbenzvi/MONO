@@ -1,0 +1,10 @@
+Title: Dragonfly
+Category: Botanical & Nature
+Subject: A dragonfly with its four wings spread flat, seen from directly above
+Style: Natural history plate, fine pen line with lace wing veins
+Medium: Drawn (illustration)
+Description: A dragonfly laid out flat, four wings of fine lace veins on either side of a long segmented body. It has been flying in much this way for three hundred million years and sees no reason to change now.
+Tee colours: Black and white (dragonfly.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 16.5 cm (heading included)
+Keywords: dragonfly, insect, wings, odonata, natural history, symmetry, entomology, pond, nature
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
