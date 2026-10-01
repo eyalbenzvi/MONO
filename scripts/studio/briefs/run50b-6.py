@@ -23,6 +23,12 @@ PROMPTS = {
                 "Even soft light from the left. "
                 "Centred, the whole subject with wide white margins, plain white paper. "
                 "No text, no frame, no border, no ornaments, no colour, no grey wash.",
+        "backup": "A small bunch of barley ears, close up, upright. "
+                  "Five heavy ears of ripe barley on short straight stalks tied with string, each ear made of plump oval grains packed in neat rows, long straight bristly awns rising above every grain, no leaves, no grass. "
+                  "Fine black ink line drawing with crisp contour lines and delicate hatching on every grain, like a natural history plate. "
+                  "Even soft light from the left. "
+                  "Centred, the whole subject with wide white margins, plain white paper. "
+                  "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     4: {
         "main": "One coffee branch with cherries, upright view. "
