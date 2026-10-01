@@ -1,0 +1,18 @@
+{
+ "helper": 1,
+ "branch": "studio/sdxl50-1",
+ "started": "2026-10-01T22:37:48Z",
+ "finished": "2026-10-01T23:49:00Z",
+ "designs": [
+  {"slot": 1, "slug": "seahorse-study", "passed": true, "which": "main", "images": 3, "chosen": "s30110", "mode": "pen", "ink_coverage": 0.1541,
+   "note": "30110 one whole seahorse with two side sketches (study-sheet layout); 30111 two seahorses, 30112 lone figure in a frame with signatures. Small fake signature and paper-edge shadow painted out; pen kept the pale sketches that line blotched. fails [], 19.1 x 35.0 cm."},
+  {"slot": 2, "slug": "steam-locomotive", "passed": true, "which": "main", "images": 3, "chosen": "s30121", "mode": "line", "ink_coverage": 0.0945,
+   "note": "30121 was two stacked elevations: cropped to the top one (one engine, ground line), small fake caption and number painted out; 30120 three-quarter front, 30122 three engines. Pen failed thin; line passes. Category Engravings (my one). fails [], 25.2 x 18.2 cm."},
+  {"slot": 3, "slug": "cliff-village", "passed": true, "which": "main", "images": 3, "chosen": "s30130", "mode": "pen", "ink_coverage": 0.2801,
+   "note": "30130 densest, edge to edge, near-empty sky; --edge horizon. Not recognisably Amalfi, so titled CLIFF VILLAGE (truth rule). Tiny fake sign inpainted. White tee only. fails [], 21.1 x 35.3 cm."},
+  {"slot": 4, "slug": "acoustic-guitar-study", "passed": true, "which": "main", "images": 6, "chosen": "s30141", "mode": "line", "ink_coverage": 0.097,
+   "note": "All three mains full of small fake labels; violin backup (3 seeds) all rejected (cream paper, doubled/malformed, large fake text). Main 30141 (one whole cutaway acoustic) retouched: ~60 small labels and two edge captions painted out, frame cropped, inverted so the ink is the drawing. Black tee. fails [], 21.8 x 32.9 cm."}
+ ],
+ "minutes": {"install": 1, "generate": 64, "process": 20},
+ "generator_note": "generate_sdxl.py unchanged. The first main run was killed by the kernel (exit 137, out of memory, 16 GB VM, no swap) while loading the UNet right after the first weight download; rerun unchanged it worked (min ~1.6 GB free during VAE decode), ~3.6 min an image. 'generate' minutes include the 9 lost to that run and the 11-minute backup run."
+}
