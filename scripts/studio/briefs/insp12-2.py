@@ -37,5 +37,15 @@ PROMPTS = {
             "Centred, the whole aircraft with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        # A third try (all four main and all four backup images were sheets of repeated hulls,
+        # with no wings): no "technical drawing", one aeroplane named large, the biplane main.
+        "retry": (
+            "One single vintage biplane, side view, large in the middle of the page. One aeroplane only, "
+            "two long wings stacked one above the other with struts between them, one propeller at the front, "
+            "two wheels below, one tail at the back. Fine black pen and ink line illustration with light hatching. "
+            "Soft even daylight. A thin straight ground line under the wheels, empty white sky above. "
+            "Centred, the whole aircraft with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
 }
