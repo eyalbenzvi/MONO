@@ -1,0 +1,10 @@
+Title: Bison
+Category: Botanical & Nature
+Subject: A bison head, front view, two short curved horns, thick shaggy woolly hair
+Style: Pen portrait, flowing hair strokes over the whole head and screened mid-tones
+Medium: Drawn (illustration)
+Description: A bison faces straight out under a great cap of shaggy wool, its two short horns curving up. It does not charge often, but it would like you to keep that in mind.
+Tee colours: Black and white (one file, bison.png, prints on both)
+Print size: 25.9 x 34.0 cm
+Keywords: bison, buffalo, animal portrait, head, horns, wildlife, nature, wool, pen drawing
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -1,0 +1,10 @@
+Title: Gorilla
+Category: Botanical & Nature
+Subject: A gorilla head, front view, crested brow, deep-set eyes, broad nose and closed mouth
+Style: Pen portrait, fine hair strokes over the head and cheeks, wrinkle lines on the face
+Medium: Drawn (illustration)
+Description: A gorilla looks straight out from under a heavy brow, the hair swept back over its crown. It has listened to the whole proposal and remains unconvinced.
+Tee colours: Black and white (one file, gorilla.png, prints on both)
+Print size: 20.5 x 35.0 cm
+Keywords: gorilla, great ape, primate, animal portrait, head, wildlife, nature, pen drawing, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
