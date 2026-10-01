@@ -1,0 +1,10 @@
+Prompt: One mountain glacier, a wide river of ice, front view looking up the valley between two dark rocky peaks. Deep crevasses and white seracs across the ice, a snowfield at the top, moraine ridges along the sides. Black ink engraving, fine hatching on the rock, stippling and long lines on the ice. Clear cold morning light from the left, strong shadows in the crevasses. The glacier flowing towards the viewer, the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+
+Seed: 9502
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: the third of four (seed 9502). All four drew the same layered ice valley. The first ends in a dark meltwater stream at the foot; the second puts a small figure in the foreground; the fourth has a rock block in the middle of the ice. The third has the clearest river of ice, with crevasses, flowing towards the viewer.
+python3 scripts/studio/oneink.py <image> data/studio/run50/09-5-glacier glacier --mode tone --fade --title "GLACIER" --sub "Places · Ice"
