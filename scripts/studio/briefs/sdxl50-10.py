@@ -17,5 +17,10 @@ PROMPTS = {
     4: {"main": """One vintage rotary telephone, patent study sheet, three-quarter view, white chalk line drawing on a plain black
         background, no text, no lettering, no numbers, no frame, no border, no colour. A single telephone large in the
         centre, the handset resting on its cradle, a round finger dial with plain holes, a coiled cord. Around it, a few
-        small exploded parts and detail circles of the dial and the handset. Fine white line, centred, wide black margins. No ornaments."""},
+        small exploded parts and detail circles of the dial and the handset. Fine white line, centred, wide black margins. No ornaments.""",
+        "backup": """One vintage valve radio, front view, white chalk line drawing on a plain black background, no text,
+        no lettering, no numbers, no frame, no border, no colour. A single wooden cabinet radio with a round-topped
+        case, a fabric speaker grille with carved fretwork, a plain round dial without numbers and two knobs. Around it,
+        a few small parts: glass valves, a knob, a detail circle of the grille. Fine white line with crisp hatching,
+        centred, wide black margins. No ornaments."""},
 }
