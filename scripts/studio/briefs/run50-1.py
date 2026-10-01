@@ -1,6 +1,10 @@
 # Helper 1 (marine life) prompts for run50.py.
 PROMPTS = {
     1: {
+        "backup": "One stingray, seen from above, flat diamond body. A rounded diamond-shaped disc, two small eyes near the front, "
+                  "one long thin whip tail with a single spine, symmetrical, a single animal, no other fish. Fine black ink line drawing in "
+                  "the style of a natural history plate, clean outlines and spotted pattern on the back. Even flat light, crisp contrast. "
+                  "Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.",
         "main": "One manta ray, seen from above, wings spread wide. Two wings, one tail, two cephalic fins at the front, symmetrical, "
                 "a single animal, no other fish. Fine black ink line drawing, clean confident outlines with light hatching on the wings. "
                 "Even flat light, crisp contrast, black lines only. Centred, the whole subject with wide white margins, plain white paper. "
