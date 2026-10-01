@@ -1,0 +1,12 @@
+Prompt: One planet Jupiter, a single sphere, front view, the whole round planet small in the middle of the page. Horizontal cloud bands across the sphere, dark belts and pale zones, the Great Red Spot as one oval storm below the middle. Fine black ink engraving, the bands in parallel wavy lines and stippling, swirls at the edges of the belts. Light from the left, the right side of the sphere in shadow. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 9250
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Backup for slot 2. The main, SATURN (seeds 9200-9203), was rejected: all four drew a small planet inside a huge plain disc that filled the picture, and the rings were missing or a blur.
+Chosen: the first Jupiter (seed 9250), the first of the backup seeds to finish; the backup run was stopped at minute 85 with two Jupiters made. One banded sphere lit from the left; the model added thin circles round it like orbit lines.
+Processing before one ink: everything outside the planet (an ellipse fitted to the sphere, 2 px inside its edge) set to white paper, which takes out the thin circles.
+python3 scripts/studio/oneink.py <masked image> data/studio/run50/09-2-jupiter jupiter --mode tone --title "JUPITER" --sub "Maps & Sky · The planets"
