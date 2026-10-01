@@ -1,0 +1,15 @@
+Prompt (main): One lever espresso machine, three-quarter view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A single large chrome espresso machine with a tall lever, portafilter, boiler dome and gauge without numbers, its parts exploded and laid round it: portafilter, piston, spring, cup, and small circular detail roundels. Patent drawing style, crisp white lines, centred with wide black margins.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: main 30640-30642 (three); backup MOKA POT STUDY 30645-30647 (three); chosen main 30642 (the third main).
+Backup prompt: One stovetop moka pot, side view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A single large eight-sided aluminium moka pot with its handle and hinged lid, and beside it its three parts pulled apart: the base boiler, the funnel filter basket and the top jug, plus small circular detail roundels of the valve and the filter. Patent drawing style, crisp white lines, centred with wide black margins.
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (both CreativeML Open RAIL++-M), EulerDiscreteScheduler trailing, 8 steps, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+All six came out as dark ink on light paper: the model ignored "black background" every time.
+Why 30642: 30640 is a machine labelled all over with fake text, some of it on the machine itself; 30641 is a sheet of unrelated vessels with fake headings and a panel. Backup: 30645 is a misshapen pot with a giant handle and many notes; 30646 and 30647 carry large fake headings (30647 a big "MOKA..." title) and repeat the pot. 30642 is one whole espresso machine, front view: boiler housing with two gauges and a sight glass, bean hopper on top, group head and portafilter, a long side lever with a ball knob, steam knobs and a drip-tray base.
+Truth rule: no exploded parts or roundels were drawn, so it is not a parts study: the title is ESPRESSO MACHINE (not ESPRESSO MACHINE STUDY), sub "Objects · Front elevation".
+Clean-up before one ink: cropped inside the drawn frame (x 42-794, y 30-1180); small fake handwriting painted to paper at the top left (x 125-270, y 105-165), the top right (x 548-728, y 92-155) and right of the body (x 643-692, y 432-468), and a line of fake text under the frame (y 1170 down); the ground hatching trimmed to the machine's width (x 98-740). The tick marks on the drawer front are left: they read as vents, not letters.
+Black tee: the drawing is dark line on light paper, so the dark lines are the ink and print white on a black tee, as chalk; no inversion needed. Pen mode (line mode screened the grey body into a heavy mesh).
+python3 scripts/studio/oneink.py <prepared image> data/studio/sdxl50/06-4-espresso-machine espresso-machine --mode pen --title "ESPRESSO MACHINE" --sub "Objects · Front elevation"
