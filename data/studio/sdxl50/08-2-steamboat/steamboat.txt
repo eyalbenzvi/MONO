@@ -1,0 +1,10 @@
+Title: Steamboat
+Category: Engravings
+Subject: A small steam vessel in side elevation, funnel, wheelhouse and one mast with its rigging, on a thin waterline
+Style: Technical side elevation, fine pen lines
+Medium: Drawn (illustration)
+Description: A small steamer sits on a flat calm, one funnel, one mast and a web of rigging pulled taut fore and aft. It has clearly never been asked to hurry.
+Tee colours: Black, White
+Print size: 26.0 × 15.3 cm
+Keywords: steamboat, steamer, boat, ship, maritime, nautical, side elevation, technical drawing, rigging, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

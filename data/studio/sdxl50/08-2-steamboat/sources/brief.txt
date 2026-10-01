@@ -1,0 +1,13 @@
+Slot 2 (B, elevation). Brief title TUGBOAT (side elevation on a waterline).
+Prompt: One tugboat, side elevation, technical drawing, black ink on plain white paper, no text, no lettering, no frame, no border, no colour. Exactly one boat, seen from the side: a sturdy hull with rope fenders, a wheelhouse with round windows, one funnel, a mast with rigging lines. Fine precise pen line, hull plates and rivets, a thin straight waterline under the hull. Centred, the whole tugboat with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+No negative prompt (SDXL-Lightning is CFG-free); the exclusions are in the first sentence.
+Seeds: 30820-30822 (three, main); chosen 30821 (the second), cropped to its top boat
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30821: 30820 is a fine drawing but a bow-on front view of a large ship, not an elevation. 30822 is three wooden boats stacked in panels. 30821 is a sheet of five boats in ruled panels with fake captions; its top boat is one whole steam vessel in clean side elevation (funnel, wheelhouse, mast, rigging, waterline), so it was cropped out (box 22,38-818,424 of the 832x1216 image).
+Cleaned: the panel rules and outer frame removed as long isolated straight lines, the fake caption at the top right painted to paper, the frame line at the bow and the frame corners painted out. The caption lines under the waterline are outside the crop.
+It has a long hull and no fenders and does not clearly read as a tug, so the title is STEAMBOAT, not TUGBOAT.
+One ink: pen (line broke the rigging into dashes). Pen alone failed 1.1% thinner than 0.4 mm, so the crop was upscaled 2x (Lanczos) with a 3 px minimum filter to thicken the rigging slightly (08-2-steamboat-s30821-cropped.png). fails [], coverage 0.080.
+python3 scripts/studio/oneink.py sources/08-2-steamboat-s30821-cropped.png data/studio/sdxl50/08-2-steamboat steamboat --mode pen --title "STEAMBOAT" --sub "Maritime · Elevation"
