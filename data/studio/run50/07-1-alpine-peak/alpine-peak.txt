@@ -1,0 +1,10 @@
+Title: Alpine Peak
+Category: Botanical & Nature
+Subject: Mountains
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: A lone pyramid of rock and snow rises above the lower ridges, one face lit and one in shadow, fading into the paper at its feet. It has been standing perfectly still for a few million years and shows no sign of getting bored.
+Tee colours: Both
+Print size: 26.0 × 33.8 cm (white tee); 22.3 × 32.7 cm (black tee)
+Keywords: alpine peak, mountain, Alps, summit, snow, rock, landscape, hiking, climbing, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
