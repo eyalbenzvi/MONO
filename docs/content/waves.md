@@ -41,6 +41,15 @@ The owner delegated the selection ("do what you think; don't ask"). No picture i
 - Next: wave 2, seafaring and navigation (LoC HABS/HAER measured drawings of lighthouses and ships, af Chapman's ship plans on Commons, nautical charts).
 
 
+## Wave 3: Maps, charts and the sky; architecture and type
+
+- Date: 2026-10-01. Drop: 2026-10-01 (12 new this week), the rest 2026-09-24.
+- Closed early by the owner: what was selected went live; the rest was dropped and won't be used. The Library of Congress map division was counted (1,142 found, 400 candidates) but never prepared, so it is not in the wave. The full test run was stopped by the owner; the catalogue was regenerated, its unrelated deletions restored, and the search and data indexes republished.
+- Sources in the wave: NOAA's historical charts (new adapter), the Met, the Art Institute of Chicago, the Cleveland Museum of Art, Wikimedia Commons.
+- Kept by the automatic selection: 137 (NOAA 23, the Met 35, AIC 24, Cleveland 4, Wikimedia 51); in the catalogue 136. Catalogue 1,477 → 1,613.
+- In: Maps & Sky +71, Architecture +54, Geometric +9, Type +2. Engravings untouched (at its ceiling). Median quality of the wave 78.
+- Next: wave 4, if wanted, starts from the LoC map division (counted, not prepared) and Type, which gained only 2.
+
 ## Make artwork (the Make prints' wave 4)
 
 Retired. The two Make prints that drew traced pictures (Your Dinosaur's plates from Marsh, Osborn, Gilmore, Hatcher and Eaton; Your Landmarks from public-domain Commons photographs, screened) looked poor on a tee: speckle from the scans, fragments of printed captions, photographs that read as noise at 3 cm. Both now draw their pictures in code (`lib/custom/draw/dinosaurs.ts`, `lib/custom/draw/landmarks.ts`; README, Make artwork), so the tracing pipeline (`makeArt.ts`, `artSets.ts`, `vectorise.py`, `dots.py`, the review page and `data/art/`) was removed with the pictures it made. Landmarks that are modern buildings are drawn as generic line illustrations, not copied from any photograph.
