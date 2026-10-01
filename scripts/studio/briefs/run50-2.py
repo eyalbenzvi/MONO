@@ -37,6 +37,12 @@ softly at the chest. Clean confident black ink outlines with fine feather hatchi
 bold grooves on the beak. Light from the left, high contrast. Centred, the whole subject with wide white
 margins, plain white paper.
 No text, no frame, no border, no ornaments, no colour, no grey wash.""",
+        "backup": """One kingfisher, head and shoulders, side portrait. One bird only, one long straight dagger
+beak, one round dark eye, a pale patch behind the eye and a pale throat, the crown finely barred, the
+portrait ending softly at the chest. Black ink line drawing on white paper, crisp outlines, short fine
+strokes for the small feathers, the beak left clean. Light from the left, high contrast. Centred, the whole
+subject with wide white margins, plain white paper.
+No text, no frame, no border, no ornaments, no colour, no grey wash.""",
     },
     5: {
         "main": """One bird's nest with eggs, seen from above. One round woven nest of twigs and grass, three
