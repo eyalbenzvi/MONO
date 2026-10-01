@@ -47,5 +47,15 @@ PROMPTS = {
             "Centred, the whole aircraft with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        # A fourth try: the model draws a symmetrical front view far better than a long body side on.
+        "front": (
+            "One vintage biplane, front view, symmetrical. One aeroplane only, two long straight wings stacked one above "
+            "the other, joined by vertical struts and crossed bracing wires, one round propeller at the centre, "
+            "two wheels below on a V-shaped undercarriage, the tail fin just showing behind. "
+            "Fine black pen and ink line, like an engineer's front elevation, thin construction lines. "
+            "Flat even light. A thin straight ground line under the wheels. "
+            "Centred, the whole aircraft with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
 }
