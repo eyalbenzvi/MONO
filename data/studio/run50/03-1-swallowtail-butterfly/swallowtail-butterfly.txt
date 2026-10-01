@@ -1,0 +1,10 @@
+Title: Swallowtail Butterfly
+Category: Botanical & Nature
+Subject: A swallowtail butterfly with its wings open, seen from directly above
+Style: Natural history plate, fine pen line and hatched wing borders
+Medium: Drawn (illustration)
+Description: A swallowtail butterfly laid flat with its four wings open and its two long tails trailing below. It has spent its whole life looking this symmetrical and would like some credit for it.
+Tee colours: Black and white (swallowtail-butterfly.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 28.5 cm (heading included)
+Keywords: swallowtail, butterfly, insect, wings, lepidoptera, natural history, symmetry, entomology, nature
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
