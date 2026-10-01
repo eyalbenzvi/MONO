@@ -35,6 +35,11 @@ PROMPTS = {
                 "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
     5: {
+        "backup": "One bladderwrack seaweed frond, upright, full length. A single brown seaweed, flat strap-like blades forking again "
+                  "and again in pairs, a raised midrib down each blade, round air bladders set in pairs along the blades, swollen tips, "
+                  "a small holdfast at the base, no leaves, no fish, no rocks. Fine black ink line drawing in the style of a natural "
+                  "history plate, clean outlines and delicate hatching. Even flat light, crisp contrast. Centred, the whole subject with "
+                  "wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.",
         "main": "One kelp frond, upright, full length. A single seaweed stem rising from a small root holdfast, long wavy ribbon blades "
                 "with rippled edges and a central vein, small round gas bladders where each blade meets the stem, no fish, no rocks, no "
                 "seabed. Fine black ink line drawing in the style of a natural history plate, clean outlines and delicate hatching along "
