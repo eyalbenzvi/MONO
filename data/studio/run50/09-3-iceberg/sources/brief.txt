@@ -10,3 +10,5 @@ Backup for slot 3. The main, GEYSER (seeds 9300-9303), was rejected: all four dr
 Chosen: the first iceberg (seed 9350), the first of the backup seeds to finish; the backup run was stopped at minute 85 with two icebergs made. One clear berg with lit and shadowed faces, a clean waterline and a long reflection.
 Tried and set aside: the sky set to white paper first (no change on the black tee), and a hand-made elliptical fade without --fade (a hard bowl edge on the black tee).
 python3 scripts/studio/oneink.py <image> data/studio/run50/09-3-iceberg iceberg --mode tone --fade --title "ICEBERG" --sub "Science · Earth at work"
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

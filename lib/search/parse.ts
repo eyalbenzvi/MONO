@@ -254,6 +254,9 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
 
   const prefix = typing && ws.length ? ws[ws.length - 1] : null;
   const named = exactOf(query, catalog);
+  // An id or a SKU names its design and nothing else: its letters ("mono", "mn") aren't words to search for
+  // (the studio's credit, "MONO Studio", made "mono" a word of the catalogue).
+  if (named.length && /^\s*(?:mono-?\d+|mn-[a-z]{3}-[bw]-\d+)\s*$/i.test(query)) ws.forEach((_, i) => consumed.add(i));
   const corrected: ParsedQuery["corrected"] = [];
   const slots: Slot[] = [];
   ws.forEach((w, i) => {

@@ -1182,6 +1182,349 @@
 "sha": "ba6fd5f9f668b63f",
 "src": "537f342919bdcc80"
 },
+"20001": {
+"mode": "line",
+"paper": 0.0,
+"sha": "99addc6d30fa9c76",
+"src": "710f91351428b16c",
+"via": "scripts/studio/oneink.py"
+},
+"20002": {
+"mode": "line",
+"paper": 0.0,
+"sha": "c3f3d451e357edec",
+"src": "7161a297ac02cb33",
+"via": "scripts/studio/oneink.py"
+},
+"20003": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "965200a9afeca447",
+"src": "3c3ece96afb2d7b7",
+"via": "scripts/studio/oneink.py"
+},
+"20004": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "9ce48f05aaff5b36",
+"src": "c0fb57078460f22a",
+"via": "scripts/studio/oneink.py"
+},
+"20005": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "f50ce798b4a80749",
+"src": "71624ba03af6446d",
+"via": "scripts/studio/oneink.py"
+},
+"20006": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "6013fa65ed04a8a1",
+"src": "a8a9c98a5226ee80",
+"via": "scripts/studio/oneink.py"
+},
+"20007": {
+"mode": "line",
+"paper": 0.0,
+"sha": "8f12621765488733",
+"src": "db972f4ebfb72d69",
+"via": "scripts/studio/oneink.py"
+},
+"20008": {
+"mode": "line",
+"paper": 0.0,
+"sha": "acc55cdc31a17110",
+"src": "937f396e73e3b7b7",
+"via": "scripts/studio/oneink.py"
+},
+"20009": {
+"mode": "line",
+"paper": 0.0,
+"sha": "15eb64629935f1ab",
+"src": "5f7998af09369bb4",
+"via": "scripts/studio/oneink.py"
+},
+"20010": {
+"mode": "line",
+"paper": 0.0,
+"sha": "325e6f11d5d7fa01",
+"src": "42628c64c5d93fc7",
+"via": "scripts/studio/oneink.py"
+},
+"20011": {
+"mode": "line",
+"paper": 0.0,
+"sha": "41fb8d10bfdfe0aa",
+"src": "4e4e3c57d6c6de7f",
+"via": "scripts/studio/oneink.py"
+},
+"20012": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "0a85ddf10a506b1f",
+"src": "735fa39b2329f56f",
+"via": "scripts/studio/oneink.py"
+},
+"20013": {
+"mode": "line",
+"paper": 0.0,
+"sha": "ae2e8286fd3260f1",
+"src": "279fe704966a1a04",
+"via": "scripts/studio/oneink.py"
+},
+"20014": {
+"mode": "line",
+"paper": 0.0,
+"sha": "c9e243385eb2b119",
+"src": "51bfc0605599c743",
+"via": "scripts/studio/oneink.py"
+},
+"20015": {
+"mode": "line",
+"paper": 0.0,
+"sha": "87b9701b53963c10",
+"src": "88bc35ca43dc67a8",
+"via": "scripts/studio/oneink.py"
+},
+"20016": {
+"mode": "line",
+"paper": 0.0,
+"sha": "7086e35643677dfb",
+"src": "404ec612beb39d1c",
+"via": "scripts/studio/oneink.py"
+},
+"20017": {
+"mode": "line",
+"paper": 0.0,
+"sha": "9ff63fea1a1a2d38",
+"src": "04f699fc6e719d2e",
+"via": "scripts/studio/oneink.py"
+},
+"20018": {
+"mode": "line",
+"paper": 0.0,
+"sha": "0c14cfe70bc69b17",
+"src": "391447b219a00a47",
+"via": "scripts/studio/oneink.py"
+},
+"20019": {
+"mode": "line",
+"paper": 0.0,
+"sha": "7bb301a590444b3a",
+"src": "ea9328f859f59ad8",
+"via": "scripts/studio/oneink.py"
+},
+"20020": {
+"mode": "line",
+"paper": 0.0,
+"sha": "fdce927c77d33149",
+"src": "123f13aae1e64784",
+"via": "scripts/studio/oneink.py"
+},
+"20021": {
+"mode": "line",
+"paper": 0.0,
+"sha": "ab4428c758ddb476",
+"src": "a55503aa3ab05e2d",
+"via": "scripts/studio/oneink.py"
+},
+"20022": {
+"mode": "line",
+"paper": 0.0,
+"sha": "51018a4f3ead3052",
+"src": "e08abfdff5811932",
+"via": "scripts/studio/oneink.py"
+},
+"20023": {
+"mode": "line",
+"paper": 0.0,
+"sha": "bc0ce1e962eda406",
+"src": "2c779eb5decfa04d",
+"via": "scripts/studio/oneink.py"
+},
+"20024": {
+"mode": "line",
+"paper": 0.0,
+"sha": "8785c267df81e811",
+"src": "a8bb3a403de73004",
+"via": "scripts/studio/oneink.py"
+},
+"20025": {
+"mode": "line",
+"paper": 0.0,
+"sha": "45a89b50dadee2f5",
+"src": "dfe9743d548e5a04",
+"via": "scripts/studio/oneink.py"
+},
+"20026": {
+"mode": "line",
+"paper": 0.0,
+"sha": "2ab1074017cf233e",
+"src": "9689e2208b38c888",
+"via": "scripts/studio/oneink.py"
+},
+"20027": {
+"mode": "line",
+"paper": 0.0,
+"sha": "b097c19bb5f5349c",
+"src": "670aebaba16d99dd",
+"via": "scripts/studio/oneink.py"
+},
+"20028": {
+"mode": "line",
+"paper": 0.0,
+"sha": "334eccb9a7d3d99e",
+"src": "b79176f8ef143221",
+"via": "scripts/studio/oneink.py"
+},
+"20029": {
+"mode": "line",
+"paper": 0.0,
+"sha": "52190671a2da4866",
+"src": "11a6213ac4a3c393",
+"via": "scripts/studio/oneink.py"
+},
+"20030": {
+"mode": "line",
+"paper": 0.0,
+"sha": "20da4adfbb6e0348",
+"src": "a7afb32d7ae4129a",
+"via": "scripts/studio/oneink.py"
+},
+"20031": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "a02746c3e1444d5e",
+"src": "9dd243ac94bc7c14",
+"via": "scripts/studio/oneink.py"
+},
+"20032": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "12ec1a6f95b47643",
+"src": "547fc7b6839b733c",
+"via": "scripts/studio/oneink.py"
+},
+"20033": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "a805c2d8bc5107a8",
+"src": "010451ad59a26401",
+"via": "scripts/studio/oneink.py"
+},
+"20034": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "b799768f284d0764",
+"src": "927dd04cdf690534",
+"via": "scripts/studio/oneink.py"
+},
+"20035": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "ef22c1775034bd2d",
+"src": "6ae31f5b4e55dc60",
+"via": "scripts/studio/oneink.py"
+},
+"20036": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "e206c96f5b30584c",
+"src": "9f70c5079bba4c98",
+"via": "scripts/studio/oneink.py"
+},
+"20037": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "d16b23d07e0d26b0",
+"src": "328de4233287ac40",
+"via": "scripts/studio/oneink.py"
+},
+"20038": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "423b30a8dde4edf4",
+"src": "585938631f9465f7",
+"via": "scripts/studio/oneink.py"
+},
+"20039": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "de74d823b37f17ad",
+"src": "9242277ccf13ba34",
+"via": "scripts/studio/oneink.py"
+},
+"20040": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "7c98fd0969a32fd4",
+"src": "96af4d76af02b0c2",
+"via": "scripts/studio/oneink.py"
+},
+"20041": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "48e581aeb1a7516f",
+"src": "07fe78414f929211",
+"via": "scripts/studio/oneink.py"
+},
+"20042": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "6a1082171aef61ba",
+"src": "c8371151de1f3f98",
+"via": "scripts/studio/oneink.py"
+},
+"20043": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "e9ff1df8b032b98e",
+"src": "3e21b62e7f30108e",
+"via": "scripts/studio/oneink.py"
+},
+"20044": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "ff0efe30b1794089",
+"src": "516bf7b758d93ed9",
+"via": "scripts/studio/oneink.py"
+},
+"20045": {
+"mode": "line",
+"paper": 0.0,
+"sha": "eb5bdce611a0b4cb",
+"src": "ee561645c1c969a0",
+"via": "scripts/studio/oneink.py"
+},
+"20046": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "487e36db7b95374c",
+"src": "9bdd51258d38d3bb",
+"via": "scripts/studio/oneink.py"
+},
+"20047": {
+"mode": "line",
+"paper": 0.0,
+"sha": "d797952edec9b7cc",
+"src": "242af514161b1519",
+"via": "scripts/studio/oneink.py"
+},
+"20048": {
+"mode": "line",
+"paper": 0.0,
+"sha": "fafdecea0182aea4",
+"src": "c13263eec7b9dec8",
+"via": "scripts/studio/oneink.py"
+},
+"20049": {
+"mode": "line",
+"paper": 0.0,
+"sha": "8b533d0b56b2f031",
+"src": "08c7a72c27dfb8d0",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

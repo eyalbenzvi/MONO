@@ -69,6 +69,8 @@ export const SOURCE_CATEGORIES = [
   "archive",
   // seventh set: designs made from real data (content overhaul, Part 3)
   "data",
+  // the studio: illustrations made for MONO from its own briefs (data/studio, scripts/studio/publish.ts)
+  "studio",
 ] as const;
 export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
 

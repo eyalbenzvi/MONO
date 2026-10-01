@@ -67,6 +67,8 @@ export function displayCategory(source: SourceCategory, variant: string, title =
       return "pattern";
     case "data": // the seventh set files each design itself (Set7Design.category)
       return "systems";
+    case "studio": // the studio files each design itself (scripts/studio/publish.ts)
+      return "specimens";
     case "archive": {
       const shown = ARCHIVE_DISPLAY[variant.replace(/^archive-/, "") as ArchiveGroup];
       return (shown === "etched" || shown === "pattern") && BUILDING.test(title) ? "architecture" : shown;

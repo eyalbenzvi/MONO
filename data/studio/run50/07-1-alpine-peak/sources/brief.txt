@@ -4,3 +4,5 @@ Seed: 7100 (of 7100, 7101, 7102, 7103; main)
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
 Chosen: s7100. s7101 has a thin frame line and fake signature marks; s7102 and s7103 have fake lettering in the bottom right corner. s7100 is clean, one pyramid peak with a clear lit and shadowed face. Titled ALPINE PEAK, not MATTERHORN: the peak is a generic pyramid without the Matterhorn's hooked summit.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

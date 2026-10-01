@@ -7,3 +7,5 @@ Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), 8 steps, guidance 1.0, run on CPU with scripts/studio/generate.py --lcm --steps 8.
 Attempt: 3 of 3 (attempts 1 and 2, seeds 301 and 311, were rejected: one spire, then five).
 Processing: scripts/studio/oneink.py --mode tone --fade --size 0.9 --title "PATAGONIA" --sub "Places · Torres del Paine"
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

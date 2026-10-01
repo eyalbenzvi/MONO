@@ -10,7 +10,9 @@ import type { Selected } from "./_types";
 import type { SourceId } from "./ranges";
 
 /** Each wave's drop: at most 12 of its designs (four per category) are new that week, the rest a week earlier. */
-export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-30", 3: "2026-10-01" };
+export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-30", 3: "2026-10-01", 4: "2026-10-01" };
+/** The studio's drop (scripts/studio/publish.ts): its illustrations count as wave 4. */
+export const STUDIO_WAVE = 4;
 
 /** The institution a design is "from" in its description, and the credit's source line. */
 export const INSTITUTION: Record<SourceId, string> = {
@@ -26,6 +28,7 @@ export const INSTITUTION: Record<SourceId, string> = {
   wellcome: "Wellcome Collection",
   archiveorg: "Internet Archive",
   rijksmuseum: "Rijksmuseum",
+  studio: "MONO Studio",
 };
 export const SOURCE_LINE: Record<SourceId, string> = {
   wikimedia: "Wikimedia Commons",
@@ -40,6 +43,7 @@ export const SOURCE_LINE: Record<SourceId, string> = {
   wellcome: "Wellcome Collection",
   archiveorg: "Internet Archive",
   rijksmuseum: "Rijksmuseum",
+  studio: "MONO Studio",
 };
 export const licenseLine = (l: License) => LICENSE_LABEL[l];
 

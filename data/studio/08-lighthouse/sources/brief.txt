@@ -6,3 +6,5 @@ Prompt: Exactly one tall round stone lighthouse standing on a rocky cliff above 
 Negative prompt (not used with LCM at guidance 1.0): text, letters, words, numbers, labels, caption, title, signature, watermark, logo, frame, border, ornament, decorative corners, panels, colour, color, grey wash, gradient, blurry, soft focus, photograph, 3d render, cartoon, low contrast, cropped, cut off at the edge, extra limbs, missing limbs, fused limbs, extra fins, extra legs, deformed, distorted anatomy, duplicate, two subjects
 Preparation before oneink: the generated image (lighthouse-generated.png) was padded with its own sky tone, 260 px at the top and 200 px at the left, with a 160 px soft blend at the original left edge, so the vignette of --fade does not cut off the lantern; nothing in the picture was drawn or changed.
 oneink: --mode tone --fade --title "LIGHTHOUSE" --sub "Maritime · Atlantic coast"
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

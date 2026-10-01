@@ -4,3 +4,5 @@ Seed: 7200 (of 7200, 7201, 7202, 7203; main)
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
 Chosen: s7200. s7201 has a flat grey-wash lake and a faint frame; s7203 is drawn inside a ruled panel; s7202 is clean but its peak is a bare outline and on the black tee the open middle prints as a grey blotch. s7200 has the most drawing: snowy peaks, pines either side, a mirror reflection; both positives pass and read cleanly.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge rect (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

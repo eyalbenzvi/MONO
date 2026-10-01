@@ -7,3 +7,5 @@ Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), 8 steps, guidance 1.0, run on CPU with scripts/studio/generate.py --lcm --steps 8.
 Attempt: 1 (the stand-in for 06 Alpine Village, which failed three attempts).
 Processing: scripts/studio/oneink.py --mode tone --fade --title "PINE ON THE CLIFF" --sub "Places · Coast"
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

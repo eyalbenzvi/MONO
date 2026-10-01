@@ -52,7 +52,8 @@ import { PHOTO_CATEGORIES, photoOrder, recordUrl, type PhotoSource } from "./pho
 import { set5Designs } from "./gen/set5";
 import { set7Designs } from "./gen/set7";
 import type { Selected } from "./sources/_types";
-import { INSTITUTION, SOURCE_LINE, WAVE_DROP, filing, licenseLine, shortName } from "./sources/waves";
+import { INSTITUTION, SOURCE_LINE, STUDIO_WAVE, WAVE_DROP, filing, licenseLine, shortName } from "./sources/waves";
+import { STUDIO_MANIFEST, type StudioEntry } from "./studio/publish";
 import { ADDITIONS_FIRST_N, ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
 import { displayCategory } from "./gen/categories";
@@ -127,7 +128,7 @@ const SHARD_DIR = path.join(ROOT, "public", "data");
 /* ------------------------------------------------------------------ */
 
 /** The drawn sources of the first three sets (the others are named after their subject). */
-type DrawnCategory = Exclude<SourceCategory, (typeof PHOTO_CATEGORIES)[number] | "sky" | "curves" | "botany" | "ornament" | "archive" | "data">;
+type DrawnCategory = Exclude<SourceCategory, (typeof PHOTO_CATEGORIES)[number] | "sky" | "curves" | "botany" | "ornament" | "archive" | "data" | "studio">;
 const TITLE_WORDS: Record<DrawnCategory, [string[], string[]]> = {
   architectural: [
     ["Concrete", "Brutal", "Monolith", "Facade", "Structural", "Civic", "Steel", "Tectonic", "Transit", "Pillar", "Modular", "Grid", "Poured", "Cantilever", "Plinth"],
@@ -287,6 +288,8 @@ type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar"
   source: SourceCategory;
   /** An archive work's own record title (a numeral in its name that the record hasn't was added to tell repeats apart). */
   recordTitle?: string;
+  /** A studio design's description as its maker wrote it (a fact and a dry wink): no closing line is added. */
+  ownDescription?: string;
 };
 
 const skuOf = (category: ShirtCategory, baseColor: BaseColor, n: number) => `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`;
@@ -598,6 +601,71 @@ function sourcesSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
   return bytes;
 }
 
+/**
+ * The studio (docs/content/studio.md): illustrations made for MONO from its own briefs, delivered to
+ * data/studio and made into prints by scripts/studio/publish.ts, which writes their measures to
+ * data/studio/catalogue.json. Engraving-style plates and scenes; tonal ones offered on the black tee.
+ */
+function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): number {
+  if (!existsSync(STUDIO_MANIFEST)) return 0;
+  const list = JSON.parse(readFileSync(STUDIO_MANIFEST, "utf8")) as StudioEntry[];
+  let bytes = 0;
+  // One design per subject (the catalogue's rule): a second "Mountains" goes by its own title.
+  const subjects = new Set(shirts.map((s) => s.subject.toLowerCase()));
+  for (const e of list) {
+    const file = path.join(PRINTS_DIR, `print_${e.n}.webp`);
+    if (!existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)} (run scripts/studio/publish.ts)`);
+    const subject = subjects.has(e.subject.toLowerCase()) ? e.title : e.subject;
+    subjects.add(subject.toLowerCase());
+    const nature = e.category === "specimens" ? 0.9 : e.category === "etched" ? (e.dir.match(/anchor|lantern|hourglass/) ? 0.05 : 0.8) : e.category === "brush" ? 0.7 : e.category === "sky" ? 0.3 : 0.25;
+    const f: Partial<Record<FeatureKey, number>> = {
+      line_art: e.mode === "line" ? 0.8 : 0.45,
+      halftone_raster: e.mode === "tone" ? 0.4 : 0,
+      pictorial: 0.85,
+      classic: 0.6,
+      nature,
+      architectural: e.category === "architecture" ? 0.7 : 0.05,
+      retro: 0.15,
+      contrast: 0.7,
+      density: Math.min(1, e.coverage * 2.5),
+      ...(e.baseColor === "black" ? { dark_industrial: 0.12 } : { clean_minimal: 0.12 }),
+    };
+    const slug = path.basename(e.dir).replace(/^\d{2}-(\d-)?/, "");
+    sigs.push({ key: `studio|${slug}`, vec: [] });
+    const first = sentence(e.description.split(/(?<=\.)\s/)[0]);
+    shirts.push({
+      id: `mono-${String(e.n).padStart(4, "0")}`,
+      n: e.n,
+      no: 0,
+      sku: skuOf(e.category, e.baseColor, e.n),
+      title: freeTitle(e.title, taken),
+      price: PRICE,
+      baseColor: e.baseColor,
+      backPrintUrl: `/prints/print_${e.n}.webp`,
+      category: e.category,
+      medium: "ink",
+      colors: offeredColors(e.baseColor, e.single),
+      source: "studio",
+      // One variant per shop category (a template sits in one category).
+      variant: `studio-${e.category}`,
+      base: first,
+      // A colour in the title ("Golden Eagle") is said to be one ink (Part 5).
+      ownDescription: /\b(red|scarlet|blue|green|yellow|golden|gold|silver|purple|pink|orange|grey|gray|brown)\b/i.test(e.title) && !/one[- ]ink/i.test(e.description) ? `${e.description} Printed in one ink.` : e.description,
+      subject,
+      style: STYLE.studio,
+      quality: e.quality,
+      flags: [],
+      printCm: e.printCm,
+      features: vector(f),
+      photo: { credit: "MONO Studio", url: e.briefUrl, image: `studio-${slug}`, source: "drawn with Segmind SSD-1B on MONO's own machine", license: "Apache 2.0" },
+      dropDate: WAVE_DROP[STUDIO_WAVE],
+      wave: STUDIO_WAVE,
+    });
+    bytes += statSync(file).size;
+  }
+  return bytes;
+}
+
 /** The seventh set's number range (content overhaul, Part 3): from 7001, clear of every earlier range. */
 const SET7_FIRST_N = 7001;
 /** The day the seventh set dropped (the Monday of the week it was added). */
@@ -864,6 +932,7 @@ async function main() {
   bytes += seventhSet(shirts, sigs, takenTitles);
   // After every earlier set: their titles and numbers come first (the waves' blocks start at 8001).
   bytes += sourcesSet(shirts, sigs, takenTitles);
+  bytes += studioSet(shirts, sigs, takenTitles);
 
   // Retire the designs the content review took out (scripts/gen/retire):
   // everything above was generated in full, so the rest keep their ids,
@@ -986,13 +1055,13 @@ async function main() {
       else s.dropDate = earlier;
     }
   }
-  const withFamily = shirts.map(({ base, source: _source, recordTitle: _r, ...s }, i) => ({
+  const withFamily = shirts.map(({ base, source: _source, recordTitle: _r, ownDescription, ...s }, i) => ({
     ...s,
     family: `fam-${String(familyIndex[i] + 1).padStart(4, "0")}`,
     // `summary`: the design's own sentence (meta descriptions); `description`
     // adds the closing line about how it wears (the product page).
     summary: sentence(base),
-    description: descriptions[i],
+    description: ownDescription ?? descriptions[i],
     rank: ranks[i],
   }));
   // Two designs of one name (two photographs of one subject): the plain name

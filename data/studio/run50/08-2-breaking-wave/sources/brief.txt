@@ -5,3 +5,5 @@ Size: 960x1088
 Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
 One ink: scripts/studio/oneink.py /tmp/run50/K2-breaking-wave-s8201.png data/studio/run50/08-2-breaking-wave breaking-wave --mode tone --title BREAKING WAVE --sub Maritime · Open water --fade
 Chosen: Seed 8201, the second of four. One clear wave with a hollow barrel and curled foam, the woodblock look asked for. 8200 had mottled sandy foam and many crests; 8202 sat in a hard rectangular panel with mottled foam; 8201 was taken before 8203 finished, being the plainly better read. fails [] on both files.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge circle (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

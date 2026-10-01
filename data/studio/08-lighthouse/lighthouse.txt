@@ -1,7 +1,7 @@
 Title: Lighthouse
 Category: Maritime
 Subject: A tall round stone lighthouse with its keeper's cottage on a rocky headland, Atlantic waves breaking below
-Style: Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges
+Style: Engraving-style landscape, clustered-dot tone, the ground cut straight with a thin rule under it
 Medium: Drawn (illustration)
 Description: A slender stone lighthouse and its keeper's cottage stand on a rocky headland while the swell breaks white on the rocks below. It has been keeping the lights on for longer than most utilities.
 Tee colours: Black and white (lighthouse-black.png for black tees, lighthouse-white.png for white tees)

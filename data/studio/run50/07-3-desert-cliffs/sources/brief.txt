@@ -4,3 +4,5 @@ Seed: 7351 (of 7350, 7351, 7352, 7353; backup)
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
 Chosen: s7351 (backup). All four mains (DESERT DUNES, s7300-s7303) were rejected: photographic grey with no line, frame edges, a figure in s7302, and in one ink the black tee became one grey slab. Backup MESAS: s7350 a muddier canyon, s7352 has a fake signature in the corner; s7351 (chosen before s7353 finished) is a clean line drawing of a flat-topped cliff wall with desert scrub. Titled DESERT CLIFFS, not MESAS: it shows a continuous cliff wall rather than separate mesas.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

@@ -1,0 +1,1484 @@
+[
+ {
+  "n": 20001,
+  "dir": "data/studio/01-jellyfish",
+  "title": "Jellyfish",
+  "category": "specimens",
+  "subject": "A single jellyfish in side view: domed bell with radiating lines, frilled oral arms and long trailing tentacles",
+  "style": "Natural history plate, engraving-style line work with a screened bell",
+  "description": "A jellyfish hangs in open water, its domed bell trailing frilled arms and a curtain of beaded tentacles. It has managed for five hundred million years without a brain, which is more than can be said for most of us.",
+  "keywords": [
+   "jellyfish",
+   "medusa",
+   "marine life",
+   "ocean",
+   "sea creature",
+   "natural history",
+   "engraving",
+   "scientific illustration",
+   "line art"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 88,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.197,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/01-jellyfish/sources/brief.txt"
+ },
+ {
+  "n": 20002,
+  "dir": "data/studio/02-sea-turtle",
+  "title": "Sea Turtle",
+  "category": "specimens",
+  "subject": "A sea turtle swimming, seen from above at a slight angle: head, plated shell and two front flippers",
+  "style": "Natural history plate, engraving-style line work with scale patterns and stipple",
+  "description": "A sea turtle glides past with its front flippers spread, every scale and shell plate drawn in fine engraved line. It has been doing this for a hundred million years and sees no reason to hurry now.",
+  "keywords": [
+   "sea turtle",
+   "turtle",
+   "marine life",
+   "ocean",
+   "reptile",
+   "natural history",
+   "engraving",
+   "scientific illustration",
+   "line art"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 75,
+  "printCm": {
+   "width": 26,
+   "height": 31
+  },
+  "coverage": 0.145,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/02-sea-turtle/sources/brief.txt"
+ },
+ {
+  "n": 20003,
+  "dir": "data/studio/04-barn-owl",
+  "title": "Barn Owl",
+  "category": "specimens",
+  "subject": "A barn owl perched on a bare branch, facing the viewer",
+  "style": "Natural history portrait, fine stipple and screened tone",
+  "description": "A barn owl sits upright on a dead branch, its pale facial disc turned straight towards you. It has clearly already decided whether you are worth eating.",
+  "keywords": [
+   "barn owl",
+   "owl",
+   "bird of prey",
+   "nocturnal",
+   "wildlife",
+   "natural history",
+   "bird",
+   "hunter",
+   "branch"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 72,
+  "printCm": {
+   "width": 22,
+   "height": 35
+  },
+  "coverage": 0.219,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/04-barn-owl/sources/brief.txt"
+ },
+ {
+  "n": 20004,
+  "dir": "data/studio/05-patagonia",
+  "title": "Patagonia",
+  "category": "etched",
+  "subject": "Mountains",
+  "style": "Halftone engraving",
+  "description": "Three granite towers rise above a scree valley and a glacial lake, after the Torres del Paine in Chilean Patagonia. They have stood there for some twelve million years and are in no hurry to be anywhere else.",
+  "keywords": [
+   "Patagonia",
+   "Torres del Paine",
+   "mountains",
+   "granite towers",
+   "Chile",
+   "lake",
+   "landscape",
+   "hiking",
+   "engraving",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 83,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.301,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/05-patagonia/sources/brief.txt"
+ },
+ {
+  "n": 20005,
+  "dir": "data/studio/06-pine-on-the-cliff",
+  "title": "Pine on the Cliff",
+  "category": "etched",
+  "subject": "Tree",
+  "style": "Halftone engraving",
+  "description": "An old wind-bent pine grows alone from a rocky ledge above a calm bay, with headlands on either side. It has chosen the view over the soil, and seems content with the bargain.",
+  "keywords": [
+   "pine",
+   "tree",
+   "cliff",
+   "coast",
+   "sea",
+   "bay",
+   "landscape",
+   "engraving",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 90,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.28,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/06-pine-on-the-cliff/sources/brief.txt"
+ },
+ {
+  "n": 20006,
+  "dir": "data/studio/08-lighthouse",
+  "title": "Lighthouse",
+  "category": "architecture",
+  "subject": "A tall round stone lighthouse with its keeper's cottage on a rocky headland, Atlantic waves breaking below",
+  "style": "Engraving-style landscape, clustered-dot tone, the ground cut straight with a thin rule under it",
+  "description": "A slender stone lighthouse and its keeper's cottage stand on a rocky headland while the swell breaks white on the rocks below. It has been keeping the lights on for longer than most utilities.",
+  "keywords": [
+   "lighthouse",
+   "coast",
+   "Atlantic",
+   "sea",
+   "waves",
+   "cliff",
+   "maritime",
+   "keeper's cottage",
+   "engraving",
+   "seaside"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 82,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.258,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/08-lighthouse/sources/brief.txt"
+ },
+ {
+  "n": 20007,
+  "dir": "data/studio/run50/01-2-spiral-shell",
+  "title": "Spiral Shell",
+  "category": "specimens",
+  "subject": "A single coiled sea shell seen side on, its ribbed whorls winding in to a fine centre",
+  "style": "Natural history plate, engraving-style pen lines",
+  "description": "A coiled shell winds in on itself in ribbed whorls, each turn a little smaller than the last. Its owner built it one chamber at a time and never once needed planning permission.",
+  "keywords": [
+   "shell",
+   "spiral shell",
+   "seashell",
+   "marine life",
+   "ocean",
+   "natural history",
+   "spiral",
+   "line art",
+   "scientific illustration"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 82,
+  "printCm": {
+   "width": 26,
+   "height": 34
+  },
+  "coverage": 0.287,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/01-2-spiral-shell/sources/brief.txt"
+ },
+ {
+  "n": 20008,
+  "dir": "data/studio/run50/01-4-pufferfish",
+  "title": "Pufferfish",
+  "category": "specimens",
+  "subject": "A spotted pufferfish seen head on, fully inflated, a round ball of spines with two big eyes and a pouting mouth",
+  "style": "Natural history plate, bold pen line work and spotted pattern",
+  "description": "A pufferfish faces the viewer fully inflated, its spotted body a ball of spines round two wide eyes and a pout. It swallows water to treble its size, which settles most arguments before they start.",
+  "keywords": [
+   "pufferfish",
+   "puffer",
+   "blowfish",
+   "marine life",
+   "ocean",
+   "fish",
+   "natural history",
+   "line art",
+   "spines"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 85,
+  "printCm": {
+   "width": 26,
+   "height": 27
+  },
+  "coverage": 0.149,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/01-4-pufferfish/sources/brief.txt"
+ },
+ {
+  "n": 20009,
+  "dir": "data/studio/run50/02-1-snowy-owl",
+  "title": "Snowy Owl",
+  "category": "specimens",
+  "subject": "A snowy owl perched on a bare branch, facing the viewer",
+  "style": "Natural history portrait in fine ink line, spotted plumage and light screened shading",
+  "description": "A snowy owl sits square on a bare branch, both yellow eyes fixed on you and both feet locked round the wood. It has the calm of a bird that has never once been cold.",
+  "keywords": [
+   "snowy owl",
+   "owl",
+   "arctic",
+   "bird of prey",
+   "wildlife",
+   "natural history",
+   "bird",
+   "winter",
+   "branch"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 77,
+  "printCm": {
+   "width": 24,
+   "height": 35
+  },
+  "coverage": 0.072,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/02-1-snowy-owl/sources/brief.txt"
+ },
+ {
+  "n": 20010,
+  "dir": "data/studio/run50/02-2-golden-eagle",
+  "title": "Golden Eagle",
+  "category": "specimens",
+  "subject": "A golden eagle facing the viewer with both wings raised and spread wide",
+  "style": "Heraldic natural history study in fine ink line, feather by feather",
+  "description": "A golden eagle faces straight out with both wings thrown open, every flight feather drawn in its place. It is the posture of a bird that has seen the coat of arms and intends to keep it.",
+  "keywords": [
+   "golden eagle",
+   "eagle",
+   "bird of prey",
+   "wings",
+   "raptor",
+   "wildlife",
+   "natural history",
+   "bird",
+   "heraldic"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 86,
+  "printCm": {
+   "width": 26,
+   "height": 31
+  },
+  "coverage": 0.218,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/02-2-golden-eagle/sources/brief.txt"
+ },
+ {
+  "n": 20011,
+  "dir": "data/studio/run50/02-4-kingfisher",
+  "title": "Kingfisher",
+  "category": "specimens",
+  "subject": "A kingfisher in side portrait, crest raised, long dagger beak pointing right",
+  "style": "Natural history portrait in ink line and screened shading",
+  "description": "A kingfisher sits half turned with its crest up and its long straight beak aimed at something only it can see. Somewhere a small fish has just had a very bad idea.",
+  "keywords": [
+   "kingfisher",
+   "bird",
+   "river bird",
+   "crest",
+   "beak",
+   "wildlife",
+   "natural history",
+   "portrait"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 74,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.145,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/02-4-kingfisher/sources/brief.txt"
+ },
+ {
+  "n": 20012,
+  "dir": "data/studio/run50/02-5-birds-nest",
+  "title": "Bird's Nest",
+  "category": "specimens",
+  "subject": "A round woven bird's nest with five eggs, seen from directly above",
+  "style": "Natural history study in ink line and screened tone, top-down",
+  "description": "A round nest of woven grass and twigs holds five pale eggs, seen from straight above. Someone has clearly been very busy, and is not going to say who.",
+  "keywords": [
+   "bird's nest",
+   "nest",
+   "eggs",
+   "birds",
+   "spring",
+   "woven",
+   "nature",
+   "natural history",
+   "seen from above"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 84,
+  "printCm": {
+   "width": 26,
+   "height": 29
+  },
+  "coverage": 0.276,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/02-5-birds-nest/sources/brief.txt"
+ },
+ {
+  "n": 20013,
+  "dir": "data/studio/run50/03-1-swallowtail-butterfly",
+  "title": "Swallowtail Butterfly",
+  "category": "specimens",
+  "subject": "A swallowtail butterfly with its wings open, seen from directly above",
+  "style": "Natural history plate, fine pen line and hatched wing borders",
+  "description": "A swallowtail butterfly laid flat with its four wings open and its two long tails trailing below. It has spent its whole life looking this symmetrical and would like some credit for it.",
+  "keywords": [
+   "swallowtail",
+   "butterfly",
+   "insect",
+   "wings",
+   "lepidoptera",
+   "natural history",
+   "symmetry",
+   "entomology",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 77,
+  "printCm": {
+   "width": 26,
+   "height": 28
+  },
+  "coverage": 0.089,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/03-1-swallowtail-butterfly/sources/brief.txt"
+ },
+ {
+  "n": 20014,
+  "dir": "data/studio/run50/03-2-moth",
+  "title": "Moth",
+  "category": "specimens",
+  "subject": "A moth with its four wings open, seen from directly above",
+  "style": "Natural history plate, fine pen line with banded wings",
+  "description": "A moth laid flat with its wings open, a furry thorax, a striped abdomen and long trailing hind wings. It came all this way for a light bulb and settled for a shirt.",
+  "keywords": [
+   "moth",
+   "insect",
+   "wings",
+   "lepidoptera",
+   "night",
+   "natural history",
+   "symmetry",
+   "entomology",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 77,
+  "printCm": {
+   "width": 26,
+   "height": 28
+  },
+  "coverage": 0.077,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/03-2-moth/sources/brief.txt"
+ },
+ {
+  "n": 20015,
+  "dir": "data/studio/run50/03-3-dragonfly",
+  "title": "Dragonfly",
+  "category": "specimens",
+  "subject": "A dragonfly with its four wings spread flat, seen from directly above",
+  "style": "Natural history plate, fine pen line with lace wing veins",
+  "description": "A dragonfly laid out flat, four wings of fine lace veins on either side of a long segmented body. It has been flying in much this way for three hundred million years and sees no reason to change now.",
+  "keywords": [
+   "dragonfly",
+   "insect",
+   "wings",
+   "odonata",
+   "natural history",
+   "symmetry",
+   "entomology",
+   "pond",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 70,
+  "printCm": {
+   "width": 26,
+   "height": 16
+  },
+  "coverage": 0.063,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/03-3-dragonfly/sources/brief.txt"
+ },
+ {
+  "n": 20016,
+  "dir": "data/studio/run50/03-5-bat",
+  "title": "Bat",
+  "category": "specimens",
+  "subject": "A bat seen from the front with both wings spread wide",
+  "style": "Natural history plate, fine pen line and hatched wing membranes",
+  "description": "A bat facing you with its wings stretched to their full span, the membrane pulled taut between long finger bones. It would prefer you saw it at dusk, from a distance.",
+  "keywords": [
+   "bat",
+   "wings",
+   "mammal",
+   "night",
+   "nocturnal",
+   "natural history",
+   "symmetry",
+   "halloween",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 75,
+  "printCm": {
+   "width": 26,
+   "height": 22
+  },
+  "coverage": 0.068,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/03-5-bat/sources/brief.txt"
+ },
+ {
+  "n": 20017,
+  "dir": "data/studio/run50/04-1-wolf",
+  "title": "Wolf",
+  "category": "specimens",
+  "subject": "A grey wolf head and ruff, front view, looking straight out",
+  "style": "Engraving-style line portrait, fine fur strokes and screened mid-tones",
+  "description": "A grey wolf looks straight out, ears up and ruff full, drawn in fine fur strokes. It has clearly heard about the sheep.",
+  "keywords": [
+   "wolf",
+   "grey wolf",
+   "animal portrait",
+   "head",
+   "wildlife",
+   "nature",
+   "fur",
+   "line art",
+   "predator"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 82,
+  "printCm": {
+   "width": 21,
+   "height": 34
+  },
+  "coverage": 0.157,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/04-1-wolf/sources/brief.txt"
+ },
+ {
+  "n": 20018,
+  "dir": "data/studio/run50/04-2-lion",
+  "title": "Lion",
+  "category": "specimens",
+  "subject": "A male lion head with full mane, front view, looking straight out",
+  "style": "Engraving-style line portrait, flowing mane strokes",
+  "description": "A male lion looks straight out from a full, flowing mane, drawn in fine ink strokes. The hair took longer than the hunting.",
+  "keywords": [
+   "lion",
+   "mane",
+   "big cat",
+   "animal portrait",
+   "head",
+   "wildlife",
+   "nature",
+   "line art",
+   "king of beasts"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 76,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.074,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/04-2-lion/sources/brief.txt"
+ },
+ {
+  "n": 20019,
+  "dir": "data/studio/run50/04-3-red-deer-stag",
+  "title": "Red Deer Stag",
+  "category": "specimens",
+  "subject": "A red deer stag head and neck with two branching antlers, front view",
+  "style": "Engraving-style pen portrait, fur and antlers in fine strokes",
+  "description": "A red deer stag faces out under a full set of branching antlers, drawn in fine pen strokes. He grows them fresh every year and still looks smug about it.",
+  "keywords": [
+   "red deer",
+   "stag",
+   "antlers",
+   "deer",
+   "animal portrait",
+   "head",
+   "wildlife",
+   "Highlands",
+   "nature",
+   "pen and ink"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 80,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.131,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/04-3-red-deer-stag/sources/brief.txt"
+ },
+ {
+  "n": 20020,
+  "dir": "data/studio/run50/04-4-brown-bear",
+  "title": "Brown Bear",
+  "category": "specimens",
+  "subject": "A brown bear head and shoulders, front view, looking straight out",
+  "style": "Engraving-style line portrait, fur strokes and screened mid-tones",
+  "description": "A brown bear looks straight out with round ears and a broad muzzle, drawn in fine fur strokes. It has the calm of something that sleeps through winter on purpose.",
+  "keywords": [
+   "brown bear",
+   "bear",
+   "grizzly",
+   "animal portrait",
+   "head",
+   "wildlife",
+   "nature",
+   "fur",
+   "line art"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 78,
+  "printCm": {
+   "width": 23,
+   "height": 33
+  },
+  "coverage": 0.121,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/04-4-brown-bear/sources/brief.txt"
+ },
+ {
+  "n": 20021,
+  "dir": "data/studio/run50/04-5-highland-bull",
+  "title": "Highland Bull",
+  "category": "specimens",
+  "subject": "A Highland bull head with two long curved horns and a shaggy coat, front view",
+  "style": "Engraving-style pen portrait, long hair in flowing strokes",
+  "description": "A Highland bull stares out from under a shaggy fringe between two wide curved horns, drawn in long pen strokes. The hairstyle is entirely deliberate and not up for discussion.",
+  "keywords": [
+   "highland cow",
+   "highland bull",
+   "Scottish",
+   "cattle",
+   "horns",
+   "animal portrait",
+   "head",
+   "Highlands",
+   "pen and ink",
+   "shaggy"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 79,
+  "printCm": {
+   "width": 26,
+   "height": 30
+  },
+  "coverage": 0.178,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/04-5-highland-bull/sources/brief.txt"
+ },
+ {
+  "n": 20022,
+  "dir": "data/studio/run50/05-1-maple-leaf",
+  "title": "Maple Leaf",
+  "category": "specimens",
+  "subject": "A single five-lobed maple leaf, flat in front view, its veins fanning out from the base of a long straight stalk",
+  "style": "Natural history plate, engraving-style line work",
+  "description": "One maple leaf lies flat, five toothed lobes spreading from a single point on its long stalk. Each one is drawn as if it might be needed for a flag.",
+  "keywords": [
+   "maple leaf",
+   "maple",
+   "leaf",
+   "autumn",
+   "botanical",
+   "natural history",
+   "tree",
+   "line art",
+   "scientific illustration"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 76,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.068,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-1-maple-leaf/sources/brief.txt"
+ },
+ {
+  "n": 20023,
+  "dir": "data/studio/run50/05-2-fern-frond",
+  "title": "Fern Frond",
+  "category": "specimens",
+  "subject": "A single upright fern frond in front view: one straight stem with paired, finely toothed leaflets tapering to the tip",
+  "style": "Natural history plate, engraving-style line work",
+  "description": "One fern frond stands straight up its stem, its paired leaflets narrowing evenly to a point. Ferns were here long before flowers and have never seen the need to catch up.",
+  "keywords": [
+   "fern",
+   "frond",
+   "leaf",
+   "botanical",
+   "natural history",
+   "plant",
+   "line art",
+   "scientific illustration",
+   "forest"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 87,
+  "printCm": {
+   "width": 12,
+   "height": 35
+  },
+  "coverage": 0.091,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-2-fern-frond/sources/brief.txt"
+ },
+ {
+  "n": 20024,
+  "dir": "data/studio/run50/05-3-pine-cone",
+  "title": "Pine Cone",
+  "category": "specimens",
+  "subject": "A single closed pine cone standing upright in front view, its woody scales overlapping in neat rows to a pointed tip",
+  "style": "Natural history plate, engraving-style line work",
+  "description": "A closed pine cone stands on end, row upon row of woody scales stacked to its tip. It will open them only when the weather is dry enough, which shows more sense than most of us manage.",
+  "keywords": [
+   "pine cone",
+   "conifer",
+   "botanical",
+   "natural history",
+   "forest",
+   "woodland",
+   "line art",
+   "scientific illustration",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 99,
+  "printCm": {
+   "width": 14,
+   "height": 35
+  },
+  "coverage": 0.136,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-3-pine-cone/sources/brief.txt"
+ },
+ {
+  "n": 20025,
+  "dir": "data/studio/run50/05-4-artichoke",
+  "title": "Artichoke",
+  "category": "specimens",
+  "subject": "A single globe artichoke in front view on a short cut stem, its pointed bracts overlapping in rows, a ruff of leaves at the base",
+  "style": "Natural history plate, engraving-style line work",
+  "description": "One globe artichoke stands on its cut stem, the pointed bracts closing in over the heart. It is, strictly speaking, a thistle that never got round to flowering.",
+  "keywords": [
+   "artichoke",
+   "globe artichoke",
+   "vegetable",
+   "botanical",
+   "natural history",
+   "kitchen garden",
+   "line art",
+   "scientific illustration",
+   "thistle"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 81,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.112,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-4-artichoke/sources/brief.txt"
+ },
+ {
+  "n": 20026,
+  "dir": "data/studio/run50/05-5-sunflower-head",
+  "title": "Sunflower Head",
+  "category": "specimens",
+  "subject": "A single sunflower head seen face on: a round disc of seeds in crossing spirals, ringed by two rows of pointed petals",
+  "style": "Natural history plate, engraving-style line work",
+  "description": "A sunflower seen head on, its seeds packed in crossing spirals inside a double ring of petals. The spirals follow the Fibonacci numbers, though the sunflower has never been asked to show its working.",
+  "keywords": [
+   "sunflower",
+   "flower",
+   "seed head",
+   "botanical",
+   "natural history",
+   "Fibonacci spiral",
+   "summer",
+   "line art",
+   "scientific illustration"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 80,
+  "printCm": {
+   "width": 26,
+   "height": 30
+  },
+  "coverage": 0.13,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-5-sunflower-head/sources/brief.txt"
+ },
+ {
+  "n": 20027,
+  "dir": "data/studio/run50/06-1-pomegranate",
+  "title": "Pomegranate",
+  "category": "specimens",
+  "subject": "A pomegranate cut in half, the open face with its chambers of red flesh and the crown at the top",
+  "style": "Engraving-style line drawing, fine hatching on the rind",
+  "description": "A pomegranate sliced clean through the middle, its crown standing up like a small, slightly surprised hat. Considerably tidier than eating one.",
+  "keywords": [
+   "pomegranate",
+   "fruit",
+   "cut fruit",
+   "botanical",
+   "garden",
+   "crown",
+   "natural history",
+   "line art",
+   "Mediterranean"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 85,
+  "printCm": {
+   "width": 26,
+   "height": 32
+  },
+  "coverage": 0.218,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/06-1-pomegranate/sources/brief.txt"
+ },
+ {
+  "n": 20028,
+  "dir": "data/studio/run50/06-2-fly-agaric",
+  "title": "Fly Agaric",
+  "category": "specimens",
+  "subject": "Three fly agaric mushrooms, two tall and one small, with spotted caps and gills, growing in a tuft of grass",
+  "style": "Engraving-style line drawing with fine hatching on the gills",
+  "description": "Three fly agarics stand in the grass, caps spotted, gills finely ruled. Lovely to look at and best left exactly there.",
+  "keywords": [
+   "fly agaric",
+   "mushroom",
+   "toadstool",
+   "Amanita",
+   "fungi",
+   "forest floor",
+   "woodland",
+   "nature",
+   "line art"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 85,
+  "printCm": {
+   "width": 19,
+   "height": 35
+  },
+  "coverage": 0.164,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/06-2-fly-agaric/sources/brief.txt"
+ },
+ {
+  "n": 20029,
+  "dir": "data/studio/run50/06-3-lotus-flower",
+  "title": "Lotus Flower",
+  "category": "specimens",
+  "subject": "A lotus in full bloom seen from the front, layered pointed petals on a single stem",
+  "style": "Pen-and-ink line drawing, petals ruled with fine parallel lines",
+  "description": "A lotus opens in tiers of pointed petals, each ruled from tip to base. It rises out of the mud and still manages to look like this.",
+  "keywords": [
+   "lotus",
+   "lotus flower",
+   "flower",
+   "bloom",
+   "botanical",
+   "petals",
+   "water plant",
+   "natural history",
+   "line art"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 75,
+  "printCm": {
+   "width": 26,
+   "height": 29
+  },
+  "coverage": 0.148,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/06-3-lotus-flower/sources/brief.txt"
+ },
+ {
+  "n": 20030,
+  "dir": "data/studio/run50/06-4-rose",
+  "title": "Rose",
+  "category": "specimens",
+  "subject": "A single rose bloom seen head on, petals spiralling into a tight centre",
+  "style": "Engraving-style line drawing with a fine screen in the shaded folds",
+  "description": "One rose seen straight on, petals turning inward to a tight spiral at its heart. No thorns were included, which is more than most roses can say.",
+  "keywords": [
+   "rose",
+   "flower",
+   "bloom",
+   "botanical",
+   "garden",
+   "petals",
+   "natural history",
+   "line art",
+   "romantic"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 83,
+  "printCm": {
+   "width": 26,
+   "height": 30
+  },
+  "coverage": 0.125,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/06-4-rose/sources/brief.txt"
+ },
+ {
+  "n": 20031,
+  "dir": "data/studio/run50/06-5-lemon-branch",
+  "title": "Lemon Branch",
+  "category": "specimens",
+  "subject": "A lemon branch with two ripe lemons hanging among glossy leaves",
+  "style": "Engraving-style botanical plate in clustered-dot tone",
+  "description": "Two lemons hang from a single leafy branch, drawn in the manner of an old botanical plate. Life handed it lemons and it made a print.",
+  "keywords": [
+   "lemon",
+   "lemon branch",
+   "citrus",
+   "fruit",
+   "botanical",
+   "Mediterranean",
+   "garden",
+   "leaves",
+   "natural history"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 79,
+  "printCm": {
+   "width": 19,
+   "height": 35
+  },
+  "coverage": 0.171,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/06-5-lemon-branch/sources/brief.txt"
+ },
+ {
+  "n": 20032,
+  "dir": "data/studio/run50/07-1-alpine-peak",
+  "title": "Alpine Peak",
+  "category": "etched",
+  "subject": "Mountains",
+  "style": "Halftone engraving",
+  "description": "A lone pyramid of rock and snow rises above the lower ridges, one face lit and one in shadow, fading into the paper at its feet. It has been standing perfectly still for a few million years and shows no sign of getting bored.",
+  "keywords": [
+   "alpine peak",
+   "mountain",
+   "Alps",
+   "summit",
+   "snow",
+   "rock",
+   "landscape",
+   "hiking",
+   "climbing",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 83,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.187,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/07-1-alpine-peak/sources/brief.txt"
+ },
+ {
+  "n": 20033,
+  "dir": "data/studio/run50/07-2-alpine-lake",
+  "title": "Alpine Lake",
+  "category": "etched",
+  "subject": "Mountains",
+  "style": "Halftone engraving",
+  "description": "A still mountain lake holds the reflection of the snowy peaks behind it, framed by dark pines on both shores. The water is perfectly calm, which is more than can be said for anyone who has tried swimming in it.",
+  "keywords": [
+   "alpine lake",
+   "mountain lake",
+   "reflection",
+   "pine trees",
+   "Alps",
+   "mountains",
+   "still water",
+   "landscape",
+   "hiking",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 86,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.234,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/07-2-alpine-lake/sources/brief.txt"
+ },
+ {
+  "n": 20034,
+  "dir": "data/studio/run50/07-3-desert-cliffs",
+  "title": "Desert Cliffs",
+  "category": "etched",
+  "subject": "Landscapes",
+  "style": "Halftone engraving",
+  "description": "A long wall of flat-topped sandstone cliffs runs into a dry valley dotted with desert scrub. The rock was laid down one thin layer at a time, which is one way to avoid being rushed.",
+  "keywords": [
+   "desert",
+   "cliffs",
+   "sandstone",
+   "canyon",
+   "mesa",
+   "butte",
+   "scrub",
+   "landscape",
+   "American West",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 81,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.232,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/07-3-desert-cliffs/sources/brief.txt"
+ },
+ {
+  "n": 20035,
+  "dir": "data/studio/run50/07-4-waterfall",
+  "title": "Waterfall",
+  "category": "etched",
+  "subject": "Landscapes",
+  "style": "Halftone engraving",
+  "description": "A single tall fall drops between walls of dense fern and rock into a misty pool. The water has been taking the same route down for a very long time and sees no reason to change.",
+  "keywords": [
+   "waterfall",
+   "falling water",
+   "ferns",
+   "jungle",
+   "cliff",
+   "rainforest",
+   "landscape",
+   "nature",
+   "hiking",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 88,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.301,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/07-4-waterfall/sources/brief.txt"
+ },
+ {
+  "n": 20036,
+  "dir": "data/studio/run50/07-5-pine-forest-in-mist",
+  "title": "Pine Forest in Mist",
+  "category": "etched",
+  "subject": "Trees",
+  "style": "Halftone engraving",
+  "description": "Tall straight pines stand in rows, the near trunks dark and sharp, the far ones lost in morning fog. Visibility is poor, but the trees have never needed to go anywhere.",
+  "keywords": [
+   "pine forest",
+   "mist",
+   "fog",
+   "pine trees",
+   "woodland",
+   "forest",
+   "trees",
+   "landscape",
+   "nature",
+   "halftone"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 86,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.268,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/07-5-pine-forest-in-mist/sources/brief.txt"
+ },
+ {
+  "n": 20037,
+  "dir": "data/studio/run50/08-1-sea-stacks",
+  "title": "Sea Stacks",
+  "category": "etched",
+  "subject": "Three tall rock sea stacks rising from the sea off a rocky shore, surf around boulders in the foreground",
+  "style": "Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges",
+  "description": "Three weathered sea stacks stand off a rocky shore with the surf working at their feet. The sea has been carving them for millennia and shows no sign of finishing.",
+  "keywords": [
+   "sea stacks",
+   "coast",
+   "cliffs",
+   "rock",
+   "sea",
+   "surf",
+   "shoreline",
+   "seaside",
+   "landscape",
+   "etching"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 83,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.262,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/08-1-sea-stacks/sources/brief.txt"
+ },
+ {
+  "n": 20038,
+  "dir": "data/studio/run50/08-2-breaking-wave",
+  "title": "Breaking Wave",
+  "category": "brush",
+  "subject": "One tall curling ocean wave breaking, its hollow barrel and curled foam crest over a rolling sea",
+  "style": "Woodblock-style wave in flowing lines, clustered-dot tone fading to nothing at the edges",
+  "description": "A single tall wave curls over into a hollow barrel, its crest breaking into fingers of foam above a rolling sea. Surfers call this ideal, sailors rather less so.",
+  "keywords": [
+   "breaking wave",
+   "wave",
+   "ocean",
+   "sea",
+   "surf",
+   "foam",
+   "woodblock",
+   "maritime",
+   "open water",
+   "coast"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 84,
+  "printCm": {
+   "width": 27,
+   "height": 29
+  },
+  "coverage": 0.221,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/08-2-breaking-wave/sources/brief.txt"
+ },
+ {
+  "n": 20039,
+  "dir": "data/studio/run50/08-3-rocky-islet",
+  "title": "Rocky Islet",
+  "category": "etched",
+  "subject": "A small islet of rounded boulders in a calm sea, one tall windswept pine on top and a smaller one behind, reflected in the still water",
+  "style": "Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges",
+  "description": "A windswept pine grows from a heap of rounded boulders in a flat calm sea, with a younger one keeping it company behind. Room for two, no ferry.",
+  "keywords": [
+   "rocky islet",
+   "island",
+   "pine tree",
+   "rocks",
+   "sea",
+   "calm water",
+   "reflection",
+   "coast",
+   "landscape",
+   "solitude"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 85,
+  "printCm": {
+   "width": 27,
+   "height": 28
+  },
+  "coverage": 0.278,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/08-3-rocky-islet/sources/brief.txt"
+ },
+ {
+  "n": 20040,
+  "dir": "data/studio/run50/08-4-chalk-cliffs",
+  "title": "Chalk Cliffs",
+  "category": "etched",
+  "subject": "Pale sheer sea cliffs in stepped layers running down to a calm sea, a scatter of rocks in the shallows",
+  "style": "Engraving-style landscape vignette, clustered-dot tone fading to nothing at the edges",
+  "description": "Pale cliffs fall in sheer stepped walls to a flat sea, with a few dark rocks scattered in the shallows. The coastline retreats a little every winter and never asks permission.",
+  "keywords": [
+   "chalk cliffs",
+   "white cliffs",
+   "coast",
+   "sea",
+   "headland",
+   "cliff",
+   "shoreline",
+   "seaside",
+   "landscape"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 79,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.165,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/08-4-chalk-cliffs/sources/brief.txt"
+ },
+ {
+  "n": 20041,
+  "dir": "data/studio/run50/08-5-fishing-hut-on-stilts",
+  "title": "Fishing Hut on Stilts",
+  "category": "architecture",
+  "subject": "A gabled wooden hut with a balcony standing on tall stilts over still water, a jetty beside it and its reflection below",
+  "style": "Engraving-style vignette, clustered-dot tone fading to nothing at the edges",
+  "description": "A plank hut with a balcony stands on tall stilts above flat water, a jetty at its side and its reflection beneath. Commute: one ladder.",
+  "keywords": [
+   "fishing hut",
+   "stilt house",
+   "hut",
+   "jetty",
+   "lake",
+   "still water",
+   "reflection",
+   "wooden cabin",
+   "waterside",
+   "maritime"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 81,
+  "printCm": {
+   "width": 27,
+   "height": 32
+  },
+  "coverage": 0.242,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/08-5-fishing-hut-on-stilts/sources/brief.txt"
+ },
+ {
+  "n": 20042,
+  "dir": "data/studio/run50/09-1-full-moon",
+  "title": "Full Moon",
+  "category": "sky",
+  "subject": "The full moon, one disc, front view: the near side with its dark maria, bright highlands and scattered craters",
+  "style": "Tonal engraving-style plate in a clustered-dot screen",
+  "description": "The near side of the full moon, its dark seas and pale highlands drawn as a single disc in a fine dot screen. It has shown us exactly this face for four billion years, which is commitment of a kind.",
+  "keywords": [
+   "full moon",
+   "moon",
+   "lunar",
+   "near side",
+   "maria",
+   "craters",
+   "astronomy",
+   "night sky",
+   "space"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 84,
+  "printCm": {
+   "width": 26,
+   "height": 29
+  },
+  "coverage": 0.207,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/09-1-full-moon/sources/brief.txt"
+ },
+ {
+  "n": 20043,
+  "dir": "data/studio/run50/09-2-jupiter",
+  "title": "Jupiter",
+  "category": "sky",
+  "subject": "The planet Jupiter, one sphere, front view: horizontal cloud belts with swirls and small oval storms, lit from the left",
+  "style": "Tonal engraving-style plate in a clustered-dot screen",
+  "description": "Jupiter in banded cloud, lit from one side with its night side falling away into shadow. Eleven times the width of Earth and still mostly weather.",
+  "keywords": [
+   "jupiter",
+   "planet",
+   "gas giant",
+   "solar system",
+   "astronomy",
+   "space",
+   "cloud bands",
+   "night sky"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 77,
+  "printCm": {
+   "width": 20,
+   "height": 26
+  },
+  "coverage": 0.165,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/09-2-jupiter/sources/brief.txt"
+ },
+ {
+  "n": 20044,
+  "dir": "data/studio/run50/09-3-iceberg",
+  "title": "Iceberg",
+  "category": "etched",
+  "subject": "One tall jagged iceberg in calm sea, front view, its reflection running down into still water",
+  "style": "Tonal engraving-style plate in a clustered-dot screen, faded to the edges",
+  "description": "A single iceberg stands in flat calm, one face lit and one in shadow, doubled in the water below. Most of it is underwater, as with most things worth knowing about.",
+  "keywords": [
+   "iceberg",
+   "ice",
+   "polar",
+   "arctic",
+   "sea",
+   "reflection",
+   "ocean",
+   "cold",
+   "nature",
+   "landscape"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 75,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.175,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/09-3-iceberg/sources/brief.txt"
+ },
+ {
+  "n": 20045,
+  "dir": "data/studio/run50/09-4-quartz-crystal-cluster",
+  "title": "Quartz Crystal Cluster",
+  "category": "specimens",
+  "subject": "A cluster of quartz crystals growing from a rough rock base: one tall six-sided point in the middle, smaller points around it",
+  "style": "Mineral plate in one ink, screened line work",
+  "description": "A cluster of quartz points rising from its matrix, the tallest a clean six-sided prism. Silicon dioxide, arranged with more patience than anyone has ever had.",
+  "keywords": [
+   "quartz",
+   "crystal",
+   "crystal cluster",
+   "mineral",
+   "geology",
+   "rock crystal",
+   "gemstone",
+   "natural history",
+   "science"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 79,
+  "printCm": {
+   "width": 22,
+   "height": 35
+  },
+  "coverage": 0.223,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/09-4-quartz-crystal-cluster/sources/brief.txt"
+ },
+ {
+  "n": 20046,
+  "dir": "data/studio/run50/09-5-glacier",
+  "title": "Glacier",
+  "category": "etched",
+  "subject": "A mountain glacier seen from its foot, a river of ice running up a steep valley between rock ridges towards distant peaks",
+  "style": "Tonal landscape in a clustered-dot screen, faded to the edges",
+  "description": "A glacier fills its valley in long folded bands of ice, cut by crevasses and walled in by rock. It is moving the whole time, just not in any hurry you would notice.",
+  "keywords": [
+   "glacier",
+   "ice",
+   "mountains",
+   "valley",
+   "crevasse",
+   "alpine",
+   "landscape",
+   "snow",
+   "cold",
+   "nature"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 92,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.277,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/09-5-glacier/sources/brief.txt"
+ },
+ {
+  "n": 20047,
+  "dir": "data/studio/run50/10-1-anchor",
+  "title": "Anchor",
+  "category": "etched",
+  "subject": "An old iron ship's anchor standing upright, with two curved arms at the crown, a double stock near the top and a ring on its shank",
+  "style": "Engraving-style line work, cross-hatching on the iron, white lines on the tee",
+  "description": "An iron anchor stands upright, its two arms curving out from the crown below a long shank and a pair of stocks. It has never once been the life of the party, which is rather the point.",
+  "keywords": [
+   "anchor",
+   "maritime",
+   "ship",
+   "sailor",
+   "nautical",
+   "iron",
+   "ground tackle",
+   "engraving",
+   "sea"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 76,
+  "printCm": {
+   "width": 17,
+   "height": 35
+  },
+  "coverage": 0.068,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/10-1-anchor/sources/brief.txt"
+ },
+ {
+  "n": 20048,
+  "dir": "data/studio/run50/10-2-oil-lantern",
+  "title": "Oil Lantern",
+  "category": "etched",
+  "subject": "An old metal oil lantern with a domed cap and finial, a glass chimney behind turned guard bars, an oil font inside and a broad turned base",
+  "style": "Engraving-style line work with screened shading on the metal, white lines on the tee",
+  "description": "An old metal lantern stands on its turned base, the glass held behind slim guard bars beneath a domed cap. It is waiting, with some patience, for somebody to bring a match.",
+  "keywords": [
+   "lantern",
+   "oil lamp",
+   "maritime",
+   "ship's lamp",
+   "light",
+   "antique",
+   "metal",
+   "engraving"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 79,
+  "printCm": {
+   "width": 16,
+   "height": 35
+  },
+  "coverage": 0.144,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/10-2-oil-lantern/sources/brief.txt"
+ },
+ {
+  "n": 20049,
+  "dir": "data/studio/run50/10-3-hourglass",
+  "title": "Hourglass",
+  "category": "etched",
+  "subject": "A tall glass hourglass between a turned wooden cap and base, sand heaped in both bulbs and a thin stream at the waist",
+  "style": "Engraving-style line work, hatching on the wood and stipple in the sand, white lines on the tee",
+  "description": "A tall hourglass stands between a turned cap and base, its sand piled in both bulbs and a thin stream running at the waist. It is the only clock that never needs its batteries changed, only turning over.",
+  "keywords": [
+   "hourglass",
+   "sand glass",
+   "time",
+   "sand",
+   "glass",
+   "antique",
+   "object",
+   "engraving",
+   "timer"
+  ],
+  "baseColor": "black",
+  "single": false,
+  "mode": "line",
+  "quality": 68,
+  "printCm": {
+   "width": 21,
+   "height": 35
+  },
+  "coverage": 0.068,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/10-3-hourglass/sources/brief.txt"
+ }
+]

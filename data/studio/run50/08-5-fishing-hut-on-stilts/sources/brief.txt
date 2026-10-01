@@ -5,3 +5,5 @@ Size: 960x1088
 Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
 One ink: scripts/studio/oneink.py /tmp/run50/K5-fishing-hut-on-stilts-s8501.png data/studio/run50/08-5-fishing-hut-on-stilts fishing-hut-on-stilts --mode tone --title FISHING HUT ON STILTS --sub Maritime · Still water --fade
 Chosen: Seed 8501, the second of four. A clear gabled hut with a balcony on tall stilts, a jetty and a readable reflection, nothing cut by the edges. 8500 also passed but its reflection read as a second storey in one ink, so the hut looked stacked; 8501 was taken at minute 65 and the last two seeds were stopped. fails [] on both files.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge rect (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

@@ -85,8 +85,9 @@ describe("the shop's filters: tee colour and categories (no sort)", () => {
       const kept = filterShop(all, { tee, cats: [] });
       expect(kept.length).toBe(SHIRTS.filter((s) => s.colors.includes(tee)).length);
       expect(kept.every(({ shirt }) => shirt.colors.includes(tee))).toBe(true);
-      // Everything but the photographs of the other tee.
-      expect(all.length - kept.length).toBe(SHIRTS.filter((s) => s.medium === "photo" && !s.colors.includes(tee)).length);
+      // Everything but what is sold on the other tee alone: its photographs, and the studio's tonal plates (one positive, the black tee's).
+      expect(all.length - kept.length).toBe(SHIRTS.filter((s) => !s.colors.includes(tee)).length);
+      expect(SHIRTS.filter((s) => !s.colors.includes(tee)).every((s) => s.medium === "photo" || s.n >= 20001)).toBe(true);
     }
   });
 

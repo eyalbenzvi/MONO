@@ -5,3 +5,5 @@ Size: 832x1216
 Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
 One ink: scripts/studio/oneink.py /tmp/run50/K3-rocky-islet-s8300.png data/studio/run50/08-3-rocky-islet rocky-islet --mode tone --title ROCKY ISLET --sub Places · The island --fade
 Chosen: Seed 8300, the first of four, taken as soon as it ran: one clear windswept pine on a heap of boulders with its reflection, everything inside the frame, and it prints cleanly on both tees. A second small tree stands behind (the brief asked for one); it reads as background and the text says so. fails [] on both files.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge circle (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

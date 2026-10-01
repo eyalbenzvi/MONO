@@ -312,6 +312,11 @@ const TAILS: Record<SourceCategory, string[]> = {
     "Fine, dense and very even.",
     "Decoration with discipline.",
   ],
+  studio: [
+    "Drawn for MONO, printed in one ink.",
+    "A plate made for this shirt.",
+    "One ink, a lot of looking.",
+  ],
   archive: [
     "Straight from a museum collection, in one ink.",
     "Old work, printed new.",

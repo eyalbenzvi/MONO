@@ -8,3 +8,5 @@ Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consiste
 
 Chosen: the third of four (seed 9502). All four drew the same layered ice valley. The first ends in a dark meltwater stream at the foot; the second puts a small figure in the foreground; the fourth has a rock block in the middle of the ice. The third has the clearest river of ice, with crevasses, flowing towards the viewer.
 python3 scripts/studio/oneink.py <image> data/studio/run50/09-5-glacier glacier --mode tone --fade --title "GLACIER" --sub "Places · Ice"
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge arch (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

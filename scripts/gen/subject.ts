@@ -212,6 +212,7 @@ export const STYLE: Record<SourceCategory, string> = {
   ornament: "Ornamental",
   archive: "Vintage",
   data: "Line-Art",
+  studio: "Illustration",
 };
 
 /** Categories whose names take the subject's noun ("Lucky Cactus", "Proud Barista", "Famous Pyramids"). */

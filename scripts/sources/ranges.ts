@@ -37,6 +37,8 @@ export const SOURCE_BLOCKS = {
   wellcome: [17001],
   archiveorg: [18001],
   rijksmuseum: [19001],
+  // Not a collection: the studio's own illustrations (data/studio/catalogue.json, scripts/studio/publish.ts).
+  studio: [20001],
 } as const satisfies Record<string, readonly number[]>;
 export type SourceId = keyof typeof SOURCE_BLOCKS;
 export const SOURCE_IDS = Object.keys(SOURCE_BLOCKS) as SourceId[];

@@ -4,3 +4,5 @@ Seed: 7500 (of 7500, 7501, 7502, 7503; main)
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
 Chosen: s7500, chosen after s7500-s7502 were seen (s7503 was still rendering). s7501 adds a path, which the prompt ruled out, and shows a faint edge line; s7502's pine tops read as tufts, close to palms. s7500 has straight dark trunks in front and pines fading into mist behind; on the black tee the mist prints as light between the trunks; both positives pass.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge rect (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

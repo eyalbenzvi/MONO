@@ -126,7 +126,10 @@ describe("search: ranking", () => {
   it("one design per family, the one that matches best", () => {
     for (const s of sample(80, 9)) {
       const q = `${titleWords(s.title)[0] ?? s.title} `;
-      const collapsed = run(q).results;
+      const r = run(q);
+      // A title of stopwords only ("Print") is no text search: the shop's own order, which the shop collapses itself.
+      if (r.mode === "filter") continue;
+      const collapsed = r.results;
       const families = collapsed.map((h) => h.shirt.family);
       expect(new Set(families).size).toBe(families.length);
       const all = run(q, [], { collapse: false }).results;

@@ -5,3 +5,5 @@ Size: 832x1216
 Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --lcm --steps 8), CPU
 One ink: scripts/studio/oneink.py /tmp/run50/K4-chalk-cliffs-s8402.png data/studio/run50/08-4-chalk-cliffs chalk-cliffs --mode tone --title CHALK CLIFFS --sub Places · The coast --fade
 Chosen: Seed 8402, the third of four. Pale, sheer, layered cliffs that read as chalk, the sea and rocks clean. 8400 a grey cliff with a frame line and a post bearing fake marks; 8401 a castle and lighthouse fused into the cliff; 8403 grey sloping rock, not chalk, with a building and a frame edge. 8402 had a small village at its top-right corner, which the fade takes out entirely. fails [] on both files.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge horizon (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.

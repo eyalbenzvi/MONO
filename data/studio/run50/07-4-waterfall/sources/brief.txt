@@ -4,3 +4,5 @@ Seed: 7400 (of 7400, 7401, 7402, 7403; main)
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
 Chosen: s7400. All four are dense jungle-and-cliff engravings; s7401 and s7402 show a thin border line at the edges and s7401's cliff reads as masonry blocks; s7403 is close but busier. s7400 has the cleanest single fall, a visible plunge pool and natural rock, with no border; both positives pass.
+
+Reprocessed for the catalogue (2026-10-01): oneink.py --mode tone --edge arch (Design Guidelines, section 04, "Scenes: how a picture ends"), from the source image above.
