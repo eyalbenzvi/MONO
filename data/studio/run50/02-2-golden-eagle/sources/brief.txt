@@ -1,0 +1,9 @@
+Prompt: One golden eagle, front view, wings spread wide. One eagle only, symmetrical, head facing straight out, one hooked beak, two eyes, both wings fully open and level with long fingered primary feathers, tail fanned below, two legs with talons tucked under the body. Bold clean black ink outlines with crisp feather-by-feather line work and light hatching. Even light, high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2202
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2202, the third of four (main). 2200 had a fake seal mark and stood upright on its feet; 2201 clean but in line the beak and one eye dissolved and in tone the wings and feet blurred; 2202 symmetrical, both eyes and the beak clear, every feather drawn. 2203 was not needed. The feet are small, tucked under the body.
+One ink: scripts/studio/oneink.py --mode line. fails: [].
