@@ -75,8 +75,9 @@ def main():
             if lcm:
                 kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled)
             else:
-                ncond, npooled = compel(negative)
-                cond, ncond = compel.pad_conditioning_tensors_to_same_length([cond, ncond])
+                # Both at once: Compel pads a batch to the same length.
+                both, bpooled = compel([prompt, negative])
+                cond, ncond, pooled, npooled = both[0:1], both[1:2], bpooled[0:1], bpooled[1:2]
                 kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled, negative_prompt_embeds=ncond, negative_pooled_prompt_embeds=npooled)
         img = pipe(
             **kw,
