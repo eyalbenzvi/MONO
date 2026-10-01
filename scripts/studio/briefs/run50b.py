@@ -29,8 +29,8 @@ NO_SCENE = ", landscape background"  # not for helpers 7-9
 
 # K: [(main title, main note, backup title, backup note, mode, size, sub)]
 # After the first run's lessons (scripts/studio/briefs/run50b-helper.md): marine slots of a coral or a
-# bivalve became radial top views and spiral shells; a camera and a helmet (mechanics) became a
-# candlestick and spectacles; the mesa (made in run 1) a sandstone arch; scenes take an ending (--edge).
+# bivalve became radial top views and spiral shells (marine failed 3 of 5); the mesa (desert cliffs
+# were made in run 1) became a sandstone arch; scenes take an ending (--edge) instead of an oval fade.
 D = {
     1: [  # Marine and fossils
         ("AMMONITE FOSSIL", "spiral, side view", "TRILOBITE FOSSIL", "seen from above", "line", "960x1088", "Science · Fossil plate"),
@@ -96,9 +96,9 @@ D = {
         ("DESERT ROSE CRYSTAL", "", "PYRITE CUBES", "", "line", "960x1088", "Science · Mineral plate"),
     ],
     10: [  # Objects: front view, one object, no text, numerals or letters
-        ("CANDLESTICK", "with a lit candle", "ENAMEL JUG", "", "line", "960x1088", "Objects · Light"),
+        ("VINTAGE CAMERA", "front view", "FOLDING CAMERA", "front view", "line", "960x1088", "Objects · Light tight"),
         ("ENAMEL TEAPOT", "", "COFFEE POT", "", "line", "960x1088", "Objects · Kitchen"),
-        ("AVIATOR GOGGLES", "", "SPECTACLES", "a pair, folded", "line", "960x1088", "Objects · Open road"),
+        ("AVIATOR GOGGLES", "", "MOTORCYCLE HELMET", "front view", "line", "960x1088", "Objects · Open road"),
         ("FOUNTAIN PEN NIB", "close up", "QUILL", "", "line", "832x1216", "Objects · Ink"),
         ("MONKEY'S FIST KNOT", "", "COIL OF ROPE", "", "line", "832x1216", "Maritime · Ropework"),
     ],
