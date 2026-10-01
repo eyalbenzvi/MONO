@@ -1,0 +1,6 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 10503
+Size: 832x1216
+Chosen: image 4 of 4 (seeds 10500-10503), main. All four are rope balls in a good engraving style, none a true monkey's fist (three interlocking sets of turns), so by the truth rule the title is the general ROPE KNOT. 10500 had the best interlacing but its rope ran off the top of the page; 10501 was a plain spiral ball of yarn; 10502 a loose tangle with no rope end. 10503 is whole inside the page, with an eye at the top and the tail below; a small extra bight beside the tail.
+Prompt: One monkey's fist knot, front view, hanging. One tight round ball of thick twisted rope woven in three interlocking turns, each strand showing its twisted fibres, one rope tail hanging straight down from the ball, one knot only. No hands, no ship, no water, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching following the twist of every strand, crisp and high contrast. Even bright light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --title "ROPE KNOT" --sub "Maritime · Ropework"
