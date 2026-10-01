@@ -1,0 +1,9 @@
+Prompt: One bird's nest with eggs, seen from above. One round woven nest of twigs and grass, three smooth oval eggs resting together in the hollow centre, the rim a neat circle of interlaced twigs. Detailed black ink line work, each twig a clean stroke, the eggs left mostly white with a little stippled shading. Soft light from above, high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2501
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2501, the second of four (main), chosen before the last two were drawn (time). 2500 held fifteen ball-like spheres, not a clutch; 2501 a clean round nest with five eggs, the whole nest inside white margins. The prompt asked for three eggs; the model drew five, so the text says five. The eggs read as rounded, as seen from above.
+One ink: scripts/studio/oneink.py --mode tone (brief said line; line printed the eggs as black holes on the black tee, tone keeps them pale on both tees, as line <-> tone allows). fails: [] on both.

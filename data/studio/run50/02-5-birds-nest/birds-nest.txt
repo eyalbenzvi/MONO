@@ -1,0 +1,10 @@
+Title: Bird's Nest
+Category: Botanical & Nature
+Subject: A round woven bird's nest with five eggs, seen from directly above
+Style: Natural history study in ink line and screened tone, top-down
+Medium: Drawn (illustration)
+Description: A round nest of woven grass and twigs holds five pale eggs, seen from straight above. Someone has clearly been very busy, and is not going to say who.
+Tee colours: Black and white (birds-nest-black.png for the black tee, birds-nest-white.png for the white tee)
+Print size: 25.9 x 29.0 cm on the white tee, 25.8 x 28.9 cm on the black tee (heading included)
+Keywords: bird's nest, nest, eggs, birds, spring, woven, nature, natural history, seen from above
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
