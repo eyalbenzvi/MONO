@@ -1,0 +1,10 @@
+Title: Patagonia
+Category: Botanical & Nature
+Subject: Mountains
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: Three granite towers rise above a scree valley and a glacial lake, after the Torres del Paine in Chilean Patagonia. They have stood there for some twelve million years and are in no hurry to be anywhere else.
+Tee colours: Both
+Print size: 21.7 × 31.7 cm (white tee); 20.0 × 31.5 cm (black tee)
+Keywords: Patagonia, Torres del Paine, mountains, granite towers, Chile, lake, landscape, hiking, engraving, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
