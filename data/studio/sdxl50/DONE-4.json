@@ -1,0 +1,18 @@
+{
+ "helper": 4,
+ "branch": "studio/sdxl50-4",
+ "started": "2026-10-01T22:37:49Z",
+ "finished": "2026-10-01T23:57:00Z",
+ "designs": [
+  {"slot": 1, "slug": "fish-study", "passed": true, "which": "backup", "images": 6, "chosen": "s30416 (backup image 2)", "mode": "pen", "ink_coverage": 0.1156,
+   "note": "Swordfish main 30410-30412: 2, 4 and 6 fish stacked, no sword bill. Marlin backup: 30415 four fish in a panel, 30417 a sea backdrop with a tentacle form and text. 30416 one whole engraved fish; grid, frame and fake handwriting round it painted out. Short bill, no skeleton, so titled FISH STUDY. fails [], 26.0 x 23.9 cm."},
+  {"slot": 2, "slug": "steel-sphere", "passed": true, "which": "backup", "images": 6, "chosen": "s30425 (backup image 1)", "mode": "line", "ink_coverage": 0.1212,
+   "note": "Submarine main 30420-30422: vertical towers and hull-tower crosses, fake text, no side elevation. Bathysphere backup 30425 one clean banded sphere; frame and lettering cropped off. No cable, one porthole, so titled STEEL SPHERE. Pen made a mesh slab; line passes. White tee only (broad light patch on black). Category Engravings (the one allowed). fails [], 22.8 x 34.9 cm."},
+  {"slot": 3, "slug": "brownstone-street", "passed": true, "which": "main", "images": 3, "chosen": "s30430 (image 1)", "mode": "pen", "ink_coverage": 0.2958,
+   "note": "30430 a brownstone row with stoops, railings, balconies and a tree, no text or frame. 30431 a single framed house in grey wash; 30432 grey wash, roofline cut. Divided by local light and levelled before pen, so the shaded ground floor stays line, not mesh. --edge horizon. fails [], 21.9 x 35.3 cm."},
+  {"slot": 4, "slug": "sextant-study", "passed": false, "which": "backup", "images": 6, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "Sextant main 30440-30442: all on light paper (black background ignored), nonsense tripod contraptions, frames and fake text. Ship's wheel backup: 30445 rim into the page edges, spear spokes, a large text block; 30446 on black but tangled doubled rims edge to edge, frame, corner roundels; 30447 text blocks, a broken wire rim. Slot empty."}
+ ],
+ "minutes": {"install": 1.4, "generate": 76.7, "process": 18.0, "total": 79},
+ "issues": "Generation ran one process at a time (main, then backups 1, 2 and 4 queued behind it); about 3.5 minutes an image. generate_sdxl.py needed no changes. The model ignores 'black background' most of the time and adds frames and fake text to nearly every technical sheet; long side-view fish come out stacked."
+}
