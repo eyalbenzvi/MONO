@@ -1,0 +1,13 @@
+Backup design for slot 1. The main, OAK LEAF AND ACORNS (seeds 5100-5103), failed all four: none drew an oak leaf (serrated vine- or maple-like leaves instead) and the acorns were missing or had no cups; 5100 also had a stray mark beside the stem.
+
+Prompt: One maple leaf, flat, front view. A single sugar maple leaf with five pointed lobes, symmetrical, every lobe and vein clear, a short straight stalk at the bottom, complete and whole, nothing overlapping. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines and light hatching between the veins. Even flat light, no shadows. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5150
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5150, the first of the four backup seeds (5150-5153), taken while the rest were still generating, so as to finish within time. One whole, symmetrical five-lobed maple leaf with clear veins and a long stalk, nothing cut at the edges.
+Processing before one ink: levels stretched (grey 0.30 to black, 0.80 to white; K1-maple-leaf-s5150-stretched.png) so the model's pale grey lines print as line.
+python3 scripts/studio/oneink.py K1-maple-leaf-s5150-stretched.png data/studio/run50/05-1-maple-leaf maple-leaf --mode line --title "MAPLE LEAF" --sub "Botanical · Natural history plate"
