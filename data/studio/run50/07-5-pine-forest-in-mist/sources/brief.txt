@@ -1,0 +1,6 @@
+Prompt (91 words): A pine forest in mist, front view. Rows of tall straight pine trees on a gentle hillside, the near trees dark and sharp, the far trees fading into soft morning fog, no path, no people, no animals. Fine black ink engraving with crisp hatching for the trunks and needles and open white for the mist. Soft diffuse light. The forest sits in the centre of the page and the scene fades softly into white paper at every edge. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seed: 7500 (of 7500, 7501, 7502, 7503; main)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (CreativeML Open RAIL++-M), 8 steps, on CPU, scripts/studio/generate.py --lcm --steps 8
+Chosen: s7500, chosen after s7500-s7502 were seen (s7503 was still rendering). s7501 adds a path, which the prompt ruled out, and shows a faint edge line; s7502's pine tops read as tufts, close to palms. s7500 has straight dark trunks in front and pines fading into mist behind; on the black tee the mist prints as light between the trunks; both positives pass.

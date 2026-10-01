@@ -1,0 +1,10 @@
+Title: Pine Forest in Mist
+Category: Botanical & Nature
+Subject: Trees
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: Tall straight pines stand in rows, the near trunks dark and sharp, the far ones lost in morning fog. Visibility is poor, but the trees have never needed to go anywhere.
+Tee colours: Both
+Print size: 25.9 × 35.0 cm (white tee); 19.6 × 33.1 cm (black tee)
+Keywords: pine forest, mist, fog, pine trees, woodland, forest, trees, landscape, nature, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
