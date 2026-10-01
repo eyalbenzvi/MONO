@@ -23,6 +23,12 @@ sides, symmetrical. Elegant flowing black ink lines, each barb drawn as a fine c
 hatching on the eye spot. Even light, crisp and high contrast. Centred, the whole subject with wide white
 margins, plain white paper.
 No text, no frame, no border, no ornaments, no colour, no grey wash.""",
+        "backup": """One pheasant tail feather, upright, single long feather. One feather only, long and narrow
+with a pointed tip, straight central shaft, bold dark crossbars evenly spaced from base to tip, fine barbs
+on both sides, the base soft and downy. Clean black ink outlines, each crossbar a crisp dark band, fine
+parallel strokes for the barbs. Even light, high contrast. Centred, the whole feather with wide white
+margins top and bottom, plain white paper.
+No text, no frame, no border, no ornaments, no colour, no grey wash.""",
     },
     4: {
         "main": """One Atlantic puffin, head and shoulders, side portrait. One bird only, one large triangular
