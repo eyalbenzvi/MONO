@@ -1,0 +1,60 @@
+{
+ "helper": 5,
+ "branch": "studio/sdxl50-5",
+ "started": "22:37 UTC",
+ "finished": "23:56 UTC",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "spiral-shell",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "K1-argonaut-study-s30516.png",
+   "mode": "line",
+   "ink_coverage": 0.1319,
+   "note": "Cuttlefish main all rejected (fake labels, invented squid bodies); argonaut backup drew one ribbed spiral shell without the animal, so titled SPIRAL SHELL; caption cropped off."
+  },
+  {
+   "slot": 2,
+   "slug": "antique-telescope",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "K2-brass-telescope-s30520.png",
+   "mode": "line",
+   "ink_coverage": 0.0871,
+   "note": "One whole refractor on a tripod; double frame and small marks cropped off; brass not visible in ink and mount is altazimuth, so ANTIQUE TELESCOPE."
+  },
+  {
+   "slot": 3,
+   "slug": "tenement-blocks",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "K3-hong-kong-tenements-s30532.png",
+   "mode": "line",
+   "ink_coverage": 0.1865,
+   "note": "Fine-line stacked tenements over a market lane, horizon edge, white tee; nothing plainly Hong Kong, so TENEMENT BLOCKS; faint background city lifted to paper."
+  },
+  {
+   "slot": 4,
+   "slug": "saxophone",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "K4-saxophone-study-s30545.png",
+   "mode": "line",
+   "ink_coverage": 0.1007,
+   "note": "Trumpet main all rejected (fake text, no trumpet); saxophone backup drawn dark on grey, flattened to dark-on-white so one ink prints white line on a black tee; no parts drawn, so SAXOPHONE."
+  }
+ ],
+ "minutes": {
+  "install": 1,
+  "generate": 77,
+  "process": 1
+ },
+ "minutes_note": "Generation ran as three queued runs one after another (main 12 images, then slot 1 backup and slot 4 backup, 3 each), about 4 min an image on 4 cores. Choosing and one-ink processing ran during generation right after each image was saved; process counts only the time after the last image. generate_sdxl.py ran unchanged.",
+ "total_images": 18,
+ "lesson": "Lightning reads 'study sheet' and 'patent sheet' as a lettered plate: four of six main seeds for A and D were full of fake labels. A single object with no sheet words (shell, saxophone, telescope) comes out clean; it also ignored 'white chalk on black' in five of six seeds."
+}
