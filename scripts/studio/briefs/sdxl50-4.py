@@ -14,7 +14,12 @@ PROMPTS = {
                 "no lettering, no frame, no border, no colour. One long riveted hull with hull plates, a conning "
                 "tower with a periscope, propeller and rudder at the stern. Thin construction lines, a thin "
                 "waterline under the hull, faint columns of small marks. Clean precise pen lines, much white "
-                "space. Centred, the whole submarine with wide white margins, plain white paper."},
+                "space. Centred, the whole submarine with wide white margins, plain white paper.",
+        "backup": "One bathysphere hanging on its cable, side elevation, a technical drawing in black ink on plain "
+                  "white paper, no text, no lettering, no frame, no border, no colour. One round riveted steel "
+                  "sphere with three small round portholes and a bolted hatch, one thin cable straight up to the "
+                  "top of the page. Thin construction lines, a thin wavy waterline far above, faint columns of "
+                  "small marks. Clean precise pen lines, much white space. Centred, plain white paper."},
     3: {"main": "A dense street of old brownstone row houses, front view, a pen and ink drawing on plain white "
                 "paper, no text, no lettering, no frame, no border, no colour. Stone stoops with railings, iron "
                 "fire escapes zigzagging up the fronts, tall windows with shutters, cornices, potted plants and "
