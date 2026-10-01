@@ -16,6 +16,9 @@ PROMPTS = {
         "main": "One luna moth, wings open, seen from directly above. "
                 "Four broad wings with long trailing tails, symmetrical left and right, one eyespot on each wing, "
                 "one furry body, two feathery antennae. " + TAIL,
+        "backup": "One atlas moth, wings open, seen from directly above. "
+                  "Four broad wings with hooked tips, symmetrical left and right, bold black outlines, "
+                  "dark wavy bands and one clear window spot on each wing, one furry body, two feathery antennae. " + TAIL,
     },
     3: {
         "main": "One dragonfly, wings spread flat, seen from directly above. "
