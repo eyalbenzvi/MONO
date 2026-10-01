@@ -187,7 +187,20 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(card.getByRole("link")).toHaveCount(1);
     await expect(card.getByRole("button")).toHaveCount(0);
     await expect(card.getByText(/\$\d/)).toHaveCount(0);
-    // A saved tee (the taste test's saves) keeps its heart, to unsave.
+    // A saved tee keeps its heart, to unsave. The taste test's saves step back in the shop (seen in
+    // Discover) and the order rotates per browser and day, so they need not be on the first page:
+    // save a tee this grid does show (the ranking ignores saves; the vector, seen and seed stay put).
+    const href = await cards.nth(2).getByRole("link").getAttribute("href");
+    const id = href?.match(/\/shop\/([^/?#]+)/)?.[1];
+    expect(id).toBeTruthy();
+    await page.evaluate((id) => {
+      const t = JSON.parse(localStorage.getItem("mono-taste") || "{}");
+      t.state.likedIds = [...t.state.likedIds, id];
+      localStorage.setItem("mono-taste", JSON.stringify(t));
+    }, id!);
+    await page.reload();
+    await hydrated(page);
+    await expect(cards.filter({ has: page.locator(`a[href*="/shop/${id}/"]`) }).getByRole("button", { name: /^Remove .+ from Saved$/ })).toBeVisible();
     const saved = cards.filter({ has: page.getByRole("button", { name: /from Saved$/ }) }).first();
     await expect(saved.getByRole("link")).toHaveCount(1);
     await expect(saved.getByRole("button")).toHaveCount(1);
