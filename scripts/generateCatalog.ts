@@ -1126,7 +1126,16 @@ function editorialRanks(list: Rankable[], pins: string[]): number[] {
   const order = win.slice(0, pins.length);
   while (rest.length) {
     const k = rest.findIndex((i) => list[i].category !== list[order[order.length - 1]]?.category);
-    order.push(rest.splice(k === -1 ? 0 : k, 1)[0]);
+    if (k !== -1) {
+      order.push(rest.splice(k, 1)[0]);
+      continue;
+    }
+    // Only designs of the last one's category are left: each goes in the earliest gap (after the pins) between two others.
+    const i = rest.shift()!;
+    const c = list[i].category;
+    const gap = order.findIndex((o, j) => j >= Math.max(pins.length, 1) && list[order[j - 1]].category !== c && list[o].category !== c);
+    if (gap === -1) order.push(i);
+    else order.splice(gap, 0, i);
   }
   const ranks = new Array<number>(list.length);
   order.forEach((i, r) => (ranks[i] = r));

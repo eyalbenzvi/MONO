@@ -20,6 +20,7 @@ import { getShirtById } from "@/lib/catalog";
 import { matchScore } from "@/lib/recommendation";
 import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+import { SWIPE_LOCK, SWIPE_SHOW, SWIPE_START, swipeDrag } from "@/lib/swipeDrag";
 
 /** A mouse or trackpad (not touch): keyboard hints are for these. */
 function useFinePointer() {
@@ -40,7 +41,7 @@ const SWIPE_DISTANCE = 110;
 /** Sideways drag elasticity: the card moves this share of the pointer travel. */
 const ELASTIC_X = 0.9;
 /** Card travel at the commit point, where the tint locks in. */
-const STAMP_LOCK = SWIPE_DISTANCE * ELASTIC_X;
+const STAMP_LOCK = SWIPE_LOCK; // SWIPE_DISTANCE × ELASTIC_X (lib/swipeDrag)
 const SWIPE_VELOCITY = 550;
 /** Raw pointer travel upward that opens details (the damped card moves ~⅛ of it). */
 const FLIP_DISTANCE = 80;
@@ -177,20 +178,49 @@ function TopCard({
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  // A gentle lean (never more than MAX_TILT), and a tint instead of words:
-  // a light wash towards Save, a dim towards Pass.
+  // A gentle lean (never more than MAX_TILT), a slight dim towards Pass, and a label that says which way:
+  // "♥ Save" or "✕ Pass" at the top of the card, shown well before the commit point, locked (filled) past it.
   const rotate = useTransform(x, [-240, 0, 240], [-MAX_TILT, 0, MAX_TILT]);
-  const saveTint = useTransform(x, [20, STAMP_LOCK], [0, 0.14]);
-  const passTint = useTransform(x, [-STAMP_LOCK, -20], [0.4, 0]);
+  const passTint = useTransform(x, [-STAMP_LOCK, -SWIPE_START], [0.24, 0]);
+  // Committed (a fly-out from a drag, a button or a key): the label shows locked whatever x is.
+  const force = useMotionValue(0);
+  const pop = useMotionValue(1);
+  // Hidden while an undone card flies back in (it arrives from far off to one side).
+  const hide = useMotionValue(0);
+  const ramp = (v: number) => Math.min(1, Math.max(0, (v - SWIPE_START) / (SWIPE_SHOW - SWIPE_START)));
+  const grow = (v: number) => Math.min(1, Math.max(0, (v - SWIPE_START) / (SWIPE_LOCK - SWIPE_START)));
+  const saveOn = useTransform([x, force, hide], ([v, f, h]: number[]) => (h ? 0 : f > 0 ? 1 : f < 0 ? 0 : ramp(v)));
+  const passOn = useTransform([x, force, hide], ([v, f, h]: number[]) => (h ? 0 : f < 0 ? 1 : f > 0 ? 0 : ramp(-v)));
+  const saveLocked = useTransform([x, force], ([v, f]: number[]) => (f > 0 || v >= SWIPE_LOCK ? 1 : 0));
+  const passLocked = useTransform([x, force], ([v, f]: number[]) => (f < 0 || v <= -SWIPE_LOCK ? 1 : 0));
+  const passUnlocked = useTransform(passLocked, (l) => 1 - l);
+  const saveY = useTransform(x, [SWIPE_START, SWIPE_SHOW], [-6, 0]);
+  const passY = useTransform(x, [-SWIPE_SHOW, -SWIPE_START], [0, -6]);
+  const saveScale = useTransform([x, pop, force], ([v, p, f]: number[]) => p * (f ? 1 : 0.94 + 0.06 * grow(v)));
+  const passScale = useTransform([x, pop, force], ([v, p, f]: number[]) => p * (f ? 1 : 0.94 + 0.06 * grow(-v)));
+  // The label stays level while the card leans.
+  const level = useTransform(rotate, (r) => -r);
   // Crossing the commit point: the phone ticks once, so you know letting go
   // now counts.
   const lockedRef = useRef<SwipeAction | null>(null);
   useMotionValueEvent(x, "change", (v) => {
+    // The buttons below follow the drag (not an undone card flying back in, nor one on its way out).
+    if (!leaving.current && !hide.get()) swipeDrag.set(v);
     const next: SwipeAction | null = v >= STAMP_LOCK ? "like" : v <= -STAMP_LOCK ? "dislike" : null;
     if (next === lockedRef.current) return;
     lockedRef.current = next;
-    if (next && !leaving.current) buzz(4);
+    if (next && !leaving.current) {
+      buzz(4);
+      if (!reduceMotion) animate(pop, [1, 1.06, 1], { duration: 0.22, ease: "easeOut" });
+    }
   });
+  // The next card starts with the buttons at rest.
+  useEffect(
+    () => () => {
+      animate(swipeDrag, 0, { duration: 0.18 });
+    },
+    [],
+  );
 
   const cardRef = useRef<HTMLDivElement>(null);
   const leaving = useRef(false);
@@ -210,6 +240,13 @@ function TopCard({
       if (action === "like" && cardRef.current) onLiked(cardRef.current.getBoundingClientRect());
       else buzz(8);
       const dir = action === "like" ? 1 : -1;
+      // Every way of swiping says the same: the label locked as the card leaves, and (from a button or a key)
+      // the matching button rings, as a drag past the commit point does.
+      force.set(dir);
+      if (!velocity) {
+        animate(swipeDrag, dir * SWIPE_LOCK, { duration: 0.1, ease: "easeOut" });
+        if (!reduceMotion) animate(pop, [0.94, 1], { duration: 0.12, ease: "easeOut" });
+      }
       const width = typeof window !== "undefined" ? window.innerWidth : 500;
       const targetX = dir * (width + 200);
       // Drags carry their throw speed; buttons/keys use a fixed snappy duration.
@@ -255,7 +292,7 @@ function TopCard({
         animate(x, targetX, { duration, ease: [0.2, 0.7, 0.4, 1], onComplete: commit });
       }
     },
-    [commitSwipe, entry.id, onLiked, x, y, reduceMotion],
+    [commitSwipe, entry.id, onLiked, x, y, reduceMotion, force, pop],
   );
 
   // Pinch zooms the picture in place; the card lets go of the finger and
@@ -282,14 +319,18 @@ function TopCard({
   useEffect(() => {
     if (!undoFx) return;
     const width = typeof window !== "undefined" ? window.innerWidth : 500;
+    hide.set(1);
     x.set((undoFx.action === "like" ? 1 : -1) * (width + 100));
     animate(x, 0, {
       type: "spring",
       stiffness: 400,
       damping: 30,
-      onComplete: () => useUiStore.setState({ undoFx: null }),
+      onComplete: () => {
+        hide.set(0);
+        useUiStore.setState({ undoFx: null });
+      },
     });
-  }, [undoFx, x]);
+  }, [undoFx, x, hide]);
 
   // First-run hint: one gentle wiggle, so the card shows it moves.
   // With reduced motion the strip's words explain it alone.
@@ -369,9 +410,38 @@ function TopCard({
         {zoom.announce}
       </span>
 
-      {/* The swipe's tint: no words, just light or shade over the card. */}
-      <motion.div aria-hidden style={{ opacity: saveTint }} className="pointer-events-none absolute inset-0 bg-white will-change-[opacity]" />
+      {/* A slight dim towards Pass, and the label that says which way (solid, ringed: it reads on a white or a black tee). */}
       <motion.div aria-hidden style={{ opacity: passTint }} className="pointer-events-none absolute inset-0 bg-black will-change-[opacity]" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-5 z-10 flex justify-center" data-swipe-label>
+        <motion.div
+          style={reduceMotion ? { opacity: saveOn } : { opacity: saveOn, y: saveY, scale: saveScale, rotate: level }}
+          className="absolute flex h-10 w-24 items-center justify-center gap-2 rounded-control bg-white text-[14px] font-medium tracking-[0.02em] text-ink-950 shadow-[0_4px_16px_rgba(0,0,0,0.28)] ring-1 ring-black/45 will-change-transform"
+          data-swipe="save"
+        >
+          <span className="relative h-[18px] w-[18px]">
+            <Icon name="heart" strokeWidth={2.25} className="absolute inset-0 h-[18px] w-[18px]" />
+            <motion.span style={{ opacity: saveLocked }} className="absolute inset-0">
+              <Icon name="heart" strokeWidth={2.25} className="h-[18px] w-[18px] fill-current" />
+            </motion.span>
+          </span>
+          Save
+        </motion.div>
+        <motion.div
+          style={reduceMotion ? { opacity: passOn } : { opacity: passOn, y: passY, scale: passScale, rotate: level }}
+          className="absolute flex h-10 w-24 items-center justify-center gap-2 rounded-control bg-ink-950 text-[14px] font-medium tracking-[0.02em] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] ring-1 ring-white/40 will-change-transform"
+          data-swipe="pass"
+        >
+          <span className="relative h-[18px] w-[18px]">
+            <motion.span style={{ opacity: passUnlocked }} className="absolute inset-0">
+              <Icon name="x" strokeWidth={2.25} className="h-[18px] w-[18px]" />
+            </motion.span>
+            <motion.span style={{ opacity: passLocked }} className="absolute inset-0">
+              <Icon name="x" strokeWidth={3} className="h-[18px] w-[18px]" />
+            </motion.span>
+          </span>
+          Pass
+        </motion.div>
+      </div>
       {finePointer && (
         <span id="card-keys" className="sr-only">
           Left arrow passes, right arrow saves, space shows details.

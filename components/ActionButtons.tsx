@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion, useTransform } from "framer-motion";
 import { BuySheet } from "@/components/BuySheet";
 import { Icon } from "@/components/Icon";
 import { getShirtById } from "@/lib/catalog";
 import type { ShirtProduct } from "@/types/shirt";
 import { useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
 import { useHydrated } from "@/store/useUiStore";
+import { SWIPE_LOCK, SWIPE_START, swipeDrag } from "@/lib/swipeDrag";
 
 export function ActionButtons() {
   const requestSwipe = useTasteStore((s) => s.requestSwipe);
@@ -20,6 +21,15 @@ export function ActionButtons() {
   const top = hydrated && complete && topId ? getShirtById(topId) : undefined;
   // The tee being bought (the card stays where it is underneath).
   const [buying, setBuying] = useState<ShirtProduct | null>(null);
+  // The buttons follow the card: the one it's heading for grows (and rings once letting go would count), the other fades.
+  const reduce = useReducedMotion();
+  const saveScale = useTransform(swipeDrag, [SWIPE_START, SWIPE_LOCK], [1, 1.08]);
+  const passScale = useTransform(swipeDrag, [-SWIPE_LOCK, -SWIPE_START], [1.08, 1]);
+  const saveDim = useTransform(swipeDrag, [-SWIPE_LOCK, -SWIPE_START], [0.45, 1]);
+  const passDim = useTransform(swipeDrag, [SWIPE_START, SWIPE_LOCK], [1, 0.45]);
+  const buyDim = useTransform(swipeDrag, [-SWIPE_LOCK, -SWIPE_START, SWIPE_START, SWIPE_LOCK], [0.45, 1, 1, 0.45]);
+  const saveRing = useTransform(swipeDrag, (v) => (v >= SWIPE_LOCK ? 1 : 0));
+  const passRing = useTransform(swipeDrag, (v) => (v <= -SWIPE_LOCK ? 1 : 0));
 
   return (
     <div className="relative z-20 shrink-0 px-4 pb-[max(calc(env(safe-area-inset-bottom)-var(--tabbar,0px)),14px)] pt-2 sideways:flex sideways:items-center sideways:py-2 sideways:pl-0 sideways:pr-[max(env(safe-area-inset-right),16px)]">
@@ -27,15 +37,19 @@ export function ActionButtons() {
           "Buy now" in a sheet, without leaving the deck. Sideways phones: one column beside the card. */}
       <div className="mx-auto flex max-w-[420px] items-center justify-center sideways:flex-col sideways:gap-3">
         <div className="flex items-center justify-center gap-6 max-[339px]:gap-2 sideways:flex-col sideways:gap-3">
-          <RoundButton
-            label="Pass"
-            disabled={empty}
-            onClick={() => requestSwipe("dislike")}
-            className="h-16 w-16 bg-ink-800 text-neutral-200 ring-1 ring-white/10 hover:bg-ink-700 max-[339px]:h-[52px] max-[339px]:w-[52px]"
-          >
-            <Icon name="x" className="h-7 w-7" strokeWidth={2.75} />
-          </RoundButton>
+          <motion.div className="relative" style={{ opacity: passDim, scale: reduce ? 1 : passScale }}>
+            <RoundButton
+              label="Pass"
+              disabled={empty}
+              onClick={() => requestSwipe("dislike")}
+              className="h-16 w-16 bg-ink-800 text-neutral-200 ring-1 ring-white/10 hover:bg-ink-700 max-[339px]:h-[52px] max-[339px]:w-[52px]"
+            >
+              <Icon name="x" className="h-7 w-7" strokeWidth={2.75} />
+            </RoundButton>
+            <motion.span aria-hidden style={{ opacity: passRing }} className="pointer-events-none absolute -inset-[5px] rounded-full ring-2 ring-white" />
+          </motion.div>
           {top ? (
+            <motion.div style={{ opacity: buyDim }}>
             <motion.button
               type="button"
               onClick={() => setBuying(top)}
@@ -48,15 +62,19 @@ export function ActionButtons() {
             >
               <Icon name="shopping-bag" className="h-5 w-5" strokeWidth={2} />
             </motion.button>
+            </motion.div>
           ) : null}
-          <RoundButton
-            label="Save"
-            disabled={empty}
-            onClick={() => requestSwipe("like")}
-            className="h-16 w-16 bg-white text-black hover:bg-neutral-200 max-[339px]:h-[52px] max-[339px]:w-[52px]"
-          >
-            <Icon name="heart" className="h-7 w-7 fill-current" />
-          </RoundButton>
+          <motion.div className="relative" style={{ opacity: saveDim, scale: reduce ? 1 : saveScale }}>
+            <RoundButton
+              label="Save"
+              disabled={empty}
+              onClick={() => requestSwipe("like")}
+              className="h-16 w-16 bg-white text-black hover:bg-neutral-200 max-[339px]:h-[52px] max-[339px]:w-[52px]"
+            >
+              <Icon name="heart" className="h-7 w-7 fill-current" />
+            </RoundButton>
+            <motion.span aria-hidden style={{ opacity: saveRing }} className="pointer-events-none absolute -inset-[5px] rounded-full ring-2 ring-white" />
+          </motion.div>
         </div>
       </div>
       <BuySheet shirt={buying} onClose={() => setBuying(null)} />
