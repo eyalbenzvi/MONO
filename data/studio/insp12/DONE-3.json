@@ -1,0 +1,42 @@
+{
+ "helper": 3,
+ "branch": "studio/insp12-3",
+ "started": "2026-10-01T19:59:11Z",
+ "finished": "2026-10-01T20:47:00Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "canal-houses",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s23100",
+   "mode": "pen",
+   "ink_coverage": 0.2287,
+   "note": "23100 densest: shuttered houses with balconies over a canal, a long boat moored, all inside the page; not unmistakably Venice, so CANAL HOUSES. fails [], 21.7 x 35.3 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "medina-rooftops",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s23201",
+   "mode": "pen",
+   "ink_coverage": 0.1749,
+   "note": "23201 flat roofs, one slender minaret and a tall palm; 23200 pitched roofs, 23202 a cross on the minaret, 23203 chimney-like towers. fails [], 21.8 x 35.3 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "old-wooden-street",
+   "passed": true,
+   "which": "main",
+   "images": 8,
+   "chosen": "s23300",
+   "mode": "pen",
+   "ink_coverage": 0.2433,
+   "note": "Kyoto seeds had flat grey washes that screened into slabs; backup Hanoi (4) had frames, fake-text signs or the same slabs. Chose main 23300, levelled (high-pass) before oneink; no pagoda, not clearly Kyoto, so OLD WOODEN STREET. fails [], 21.9 x 35.3 cm."
+  }
+ ],
+ "minutes": {"install": 1, "generate": 44, "process": 12, "total": 48}
+}
