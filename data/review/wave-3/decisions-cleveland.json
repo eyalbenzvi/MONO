@@ -1,0 +1,19 @@
+{
+ "cleveland-168954": "keep",
+ "cleveland-104795": "keep",
+ "cleveland-101415": "keep",
+ "cleveland-163828": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "cleveland-104818": "keep",
+ "cleveland-109212": "keep",
+ "cleveland-287283": {
+  "decision": "reject",
+  "reason": "quality 0"
+ },
+ "cleveland-168953": {
+  "decision": "reject",
+  "reason": "quality 0"
+ }
+}

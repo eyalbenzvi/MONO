@@ -1,0 +1,126 @@
+{
+ "met-913636": "keep",
+ "met-587682": "keep",
+ "met-364346": "keep",
+ "met-389927": "keep",
+ "met-711314": "keep",
+ "met-659741": {
+  "decision": "keep",
+  "title_override": "Selected Prints from Edward Hasted's \"The History and Topographical Survey of the County o"
+ },
+ "met-51774": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "met-45613": "keep",
+ "met-341591": "keep",
+ "met-342284": "keep",
+ "met-587676": "keep",
+ "met-344118": "keep",
+ "met-386383": "keep",
+ "met-357626": {
+  "decision": "keep",
+  "title_override": "A survey of the cities of London and Westminster and the Borough of Southwark written at f"
+ },
+ "met-382687": "keep",
+ "met-358366": "keep",
+ "met-365695": "keep",
+ "met-344223": "keep",
+ "met-363549": "keep",
+ "met-362712": "keep",
+ "met-369617": "keep",
+ "met-433864": {
+  "decision": "keep",
+  "title_override": "Planiglobii Terrestris Mappa Universalis"
+ },
+ "met-401801": "keep",
+ "met-403169": "keep",
+ "met-39872": "keep",
+ "met-360532": "keep",
+ "met-39618": {
+  "decision": "reject",
+  "reason": "quality 70 sliver"
+ },
+ "met-399582": "keep",
+ "met-363211": "keep",
+ "met-913678": "keep",
+ "met-369071": "keep",
+ "met-362263": "keep",
+ "met-362592": "keep",
+ "met-351707": "keep",
+ "met-340719": "keep",
+ "met-394310": "keep",
+ "met-345403": "keep",
+ "met-389839": "keep",
+ "met-45610": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "met-381436": "keep",
+ "met-365559": "keep",
+ "met-388435": "keep",
+ "met-383163": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "met-360508": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "met-346159": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "met-363835": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "met-386371": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "met-386481": {
+  "decision": "reject",
+  "reason": "quality 54 flat"
+ },
+ "met-362883": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "met-344257": {
+  "decision": "reject",
+  "reason": "quality 54 flat"
+ },
+ "met-334069": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "met-387025": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "met-344655": {
+  "decision": "reject",
+  "reason": "quality 50 flat"
+ },
+ "met-386372": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "met-363323": {
+  "decision": "reject",
+  "reason": "quality 45 sliver"
+ },
+ "met-386369": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "met-51550": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "met-44593": {
+  "decision": "reject",
+  "reason": "quality 34 sliver"
+ }
+}

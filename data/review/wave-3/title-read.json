@@ -1,0 +1,22 @@
+{
+ "noaa-CP214C": {
+  "decision": "reject",
+  "reason": "title read: the same chart as noaa-CP219C (1853)"
+ },
+ "noaa-LC00134_05_1903_LS": {
+  "decision": "keep",
+  "title_override": "Lake Huron, Northeast Coast, Cape Hurd to Lougheed Point"
+ },
+ "noaa-LC0000Ok_07_1907_LS": {
+  "decision": "keep",
+  "title_override": "Lake Ontario, Round Island to Stony Point"
+ },
+ "noaa-LC00091_10_1917_LS": {
+  "decision": "keep",
+  "title_override": "Lake Superior, East End from Cape Gargantua"
+ },
+ "noaa-LC00124_10_1902_LS": {
+  "decision": "keep",
+  "title_override": "Lake Huron, North Coast, Scammon Cove to Lougheed Point"
+ }
+}
