@@ -1,0 +1,10 @@
+Title: Shark Study
+Category: Botanical & Nature
+Subject: A naturalist's study sheet of sharks in side view: one large shark with two dorsal fins and a row of teeth in the lower half, a second large shark and four smaller sketched sharks and fish round it, with faint scribbled note lines
+Style: 19th-century naturalist's notebook page, fine pen line work and hatching
+Medium: Drawn (illustration)
+Description: A large shark glides across the foot of a naturalist's notebook page, teeth showing, beneath a scatter of smaller sketches and faint scribbled notes. Sharks were swimming long before there were trees, and have seen no reason to change the design.
+Tee colours: White
+Print size: 25.8 × 35.0 cm
+Keywords: shark, sharks, marine life, ocean, fish, study sheet, natural history, naturalist, sketchbook, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

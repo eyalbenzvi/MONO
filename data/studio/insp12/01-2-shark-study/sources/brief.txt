@@ -1,0 +1,22 @@
+Slot 2 (HAMMERHEAD SHARK STUDY | backup SAWFISH STUDY) delivered as SHARK STUDY under the truth rule, from a third set of four.
+
+Main prompt (hammerhead, seeds 21200-21203): One hammerhead shark, side view, study sheet. One wide hammer-shaped head, one tall dorsal fin, one tail, the living animal large in the centre, its skeleton smaller below facing the same way, small sketches of the open jaw and teeth around it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Result: no hammerhead head in any of the four. 21200 inside a ruled frame, whale-like bodies; 21201 one good plain shark, the others headless or bent; 21202 a tail at both ends and lines of fake script; 21203 thin shapeless outlines.
+
+Backup prompt (sawfish, seeds 21250-21253): One sawfish, seen from above, study sheet. One long saw snout toothed along each side, two wide pectoral fins, two dorsal fins, one tail, symmetrical, the living animal large in the centre, small sketches of the saw teeth around it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Result: all four failed. 21250 ruled panels with fake script and a spiky stick shape; 21251 long bodies with a landscape below; 21252 five plain spikes; 21253 columns of ruled text lines.
+
+Third prompt (plain shark, seeds 21260-21263, key "shark" in insp12-1.py, run by hand after the backup finished): One shark, side view, study sheet. One pointed snout, one eye, gill slits, one tall dorsal fin, two pectoral fins, one tail, the living animal large in the centre, small sketches of its open jaw with rows of teeth below it, thin scale lines and tiny faint note marks. Fine black ink line drawing in the style of a 19th century naturalist's notebook page, clean outlines and light hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Chosen: 21263 (the fourth of the third set)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Edge: none (not a scene)
+
+Why 21263: 21260 has a keyline down the left and small sharks fused head to tail; 21261 overlapping sharks with shared tails; 21262 two eel-like bodies and a mast-like structure. 21263 is closest to the reference sheet: one large shark in the lower half with an eye, a row of teeth, gill area, two dorsal fins, pectoral, pelvic and anal fins and a forked tail; a second good shark top right; smaller sketches and faint scribbled note lines round them.
+Clean-up (sources/01-2-shark-study-s21263-clean.png, the file processed): the middle row (y 476-674) cut out and the two halves joined with 60 px of paper, because it held two tailless sharks overlapping end to end; one note scribble top right that came close to letterforms painted out; a 36-48 px border painted plain paper so the brown vignette at the page edge would not print as a frame. Nothing drawn added.
+The small sketches on the left are rough (one has an odd tail, one is more fish than shark); left as sketch texture. No species named: the big shark has a requiem-shark shape but nothing pins one species down.
+One ink: pen keeps the hatching on the body and the note lines thin.
+python3 scripts/studio/oneink.py sources/01-2-shark-study-s21263-clean.png data/studio/insp12/01-2-shark-study shark-study --mode pen --title "SHARK STUDY" --sub "Marine life · Study sheet"
