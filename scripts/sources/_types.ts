@@ -54,8 +54,6 @@ export interface Prepped extends Candidate {
   sha: string;
   /** The screened print's checks (scripts/gen/quality.ts): numbers only. */
   assess: { quality: number; ink: number; extent: number; flags: string[] };
-  /** Refused as a solid block of ink (solidBlock's reason), or null. */
-  solid: string | null;
   weak: boolean;
   /** The tee the photograph's halftone was baked for (halftone.py), or the ink print's tee. */
   tee: "black" | "white";

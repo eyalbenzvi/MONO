@@ -1,6 +1,6 @@
 """
 Cut-outs for photographs that were printed with their backdrop on (a
-rectangle on the tee, refused by the solid-block check): the subject is cut
+rectangle on the tee): the subject is cut
 out of the committed print with rembg (isnet-general-use), laid on the
 print area like the studio cut-outs, and kept only if the cut is clean.
 Run by hand (pip install rembg onnxruntime pillow numpy):

@@ -376,8 +376,6 @@ export function fixesFor(f: PreviewFail, s: Settings, src: Pick<Source, "kind">)
       add(lines, photo && s.mode === "dots");
       add(full, f.size === "small");
       break;
-    case "solid":
-    case "solidDots":
     case "dense":
     case "denseDots":
       add(lines, photo && s.mode === "dots");

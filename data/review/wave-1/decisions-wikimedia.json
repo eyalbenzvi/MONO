@@ -17,11 +17,11 @@
  "wikimedia-30339169": "keep",
  "wikimedia-52648670": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52648617": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-30341175": "keep",
  "wikimedia-30343172": "keep",
@@ -29,11 +29,11 @@
  "wikimedia-30344832": "keep",
  "wikimedia-52649159": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52648794": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52649312": {
   "decision": "keep",
@@ -56,7 +56,7 @@
  "wikimedia-30339180": "keep",
  "wikimedia-52649171": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52648449": {
   "decision": "keep",
@@ -72,7 +72,7 @@
  },
  "wikimedia-52648736": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52648397": {
   "decision": "keep",
@@ -97,7 +97,7 @@
  "wikimedia-596970": "keep",
  "wikimedia-52649249": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52649385": {
   "decision": "keep",
@@ -157,7 +157,7 @@
  },
  "wikimedia-52649340": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52649370": {
   "decision": "keep",
@@ -177,7 +177,7 @@
  "wikimedia-30344820": "keep",
  "wikimedia-52649355": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "wikimedia-52649500": {
   "decision": "keep",

@@ -5,7 +5,7 @@
  * diagonal lines (computed inside each outline, never clipped), the tiny
  * ones as rings, and under it the count out of 195, the name and the year.
  * The hatch opens up as more of the world is chosen, so a well-travelled map
- * isn't a solid block.
+ * stays light.
  */
 import { INK, STROKE, caption, captionLines, circle, clip, f1, fitSize, text, textWidth, type Lines, house } from "../kit";
 import { EE_X, equalEarth } from "../equalEarth";

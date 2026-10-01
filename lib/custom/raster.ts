@@ -188,8 +188,8 @@ export function drawDetail(ctx: CanvasRenderingContext2D, w: number, h: number, 
 /**
  * The print's ink as the quality checks read it (scripts/gen/quality.ts
  * svgInk): drawn 300 × 400, white ink on black counts its lightness, black
- * ink on white its darkness. The same InkRaster solidBlock and assessPrint
- * judge the catalogue by.
+ * ink on white its darkness. The same InkRaster assessPrint judges the
+ * catalogue by.
  */
 export function inkFromCanvas(svg: string, baseColor: BaseColor): InkRaster {
   const c = document.createElement("canvas");

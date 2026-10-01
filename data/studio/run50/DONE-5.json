@@ -35,7 +35,7 @@
    "chosen": "K3-pine-cone-s5301.png",
    "mode": "line",
    "ink_coverage": 0.1345,
-   "note": "Bold-outlined closed cone; levels stretched 0.25-0.62 (mass 0.048 to 0.010); 5300 mottled screen (pen failed dense area), 5303 distorted."
+   "note": "Bold-outlined closed cone; levels stretched 0.25-0.62 (mass 0.048 to 0.010); 5300 mottled screen (pen too dense), 5303 distorted."
   },
   {
    "slot": 4,

@@ -10,7 +10,7 @@
  "cleveland-167712": "keep",
  "cleveland-160899": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "cleveland-155931": {
   "decision": "keep",
@@ -18,7 +18,7 @@
  },
  "cleveland-367979": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "cleveland-114513": "keep",
  "cleveland-142350": "keep",
@@ -36,7 +36,7 @@
  },
  "cleveland-160777": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "cleveland-134105": {
   "decision": "reject",

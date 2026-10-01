@@ -4,9 +4,7 @@ import { gate } from "./fuzz";
 import { drawSpec } from "./render";
 import { DIET_MAX, DINO_NAME_MAX, ENDINGS, HEIGHT_MAX, HEIGHT_MIN, PLATES, SPECIES, genusOf, isGenus, scientificName, stemOf } from "@/lib/custom/specs/dinosaur";
 import { DINOSAURS, dinosaur } from "@/lib/custom/draw/dinosaurs";
-import { wrap } from "@/lib/custom/svg";
 import { mulberry32 } from "../../scripts/gen/core";
-import { solidBlock, svgInk } from "../../scripts/gen/quality";
 
 const W = (n: number) => "W".repeat(n);
 const rnd = mulberry32(0xd1e0);
@@ -69,10 +67,9 @@ describe("dinosaur plates", () => {
     expect(dinosaur("triceratops", 30, 58, 240, 168)).toBe(dinosaur("triceratops", 30, 58, 240, 168));
     expect(dinosaur("triceratops", 31, 58, 240, 168).svg).toBe(dinosaur("triceratops", 30, 58, 240, 168).svg.replace(/(-?[\d.]+) (-?[\d.]+)/g, (m, x, y) => `${Math.round((Number(x) + 1) * 10) / 10} ${y}`));
   });
-  it("each skeleton has no solid ink of its own, and its plate alone passes the gate in both colours", async () => {
+  it("each skeleton's plate alone passes the gate in both colours", async () => {
     for (const k of PLATES)
       for (const color of ["black", "white"] as const) {
-        expect(solidBlock(svgInk(wrap(dinosaur(k, 30, 58, 240, 168).svg, color), color)).reject, `${k} ${color}`).toBeNull();
         expect(gate(await drawSpec(specOf("dinosaur", { n: "Al", k })!, color), color), `${k} ${color}`).toBeNull();
       }
   });

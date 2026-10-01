@@ -8,6 +8,6 @@ Seed: 5503
 Size: 832x1216
 Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
 
-Chosen: seed 5503 of 5500-5503. One tall palm with a full crown of feathered fronds on a small patch of sand that breaks off into the paper, the whole tree inside the page. 5500 has a small signature-like mark at bottom right and its ground runs to both edges; 5501 and 5502 stand in a landscape with a horizon line running across the page. Pen mode failed the continuous dense area check on the crown (20.6%, and 19.7% after a levels stretch 0.30-0.80); line mode passes (mass 14.8%).
+Chosen: seed 5503 of 5500-5503. One tall palm with a full crown of feathered fronds on a small patch of sand that breaks off into the paper, the whole tree inside the page. 5500 has a small signature-like mark at bottom right and its ground runs to both edges; 5501 and 5502 stand in a landscape with a horizon line running across the page. Pen mode failed the too much ink check on the crown (20.6%, and 19.7% after a levels stretch 0.30-0.80); line mode passes (mass 14.8%).
 Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
 python3 scripts/studio/oneink.py K5-date-palm-s5503.png data/studio/run50b/05-5-palm-tree palm-tree --mode line --title "PALM TREE" --sub "Botanical · One tree"

@@ -8,7 +8,7 @@ import { loadRenderer } from "@/lib/custom/renderers";
 import { getShirtById } from "@/lib/catalog";
 import { decodeCities } from "@/lib/custom/data";
 import { customModelIds } from "@/lib/custom/models";
-import { WEAK_QUALITY, assessPrint, solidBlock, svgInk } from "../scripts/gen/quality";
+import { WEAK_QUALITY, assessPrint, svgInk } from "../scripts/gen/quality";
 import { mulberry32 } from "../scripts/gen/core";
 // Each text measured in its own face (the Make prints set serif, condensed and blackletter beside the mono), as the gate measures it.
 import { wideTexts } from "./make/fuzz";
@@ -19,11 +19,11 @@ const readJson = (f: string) => JSON.parse(readFileSync(path.join(ROOT, f), "utf
 const SKY = { stars: readJson("data/sky/stars.json"), lines: (readJson("data/sky/constellations.json") as { lines: [number, number][][] }[]).flatMap((c) => c.lines) };
 const places = decodeCities(readJson("data/cities/cities.json"));
 
-/** A print that may be applied: not a solid block, and not weak by the catalogue's own line. */
+/** A print that may be applied: not weak by the catalogue's own line. */
 function check(svg: string, color: "black" | "white") {
   const raster = svgInk(svg, color);
   const a = assessPrint(raster);
-  return { solid: solidBlock(raster).reject, quality: a.quality, flags: a.flags, wide: wideTexts(svg) };
+  return { quality: a.quality, flags: a.flags, wide: wideTexts(svg) };
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -36,7 +36,7 @@ const wordsRnd = mulberry32(0x3083);
 const words = () => (wordsRnd() < 0.34 ? { w: cleanWords(WORDS[Math.floor(wordsRnd() * WORDS.length)])! } : {});
 
 describe("personalised prints: every input makes a printable print", () => {
-  it("2,000 random skies (and the edges: longest names, the poles' nearest cities, the equator, the range's ends) pass the solid-block and quality checks, and no caption line is wider than the print", () => {
+  it("2,000 random skies (and the edges: longest names, the poles' nearest cities, the equator, the range's ends) pass the quality check, and no caption line is wider than the print", () => {
     const rnd = mulberry32(0x5eed);
     const list = places.list;
     const longest = [...list].sort((a, b) => b.name.length - a.name.length || a.id - b.id).slice(0, 20);
@@ -55,7 +55,7 @@ describe("personalised prints: every input makes a printable print", () => {
       const spec: CustomSpec = { t: "sky", v: 1, p: { c: city.id, d, ...(t ? { t } : {}), ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, { sky: SKY, city }), color);
-      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${city.name} ${d} ${t ?? ""} ${color}: ${JSON.stringify(r)}`);
+      if (r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${city.name} ${d} ${t ?? ""} ${color}: ${JSON.stringify(r)}`);
     }
     expect(failures.slice(0, 5)).toEqual([]);
     expect(longest[0].name.length).toBeGreaterThan(0);
@@ -70,7 +70,7 @@ describe("personalised prints: every input makes a printable print", () => {
       const spec: CustomSpec = { t: "moon", v: 1, p: { y, ...(rnd() < 0.5 ? { s: 1 as const } : {}), ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, {}), color);
-      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${y} ${JSON.stringify(r)}`);
+      if (r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${y} ${JSON.stringify(r)}`);
     }
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
@@ -83,7 +83,7 @@ describe("personalised prints: every input makes a printable print", () => {
       const spec: CustomSpec = { t: "night", v: 1, p: { d, ...(rnd() < 0.5 ? { s: 1 as const } : {}), ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, {}), color);
-      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
+      if (r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
     }
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
@@ -97,7 +97,7 @@ describe("personalised prints: every input makes a printable print", () => {
       const spec: CustomSpec = { t: "planets", v: 1, p: { d, ...words() } };
       const color = rnd() < 0.5 ? "black" : "white";
       const r = check(renderCustomSvg(spec, color, {}), color);
-      if (r.solid || r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
+      if (r.quality < WEAK_QUALITY || r.flags.length || r.wide.length) failures.push(`${d} ${color}: ${JSON.stringify(r)}`);
     }
     expect(failures.slice(0, 5)).toEqual([]);
   }, 120_000);
@@ -109,7 +109,7 @@ describe("personalised prints: every input makes a printable print", () => {
       for (const color of ["black", "white"] as const) {
         // The place list too: Your Journey's globe draws the world's cities (its prepare() loads them on the site).
         const r = check(render(m.example, color, { sky: SKY, city, places: places.list }), color);
-        expect({ id: m.id, color, ...r, ok: !r.solid && r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
+        expect({ id: m.id, color, ...r, ok: r.quality >= WEAK_QUALITY && !r.flags.length && !r.wide.length }).toMatchObject({ ok: true });
       }
     }
     // Thirty-one products on two tees, each measured with resvg.

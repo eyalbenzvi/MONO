@@ -3,75 +3,75 @@
  "artic-42344": "keep",
  "artic-11342": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-158268": "keep",
  "artic-146130": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-266145": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-141864": "keep",
  "artic-46611": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-198379": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-103158": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-43379": "keep",
  "artic-84759": "keep",
  "artic-199760": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-96792": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-14873": "keep",
  "artic-14882": "keep",
  "artic-38364": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-11833": "keep",
  "artic-46338": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-61066": "keep",
  "artic-127493": "keep",
  "artic-14874": "keep",
  "artic-198783": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-8118": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-7476": "keep",
  "artic-111899": "keep",
  "artic-126487": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-145588": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-33496": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-29256": {
   "decision": "reject",
@@ -126,7 +126,7 @@
  "artic-105485": "keep",
  "artic-8336": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-81540": {
   "decision": "reject",
@@ -180,7 +180,7 @@
  },
  "artic-45786": {
   "decision": "reject",
-  "reason": "solid block"
+  "reason": "rejected (Part 0)"
  },
  "artic-24253": {
   "decision": "reject",
@@ -209,11 +209,11 @@
  },
  "artic-145575": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-49331": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-73994": {
   "decision": "reject",
@@ -300,11 +300,11 @@
  },
  "artic-246749": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-16797": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-41370": {
   "decision": "reject",
@@ -321,11 +321,11 @@
  },
  "artic-246752": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-246745": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-116240": {
   "decision": "reject",
@@ -385,11 +385,11 @@
  },
  "artic-246747": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-246744": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-246748": {
   "decision": "reject",
@@ -405,7 +405,7 @@
  },
  "artic-246751": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-115182": {
   "decision": "reject",
@@ -425,7 +425,7 @@
  },
  "artic-246753": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-16800": {
   "decision": "reject",
@@ -462,7 +462,7 @@
  },
  "artic-102478": {
   "decision": "reject",
-  "reason": "solid slab"
+  "reason": "rejected (Part 0)"
  },
  "artic-95723": {
   "decision": "reject",
