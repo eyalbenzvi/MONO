@@ -31,6 +31,15 @@ LIGHTNING = "ByteDance/SDXL-Lightning"
 CKPT = {8: "sdxl_lightning_8step_unet.safetensors", 4: "sdxl_lightning_4step_unet.safetensors"}
 
 
+def trim():
+    """Hand freed heap back to the OS (glibc keeps it otherwise, and RSS is what the cgroup counts)."""
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", required=True)
@@ -63,6 +72,7 @@ def main():
             embeds[j["prompt"]] = (pe, pooled)
     del enc
     gc.collect()
+    trim()
 
     # 2. The Lightning UNet, upcast tensor by tensor (fp16 file and fp32 model never both in memory).
     with init_empty_weights():
@@ -72,12 +82,14 @@ def main():
             set_module_tensor_to_device(unet, k, "cpu", value=f.get_tensor(k).to(dt))
     unet = unet.eval()
     gc.collect()
+    trim()
     vae = AutoencoderKL.from_pretrained(base, subfolder="vae", torch_dtype=dt)
     vae.enable_tiling()
     sched = EulerDiscreteScheduler.from_pretrained(base, subfolder="scheduler", timestep_spacing="trailing")
     pipe = StableDiffusionXLPipeline(vae=vae, text_encoder=None, text_encoder_2=None, tokenizer=None,
                                      tokenizer_2=None, unet=unet, scheduler=sched)
     pipe.set_progress_bar_config(disable=True)
+    pipe.enable_attention_slicing()  # attention in slices: lower activation peak
 
     for j in jobs:
         w, h = (int(x) for x in (j.get("size") or "832x1216").split("x"))
