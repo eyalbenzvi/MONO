@@ -1,0 +1,66 @@
+{
+ "helper": 4,
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "elephant",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "seed 4102",
+   "mode": "line",
+   "ink_coverage": 0.1995,
+   "note": "Symmetrical African elephant head, ears and tusks inside wide margins; line kept the ears smoother than pen."
+  },
+  {
+   "slot": 2,
+   "slug": "horse",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "seed 4201",
+   "mode": "pen",
+   "ink_coverage": 0.1499,
+   "note": "Pale horse head with mane, the only seed whose neck fades out instead of running into the bottom edge; pen because line emptied the pale face."
+  },
+  {
+   "slot": 3,
+   "slug": "snow-leopard",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "seed 4300",
+   "mode": "pen",
+   "ink_coverage": 0.1887,
+   "note": "Whole head and spotted ruff inside the page; pen keeps the fur that line lost."
+  },
+  {
+   "slot": 4,
+   "slug": "bison",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "seed 4401",
+   "mode": "pen",
+   "ink_coverage": 0.3019,
+   "note": "Both horns inside the margins; pen failed density on the image as made, so it ran on a copy with tones lifted (gamma 0.7), which passes."
+  },
+  {
+   "slot": 5,
+   "slug": "gorilla",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "seed 4501",
+   "mode": "pen",
+   "ink_coverage": 0.262,
+   "note": "Symmetrical gorilla face, whole head inside the page; pen on a gamma 0.7 lifted copy (as made it read as a slab, line left an empty mask)."
+  }
+ ],
+ "minutes": {
+  "install": 2,
+  "generate": 84,
+  "process": 22
+ },
+ "note": "Started 15:54 UTC, all five pushed by 17:14, done 17:21. The first generation run was killed out of memory after three images (13 GB during a decode, with a oneink test alongside); it was restarted for the other 17 jobs with the same seeds, and oneink was then run only just after an image was saved. No backups were needed."
+}
