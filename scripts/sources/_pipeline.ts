@@ -45,6 +45,19 @@ export interface World {
   /** The words each source's own search is asked for (fewer and plainer than the keywords). */
   queries: string[];
   signalFlags?: boolean;
+  /**
+   * A source's own searches (from wave 3 on): its queries replace the world's, its keywords add to
+   * them for that source only (a HABS sheet named "… Bridge" is the world's at the LoC, not a museum's
+   * view of a bridge), and `maps` are the LoC's Geography and Map Division searches.
+   */
+  sources?: Partial<Record<SourceId, { queries?: string[]; keywords?: string[]; maps?: string[] }>>;
+}
+
+/** The world as one source sees it: its own queries and keywords (World.sources) in place. */
+export function worldFor(world: World, source: SourceId): World {
+  const own = world.sources?.[source];
+  if (!own) return world;
+  return { ...world, queries: own.queries ?? world.queries, keywords: [...world.keywords, ...(own.keywords ?? [])] };
 }
 
 /** What an adapter returns per record: the candidate's fields, the licence as written, and what the filter needs. */
@@ -65,6 +78,8 @@ export const screenOf = (r: Pick<Raw, "mode" | "classification">): Candidate["sc
 
 /** General art museums and the LoC surveys: a world's word must be in the title (their tags name anything somewhere in a scene, or the whole site). */
 const TITLE_MATCH = new Set<SourceId>(["met", "artic", "cleveland", "rijksmuseum", "loc"]);
+/** …except a map division's record, classed by the adapter as a map or chart: the whole record is the world's ("Massachusetts Bay"). */
+const WHOLE_WORLD = /^(?:map|chart|nautical chart)\b/i;
 
 export interface SourceCounts {
   found: number;
@@ -76,7 +91,8 @@ export interface SourceCounts {
 }
 
 /** Step 1: licence and metadata filter on everything the adapter found; the best `cap` are the candidates. */
-export async function candidates(adapter: Adapter, world: World, cap: number): Promise<SourceCounts> {
+export async function candidates(adapter: Adapter, wholeWorld: World, cap: number): Promise<SourceCounts> {
+  const world = worldFor(wholeWorld, adapter.source);
   const log = logger(adapter.source);
   const raw = await adapter.search(world, log);
   const seen = { records: new Set<string>(), shas: new Set<string>() };
@@ -93,7 +109,7 @@ export async function candidates(adapter: Adapter, world: World, cap: number): P
     }
     licensed++;
     const input: MetaInput = { ...r, photo: r.mode !== "ink" };
-    const d = metaFilter(input, { keywords: world.keywords, signalFlags: world.signalFlags, titleMatch: TITLE_MATCH.has(adapter.source) }, seen);
+    const d = metaFilter(input, { keywords: world.keywords, signalFlags: world.signalFlags, titleMatch: TITLE_MATCH.has(adapter.source) && !WHOLE_WORLD.test(r.classification) }, seen);
     decisions.push({ ...d, key: r.key });
     if (!d.keep) continue;
     const { licenseFields: _l, hasImage: _h, ...fields } = r;

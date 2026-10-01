@@ -10,7 +10,7 @@ import type { Selected } from "./_types";
 import type { SourceId } from "./ranges";
 
 /** Each wave's drop: at most 12 of its designs (four per category) are new that week, the rest a week earlier. */
-export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-30" };
+export const WAVE_DROP: Record<number, string> = { 1: "2026-09-28", 2: "2026-09-30", 3: "2026-10-01" };
 
 /** The institution a design is "from" in its description, and the credit's source line. */
 export const INSTITUTION: Record<SourceId, string> = {
@@ -20,7 +20,7 @@ export const INSTITUTION: Record<SourceId, string> = {
   cleveland: "Cleveland Museum of Art",
   smithsonian: "Smithsonian Institution",
   loc: "Library of Congress",
-  noaa: "NOAA Photo Library",
+  noaa: "NOAA Office of Coast Survey's historical chart collection",
   nasa: "NASA image library",
   usgs: "US Geological Survey library",
   wellcome: "Wellcome Collection",
@@ -34,7 +34,7 @@ export const SOURCE_LINE: Record<SourceId, string> = {
   cleveland: "Cleveland Museum of Art Open Access",
   smithsonian: "Smithsonian Open Access",
   loc: "Library of Congress",
-  noaa: "NOAA",
+  noaa: "NOAA Office of Coast Survey",
   nasa: "NASA",
   usgs: "USGS",
   wellcome: "Wellcome Collection",
@@ -59,19 +59,29 @@ const NATURE_2 = /specimen|natural history|zoolog|botan|kunstformen|challenger|h
 const SHIP_PLAN = /lines plan|sail plan|cross sections? of ships|ship ?plan|architectura navalis|construction plan|shipbuilding|half model|profile of the|plan of a ship/i;
 const VESSEL = /\b(?:ship|vessel|schooner|lightship|steamer|steamboat|boat|barge|ferry|tug)\b/i;
 const MEASURED = /measured drawing|architectural drawing/i;
+/** From wave 3 on: the sky's charts and atlases go with the maps (a star atlas, a planisphere, a map of the moon). */
+const SKY_3 = /celestial|c[eé]leste?\b|coelestis|constellation|planisph|star (?:chart|map|atlas)|uranometria|coelest|firmament|hemispher|selenograph|\bmoon\b|lunar|\bkarte\b|\bkaart\b|\bmappa\b|nautical chart|coast survey/i;
+/** From wave 3 on: lettering and type (an alphabet, a type specimen, ornamental letters) is Type. */
+const TYPE_3 = /\balphabets?\b|type specimens?|specimens? of (?:printing )?types?|typefaces?|\blettering\b|ornamental letters?|decorated initials?/i;
+/** From wave 3 on: a building's elevation, plan or section in line work is architecture. */
+const BUILDING_3 = /\belevations?\b|ground plan|floor plan|\bsections?\b|fa[cç]ade|architectur|cornice|entablature|orders? of architecture|\b(?:doric|ionic|corinthian|tuscan) order|vitruvius|édifices/i;
+/** From wave 3 on: knots and signal codes are technical line work. */
+const KNOT_3 = /\bknots?\b|\bsplices?\b|\bhitch(?:es)?\b|signal flags?|code of signals|signal code/i;
 
 /** The archive group whose character (features, screen, tee) a kept picture takes, and its shop category. */
 export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: ShirtCategory } {
   const text = [s.classification, s.title, ...s.tags].join(" · ");
   if (s.mode !== "ink" || PHOTO.test(s.classification)) return { group: "art-photo", category: "photographs" };
   const later = s.wave !== undefined && s.wave >= 2;
-  if ((later ? MAP_2 : MAP).test(text)) return { group: "etching", category: "sky" };
+  const third = s.wave !== undefined && s.wave >= 3;
+  if ((later ? MAP_2 : MAP).test(text) || (third && SKY_3.test(text))) return { group: "etching", category: "sky" };
+  if (third && TYPE_3.test(text)) return { group: "etching", category: "type" };
   // Ship plans and a vessel's measured drawing are technical line work; a building's is architecture.
   // A HABS/HAER sheet on Commons is a measured drawing too (its title names the survey).
   const measured = MEASURED.test(s.classification) || /\b(?:HABS|HAER)\b/.test(s.title);
   if (SHIP_PLAN.test(text) || (measured && VESSEL.test(s.title))) return { group: "etching", category: "systems" };
-  if (measured || (later && BUILDING_2.test(text))) return { group: "etching", category: "architecture" };
-  if (TECH.test(text)) return { group: "etching", category: "systems" };
+  if (measured || (later && BUILDING_2.test(text)) || (third && BUILDING_3.test(text))) return { group: "etching", category: "architecture" };
+  if (TECH.test(text) || (third && KNOT_3.test(text))) return { group: "etching", category: "systems" };
   if ((later ? BRUSH_2 : BRUSH).test(text)) return { group: "ukiyo-e", category: "brush" };
   // Commons files are all classed "Plate" by the adapter: after the first (natural-history) wave, only their own words count.
   const plateText = s.source === "wikimedia" && s.wave !== 1 ? [s.title, ...s.tags].join(" · ") : text;

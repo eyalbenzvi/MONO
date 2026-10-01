@@ -28,7 +28,13 @@ export interface LicenseFields {
   publicDomain?: boolean | null;
   /** Credit or description text, read for third-party rights ("courtesy of", "©"). */
   credit?: string | null;
+  /** The year the work was published, when the rights depend on it (the LoC's map division). */
+  published?: number | null;
 }
+
+/** The LoC Geography and Map Division's statement (no Rights Advisory on the record): free to use for works published before 1927, in the public domain in the US. */
+const LOC_MAPS = /free to use and reuse unless a rights advisory/i;
+export const LOC_MAPS_BEFORE = 1927;
 
 export type LicenseDecision = { ok: true; license: License } | { ok: false; reason: string };
 
@@ -54,6 +60,8 @@ export function judgeLicense(source: SourceId | string, f: LicenseFields, { allo
   for (const [re, reason] of DENY) if (re.test(text)) return { ok: false, reason };
   if (/publicdomain\/zero|\bcc-?0\b|\bcc ?zero\b|creative commons zero/i.test(text)) return { ok: true, license: "CC0" };
   if (/publicdomain\/mark|public domain mark|\bpdm\b|\bpd-?m\b/i.test(text)) return { ok: true, license: "PDM" };
+  if (source === "loc" && LOC_MAPS.test(text))
+    return f.published && f.published < LOC_MAPS_BEFORE ? { ok: true, license: "PD" } : { ok: false, reason: `map division: published ${f.published ?? "undated"}, not before ${LOC_MAPS_BEFORE}` };
   if (/no known restrictions/i.test(text)) return source === "loc" ? { ok: true, license: "NKR" } : { ok: false, reason: "no known restrictions (only the Library of Congress's)" };
   if (/creativecommons\.org\/licenses\/by\/|\bcc[- ]by\b(?![- ]?(?:nc|nd|sa))/i.test(text))
     return allowBy ? { ok: true, license: "CC-BY" } : { ok: false, reason: "CC BY (needs the owner's approval)" };

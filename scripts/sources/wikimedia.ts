@@ -12,12 +12,17 @@ const strip = (s: unknown) => String(s ?? "").replace(/<[^>]*>/g, " ").replace(/
 
 /** Category searches per wave (Commons category names vary; the search finds them). */
 export const CATEGORY_SEARCHES: Record<number, string[]> = {
+  3: [
+    "Uranometria", "Atlas coelestis by John Flamsteed", "Atlas Novus Coelestis Doppelmayr", "Selenographia Hevelius", "Maps of the Moon", "Celestial maps", "Star charts", "Celestial planispheres",
+    "Architectural elevations", "Les plus beaux édifices de Rome moderne", "Vitruvius Britannicus", "Antiquities of Athens", "Précis des leçons d'architecture",
+    "Type specimens", "Specimens of printing types", "Alphabets in art", "Ornamental alphabets", "Knots in art", "Nautical charts 19th century", "Coast Survey charts",
+  ],
   2: ["Architectura Navalis Mercatoria", "Ship plans", "Sail plans", "Lines plans of ships", "Nautical charts 18th century", "Lighthouse drawings", "Ship models engravings", "Encyclopédie Marine plates"],
   1: ["Kunstformen der Natur", "Challenger Report plates", "Haeckel Radiolarien", "Haeckel Medusen", "Die Cephalopoden Chun", "Report on the Scientific Results of the Voyage of H.M.S. Challenger", "Fishes illustrations 19th century", "Marine invertebrates illustrations"],
 };
 
 /** A category a wave keeps from the search: one that names line work (plans, charts, drawings, plates). */
-const LINE_WORK = /\bplans?\b|lines|chart|drawing|architectura navalis|cross sections|chapman|atlas|carta|encyclop|engraving|plates?\b|in art\b|kunstformen|challenger|haeckel|radiolarien|medusen|cephalopoden|illustrations|invertebrates/i;
+const LINE_WORK = /\bplans?\b|lines|chart|drawing|architectura navalis|cross sections|chapman|atlas|carta|encyclop|engraving|plates?\b|in art\b|kunstformen|challenger|haeckel|radiolarien|medusen|cephalopoden|illustrations|invertebrates|uranometria|coelest|celestial|planispher|selenograph|maps? of the moon|elevations?\b|édifices|vitruvius|antiquities of athens|leçons d'architecture|type specimens|printing types|alphabets?\b|knots\b/i;
 /** …and not a photograph collection, a museum's object photographs, one ship's or class's page, or a HABS/HAER set (copies of the LoC's own sheets, which the LoC adapter reads at the source). */
 const NOT_LINE_WORK = /photograph|\bHABS\b|\bHAER\b|sail amsterdam|rijksmuseum|full sail|proposed or planned|^Category:PLANS |\(ship, \d{4}\)|\bIMO \d|trawler|type \d+ frigate|svg\b/i;
 /** A file that is a photograph by its own categories (press photos, a photographer's own upload). */
