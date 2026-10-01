@@ -1,0 +1,11 @@
+Slot 4 (main): CASTLE RUIN — Architecture · Ruins; delivered as OLD CASTLE (truth rule: the walls stand nearly whole, only the stones in front are tumbled, so not titled a ruin)
+Ending: --edge horizon (chosen before the prompt: one building on a hill).
+Prompt (main, 97 words): One old castle ruin on a hill, front view. Crumbling stone walls and one broken square keep with empty arched windows, fallen blocks, ivy and moss on the stones, grass and rocks on the slope below, no people. Fine black ink etching with soft hatched tones and rich texture on the weathered masonry. Soft evening light from the left, deep shadows in the window holes. The ruin stands whole in the middle; the ground ends in a clean straight line, empty white sky above. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seeds: 8400-8403. Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --jobs --lcm --steps 8), CPU
+Pre-process: levels stretch 0.10-0.78
+One ink: scripts/studio/oneink.py K4-castle-ruin-s8401-lev.png data/studio/run50b/08-4-old-castle old-castle --mode tone --edge horizon --title "OLD CASTLE" --sub "Architecture · Ruins"
+Chosen: seed 8401, the second of four, the only one with a castle standing under open sky. 8400 a view through an arch, a stone frame round the page and a green tint in the grass; 8402 broken arches cut by both sides and the top; 8403 again a view through a big arch, a frame. Flaw: the left tower runs to the image's left edge; its edge is the tower's own corner, so it reads as whole.
+Tee: white only — on the black tee the sky round the towers becomes a bright continuous halo. fails [] on both files.
+Backup not run: there was no time left before minute 85 after the main run had to be restarted (out of memory).
