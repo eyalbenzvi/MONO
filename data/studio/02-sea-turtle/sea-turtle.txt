@@ -1,0 +1,10 @@
+Title: Sea Turtle
+Category: Botanical & Nature
+Subject: A sea turtle swimming, seen from above at a slight angle: head, plated shell and two front flippers
+Style: Natural history plate, engraving-style line work with scale patterns and stipple
+Medium: Drawn (illustration)
+Description: A sea turtle glides past with its front flippers spread, every scale and shell plate drawn in fine engraved line. It has been doing this for a hundred million years and sees no reason to hurry now.
+Tee colours: White, Black
+Print size: 25.8 × 31.5 cm
+Keywords: sea turtle, turtle, marine life, ocean, reptile, natural history, engraving, scientific illustration, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
