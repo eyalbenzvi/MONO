@@ -16,7 +16,7 @@ K = מספר העוזר שלך (1–10), KK = אותו מספר בשתי ספר�
 3. כתוב scripts/studio/briefs/run50-K.py עם PROMPTS = {1: {"main": "...", "backup": "..."}, ..., 5: {...}} — עכשיו רק "main" לחמש המשבצות (את "backup" כתוב רק כשצריך; run50.py קורא רק את מה שמבוקש). 60–100 מילים לכל פרומפט, באנגלית:
    - שבע המילים הראשונות: כמות, נושא, מבט (למשל "One red deer stag, head and shoulders, front view").
    - מיד אחר כך, בקצרה: מה חייב ומה לא ("two antlers, symmetrical, both eyes").
-   - משפט אחד לכל אחד: הקו, האור, הקומפוזיציה — לעיצוב שאינו נוף: "centred, the whole subject with wide white margins, plain white paper"; לנוף: "the scene fades softly into white paper at every edge".
+   - משפט אחד לכל אחד: הקו, האור, הקומפוזיציה — לעיצוב שאינו נוף: "centred, the whole subject with wide white margins, plain white paper"; לנוף — לפי הסיום שנבחר לו (--edge, ראה צעד 6): horizon: "the ground ends in a clean straight line, empty white sky above"; rect: "a complete rectangular scene"; circle: "composed to fit inside a circle"; arch: "a tall scene under a round-topped window"; oval בלבד: "the scene fades softly into white paper at every edge".
    - בסוף שורה אחת: "No text, no frame, no border, no ornaments, no colour, no grey wash."
 4. ייצור בפקודה אחת ברקע — 20 תמונות (4 seeds לכל ראשי):
    python3 scripts/studio/briefs/run50.py K all main /tmp/run50 > /tmp/jobs-main.json
@@ -27,8 +27,9 @@ K = מספר העוזר שלך (1–10), KK = אותו מספר בשתי ספר�
    python3 scripts/studio/briefs/run50.py K <slot> backup /tmp/run50 > /tmp/jobs-b<slot>.json ; python3 scripts/studio/generate.py --jobs /tmp/jobs-b<slot>.json --lcm --steps 8
    אחרי דקה 85 — המשבצת נשארת ריקה.
 6. דיו אחת:
-   python3 scripts/studio/oneink.py <image> data/studio/run50/KK-<slot>-<slug> <slug> --mode <mode> [--fade] --title "<TITLE>" --sub "<Sub>"
-   ב-<slug>-check.json חייב להיות "fails": [] בכל גרסה (oneink כולל עכשיו בדיקת "continuous dense area"). הסתכל בעין על התצוגה המקדימה, ובמצב tone על שני הקבצים: חול, כתמים, קווים שבורים, מסה, אליפסה בהירה. אם נכשל: --size 0.9, line↔pen, או line↔tone; ואם עדיין — התמונה הבאה מבין הארבע.
+   python3 scripts/studio/oneink.py <image> data/studio/run50/KK-<slot>-<slug> <slug> --mode <mode> [--edge horizon|rect|circle|arch|oval] --title "<TITLE>" --sub "<Sub>"
+   סיום לנוף (סעיף 04 בהנחיות, "Scenes: how a picture ends"): horizon כברירת מחדל (הרים, צוקים, דיונות, מגדלור); rect לסצנה עמוסה (יער, אגם, פיורד); circle לירח, אי, גייזר, כוכב לכת; arch למפל, קניון, צריחים; oval — לכל היותר עיצוב אחד מתוך עשרה, ורק אם הוא באמת יפה. בחר לפני שכותבים את הפרומפט, וכתוב את הבחירה ב-brief.txt.
+   ב-<slug>-check.json חייב להיות "fails": [] בכל גרסה (oneink כולל עכשיו בדיקת "continuous dense area"). הסתכל בעין על התצוגה המקדימה, ובמצב tone על שני הקבצים: חול, כתמים, קווים שבורים, מסה, שטח בהיר רציף. אם נכשל: --size 0.9, line↔pen, או line↔tone; ואם עדיין — התמונה הבאה מבין הארבע.
    כלל האמת: שם מדעי/מקום/סוג בכותרת רק אם התמונה באמת מראה אותו (MATTERHORN רק אם ההר נראה כמו המטרהורן; אחרת ALPINE PEAK).
 7. מסירה (סעיפים 08–09 בהנחיות) בכל data/studio/run50/KK-<slot>-<slug>/:
    - קובץ/קבצי ההדפס, <slug>-preview.png

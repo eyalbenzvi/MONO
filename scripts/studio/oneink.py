@@ -4,7 +4,7 @@ illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
   python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
-      [--mode line|pen|tone] [--fade] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
+      [--mode line|pen|tone] [--edge horizon|rect|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
 
 Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
 the 28 x 37 cm print area (3307 x 4370 px):
@@ -17,8 +17,16 @@ the 28 x 37 cm print area (3307 x 4370 px):
 --title and --sub set a heading above the picture, letter-spaced, in Space
 Grotesk (SIL OFL 1.1): its capitals 6 mm and 4 mm high.
 
---fade is for a full-bleed picture (a scene to the edges): it fades to nothing
-at the edges, as the guidelines ask of a picture with its background.
+--edge is for a full-bleed picture (a scene to the edges), which must not land on
+the tee as a rectangle. It says how the scene ends, chosen per design:
+  horizon  the ground ends in a straight cut with a thin rule under it; the sides and
+           the top fall away, an empty sky is left as tee (the default for a scene);
+  rect     (or plate) cut to a rectangle with a thin keyline round it (a plate, a postcard);
+  circle   cut to a circle with a thin ring (a lens, a seal: a moon, an island);
+  arch     a rectangle with a round top and a keyline (a window: falls, towers);
+  oval     (or vignette) an engraver's vignette fading to nothing (sparingly: at most one in ten).
+--fade is the old name for --edge oval. The keylines are 0.7 mm, 2.5 mm off the picture;
+on a black tee only the light parts that carry drawing print, never a plain light area.
 
 Every pixel is ink or nothing (alpha 0 or 255). Tone is a clustered-dot
 screen whose dots and gaps are never under 0.4 mm; lines dark enough print
@@ -77,6 +85,54 @@ def fade(k, seed=7):
     return m
 
 
+EDGES = ("horizon", "rect", "circle", "arch", "oval")
+RULE_MM, GAP_MM = 0.7, 2.5
+
+
+def edge_shape(h, w, edge):
+    """Where a scene is kept (0..1, in picture pixels) for a cut edge. A small inset drops any
+    border the picture drew itself."""
+    i = max(2, round(0.02 * min(h, w)))
+    y, x = np.mgrid[0:h, 0:w].astype(np.float32)
+    m = np.zeros((h, w), np.float32)
+    if edge == "rect":
+        m[i:h - i, i:w - i] = 1
+    elif edge == "circle":
+        r = min(h, w) / 2 - i
+        m[(x - w / 2) ** 2 + (y - h / 2) ** 2 <= r * r] = 1
+    elif edge == "arch":
+        r = (w - 2 * i) / 2
+        m[i:h - i, i:w - i] = 1
+        top = y < i + r
+        m[top & ((x - w / 2) ** 2 + (y - (i + r)) ** 2 > r * r)] = 0
+    elif edge == "horizon":
+        # A hard ground line at the bottom; the sides and the top fall away softly.
+        sm = lambda v: np.clip(v, 0, 1) ** 2 * (3 - 2 * np.clip(v, 0, 1))
+        side = sm(np.minimum(x, w - 1 - x) / (0.12 * w))
+        top = sm(y / (0.12 * h))
+        m = side * top
+        m[h - i:] = 0
+    return m
+
+
+def edge_rule(M, edge):
+    """The keyline (1-bit, print size) round a cut scene M: a ring 2.5 mm off it, or for a
+    horizon one rule under the ground line, as wide as the ground."""
+    g, r = round(GAP_MM * PX_MM), max(round(RULE_MM * PX_MM), 9)
+    rule = np.zeros(M.shape, np.uint8)
+    if edge == "horizon":
+        rows = np.nonzero((M > 0.5).any(1))[0]
+        if not len(rows):
+            return rule
+        y = rows[-1]
+        xs = np.nonzero(M[y] > 0.5)[0]
+        rule[y + g:y + g + r, xs[0]:xs[-1] + 1] = 1
+        return rule
+    inside = (M > 0.5).astype(np.uint8)
+    near = cv2.dilate(inside, disc(g))
+    return cv2.dilate(inside, disc(g + r)) & (1 - near)
+
+
 def crop_box(k):
     """The paper trimmed off around the picture: its marks' bounding box, crumbs ignored."""
     m = (cv2.GaussianBlur(k, (0, 0), 2) > 0.12)
@@ -123,13 +179,13 @@ def heading(title, sub):
     return out
 
 
-def fit(k, size):
+def fit(k, size, trim=True):
     """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned.
     Each of a stack of layers (the two positives) is trimmed and placed on its own,
     so each starts at the top: a pale sky is ink on a black tee and nothing on white."""
     if k.ndim == 3:
-        return np.stack([fit_one(l[crop_box(l)], size) for l in k])
-    return fit_one(k[crop_box(k)], size)
+        return np.stack([fit_one(l[crop_box(l)] if trim else l, size) for l in k])
+    return fit_one(k[crop_box(k)] if trim else k, size)
 
 
 def fit_one(k, size):
@@ -346,7 +402,11 @@ def main():
     crop = None
     size = 1.0
     mode = args[args.index("--mode") + 1] if "--mode" in args else "line"
-    bleed = "--fade" in args
+    edge = args[args.index("--edge") + 1] if "--edge" in args else ("oval" if "--fade" in args else None)
+    edge = {"plate": "rect", "vignette": "oval"}.get(edge, edge)
+    if edge is not None and edge not in EDGES:
+        sys.exit(f"--edge {edge}: one of {', '.join(EDGES)}")
+    bleed = edge is not None
     if "--crop" in args:
         crop = tuple(int(v) for v in args[args.index("--crop") + 1].split(","))
     if "--size" in args:
@@ -358,11 +418,21 @@ def main():
     if head is not None:
         HEAD = head.shape[0] + round(8 * PX_MM)
     k = darkness(load(src, crop), bleed)
-    m = fade(k) if bleed else None
-    if bleed:
+    rule = None
+    if edge == "oval":
         # The vignette fades both positives: the dark parts on white, the light parts on black.
+        m = fade(k)
         both = fit(np.stack([k * m, detail_light(k, 1 - k) * m]), size)
         k, light = both[0], both[1]
+    elif edge:
+        # A cut edge: both positives and the shape placed alike (no trimming), then the keyline.
+        m = edge_shape(*k.shape, edge)
+        ys, xs = np.nonzero(m > 0)
+        bb = np.s_[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+        k, m = k[bb], m[bb]
+        placed = fit(np.stack([k * m, detail_light(k, 1 - k) * m, m]), size, trim=False)
+        k, light, M = placed
+        rule = edge_rule(M, edge)
     else:
         k = fit(k, size)
     if mode == "pen":
@@ -381,6 +451,9 @@ def main():
         else:
             mask = subject_mask(k)
             black = fit_coverage(np.clip(1 - k, 0, 1), mask.astype(np.float32))
+    if rule is not None:
+        for ink in {id(white): white, id(black): black}.values():
+            ink |= rule
     if head is not None:
         for ink in {id(white): white, id(black): black}.values():
             ink[TOP:TOP + head.shape[0]] |= head

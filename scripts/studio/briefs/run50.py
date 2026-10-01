@@ -6,7 +6,11 @@ each, subject, count and view in the first seven words) as
 
   PROMPTS = {1: {"main": "...", "backup": "..."}, 2: {...}, ...}
 
-and this prints the jobs file for generate.py, four seeds a design:
+A scene's mode names its ending: "tone --edge horizon|rect|circle|arch|oval"
+(oneink.py; horizon by default, oval at most one design in ten). This run's list
+predates the endings and says "tone --fade", which oneink.py reads as oval.
+
+This prints the jobs file for generate.py, four seeds a design:
 
   python scripts/studio/briefs/run50.py <K> <slot|all> <main|backup> <out-dir> > jobs.json
 
@@ -104,7 +108,8 @@ def slug(title):
 def design(k, slot, which):
     mt, mn, bt, bn, mode, size, sub = D[k][slot - 1]
     title, note = (mt, mn) if which == "main" else (bt, bn)
-    return {"title": title, "note": note, "slug": slug(title), "mode": mode.split()[0], "fade": "--fade" in mode, "size": size, "sub": sub}
+    edge = mode.split("--edge ")[1].split()[0] if "--edge " in mode else ("oval" if "--fade" in mode else None)
+    return {"title": title, "note": note, "slug": slug(title), "mode": mode.split()[0], "edge": edge, "fade": edge is not None, "size": size, "sub": sub}
 
 
 def prompts(k):
