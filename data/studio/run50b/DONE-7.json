@@ -1,0 +1,77 @@
+{
+ "helper": 7,
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "volcano",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-snow-capped-volcano-s7103",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.0791
+   },
+   "note": "tone --edge horizon, white tees only: no clear snow cap so titled VOLCANO; the black version showed a bright sky halo"
+  },
+  {
+   "slot": 2,
+   "slug": "terraced-valley",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-rice-terraces-s7202",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.2149,
+    "black": 0.2945
+   },
+   "note": "tone --edge rect, both tees: no water or rice, so titled TERRACED VALLEY"
+  },
+  {
+   "slot": 3,
+   "slug": "savanna",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K3-savanna-s7302",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.1603
+   },
+   "note": "tone --edge horizon, white tees only: the black version showed a bright sky halo"
+  },
+  {
+   "slot": 4,
+   "slug": "rock-pinnacles",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-limestone-karst-peaks-s7400",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.2537
+   },
+   "note": "tone --edge arch, white tees only: sharp granite-like spires, not karst, so titled ROCK PINNACLES"
+  },
+  {
+   "slot": 5,
+   "slug": "aurora-over-mountains",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K5-aurora-over-mountains-s7500",
+   "mode": "tone",
+   "ink_coverage": {
+    "black": 0.2986
+   },
+   "note": "tone --edge rect, black tees only: on white the aurora is a blank hole"
+  }
+ ],
+ "minutes": {
+  "install": 2,
+  "generate": 65,
+  "process": 16
+ },
+ "note": "20 mains in one command (15:56-17:01 UTC); no backup run was needed. Total 69 minutes."
+}
