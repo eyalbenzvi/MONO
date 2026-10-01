@@ -15,6 +15,7 @@ import { TOTAL } from "../scripts/gen/constants";
 import { ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_H, ARCHIVE_W, type ArchiveSource } from "../scripts/archive/source";
 import { EXCLUDE, PER_GROUP, archiveOrder } from "../scripts/archive/curation";
 import { set5Designs } from "../scripts/gen/set5";
+import { SOURCE_LINE } from "../scripts/sources/waves";
 
 const FULL = full as unknown as CatalogEntry[];
 const SOURCES = archive as unknown as ArchiveSource[];
@@ -71,7 +72,8 @@ describe("T8: the archive — public-domain works from Smithsonian Open Access",
   it("credits name the artist or photographer where the record does, and always the museum", () => {
     for (const s of ARCHIVE_DESIGNS) {
       // (Or the content waves' sources: scripts/sources/waves.ts SOURCE_LINE.)
-      expect(s.photo!.credit, s.id).toMatch(/Smithsonian|Museum|Archives|Gallery|Cooper Hewitt|Wikimedia Commons|The Met Open Access|Art Institute of Chicago|Library of Congress|Open Access/);
+      const named = /Smithsonian|Museum|Archives|Gallery|Cooper Hewitt|Open Access/.test(s.photo!.credit) || Object.values(SOURCE_LINE).some((line) => s.photo!.credit.includes(line));
+      expect(named, `${s.id}: ${s.photo!.credit}`).toBe(true);
       expect(s.title.length, s.id).toBeLessThanOrEqual(60);
     }
   });
