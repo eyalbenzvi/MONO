@@ -1,0 +1,11 @@
+Prompt: One brass telescope on a tripod, side view, a technical drawing on plain white paper, no text, no lettering, no frame, no border, no colour. A single antique refracting telescope, a long tapered tube with rings and a dew shield, eyepiece and focusing knob, a small finder scope, on an equatorial mount with gears and a counterweight, three wooden tripod legs. Fine black ink line drawing, clean ruled lines, a thin ground line. Centred, the whole telescope with wide white margins.
+
+Seed: 30520
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, scripts/studio/generate_sdxl.py
+
+Chosen: seed 30520 of 30520-30522. One whole telescope with finder scope, eyepiece and a geared head on a three-legged tripod, wide air round it, a ruled floor under it. 30521 fills the page edge to edge (tube and legs touch the sides) with a fake title at the top.
+Clean-up: the model drew a double keyline frame and a few small fake marks (a line of letters at the bottom left inside the frame, a scrawled caption under it, a "5" at the top right). All of them lie outside the crop --crop 50,56,785,1150, which cuts the frame off; no painting needed.
+Title: the drawing shows an antique refractor, but brass cannot be seen in black ink and the head is an altazimuth, not an equatorial mount, so it is titled ANTIQUE TELESCOPE by the truth rule.
+Ending: none (one object): the tripod stands on a few ruled floor lines and its shadow.
+python3 scripts/studio/oneink.py K2-brass-telescope-s30520.png data/studio/sdxl50/05-2-antique-telescope antique-telescope --crop 50,56,785,1150 --mode line --title "ANTIQUE TELESCOPE" --sub "Objects · Elevation"

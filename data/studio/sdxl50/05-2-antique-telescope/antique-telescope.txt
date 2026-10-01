@@ -1,0 +1,10 @@
+Title: Antique Telescope
+Category: Objects
+Subject: One antique refracting telescope with a finder scope, eyepiece and dew cap, on an altazimuth head and a three-legged tripod, standing on a ruled floor with its shadow
+Style: Technical elevation, engraving-style line work
+Medium: Drawn (illustration)
+Description: An old refracting telescope stands on its tall tripod, tilted at the sky with its finder scope ready. It has been pointed upwards for so long it has forgotten what the ground looks like.
+Tee colours: Black, White
+Print size: 20.8 × 34.8 cm
+Keywords: telescope, antique telescope, astronomy, tripod, stargazing, scientific instrument, vintage, line art, technical drawing
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
