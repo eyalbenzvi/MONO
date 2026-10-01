@@ -1,0 +1,13 @@
+Prompt: One total solar eclipse, a single dark disc, front view, the black moon covering the sun completely. One round disc only, the corona around it as long fine streamers radiating outward, uneven and wispy, a few small prominences at the rim. Fine black ink engraving on white paper, the corona drawn in thin radiating lines and stippling, the disc solid and crisp. Centred, the whole subject with wide white margins, plain white paper, no dark sky. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+
+Seed: 9103
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+Ending: none (a single object, centred; not a scene).
+
+Chosen: the 4th of 4 (seed 9103). One black disc with a corona of fine radiating streaks. The others: s9100 drew concentric rings with a bright ring inside a black disc (no eclipse logic); s9101 and s9102 were close but 9102 sat inside a flat grey disc with a black ring, and 9101's corona was a uniform flat-edged disc.
+Processing before one ink: the dark square sky removed: around the disc (centre 472,522, radius 170, kept as drawn) a levels stretch 0.22-0.62, then a radial fade to white paper from radius 200 to 420, so the corona's streaks thin out into paper and no sky edge is left.
+python3 scripts/studio/oneink.py <processed image> data/studio/run50b/09-1-total-solar-eclipse total-solar-eclipse --mode tone --title "TOTAL SOLAR ECLIPSE" --sub "Maps & Sky · The sun hidden"
+Delivered white tee only: on the black-tee positive the corona became one continuous bright ring with a hard edge, so the black file is not delivered.
