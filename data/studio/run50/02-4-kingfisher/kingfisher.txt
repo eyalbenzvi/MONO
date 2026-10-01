@@ -1,0 +1,10 @@
+Title: Kingfisher
+Category: Botanical & Nature
+Subject: A kingfisher in side portrait, crest raised, long dagger beak pointing right
+Style: Natural history portrait in ink line and screened shading
+Medium: Drawn (illustration)
+Description: A kingfisher sits half turned with its crest up and its long straight beak aimed at something only it can see. Somewhere a small fish has just had a very bad idea.
+Tee colours: Black and white (one file, kingfisher.png: white ink on black tees, black ink on white tees)
+Print size: 19.9 x 34.9 cm (heading included)
+Keywords: kingfisher, bird, river bird, crest, beak, wildlife, natural history, portrait
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

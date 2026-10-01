@@ -1,0 +1,10 @@
+Title: Golden Eagle
+Category: Botanical & Nature
+Subject: A golden eagle facing the viewer with both wings raised and spread wide
+Style: Heraldic natural history study in fine ink line, feather by feather
+Medium: Drawn (illustration)
+Description: A golden eagle faces straight out with both wings thrown open, every flight feather drawn in its place. It is the posture of a bird that has seen the coat of arms and intends to keep it.
+Tee colours: Black and white (one file, golden-eagle.png: white ink on black tees, black ink on white tees)
+Print size: 25.9 x 31.0 cm (heading included)
+Keywords: golden eagle, eagle, bird of prey, wings, raptor, wildlife, natural history, bird, heraldic
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
