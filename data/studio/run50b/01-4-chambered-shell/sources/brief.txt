@@ -1,0 +1,14 @@
+Prompt: One nautilus shell cut in half, side view. A single round coiled shell sliced through the middle, showing the spiral of chambers inside, each chamber a curved wall growing larger towards the wide opening, a thin tube linking the chambers, the outer wall whole, no animal, no tentacles. Fine black ink line drawing in the style of a natural history plate, every chamber wall drawn, delicate hatching on the outer shell. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1450-1453 (four, backup); chosen 1451 (the second)
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Main conch (1400-1403) rejected, all four: 1400 and 1401 leaf shapes with serrated edges, 1402 a smooth grey blob with a horn, 1403 a folded cloth form; none had a spire, knobs or an aperture.
+Backup nautilus cut in half (1450-1453). Why 1451: 1450 a plain grey bowl with a dark centre; 1452 a flat swirl of folds inside a rim, no coil; 1453 a bowl with a muddled inner whorl. 1451 is the only clear coiled shell: true spiral whorls divided into rows of curved chambers, a fine centre, whole and centred with white margins.
+It is seen whole, not cut open, and the chambers are segmented whorls rather than nautilus septa, so the title is CHAMBERED SHELL, not NAUTILUS.
+One ink: pen mode keeps the chamber walls as engraved lines.
+python3 scripts/studio/oneink.py <image> data/studio/run50b/01-4-chambered-shell chambered-shell --mode pen --title "CHAMBERED SHELL" --sub "Marine life · Natural history plate"

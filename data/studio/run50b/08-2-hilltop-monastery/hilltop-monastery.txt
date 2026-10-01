@@ -1,0 +1,10 @@
+Title: Hilltop Monastery
+Category: Architecture
+Subject: A small stone monastery with a bell tower and a rounded apse on top of a boulder-strewn crag, a stone stair climbing to it past a gatehouse, tall pines either side, mountains far behind
+Style: Engraving-style landscape, clustered-dot tone, under a round-topped window with a fine keyline
+Medium: Drawn (illustration)
+Description: A stone monastery with a bell tower sits on top of a rocky crag, reached by one long stair from a gatehouse below. Visitors are welcome, provided they have the knees for it.
+Tee colours: White
+Print size: 22.7 x 35.3 cm
+Keywords: monastery, hilltop, bell tower, crag, rocks, stair, pines, mountains, old building, etching
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

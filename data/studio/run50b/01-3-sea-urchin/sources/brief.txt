@@ -1,0 +1,14 @@
+Prompt: One sea urchin shell, seen from above, radial. A single round test with five-fold symmetry, five double rows of small bumps and pores running from the centre to the rim like a star, rings of tiny knobs between them, a small opening in the middle, no spines. Fine black ink line drawing in the style of a natural history plate, every bump drawn, delicate stippling and hatching. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1300-1303 (four, main); chosen 1303 (the fourth)
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why 1303: all four drew a spiny urchin rather than the bare test asked for, none with five-fold rows. 1300 a ring of spines round a flat striped disc, edges thin (pen failed: 1.3% of the ink thinner than 0.4 mm); 1301 a spiny burst nearly touching the page edges, no body; 1302 a flat bristle disc with no centre. 1303 is the only one with a real urchin body: a knobbed, tuberculed centre and an even ring of spines, whole and centred.
+Since it shows spines and not the bare shell, the title is SEA URCHIN, not SEA URCHIN SHELL.
+Clean-up: the source has a soft grey cast shadow under the lower edge that printed as a stray rule; before oneink, pale pixels (over 170) outside the urchin's outline were lifted to white with a 6 px feather (sources/01-3-sea-urchin-s1303-clean.png). No drawing was changed.
+One ink: pen mode keeps the spines as separate engraved strokes.
+python3 scripts/studio/oneink.py sources/01-3-sea-urchin-s1303-clean.png data/studio/run50b/01-3-sea-urchin sea-urchin --mode pen --title "SEA URCHIN" --sub "Marine life · Seen from above"

@@ -7,7 +7,7 @@ import { topFraction } from "@/lib/match";
 import { makeScorer } from "@/lib/recommendation";
 import type { ShirtProduct, UserProfileVector } from "@/types/shirt";
 import { search } from "./engine";
-import type { SearchIndex } from "./format";
+import type { SearchIndex, SubjectChip } from "./format";
 import { labelCase } from "./labels";
 import { LEXICON } from "./lexicon";
 
@@ -19,26 +19,33 @@ export { readRecent, pushRecent, removeRecent } from "./recent";
 
 /** A SUBJECT chip needs at least this many designs behind it. */
 export const SUBJECT_MIN = 12;
-const subjects = new WeakMap<SearchIndex, { label: string; query: string; count: number }[]>();
+const subjects = new WeakMap<SearchIndex, SubjectChip[]>();
 
-/** Lexicon subjects that find enough designs in this catalog, as chips (they search as text). */
-export function subjectChips(index: SearchIndex, catalog: readonly ShirtProduct[] = SHIRTS) {
+/**
+ * Lexicon subjects that find enough designs in this catalog, as chips (they search as text). The shop's are in the
+ * index file (scripts/tools/searchIndex.ts works them out with computeSubjects); worked out here only for another catalog.
+ */
+export function subjectChips(index: SearchIndex, catalog: readonly ShirtProduct[] = SHIRTS): SubjectChip[] {
+  if (catalog === SHIRTS && index.file.subjects) return index.file.subjects;
   let list = subjects.get(index);
-  if (!list) {
-    const seen = new Set<string>();
-    list = [];
-    for (const e of LEXICON) {
-      if (!e.expand || e.facet) continue;
-      const phrase = e.phrases[0];
-      const r = search(index, catalog, { query: `${phrase} `, facets: [] });
-      // A chip only for a subject the words really find: not a relaxed fallback, not most of the catalogue.
-      const count = !r.relaxed && r.mode === "text" && r.total <= 0.4 * catalog.length ? r.total : 0;
-      if (count >= SUBJECT_MIN && !seen.has(phrase)) {
-        seen.add(phrase);
-        list.push({ label: labelCase(phrase), query: phrase, count });
-      }
+  if (!list) subjects.set(index, (list = computeSubjects(index, catalog)));
+  return list;
+}
+
+/** One full search per lexicon subject: the work behind the chips. */
+export function computeSubjects(index: SearchIndex, catalog: readonly ShirtProduct[]): SubjectChip[] {
+  const seen = new Set<string>();
+  const list: SubjectChip[] = [];
+  for (const e of LEXICON) {
+    if (!e.expand || e.facet) continue;
+    const phrase = e.phrases[0];
+    const r = search(index, catalog, { query: `${phrase} `, facets: [] });
+    // A chip only for a subject the words really find: not a relaxed fallback, not most of the catalogue.
+    const count = !r.relaxed && r.mode === "text" && r.total <= 0.4 * catalog.length ? r.total : 0;
+    if (count >= SUBJECT_MIN && !seen.has(phrase)) {
+      seen.add(phrase);
+      list.push({ label: labelCase(phrase), query: phrase, count });
     }
-    subjects.set(index, list);
   }
   return list;
 }

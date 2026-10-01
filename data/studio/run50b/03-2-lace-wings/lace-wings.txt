@@ -1,0 +1,10 @@
+Title: Lace Wings
+Category: Botanical & Nature
+Subject: A winged insect with four clear lace-veined wings open, seen from directly above
+Style: Fine pen line, a dense net of veins in clear wings
+Medium: Drawn (illustration)
+Description: A slender winged insect seen from above, four broad clear wings ruled into a fine lace of veins around a long segmented body. All that net and still nothing to catch.
+Tee colours: Black and white (lace-wings.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 28.1 cm (heading included)
+Keywords: lace wings, insect, wings, veins, lacewing, natural history, symmetry, entomology, nature
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

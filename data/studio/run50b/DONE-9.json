@@ -1,0 +1,76 @@
+{
+ "helper": 9,
+ "branch": "studio/run50b-9",
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "total-solar-eclipse",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9103 (4th of 4)",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.2426
+   },
+   "note": "Black disc with radiating corona; dark square sky faded out to paper; white tee only (corona a bright continuous ring on black)."
+  },
+  {
+   "slot": 2,
+   "slug": "meteor-shower",
+   "passed": true,
+   "which": "backup",
+   "images": 5,
+   "chosen": "s9250 (backup, 1st)",
+   "mode": "tone --edge horizon",
+   "ink_coverage": {
+    "white": 0.2296
+   },
+   "note": "No comet in any of the 4 mains; backup started late (my queue watcher matched itself), stopped at minute 84 with 1 image; white tee only (horizon glow a bright band on black)."
+  },
+  {
+   "slot": 3,
+   "slug": "lightning-storm",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9303 (4th of 4)",
+   "mode": "tone --edge horizon",
+   "ink_coverage": {
+    "white": 0.29
+   },
+   "note": "Forked bolt under heavy cloud over a plain; mild levels 0.10-0.90 (0.25-0.62 lost the bolt); white tee only (lit mid-sky bright on black)."
+  },
+  {
+   "slot": 4,
+   "slug": "rocky-planet",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9401 (2nd of 4)",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.162
+   },
+   "note": "Main MARS retitled ROCKY PLANET (truth rule: no polar cap or canyon); masked to the Hough-fitted sphere; white tee only (lit side a blank egg on black)."
+  },
+  {
+   "slot": 5,
+   "slug": "desert-rose-crystal",
+   "passed": false,
+   "which": "main",
+   "images": 4,
+   "chosen": null,
+   "mode": "line",
+   "ink_coverage": null,
+   "note": "All 4 drew paper flowers or succulents with soft petals, not gypsum blades; no time for the PYRITE CUBES backup before minute 85."
+  }
+ ],
+ "minutes": {
+  "install": 5,
+  "generate": 73,
+  "process": 25,
+  "total_elapsed": 85
+ },
+ "note": "20 main images (15:59-17:11) plus 1 backup image (meteor shower s9250); the backup run was stopped at minute 84. 4 of 5 slots passed, all delivered white tee only. run50b-9.py holds a backup prompt only for slot 2."
+}

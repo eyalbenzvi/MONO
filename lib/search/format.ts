@@ -37,6 +37,18 @@ export interface SearchIndexFile {
   tables: { style: TableEntry[]; source: TableEntry[]; artist: TableEntry[]; era: TableEntry[]; look: TableEntry[]; variant: TableEntry[]; category: TableEntry[]; medium: TableEntry[] };
   /** Quantized visual measures, 5 characters per design (symmetry, detail, coverage, extent, aspect), and a 64-bit dHash, 16 hex each. */
   visual: { m: string; h: string };
+  /**
+   * The SUBJECT chips (lib/search/runtime, subjectChips), worked out when the index is built: each takes a full
+   * search, dozens of them, which in the browser froze the opening of search for a moment that grew with the catalogue.
+   */
+  subjects?: SubjectChip[];
+}
+
+/** A lexicon subject that finds enough designs: a chip that searches as text. */
+export interface SubjectChip {
+  label: string;
+  query: string;
+  count: number;
 }
 
 /** 64 levels per character (the visual measures). */

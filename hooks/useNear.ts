@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 
 /** How far ahead of the visible area a picture starts loading (px): about two phone screens. */
 export const NEAR_PX = 1600;
@@ -66,6 +66,19 @@ export function useNear(ref: RefObject<Element>, on = true, margin = NEAR_PX): b
   const [near, setNear] = useState(() => !on || !hydrated);
   useEffect(() => {
     hydrated = true;
+  }, []);
+  // Already within reach when it mounts (a page opened in the app, the next page of a grid): its picture
+  // starts in this same frame, before paint. Left to the observer, whose first report comes a frame or
+  // more later, the card was drawn empty first, and a phone showed its broken-image outline meanwhile.
+  useLayoutEffect(() => {
+    if (near) return;
+    const el = ref.current;
+    if (!el) return;
+    const root = scrollRootOf(el);
+    const view = root ? root.getBoundingClientRect() : { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
+    const r = el.getBoundingClientRect();
+    if (r.bottom >= view.top - margin && r.top <= view.bottom + margin && r.right >= view.left - margin && r.left <= view.right + margin) setNear(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
   }, []);
   useEffect(() => {
     if (near) return;

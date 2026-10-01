@@ -18,6 +18,9 @@ import { gzipSync } from "node:zlib";
 import sharp from "sharp";
 import { rasterInk, svgInk, type InkRaster } from "../gen/quality";
 import { buildSearchIndex, type SearchEntry, type VisualMetrics } from "../../lib/search/build";
+import { decodeIndex } from "../../lib/search/format";
+import { computeSubjects } from "../../lib/search/runtime";
+import { SHIRTS } from "../../lib/catalog";
 
 const ROOT = path.resolve(__dirname, "../..");
 const CATALOG = path.join(ROOT, "data", "shirts.json");
@@ -115,6 +118,10 @@ async function main() {
   writeFileSync(CACHE, `${JSON.stringify({ recipe: RECIPE, entries }, null, 0).replace(/},"/g, '},\n"')}\n`);
 
   const { file, warnings } = buildSearchIndex(catalog, visual);
+  // The SUBJECT chips, against the catalogue as the shop decodes it (lib/catalog): worked out here, once, not in every browser.
+  const index = decodeIndex(file, SHIRTS.map((s) => s.id));
+  if (!index) throw new Error("search: the index doesn't match the shop's catalogue (run publishIndex first)");
+  file.subjects = computeSubjects(index, SHIRTS);
   const json = JSON.stringify(file);
   const gz = gzipSync(json, { level: 9 }).length;
   const name = `search.${createHash("sha256").update(json).digest("hex").slice(0, 10)}.json`;

@@ -1,0 +1,13 @@
+Prompt: One ammonite fossil, spiral shell, side view. A single round coiled shell, thick ribs radiating across every whorl, the spiral winding in to a small centre, the outer whorl whole and unbroken, no rock, no tentacles. Fine black ink line drawing in the style of a natural history plate, clean outlines and engraved hatching between the ribs. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1100-1103 (four, main); chosen 1101 (the second)
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why 1101: 1100 is a grey photo-like disc inside a hatched ring that reads as a frame, filling the page; 1102 a flat swirl of wavy ribs with no coil or centre; 1103 a wrinkled bowl with a rim, no shell. 1101 is the only one with a clear inner coil, ribbed whorls and a whole rounded outline, centred with white margins.
+The coil reads as rings more than a true ammonite spiral, so the title is COILED FOSSIL, not AMMONITE.
+One ink: line mode screened the pale ribs into blotchy grey patches; pen mode keeps them as engraved lines.
+python3 scripts/studio/oneink.py <image> data/studio/run50b/01-1-coiled-fossil coiled-fossil --mode pen --title "COILED FOSSIL" --sub "Science · Fossil plate"

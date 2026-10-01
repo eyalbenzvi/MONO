@@ -1,0 +1,13 @@
+Prompt: One moon snail shell, side view, round. A single smooth globe-shaped sea snail shell, a low spire of three whorls on top, a wide rounded opening at the bottom, fine growth lines and a gentle spiral texture across the surface, no animal, no sand. Fine black ink line drawing in the style of a natural history plate, clean outlines and delicate hatching for shading. Even flat light, crisp contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seeds: 1200-1203 (four, main); chosen 1201 (the second)
+Size: 960x1088
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why 1201: 1200 is a ribbed ball with a spiral centre and a cast shadow that printed as a wide ground band (tried in pen; it read as a pumpkin); 1202 a smooth grey pebble with a dimple, no coil; 1203 a melted bean shape. 1201 is the only clear coiled shell: a round body whorl curling in to a small spire, fine growth marks, whole, centred, white margins.
+The paper is pale grey in the source; oneink's paper levelling dropped it cleanly. The shell is round and coiled but not clearly a moon snail (no glossy smooth surface, no umbilicus), so the title is SEA SNAIL SHELL, not MOON SNAIL.
+One ink: pen mode keeps the growth marks as fine lines (pen chosen as for slot 1).
+python3 scripts/studio/oneink.py <image> data/studio/run50b/01-2-sea-snail-shell sea-snail-shell --mode pen --title "SEA SNAIL SHELL" --sub "Marine life · Natural history plate"

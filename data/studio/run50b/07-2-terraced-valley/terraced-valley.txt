@@ -1,0 +1,10 @@
+Title: Terraced Valley
+Category: Botanical & Nature
+Subject: Terraced fields
+Style: Halftone engraving
+Medium: Drawn (illustration)
+Description: A long valley of stepped, contoured fields runs back to a small village and a line of bare mountains, with tall grass in the foreground. Someone has gone to a great deal of trouble to make a hillside flat in instalments.
+Tee colours: Both
+Print size: 22.8 × 35.3 cm (white tee); 22.8 × 35.3 cm (black tee)
+Keywords: terraced valley, terraces, fields, farmland, hills, valley, worked land, landscape, engraving, halftone
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

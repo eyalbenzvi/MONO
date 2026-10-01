@@ -97,12 +97,14 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
     );
   return (
     <div ref={frame} className={`relative select-none overflow-hidden ${className}`} style={{ aspectRatio: `${MODEL_ASPECT}`, ...style }} role="img" aria-label={label}>
-      <img
+      {/* Not drawn until it has a file to show: an <img> with no source is a broken-image outline on some phones. */}
+      {near && (
+        <img
         key={attempt}
         ref={img}
         onError={() => setFailed(true)}
-        src={near ? src : undefined}
-        srcSet={near ? srcSet : undefined}
+        src={src}
+        srcSet={srcSet}
         sizes={sizes}
         alt=""
         draggable={false}
@@ -111,7 +113,8 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
         {...{ fetchpriority: priority ? "high" : "auto" }}
         className="pointer-events-none absolute inset-0 h-full w-full"
         data-mockup
-      />
+        />
+      )}
       {page > 1 && <Sharper key={page} srcSet={srcSet} sizes={sizes} factor={page} />}
       {zoomed && box && <Detail src={assetUrl(detailPath(shirt, color))} box={box} />}
     </div>

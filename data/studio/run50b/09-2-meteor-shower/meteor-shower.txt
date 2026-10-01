@@ -1,0 +1,10 @@
+Title: Meteor Shower
+Category: Maps & Sky
+Subject: A meteor shower over rolling hills: many shooting stars streaking across the night sky above a valley and dark fir trees
+Style: Tonal engraving-style plate in a clustered-dot screen
+Medium: Drawn (illustration)
+Description: Shooting stars streak across the night sky above rolling hills and a few dark firs. Mostly grains of dust burning up, which is more of an entrance than most of us manage.
+Tee colours: White
+Print size: 20.7 × 35.3 cm
+Keywords: meteor shower, shooting stars, night sky, meteors, hills, astronomy, stars, landscape
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

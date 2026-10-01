@@ -1,0 +1,10 @@
+Title: Total Solar Eclipse
+Category: Maps & Sky
+Subject: A total solar eclipse: the moon's black disc with the sun's corona streaming out round it in fine rays
+Style: Tonal engraving-style plate in a clustered-dot screen
+Medium: Drawn (illustration)
+Description: The moon covering the sun exactly, with the corona fanning out in fine rays round the black disc. A coincidence of size and distance that only works for now, so best enjoyed while it lasts.
+Tee colours: White
+Print size: 26.0 × 28.4 cm
+Keywords: solar eclipse, total eclipse, corona, sun, moon, astronomy, sky, space
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

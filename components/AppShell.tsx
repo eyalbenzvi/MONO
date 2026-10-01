@@ -13,7 +13,7 @@ import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
 import { syncFromStorage } from "@/store/sync";
 import { decodeTaste } from "@/lib/taste";
-import { catalogReady, isCatalogFailed, isCatalogReady } from "@/lib/catalog";
+import { assetUrl, catalogReady, isCatalogFailed, isCatalogReady } from "@/lib/catalog";
 import { updateQuery } from "@/lib/url";
 import { whenIdle } from "@/lib/preload";
 import { captureLanding, track } from "@/lib/analytics";
@@ -70,6 +70,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // One page_view per page, client-side navigations included.
   useEffect(() => track("page_view", { page_path: pathname }), [pathname]);
+  // Pictures kept on the device (public/sw.js): GitHub Pages lets a browser keep them ten minutes, and every deploy starts them over.
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
+    whenIdle(() => void navigator.serviceWorker.register(assetUrl("/sw.js"), { scope: assetUrl("/") }).catch(() => {}));
+  }, []);
 
   // The share sheet's code, fetched while idle: the first Share opens at once, and the page's first load doesn't carry it.
   useEffect(() => (hydrated ? whenIdle(() => void import("@/components/ShareSheet").catch(() => {})) : undefined), [hydrated]);

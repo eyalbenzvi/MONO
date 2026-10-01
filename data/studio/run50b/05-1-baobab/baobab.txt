@@ -1,0 +1,10 @@
+Title: Baobab
+Category: Botanical & Nature
+Subject: A single old baobab tree drawn whole, a tall thick trunk with knotholes and furrowed bark, short crooked branches with tufted foliage, standing on a small patch of ground
+Style: Natural history plate, engraving-style pen work
+Medium: Drawn (illustration)
+Description: One baobab stands on its own scrap of ground, its great knotted trunk carrying a crown of short crooked branches. It has been there long enough to have seen most things twice.
+Tee colours: Black, White
+Print size: 22.0 × 34.9 cm
+Keywords: baobab, tree, ancient tree, africa, botanical, natural history, bark, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

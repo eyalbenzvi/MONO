@@ -296,9 +296,11 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       const bare = w.length > 4 && w.endsWith("e") ? [w.slice(0, -1)] : [];
       // A typo inside an -ing ending ("lookxng", "fishixg", "fishinx", a swap: "clearign", "sailnig"): the word before it, when the catalogue has it as it is.
       // Or the stem's last letter swapped with the ending's "i" ("shipipng": shipping).
+      // Or the second of a doubled consonant mistyped ("netxing": netting).
       const ing =
         (/^[a-z]{3,}(?:.ng|i.g|in.|ign|nig)$/.test(w) ? index.termId.get(stem(w.slice(0, -3))) : undefined) ??
-        (/^[a-z]{3,}i[a-z]ng$/.test(w) ? index.termId.get(stem(`${w.slice(0, -4)}${w.at(-3)}ing`)) : undefined);
+        (/^[a-z]{3,}i[a-z]ng$/.test(w) ? index.termId.get(stem(`${w.slice(0, -4)}${w.at(-3)}ing`)) : undefined) ??
+        (/^[a-z]{2,}[b-df-hj-np-tv-z][a-z]ing$/.test(w) ? index.termId.get(stem(`${w.slice(0, -4)}${w.at(-5)}ing`)) : undefined);
       if (ing !== undefined) add(ing, WEIGHT.fuzzy1);
       const plural = w.length > 4 && w.endsWith("s") ? [w.slice(0, -1)] : [];
       const near = [t, w, ...bare, ...plural]

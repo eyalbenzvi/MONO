@@ -1,0 +1,10 @@
+Title: Rocky Planet
+Category: Maps & Sky
+Subject: One rocky planet, a single globe lit from the upper left, with craters and long rifts across its surface
+Style: Tonal engraving-style plate in a clustered-dot screen
+Medium: Drawn (illustration)
+Description: A rocky world lit from one side, its craters and long rifts catching the light before the globe turns into shadow. No atmosphere to speak of, and nobody to complain about it.
+Tee colours: White
+Print size: 25.9 × 28.2 cm
+Keywords: planet, rocky planet, globe, craters, astronomy, solar system, space, sky
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

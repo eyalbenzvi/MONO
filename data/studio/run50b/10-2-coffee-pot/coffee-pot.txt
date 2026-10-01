@@ -1,0 +1,10 @@
+Title: Coffee Pot
+Category: Photographs
+Subject: A round-bellied metal coffee pot in side view, a long swan-neck spout on the left, one looped handle on the right, a stepped lid with a small knob, on a flared foot
+Style: Line work with screened shading on the polished metal, white lines on the tee
+Medium: Drawn (illustration)
+Description: A plump metal coffee pot with a swan-neck spout and a lid like a little hat. It has poured a great many second cups and kept count of none of them.
+Tee colours: Black and white (coffee-pot.png prints white on black tees and black on white tees)
+Print size: 25.8 x 24.2 cm
+Keywords: coffee pot, coffee, kitchen, pot, metal, pewter, vintage, breakfast, objects
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

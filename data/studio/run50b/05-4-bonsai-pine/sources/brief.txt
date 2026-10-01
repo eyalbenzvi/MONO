@@ -1,0 +1,11 @@
+Prompt: One bonsai pine tree, whole, front view. A single small pine bonsai with a twisted trunk of scaly bark, a few flat pads of needles on curving branches, roots gripping a rock, no pot. Fine black ink line drawing in the manner of an old botanical engraving, clean contour lines, needles drawn in fine tufts, hatching on the bark. Soft light from the left. Centred, the whole tree with wide white margins, on a small mound of earth that breaks off into plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5400
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5400 of 5400-5403. A pine in bonsai style: a twisting trunk with deep furrows, flat layered pads of needles, roots gripping a rock, no pot, the whole tree inside the page. 5401 stands on a flat slab with a small stray plant beside it; 5402 and 5403 came out with green-tinted pads (colour), 5403's lower pads near the edges. Pen mode keeps the bark and needle lines.
+Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
+python3 scripts/studio/oneink.py K4-bonsai-pine-s5400.png data/studio/run50b/05-4-bonsai-pine bonsai-pine --mode pen --title "BONSAI PINE" --sub "Botanical · One tree"

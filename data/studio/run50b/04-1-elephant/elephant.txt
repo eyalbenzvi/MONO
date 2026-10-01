@@ -1,0 +1,10 @@
+Title: Elephant
+Category: Botanical & Nature
+Subject: An African elephant head, front view, ears spread, tusks and trunk hanging straight
+Style: Engraving-style line portrait, fine wrinkle lines and screened mid-tones
+Medium: Drawn (illustration)
+Description: An African elephant faces straight out with its ears fanned wide and its trunk hanging plumb. It is listening, and it will remember.
+Tee colours: Black and white (one file, elephant.png, prints on both)
+Print size: 25.9 x 28.0 cm
+Keywords: elephant, african elephant, animal portrait, head, wildlife, nature, ears, tusks, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

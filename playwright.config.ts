@@ -18,6 +18,9 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${PORT}${BASE_PATH}/`,
     trace: "retain-on-failure",
+    // The site's service worker (public/sw.js) answers picture requests from its cache, out of reach of page.route:
+    // the suites that stage a failed picture need it off. e2e/sw.spec.ts turns it on to test it.
+    serviceWorkers: "block",
   },
   projects: [
     // *.desktop.spec.ts run on a desktop (mouse, keyboard); the rest on a phone.

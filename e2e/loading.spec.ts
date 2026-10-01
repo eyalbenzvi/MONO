@@ -12,11 +12,19 @@ test("V3: switching categories never shows a tee without its print — one baked
   await page.goto("shop/");
   await hydrated(page);
   await pickCategories(page, ["Engravings"]);
-  // Sample the grid while it loads: a mockup is one picture — the print can't arrive apart from the tee.
+  // Sample the grid while it loads: a mockup is one picture — the print can't arrive apart from the tee. Every card on
+  // screen has its picture from the first frame; one further down has none until it comes within reach (hooks/useNear),
+  // never a second one.
   for (let i = 0; i < 12; i++) {
-    const counts = await page.locator('main [role="img"]').evaluateAll((els) => els.map((el) => el.querySelectorAll("img").length));
-    expect(counts.length).toBeGreaterThan(0);
-    expect(counts.every((n) => n === 1)).toBe(true);
+    const cards = await page.locator('main [role="img"]').evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { onScreen: r.bottom > 0 && r.top < innerHeight, imgs: el.querySelectorAll("img").length };
+      }),
+    );
+    expect(cards.filter((c) => c.onScreen).length).toBeGreaterThan(0);
+    expect(cards.filter((c) => c.onScreen).every((c) => c.imgs === 1)).toBe(true);
+    expect(cards.every((c) => c.imgs <= 1)).toBe(true);
     await page.waitForTimeout(60);
   }
   // The files are the baked ones, the size a grid card needs on this phone (390 px wide at 3×).

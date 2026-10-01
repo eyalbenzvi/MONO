@@ -219,14 +219,16 @@ export function SaveButton({ id, title, size = "sm", className = "" }: { id: str
   const saved = useTasteStore((s) => s.likedIds.includes(id)) && hydrated;
   const name = title ? ` ${title}` : "";
   return (
-    <motion.button
+    // A plain button, not a motion one: it sits on every shop card, and framer-motion's per-element
+    // measuring made each grid change (a search, a filter, the next page) cost a noticeable pause on a phone.
+    <button
       type="button"
-      whileTap={{ scale: 0.95 }}
-      animate={saved ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-      transition={{ duration: 0.15 }}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        // The little pop on saving (what the motion version animated), unless motion is reduced.
+        if (!saved && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+          e.currentTarget.animate?.([{ transform: "scale(1)" }, { transform: "scale(1.05)" }, { transform: "scale(1)" }], { duration: 150 });
         const { toggleSaved, restoreSaved } = useTasteStore.getState();
         const { showToast } = useUiStore.getState();
         toggleSaved(id);
@@ -238,12 +240,12 @@ export function SaveButton({ id, title, size = "sm", className = "" }: { id: str
       }}
       aria-pressed={saved}
       aria-label={saved ? `Remove${name} from Saved` : `Save${name}`}
-      className={`flex items-center justify-center transition-colors duration-150 ${size === "sm" ? "h-11 w-11" : "h-12 w-12 shrink-0 rounded-control ring-1 ring-inset ring-white/25"} ${
+      className={`flex items-center justify-center transition-[color,background-color,transform] duration-150 active:scale-95 motion-reduce:active:scale-100 ${size === "sm" ? "h-11 w-11" : "h-12 w-12 shrink-0 rounded-control ring-1 ring-inset ring-white/25"} ${
         saved ? (size === "sm" ? "text-white" : "bg-white text-black") : size === "sm" ? "text-white drop-shadow hover:text-neutral-200" : "text-white hover:bg-white/5"
       } ${className}`}
     >
       <Icon name="heart" className={`${size === "sm" ? "h-5 w-5" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
-    </motion.button>
+    </button>
   );
 }
 

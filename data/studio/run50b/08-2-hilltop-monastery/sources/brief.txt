@@ -1,0 +1,10 @@
+Slot 2 (main): HILLTOP MONASTERY — Architecture · High places
+Ending: --edge arch (chosen before the prompt: a tall scene, a building high on a crag).
+Prompt (main, 89 words): One old hilltop monastery on a rocky crag, front view. Weathered stone walls, a small bell tower and tiled roofs clustered on top of a steep rock, a winding stair path, a few cypress trees, no people. Fine black ink etching with soft hatched tones and detailed texture on the rock, stone and roof tiles. Soft morning light from the right. A tall scene under a round-topped window, the monastery and crag whole in the middle. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+Seeds: 8200-8203. Size: 832x1216
+Model: Segmind SSD-1B with the LCM LoRA for SSD-1B, 8 steps (scripts/studio/generate.py --jobs --lcm --steps 8), CPU
+Pre-process: levels stretch 0.10-0.72 (clears the hazy mountains' sandy dots; 0.10-0.80 left them)
+One ink: scripts/studio/oneink.py K2-hilltop-monastery-s8202-lev.png data/studio/run50b/08-2-hilltop-monastery hilltop-monastery --mode tone --edge arch --title "HILLTOP MONASTERY" --sub "Architecture · High places"
+Chosen: seed 8202, the third of four. The one whose building sits on top of the crag with open sky above it, which suits the arch; a bell tower, a rounded apse and cross finials make it read as a church house rather than a castle. 8200 and 8203 are turreted castles filling the page; 8201 a tall stone house in a gorge, the top cramped.
+Tee: white only — on the black tee the sky inside the arch becomes a bright continuous halo. fails [] on both files.

@@ -1,0 +1,17 @@
+{
+ "helper": 6,
+ "branch": "studio/run50b-6",
+ "slots": [
+  {"slot": 1, "slug": "king-protea", "passed": true, "which": "main", "images": 2, "chosen": "s6100", "mode": "pen", "ink_coverage": 0.1663,
+   "note": "Reads as a king protea, whole in the page; 6101 artichoke-like and cropped. Line blotched the pale bracts, pen clean. 6102-6103 dropped to save time"},
+  {"slot": 2, "slug": "flowering-stem", "passed": true, "which": "main", "images": 3, "chosen": "s6202", "mode": "pen", "ink_coverage": 0.1132,
+   "note": "No image looked clearly like an orchid (no lip), so the general name FLOWERING STEM. 6202 finely ruled petals, pen keeps the ruling. 6203 dropped"},
+  {"slot": 3, "slug": "grass-plume", "passed": true, "which": "main", "images": 6, "chosen": "s6300", "mode": "line", "ink_coverage": 0.0847,
+   "note": "Wheat (6300-6302) and barley backup (6350-6352) all gave feathery grass plumes with no grain (6352 also a fake signature), so a general name GRASS PLUME. 6303 dropped; 6353 would start after minute 85"},
+  {"slot": 4, "slug": "cherry-branch", "passed": true, "which": "main", "images": 3, "chosen": "s6402", "mode": "tone", "ink_coverage": {"white": 0.1867},
+   "note": "Model drew cherries, not coffee (serrated leaves, fruit on long stalks), so CHERRY BRANCH. Line/pen made blotchy fruit; tone good. Black-tee file was wide continuous light leaves, so white tee only. Cocoa backup prompt written, not run"},
+  {"slot": 5, "slug": "lavender", "passed": true, "which": "backup", "images": 4, "chosen": "s6550", "mode": "line", "ink_coverage": 0.11,
+   "note": "Hop main (6500-6501) drew dahlia-like flowers and leaf masses, no cones; 6502-6503 dropped so the backup ran before minute 85 (one queue, not parallel). 6550 plainly lavender; 6551 crowded centre"}
+ ],
+ "minutes": {"install": 2, "generate": 81, "process": 20, "total": 84, "note": "start 15:54, generation 15:56-17:17, processing ran while generation continued; restarts of the queue to drop seeds after a pass"}
+}

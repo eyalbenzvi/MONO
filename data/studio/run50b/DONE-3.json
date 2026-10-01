@@ -1,0 +1,11 @@
+{
+ "helper": 3,
+ "slots": [
+  {"slot": 1, "slug": "banded-moth", "passed": true, "which": "main", "images": 4, "chosen": 3102, "mode": "line", "ink_coverage": 0.1216, "note": "Emperor moth asked; no eyespots came through, so titled Banded Moth."},
+  {"slot": 2, "slug": "lace-wings", "passed": true, "which": "backup", "images": 8, "chosen": 3251, "mode": "pen", "ink_coverage": 0.0991, "note": "All four cicadas rejected (grub bodies, wrong legs); lacewing backup has a fine vein net but butterfly-shaped wings, so titled Lace Wings."},
+  {"slot": 3, "slug": "butterfly", "passed": true, "which": "main", "images": 4, "chosen": 3301, "mode": "line", "ink_coverage": 0.1016, "note": "Morpho asked; clean veins and scalloped border but no morpho markings, so titled Butterfly."},
+  {"slot": 4, "slug": "spotted-beetle", "passed": true, "which": "main", "images": 4, "chosen": 3401, "mode": "line", "ink_coverage": 0.1684, "note": "Ladybird asked; far too many spots, so titled Spotted Beetle; the only seed with head, antennae and legs."},
+  {"slot": 5, "slug": "spider-web", "passed": true, "which": "main", "images": 4, "chosen": 3502, "mode": "pen", "ink_coverage": 0.0562, "note": "Clean complete orb web on one thread; the dew drops did not come through, so the title does not claim them."}
+ ],
+ "minutes": {"install": 1, "generate": 73, "process": 14}
+}

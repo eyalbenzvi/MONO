@@ -1,0 +1,90 @@
+{
+ "helper": 8,
+ "branch": "studio/run50b-8",
+ "started": "2026-10-01T15:54:21Z",
+ "finished": "2026-10-01T17:28:00Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "windmill",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-windmill-s8103.png",
+   "mode": "tone --edge horizon",
+   "tee": "white",
+   "ink_coverage": {
+    "black": 0.2426,
+    "white": 0.1712
+   },
+   "note": "The only seed that reads as a windmill (three long sails, whole mill); 8100 stub sails, 8101-8102 sailless towers. Levels 0.10-0.80. White tee only (bright sky halo on black). fails [], 21.7 x 35.3 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "hilltop-monastery",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-hilltop-monastery-s8202.png",
+   "mode": "tone --edge arch",
+   "tee": "white",
+   "ink_coverage": {
+    "black": 0.2339,
+    "white": 0.1539
+   },
+   "note": "Bell tower and apse on a crag with open sky, suits the arch; 8200/8203 turreted castles, 8201 cramped. Levels 0.10-0.72. White tee only. fails [], 22.7 x 35.3 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "stone-cottage",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "K3-stone-cottage-s8301.png",
+   "mode": "tone --edge horizon",
+   "tee": "white",
+   "ink_coverage": {
+    "black": 0.2754,
+    "white": 0.213
+   },
+   "note": "Roughest fieldstone, two chimneys, whole and central; all three seen were sound; the fourth was lost when the generator was killed for memory. Levels 0.10-0.78. White tee only. fails [], 24.9 x 31.6 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "old-castle",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-castle-ruin-s8401.png",
+   "mode": "tone --edge horizon",
+   "tee": "white",
+   "ink_coverage": {
+    "black": 0.2424,
+    "white": 0.2006
+   },
+   "note": "Titled OLD CASTLE, not CASTLE RUIN (walls stand nearly whole; truth rule). The only seed with a castle under open sky; 8400/8403 framed arch views, 8402 cut. Left tower meets the image edge at its own corner. White tee only. fails [], 21.7 x 35.3 cm."
+  },
+  {
+   "slot": 5,
+   "slug": "mountain-hut",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K5-mountain-hut-s8501.png",
+   "mode": "tone --edge rect",
+   "tee": "white",
+   "ink_coverage": {
+    "black": 0.2948,
+    "white": 0.2223
+   },
+   "note": "Hut whole and central under peaks; a plank hut, not logs, and the text says so. 8500 cut and a signature scribble, 8502 hut small. White tee only. fails [], 22.7 x 35.3 cm."
+  }
+ ],
+ "minutes": {
+  "install": 2,
+  "generate": 71,
+  "process": 22,
+  "total": 94
+ },
+ "note": "All five mains passed; no backups needed. The first generate run failed on a missing output folder (10 min lost) and the second was killed out of memory while oneink ran beside it during a VAE decode (generator peaks ~13.7 GB), losing seed 8303 and 10 min; slots 4-5 were rerun. All five delivered for white tees only: each scene's black-tee version showed its sky or ground as a bright continuous area."
+}

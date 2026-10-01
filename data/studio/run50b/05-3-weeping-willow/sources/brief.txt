@@ -1,0 +1,11 @@
+Prompt: One weeping willow tree, whole, front view. A single willow with a stout trunk of ridged bark, long drooping branches hanging down like curtains of thin leaves almost to the ground, open gaps between the strands, one trunk only. Fine black ink line drawing in the manner of an old botanical engraving, clean flowing lines, each hanging strand drawn separately. Soft light from the left. Centred, the whole tree with wide white margins, standing on a small patch of grass that breaks off into plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 5303
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Chosen: seed 5303 of 5300-5303. A clear weeping willow: a straight ridged trunk, long hanging strands in two curtains with open gaps, roots on a small patch of grass, the whole tree inside the page. 5300's crown touches the left edge and its meadow runs off the page; 5301 and 5302 put the tree in a landscape with bushes and a horizon behind it, and 5301 has a grey border at its edges. Pen mode keeps the fine hanging strands.
+Ending: none (one object, not a scene): the tree stands on its own patch of ground, which breaks off into the paper.
+python3 scripts/studio/oneink.py K3-weeping-willow-s5303.png data/studio/run50b/05-3-weeping-willow weeping-willow --mode pen --title "WEEPING WILLOW" --sub "Botanical · One tree"

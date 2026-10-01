@@ -1,0 +1,10 @@
+Title: Gnarled Tree
+Category: Botanical & Nature
+Subject: A single old gnarled tree drawn whole, a twisted knotted trunk with hollows and furrowed bark, crooked branches carrying tufted foliage, roots spread on a small patch of ground
+Style: Natural history plate, engraving-style pen work
+Medium: Drawn (illustration)
+Description: One old tree twists up from a scrap of ground, its trunk knotted and hollowed by long years of weather. It has clearly given up on growing straight and is doing very well without it.
+Tee colours: Black, White
+Print size: 22.1 × 35.0 cm
+Keywords: gnarled tree, old tree, ancient tree, twisted trunk, bark, botanical, natural history, line art, tree
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

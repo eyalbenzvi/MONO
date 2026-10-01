@@ -1,0 +1,7 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 4201
+Size: 832x1216
+Prompt (main, 90 words): One horse head, front view, looking straight out. Head and neck only, two ears pricked up, a white blaze down the face, two eyes, two nostrils, symmetrical, forelock and mane. Fine black ink pen drawing, crisp contour lines and flowing strokes for the mane, short hatching on the coat, like a nature engraving. Even soft daylight from the front, clear shapes, white highlights on the coat. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+Chosen: seed 4201, from seeds 4200, 4201, 4202, 4203. All four are clean symmetrical pale horse heads; 4200, 4202 and 4203 run the neck and chest hard into the bottom edge; 4201 has the whole head, both ears and the mane inside the page, the neck fading out softly. (The prompt asked for a white blaze; the horse came out pale all over, so the title is just Horse.)
+oneink: --mode pen --title "HORSE" --sub "Nature · Portrait" (line emptied out the pale face; pen keeps the hair strokes and the face lines)

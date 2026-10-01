@@ -5,7 +5,10 @@ import { clean, stem, terms, words } from "@/lib/search/normalize";
 import { parseQuery } from "@/lib/search/parse";
 import { LABEL_WORDS, VARIANT_LABELS, humanizeId, labelCase, sourceOf, titleCase, typographic } from "@/lib/search/labels";
 import { LEXICON } from "@/lib/search/lexicon";
-import { subjectChips } from "@/lib/search/runtime";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import manifest from "@/data/search.manifest.json";
+import { computeSubjects, subjectChips } from "@/lib/search/runtime";
 import { realIndex } from "./searchFixture";
 
 describe("search: normalizing text (shared by the index and the query)", () => {
@@ -118,5 +121,13 @@ describe("search: label case", () => {
     expect(subjects).toEqual(expect.arrayContaining(["NASA", "New York", "New England"]));
     expect(file.tables.style.map((e) => e.label)).toEqual(expect.arrayContaining(["Line art", "ASCII art", "Star chart"]));
     expect(file.tables.variant.find((e) => e.id === "orbit-halley")?.label).toBe("Halley’s orbit");
+  });
+
+  it("the published index carries the SUBJECT chips, the same as working them out (so opening search runs no searches)", () => {
+    const published = JSON.parse(readFileSync(path.join(__dirname, "..", "public", "data", manifest.file), "utf8"));
+    const { index } = realIndex();
+    expect(published.subjects?.length).toBeGreaterThan(0);
+    expect(published.subjects).toEqual(computeSubjects(index, SHIRTS));
+    expect(subjectChips({ ...index, file: { ...index.file, subjects: published.subjects } }, SHIRTS)).toBe(published.subjects);
   });
 });

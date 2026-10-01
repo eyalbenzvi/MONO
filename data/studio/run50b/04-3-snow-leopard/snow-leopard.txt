@@ -1,0 +1,10 @@
+Title: Snow Leopard
+Category: Botanical & Nature
+Subject: A snow leopard head and ruff, front view, pale eyes, spotted fur and whiskers
+Style: Pen portrait, fine fur strokes, clear rosette spots and screened mid-tones
+Medium: Drawn (illustration)
+Description: A snow leopard looks straight out with pale eyes, its spotted ruff full and its whiskers spread. It has been sitting on that ridge for some hours and sees no reason to move.
+Tee colours: Black and white (one file, snow-leopard.png, prints on both)
+Print size: 24.2 x 35.0 cm
+Keywords: snow leopard, big cat, animal portrait, head, wildlife, nature, spots, fur, pen drawing
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
