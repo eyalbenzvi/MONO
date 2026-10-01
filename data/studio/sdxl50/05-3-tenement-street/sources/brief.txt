@@ -1,0 +1,13 @@
+Prompt: Dense Hong Kong tenement street, front view, a pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Tall old apartment blocks crowded edge to edge, rows of balconies with laundry, air conditioners, plants in pots, blank hanging signboards, tangled wires. Fine black ink lines and delicate hatching, every window drawn. The ground ends in a clean straight line, empty white sky above.
+
+Seed: 30530
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, scripts/studio/generate_sdxl.py
+
+Chosen: seed 30530 (see the note on the other seeds below). A dense street of tall tenement blocks, balconies, windows, awnings and crowds, drawn edge to edge on white paper with no frame and no text.
+Title: nothing in the drawing is plainly Hong Kong (no laundry poles, no air-conditioner boxes, a European-looking balcony street), so it is titled TENEMENT STREET by the truth rule, not HONG KONG TENEMENTS.
+Clean-up: the valance of the big awning at the bottom left carried a strip of small pseudo-lettering; it was painted to paper and its lower edge redrawn as a plain line (K3-s30530-clean.png). Then a levels stretch (black 40, white 185 of 255) to lift the light grey wall shading to paper, so it does not print as a mottled screen.
+Ending: horizon (C family): the street is cut at the bottom in a straight line with a thin rule; the sky between the blocks is left as tee.
+Tee: white only. On a black tee the line work turns into a busy light mass, so it is delivered for white.
+python3 scripts/studio/oneink.py K3-s30530-clean.png data/studio/sdxl50/05-3-tenement-street tenement-street --mode line --edge horizon --title "TENEMENT STREET" --sub "Places · Street"
+(pen mode failed: 1.1% of the ink thinner than 0.4 mm.)
