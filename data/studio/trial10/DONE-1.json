@@ -1,0 +1,15 @@
+{
+ "helper": 1,
+ "branch": "studio/trial10-1",
+ "started": "2026-10-01T10:47:07Z",
+ "finished": "2026-10-01T11:13:00Z",
+ "designs": [
+  {"nn": "01", "slug": "blue-whale", "passed": false, "backup": false, "attempts": 3, "mode": "line", "ink_coverage": null,
+   "note": "All three rejected before one ink: 1 an eel-like curved body with no head; 2 three fused or duplicated bodies; 3 two headless blob shapes. SSD-1B could not draw a whale side view at 960x1088. Replaced by the backup."},
+  {"nn": "01", "slug": "jellyfish", "passed": true, "backup": true, "attempts": 3, "mode": "line", "ink_coverage": 0.1946,
+   "note": "1 a grey mass with faint tentacles that broke up in one ink; 2 usable but sandy, broken tentacles; 3 strong but the model drew a thin black border, cut off with --crop 40,40,792,1176 (clear of the animal), then levels stretched (0.35-0.92) before one ink. fails [], 20.0 x 35.0 cm."},
+  {"nn": "02", "slug": "sea-turtle", "passed": true, "backup": false, "attempts": 2, "mode": "line", "ink_coverage": 0.1451,
+   "note": "1 rejected: two heads and a circular frame. 2 one head, three-quarter view from above with two flippers showing; the shell's flat grey prints as a mottled screen, which reads as shell pattern. Pen failed thin lines (1.1%), and a levels lift lost the shell lines, so plain line was kept. fails [], 25.8 x 31.5 cm. No scientific name, as the species is not certain."}
+ ],
+ "minutes": {"install": 1.4, "generate": 21.8, "process": 6.0, "total": 26}
+}
