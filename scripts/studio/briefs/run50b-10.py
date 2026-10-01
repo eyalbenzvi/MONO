@@ -57,6 +57,15 @@ PROMPTS = {
             "subject with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One goose feather quill pen, standing upright, front view. One long white feather "
+            "with a full soft vane on both sides of a clear central shaft, every barb drawn, the "
+            "bare quill at the bottom cut to a sharp split nib, one quill only. No inkwell, no "
+            "hand, no paper, nothing else. Bold confident black pen and ink engraving lines with "
+            "fine hatching along every barb, crisp and high contrast. Centred, the whole subject "
+            "with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     5: {
         "main": (
