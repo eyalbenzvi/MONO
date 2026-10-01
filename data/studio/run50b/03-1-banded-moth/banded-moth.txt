@@ -1,0 +1,10 @@
+Title: Banded Moth
+Category: Botanical & Nature
+Subject: A moth with its four wings open, seen from directly above
+Style: Natural history plate, fine line with banded, scalloped wings
+Medium: Drawn (illustration)
+Description: A moth laid flat with its wings open, dark bands across every wing, scalloped hind edges and a furry striped body. It keeps night hours and will be wearing yours.
+Tee colours: Black and white (banded-moth.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 23.0 cm (heading included)
+Keywords: moth, insect, wings, night, natural history, symmetry, entomology, nature, lepidoptera
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
