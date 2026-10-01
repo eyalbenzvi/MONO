@@ -1,0 +1,10 @@
+Title: Hot Air Balloon
+Category: Engravings
+Subject: A hot air balloon in side elevation, seamed envelope, burner rings and rigging ropes down to a wicker basket
+Style: Technical elevation in fine ink line, after an engineer's drawing; one object, lots of air
+Medium: Drawn (illustration)
+Description: A hot air balloon drawn flat in side elevation, every gore seam and rigging rope running down to one small wicker basket. The engineering is mostly hot air, which is rather the point.
+Tee colours: White (one file, hot-air-balloon.png: black ink on white tees; also prints white on black tees)
+Print size: 16.3 x 34.9 cm (heading included)
+Keywords: hot air balloon, balloon, elevation, technical drawing, flight, aviation, line drawing, basket, sky
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -1,0 +1,10 @@
+Prompt: One hot air balloon, side elevation, technical drawing. One round balloon envelope with vertical gore seams, one small wicker basket hanging below on straight thin rigging ropes, a burner frame between them. Fine even black ink line, like an engineer's elevation drawing, thin construction lines. Flat even light, no shadows. A thin straight ground line below the basket, small faint tick marks in narrow columns at both sides. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seed: 22103
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 22103, the fourth of four (main). 22100 envelope stretched into a long cone, basket a narrow tube; 22101 good envelope but the basket became a stepped pedestal; 22102 drawn inside a ruled frame; 22103 round seamed envelope, burner rings, rigging ropes down to one wicker basket, whole and inside the page.
+Edge: none (an object, not a scene).
+One ink: scripts/studio/oneink.py --mode pen (brief said line; line screened the faint grey between the gores into stray dot patches, pen kept only the seams and ropes, as the brief allows: line <-> pen). fails: [].
