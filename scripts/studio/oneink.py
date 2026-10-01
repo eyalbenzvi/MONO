@@ -81,10 +81,10 @@ def crop_box(k):
 
 def fit(k, size):
     """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned.
-    A stack of layers is cropped by the first and placed the same."""
+    Each of a stack of layers (the two positives) is trimmed and placed on its own,
+    so each starts at the top: a pale sky is ink on a black tee and nothing on white."""
     if k.ndim == 3:
-        box = crop_box(np.maximum(k[0], k[1] * 0.999))
-        return np.stack([fit_one(l[box], size) for l in k])
+        return np.stack([fit_one(l[crop_box(l)], size) for l in k])
     return fit_one(k[crop_box(k)], size)
 
 
@@ -132,13 +132,11 @@ def hold_masses(tone):
 
 
 def to_ink(tone):
-    """Screen a tone map to 1-bit ink, then clean what won't print."""
-    t = hold_masses(tone)
+    """Screen a tone map to 1-bit ink, then clean what won't print. The whole picture is
+    held to MAX_MASS_TONE, so its darkest parts are an even open mesh (no solid slab, and
+    no seam where a capped mass meets an uncapped stroke)."""
+    t = np.minimum(tone, MAX_MASS_TONE)
     ink = (t > screen_map()).astype(np.uint8)
-    # Solid where the picture is a line (dark and narrow): keep it a line, not dots.
-    line = ((tone > 0.72)).astype(np.uint8)
-    ink = np.maximum(ink, line & (1 - cv2.dilate(cv2.erode(line, disc(2 * PX_MM)), disc(2 * PX_MM))))
-    ink = hold_slabs(ink)
     # Specks under 0.4 mm across go; gaps under 0.4 mm close up deliberately (they would anyway).
     r = 0.2 * PX_MM
     ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(r))
