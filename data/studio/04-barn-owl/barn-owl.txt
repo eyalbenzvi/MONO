@@ -1,0 +1,10 @@
+Title: Barn Owl
+Category: Botanical & Nature
+Subject: A barn owl (Tyto alba) perched on a bare branch, facing the viewer
+Style: Natural history portrait, fine stipple and screened tone
+Medium: Drawn (illustration)
+Description: A barn owl sits upright on a dead branch, its pale facial disc turned straight towards you. It has clearly already decided whether you are worth eating.
+Tee colours: Black and white (barn-owl-black.png for the black tee, barn-owl-white.png for the white tee)
+Print size: 22.1 x 35.0 cm on the white tee, 21.9 x 34.9 cm on the black tee (heading included)
+Keywords: barn owl, owl, bird of prey, nocturnal, wildlife, natural history, bird, hunter, branch
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
