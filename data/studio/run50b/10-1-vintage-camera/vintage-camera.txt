@@ -1,0 +1,10 @@
+Title: Vintage Camera
+Category: Photographs
+Subject: An old box camera seen from the front, with a ringed lens in the middle, a viewfinder hood on top and two winding knobs at its shoulders
+Style: Line work with fine screened texture on the body and rings round the lens, white lines on the tee
+Medium: Drawn (illustration)
+Description: A boxy old camera looks straight back at you over its one large lens. It has seen everything and kept all of it to itself.
+Tee colours: Black and white (vintage-camera.png prints white on black tees and black on white tees)
+Print size: 25.5 x 35.0 cm
+Keywords: camera, vintage camera, box camera, photography, lens, film, analogue, retro, objects
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
