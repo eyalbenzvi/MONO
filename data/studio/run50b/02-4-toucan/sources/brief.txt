@@ -1,0 +1,10 @@
+Prompt: One toucan, head and shoulders, side portrait. One bird only, one huge curved banana-shaped beak with a serrated edge and a dark tip, one round eye with bare skin around it, pale throat bib, dark glossy body feathers, the portrait ending softly at the chest. Clean confident black ink outlines, fine feather hatching on the dark body, bold smooth curves and a few shading lines on the beak. Light from the left, high contrast. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2402
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2402, the third of four (main). 2400 feet gripping nothing in mid-air and a signature mark; 2401 the body standing on the bottom edge, a stretched neck; 2403 the body cut at the right and bottom; 2402 the whole bird on a stump that fades out inside the page. The model gave the whole bird rather than head and shoulders.
+Clean-up: paper above 232 set to white (a faint lighter paper panel). The image is otherwise as generated.
+One ink: scripts/studio/oneink.py --mode tone (brief said line; line on the black tee turned the dark body into a pale mass and the pale throat dark, so tone, as the brief allows: line <-> tone). fails: [] on both files.
