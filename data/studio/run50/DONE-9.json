@@ -1,0 +1,82 @@
+{
+ "helper": 9,
+ "branch": "studio/run50-9",
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "full-moon",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9103 (4th of 4)",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.1684,
+    "black": 0.2062
+   },
+   "note": "One clean disc; black ground masked to paper; the others drew a moon inside a dotted disc or a pale blank one."
+  },
+  {
+   "slot": 2,
+   "slug": "jupiter",
+   "passed": true,
+   "which": "backup",
+   "images": 5,
+   "chosen": "s9250 (backup, 1st)",
+   "mode": "tone",
+   "ink_coverage": {
+    "white": 0.2086,
+    "black": 0.1653
+   },
+   "note": "All 4 Saturns were a small planet in a huge plain disc; backup stopped at minute 82 with 1 Jupiter, masked to the sphere."
+  },
+  {
+   "slot": 3,
+   "slug": "iceberg",
+   "passed": true,
+   "which": "backup",
+   "images": 5,
+   "chosen": "s9350 (backup, 1st)",
+   "mode": "tone --fade",
+   "ink_coverage": {
+    "white": 0.1809,
+    "black": 0.2545
+   },
+   "note": "Geysers read as mushroom clouds with a halo on the black tee; 1 iceberg made before the stop, soft fade glow on the black tee."
+  },
+  {
+   "slot": 4,
+   "slug": "quartz-crystal-cluster",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9402 (3rd of 4)",
+   "mode": "line",
+   "ink_coverage": {
+    "line": 0.2208
+   },
+   "note": "Model drew grey studio photos; ground cut away with GrabCut, levels stretched; line kept over tone (tone lost the dark crystal on black)."
+  },
+  {
+   "slot": 5,
+   "slug": "glacier",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "s9502 (3rd of 4)",
+   "mode": "tone --fade",
+   "ink_coverage": {
+    "white": 0.2541,
+    "black": 0.2141
+   },
+   "note": "Stylised layered ice valley; the clearest river of ice with crevasses."
+  }
+ ],
+ "minutes": {
+  "install": 1.4,
+  "generate": 81.5,
+  "process": 14,
+  "total_elapsed": 83
+ },
+ "note": "20 main images plus 2 backup images (iceberg s9350, Jupiter s9250); a third backup image was cut off when the run was stopped once all five slots had passed. run50-9.py holds backup prompts for slots 4 and 5 too, written in advance and never run."
+}
