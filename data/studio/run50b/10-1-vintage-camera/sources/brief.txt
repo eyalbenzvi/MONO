@@ -1,0 +1,6 @@
+Model: Segmind SSD-1B (Apache 2.0) + LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b), 8 steps, CPU
+Seed: 10103
+Size: 960x1088
+Chosen: image 4 of 4 (seeds 10100-10103), main. 10100 was a flat box with a faint smudge like lettering at the lower left and a long shadow; 10101 was good but its dark body and cast shadow printed as a heavy blob under the lens; 10102 left a stray strip of grey background at the right edge and a shadow slab. 10103 is a symmetrical box camera with knobs, a viewfinder hood and a ringed lens, no markings; cropped to the camera (170,160,770,905) to drop the cast shadow.
+Prompt: One vintage film camera, front view, alone. One round lens barrel in the centre with glass rings, a boxy body covered in worn textured leather, knobs and a viewfinder on top, scuffed metal edges, symmetrical, blank plain metal with no markings. No hands, no strap, no tripod, nothing else. Bold confident black pen and ink engraving lines with fine cross-hatching on the leather and metal, crisp and high contrast. Even bright light from the front. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+oneink: --mode line --crop 170,160,770,905 --title "VINTAGE CAMERA" --sub "Objects · Light tight"

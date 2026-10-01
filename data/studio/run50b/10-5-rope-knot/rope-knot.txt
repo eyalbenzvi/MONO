@@ -1,0 +1,10 @@
+Title: Rope Knot
+Category: Engravings
+Subject: A round ball of laid rope wound tight on itself, an eye spliced at the top and the tail of the rope hanging below
+Style: Engraving-style line work, every strand drawn along its twist, white lines on the tee
+Medium: Drawn (illustration)
+Description: A ball of three-strand rope worked tight on itself, hung from a small eye with its tail let go below. Somebody on watch had a great deal of time and rather a lot of rope.
+Tee colours: Black and white (rope-knot.png prints white on black tees and black on white tees)
+Print size: 16.6 x 35.0 cm
+Keywords: rope, knot, ropework, sailor, maritime, nautical, ship, engraving, hemp
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

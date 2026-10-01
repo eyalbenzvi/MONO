@@ -1,0 +1,10 @@
+Title: Aviator Goggles
+Category: Photographs
+Subject: A pair of old flying goggles seen from the front, two round rimmed lenses in a padded mask with a stud at the bridge, the strap looping round above and below
+Style: Line work with screened shading on the mask and lenses, white lines on the tee
+Medium: Drawn (illustration)
+Description: A pair of round flying goggles faces the front, strap looped about them as if just taken off. From some angles they look faintly amused, which is fair enough.
+Tee colours: Black and white (aviator-goggles.png prints white on black tees and black on white tees)
+Print size: 25.6 x 24.5 cm
+Keywords: goggles, aviator goggles, flying, pilot, motorcycle, open road, vintage, adventure, objects
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
