@@ -16,7 +16,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       # Anything that loads next.config.mjs on Actions (lint, build) must name
       # a public origin, or the config stops the run.
