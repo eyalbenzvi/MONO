@@ -1,0 +1,10 @@
+Title: Cherry Branch
+Category: Botanical
+Subject: A leafy branch with three dark cherries hanging on long stalks among serrated, veined leaves
+Style: Screened tonal drawing in one ink, like a hand-coloured plate printed in black
+Medium: Drawn (illustration)
+Description: Three ripe cherries hang on long stalks from a branch of serrated, veined leaves. The birds have not found them yet, which is the only reason this drawing exists.
+Tee colours: White (cherry-branch-white.png, printed in black ink)
+Print size: 22.3 x 35.0 cm
+Keywords: cherry, cherries, cherry branch, fruit, branch, leaves, botanical, natural history, orchard
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
