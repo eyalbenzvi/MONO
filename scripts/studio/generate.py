@@ -8,7 +8,7 @@ service): Segmind SSD-1B (Apache 2.0), optionally with the LCM LoRA
   python scripts/studio/generate.py --jobs <jobs.json> [--steps 22]   ([{"out", "seed", "prompt", "negative"?, "size"?}])
 
 The text encoders read 77 tokens at a time; a long prompt (a full brief of
-200 words or more) is encoded in 77-token chunks with Compel and read whole,
+200 words or more) is encoded in 77-token chunks and read whole,
 not cut off. A --jobs prompt is the whole prompt: no house style is put before it.
 
 The house style (docs/content/studio.md) is put before the subject, and the
@@ -16,7 +16,6 @@ negative prompt keeps out text, frames, colour and grey wash.
 """
 import json, sys, time
 import torch
-from compel import Compel, ReturnedEmbeddingsType
 from diffusers import StableDiffusionXLPipeline, LCMScheduler
 
 STYLES = {
@@ -36,6 +35,33 @@ NEGATIVE = (
     "text, letters, words, labels, caption, signature, watermark, logo, frame, border, "
     "colour, color, grey wash, gradient, blurry, photo, 3d render, low contrast, cropped, deformed"
 )
+
+
+def chunks(tok, text, n=None):
+    """Token ids in 77-token windows (start, 75 tokens, end, padding), at least n of them."""
+    ids = tok(text, add_special_tokens=False).input_ids
+    parts = [ids[i:i + 75] for i in range(0, len(ids), 75)] or [[]]
+    while n and len(parts) < n:
+        parts.append([])
+    pad = tok.pad_token_id if tok.pad_token_id is not None else tok.eos_token_id
+    return [[tok.bos_token_id] + p + [tok.eos_token_id] + [pad] * (75 - len(p)) for p in parts]
+
+
+def encode(pipe, text, n=None):
+    """SDXL conditioning for a long prompt: each window through both text encoders
+    (their penultimate layers, side by side), the windows end to end; the pooled
+    embedding from the first window."""
+    c1, c2 = chunks(pipe.tokenizer, text, n), chunks(pipe.tokenizer_2, text, n)
+    k = max(len(c1), len(c2))
+    c1, c2 = chunks(pipe.tokenizer, text, k), chunks(pipe.tokenizer_2, text, k)
+    embs, pooled = [], None
+    for a, b in zip(c1, c2):
+        h1 = pipe.text_encoder(torch.tensor([a]), output_hidden_states=True).hidden_states[-2]
+        o2 = pipe.text_encoder_2(torch.tensor([b]), output_hidden_states=True)
+        if pooled is None:
+            pooled = o2[0]
+        embs.append(torch.cat([h1, o2.hidden_states[-2]], dim=-1))
+    return torch.cat(embs, dim=1), pooled, k
 
 
 def main():
@@ -60,24 +86,17 @@ def main():
         jobs = [(o, int(s), style + subj, NEGATIVE, None) for o, s, subj in jobs]
     else:
         jobs = [(a[0], seed, style + a[1], NEGATIVE, None)]
-    compel = Compel(
-        tokenizer=[pipe.tokenizer, pipe.tokenizer_2],
-        text_encoder=[pipe.text_encoder, pipe.text_encoder_2],
-        returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
-        requires_pooled=[False, True],
-        truncate_long_prompts=False,
-    )
     for out, seed, prompt, negative, size in jobs:
         jw, jh = (int(v) for v in size.split("x")) if size else (w, h)
         t = time.time()
         with torch.no_grad():
-            cond, pooled = compel(prompt)
+            cond, pooled, k = encode(pipe, prompt)
             if lcm:
                 kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled)
             else:
-                # Both at once: Compel pads a batch to the same length.
-                both, bpooled = compel([prompt, negative])
-                cond, ncond, pooled, npooled = both[0:1], both[1:2], bpooled[0:1], bpooled[1:2]
+                ncond, npooled, nk = encode(pipe, negative, k)
+                if nk > k:
+                    cond, pooled, k = encode(pipe, prompt, nk)
                 kw = dict(prompt_embeds=cond, pooled_prompt_embeds=pooled, negative_prompt_embeds=ncond, negative_pooled_prompt_embeds=npooled)
         img = pipe(
             **kw,
