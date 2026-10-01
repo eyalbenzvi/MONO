@@ -27,5 +27,10 @@ PROMPTS = {
                 "a tall lever, portafilter, boiler dome and gauge without numbers, its parts exploded and laid round "
                 "it: portafilter, piston, spring, cup, and small circular detail roundels. Patent drawing style, crisp "
                 "white lines, centred with wide black margins.",
+        "backup": "One stovetop moka pot, side view, white chalk line drawing on a plain black background, no text, "
+                  "no lettering, no frame, no border, no colour. A single large eight-sided aluminium moka pot with "
+                  "its handle and hinged lid, and beside it its three parts pulled apart: the base boiler, the funnel "
+                  "filter basket and the top jug, plus small circular detail roundels of the valve and the filter. "
+                  "Patent drawing style, crisp white lines, centred with wide black margins.",
     },
 }
