@@ -156,14 +156,29 @@ const TABLE_SUGGESTIONS = 3;
  * many labels ("museum", "john") or common in the catalog names nothing.
  * Looks come from the lexicon only ("text" must not offer "No text").
  */
-function tableSuggestions(index: SearchIndex, ws: string[], prefix: string | null): Suggestion[] {
-  const said = new Set(ws.filter((w) => w.length >= 4 && !STOPWORDS.has(w)).map(stem));
+interface TableLabel {
+  kind: (typeof TABLE_KINDS)[number];
+  id: string;
+  label: string;
+  count: number;
+  /** Every word's stem (an artist named by two of their names). */
+  stems: string[];
+  /** The telling words, as written (an artist's surname typed in part) and stemmed. */
+  telling: string[];
+  tellingStems: string[];
+}
+
+/** The tables' labels, read once per index: what a query is checked against doesn't depend on the query. */
+const tableLabels = new WeakMap<SearchIndex, TableLabel[]>();
+function labelsOf(index: SearchIndex): TableLabel[] {
+  let list = tableLabels.get(index);
+  if (list) return list;
+  list = [];
   const common = (t: string) => (index.file.df[index.termId.get(stem(t)) ?? -1] ?? 0) > index.n * 0.2;
-  const out: (Suggestion & { count: number })[] = [];
+  const tokensOf = (label: string) => words(label).filter((t) => !STOPWORDS.has(t) && !PARTICLES.has(t));
   for (const kind of TABLE_KINDS) {
     if (kind === "look") continue;
     const entries = index.file.tables[kind].filter((e) => e.count > 0);
-    const tokensOf = (label: string) => words(label).filter((t) => !STOPWORDS.has(t) && !PARTICLES.has(t));
     const uses = new Map<string, number>();
     for (const e of entries) for (const t of new Set(tokensOf(kind === "era" ? eraLabel(e.id) : e.label))) uses.set(t, (uses.get(t) ?? 0) + 1);
     for (const e of entries) {
@@ -171,10 +186,20 @@ function tableSuggestions(index: SearchIndex, ws: string[], prefix: string | nul
       const all = tokensOf(label);
       // An artist by surname (or two of their names); anything else by a telling word of its label.
       const telling = (kind === "artist" ? all.slice(-1) : all).filter((t) => (uses.get(t) ?? 0) <= 2 && !common(t));
-      const two = kind === "artist" && all.filter((t) => said.has(stem(t))).length >= 2;
-      const typed = kind === "artist" && prefix !== null && prefix.length >= 4 && telling.some((t) => t.length > prefix.length && t.startsWith(prefix));
-      if (two || typed || telling.some((t) => said.has(stem(t)))) out.push({ facet: { kind, value: e.id }, label, kind: KIND_LABELS[kind], count: e.count });
+      list.push({ kind, id: e.id, label, count: e.count, stems: all.map(stem), telling, tellingStems: telling.map(stem) });
     }
+  }
+  tableLabels.set(index, list);
+  return list;
+}
+
+function tableSuggestions(index: SearchIndex, ws: string[], prefix: string | null): Suggestion[] {
+  const said = new Set(ws.filter((w) => w.length >= 4 && !STOPWORDS.has(w)).map(stem));
+  const out: (Suggestion & { count: number })[] = [];
+  for (const { kind, id, label, count, stems, telling, tellingStems } of labelsOf(index)) {
+    const two = kind === "artist" && stems.filter((t) => said.has(t)).length >= 2;
+    const typed = kind === "artist" && prefix !== null && prefix.length >= 4 && telling.some((t) => t.length > prefix.length && t.startsWith(prefix));
+    if (two || typed || tellingStems.some((t) => said.has(t))) out.push({ facet: { kind, value: id }, label, kind: KIND_LABELS[kind], count });
   }
   const seen = new Set<string>();
   return out
