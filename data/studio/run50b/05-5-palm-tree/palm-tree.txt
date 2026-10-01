@@ -1,0 +1,10 @@
+Title: Palm Tree
+Category: Botanical & Nature
+Subject: A single tall palm tree drawn whole, a slender straight trunk with fine ring lines, a full crown of long arching feathered fronds, standing on a small patch of sand
+Style: Natural history plate, engraving-style line work
+Medium: Drawn (illustration)
+Description: One palm stands tall on a scrap of sand, its long feathered fronds falling from a single crown. It has the composure of something that has never once had to rake leaves.
+Tee colours: Black, White
+Print size: 18.9 × 35.0 cm
+Keywords: palm tree, palm, tree, tropical, desert, oasis, botanical, natural history, line art, fronds
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
