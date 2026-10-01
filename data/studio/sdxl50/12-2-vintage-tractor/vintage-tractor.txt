@@ -1,0 +1,10 @@
+Title: Vintage Tractor
+Category: Engravings
+Subject: An old farm tractor in side elevation: big ribbed rear wheel, small spoked front wheel, bonnet, grille, exhaust stack and steering wheel
+Style: Technical side elevation, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A mid-century farm tractor drawn in clean side view, from its slatted grille to its deep-treaded rear tyre. It has one speed, which is slower than the car behind it.
+Tee colours: White, Black
+Print size: 26.0 × 17.3 cm
+Keywords: tractor, vintage tractor, farm, farming, machine, agriculture, side elevation, technical drawing, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
