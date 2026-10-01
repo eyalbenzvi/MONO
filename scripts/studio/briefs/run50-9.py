@@ -18,6 +18,14 @@ PROMPTS = {
             "Centred, the whole subject with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+        "backup": (
+            "One planet Jupiter, a single sphere, front view, the whole round planet small in the middle of the page. "
+            "Horizontal cloud bands across the sphere, dark belts and pale zones, the Great Red Spot as one oval storm below the middle. "
+            "Fine black ink engraving, the bands in parallel wavy lines and stippling, swirls at the edges of the belts. "
+            "Light from the left, the right side of the sphere in shadow. "
+            "Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     3: {
         "main": (
@@ -26,6 +34,14 @@ PROMPTS = {
             "Black ink engraving, stippled steam, fine hatching on the rocks and the flat ground. "
             "Bright midday light, the plume white against a pale sky. "
             "The plume in the centre, tall and vertical, the scene fades softly into white paper at every edge. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
+            "backup": (
+            "One iceberg floating in calm sea, front view, a single tall white mass of ice with jagged peaks and sheer cliffs. "
+            "One iceberg only, its reflection below in still water, a low horizon. "
+            "Black ink engraving, fine hatching in the shadowed faces of the ice, long horizontal lines on the water. "
+            "Soft polar light from the left, bright ice faces against darker shadowed faces. "
+            "The iceberg in the centre, the scene fades softly into white paper at every edge. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
     },
@@ -38,6 +54,14 @@ PROMPTS = {
             "Centred, the whole subject with wide white margins, plain white paper. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
+            "backup": (
+            "One amethyst geode cut in half, front view, the open half showing its hollow inside lined with pointed crystals. "
+            "A rough rounded stone shell outside, a thin band of agate layers, then dense crystal points all facing the hollow centre. "
+            "Bold clean black ink outlines, fine hatching on the crystal facets, a natural history mineral plate. "
+            "Light from the upper left. "
+            "Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
     },
     5: {
         "main": (
@@ -46,6 +70,14 @@ PROMPTS = {
             "Black ink engraving, fine hatching on the rock, stippling and long lines on the ice. "
             "Clear cold morning light from the left, strong shadows in the crevasses. "
             "The glacier flowing towards the viewer, the scene fades softly into white paper at every edge. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
+            "backup": (
+            "One ice cave, view from inside looking out, a tall arched opening of glacier ice framing bright daylight beyond. "
+            "Smooth scalloped walls of ice curving overhead, one small dark rocky floor, a glimpse of mountains through the mouth. "
+            "Black ink engraving, fine stippling and hatching following the curves of the ice. "
+            "Bright light pouring in through the opening, the walls darker towards the edges. "
+            "The opening in the centre, the scene fades softly into white paper at every edge. "
             "No text, no frame, no border, no ornaments, no colour, no grey wash."
         ),
     },
