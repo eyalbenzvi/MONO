@@ -1,0 +1,92 @@
+{
+ "model": "ssd1b",
+ "model_ids": {
+  "base": "segmind/SSD-1B (fp16 variant safetensors, loaded as float32)",
+  "lora": "latent-consistency/lcm-lora-ssd-1b"
+ },
+ "licences": {
+  "segmind/SSD-1B": "Apache-2.0",
+  "latent-consistency/lcm-lora-ssd-1b": "openrail++"
+ },
+ "settings": {
+  "scheduler": "LCMScheduler",
+  "steps": 8,
+  "guidance_scale": 1.0,
+  "dtype": "float32",
+  "device": "cpu",
+  "threads": 4,
+  "size": "832x1216",
+  "seeds": [
+   7001,
+   7002
+  ],
+  "prompt_encoding": "generate.py encode(): 77-token windows through both text encoders, full prompt read, no house style prefix",
+  "negative_prompt": "recorded per spec but unused: at guidance 1.0 LCM runs without classifier-free guidance (same as generate.py --lcm)"
+ },
+ "machine": "4 vCPU, 15 GB RAM, no GPU",
+ "load_seconds": 41.5,
+ "load_seconds_note": "first load, includes the weight download from Hugging Face; a second load from the warm cache took 19.6 s",
+ "load_seconds_warm": 19.6,
+ "load_peak_ram_gb": 10.13,
+ "images": [
+  {
+   "subject": "octopus",
+   "seed": 7001,
+   "seconds": 164.4,
+   "peak_ram_gb": 13.25
+  },
+  {
+   "subject": "biplane",
+   "seed": 7001,
+   "seconds": 155.7,
+   "peak_ram_gb": 13.25
+  },
+  {
+   "subject": "canal",
+   "seed": 7001,
+   "seconds": 152.1,
+   "peak_ram_gb": 13.25
+  },
+  {
+   "subject": "octopus",
+   "seed": 7002,
+   "seconds": 149.0,
+   "peak_ram_gb": 13.25
+  },
+  {
+   "subject": "biplane",
+   "seed": 7002,
+   "seconds": 149.2,
+   "peak_ram_gb": 13.25
+  },
+  {
+   "subject": "canal",
+   "seed": 7002,
+   "seconds": 147.6,
+   "peak_ram_gb": 13.25
+  }
+ ],
+ "oneink": {
+  "octopus": {
+   "source": "octopus-s7001.png",
+   "mode": "line",
+   "fails": []
+  },
+  "biplane": {
+   "source": "biplane-s7002.png",
+   "mode": "line",
+   "fails": []
+  },
+  "canal": {
+   "source": "canal-s7002.png",
+   "mode": "pen",
+   "edge": "horizon",
+   "fails": []
+  }
+ },
+ "note": [
+  "Anatomy and prompt following are weak: the octopus has about 9-10 tangled arms and no beak or sucker sketch, and both seeds add boxed side panels of extra octopuses. The biplane s7001 is a stack of airships with wheels; s7002 is a malformed biplane drawn twice, with no propeller and a table where the specification marks should be. The canal s7002 follows the brief well, with a front view, water and a flat ground line, but has no arches or palazzo character and no white sky edge; s7001 is a street-perspective canal.",
+  "Fake text is a real problem: octopus s7002 is covered in pseudo-letter blocks, and s7001 and biplane s7002 carry scribbled captions and signatures, because the negative prompt does nothing at guidance 1.0.",
+  "One ink: all three pass oneink checks with no fails. The octopus and canal read well as prints, but the grey modelling turns into dotted screen patches and the canal reflections become a dense mass. The biplane's thin lines break up into dashes, and its spec table survives as stray dots."
+ ]
+}
