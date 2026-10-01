@@ -1,0 +1,14 @@
+Prompt: One vintage roller skate study sheet, side view. A large old leather lace-up roller skate boot on a metal plate with four wheels in the centre; around it separate wheels, a toe stop, the plate and axle parts drawn apart, a row of small round detail circles along the bottom. White chalk line drawing on a black background, like a vintage patent drawing, clean outlines, fine hatching. Even flat light, crisp contrast. Centred, the whole sheet with wide black margins. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used by the LCM pipeline at guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seeds: 24300-24303 (four, main); chosen 24301 (the second)
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why 24301: 24300 is a boot inside a ruled frame with only two wheels; 24302 a boot in a ruled frame with a signature and a title block at the foot; 24303 a frame, a signature and laces that tangle into nonsense. 24301 is the only one with no frame and a whole, believable skate: lace-up boot, ankle strap, plate, two trucks and four wheels, all inside the page.
+The model drew it dark ink on light paper (it ignored "white chalk on black"), which is what oneink wants, so no inversion was needed. It also ignored the request for exploded parts and detail roundels: this is one object, not a full sheet, and the title says only ROLLER SKATE STUDY.
+Clean-up before oneink (cv2.inpaint, then the boot's own 2 px horizontal hatching laid back over the patch): a coin-like seal on the ankle with a ring of fake letters round a face, two small emblems on the cuff panel and a strip of letter-like marks along the welt were removed (none legible, but they read as a brand stamp). The seal's place now reads as a hatched ankle patch. Crop 24,26 to 792,1190 drops the thin dark rim of the render.
+One ink: line mode screened the shading into a coarse dot grid that read like a photo negative; pen mode keeps the engraved lines. On a black tee the dark lines print white (one file, Tee colours: Black).
+python3 scripts/studio/oneink.py <cleaned image> data/studio/insp12/04-3-roller-skate-study roller-skate-study --mode pen --title "ROLLER SKATE STUDY" --sub "Objects · Study sheet"
