@@ -51,5 +51,11 @@ PROMPTS = {
                 "Even soft light from the left. "
                 "Centred, the whole subject with wide white margins, plain white paper. "
                 "No text, no frame, no border, no ornaments, no colour, no grey wash.",
+        "backup": "One bunch of lavender stems, front view, upright. "
+                  "A small tied bunch of straight slender stems, each topped with a long spike of tiny tubular flowers in tight whorls, a few narrow leaves near the base, a ribbon around the middle, the stems cut cleanly at the bottom. "
+                  "Fine black ink line drawing with crisp contour lines and delicate hatching on every flower spike, like a natural history plate. "
+                  "Even soft light from the left. "
+                  "Centred, the whole subject with wide white margins, plain white paper. "
+                  "No text, no frame, no border, no ornaments, no colour, no grey wash.",
     },
 }
