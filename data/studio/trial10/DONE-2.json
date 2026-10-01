@@ -1,0 +1,15 @@
+{
+ "helper": 2,
+ "branch": "studio/trial10-2",
+ "designs": [
+  {"slug": "emperor-penguins", "nn": "03", "passed": false, "backup": false, "attempts": 3, "mode": "line", "ink_coverage": null,
+   "note": "Rejected 3 times: (1) seed 201, brief prompt: no chick, heron-like long legs, extra foot, bodies fused, no ear patch; (2) seed 2011, two adults only, short legs: anatomy fine but no ear patch and crow beak, not emperor penguins; (3) seed 2012, ear patch front-loaded: long wading-bird legs, one leg missing, cormorant tail. SSD-1B+LCM does not hold penguin anatomy or the emperor's markings."},
+  {"slug": "seahorse", "nn": "03", "passed": false, "backup": true, "attempts": 3, "mode": "line", "ink_coverage": null,
+   "note": "Backup for 03. Rejected 3 times: (1) seed 203, brief prompt: dinosaur head facing left, no tube snout, crest, no spiral or belly; (2) seed 2031: spiral tail but a sail fin down the whole back, duck-bill snout, horns, no rings; (3) seed 2032: clawed legs and a doubled tail. The model draws a sea-dragon, not a seahorse."},
+  {"slug": "barn-owl", "nn": "04", "passed": true, "backup": false, "attempts": 2, "mode": "tone", "ink_coverage": {"white_tee": 0.1604, "black_tee": 0.2181},
+   "note": "Attempt 1 (seed 202, brief prompt) rejected: ear tufts, one foot, branch read as a feather. Attempt 2 (seed 2021, 'smooth round head, no ear tufts, both feet') passed. Delivered in tone, not line: line and pen inverted the eyes into an unequal pair on the black tee; tone keeps the bird as drawn, with clean screens on both files, fails []. Facial disc is round rather than heart-shaped, so the text gives no species name."}
+ ],
+ "minutes": {"install": 3.2, "generate": 33.7, "process": 2.0},
+ "started": "2026-10-01T10:47:47Z",
+ "finished": "2026-10-01T11:25:11Z"
+}
