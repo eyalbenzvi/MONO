@@ -1,0 +1,16 @@
+{
+ "helper": 2,
+ "reference": "sailboat technical side elevation, black ink on a white tee",
+ "slots": [
+  {"slot": 1, "slug": "hot-air-balloon", "passed": true, "which": "main", "images": 4, "chosen": "s22103",
+   "mode": "pen", "ink_coverage": 0.0713,
+   "note": "Round seamed envelope, burner rings, rigging ropes down to one wicker basket; pen instead of line (line screened the faint gore shading into dot patches)."},
+  {"slot": 2, "slug": "lighthouse-elevation", "passed": true, "which": "main", "images": 4, "chosen": "s22202",
+   "mode": "pen", "ink_coverage": 0.1288,
+   "note": "Tall tapering tower, two railed galleries, lantern, keeper's house on a ground line; cropped off two corner scribbles; no stair cut-away was drawn, so the title stays generic; pen instead of line (line lost the tower's left outline)."},
+  {"slot": 3, "slug": null, "passed": false, "which": "main+backup+2 extra tries", "images": 16, "chosen": null,
+   "mode": null, "ink_coverage": null,
+   "note": "No usable aircraft: biplane main (4) and seaplane backup (4) came out as sheets of repeated wingless hulls, a pen-illustration retry (4) and a front-elevation retry (4) as single but broken airframes (no stacked wings, missing gear, jet-like noses). Left empty rather than ship a wrong machine."}
+ ],
+ "minutes": {"install": 1, "generate": 69, "process": 8, "total": 72}
+}
