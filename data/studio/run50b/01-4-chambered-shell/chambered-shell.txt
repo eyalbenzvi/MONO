@@ -1,0 +1,10 @@
+Title: Chambered Shell
+Category: Botanical & Nature
+Subject: A single coiled sea shell seen side on, its whorls divided into rows of curved chambers winding in to a small centre
+Style: Natural history plate, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A coiled shell winds in to a tight centre, every whorl divided into a row of curved chambers. Its builder added a new room each time it grew and moved into the latest one, leaving the rest empty.
+Tee colours: Black, White
+Print size: 25.9 × 30.6 cm
+Keywords: shell, chambered shell, coiled shell, seashell, marine life, ocean, natural history, spiral, line art, scientific illustration
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
