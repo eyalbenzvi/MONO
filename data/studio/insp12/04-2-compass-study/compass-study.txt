@@ -1,0 +1,10 @@
+Title: Compass Study
+Category: Geometric
+Subject: A round compass card seen from above, a long needle crossing it north to south and east to west, fine radial divisions and concentric rings round the pivot
+Style: Patent-style study in white chalk-like line on black
+Medium: Drawn (illustration)
+Description: A compass card drawn in fine radiating lines, its needle crossed through a small pivot at the centre and running out past the rim. It points every way at once, which is one way of never getting lost.
+Tee colours: Black
+Print size: 23.4 × 35.0 cm
+Keywords: compass, compass card, navigation, needle, wayfinding, patent drawing, line art, chalk, geometric, study
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

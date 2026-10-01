@@ -1,0 +1,19 @@
+Main prompt (POCKET WATCH STUDY, seeds 24200-24203, all four rejected): One pocket watch study sheet, front view. A large round pocket watch with crown and ring in the centre, a plain dial with only tick marks, no numerals; around it the open movement, separate gears, cogs and a balance wheel, a row of small round detail circles along the bottom. White chalk line drawing on a black background, like a vintage patent drawing, clean outlines, fine hatching. Even flat light, crisp contrast. Centred, the whole sheet with wide black margins. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Backup prompt (COMPASS STUDY, seeds 24250-24253, all four rejected): One brass compass, top view, with parts around. A round compass in the middle of the page, a clear compass rose with a long needle, only small tick marks, no letters; around it on the black page a separate needle, a gimbal ring and a lid drawn small, a row of small round detail circles along the bottom. Thin white chalk outlines on a black background, like a vintage patent drawing, fine hatching. Flat light. The compass small and centred, lots of empty black around it. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Second backup prompt (COMPASS STUDY, seeds 24254-24256, used; PROMPTS['2b'] in insp12-4.py, jobs written directly with the backup's design fields): One small round compass, top view, a perfect circle. The compass drawn small in the upper half of the page, a clear four-point compass rose and a needle, tick marks only, no letters; below it a neat row of separate parts drawn apart: a needle, a pivot, a glass ring and a hinged lid. Thin white chalk outlines on a black background, like a vintage patent drawing, fine hatching. Flat light. Wide empty black margins on every side. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used by the LCM pipeline at guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seeds: main 24200-24203, backup 24250-24253, second backup 24254-24256; chosen 24255
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Ending: none (not a scene)
+
+Why not the pocket watch: all four drew the watch as a huge ornamented oval case filling the page like a frame, three on light paper, with fake text or large numerals on the dial.
+Why not the first compass backup: the face stretched into an oval reaching the sides of the portrait page every time (24252 had a good four-point rose but its rim is cut at both sides), with light ring bands, a cream border (24251) or target rings (24253).
+Why 24255: the second prompt asked for a perfect circle with wide margins. 24254 has a ruled frame and a ring of blocky fake letters; 24255 is a whole circular compass card with a needle crossing it, radial divisions and rings, no text, wide margins. It did not draw the separate parts it was asked for, so this is one object, not a full sheet.
+Clean-up before oneink: levels 60-205 so the uneven paper prints as nothing (the first pass screened it into blotches), and two small letter-like marks at the east and west ends of the rim painted out to paper.
+One ink: line mode; one file, the lines print white on a black tee (Tee colours: Black).
+python3 scripts/studio/oneink.py <cleaned image> data/studio/insp12/04-2-compass-study compass-study --mode line --title "COMPASS STUDY" --sub "Objects · Study sheet"
