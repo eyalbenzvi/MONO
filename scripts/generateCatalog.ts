@@ -583,7 +583,7 @@ function sourcesSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): num
       const first = sel.maker ? sel.maker.split(/[;\n]|\s{2,}/)[0].slice(0, 80).trim() : "";
       // Not a maker: a scanner, an uploader, "unknown", a web address.
       const maker = first && !/\b(?:scan|scanned|unknown|anonymous|upload|nypl|biodiversity heritage|library|wikimedia|see below|author)\b|https?:\/\/|www\./i.test(first) ? first : null;
-      bytes += archiveDraft(shirts, sigs, taken, sel.n, { ...sel, group, name: shortName(sel.name), maker, date: sel.date?.slice(0, 40) ?? null, record: sel.record }, {
+      bytes += archiveDraft(shirts, sigs, taken, sel.n, { ...sel, group, name: shortName(sel.name), maker, date: sel.date?.replace(/\s*date QS:.*$/i, "").slice(0, 40) || null, record: sel.record }, {
         unit: INSTITUTION[sel.source],
         credit: SOURCE_LINE[sel.source],
         url: sel.recordUrl,

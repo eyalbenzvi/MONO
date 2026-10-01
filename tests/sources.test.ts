@@ -138,3 +138,49 @@ describe("content waves: stories are not subjects", () => {
     expect(run("Discomedusae plate of the medusae from the voyage of the Challenger", "Plate").keep).toBe(true);
   });
 });
+
+describe("content waves: wave 3 (maps, the sky, architecture and type)", () => {
+  const base: MetaInput = { record: "r", title: "", classification: "Print, Engraving", tags: [], description: "", photo: false, hasImage: true, width: 3000, height: 4000, date: "1800", maker: null, credit: "" };
+  const keywords = ["chart", "map", "harbor", "alphabet", "letters", "signal flags", "celestial"];
+  const run = (c: Partial<MetaInput>, extra = {}) => metaFilter({ ...base, ...c }, { keywords, ...extra }, { records: new Set(), shas: new Set() });
+
+  it("a map's saints are places and its long title is one subject; a print's saint is still a story", () => {
+    expect(run({ title: "St. Augustine Harbor", classification: "Map" }).keep).toBe(true);
+    expect(run({ title: "A chart of Delawar Bay, with soundings and nautical observations", classification: "Map" }).keep).toBe(true);
+    expect(run({ title: "Saint Jerome Reading a Chart" }).reasons).toContain("narrative");
+  });
+
+  it("people, scenes and battles in more languages; figure constellations are refused, the sky's animals are not", () => {
+    expect(run({ title: "Portret van een vrouw met kaart", tags: ["map"] }).reasons).toContain("people");
+    expect(run({ title: "Carte de la bataille de Fontenoy", tags: ["map"] }).reasons).toContain("unsuitable");
+    expect(run({ title: "Andromeda, celestial chart" }).reasons).toContain("narrative");
+    expect(run({ title: "Ursa Major, celestial chart" }).keep).toBe(true);
+  });
+
+  it("ornamental letters are type, not correspondence; signal flags are a code, a nation's flag is not", () => {
+    expect(run({ title: "Ornamental letters of the alphabet" }).keep).toBe(true);
+    expect(run({ title: "Letters to a sailor about a chart" }).reasons).toContain("text");
+    expect(run({ title: "Chart of signal flags" }, { signalFlags: true }).keep).toBe(true);
+    expect(run({ title: "Chart of the flags of all nations" }, { signalFlags: true }).reasons).toContain("brand");
+  });
+
+  it("the LoC map division's statement is public domain before 1927 only", () => {
+    const rights = "The content of the Library of Congress Geography and Map Division digitized collections is free to use and reuse unless a Rights Advisory statement is present that indicates otherwise.";
+    expect(judgeLicense("loc", { rights, published: 1779 })).toEqual({ ok: true, license: "PD" });
+    expect(judgeLicense("loc", { rights, published: 1950 }).ok).toBe(false);
+    expect(judgeLicense("loc", { rights, published: null }).ok).toBe(false);
+    expect(judgeLicense("noaa", { rights: "US government work (NOAA Office of Coast Survey)" })).toEqual({ ok: true, license: "US-Gov" });
+  });
+
+  it("files the sky with the maps, type as Type, elevations as Architecture and knots as Geometric, from wave 3 only", async () => {
+    const { filing } = await import("../scripts/sources/waves");
+    const f = (title: string, wave = 3, classification = "Print, Engraving") => filing({ mode: "ink", classification, title, tags: [], source: "met", wave }).category;
+    expect(f("Planisphère céleste")).toBe("sky");
+    expect(f("Map of the Moon")).toBe("sky");
+    expect(f("Ornamental Alphabet")).toBe("type");
+    expect(f("Elevation of the Pantheon")).toBe("architecture");
+    expect(f("Knots and Splices")).toBe("systems");
+    expect(f("Ornamental Alphabet", 2)).toBe("etched");
+    expect(f("Massachusetts Bay", 3, "Nautical Chart")).toBe("sky");
+  });
+});

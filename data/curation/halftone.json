@@ -412,6 +412,13 @@
 "sha": "2d37aef1d5fcd46c",
 "src": "cab902118d7b2ce9"
 },
+"10060": {
+"mode": "halftone",
+"paper": 0.078,
+"recipe": 2,
+"sha": "e23f96062fd8566c",
+"src": "b241c0f5e4c48436"
+},
 "10061": {
 "mode": "halftone",
 "paper": 0,
@@ -474,6 +481,167 @@
 "recipe": 2,
 "sha": "37c64566d306a305",
 "src": "ae1dd66ff652b627"
+},
+"10070": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "1ec2dd40ea42e80e",
+"src": "f6aac6f2b5ad97de"
+},
+"10071": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "a452f1754004ec21",
+"src": "ff0e6aee7004c5f1"
+},
+"10072": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "5ba3e4cc7ae2bcb7",
+"src": "7acc2ef395970df3"
+},
+"10073": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "785907e94113d8e4",
+"src": "86bb8915a1172477"
+},
+"10074": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "57b60e3eec3f3e9e",
+"src": "d9d6266203fb9702"
+},
+"10075": {
+"mode": "halftone",
+"paper": 0.086,
+"recipe": 2,
+"sha": "35aa36c9fb252d9c",
+"src": "d5d6b0bf094c00b3"
+},
+"10076": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "3d6e9936dd87340e",
+"src": "10d7dc9a0b2d6c0d"
+},
+"10077": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "901c76e1e1dfa936",
+"src": "0c8bc0611ff8940a"
+},
+"10078": {
+"mode": "halftone",
+"paper": 0.082,
+"recipe": 2,
+"sha": "234ee07108b54b33",
+"src": "5cfc3a83d8684449"
+},
+"10079": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "9926987fc34e02b8",
+"src": "59c5cccdb68c4d9f"
+},
+"10080": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "0f64bd209b2f875b",
+"src": "691809b350c429c2"
+},
+"10081": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2bd4560a199567dd",
+"src": "416b0780bc0ce948"
+},
+"10082": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "ba677102de870e7e",
+"src": "c71b9d2cc287ad48"
+},
+"10083": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "ffc6e25197c5d128",
+"src": "080f063728105cd0"
+},
+"10084": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2863a143a233df58",
+"src": "13f1f6fe93cc34af"
+},
+"10085": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "626a86d6ec9f2c5a",
+"src": "10aca0372d60e49a"
+},
+"10086": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "7de816f7493d6cae",
+"src": "317288abb174b430"
+},
+"10087": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2bc2b2fcfbf34731",
+"src": "564183383b18349a"
+},
+"10088": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "1a019d1455143ce9",
+"src": "a94bd1bac4460bf8"
+},
+"10089": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "ffb7c47a470fbe65",
+"src": "fbfe725b4e8b4867"
+},
+"10090": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "154750c502351fc3",
+"src": "fc1599310fc7d78c"
+},
+"10091": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d6d05e96c037ac90",
+"src": "a0e7f1230c3be6d6"
+},
+"10092": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "996e05343b3581c4",
+"src": "298cee3374a2ab25"
 },
 "11001": {
 "mode": "halftone",
@@ -671,6 +839,34 @@
 "sha": "4b9ee543c1e3d67f",
 "src": "8e1a6e9ea16eb5f0"
 },
+"11029": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "50c945f675ba3290",
+"src": "b945a311e1389839"
+},
+"11030": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "f65412ef4e4fe567",
+"src": "4cb6835112bd322b"
+},
+"11031": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c1a032e28834b3b4",
+"src": "27b7bedbbf0bf7a0"
+},
+"11032": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "934e534f0afde925",
+"src": "bf0f3929f6973657"
+},
 "13001": {
 "mode": "halftone",
 "paper": 0,
@@ -824,6 +1020,167 @@
 "recipe": 2,
 "sha": "eaad0afde56229b9",
 "src": "05535f9e7fe3eef6"
+},
+"14001": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "255dd619b34439d1",
+"src": "57ed2c698a8c7029"
+},
+"14002": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "3422f5b410d14186",
+"src": "7cf2de099fb15413"
+},
+"14003": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "6cc42150a5ca9acf",
+"src": "9ab421d8871cd772"
+},
+"14004": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "56c7254c3305cb60",
+"src": "07f4829bb35e19a9"
+},
+"14005": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d5300ef5f77eee68",
+"src": "08fcfd1e8400fb76"
+},
+"14006": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "441b27c1a0a8ad37",
+"src": "5881cf3b93416dd0"
+},
+"14007": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "a0f07bc072bd60c4",
+"src": "1c167c37daecff9b"
+},
+"14008": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "a0468aa46ea7da6b",
+"src": "63f94badf95e0751"
+},
+"14009": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "b3051abfc674946c",
+"src": "d43ebf746b19a552"
+},
+"14010": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "84936adc826c07ba",
+"src": "034d7d47521bb6fa"
+},
+"14011": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "223ec47bd638cfe2",
+"src": "8f81325ee61b6ad2"
+},
+"14012": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "8bf0ca3c29a24a79",
+"src": "c77a5a2f3219e561"
+},
+"14013": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "9a4e11dec3d1000a",
+"src": "2c1c81f12d4058f4"
+},
+"14014": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "690ae0c7c6f7532a",
+"src": "f14bc68ac7e73a3c"
+},
+"14015": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "4ef48564357eec53",
+"src": "ef994eb0d3564432"
+},
+"14016": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "74e04bb7cdad1f21",
+"src": "a8835a5cd51c75a7"
+},
+"14017": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c886c18790fdc965",
+"src": "fcadda748dc9aab5"
+},
+"14018": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c3e348756b4795db",
+"src": "11a95524da1b43fe"
+},
+"14019": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "250788a1e01eac80",
+"src": "20789dc3c343a5a2"
+},
+"14020": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "1db37e8508d6f8c8",
+"src": "6f19af5e1d1481a2"
+},
+"14021": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "0e49f20153c6d6e0",
+"src": "82a158c34f782162"
+},
+"14022": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "ed7a94e7857dd5c0",
+"src": "2b7e4f088b917287"
+},
+"14023": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "ba6fd5f9f668b63f",
+"src": "537f342919bdcc80"
 },
 "2801": {
 "mode": "halftone",
@@ -18087,6 +18444,363 @@
 "sha": "625964b2182d3f65",
 "src": "f421358a921c6f73"
 },
+"8118": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "63108236d9ad7434",
+"src": "8e6118b0114c7160"
+},
+"8119": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "24423b6aa8ec3f35",
+"src": "353e4981c8af2d1d"
+},
+"8120": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "93cb4ff13d6b5ae6",
+"src": "180090b35fb42d1d"
+},
+"8121": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "74b8346d4a7ff2da",
+"src": "4094cc30e36f0717"
+},
+"8122": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e20f62b611b30d08",
+"src": "a71e09898e7d2192"
+},
+"8123": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "42a479dc9a8f3491",
+"src": "5575dbd0643bab8f"
+},
+"8124": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d06f4bdd94077f0b",
+"src": "526a61331022bcc4"
+},
+"8125": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "34e58ed77a7b4f74",
+"src": "28273d43383b412b"
+},
+"8126": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "8f4336eee47704af",
+"src": "5fd0b11c059de759"
+},
+"8127": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "5206ff0af8f5cc94",
+"src": "94f989ca9e3d2488"
+},
+"8128": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "af6202b4bf0c9614",
+"src": "44449973afcbfba2"
+},
+"8129": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "6cae68151cbc85b0",
+"src": "8ea8fcebcb134ee5"
+},
+"8130": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "fc033a0b0779fff5",
+"src": "a93a354e44f4fdf0"
+},
+"8131": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "4422d0ebd6723f3f",
+"src": "1d4297c56e407acd"
+},
+"8132": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "7de47ceddbd69f13",
+"src": "9ae3f3a6e9abb322"
+},
+"8133": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "47c7cacc3ff30c87",
+"src": "6b3e8ea7e1121b1f"
+},
+"8134": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "73e8f6344c2540fd",
+"src": "723a2e8864f4944b"
+},
+"8135": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "db36e522e066a4f8",
+"src": "f2ed974f2a21c935"
+},
+"8136": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "5814145d9d80f411",
+"src": "78a23136d9e9332f"
+},
+"8137": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "8d5837cef38c36b6",
+"src": "ba40e448cb0feba4"
+},
+"8138": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "57aef9f505073a01",
+"src": "09ad9724c50da136"
+},
+"8139": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "6d39b729d02a2bc1",
+"src": "eb62f0081a7852d7"
+},
+"8140": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "292770af25905169",
+"src": "482d4426ed4b11a6"
+},
+"8141": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c402e1b7a646efbe",
+"src": "6f43868b2adc1c6f"
+},
+"8142": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "86d21768f06c4462",
+"src": "7d7e73f885193c10"
+},
+"8143": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "7b0679b8daa669fb",
+"src": "267a9d791709c306"
+},
+"8144": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "85ee52deb1963030",
+"src": "28dae74419975ef1"
+},
+"8145": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "787f5faa7ad00abd",
+"src": "0b8f02d871993958"
+},
+"8146": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "5c45aa1596e65be8",
+"src": "b0c0fa8c0e91c6fd"
+},
+"8147": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e7daafc56587b599",
+"src": "943df500bca3c9d3"
+},
+"8148": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2873d314df1705c0",
+"src": "eb2259522d25714c"
+},
+"8149": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "b422f90f2d3b5627",
+"src": "1048c07f98f6be01"
+},
+"8150": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2d91853dacb19489",
+"src": "0bce156200ad55fa"
+},
+"8151": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "a5b2adc336ab50fa",
+"src": "fe75f5c1ef0dad84"
+},
+"8152": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "4ece27ad8d7ac101",
+"src": "fb6d1ed69b26b47b"
+},
+"8153": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "8c123abf140e488b",
+"src": "ee47bd8c7c235110"
+},
+"8154": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c29a1edbec306132",
+"src": "7edc70df2298199c"
+},
+"8155": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e5f70fb1da0aacb6",
+"src": "41b31898d5adcb51"
+},
+"8156": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2a8e377b1ee3b333",
+"src": "830b8f8ea7bebdb0"
+},
+"8157": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "aa61d7fb6bdd94ed",
+"src": "5c8840f1afb07d1b"
+},
+"8158": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "adde97477a27f272",
+"src": "e224966d0512f78a"
+},
+"8159": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "09e3f4b28b37fdcf",
+"src": "8fa680484a9c6d44"
+},
+"8160": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e57c5c245f8684af",
+"src": "cb9c0353f11cc288"
+},
+"8161": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "0f3cecb31e48557c",
+"src": "0c7110fe86312779"
+},
+"8162": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "39ead44513895f04",
+"src": "4c0812acc354d436"
+},
+"8163": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e1b5c1dcddbd174b",
+"src": "02a40d3e50f1ed97"
+},
+"8164": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "da0fc23dc78ef994",
+"src": "57ddc07cd69344f1"
+},
+"8165": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "cfbfa8309c5b1c96",
+"src": "22d7ef821be12cc4"
+},
+"8166": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "22da483491f1f5d5",
+"src": "d7841dfd1b1dbbcf"
+},
+"8167": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2e60994a636f8b61",
+"src": "c45c2cfc623303e5"
+},
+"8168": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "0fc5abbe361170ed",
+"src": "76e7565cfda9d7da"
+},
 "9001": {
 "mode": "halftone",
 "paper": 0,
@@ -18493,6 +19207,13 @@
 "sha": "5ca7fddd6c008114",
 "src": "50857cf3426ae778"
 },
+"9059": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "85fb127213d69c29",
+"src": "c625a1dfb1d10672"
+},
 "9060": {
 "mode": "halftone",
 "paper": 0,
@@ -18521,6 +19242,13 @@
 "sha": "cc82726f2fc6ac9e",
 "src": "64dad6a0a95c0d27"
 },
+"9064": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2d21ea130b081382",
+"src": "c5d34b75a38d0eb1"
+},
 "9065": {
 "mode": "halftone",
 "paper": 0,
@@ -18541,5 +19269,236 @@
 "recipe": 2,
 "sha": "4991e9d21b5888d4",
 "src": "f58eee41c0fc5391"
+},
+"9068": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2e6e04a004e33f45",
+"src": "2c945647a55e9981"
+},
+"9069": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "eb292c4c5f144317",
+"src": "5286c7637d18c2f2"
+},
+"9070": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "32d4a79781f85a38",
+"src": "6f091a78e6c16a3e"
+},
+"9071": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "27b023f5a8c55040",
+"src": "89b4b341467d153c"
+},
+"9072": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "f10a3c8c4bba2dc1",
+"src": "e769728baf2a8f9f"
+},
+"9073": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2eef1a7226636157",
+"src": "77432d1af16d3ef4"
+},
+"9074": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d1091a9017cf316a",
+"src": "0fe0f23665f9bd15"
+},
+"9075": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "fa9c9bf58d56bff5",
+"src": "2d047f3fd47504eb"
+},
+"9076": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d16f48a18312310e",
+"src": "165185ec90ecc204"
+},
+"9077": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e275ef305d6e2ce4",
+"src": "bce6294b6370e47e"
+},
+"9078": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "7345111bd102c10e",
+"src": "99e47b9c4f6d9117"
+},
+"9079": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "dda86e129bab88c0",
+"src": "94c39e0e3d0d6770"
+},
+"9080": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "d174884ba28b9346",
+"src": "3a768c6400998715"
+},
+"9081": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "4868d9cfca8279c3",
+"src": "3dc0f3d040cf0bc8"
+},
+"9082": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "36d4e7c7cdf0f4e3",
+"src": "dc589de16ada52ef"
+},
+"9083": {
+"mode": "halftone",
+"paper": 0.078,
+"recipe": 2,
+"sha": "eaf7ebcdde7194e8",
+"src": "be28ef2d71a3e1b0"
+},
+"9084": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "f9f1d7f2c98eb427",
+"src": "8b378d43d31ec5bf"
+},
+"9085": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e82e92efe71b92dc",
+"src": "75cb98c1407062df"
+},
+"9086": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e7e5ed4ab795c4a2",
+"src": "c7929166a450b4b1"
+},
+"9087": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "e3ce20dfdc30a1a3",
+"src": "c6ce84b1bd034e46"
+},
+"9088": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "16fdf964648eaf75",
+"src": "239a787ca572f9e9"
+},
+"9089": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "2c04c241ae490264",
+"src": "fb4248c621302ae9"
+},
+"9090": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c74290218a56b8e1",
+"src": "0801174ba13b535a"
+},
+"9091": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "09735eda0af0fc59",
+"src": "aa004ca00157fb15"
+},
+"9092": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "75f23b0615904d3e",
+"src": "94ecb4c3942b6a3d"
+},
+"9093": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c0343dca1892c156",
+"src": "bdbb98b251925b8f"
+},
+"9094": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "eae3c246448ce73e",
+"src": "60974577d396ccae"
+},
+"9095": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "c0f4eabe5e7cd59b",
+"src": "130b5375827cac05"
+},
+"9096": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "30c536491d7915f3",
+"src": "d2a4bb806893e3a0"
+},
+"9097": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "a7a381840f433d80",
+"src": "e10b33c5c3a1f72f"
+},
+"9098": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "99c98df17c9d2d27",
+"src": "4aa02836d4be86bc"
+},
+"9099": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "5e77182b0b37698b",
+"src": "42570117a134ff8b"
+},
+"9100": {
+"mode": "halftone",
+"paper": 0,
+"recipe": 2,
+"sha": "64e49cf010996755",
+"src": "9c6e427f40828366"
 }
 }

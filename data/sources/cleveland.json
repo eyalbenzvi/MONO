@@ -1440,5 +1440,209 @@
   "n": 11028,
   "wave": 2,
   "name": "Liber Studiorum: Ships in a Breeze"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-104795",
+  "record": "104795",
+  "recordUrl": "https://clevelandart.org/art/1923.112",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1923.112/1923.112_print.jpg",
+  "title": "Third Knot",
+  "maker": "Albrecht Dürer",
+  "date": "c. 1506–7",
+  "credit": "Albrecht Dürer, The Cleveland Museum of Art",
+  "classification": "Print, woodcut",
+  "tags": [
+   "Prints",
+   "Germany"
+  ],
+  "description": "",
+  "width": 2661,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.377,
+  "matched": [
+   "knot"
+  ],
+  "screen": "line",
+  "tone": 0.344,
+  "contrast": 0.098,
+  "coverage": 0.346,
+  "detail": 1,
+  "box": [
+   0.043,
+   0.042,
+   0.953,
+   0.921
+  ],
+  "sha": "4dce1b754f6c3618",
+  "assess": {
+   "quality": 85,
+   "ink": 0.223,
+   "extent": 0.799,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11029,
+  "wave": 3,
+  "name": "Third Knot"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-104818",
+  "record": "104818",
+  "recordUrl": "https://clevelandart.org/art/1923.113",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1923.113/1923.113_print.jpg",
+  "title": "Fourth Knot",
+  "maker": "Albrecht Dürer",
+  "date": "c. 1506–7",
+  "credit": "Albrecht Dürer, The Cleveland Museum of Art",
+  "classification": "Print, woodcut",
+  "tags": [
+   "Prints",
+   "Germany"
+  ],
+  "description": "",
+  "width": 2696,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.195,
+  "matched": [
+   "knot"
+  ],
+  "screen": "line",
+  "tone": 0.214,
+  "contrast": 0.049,
+  "coverage": 0.094,
+  "detail": 1,
+  "box": [
+   0.044,
+   0.072,
+   0.952,
+   0.913
+  ],
+  "sha": "75a659fa259c20ba",
+  "assess": {
+   "quality": 76,
+   "ink": 0.13,
+   "extent": 0.767,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11030,
+  "wave": 3,
+  "name": "Fourth Knot"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-109212",
+  "record": "109212",
+  "recordUrl": "https://clevelandart.org/art/1927.363",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1927.363/1927.363_print.jpg",
+  "title": "Elevation for Wall Decoration",
+  "maker": null,
+  "date": "c. 1550",
+  "credit": "The Cleveland Museum of Art",
+  "classification": "Drawing, pen and brown ink (ruled in places) and brush and brown wash with graphite and graphite wash; framing lines in brown ink and graphite",
+  "tags": [
+   "Drawings",
+   "Italy",
+   {
+    "description": "cream(3) laid paper",
+    "watermarks": []
+   }
+  ],
+  "description": "",
+  "width": 2199,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.598,
+  "matched": [
+   "elevation"
+  ],
+  "screen": "tonal",
+  "tone": 0.41,
+  "contrast": 0.221,
+  "coverage": 0.132,
+  "detail": 1,
+  "box": [
+   0.099,
+   0.036,
+   0.901,
+   0.965
+  ],
+  "sha": "1b5ffb2bb2509f1a",
+  "assess": {
+   "quality": 72,
+   "ink": 0.052,
+   "extent": 0.742,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "black",
+  "flags": [],
+  "n": 11031,
+  "wave": 3,
+  "name": "Elevation for Wall Decoration"
+ },
+ {
+  "source": "cleveland",
+  "key": "cleveland-101415",
+  "record": "101415",
+  "recordUrl": "https://clevelandart.org/art/1920.231",
+  "imageUrl": "https://openaccess-cdn.clevelandart.org/1920.231/1920.231_print.jpg",
+  "title": "Rheims Cathedral, Facade",
+  "maker": "Louis Orr",
+  "date": "before 1920",
+  "credit": "Louis Orr, The Cleveland Museum of Art",
+  "classification": "Print, etching",
+  "tags": [
+   "Prints",
+   "America"
+  ],
+  "description": "",
+  "width": 2183,
+  "height": 3400,
+  "mode": "ink",
+  "license": "CC0",
+  "score": 0.766,
+  "matched": [
+   "facade"
+  ],
+  "screen": "line",
+  "tone": 0.578,
+  "contrast": 0.248,
+  "coverage": 0.26,
+  "detail": 1,
+  "box": [
+   0.116,
+   0.046,
+   0.883,
+   0.95
+  ],
+  "sha": "e926099be74f9d2c",
+  "assess": {
+   "quality": 83,
+   "ink": 0.154,
+   "extent": 0.673,
+   "flags": []
+  },
+  "solid": null,
+  "weak": false,
+  "tee": "white",
+  "flags": [],
+  "n": 11032,
+  "wave": 3,
+  "name": "Rheims Cathedral, Facade"
  }
 ]

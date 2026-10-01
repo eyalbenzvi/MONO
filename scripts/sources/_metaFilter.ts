@@ -29,7 +29,7 @@ export interface MetaInput {
 export interface MetaOptions {
   /** The world's keywords (lowercase; multi-word allowed). */
   keywords: readonly string[];
-  /** Maritime signal flags are the subject (the sea wave): "flag" isn't refused. */
+  /** Maritime signal flags are a subject: "signal flags" (a code) aren't refused; a nation's flag still is. */
   signalFlags?: boolean;
   minShortSide?: number;
   /** The world's word must be in the title itself (general art museums, whose tags name what's somewhere in a scene). */
@@ -49,24 +49,43 @@ export const MAX_ASPECT = 3;
 
 const words = (list: string[]) => new RegExp(`\\b(?:${list.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "[\\s-]+")).join("|")})s?\\b`, "i");
 
-export const PEOPLE = words(["portrait", "self-portrait", "man", "woman", "men", "women", "child", "children", "girl", "boy", "people", "crowd", "figure", "soldier", "family", "worker", "crew", "person", "lady", "gentleman", "sailor", "fisherman", "fishermen", "fisher", "youth", "bather", "bathers", "bathing", "gathering", "preparing", "dabblers", "vendor", "shop"]);
+export const PEOPLE = words(["portrait", "self-portrait", "man", "woman", "men", "women", "child", "children", "girl", "boy", "people", "crowd", "figure", "soldier", "family", "worker", "crew", "person", "lady", "gentleman", "sailor", "fisherman", "fishermen", "fisher", "youth", "bather", "bathers", "bathing", "gathering", "preparing", "dabblers", "vendor", "shop",
+  "homme", "hommes", "femme", "femmes", "enfant", "enfants", "mann", "männer", "frau", "frauen", "kinder", "vrouw", "kinderen", "kvinna", "uomo", "donna", "bambino", "hombre", "mujer", "niño"]);
 /** People as the subject of a print or drawing. */
 export const PEOPLE_SUBJECT = words(["portrait", "self-portrait", "bust of", "head of a", "figure study", "study of a man", "study of a woman", "nude", "academy figure", "likeness",
   // People who are the picture whatever vessel they're in ("Two Beauties in a Boat", "Girl Boarding a Boat").
-  "beauty", "beauties", "courtesan", "dancer", "geisha", "girl", "girls", "woman", "women", "lovers", "emigrant", "wounded"]);
+  "beauty", "beauties", "courtesan", "dancer", "geisha", "girl", "girls", "woman", "women", "lovers", "emigrant", "wounded",
+  // The same in the languages of the old atlases and the Commons' Dutch, Swedish and German uploads (from wave 3).
+  "portrait de", "femme", "femmes", "jeune fille", "nue", "baigneuse", "danseuse", "bildnis", "selbstbildnis", "porträt", "frau", "frauen", "mädchen", "portret", "vrouw", "vrouwen", "meisje", "naakt",
+  "porträtt", "kvinna", "kvinnor", "flicka", "naken", "ritratto", "donna", "donne", "ragazza", "nudo", "nuda", "retrato", "mujer", "mujeres", "niña", "desnudo", "desnuda", "effigies"]);
 export const TEXT = words(["cigarette", "tobacco", "trading card", "playing card", "letter", "manuscript", "document", "page of text", "title page", "certificate", "advertisement", "poster", "label", "trade card", "sheet music", "newspaper", "broadside", "book cover", "ticket", "stamp", "postage stamp", "coin", "banknote", "frontispiece", "bookplate", "calligraphy", "inscription", "postcard", "carte postale", "cartes postales"]);
 export const BRAND = words(["logo", "insignia", "emblem", "coat of arms", "armorial", "official seal", "great seal", "seal of", "badge", "trademark", "brand"]);
 const FLAG = words(["flag"]);
-export const UNSUITABLE = words(["erotic", "nude", "violence", "execution", "war", "battle", "massacre", "devotional", "crucifixion", "madonna", "annunciation", "virgin and child", "holy family", "caricature", "satire", "satirical", "cartoon", "fashion plate", "fragment", "textile swatch", "swatch", "study sheet", "sketchbook page", "slave", "slaver", "slave ship", "négrier", "negrier", "torpedoed", "hospital ship"]);
+export const UNSUITABLE = words(["erotic", "nude", "violence", "execution", "war", "battle", "massacre", "devotional", "crucifixion", "madonna", "annunciation", "virgin and child", "holy family", "caricature", "satire", "satirical", "cartoon", "fashion plate", "fragment", "textile swatch", "swatch", "study sheet", "sketchbook page", "slave", "slaver", "slave ship", "négrier", "negrier", "torpedoed", "hospital ship",
+  "bataille", "schlacht", "batalla", "battaglia", "guerre", "krieg", "oorlog", "guerra", "esclave", "esclaves", "sklaven", "slaven"]);
 /**
  * A scene rather than a subject (with no eye on the picture, a story's title is the only warning):
  * sacred and mythological figures, fables, allegories. And a long title in a print or drawing tells
  * a story more often than it names a thing.
  */
-export const NARRATIVE = words(["virgin", "saint", "st", "head of medusa", "medusa's head", "apocalypse", "revelation", "angel", "christ", "jonah", "tobias", "bible", "biblical", "apostle", "prophet", "triton", "galatea", "nereid", "neptune", "poseidon", "venus", "cupid", "putto", "putti", "god", "goddess", "allegory", "fable", "myth", "mythological", "legend", "renard", "miracle", "charon", "psyche", "hercules", "argonaut", "argonauts", "jason", "odysseus", "ulysses", "aeneas", "theuerdanck", "bruin"]);
+export const NARRATIVE = words(["virgin", "saint", "st", "head of medusa", "medusa's head", "apocalypse", "revelation", "angel", "christ", "jonah", "tobias", "bible", "biblical", "apostle", "prophet", "triton", "galatea", "nereid", "neptune", "poseidon", "venus", "cupid", "putto", "putti", "god", "goddess", "allegory", "fable", "myth", "mythological", "legend", "renard", "miracle", "charon", "psyche", "hercules", "argonaut", "argonauts", "jason", "odysseus", "ulysses", "aeneas", "theuerdanck", "bruin",
+  "vierge", "ange", "dieu", "déesse", "heilige", "heiliger", "engel", "gott", "christus", "virgen", "dios", "diosa", "deus", "sanctus", "sancta", "mythologie", "mythos",
+  // A star atlas's plate of a figure constellation is a figure (often nude) as the subject; the animals and objects of the sky are not.
+  "andromeda", "perseus", "cassiopeia", "cepheus", "orion", "bootes", "boötes", "ophiuchus", "serpentarius", "auriga", "aquarius", "gemini", "virgo", "sagittarius", "centaurus"]);
+/** A map's or a measured drawing's saints are places ("St. Augustine Harbor", "San Diego Bay"): out of the narrative read. */
+const MAPLIKE = /^(?:map|chart|nautical chart|measured drawing)\b/i;
+/** …and a title that starts as a map's does ("Carte de la rade de Saint-Malo", "A new chart of …"). */
+const MAP_TITLE = /^(?:an? |the )?(?:new |general |correct |hydrographic(?:al)? |nautical |topographic(?:al)? )*(?:maps?|charts?|cartes?|karte|kaart|plan|plans|survey|sketch)\b/i;
+const SAINT_PLACE = /\b(?:st|saint|sainte|san|santa|santo|sankt|são)\b\.?[\s-]+/gi;
+/** Type words that aren't correspondence ("Ornamental letters", "Letters of the alphabet"). */
+const TYPE_LETTERS = /\b(?:ornamental|decorative|decorated|initial|capital|roman|gothic|italic|block|printing|engraved|fancy) letters?\b|\bletters of the alphabet\b/gi;
+/** Signal flags at sea (a code, not a nation): the only flags a world with signalFlags allows. */
+const SIGNAL_FLAGS = /\b(?:signal(?:ling)? flags?|code flags?|flag signals?|code of signals|signal code)\b/gi;
 export const LONG_TITLE_WORDS = 7;
-/** Scientific plates and specimens, where a long Latin title is still one subject. */
-const PLATE_CLASS = words(["plate", "specimen", "natural history", "illustration", "zoology", "botany", "chromolithograph"]);
+/** Scientific plates and specimens, where a long Latin title is still one subject; maps and charts likewise. */
+const PLATE_CLASS = words(["plate", "specimen", "natural history", "illustration", "zoology", "botany", "chromolithograph",
+  // A map's or chart's title is long by nature ("A chart of Delawar Bay, with soundings and nautical observations").
+  "map", "nautical chart"]);
 
 /** Classifications worth a print (preferred in the order). */
 export const GOOD_CLASS = words(["print", "drawing", "photograph", "map", "chart", "illustration", "plate", "technical drawing", "patent drawing", "specimen", "scientific instrument", "engraving", "etching", "woodcut", "lithograph", "woodblock", "measured drawing", "architectural drawing"]);
@@ -97,10 +116,11 @@ export function metaFilter(c: MetaInput, o: MetaOptions, seen: { records: Set<st
   // People: in a photograph anywhere in the title, classification or tags; in a print or drawing only as its subject.
   const named = [title, c.classification, ...c.tags].join(" · ");
   if (c.photo ? PEOPLE.test(named) : PEOPLE_SUBJECT.test(named) || (PEOPLE.test(title) && !matched.some((k) => words([k]).test(title)))) reasons.push("people");
-  if (TEXT.test(named)) reasons.push("text");
-  if (BRAND.test(named) || (FLAG.test(named) && !o.signalFlags)) reasons.push("brand");
+  if (TEXT.test(named.replace(TYPE_LETTERS, ""))) reasons.push("text");
+  if (BRAND.test(named) || FLAG.test(o.signalFlags ? named.replace(SIGNAL_FLAGS, "") : named)) reasons.push("brand");
   if (UNSUITABLE.test(named)) reasons.push("unsuitable");
-  if (!c.photo && (NARRATIVE.test(title) || (!PLATE_CLASS.test(c.classification) && title.split(/\s+/).length > LONG_TITLE_WORDS))) reasons.push("narrative");
+  const story = MAPLIKE.test(c.classification) || MAP_TITLE.test(title) ? title.replace(SAINT_PLACE, "") : title;
+  if (!c.photo && (NARRATIVE.test(story) || (!PLATE_CLASS.test(c.classification) && title.split(/\s+/).length > LONG_TITLE_WORDS))) reasons.push("narrative");
 
   const keep = reasons.length === 0;
   if (keep) {

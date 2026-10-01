@@ -1,0 +1,539 @@
+{
+ "noaa-CP844C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP1145C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP1477C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP219C": "keep",
+ "noaa-CP2401C": "keep",
+ "noaa-CP165C": "keep",
+ "noaa-CP1277C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP1496C": "keep",
+ "noaa-CP2160C": "keep",
+ "noaa-CP1141C": "keep",
+ "noaa-CP487C": "keep",
+ "noaa-CP162C": "keep",
+ "noaa-CP161C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-LC00134_05_1903_LS": {
+  "decision": "keep",
+  "title_override": "Coast Chart No.7. Northeast Coast of Lake Huron from Cape Hurd to Lougheed Point Including"
+ },
+ "noaa-CP1666C": "keep",
+ "noaa-CP711C": "keep",
+ "noaa-CP1150C": "keep",
+ "noaa-CP114C": "keep",
+ "noaa-CP182C": "keep",
+ "noaa-CP1105C": "keep",
+ "noaa-CP926C": "keep",
+ "noaa-CP262C": "keep",
+ "noaa-CP214C": "keep",
+ "noaa-LC0000Ok_07_1907_LS": "keep",
+ "noaa-LC0000Ok_09_1904_LS": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-LC00091_10_1917_LS": {
+  "decision": "keep",
+  "title_override": "Coast Chart No.1 East End of Lake Superior from Cape Gargantua. Ont. to Mouth of Big Two H"
+ },
+ "noaa-LC00124_10_1902_LS": {
+  "decision": "keep",
+  "title_override": "Coast Chart No.8. North Coast of Lake Huron from Scammon Cove to Lougheed Point, Including"
+ },
+ "noaa-CP779C": "keep",
+ "noaa-CP2938C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP1581C": "keep",
+ "noaa-CP785C": "keep",
+ "noaa-CP782C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP880C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP856C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Sd_05_1907_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP180C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1532C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP824C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2948C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1755C": {
+  "decision": "reject",
+  "reason": "solid slab"
+ },
+ "noaa-CP264C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Ef_11_1904_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2227C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2695C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP3601C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1635C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1559C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1442C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP69C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1190C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-605-00-1915": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1002C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Eg_02_1906_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP169C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2425C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Sh_11_1905_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP379C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1206C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2128C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1809C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2731C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-CP1908C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Ec_06_1904_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC00126_10_1902_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2512C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC00125_10_1902_LS": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1849C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2396C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-CP164C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2871C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP884C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2826C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP984C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2398C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP196C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP687c": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CHESBAY": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CHESBAY2": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CHESBAY1": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP2524C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-CP1326C": {
+  "decision": "reject",
+  "reason": "source full (24)"
+ },
+ "noaa-LC0000Ef_10_1906_LS": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-LC0000Mh_04_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 60 flat"
+ },
+ "noaa-CP1115C": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "noaa-NCDC1882": {
+  "decision": "reject",
+  "reason": "quality 59"
+ },
+ "noaa-CP2234C": {
+  "decision": "reject",
+  "reason": "quality 59 flat"
+ },
+ "noaa-MILW": {
+  "decision": "reject",
+  "reason": "quality 58 flat"
+ },
+ "noaa-CP441C": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "noaa-8154-9-1887": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "noaa-CP1905C": {
+  "decision": "reject",
+  "reason": "quality 58 flat"
+ },
+ "noaa-CP1683C": {
+  "decision": "reject",
+  "reason": "quality 58"
+ },
+ "noaa-LC0000Md_01_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "noaa-CP435C": {
+  "decision": "reject",
+  "reason": "quality 57"
+ },
+ "noaa-CP1357C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-CP445C": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "noaa-CP2162C": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "noaa-CP1611C": {
+  "decision": "reject",
+  "reason": "quality 56"
+ },
+ "noaa-11-00-1866": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "noaa-LC0000Mf_05_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 55 flat"
+ },
+ "noaa-LC00075_10_1913_LS": {
+  "decision": "reject",
+  "reason": "quality 55"
+ },
+ "noaa-CP811C": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "noaa-cp1570c": {
+  "decision": "reject",
+  "reason": "quality 54"
+ },
+ "noaa-CP1184C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-LC00128_11_1902_LS": {
+  "decision": "reject",
+  "reason": "quality 54 flat"
+ },
+ "noaa-CP907C": {
+  "decision": "reject",
+  "reason": "quality 53"
+ },
+ "noaa-cp2122c": {
+  "decision": "reject",
+  "reason": "quality 52 flat"
+ },
+ "noaa-LC0000Me_12_1905_LS": {
+  "decision": "reject",
+  "reason": "quality 52 flat"
+ },
+ "noaa-CP936C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-8124-6-1908": {
+  "decision": "reject",
+  "reason": "quality 51"
+ },
+ "noaa-CP548C": {
+  "decision": "reject",
+  "reason": "quality 50 flat"
+ },
+ "noaa-LC00145_10_1903_LS": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "noaa-8124-3-1919": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "noaa-ROYAL": {
+  "decision": "reject",
+  "reason": "quality 50"
+ },
+ "noaa-CP2749C": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "noaa-LC0000Ed_06_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "noaa-CP810C": {
+  "decision": "reject",
+  "reason": "quality 49"
+ },
+ "noaa-CPNO335C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-PORTAGE": {
+  "decision": "reject",
+  "reason": "quality 49 flat"
+ },
+ "noaa-CP231C": {
+  "decision": "reject",
+  "reason": "quality 48 flat"
+ },
+ "noaa-LC0000Oo_10_1907_LS": {
+  "decision": "reject",
+  "reason": "quality 48"
+ },
+ "noaa-587-00-1915": {
+  "decision": "reject",
+  "reason": "quality 47 flat"
+ },
+ "noaa-CP879C": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "noaa-CP625C": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "noaa-LC00051_12_1876_LS": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "noaa-CP226C": {
+  "decision": "reject",
+  "reason": "quality 46"
+ },
+ "noaa-LC00058_04_1895_LS": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "noaa-CP1339C": {
+  "decision": "reject",
+  "reason": "quality 45"
+ },
+ "noaa-LC00072_01_1880_LS": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-1076-5-1866": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "noaa-CP1380C": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "noaa-CP977C": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-9-00-1866": {
+  "decision": "reject",
+  "reason": "quality 44"
+ },
+ "noaa-CP195C": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "noaa-cp966c": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "noaa-CP2019C": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "noaa-8124-5-1897": {
+  "decision": "reject",
+  "reason": "quality 43"
+ },
+ "noaa-CP1578C": {
+  "decision": "reject",
+  "reason": "quality 42"
+ },
+ "noaa-LC00054_01_1880_LS": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "noaa-CP176C": {
+  "decision": "reject",
+  "reason": "quality 41"
+ },
+ "noaa-LC0000On_01_1906_LS": {
+  "decision": "reject",
+  "reason": "repeated title"
+ },
+ "noaa-LC0000Mc_11_1905_LS": {
+  "decision": "reject",
+  "reason": "quality 39"
+ },
+ "noaa-LC00062_01_1880_LS": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "noaa-LC0000Eb_08_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 38"
+ },
+ "noaa-CP286C": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "noaa-LC0000Om_05_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 37"
+ },
+ "noaa-LC0000Mj_07_1906_LS": {
+  "decision": "reject",
+  "reason": "quality 36"
+ },
+ "noaa-CP272C": {
+  "decision": "reject",
+  "reason": "quality 34"
+ },
+ "noaa-35-A-11-1920": {
+  "decision": "reject",
+  "reason": "quality 31 sliver"
+ },
+ "noaa-cp963c": {
+  "decision": "reject",
+  "reason": "quality 27 sliver"
+ },
+ "noaa-cp1029c": {
+  "decision": "reject",
+  "reason": "quality 26 sliver"
+ }
+}
