@@ -3,14 +3,19 @@ One ink from an illustration (the studio's raster path): a tonal or line
 illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
-  python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9] [--mode line|tone] [--fade]
+  python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
+      [--mode line|tone] [--fade] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
 
-Writes, at 300 DPI on the 28 x 37 cm print area (3307 x 4370 px):
-  <slug>-white.png   black ink for a white tee: the picture's dark parts are ink;
-  <slug>-black.png   white ink for a black tee: the subject's light parts are ink
-                     (the picture stays a positive, never a negative);
-  <slug>-preview.png 1500 px wide, the design on both tees;
-  <slug>-check.json  the measures and anything that fails.
+Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
+the 28 x 37 cm print area (3307 x 4370 px):
+  <slug>.png         line art: one file, black ink (printed white on black tees);
+  <slug>-black.png   tonal work: white ink for a black tee, the subject's light parts
+  <slug>-white.png   and black ink for a white tee, its dark parts (two positives);
+  <slug>-preview.png 1500 px wide, the design on a black background;
+  <slug>-check.json  the measures and anything that fails (not delivered).
+
+--title and --sub set a heading above the picture, letter-spaced, in Space
+Grotesk (SIL OFL 1.1): its capitals 6 mm and 4 mm high.
 
 --fade is for a full-bleed picture (a scene to the edges): it fades to nothing
 at the edges, as the guidelines ask of a picture with its background.
@@ -22,7 +27,7 @@ as lines; a dark mass wider than 4 mm is held to an open mesh, never a slab.
 import json, os, sys
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
 
 DPI = 300
@@ -30,6 +35,8 @@ PX_MM = DPI / 25.4
 AREA_W, AREA_H = round(280 * PX_MM), round(370 * PX_MM)  # 3307 x 4370
 DESIGN_W, DESIGN_H = 260 * PX_MM, 350 * PX_MM
 TOP = round(10 * PX_MM)
+# The heading's height and the space under it (px), when there is one (set in main).
+HEAD = 0
 # The screen: a 45-degree clustered dot, cell 1.1 mm (about 23 lines an inch).
 CELL_MM = 1.1
 # The darkest tone a mass may carry: 78% ink, an open mesh.
@@ -79,6 +86,43 @@ def crop_box(k):
     return np.s_[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
 
 
+FONT = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "fonts", "space-grotesk.ttf")
+
+
+def heading(title, sub):
+    """The heading as ink (1-bit), centred on the print area's width; and its height in px."""
+    lines = [(title, 6.0, 0.42), (sub, 4.0, 0.18)] if sub else [(title, 6.0, 0.42)]
+    rows, gap = [], round(3.5 * PX_MM)
+    for text, cap_mm, track in lines:
+        if not text:
+            continue
+        probe = ImageFont.truetype(FONT, 1000)
+        cap = probe.getbbox("H")[3] - probe.getbbox("H")[1]
+        size = round(cap_mm * PX_MM * 1000 / cap)
+        f = ImageFont.truetype(FONT, size)
+        sp = track * size
+        widths = [f.getlength(c) for c in text]
+        w = int(sum(widths) + sp * (len(text) - 1)) + 4
+        asc, desc = f.getmetrics()
+        im = Image.new("L", (w, asc + desc), 0)
+        dr = ImageDraw.Draw(im)
+        x = 0.0
+        for c, cw in zip(text, widths):
+            dr.text((x, 0), c, font=f, fill=255)
+            x += cw + sp
+        a = np.asarray(im) > 127
+        ys = np.nonzero(a.any(1))[0]
+        rows.append(a[ys[0]:ys[-1] + 1])
+    hgt = sum(r.shape[0] for r in rows) + gap * (len(rows) - 1)
+    out = np.zeros((hgt, AREA_W), np.uint8)
+    y = 0
+    for r in rows:
+        x0 = (AREA_W - r.shape[1]) // 2
+        out[y:y + r.shape[0], x0:x0 + r.shape[1]] = r
+        y += r.shape[0] + gap
+    return out
+
+
 def fit(k, size):
     """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned.
     Each of a stack of layers (the two positives) is trimmed and placed on its own,
@@ -90,7 +134,7 @@ def fit(k, size):
 
 def fit_one(k, size):
     h, w = k.shape
-    s = min(DESIGN_W * size / w, DESIGN_H * size / h)
+    s = min(DESIGN_W * size / w, (DESIGN_H - HEAD) * size / h)
     nw, nh = int(w * s), int(h * s)
     up = cv2.resize(k, (nw, nh), interpolation=cv2.INTER_CUBIC if s > 1 else cv2.INTER_AREA)
     # A little sharpening after the enlargement keeps the engraved lines crisp.
@@ -98,7 +142,8 @@ def fit_one(k, size):
     up = np.clip(up + 0.6 * (up - blur), 0, 1)
     canvas = np.zeros((AREA_H, AREA_W), np.float32)
     x0 = (AREA_W - nw) // 2
-    canvas[TOP:TOP + nh, x0:x0 + nw] = up[: AREA_H - TOP]
+    top = TOP + HEAD
+    canvas[top:top + nh, x0:x0 + nw] = up[: AREA_H - top]
     return canvas
 
 
@@ -240,29 +285,14 @@ def save_ink(ink, colour, path):
     Image.fromarray(rgba, "RGBA").save(path, optimize=True, dpi=(DPI, DPI))
 
 
-TEE = [(0.31, 0.0), (0.69, 0.0), (0.93, 0.07), (1.0, 0.30), (0.86, 0.36), (0.84, 0.28), (0.84, 1.0), (0.16, 1.0), (0.16, 0.28), (0.14, 0.36), (0.0, 0.30), (0.07, 0.07)]
-
-
-def mockup(ink, tee, w=750):
-    """The back of a tee (about 76 cm across the sleeves) with the print at its true size and place."""
-    cm = w / 76
-    h = int(76 * cm * 1.0)
-    bg = (236, 236, 236) if tee == "black" else (40, 40, 40)
-    cloth = (22, 22, 22) if tee == "black" else (246, 246, 244)
-    ink_c = (240, 240, 240) if tee == "black" else (16, 16, 16)
-    im = Image.new("RGB", (w, h), bg)
-    dr = ImageDraw.Draw(im)
-    dr.polygon([(x * w, y * h + 0.02 * h) for x, y in TEE], fill=cloth)
-    dr.ellipse([0.36 * w, -0.03 * h, 0.64 * w, 0.06 * h], fill=bg)
-    pw, ph = int(28 * cm), int(37 * cm)
-    small = cv2.resize(ink.astype(np.float32), (pw, ph), interpolation=cv2.INTER_AREA)
-    layer = Image.new("RGB", (pw, ph), ink_c)
-    alpha = Image.fromarray((small * 255).astype(np.uint8), "L")
-    im.paste(layer, ((w - pw) // 2, int(0.11 * h)), alpha)
-    return im
+def preview(ink, path):
+    """The guidelines' preview: 1500 px wide, the design on a black background."""
+    small = cv2.resize(ink.astype(np.float32), (1500, round(1500 * AREA_H / AREA_W)), interpolation=cv2.INTER_AREA)
+    Image.fromarray((small * 255).astype(np.uint8), "L").save(path)
 
 
 def main():
+    global HEAD
     args = sys.argv[1:]
     src, out, slug = args[0], args[1], args[2]
     crop = None
@@ -274,6 +304,11 @@ def main():
     if "--size" in args:
         size = float(args[args.index("--size") + 1])
     os.makedirs(out, exist_ok=True)
+    title = args[args.index("--title") + 1] if "--title" in args else None
+    sub = args[args.index("--sub") + 1] if "--sub" in args else None
+    head = heading(title, sub) if title else None
+    if head is not None:
+        HEAD = head.shape[0] + round(8 * PX_MM)
     k = darkness(load(src, crop), bleed)
     m = fade(k) if bleed else None
     if bleed:
@@ -294,14 +329,16 @@ def main():
         else:
             mask = subject_mask(k)
             black = fit_coverage(np.clip(1 - k, 0, 1), mask.astype(np.float32))
-    save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
-    save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
-    a, b = mockup(black, "black"), mockup(white, "white")
-    prev = Image.new("RGB", (a.width * 2, a.height))
-    prev.paste(a, (0, 0))
-    prev.paste(b, (a.width, 0))
-    prev.save(os.path.join(out, f"{slug}-preview.png"))
-    rep = {"white": check(white), "black": check(black)}
+    if head is not None:
+        for ink in {id(white): white, id(black): black}.values():
+            ink[TOP:TOP + head.shape[0]] |= head
+    if mode == "line":
+        save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}.png"))
+    else:
+        save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
+        save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
+    preview(black, os.path.join(out, f"{slug}-preview.png"))
+    rep = {"line": check(white)} if mode == "line" else {"white": check(white), "black": check(black)}
     with open(os.path.join(out, f"{slug}-check.json"), "w") as f:
         json.dump(rep, f, indent=1, ensure_ascii=False)
     print(slug, json.dumps(rep, ensure_ascii=False))
