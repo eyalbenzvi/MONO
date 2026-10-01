@@ -1,0 +1,10 @@
+Title: Moth
+Category: Botanical & Nature
+Subject: A moth with its four wings open, seen from directly above
+Style: Natural history plate, fine pen line with banded wings
+Medium: Drawn (illustration)
+Description: A moth laid flat with its wings open, a furry thorax, a striped abdomen and long trailing hind wings. It came all this way for a light bulb and settled for a shirt.
+Tee colours: Black and white (moth.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 25.9 x 28.5 cm (heading included)
+Keywords: moth, insect, wings, lepidoptera, night, natural history, symmetry, entomology, nature
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
