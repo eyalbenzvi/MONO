@@ -1,0 +1,11 @@
+Prompt: One tall lighthouse, side elevation, architectural drawing. One tapering round stone tower, one glass lantern room and domed cap at the top, a railed gallery under the lantern, a spiral staircase shown inside a cut-away section of the wall. Fine even black ink line, like an architect's elevation, thin construction lines. Flat even light. A thin straight ground line at the base, small faint tick marks in narrow columns at both sides. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, landscape background
+
+Seed: 22202
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 22202, the third of four (main). 22200 good tower but two domed outbuildings crowd its foot and a cross-like finial tops the lantern; 22201 squat banded tower, reads more as a water tower; 22203 base drawn inside a ruled box like a panel; 22202 one tall tapering tower, two railed galleries and a lantern with a finial, a keeper's house with a veranda at the foot, a ground line under it. The model drew no cut-away of the stairs, so the title says only Lighthouse Elevation.
+Crop: 25,20,815,1187 (removes two small signature-like scribbles in the bottom corners and a paper edge on the left).
+Edge: none (one structure on its own ground line, not a full-bleed scene).
+One ink: scripts/studio/oneink.py --crop 25,20,815,1187 --mode pen (brief said line; line dropped the tower's left outline and broke the ground into dashes, pen kept the whole tower and its courses, as the brief allows: line <-> pen). fails: [].

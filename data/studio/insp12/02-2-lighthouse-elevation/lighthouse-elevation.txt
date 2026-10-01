@@ -1,0 +1,10 @@
+Title: Lighthouse Elevation
+Category: Architecture
+Subject: A tall tapering lighthouse in elevation, two railed galleries and a lantern, a keeper's house with a veranda at its foot
+Style: Architectural elevation in fine pen line and hatching; one structure on a thin ground line, lots of air
+Medium: Drawn (illustration)
+Description: A tall lighthouse drawn in elevation, its tower climbing past two railed galleries to the lantern, the keeper's house squared away at its foot. It has stood in worse weather than a wash cycle.
+Tee colours: White (one file, lighthouse-elevation.png: black ink on white tees; also prints white on black tees)
+Print size: 21.4 x 35.0 cm (heading included)
+Keywords: lighthouse, elevation, architecture, coast, maritime, tower, technical drawing, pen and ink, seaside
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
