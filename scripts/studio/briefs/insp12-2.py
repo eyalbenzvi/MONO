@@ -1,0 +1,33 @@
+"""insp12 helper 2: technical elevations after the sailboat tee (black ink on a white tee)."""
+PROMPTS = {
+    1: {
+        "main": (
+            "One hot air balloon, side elevation, technical drawing. One round balloon envelope with vertical gore seams, "
+            "one small wicker basket hanging below on straight thin rigging ropes, a burner frame between them. "
+            "Fine even black ink line, like an engineer's elevation drawing, thin construction lines. "
+            "Flat even light, no shadows. A thin straight ground line below the basket, small faint tick marks in narrow columns at both sides. "
+            "Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
+    },
+    2: {
+        "main": (
+            "One tall lighthouse, side elevation, architectural drawing. One tapering round stone tower, one glass lantern room and domed cap at the top, "
+            "a railed gallery under the lantern, a spiral staircase shown inside a cut-away section of the wall. "
+            "Fine even black ink line, like an architect's elevation, thin construction lines. "
+            "Flat even light. A thin straight ground line at the base, small faint tick marks in narrow columns at both sides. "
+            "Centred, the whole subject with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
+    },
+    3: {
+        "main": (
+            "One vintage biplane, side elevation, technical drawing. One fuselage seen exactly from the side, two stacked wings joined by vertical struts and crossed bracing wires, "
+            "one wooden propeller at the nose, two wheels under it, a tail fin at the back. "
+            "Fine even black ink line, like an engineer's elevation drawing, thin construction lines. "
+            "Flat even light. A thin straight ground line under the wheels, small faint tick marks in narrow columns at both sides. "
+            "Centred, the whole aircraft with wide white margins, plain white paper. "
+            "No text, no frame, no border, no ornaments, no colour, no grey wash."
+        ),
+    },
+}
