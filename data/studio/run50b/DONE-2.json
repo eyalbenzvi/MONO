@@ -1,0 +1,66 @@
+{
+ "helper": 2,
+ "branch": "studio/run50b-2",
+ "slots": [
+  {
+   "slot": 1,
+   "slug": "wood-owl",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K1-tawny-owl-s2102.png",
+   "mode": "tone",
+   "ink_coverage": 0.1744,
+   "note": "frontal Strix owl on a branch; trunk cropped, twigs whitened; titled WOOD OWL, not clearly a tawny"
+  },
+  {
+   "slot": 2,
+   "slug": "falcon",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K2-peregrine-falcon-s2201.png",
+   "mode": "tone",
+   "ink_coverage": 0.1939,
+   "note": "pale spotted falcon in profile, no peregrine moustache, so FALCON; bust cut on a curve; line inverted the eye, so tone"
+  },
+  {
+   "slot": 3,
+   "slug": null,
+   "passed": false,
+   "which": "main",
+   "images": 4,
+   "chosen": null,
+   "mode": null,
+   "ink_coverage": null,
+   "note": "empty: white swan on white paper gave a flat mass with no detail in line and tone; others malformed, grey panel or photo-like; no time for the backup after the main finished (minute 92)"
+  },
+  {
+   "slot": 4,
+   "slug": "toucan",
+   "passed": true,
+   "which": "main",
+   "images": 4,
+   "chosen": "K4-toucan-s2402.png",
+   "mode": "tone",
+   "ink_coverage": 0.1622,
+   "note": "whole toucan on a stump; line made the black body a pale mass, so tone"
+  },
+  {
+   "slot": 5,
+   "slug": null,
+   "passed": false,
+   "which": "main",
+   "images": 4,
+   "chosen": null,
+   "mode": null,
+   "ink_coverage": null,
+   "note": "empty: the model drew feathered raven heads and perched birds, no skull in any of the four; main finished at minute 92, no backup"
+  }
+ ],
+ "minutes": {
+  "install": 11,
+  "generate": 81,
+  "process": 30
+ }
+}
