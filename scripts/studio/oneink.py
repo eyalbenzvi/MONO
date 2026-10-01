@@ -251,19 +251,47 @@ def subject_mask(k):
 
 
 def fit_coverage(tone, mask, lo=0.06, hi=0.30, inker=None):
-    """Bend the tone (a gamma) until the screened coverage falls inside the guidelines' 4–32%."""
+    """Bend the tone (a gamma) until the screened coverage falls inside the guidelines' 4–32%
+    and no continuous dense area passes MASS (a pale sky on a black tee would otherwise
+    print as one bright oval)."""
     inker = inker or to_ink
     g = 1.0
     for _ in range(14):
         ink = inker(np.power(tone, g) * mask)
         c = ink.mean()
-        if c > hi:
+        if c > hi or (c > lo * 1.25 and masses(ink) > MASS):
             g *= 1.25
         elif c < lo:
             g /= 1.25
         else:
             break
     return ink
+
+
+def detail_light(k, light):
+    """The black tee's positive for a faded scene: the light parts that carry drawing.
+    A plain light area (an empty sky, the paper inside the vignette) is left as tee,
+    not printed as a bright oval of mesh; the lit side of a tower, foam or snow with
+    marks in it stays ink. Detail is the local contrast of the picture, about 2 mm round."""
+    mean = cv2.GaussianBlur(k, (0, 0), 2 * PX_MM)
+    std = np.sqrt(np.maximum(cv2.GaussianBlur(k * k, (0, 0), 2 * PX_MM) - mean * mean, 0))
+    detail = np.clip((std - 0.03) / 0.09, 0, 1)
+    detail = cv2.GaussianBlur(detail, (0, 0), 3 * PX_MM)
+    return light * np.clip(detail * 1.4, 0, 1)
+
+
+# The largest continuous dense area a print may have (measured on the catalogue's trial: the
+# good line and tone prints 1–13%, the bright ovals of faded scenes on black tees 17–28%).
+MASS = 0.15
+
+
+def masses(ink):
+    """Continuous areas of dense ink (mesh included): ink averaged over about 6 mm, above
+    55%, in one piece. One larger than MASS of the print lands on the tee as a slab of
+    light (or dark) even when no part of it is solid."""
+    dense = (cv2.GaussianBlur(ink.astype(np.float32), (0, 0), 3 * PX_MM) > 0.55).astype(np.uint8)
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(dense)
+    return float(stats[1:, cv2.CC_STAT_AREA].max() / ink.size) if n > 1 else 0.0
 
 
 def check(ink):
@@ -289,10 +317,12 @@ def check(ink):
     if all(v > 0.25 for v in edges): fails.append("ink along all four edges")
     if bw < 0.3 or bh < 0.3: fails.append(f"too small {bw:.0%} × {bh:.0%}")
     if top_mm > 25: fails.append(f"starts {top_mm:.0f} mm down")
+    mass = masses(ink)
+    if mass > MASS: fails.append(f"continuous dense area {mass:.1%} of the print (≤{MASS:.0%}): reads as a slab")
     if thin > 0.01: fails.append(f"{thin:.1%} of the ink thinner than 0.4 mm")
     return {
         "coverage": round(float(cov), 4), "solid": round(float(solid.mean()), 4), "largestSolid": round(float(largest), 4),
-        "thin": round(float(thin), 4), "sizeCm": [round(bw * 28, 1), round(bh * 37, 1)], "topMm": round(float(top_mm), 1), "fails": fails,
+        "thin": round(float(thin), 4), "mass": round(masses(ink), 4), "sizeCm": [round(bw * 28, 1), round(bh * 37, 1)], "topMm": round(float(top_mm), 1), "fails": fails,
     }
 
 
@@ -331,7 +361,7 @@ def main():
     m = fade(k) if bleed else None
     if bleed:
         # The vignette fades both positives: the dark parts on white, the light parts on black.
-        both = fit(np.stack([k * m, (1 - k) * m]), size)
+        both = fit(np.stack([k * m, detail_light(k, 1 - k) * m]), size)
         k, light = both[0], both[1]
     else:
         k = fit(k, size)
