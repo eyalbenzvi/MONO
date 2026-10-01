@@ -1,0 +1,71 @@
+{
+  "model": "flux-schnell",
+  "model_ids": {
+    "base_pipeline": "black-forest-labs/FLUX.1-schnell (gated on HF without a token; the identical files were taken from the ungated mirror unsloth/FLUX.1-schnell: CLIP-L text_encoder, T5-XXL text_encoder_2 in bf16, tokenizers, VAE, configs)",
+    "transformer": "city96/FLUX.1-schnell-gguf"
+  },
+  "quant_file": "flux1-schnell-Q5_K_S.gguf (8.26 GB)",
+  "licences": {
+    "FLUX.1-schnell transformer / VAE (and the GGUF conversion)": "Apache-2.0",
+    "CLIP ViT-L/14 text encoder (openai/clip-vit-large-patch14)": "MIT",
+    "T5 v1.1 XXL encoder (google/t5-v1_1-xxl)": "Apache-2.0"
+  },
+  "settings": {
+    "steps": 4,
+    "guidance_scale": 0.0,
+    "max_sequence_length": 256,
+    "negative_prompt": "none (FLUX schnell takes no negative prompt; the prompts' 'No text, no frame...' clauses are the only exclusion)",
+    "transformer_compute_dtype": "bfloat16 (GGUFQuantizationConfig)",
+    "text_encoders": "bf16, encoded first then freed",
+    "scheduler": "FlowMatchEulerDiscreteScheduler (pipeline default)",
+    "threads": 4,
+    "size_requested": [
+      832,
+      1216
+    ],
+    "size_used": [
+      704,
+      1024
+    ]
+  },
+  "images": [
+    {
+      "subject": "octopus",
+      "seed": 7001,
+      "seconds": 2080.4,
+      "peak_ram_gb": 10.49,
+      "step_seconds": [
+        507.6,
+        509.0,
+        494.7,
+        499.9
+      ],
+      "size": [
+        704,
+        1024
+      ]
+    }
+  ],
+  "load_seconds": 50.7,
+  "encoder_seconds": {
+    "load_and_encode_3_prompts": 137.1,
+    "peak_ram_gb": 10.06
+  },
+  "load_peak_ram_gb": 12.82,
+  "bench_seconds_per_image_projected": {
+    "832x1216": 2836.4,
+    "704x1024": 2080.8,
+    "512x768": 1348.4
+  },
+  "first_attempt_832x1216": {
+    "subject": "octopus",
+    "seed": 7001,
+    "step_seconds": [
+      697.8,
+      694.7
+    ],
+    "outcome": "killed after 2 of 4 steps by the session's 30 min background-command limit (my error: no timeout set), not by memory; peak RAM through those steps stayed under the 15 GB machine"
+  },
+  "coverage": "1 of 6 images. Measured ~700 s per denoise step at 832x1216 on 4 CPU cores (~47 min per image); after the lost first attempt, only octopus s7001 fit the 90 min limit, run at 704x1024 (~520 s/step). biplane, canal and all 7002 seeds were not generated.",
+  "note": "Octopus s7001 (704x1024): a clean, convincing engraved plate with real cross hatching and good light from above, but only six arms; the 'beak' sketch reads as a bird's head, and the row of sucker details is missing. Prompt following on the negatives is poor: four corner labels and a full caption line of fake handwriting ('One test', 'The pile p ri le s liog...'), which oneink keeps as print, so they would need cropping or masking by hand.\nIn one ink it survives well (line mode, 7% coverage, no check fails); the suckers and the hatched arms hold up crisply. The cost is speed: ~500 s/step at 704x1024 and ~700 s/step at 832x1216 on this 4-core CPU (35-47 min per image), so only 1 of the 6 images exists. Not usable for batch work on this machine."
+}
