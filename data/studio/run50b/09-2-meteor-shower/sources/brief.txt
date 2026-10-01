@@ -1,0 +1,14 @@
+Prompt: A meteor shower in the night sky over rolling hills, wide view, many shooting stars. Dozens of long thin bright streaks crossing the sky diagonally, all from one point high on the left, stars as tiny dots between them. Black ink engraving, the sky in fine horizontal hatching lines with the white streaks cut through it, the hills below in crosshatching with a few dark trees. Night light. The ground ends in a clean straight line along the bottom. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt: text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate
+
+Seed: 9250
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+Ending: --edge horizon (the hills end in a straight cut with a rule; the sky above).
+
+Backup for slot 2. The main, COMET (seeds 9200-9203), was rejected: all four drew rolling hills and trees under an empty or dotted sky, with no comet anywhere.
+Chosen: the first backup image (seed 9250), started at minute 78; the backup run was stopped at minute 85. Dozens of meteor streaks crossing a night sky diagonally over rolling hills and dark firs.
+Processing: --crop 12,12,820,1204 in oneink (takes off a thin frame line the model drew round the picture). A levels stretch to lighten the sky was tried and dropped: it gave a continuous dense area on the white-tee positive.
+python3 scripts/studio/oneink.py <image> data/studio/run50b/09-2-meteor-shower meteor-shower --crop 12,12,820,1204 --mode tone --edge horizon --title "METEOR SHOWER" --sub "Maps & Sky · Visitors"
+Delivered white tee only: on the black-tee positive the glow of the sky above the hills printed as a continuous bright band, so the black file is not delivered. Preview: the white-tee file on a white tee.
