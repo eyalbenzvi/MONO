@@ -1,0 +1,9 @@
+Prompt: One snowy owl perched on a branch, front view. One owl only, symmetrical, two round yellow-ringed eyes looking straight out, one short hooked beak, two feathered feet gripping one bare horizontal branch, wings folded. Soft white plumage with small dark bars and spots, drawn in fine black ink stippling and short hatching. Gentle light from the upper left, shadows soft under the wings. Centred, the whole subject with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+Negative prompt (not used with LCM, guidance 1.0): text, letters, numbers, signature, watermark, logo, frame, border, ornament, decorative corners, panel, colour, grey wash, gradient, blurry, photo, 3d render, cropped, cut off, extra limbs, missing limbs, fused, deformed, two heads, duplicate, landscape background
+
+Seed: 2103
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B, LCMScheduler, 8 steps, guidance 1.0, CPU, scripts/studio/generate.py --jobs --lcm --steps 8
+Chosen: seed 2103, the fourth of four (main). 2100 three-quarter view, branches cut at both edges; 2101 grey panel background with a hard edge; 2102 good and frontal but its tree encloses the paper beside the owl (tone filled it as a slab on the black tee, line made the bird dark); 2103 frontal, symmetrical, two feet on one branch, white margins.
+One ink: scripts/studio/oneink.py --mode line (brief said tone; tone on the black tee turned the eyes into dark hollows and filled the paper between branch and wing as a light slab, so line, as the brief allows: line <-> tone). fails: [].
