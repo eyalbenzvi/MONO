@@ -1,0 +1,12 @@
+Prompt: Bold pen and ink drawing of a single jellyfish, one animal only, woodcut weight, thick confident black outlines, vintage nineteenth-century natural history plate. One dome-shaped bell at the top, white inside, outlined in a thick black line, with bold black radiating lines from the top of the dome to its scalloped rim. Under the bell, four frilled oral arms, wide ruffled ribbons with thick black outlines and white insides, twisting downwards in the centre. About twelve long tentacles, each one a single clean thick black line, hanging in long smooth separate curves to fine points, not tangled. Lots of open white paper between the lines. Tall and narrow, centred, the whole jellyfish in the picture from the top of the bell to the tip of the longest tentacle, white margins on every side, isolated on plain white paper. Pure black and white, high contrast. No grey, no shading wash, no gradient, no water, no bubbles, no text, no letters, no frame, no border.
+
+Negative prompt: text, letters, words, numbers, labels, caption, title, signature, watermark, logo, frame, border, ornament, decorative corners, panels, colour, color, grey wash, gradient, blurry, soft focus, photograph, 3d render, cartoon, low contrast, cropped, cut off at the edge, extra limbs, missing limbs, fused limbs, extra fins, extra legs, deformed, distorted anatomy, duplicate, two subjects, airbrush, smooth shading, soft gradient, pale grey lines, faint lines, translucent render, tangled hair, thin faint lines, grey shading, dense texture
+
+Seed: 1404
+Size: 832x1216
+Model: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (latent-consistency/lcm-lora-ssd-1b, CreativeML Open RAIL++-M), LCMScheduler, 8 steps, CPU, scripts/studio/generate.py --lcm --steps 8
+
+Processing before one ink: levels stretched (grey 0.35 to black, 0.92 to white) so the model's mid-grey lines print as line;
+the model drew a thin black border round the picture, cut off with --crop 40,40,792,1176 (clear of the animal).
+python3 scripts/studio/oneink.py <stretched image> data/studio/01-jellyfish jellyfish --mode line --crop 40,40,792,1176 --title "JELLYFISH" --sub "Marine life · Natural history plate"
+Backup design for 01 (the blue whale failed three attempts). Third attempt; the first was a grey mass with faint tentacles, the second broke up in one ink.

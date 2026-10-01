@@ -1,0 +1,10 @@
+Title: Jellyfish
+Category: Botanical & Nature
+Subject: A single jellyfish in side view: domed bell with radiating lines, frilled oral arms and long trailing tentacles
+Style: Natural history plate, engraving-style line work with a screened bell
+Medium: Drawn (illustration)
+Description: A jellyfish hangs in open water, its domed bell trailing frilled arms and a curtain of beaded tentacles. It has managed for five hundred million years without a brain, which is more than can be said for most of us.
+Tee colours: White, Black
+Print size: 20.0 × 35.0 cm
+Keywords: jellyfish, medusa, marine life, ocean, sea creature, natural history, engraving, scientific illustration, line art
+Credit and source: Original image made with a generative tool: Segmind SSD-1B (Apache 2.0) with the LCM LoRA for SSD-1B (CreativeML Open RAIL++-M); both allow commercial use. Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
