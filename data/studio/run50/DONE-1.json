@@ -1,0 +1,20 @@
+{
+ "helper": 1,
+ "branch": "studio/run50-1",
+ "started": "2026-10-01T12:22:58Z",
+ "finished": "2026-10-01T13:51:00Z",
+ "designs": [
+  {"slot": 1, "slug": "stingray", "passed": false, "which": "backup", "images": 8, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "Main manta ray (1100-1103): all four moth or bat-like wing shapes with no head or cephalic fins. Backup stingray (1150-1153): two inside a circular frame, two with a tail at both ends and no eyes. Slot empty."},
+  {"slot": 2, "slug": "spiral-shell", "passed": true, "which": "main", "images": 4, "chosen": "s1202", "mode": "pen", "ink_coverage": 0.2856,
+   "note": "1202 the only clear coiled shell; ribbed and unstriped, more ammonite than nautilus, so titled SPIRAL SHELL. Line broke the ribs into blotches, pen kept them. fails [], 25.8 x 34.4 cm."},
+  {"slot": 3, "slug": "scallop-shell", "passed": false, "which": "main", "images": 4, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "All four a ginkgo leaf or hand fan on a stalk, no hinge ears. No backup: one generation at a time (two ran out of memory) and the sand dollar could not start before minute 85. Slot empty."},
+  {"slot": 4, "slug": "pufferfish", "passed": true, "which": "main", "images": 4, "chosen": "s1402", "mode": "pen", "ink_coverage": 0.1472,
+   "note": "1402 the clearest face: ringed eyes, nostrils, pout, spines whole all round. A little cartoonish, no fins, no species named. Pen over line (line screened the lower body grey). fails [], 26.0 x 27.0 cm."},
+  {"slot": 5, "slug": "branching-coral", "passed": false, "which": "main", "images": 4, "chosen": null, "mode": "line", "ink_coverage": null,
+   "note": "All four drawn as a land tree with grass, roots and ground. Ready at minute 87, past 85, so no backup. Slot empty."}
+ ],
+ "minutes": {"install": 1.4, "generate": 85.5, "process": 6.0, "total": 88},
+ "issues": "Running the slot-1 backup in parallel with the main batch got the main run OOM-killed (15 GB, about 10 GB per pipeline) after four images; mains 2-5 were re-queued after the backup, which cost the time for any further backups."
+}
