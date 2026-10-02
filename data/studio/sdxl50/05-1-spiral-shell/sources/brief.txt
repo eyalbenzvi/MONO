@@ -1,0 +1,13 @@
+Prompt (backup, ARGONAUT STUDY): One argonaut in its shell, side view, a naturalist's drawing on plain white paper, no text, no lettering, no frame, no border, no colour. A single paper nautilus: a thin white spiral shell with fine radiating ribs and a double row of small knobs along the keel, a small octopus inside with big eyes and curling arms. One empty shell drawn small beside it. Fine black ink line drawing like an old engraving, delicate hatching. Centred, the whole animal with wide white margins.
+
+Seed: 30516
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, scripts/studio/generate_sdxl.py
+
+Main (CUTTLEFISH STUDY), seeds 30510-30512, all rejected: 30510 a horned squid-like creature that is no real animal; 30511 and 30512 study-sheet layouts full of fake lettering, a keyline frame, and invented squid or bug-like bodies, none a cuttlefish. Main prompt: One cuttlefish, side view, a naturalist's study sheet on plain white paper, no text, no lettering, no frame, no border, no colour. A single living cuttlefish large in the centre, wavy fin along the body, eight short arms and two tentacles, a W-shaped pupil, mottled skin pattern. Around it small sketches: the oval cuttlebone, one eye in detail, thin scale lines. Fine black ink line drawing like an old engraving, hatching on the mantle. Centred, wide white margins.
+
+Backup (ARGONAUT STUDY), seeds 30515-30517: chosen 30516, one large ribbed spiral shell, whole in the page, no frame. 30515 a shell with a mass of octopus arms, oddly built (the coil sits where shell and arms meet) and touching the left edge; 30517 a keyline frame, a fake caption, and a fan of ribs ending in a scaly reptile-like body.
+Title: no octopus is drawn and the coiling is closer to an ammonite than a paper nautilus, so by the truth rule it is titled SPIRAL SHELL, not ARGONAUT STUDY. The model drew one shell, not a study sheet with detail sketches.
+Clean-up: a small fake caption and two faint corner marks lie under and beside the shell; the crop --crop 60,40,800,1078 leaves all of them out (nothing painted).
+Ending: none (one object).
+python3 scripts/studio/oneink.py K1-argonaut-study-s30516.png data/studio/sdxl50/05-1-spiral-shell spiral-shell --crop 60,40,800,1078 --mode line --title "SPIRAL SHELL" --sub "Marine life · Study sheet"

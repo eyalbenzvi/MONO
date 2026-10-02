@@ -1,0 +1,10 @@
+Title: Tenement Blocks
+Category: Architecture
+Subject: Old wooden-framed tenement blocks stacked storey on storey along a narrow lane, deep eaves with upturned tips, balconies and many-paned windows, rows of market stalls with covered roofs down the street below
+Style: Pen-and-ink street drawing, fine line and light hatching
+Medium: Drawn (illustration)
+Description: Old tenements climb over a narrow market lane, each storey jutting a little further out than the last. The top floors are close enough to pass a teapot across.
+Tee colours: White
+Print size: 21.0 × 35.3 cm
+Keywords: tenements, old town, street, balconies, market lane, pen and ink, architecture, urban sketch, asia
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
