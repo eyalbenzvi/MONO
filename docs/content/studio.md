@@ -49,3 +49,11 @@ Add for line work: "pen and ink, woodcut weight, no grey wash". For tonal subjec
 | 22 | A blacksmith at the anvil, sparks | Engravings | tone |
 | 23 | A fisherman mending nets | Engravings | tone |
 | 24 | A heart in anatomical section | Botanical & Nature | line |
+
+## The designers' gate (from the run after sdxl50)
+
+Five designer reviews of the SDXL fifty (average 5.5 of 10) found the same faults again and again: screen-dot greys, shaded drawings printed white as negatives, hard rectangles, side elevations floating as strips, invented "study" details, wrong anatomy, small headings, near-duplicate subjects. Every run from now on:
+- follows `scripts/studio/briefs/rules.md`: subjects and families, the prompt, `oneink.py --mode engrave` with its new options and checks, the truth check in DONE, and `print.json` delivered with each design;
+- reaches the shop only through five designer agents (`scripts/studio/briefs/review-designers.md`), whose reviews `scripts/studio/approve.ts` turns into the run's `approved.json` on the shop branch.
+
+The runs before stay as they are.

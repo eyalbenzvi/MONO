@@ -4,7 +4,8 @@ illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
   python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
-      [--mode line|pen|tone] [--edge horizon|rect|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
+      [--mode engrave|line|pen|tone] [--edge horizon|dissolve|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
+      [--plate "Pl. IV"] [--view "Side elevation"] [--views 1] [--outline] [--ground]
 
 Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
 the 28 x 37 cm print area (3307 x 4370 px):
@@ -12,16 +13,41 @@ the 28 x 37 cm print area (3307 x 4370 px):
   <slug>-black.png   tonal work: white ink for a black tee, the subject's light parts
   <slug>-white.png   and black ink for a white tee, its dark parts (two positives);
   <slug>-preview.png 1500 px wide, the design on a black background;
-  <slug>-check.json  the measures and anything that fails (not delivered).
+  <slug>-check.json  the measures and anything that fails (not delivered);
+  print.json         the same measures, delivered with the design: the shop reads its size,
+                     its coverage and whether it may print in white ink on a black tee.
 
 --title and --sub set a heading above the picture, letter-spaced, in Space
-Grotesk (SIL OFL 1.1): its capitals 6 mm and 4 mm high.
+Grotesk (SIL OFL 1.1): its capitals 8.5 mm (a heavier stroke) and 5 mm high, with a
+0.5 mm rule under it. --plate adds a plate number at the rule's right ("Pl. IV"), --view
+names the view after the subtitle ("Side elevation"). A title or subtitle that says
+"study" claims several views: --views (how many the picture really shows) must be 2 or
+more, or the check fails.
+
+--mode engrave (the default for generated drawings) is line and solid only: no dot
+screen anywhere. A flat grey with no line in it is left as tee, not screened; specks
+under 0.5 mm go. line, pen and tone are the older conversions (line and pen screen a
+flat grey; tone is a dot screen throughout); in every mode but tone, more than 3% of the
+ink in screen dots fails the check.
+
+--outline says the picture is drawn as outline, with no cast shadows or shading masses
+(asked for in the prompt). Only such a drawing may print in white ink on a black tee: a
+shaded drawing printed white is a photographic negative (shadows glow). print.json's
+blackTee is --outline and under 10% of the ink in solid fills.
+
+The picture sits at the optical centre of the space under the heading (a little above
+the middle), never pinned to the top. A wide subject (over 1.6 times as wide as tall) or
+--ground gets a ground line under it and a dimension line below that, so a side
+elevation builds height instead of floating as a strip.
 
 --edge is for a full-bleed picture (a scene to the edges), which must not land on
 the tee as a rectangle. It says how the scene ends, chosen per design:
   horizon  the ground ends in a straight cut with a thin rule under it; the sides and
            the top fall away, an empty sky is left as tee (the default for a scene);
-  rect     (or plate) cut to a rectangle with a thin keyline round it (a plate, a postcard);
+  dissolve the scene dissolves into the tee on every side, its edge wandering (the scene's
+           edge for generated work: no hard rectangle);
+  rect     (or plate) cut to a rectangle with a thin keyline round it: fails the check (a hard
+           rectangle reads as a photo printed on a shirt);
   circle   cut to a circle with a thin ring (a lens, a seal: a moon, an island);
   arch     a rectangle with a round top and a keyline (a window: falls, towers);
   oval     (or vignette) an engraver's vignette fading to nothing (sparingly: at most one in ten).
@@ -49,6 +75,10 @@ HEAD = 0
 CELL_MM = 1.1
 # The darkest tone a mass may carry: 78% ink, an open mesh.
 MAX_MASS_TONE = 0.78
+# Where the picture was placed by the last fit (x0, top, width, height in px), for the ground line and the checks.
+LAST_BOX = None
+# The share of the ink the conversion put down as screen dots (line/pen screen a flat grey; tone is all dots).
+SCREENED = 0.0
 
 
 def load(path, crop=None):
@@ -85,7 +115,23 @@ def fade(k, seed=7):
     return m
 
 
-EDGES = ("horizon", "rect", "circle", "arch", "oval")
+def dissolve(k, seed=11):
+    """A scene dissolving into the tee on every side: a rounded rectangle (not an oval, so the
+    scene keeps its width) whose edge wanders and frays, with a soft fall-off."""
+    h, w = k.shape
+    y, x = np.mgrid[0:h, 0:w].astype(np.float32)
+    nx, ny = np.abs(x - w / 2) / (w / 2), np.abs(y - h * 0.5) / (h / 2)
+    r = (nx ** 6 + ny ** 6) ** (1 / 6)
+    th = np.arctan2(y - h / 2, x - w / 2)
+    rnd = np.random.default_rng(seed)
+    wobble = sum(rnd.uniform(0.015, 0.035) / f * np.sin(f * th + rnd.uniform(0, 6.3)) for f in (3, 5, 9, 15))
+    grain = cv2.GaussianBlur(rnd.random((h, w)).astype(np.float32), (0, 0), max(2, w / 150)) - 0.5
+    edge = 0.9 + wobble + 0.5 * grain
+    m = np.clip((edge - r) / 0.22, 0, 1)
+    return m * m * (3 - 2 * m)
+
+
+EDGES = ("horizon", "dissolve", "rect", "circle", "arch", "oval")
 RULE_MM, GAP_MM = 0.7, 2.5
 
 
@@ -145,11 +191,12 @@ def crop_box(k):
 FONT = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "fonts", "space-grotesk.ttf")
 
 
-def heading(title, sub):
-    """The heading as ink (1-bit), centred on the print area's width; and its height in px."""
-    lines = [(title, 6.0, 0.42), (sub, 4.0, 0.18)] if sub else [(title, 6.0, 0.42)]
+def heading(title, sub, plate=None):
+    """The heading as ink (1-bit), centred on the print area's width, with a 0.5 mm rule under it
+    (and the plate number at the rule's right); and its height in px."""
+    lines = [(title, 8.5, 0.3, 0.32), (sub, 5.0, 0.16, 0)] if sub else [(title, 8.5, 0.3, 0.32)]
     rows, gap = [], round(3.5 * PX_MM)
-    for text, cap_mm, track in lines:
+    for text, cap_mm, track, stroke_mm in lines:
         if not text:
             continue
         probe = ImageFont.truetype(FONT, 1000)
@@ -157,40 +204,61 @@ def heading(title, sub):
         size = round(cap_mm * PX_MM * 1000 / cap)
         f = ImageFont.truetype(FONT, size)
         sp = track * size
+        sw = round(stroke_mm * PX_MM)
         widths = [f.getlength(c) for c in text]
-        w = int(sum(widths) + sp * (len(text) - 1)) + 4
+        w = int(sum(widths) + sp * (len(text) - 1)) + 4 + 2 * sw
         asc, desc = f.getmetrics()
-        im = Image.new("L", (w, asc + desc), 0)
+        im = Image.new("L", (w, asc + desc + 2 * sw), 0)
         dr = ImageDraw.Draw(im)
-        x = 0.0
+        x = float(sw)
         for c, cw in zip(text, widths):
-            dr.text((x, 0), c, font=f, fill=255)
+            dr.text((x, sw), c, font=f, fill=255, stroke_width=sw, stroke_fill=255)
             x += cw + sp
         a = np.asarray(im) > 127
         ys = np.nonzero(a.any(1))[0]
         rows.append(a[ys[0]:ys[-1] + 1])
-    hgt = sum(r.shape[0] for r in rows) + gap * (len(rows) - 1)
+    rule_h, rule_gap = max(round(0.5 * PX_MM), 6), round(3 * PX_MM)
+    hgt = sum(r.shape[0] for r in rows) + gap * (len(rows) - 1) + rule_gap + rule_h
     out = np.zeros((hgt, AREA_W), np.uint8)
     y = 0
     for r in rows:
         x0 = (AREA_W - r.shape[1]) // 2
         out[y:y + r.shape[0], x0:x0 + r.shape[1]] = r
         y += r.shape[0] + gap
+    y += rule_gap - gap
+    widest = max(r.shape[1] for r in rows)
+    half = max(widest + (round(50 * PX_MM) if plate else 0), round(120 * PX_MM)) // 2
+    out[y:y + rule_h, AREA_W // 2 - half:AREA_W // 2 + half] = 1
+    if plate:
+        probe = ImageFont.truetype(FONT, 1000)
+        cap = probe.getbbox("H")[3] - probe.getbbox("H")[1]
+        f = ImageFont.truetype(FONT, round(4.0 * PX_MM * 1000 / cap))
+        im = Image.new("L", (int(f.getlength(plate)) + 4, sum(f.getmetrics())), 0)
+        ImageDraw.Draw(im).text((0, 0), plate, font=f, fill=255)
+        a = np.asarray(im) > 127
+        ys = np.nonzero(a.any(1))[0]
+        a = a[ys[0]:ys[-1] + 1]
+        x1 = AREA_W // 2 + half
+        y0 = max(0, y - round(1.5 * PX_MM) - a.shape[0])
+        out[y0:y0 + a.shape[0], x1 - a.shape[1]:x1] |= a
     return out
 
 
-def fit(k, size, trim=True):
-    """Scale the picture into the design box (26 x 35 cm x size) and place it centred, top-aligned.
+def fit(k, size, trim=True, below=0):
+    """Scale the picture into the design box (26 x 35 cm x size) and place it centred, at the optical
+    centre of the space under the heading (a little above the middle). `below` (px) is kept free under
+    the picture for a ground line and dimension line.
     Each of a stack of layers (the two positives) is trimmed and placed on its own,
     so each starts at the top: a pale sky is ink on a black tee and nothing on white."""
     if k.ndim == 3:
-        return np.stack([fit_one(l[crop_box(l)] if trim else l, size) for l in k])
-    return fit_one(k[crop_box(k)] if trim else k, size)
+        return np.stack([fit_one(l[crop_box(l)] if trim else l, size, below) for l in k])
+    return fit_one(k[crop_box(k)] if trim else k, size, below)
 
 
-def fit_one(k, size):
+def fit_one(k, size, below=0):
+    global LAST_BOX
     h, w = k.shape
-    s = min(DESIGN_W * size / w, (DESIGN_H - HEAD) * size / h)
+    s = min(DESIGN_W * size / w, (DESIGN_H - HEAD - below) * size / h)
     nw, nh = int(w * s), int(h * s)
     up = cv2.resize(k, (nw, nh), interpolation=cv2.INTER_CUBIC if s > 1 else cv2.INTER_AREA)
     # A little sharpening after the enlargement keeps the engraved lines crisp.
@@ -198,9 +266,36 @@ def fit_one(k, size):
     up = np.clip(up + 0.6 * (up - blur), 0, 1)
     canvas = np.zeros((AREA_H, AREA_W), np.float32)
     x0 = (AREA_W - nw) // 2
-    top = TOP + HEAD
+    # The optical centre: 40% of the spare height above the picture (and its ground block), 60% below.
+    spare = max(0, round(TOP + DESIGN_H) - (TOP + HEAD) - nh - below)
+    top = TOP + HEAD + round(0.4 * spare)
     canvas[top:top + nh, x0:x0 + nw] = up[: AREA_H - top]
+    LAST_BOX = (x0, top, nw, min(nh, AREA_H - top))
     return canvas
+
+
+GROUND_MM, DIM_GAP_MM = 0.6, 7.0
+
+
+def ground_block(box):
+    """A ground line under a side elevation (a little wider than it) and a dimension line below:
+    0.4 mm with end ticks, as on a patent sheet or a builder's elevation (1-bit, print size)."""
+    x0, top, nw, nh = box
+    out = np.zeros((AREA_H, AREA_W), np.uint8)
+    g = round(GROUND_MM * PX_MM)
+    y = top + nh + round(1.5 * PX_MM)
+    pad = round(0.04 * nw)
+    out[y:y + g, max(0, x0 - pad):min(AREA_W, x0 + nw + pad)] = 1
+    t = max(round(0.4 * PX_MM), 5)
+    yd = y + g + round(DIM_GAP_MM * PX_MM)
+    out[yd:yd + t, x0:x0 + nw] = 1
+    tick = round(3 * PX_MM)
+    for x in (x0, x0 + nw - t):
+        out[yd - tick // 2:yd + tick // 2 + t, x:x + t] = 1
+    return out
+
+
+GROUND_BELOW = round((1.5 + GROUND_MM + DIM_GAP_MM + 3) * PX_MM)
 
 
 def disc(r_px):
@@ -244,6 +339,28 @@ def to_ink(tone):
     return ink
 
 
+def engrave_ink(tone):
+    """Line and solid only (the conversion for generated drawings): a threshold, strokes under
+    0.4 mm thickened to it, specks under 0.5 mm dropped. No dot screen anywhere: a flat grey with
+    no line in it (a wash, a smudge, a shaded sky) is left as tee, never screened."""
+    global SCREENED
+    SCREENED = 0.0
+    mean = cv2.GaussianBlur(tone, (0, 0), 0.8 * PX_MM)
+    var = cv2.GaussianBlur(tone * tone, (0, 0), 0.8 * PX_MM) - mean * mean
+    flat = ((mean > 0.18) & (mean < 0.75) & (var < 0.012)).astype(np.uint8)
+    flat = cv2.morphologyEx(flat, cv2.MORPH_OPEN, disc(1.5 * PX_MM)).astype(bool)
+    ink = ((tone > 0.5) & ~flat).astype(np.uint8)
+    # Strokes under 0.4 mm are grown to it (never dropped: a fine line stays a line), then what is
+    # still thinner (a corner, a frayed end) is trimmed.
+    thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
+    ink = np.maximum(ink, cv2.dilate(ink & (1 - thick), disc(0.2 * PX_MM + 0.5)))
+    ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM - 0.01))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(ink)
+    keep = np.zeros(n, bool)
+    keep[1:] = stats[1:, cv2.CC_STAT_AREA] > (0.5 * PX_MM) ** 2 * 1.5
+    return keep[lab].astype(np.uint8)
+
+
 def line_ink(tone):
     """Line work (engraving, woodcut, pen): the lines are already the screen, so a threshold, not dots.
     Strokes under 0.4 mm are thickened to it; flat mid-grey (wash, not line) is screened."""
@@ -256,10 +373,20 @@ def line_ink(tone):
     var = cv2.GaussianBlur(tone * tone, (0, 0), 0.8 * PX_MM) - mean * mean
     flat = ((mean > 0.18) & (mean < 0.75) & (var < 0.012)).astype(np.uint8)
     flat = cv2.morphologyEx(flat, cv2.MORPH_OPEN, disc(1.5 * PX_MM))
+    global SCREENED
     dots = (np.minimum(tone, MAX_MASS_TONE) > screen_map()).astype(np.uint8)
     ink = np.where(flat.astype(bool), dots, ink).astype(np.uint8)
+    slab = slab_mask(ink)
     ink = hold_slabs(ink)
-    return cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
+    ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
+    SCREENED = float(((flat.astype(bool) | slab) & (ink > 0)).sum() / max(1, ink.sum()))
+    return ink
+
+
+def slab_mask(ink):
+    """Where hold_slabs will cut a mesh: solid patches wider than 4 mm."""
+    core = cv2.erode(ink, disc(2 * PX_MM))
+    return cv2.dilate(core, disc(2 * PX_MM)).astype(bool)
 
 
 def pen_ink(tone):
@@ -277,7 +404,11 @@ def pen_ink(tone):
     keep = np.zeros(n, bool)
     keep[1:] = stats[1:, cv2.CC_STAT_AREA] > (0.8 * PX_MM) ** 2
     ink = keep[lab].astype(np.uint8)
-    return hold_slabs(ink)
+    global SCREENED
+    slab = slab_mask(ink)
+    ink = hold_slabs(ink)
+    SCREENED = float((slab & (ink > 0)).sum() / max(1, ink.sum()))
+    return ink
 
 
 def hold_slabs(ink):
@@ -334,13 +465,30 @@ def detail_light(k, light):
     return light * np.clip(detail * 1.4, 0, 1)
 
 
-def check(ink):
-    """The guidelines' measures (sections 02, 04, 05) on a 1-bit print at 300 DPI."""
+def solid_share(ink):
+    """The share of the ink in solid fills: pixels whose 1.5 mm neighbourhood is over 85% ink."""
+    k = max(3, round(1.5 * PX_MM)) | 1
+    local = cv2.blur(ink.astype(np.float32), (k, k))
+    return float(((local > 0.85) & (ink > 0)).sum() / max(1, ink.sum()))
+
+
+def check(ink, ctx=None):
+    """The guidelines' measures (sections 02, 04, 05) on a 1-bit print at 300 DPI, and the studio's
+    own (a screen, a hard rectangle, an empty sheet, a heading on the picture, specks, a study
+    of one view). ctx: mode, edge, title, sub, views, outline, box (the picture), headRows."""
+    ctx = ctx or {}
     cov = ink.mean()
-    ys, xs = np.nonzero(ink)
+    # The drawing's own extent, under the heading (the heading isn't the picture).
+    rows = ctx.get("headRows")
+    art = ink.copy()
+    if rows is not None:
+        art[:rows + round(1 * PX_MM)] = 0
+    ys, xs = np.nonzero(art)
     bw = (xs.max() - xs.min() + 1) / AREA_W if len(xs) else 0
     bh = (ys.max() - ys.min() + 1) / AREA_H if len(ys) else 0
-    top_mm = ys.min() / PX_MM if len(ys) else 0
+    # The print's top (heading included): where the ink starts on the back.
+    all_rows = np.nonzero(ink.any(1))[0]
+    top_mm = all_rows[0] / PX_MM if len(all_rows) else 0
     thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM - 0.01))
     thin = (ink & (1 - thick)).sum() / max(1, ink.sum())
     fails = []
@@ -348,9 +496,42 @@ def check(ink):
     if bw < 0.3 or bh < 0.3: fails.append(f"too small {bw:.0%} × {bh:.0%}")
     if top_mm > 25: fails.append(f"starts {top_mm:.0f} mm down")
     if thin > 0.01: fails.append(f"{thin:.1%} of the ink thinner than 0.4 mm")
+    screened = SCREENED if ctx.get("mode") != "tone" else 1.0
+    if ctx.get("mode") in ("engrave", "line", "pen") and screened > 0.03:
+        fails.append(f"{screened:.0%} of the ink is screen dots (3% at most: line and solid only)")
+    if ctx.get("edge") == "rect":
+        fails.append("a hard rectangular edge (use --edge dissolve or horizon)")
+    # An empty sheet: the drawing fills neither the design box's width nor its height (75%); or a
+    # strip: full width but under 30% of the height (a side elevation must build height: a second
+    # view, a plan above it, the ground block).
+    dw, dh = bw * AREA_W / DESIGN_W, bh * AREA_H / DESIGN_H
+    if bw > 0 and dw < 0.75 and dh < 0.75:
+        fails.append(f"floats small: {dw:.0%} of the width, {dh:.0%} of the height (fill one of them to 75%)")
+    elif bw > 0 and dh < 0.30:
+        fails.append(f"a strip: {dh:.0%} of the height (add a second view or a plan to build height)")
+    # The heading must stand clear of the picture by 3 mm.
+    if rows is not None and len(ys):
+        below = ys[ys > rows]
+        if len(below) and (below.min() - rows) < 3 * PX_MM:
+            fails.append("the heading touches the picture (3 mm clear)")
+    # Specks: pieces under 0.5 mm across.
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(ink)
+    crumbs = stats[1:, cv2.CC_STAT_AREA][stats[1:, cv2.CC_STAT_AREA] < (0.5 * PX_MM) ** 2 * 1.5].sum() if n > 1 else 0
+    if ctx.get("mode") != "tone" and crumbs / max(1, ink.sum()) > 0.002:
+        fails.append(f"{crumbs / max(1, ink.sum()):.1%} of the ink in specks under 0.5 mm")
+    says_study = "study" in (ctx.get("title") or "").lower() or "study" in (ctx.get("sub") or "").lower()
+    if says_study and ctx.get("views", 1) < 2:
+        fails.append("titled a study but shows one view (--views 2 or more, or retitle)")
+    w_cm, h_cm = bw * 28, bh * 37
+    if w_cm < 20 and h_cm < 30:
+        fails.append(f"too small on the tee: {w_cm:.0f} × {h_cm:.0f} cm (20 cm wide or 30 cm tall)")
+    solid = solid_share(ink)
     return {
         "coverage": round(float(cov), 4),
-        "thin": round(float(thin), 4), "sizeCm": [round(bw * 28, 1), round(bh * 37, 1)], "topMm": round(float(top_mm), 1), "fails": fails,
+        "thin": round(float(thin), 4), "sizeCm": [round(w_cm, 1), round(h_cm, 1)], "topMm": round(float(top_mm), 1),
+        "screened": round(float(screened), 4), "solid": round(solid, 4),
+        "blackTee": bool(ctx.get("outline")) and solid < 0.10,
+        "fails": fails,
     }
 
 
@@ -386,12 +567,26 @@ def main():
     os.makedirs(out, exist_ok=True)
     title = args[args.index("--title") + 1] if "--title" in args else None
     sub = args[args.index("--sub") + 1] if "--sub" in args else None
-    head = heading(title, sub) if title else None
+    plate = args[args.index("--plate") + 1] if "--plate" in args else None
+    view = args[args.index("--view") + 1] if "--view" in args else None
+    views = int(args[args.index("--views") + 1]) if "--views" in args else 1
+    outline = "--outline" in args
+    if view:
+        sub = f"{sub} · {view}" if sub else view
+    head = heading(title, sub, plate) if title else None
     if head is not None:
         HEAD = head.shape[0] + round(8 * PX_MM)
     k = darkness(load(src, crop), bleed)
     rule = None
-    if edge == "oval":
+    # A wide subject (or --ground): room under it for a ground line and a dimension line.
+    kh, kw = k[crop_box(k)].shape if not bleed else k.shape
+    ground = not bleed and ("--ground" in args or kw / max(1, kh) > 1.6)
+    below = GROUND_BELOW if ground else 0
+    if edge == "dissolve":
+        m = dissolve(k)
+        both = fit(np.stack([k * m, detail_light(k, 1 - k) * m]), size)
+        k, light = both[0], both[1]
+    elif edge == "oval":
         # The vignette fades both positives: the dark parts on white, the light parts on black.
         m = fade(k)
         both = fit(np.stack([k * m, detail_light(k, 1 - k) * m]), size)
@@ -406,16 +601,23 @@ def main():
         k, light, M = placed
         rule = edge_rule(M, edge)
     else:
-        k = fit(k, size)
-    if mode == "pen":
+        k = fit(k, size, below=below)
+    box = LAST_BOX
+    if mode == "engrave":
+        white = fit_coverage(k, 1.0, lo=0.04, hi=0.30, inker=engrave_ink)
+        black = white
+        mode, conv = "line", "engrave"
+    elif mode == "pen":
         white = pen_ink(k)
         black = white
-        mode = "line"
+        mode, conv = "line", "pen"
     elif mode == "line":
+        conv = "line"
         # Line art: one file; the same lines print white on black and black on white (guidelines, 03).
         white = fit_coverage(k, 1.0, inker=line_ink)
         black = white
     else:
+        conv = "tone"
         # Tonal work: two positives; on a black tee the subject's light parts are the ink.
         white = fit_coverage(k, 1.0)
         if bleed:
@@ -426,6 +628,10 @@ def main():
     if rule is not None:
         for ink in {id(white): white, id(black): black}.values():
             ink |= rule
+    if ground and box is not None:
+        block = ground_block(box)
+        for ink in {id(white): white, id(black): black}.values():
+            ink |= block
     if head is not None:
         for ink in {id(white): white, id(black): black}.values():
             ink[TOP:TOP + head.shape[0]] |= head
@@ -435,9 +641,18 @@ def main():
         save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
         save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
     preview(black, os.path.join(out, f"{slug}-preview.png"))
-    rep = {"line": check(white)} if mode == "line" else {"white": check(white), "black": check(black)}
+    ctx = {"mode": conv, "edge": edge, "title": title, "sub": sub, "views": views, "outline": outline,
+           "headRows": (TOP + head.shape[0]) if head is not None else None}
+    rep = {"line": check(white, ctx)} if mode == "line" else {"white": check(white, ctx), "black": check(black, ctx)}
     with open(os.path.join(out, f"{slug}-check.json"), "w") as f:
         json.dump(rep, f, indent=1, ensure_ascii=False)
+    # Delivered with the design (the shop reads it): the measures of the print it sells.
+    main_rep = rep.get("line") or rep["white"]
+    with open(os.path.join(out, "print.json"), "w") as f:
+        json.dump({"mode": conv, "edge": edge, "views": views, "outline": outline, "ground": ground,
+                   "coverage": main_rep["coverage"], "solid": main_rep["solid"], "screened": main_rep["screened"],
+                   "sizeCm": main_rep["sizeCm"], "blackTee": main_rep["blackTee"] and mode == "line",
+                   "fails": main_rep["fails"]}, f, indent=1, ensure_ascii=False)
     print(slug, json.dumps(rep, ensure_ascii=False))
 
 
