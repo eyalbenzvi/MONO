@@ -1,0 +1,30 @@
+{
+ "helper": 4,
+ "started": "2026-10-02T06:45:32Z",
+ "finished": "2026-10-02T07:16:00Z",
+ "model": "SDXL base 1.0 + SDXL-Lightning 8-step UNet (scripts/studio/generate_sdxl.py, unpatched; one process at a time)",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "colonial-house",
+   "folder": "data/studio/rules10/04-1-colonial-house",
+   "passed": true,
+   "which": "main",
+   "images": ["K1-colonial-house-s40410.png", "K1-colonial-house-s40411.png", "K1-colonial-house-s40412.png"],
+   "chosen": "K1-colonial-house-s40411.png",
+   "note": "Frontal view of one house with two arcaded veranda levels, a pedimented roof and a palm. Cropped 14,60,816,1205 to remove the generator's thin frame line and the top cloud band; --edge dissolve. check.json and print.json fails []. 21.9 x 30.3 cm, White tee. Rejected: 40410 (three storeys with a second house behind it), 40412 (angled view behind a fence and gate).",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "One building, no second house: columns stand on the veranda floors and carry the levels above them, railings run between the columns, and the stair rises to the front door. The prompt asked for two storeys; the drawing shows two arcaded veranda floors plus a shallow top floor under the roof, so the text describes verandas 'two deep' and never gives a storey count. The palm and the shrubs are planting around the house (the prompt asked for them), not a second object. The title 'Colonial House' matches."}
+  },
+  {
+   "slot": 2,
+   "slug": "lighthouse",
+   "folder": "data/studio/rules10/04-2-lighthouse",
+   "passed": true,
+   "which": "main",
+   "images": ["K2-lighthouse-s40420.png", "K2-lighthouse-s40421.png", "K2-lighthouse-s40422.png"],
+   "chosen": "K2-lighthouse-s40420.png",
+   "note": "All three seeds came with a hatched grey sky inside a frame. 40420 is the only plain front elevation of a single tower. Its sky, sea, frame and fake caption text were painted to paper (GrabCut cutout of tower and rock), then the broad shading was flattened so the shaded side keeps its stone courses; the painted file is in sources/. No backup run (not all three seeds were rejected). check.json and print.json fails []. 15.8 x 32.1 cm (over 30 cm tall), White tee. Rejected: 40421 (coastal scene with cliff, trees and a sailing boat), 40422 (extra keeper's cottage, a tree and a heavy sky).",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "One lighthouse with every part in order from the bottom up: rock, keeper's door with steps, a tapering stone shaft with three windows, the corbelled gallery with its railing, the glazed lantern, and a domed cap with finial. It could stand and work. Nothing else in the picture: the sea, sky and frame were painted out, and the rock is its footing. The title 'Lighthouse' with 'Elevation' matches the front elevation."}
+  }
+ ]
+}
