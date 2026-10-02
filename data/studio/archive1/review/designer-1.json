@@ -9,6 +9,14 @@
    "why": "Clean, solid line art. Strokes are about 0.5-0.9 mm at print size and the gaps between hatch lines are open, so it will hold on cotton with no gain trouble and an even ink load. It reads at 3 m and rewards a close look. The D\u00fcrer pedigree plus 'DRAWN FROM A RUMOR.' is a real line that carries the tee. The crop along the shoulder shield mostly works, but the cut-away back still reads slightly as 'half a rhino'.",
    "fix": "Give the caption more air: it sits too close to the bottom of the print area. Lift it up or tighten the artwork above it. Also clean up the cut edge of the shield so it reads as a deliberate frame edge rather than a missing rump.",
    "title": "Drawn from a Rumor"
+  },
+  {
+   "no": 2,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "This is proper screen-print art: engraved hatching at roughly 0.4 mm lines with matching gaps, which holds on cotton without filling in, a strong black-and-white range, a genuine archive source, and a caption that earns its place. Weak points: the straight vertical cut down the left edge reads as an arbitrary crop rather than a composed vignette, the bottom-left is empty, and the trace leaves blotchy plugged clumps and speckle in the dark plates and head that will print as ink blobs.",
+   "fix": "Recompose so the body ends on a deliberate, drawn edge (or show more of the flea so the silhouette fills the area like the octopus), and clean the trace at the same time so every dark area is continuous engraved line with no plugged clumps or stray specks.",
+   "title": "Nobody Had Looked"
   }
  ],
  "best": 1,

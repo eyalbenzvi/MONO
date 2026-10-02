@@ -68,6 +68,9 @@ export interface StudioEntry {
   briefUrl: string;
   /** The model that drew it when it isn't the studio's first (SSD-1B): "sdxl" for SDXL base 1.0 with SDXL-Lightning; "code" for a drawing made in code (no image model); "gemini" for Google Gemini (Gemini 3 Pro Image); "archive" for a public-domain work traced and set by MONO (no image model; the details' Credit line names the work and the museum). */
   model?: "sdxl" | "code" | "gemini" | "archive";
+  /** An archive work's source and licence, from its details' "Credit and source" and "Licence" lines (an open licence such as CC BY needs the credit shown). */
+  credit?: string;
+  licence?: string;
 }
 
 /**
@@ -273,7 +276,7 @@ async function main() {
       printCm: a.printCm,
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
-      ...(gated && /^code$/i.test(d.model ?? "") ? { model: "code" as const } : gated && /^gemini$/i.test(d.model ?? "") ? { model: "gemini" as const } : gated && /^archive$/i.test(d.model ?? "") ? { model: "archive" as const } : sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
+      ...(gated && /^code$/i.test(d.model ?? "") ? { model: "code" as const } : gated && /^gemini$/i.test(d.model ?? "") ? { model: "gemini" as const } : gated && /^archive$/i.test(d.model ?? "") ? { model: "archive" as const, credit: d["credit and source"], licence: d.licence } : sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
     });
     console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${entries[entries.length - 1].quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
   }

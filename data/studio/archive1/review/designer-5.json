@@ -9,6 +9,14 @@
    "why": "Crisp, bold, high-contrast woodcut line that prints cleanly and photographs well, and the head and armour detail rewards a close look. 'DRAWN FROM A RUMOR.' is the reason to buy: it turns the most over-merchandised public-domain animal in museum shops into a witty, knowing piece. I'd stock it at $50. Docked because the D\u00fcrer rhino is very familiar, and the cut-away rear reads at a glance as a blunt slab on the left rather than a deliberate crop.",
    "fix": "Make the crop look intentional: either square the cut off with a clean ruled plate edge or frame line, or pull the animal right so the cut edge sits flush with the print boundary. The caption could also be set a touch tighter, so it locks up with the 1515 RHINOCERVS heading as one composition.",
    "title": "Drawn from a Rumor"
+  },
+  {
+   "no": 2,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Real provenance (Hooke, 1665) and engraving-quality line that prints crisply. The plate letters (K, L, M) add authenticity, and the caption gives the buyer a story to tell, which is exactly what sells a $50 tee. Weaknesses: the close crop loses the famous whole-flea silhouette, so from 3 m it reads as a dark armoured lump with a small head, the straight cut along the left edge looks like a mistake rather than a choice, and the thin trailing legs leave the lower half airy.",
+   "fix": "Show the whole Hooke flea (the iconic full silhouette), scaled to fill the print area, and keep the caption under it; at minimum, recrop so the head and eye sit nearer the centre and the cut edge reads as intentional.",
+   "title": "Nobody Had Looked"
   }
  ],
  "best": 1,

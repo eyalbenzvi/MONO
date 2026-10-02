@@ -9,6 +9,14 @@
    "why": "It is a real artefact traced faithfully, with crisp, bold, even woodcut line that will print cleanly on either tee. The head, the scale-mail legs and the plate rings all hold up at full size, and the 1515 RHINOCERVS title and AD monogram add authenticity. The caption is witty and true to the story: an animal assembled from hearsay, which a natural-history eye enjoys. The weak point is the cut. With the rear gone, the shoulder shield closes into a rounded hood, so at a distance the animal reads as a cowled hump rather than D\u00fcrer's iconic armoured tank. The floating pebbles and ground strokes at lower right also look like leftovers.",
    "fix": "Show the whole animal, with the full woodcut silhouette including the hindquarters and tail, scaled to the width. Failing that, at least trim the stray ground pebbles so the truncation reads as deliberate.",
    "title": "Drawn from a Rumor"
+  },
+  {
+   "no": 2,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A real archive engraving, bold and dense, the same family as the octopus, and the caption is a good line that earns the crop. Close up, the tracing shows its seams. Hooke's plate-key letters (A, B, C, D, K, L, M, N, O) are left floating on the legs and head with no key to explain them. Several hatched passages have broken into dashes or blotchy white dropouts, mostly on the upper plates and the leg segments. Cut this tight, the animal does not read as a flea at first glance; it could pass for a shrimp or a beetle until you find the eye and claws.",
+   "fix": "Re-trace or hand-clean the scan: take out the stray plate letters and mend the broken, blotchy hatching so the line work is as clean and continuous as Hooke engraved it.",
+   "title": "Nobody Had Looked"
   }
  ],
  "best": 1,

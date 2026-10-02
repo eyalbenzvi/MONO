@@ -4621,6 +4621,42 @@
   },
   "coverage": 0.199,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/archive1/01-1-drawn-from-a-rumor/sources/brief.txt",
-  "model": "archive"
+  "model": "archive",
+  "credit": "Albrecht Dürer, The Rhinoceros, 1515, woodcut. Cleveland Museum of Art, 1993.9, open access (CC0): https://www.clevelandart.org/art/1993.9. Traced to one ink, cropped and captioned by MONO.",
+  "licence": "Public domain (CC0)"
+ },
+ {
+  "n": 20152,
+  "dir": "data/studio/archive1/02-1-nobody-had-looked",
+  "title": "Nobody Had Looked",
+  "category": "etched",
+  "subject": "Robert Hooke's 1665 engraving of a flea from Micrographia, shown close: the head with its eye, the plated thorax and the two front legs with their claws, Hooke's plate letters kept, with the caption \"Nobody had looked this closely before.\" under it",
+  "style": "Engraving line traced from a library scan, with a bold serif caption",
+  "description": "In 1665 Robert Hooke put a flea under his microscope and engraved what he saw, armour plates, bristles, claws and all. London had never seen anything like it.",
+  "keywords": [
+   "flea",
+   "Hooke",
+   "Micrographia",
+   "microscope",
+   "1665",
+   "engraving",
+   "insect",
+   "science",
+   "close-up",
+   "line art"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "line",
+  "quality": 75,
+  "printCm": {
+   "width": 21,
+   "height": 34
+  },
+  "coverage": 0.232,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/archive1/02-1-nobody-had-looked/sources/brief.txt",
+  "model": "archive",
+  "credit": "Robert Hooke, Micrographia (1665), Schem. XXXIV, the flea. Wellcome Collection, L0084699, CC BY 4.0: https://wellcomecollection.org/works/jrp59aem. Traced to one ink, cropped and captioned by MONO.",
+  "licence": "CC BY 4.0 (Wellcome Collection)"
  }
 ]

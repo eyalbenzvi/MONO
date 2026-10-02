@@ -1,0 +1,4 @@
+Source: Wellcome Collection image L0084699 (Robert Hooke, Micrographia, 1665, the flea), CC BY 4.0, IIIF 6000 px wide:
+https://iiif.wellcomecollection.org/image/L0084699/full/6000,/0/gray.jpg
+Trace (sources/trace.py, threshold 0.40): Hooke's hatching is 0.43 mm apart at full-flea print size, under the shop's 0.4 mm line plus a gap, so the head, thorax and front legs are shown at 1:1 (lines about 0.8 mm apart), cut along a thorax plate; skeleton redrawn at 0.42 mm minimum.
+Chosen by the 100-idea competition (#10, 8.1 average of ten personas). Designer panel: 7.5 (round 1, this version); a microscope-circle version scored 7.2; the panel asked for the whole flea, which this engraving can't give in one ink, so the loop stopped. Zero Gemini images.
