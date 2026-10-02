@@ -1,0 +1,18 @@
+{
+ "helper": 6,
+ "branch": "studio/rules10-6",
+ "started": "2026-10-02T06:45:34Z",
+ "finished": "2026-10-02T07:50:00Z",
+ "designs": [
+  {"slot": 1, "slug": "agave", "passed": false, "which": "main+backup+2 rewritten prompts", "images": 15, "chosen": null,
+   "note": "Not delivered. Main AGAVE 40610-40612: a rosette on a tall spiny trunk with a second rosette at its foot; a rosette sitting on a pine-cone-like stack of dead leaves; a flower on a stem with two leaves. Backup ALOE 40615-40617: all a leafy cone on a bare stalk, no rosette at the ground and no flower spike (40616/40617 also framed with fake text). Both prompts having failed, two rewrites (45-90 words, same spirit) were tried, passed as job files, not edited into rules10.py: side view stemless rosette (40613, 40614, 40618: all an artichoke-like flower head on a stalk, fake text) and top view (40640-40642: a rosette with a stem stub, then two houseleek/echeveria rosettes with no spines; 40650-40652: page-filling pineapple top in a frame, a trunked plant in a landscape, two rosettes stacked on a bulb). No seed is truthfully an agave or an aloe; stopped at minute 63 rather than start a run that could not finish converting before minute 80.",
+   "truth": {"anatomy_or_mechanics_ok": false, "one_object": false, "title_matches": false,
+             "note": "Best near-miss 40611 (one spiny rosette) sits on an invented cone of dead leaves; 40640 (top view) reads as a generic succulent with a stalk. Neither is an honest AGAVE or ALOE."}},
+  {"slot": 2, "slug": "sunflower", "passed": true, "which": "main", "images": 3, "chosen": "s40622", "mode": "engrave", "ink_coverage": 0.2342,
+   "note": "40622: one whole sunflower inside the margins, one head, a side bud and four toothed leaves on a single stem, no frame, no fake text; nothing painted or cropped. 40620 leaves run off two edges, second stalk at the foot; 40621 frame and fake label box. Options as in rules10.py. White tee. fails [], 20.3 x 31.4 cm.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "One Helianthus head with a ray of petals and a seed disc (rings rather than a crisp spiral), one stem, one bud, four heart-shaped toothed leaves: a sunflower."}}
+ ],
+ "minutes": {"install": 3, "generate": 58, "process": 4},
+ "generator_note": "generate_sdxl.py unchanged; no out-of-memory (UNet loaded at ~10.8 GB RSS), 2.5-3.7 min an image. Five runs of three, strictly one after another."
+}
