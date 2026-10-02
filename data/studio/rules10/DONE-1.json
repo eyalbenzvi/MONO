@@ -1,0 +1,18 @@
+{
+ "helper": 1,
+ "branch": "studio/rules10-1",
+ "started": "2026-10-02T06:45:31Z",
+ "finished": "2026-10-02T07:28:00Z",
+ "designs": [
+  {"slot": 1, "slug": "humpback-whale", "passed": true, "which": "main", "images": 3, "chosen": "s40111", "mode": "engrave", "ink_coverage": 0.1622,
+   "note": "40111 one whole humpback breaching (not diving), so --view 'Breaching' replaces 'Diving'; 40110 headless body like an aeroplane, in a frame with a fake caption; 40112 diving but no eye or jaw, stubby fins, grey haze, frame, fake caption. Cream paper flattened to white, faint sea lines under the tail painted out. fails [], 23.3 x 31.8 cm.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "Counted: two pectoral fins (the long knobbly near one, the far one behind it), one dorsal fin on the back (drawn larger and more serrated than a real humpback's), one fluke, one eye, throat grooves, tubercles on the jaw. One animal. Humpback whale, breaching."}},
+  {"slot": 2, "slug": "ammonite", "passed": true, "which": "backup", "images": 6, "chosen": "s40126", "mode": "engrave", "ink_coverage": 0.2545,
+   "note": "All three NAUTILUS mains rejected (40120 two spirals fused, 40121 blobby lobes and fake handwriting, 40122 trumpet-like spout). Backup AMMONITE: 40126 one clean spiral with outward ribs; 40125 a broken second curl, 40127 a smeared oval disc with a stray outline. Paper painted white. Options adapted from the nautilus's: --sub 'Fossil cephalopod' --view 'Side view' --views 1. fails [], 25.0 x 31.8 cm.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "One planispiral shell, one centre, the whorls tightening evenly, ribs curving outward, the last whorl ending in its aperture. An ammonite, not a nautilus (ribbed, no smooth shell or section), so titled AMMONITE."}}
+ ],
+ "minutes": {"install": 1, "generate": 40, "process": 3},
+ "generator_note": "generate_sdxl.py unchanged; no out-of-memory. About 4 minutes an image (233-259 s), UNet at 10.8 GB RSS. Main run 06:46-07:13, backup 07:13-07:26, one process at a time."
+}
