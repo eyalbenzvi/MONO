@@ -1,0 +1,12 @@
+Title: Humpback Whale
+Category: Botanical & Nature
+Family: sea-life
+Subject: One humpback whale breaching, side view, long knobbly pectoral fin, throat grooves, small eye and a single fluke
+Style: Natural history plate, black ink line engraving with cross-hatching
+Medium: Drawn (illustration)
+Description: A humpback whale rises out of the frame with its long pectoral fin swept back and its throat grooves drawn line by line. Forty tonnes, and still it insists on jumping.
+Tee colours: White
+Print size: 23.3 × 31.8 cm
+Keywords: humpback whale, whale, Megaptera novaeangliae, marine life, ocean, natural history, engraving, sea-life
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
