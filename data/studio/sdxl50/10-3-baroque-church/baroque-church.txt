@@ -1,0 +1,10 @@
+Title: Baroque Church
+Category: Architecture
+Subject: A baroque church front with two onion-domed towers and a third domed tower, a rose window over the arched door, old houses lining the street on either side and a paved square in front
+Style: Pen-and-ink town view, fine hatching
+Medium: Drawn (illustration)
+Description: A baroque church front fills the end of a narrow street, its domed towers rising over a rose window and an arched door. The houses either side have been leaning in for a better look for a few hundred years.
+Tee colours: Black, White
+Print size: 21.9 × 35.3 cm
+Keywords: church, baroque church, baroque architecture, old town, street, bell towers, domes, pen and ink, architecture, town view
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

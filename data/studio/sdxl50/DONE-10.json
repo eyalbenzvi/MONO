@@ -1,0 +1,15 @@
+{
+ "helper": 10,
+ "slots": [
+  {"slot": 1, "slug": "snake-study", "passed": true, "which": "main", "images": 3, "chosen": "s31012", "mode": "line", "ink_coverage": 0.1962,
+   "note": "one coiled snake, whole; 31010 malformed head, 31011 grew clawed legs; skeleton sketches did not appear"},
+  {"slot": 2, "slug": "observatory", "passed": true, "which": "main", "images": 3, "chosen": "s31020", "mode": "pen", "ink_coverage": 0.179,
+   "note": "domed observatory with open shutter slit; frame cropped, small fake note painted out, paper flattened"},
+  {"slot": 3, "slug": "baroque-church", "passed": true, "which": "main", "images": 3, "chosen": "s31030", "mode": "pen", "ink_coverage": 0.239,
+   "note": "retitled from COLONIAL CHURCH (truth rule: Central European baroque front); --edge horizon; paper flattened"},
+  {"slot": 4, "slug": "rotary-phone-study", "passed": true, "which": "main", "images": 3, "chosen": "s31041", "mode": "line", "ink_coverage": 0.1195,
+   "note": "only seed on black; frame cropped, ~20 small fake labels painted to black, inverted before oneink; Black tee"}
+ ],
+ "minutes": {"install": 29, "generate": 43, "process": 10},
+ "notes": "Container restarted during install (generation never started); restarted generation at minute 29. generate_sdxl.py unchanged. Backup prompt for slot 4 written but not run."
+}

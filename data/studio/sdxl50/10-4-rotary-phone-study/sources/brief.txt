@@ -1,0 +1,11 @@
+Prompt: One vintage rotary telephone, patent study sheet, three-quarter view, white chalk line drawing on a plain black background, no text, no lettering, no numbers, no frame, no border, no colour. A single telephone large in the centre, the handset resting on its cradle, a round finger dial with plain holes, a coiled cord. Around it, a few small exploded parts and detail circles of the dial and the handset. Fine white line, centred, wide black margins. No ornaments.
+
+Seeds: 31040-31042 (three, main); chosen 31041 (the second)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 31041: the only one on a black ground, as asked; one telephone large in the middle with its dial, cradled handset, coiled cords and a few parts round it. 31040 came out on cream paper, with paragraphs of fake writing round four separate phones; 31042 on cream paper, a jumble of handsets and dials with large fake lettering across the top. Both rejected for the large text.
+Clean-up before oneink: the ruled frame was cropped off (46,46,786,1100); the small fake labels and captions round the drawing (about twenty short scribbles, none over the object) were painted to black, and one tiny mark in the white centre of the dial was painted to the disc's tone; the near-black ground was set to pure black, then the picture inverted (dark lines on white) so the ink is the drawing. A few thin leader lines are left where the labels were.
+It is a tall candlestick-style desk phone rather than a modern rotary set; it does have a rotary finger dial with plain holes, so the title ROTARY PHONE STUDY stands.
+Tee colours: Black (the brief's family D); the one line file prints white on the black tee.
+python3 scripts/studio/oneink.py <cleaned, inverted image> data/studio/sdxl50/10-4-rotary-phone-study rotary-phone-study --mode line --crop 46,46,786,1100 --title "ROTARY PHONE STUDY" --sub "Objects · Study sheet"
