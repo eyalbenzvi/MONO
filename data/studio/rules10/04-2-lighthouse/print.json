@@ -1,15 +1,15 @@
 {
- "mode": "engrave",
+ "mode": "halftone",
  "edge": null,
  "views": 1,
  "outline": false,
  "ground": false,
- "coverage": 0.1057,
- "solid": 0.6274,
- "screened": 0.0,
+ "coverage": 0.0886,
+ "solid": 0.3577,
+ "screened": 1.0,
  "sizeCm": [
   15.8,
-  32.1
+  32.0
  ],
  "blackTee": false,
  "fails": []

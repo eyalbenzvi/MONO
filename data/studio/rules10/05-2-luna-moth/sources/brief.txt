@@ -9,3 +9,6 @@ Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet 
 Why 40520: one whole moth, symmetrical, four wings with the two long curling hind-wing tails of Actias luna, a furry thorax, a ringed abdomen and two antennae; nothing else on the page. 40521 put four extra small moths round the main one, a drawn frame and fake caption text; 40522 grew a long segmented forked abdomen past the wings instead of hind-wing tails (wrong anatomy).
 Retouch before one ink: none. Nothing cropped or painted out; the cream paper is read as paper by oneink.
 python3 scripts/studio/oneink.py /tmp/rules10/K2-luna-moth-s40520.png data/studio/rules10/05-2-luna-moth luna-moth --mode engrave --title "LUNA MOTH" --sub 'Actias luna' --view 'Wings spread'
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'LUNA MOTH' --sub 'Actias luna' --view 'Wings spread', from sources/K2-luna-moth-s40520.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

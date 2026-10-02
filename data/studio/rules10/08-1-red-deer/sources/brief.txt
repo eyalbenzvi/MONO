@@ -5,3 +5,6 @@ Why chosen: the only seed with one coherent stag: four legs and four hooves, one
 Not a true side view: the stag stands three-quarter on, head to the viewer, so the plate's view reads "Standing", not "Side view".
 Painted before oneink (red-deer-s40811-prepared.png): cream paper normalised to white and the tones lifted (gamma 0.6) so the body keeps hatching rather than going solid. Below y=1035 only the darkest pixels (the hooves) were kept, which removes the cast shadow on the ground the generator added. Fake signatures in both bottom corners painted out.
 Weak spot: the lit flank converts to a large open highlight.
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'RED DEER' --sub 'Cervus elaphus' --view Standing, from red-deer-s40811-prepared.png with the prepared image's tone lift undone (gamma 1/0.6); below y 960 only tones darker than 0.55 kept (no ground shadow or horizon band): sources/red-deer-halftone-input.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

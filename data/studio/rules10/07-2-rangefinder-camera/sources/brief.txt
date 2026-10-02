@@ -13,3 +13,6 @@ What was cut or painted (sources/K2-rangefinder-camera-s40720-cleaned.png):
 
 One ink: python3 scripts/studio/oneink.py sources/K2-rangefinder-camera-s40720-cleaned.png data/studio/rules10/07-2-rangefinder-camera rangefinder-camera --mode engrave --title "RANGEFINDER CAMERA" --outline --view 'Front elevation' --plate 'Pl. VII'
 Result: fails [], 28.0 x 16.4 cm, wide subject so oneink adds the ground line and dimension line. The leatherette prints as solid (46% of the ink), so print.json has blackTee false even with --outline: white tee only.
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'RANGEFINDER CAMERA' --view 'Front elevation' --plate 'Pl. VII', from sources/K2-rangefinder-camera-s40720-cleaned.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

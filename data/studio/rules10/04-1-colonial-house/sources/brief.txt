@@ -3,3 +3,6 @@ Seed: 40411 (832x1216, 8 steps, SDXL base 1.0 + SDXL-Lightning UNet)
 Why chosen: of the three main seeds this is the one clear frontal view of a single house: two storeys of deep arcaded verandas with columns, railings and shutters, a pedimented roof and the asked-for palm. Seed 40410 showed a three-storey house with a second building behind it; 40412 was an angled view behind a fence and gate.
 Cropped: --crop 14,60,816,1205, removing the thin drawn frame line the generator put round the picture, the cloud band at the very top and the bottom margin. Nothing painted. Edge: --edge dissolve (the scene fades into the tee).
 Converted: oneink.py --mode engrave --title "COLONIAL HOUSE" --edge dissolve --crop 14,60,816,1205
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'COLONIAL HOUSE' --edge dissolve --crop 14,60,816,1205, from sources/K1-colonial-house-s40411.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

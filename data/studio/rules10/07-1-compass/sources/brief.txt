@@ -13,3 +13,6 @@ What was painted (sources/K1-compass-s40715-cleaned.png):
 
 One ink: python3 scripts/studio/oneink.py sources/K1-compass-s40715-cleaned.png data/studio/rules10/07-1-compass compass --mode engrave --title "COMPASS" --outline --view 'Front view' --plate 'Pl. VI'
 Result: fails [], 17.5 x 31.5 cm. The case is shaded (57% of the ink in solids), so print.json has blackTee false even with --outline: white tee only.
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title COMPASS --view 'Front view' --plate 'Pl. VI', from K1-compass-s40715-cleaned.png with the white the clean-up painted filled with the paper's own tone (so no edge of it prints): sources/compass-halftone-input.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

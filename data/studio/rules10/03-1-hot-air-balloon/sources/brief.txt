@@ -9,3 +9,6 @@ Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (Creati
 Clean-up before one ink: paper levelled to white (x 255/200); the double frame lines on all four sides and the faint fake lettering under the bottom frame line and the scribble at the right edge painted to white paper (everything outside x 46-770, y 46-1176; the balloon lies inside x 102-719, y 68-1140, untouched).
 One ink: engrave (fails []). The option list in rules10.py has --outline, but the drawing is hatched, not a pure outline (47% of the ink in solid fills, blackTee false either way), so --outline was left off (rules.md section 3) and it is offered on white tees only.
 python3 scripts/studio/oneink.py <cleaned image> data/studio/rules10/03-1-hot-air-balloon hot-air-balloon --mode engrave --title "HOT AIR BALLOON" --view 'Elevation' --plate 'Pl. III'
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'HOT AIR BALLOON' --view Elevation --plate 'Pl. III', from K1-hot-air-balloon-s40312.png with everything outside x 90-732, y 60-1152 (frames, fake lettering) filled with the paper's own tone: sources/hot-air-balloon-halftone-input.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

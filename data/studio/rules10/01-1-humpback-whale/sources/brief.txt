@@ -10,3 +10,6 @@ Ending: none (not a scene)
 Why 40111: 40110 has no head at all (a tapering body with flukes and two fins, like an aeroplane) in a ruled frame with a fake caption; 40112 is diving as asked but has stubby fins, no eye or jaw, a grey hazed background, a frame and a fake caption. 40111 is one whole, recognisable humpback: long knobbly pectoral fin (the far one behind it), throat grooves, eye, tubercles on the jaw, a dorsal fin on the back and one fluke. It is breaching upward, not diving, so the view line says "Breaching" instead of "Diving" (truth rule).
 Retouch before one ink: the cream paper flattened to white (divided by a smoothed paper estimate taken off the whale's mask); the faint drawn sea lines under the tail (box 40,840-800,1120, outside the whale) painted to white paper.
 python3 scripts/studio/oneink.py <retouched image> data/studio/rules10/01-1-humpback-whale humpback-whale --mode engrave --title "HUMPBACK WHALE" --sub 'Megaptera novaeangliae' --view 'Breaching'
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'HUMPBACK WHALE' --sub 'Megaptera novaeangliae' --view Breaching, from sources/K1-humpback-whale-s40111.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

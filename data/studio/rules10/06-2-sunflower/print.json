@@ -1,12 +1,12 @@
 {
- "mode": "engrave",
+ "mode": "halftone",
  "edge": null,
  "views": 1,
  "outline": false,
  "ground": false,
- "coverage": 0.2342,
- "solid": 0.6529,
- "screened": 0.0,
+ "coverage": 0.171,
+ "solid": 0.1723,
+ "screened": 1.0,
  "sizeCm": [
   20.3,
   31.4

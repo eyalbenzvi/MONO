@@ -3,3 +3,6 @@ Seed: 40820 (SDXL base 1.0 + SDXL-Lightning 8-step UNet, 832x1216, bfloat16 UNet
 Seeds tried: 40820, 40821, 40822.
 Why chosen: one grey heron in true side view, facing left: dagger beak, black eye stripe with a crest plume, S-curved neck, folded wing, two legs, two feet on a tussock. 40821 was a white egret-like bird against a dark slab of sky inside a frame with fake lettering; 40822 was good but had a big reed bank and a far shore.
 Painted before oneink (grey-heron-s40820-prepared.png): cream paper normalised to white and the tones lifted (gamma 0.6), which drops the faint distant hills. A tall reed blade right of the bird painted out. Everything below the tussock painted out (water hatching and a fake signature, bottom right), except the darkest pixels under the feet, so the toes still grip the tussock's edge.
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'GREY HERON' --sub 'Ardea cinerea' --view Standing, from grey-heron-s40820-prepared.png with the prepared image's tone lift undone (gamma 1/0.6); below y 780 only tones darker than 0.42 kept (no ground shadow or horizon band): sources/grey-heron-halftone-input.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

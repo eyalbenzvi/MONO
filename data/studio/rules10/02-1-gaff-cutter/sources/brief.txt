@@ -9,3 +9,6 @@ Clean-up before one ink: paper levelled to white (x 255/205, anything above 225 
 Not delivered as outline: rules10 listed --outline, but the hull and sails keep hatching and 24% of the ink is in solid strokes, so it is printed as a shaded drawing (no --outline, White tee).
 python3 scripts/studio/oneink.py <cleaned image> data/studio/rules10/02-1-gaff-cutter gaff-cutter --mode engrave --title "GAFF CUTTER" --view 'Sail plan' --plate 'Pl. I'
 One ink: fails [], 25.8 x 31.9 cm, coverage 6.1%, screened 0.
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title 'GAFF CUTTER' --view 'Sail plan' --plate 'Pl. I', from K1-gaff-cutter-s40211.png with everything outside x 40-792, y 70-1018 (frames, fake lettering) filled with the paper's own tone: sources/gaff-cutter-halftone-input.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

@@ -14,3 +14,6 @@ Why 40126: one whole ammonite, flat side view, a single spiral tightening to one
 Retouch before one ink: the cream paper and a faint shadow on the right edge painted to white outside the shell's mask; the shell's tones scaled by the paper level (222) so the paper reads white.
 One-ink options: the slot's options were written for the nautilus (--sub 'Nautilus pompilius' --view 'Shell in section'); for the ammonite they became --sub 'Fossil cephalopod' --view 'Side view' --views 1.
 python3 scripts/studio/oneink.py <retouched image> data/studio/rules10/01-2-ammonite ammonite --mode engrave --title "AMMONITE" --sub 'Fossil cephalopod' --view 'Side view' --views 1
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title AMMONITE --sub 'Fossil cephalopod' --view 'Side view' --views 1, from sources/K2-ammonite-s40126.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.

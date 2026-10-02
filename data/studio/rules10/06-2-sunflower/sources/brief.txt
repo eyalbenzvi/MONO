@@ -11,3 +11,6 @@ The seed disc reads as rings of seeds rather than a crisp spiral; the leaves are
 Nothing painted out or cropped; the cream paper is dropped by oneink.
 One ink: engrave, fails [], coverage 0.234, 20.3 x 31.4 cm.
 python3 scripts/studio/oneink.py sources/06-2-sunflower-s40622.png data/studio/rules10/06-2-sunflower sunflower --mode engrave --title "SUNFLOWER" --sub 'Helianthus annuus' --view 'Flower and leaf'
+
+
+Converted again (halftone, Oct 2026): oneink.py --mode halftone --title SUNFLOWER --sub 'Helianthus annuus' --view 'Flower and leaf', from sources/06-2-sunflower-s40622.png. The shop's photograph screen (30 lpi, 45 degrees, dots 8-80%) on the paper-flattened tone, the subject alone; white tee only.
