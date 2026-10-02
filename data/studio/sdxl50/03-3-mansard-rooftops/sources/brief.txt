@@ -1,0 +1,6 @@
+Prompt: Dense Paris rooftops seen from a high window, a pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Old stone apartment buildings with slate mansard roofs, dormer windows, rows of chimney pots, iron balconies, shutters, flower pots. Fine black ink line and gentle hatching, drawn edge to edge across the page. The ground ends in a clean straight line, empty white sky above. No grey wash.
+Seed: 30330 (chosen from seeds 30330, 30331, 30332; brief: main)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (scripts/studio/generate_sdxl.py, 8 steps, guidance 0)
+One ink: scripts/studio/oneink.py --mode pen --edge horizon (horizon: a dense town, the ground ends in a straight cut, empty sky)
+Why this one: 30330 is the only true rooftop view (roofs, dormers and chimney pots receding to a spire); 30331 is one façade over a cobbled street, 30332 a narrow street between walls. Its drawn frame was cropped off ((30,22)-(804,1192)) with the small fake signature under it, and the drawn clouds above the roofline were painted to paper so the sky prints as empty tee; enlarged 2x, paper flattened to white. Pen kept the roof hatching. The houses read as Parisian in style but nothing in the drawing proves Paris, so the title is the general MANSARD ROOFTOPS.

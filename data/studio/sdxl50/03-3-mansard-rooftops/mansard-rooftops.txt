@@ -1,0 +1,10 @@
+Title: Mansard Rooftops
+Category: Architecture
+Subject: A crowd of old town houses with mansard roofs, dormers and chimney pots under one spire, seen from a high window
+Style: Dense pen and ink town view, fine line and hatching, the ground cut on a straight line
+Medium: Drawn (illustration)
+Description: Steep slate mansards, dormer windows, iron balconies and forests of chimney pots climbing towards a single spire. Everyone up there has a view and nobody has a lift.
+Tee colours: Black and white (mansard-rooftops.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 21.1 x 35.3 cm (heading included)
+Keywords: rooftops, mansard roofs, chimneys, town, city, spire, balconies, pen and ink, architecture, old town
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

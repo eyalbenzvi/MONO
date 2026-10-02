@@ -31,6 +31,19 @@ LIGHTNING = "ByteDance/SDXL-Lightning"
 CKPT = {8: "sdxl_lightning_8step_unet.safetensors", 4: "sdxl_lightning_4step_unet.safetensors"}
 
 
+def rss():
+    return int(open("/proc/self/statm").read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / 1e9
+
+
+def trim():
+    # Hand freed heap back to the OS (glibc keeps it otherwise, and the UNet then lands on top).
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", required=True)
@@ -61,8 +74,12 @@ def main():
         if j["prompt"] not in embeds:
             pe, pooled, _ = encode(enc, j["prompt"])
             embeds[j["prompt"]] = (pe, pooled)
-    del enc
+    te = (enc.text_encoder, enc.text_encoder_2)
+    enc.text_encoder = enc.text_encoder_2 = None
+    del enc, te
     gc.collect()
+    trim()
+    print(f"encoded, rss {rss():.1f} GB", flush=True)
 
     # 2. The Lightning UNet, upcast tensor by tensor (fp16 file and fp32 model never both in memory).
     with init_empty_weights():
@@ -72,6 +89,8 @@ def main():
             set_module_tensor_to_device(unet, k, "cpu", value=f.get_tensor(k).to(dt))
     unet = unet.eval()
     gc.collect()
+    trim()
+    print(f"unet loaded, rss {rss():.1f} GB", flush=True)
     vae = AutoencoderKL.from_pretrained(base, subfolder="vae", torch_dtype=dt)
     vae.enable_tiling()
     sched = EulerDiscreteScheduler.from_pretrained(base, subfolder="scheduler", timestep_spacing="trailing")

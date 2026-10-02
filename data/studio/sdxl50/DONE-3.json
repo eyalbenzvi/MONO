@@ -1,0 +1,59 @@
+{
+ "helper": 3,
+ "branch": "studio/sdxl50-3",
+ "started": "2026-10-01T22:37:58Z",
+ "finished": "2026-10-01T23:52:31Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "crab-study",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "s30316",
+   "mode": "line",
+   "ink_coverage": 0.1545,
+   "note": "Main horseshoe crab: three beetle/tick-like bugs, none a horseshoe crab. Backup king crab: 30316 one whole crab, shell outline and detail sketches, no text; eight legs and big claws, so CRAB STUDY. Frame cropped, gamma 2.2 so the sketches print. fails [], 21.7 x 35.0 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "vintage-car",
+   "passed": true,
+   "which": "main",
+   "images": 6,
+   "chosen": "s30321",
+   "mode": "line",
+   "ink_coverage": 0.0676,
+   "note": "All three mains drew rows of cars; 30321's top car cut out alone (whole, side view, spoked wheels, ground line), two small fake captions painted out. Truck backup (landscape) ran too: single trucks but disc wheels; the car kept. fails [], 26.0 x 11.4 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "mansard-rooftops",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30330",
+   "mode": "pen",
+   "ink_coverage": 0.195,
+   "note": "30330 the only true rooftop view (mansards, dormers, chimney pots, a spire); frame and signature cropped, clouds painted out, --edge horizon. Not provably Paris, so MANSARD ROOFTOPS. fails [], 21.1 x 35.3 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "microscope-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30340",
+   "mode": "pen",
+   "ink_coverage": 0.1794,
+   "note": "All three came dark on cream, not white on black, so used as is (the drawing is the ink, white on the black tee). 30340 one convincing microscope with twelve part sketches; 17 small fake labels painted out, frame cropped. Tee colours: Black. fails [], 21.7 x 35.0 cm."
+  }
+ ],
+ "minutes": {
+  "install": 1.4,
+  "generate": 72.7,
+  "process": 0.5,
+  "total": 75
+ },
+ "issues": "generate_sdxl.py was OOM-killed at 13.9 GB on the first run (the text encoders' memory was not handed back before the fp32 UNet loaded); fixed on this branch by dropping them explicitly and calling malloc_trim (RSS 0.5 GB after encoding, 10.7 GB with the UNet), about 195 s an image after that. Lightning ignored 'one object' for the car (rows of copies) and 'black background' for the patent sheet; a landscape 1216x832 size gave single vehicles. Backups ran one at a time after the main, never in parallel."
+}
