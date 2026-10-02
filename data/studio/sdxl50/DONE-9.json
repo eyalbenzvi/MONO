@@ -1,0 +1,18 @@
+{
+ "helper": 9,
+ "branch": "studio/sdxl50-9",
+ "started": "2026-10-01T22:37:54Z",
+ "finished": "2026-10-01T23:38:00Z",
+ "designs": [
+  {"slot": 1, "slug": "tree-frog-study", "passed": true, "which": "main", "images": 3, "chosen": "s30910", "mode": "pen", "ink_coverage": 0.2206,
+   "note": "30910 the one whole face-on frog on a leaf; 30911/30912 run the leaf off the edges, 30912 framed with a second creature. No skeleton sketches drawn, so sub 'Nature · Pen and ink'. Small signature painted out. Pen over line (line screened the leaf flat). White tee only (negative on black). fails [], 21.1 x 35.0 cm."},
+  {"slot": 2, "slug": "ferris-wheel", "passed": true, "which": "main", "images": 3, "chosen": "s30921", "mode": "pen", "ink_coverage": 0.1839,
+   "note": "30921 one wheel face on, A-frame, ground line, lots of air; cropped inside the ruled frame and above the fake caption. Pen keeps the faint spokes line dropped. fails [], 23.4 x 35.0 cm."},
+  {"slot": 3, "slug": "hillside-houses", "passed": true, "which": "main", "images": 3, "chosen": "s30930", "mode": "line", "ink_coverage": 0.2829,
+   "note": "Listed as VALPARAISO HILLS; nothing in the picture marks Valparaiso (no funicular), so titled HILLSIDE HOUSES (truth rule). 30930 the cleanest, edge to edge, --edge horizon, cropped inside the frame. Pen 32.2% coverage failed, line passes. White tee only."},
+  {"slot": 4, "slug": "tennis-racket-study", "passed": true, "which": "main", "images": 3, "chosen": "s30942", "mode": "pen", "ink_coverage": 0.1079,
+   "note": "30942 one racket centred with two columns of part sketches; about fifty small fake labels painted to black (listed in brief.txt), cropped inside the double frame, inverted for one ink. 30940 large fake text (rejected), 30941 fake script and a baseball. Racket is modern, not wooden. Category Engravings. Black tee. fails [], 21.3 x 35.0 cm."}
+ ],
+ "minutes": {"install": 1.5, "generate": 54, "process": 6, "total": 60},
+ "issues": "generate_sdxl.py was OOM-killed at 13.9 GB (cgroup limit 14.3 GB) while loading the UNet on the first run (~10 min lost): a plain del of the encode pipeline left the text encoders held. Minimal fix on this branch: move both text encoders to meta and malloc_trim before the UNet loads; peak then about 13.5 GB (VAE decode), about 3.5 min an image."
+}
