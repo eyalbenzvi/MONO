@@ -1,0 +1,15 @@
+Prompt (rules10.py DESIGNS[7] slot 2, main): One 1930s rangefinder camera, front view, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single small rectangular camera body, a round lens barrel in the middle, two small rangefinder windows above it, a shutter dial and a winding knob on top, no logo. Clean black outline drawing, one even line weight, no shading, no hatching masses, no cast shadow, patent drawing. Centred, large, with white margins.
+
+Seeds: 40720-40722 (three, main, 832x1216); chosen 40720.
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, CPU, scripts/studio/generate_sdxl.py --jobs (unpatched).
+
+Why 40720: 40721 is a tall box with side knobs that does not read as a rangefinder; 40722 has two lenses fused into a figure eight. 40720 drew two cameras one above the other (two different bodies, not two views of one camera) with fake captions; the upper one is a clean 1930s Leica-type front: viewfinder window, two round rangefinder windows, rewind and shutter dials, a collapsible lens with focusing ring, self-timer lever, strap lugs. Only that camera is used.
+
+What was cut or painted (sources/K2-rangefinder-camera-s40720-cleaned.png):
+- cropped to the upper camera (x 30-810, y 105-555); the lower camera, the fake captions and the plate frame are cut away;
+- cream paper set to white (pixels lighter than 212);
+- painted white: the plate frame lines at both sides, a stray bracket beyond the right strap lug (it fed nothing), stray glyphs above the right dial, the fake caption under the base plate.
+- left as drawn: the small pseudo-markings round the focusing ring (they read as engraved distance and aperture scale, not words).
+
+One ink: python3 scripts/studio/oneink.py sources/K2-rangefinder-camera-s40720-cleaned.png data/studio/rules10/07-2-rangefinder-camera rangefinder-camera --mode engrave --title "RANGEFINDER CAMERA" --outline --view 'Front elevation' --plate 'Pl. VII'
+Result: fails [], 28.0 x 16.4 cm, wide subject so oneink adds the ground line and dimension line. The leatherette prints as solid (46% of the ink), so print.json has blackTee false even with --outline: white tee only.

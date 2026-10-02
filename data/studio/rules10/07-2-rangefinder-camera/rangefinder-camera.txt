@@ -1,0 +1,11 @@
+Title: Rangefinder Camera
+Category: Engravings
+Family: objects
+Subject: A 1930s rangefinder camera seen straight on: viewfinder and two rangefinder windows, top dials, a collapsible lens with its focusing ring, strap lugs
+Style: Engraved technical plate, front elevation
+Medium: Drawn (illustration)
+Description: A 1930s rangefinder camera stands square to the viewer, lens out, dials set. It has been waiting ninety years for you to stop fiddling and take the picture.
+Tee colours: White
+Keywords: rangefinder camera, vintage camera, 1930s camera, film camera, photography, photographer, lens, engraving, technical drawing
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
