@@ -1,0 +1,18 @@
+{
+ "helper": 8,
+ "branch": "studio/sdxl50-8",
+ "started": "2026-10-01T22:37:53Z",
+ "finished": "2026-10-01T23:27:00Z",
+ "designs": [
+  {"slot": 1, "slug": "beetle-study", "passed": true, "which": "main", "images": 3, "chosen": "s30811", "mode": "line", "ink_coverage": 0.1532,
+   "note": "Brief STAG BEETLE STUDY. 30811 one six-legged horned beetle with small beetles round it like a collector's sheet; jaws are short horns, not stag antlers, so BEETLE STUDY. Cell boxes and tiny fake labels painted out. fails [], 21.8 x 34.6 cm."},
+  {"slot": 2, "slug": "steamboat", "passed": true, "which": "main", "images": 3, "chosen": "s30821", "mode": "pen", "ink_coverage": 0.0801,
+   "note": "Brief TUGBOAT. All three repeated boats or went bow-on; 30821's top boat cropped out: one steamer in side elevation with funnel, mast, rigging, waterline. No fenders, long hull, so STEAMBOAT. Panel rules and captions removed; 2x upscale + 3 px min filter to pass the 0.4 mm check. fails [], 26.0 x 15.3 cm."},
+  {"slot": 3, "slug": "old-town-lane", "passed": true, "which": "main", "images": 3, "chosen": "s30831", "mode": "pen", "ink_coverage": 0.2501,
+   "note": "Brief EDINBURGH OLD TOWN. 30831 steep cobbled lane between tall stone houses up to a spired building, edge to edge, no frame or text, no cleaning. Not recognisably Edinburgh, so OLD TOWN LANE. --edge horizon, white tee only. fails [], 21.8 x 35.3 cm."},
+  {"slot": 4, "slug": "globe-study", "passed": true, "which": "main", "images": 3, "chosen": "s30841", "mode": "pen", "ink_coverage": 0.2245,
+   "note": "All three came out dark-on-cream, not white-on-black, with no exploded parts. 30841 cleanest globe; cropped off the large fake caption, top text blocks and table hatching painted out. Pen keeps continents and grid as white lines on a black tee. fails [], 23.3 x 34.9 cm."}
+ ],
+ "minutes": {"install": 1, "generate": 45, "process": 14, "total": 49},
+ "issues": "generate_sdxl.py was OOM-killed on the first run (13.9 GB RSS against the 14.3 GB cgroup limit) before any image. Fixed minimally on this branch: malloc_trim after freeing the text encoders and after loading the UNet, and pipe.enable_attention_slicing(). Peak 13.9 GB at load, steady 10.9 GB, about 195 s an image. (unet.enable_forward_chunking was tried and removed: diffusers 0.40 has no such method.) No backups were needed."
+}

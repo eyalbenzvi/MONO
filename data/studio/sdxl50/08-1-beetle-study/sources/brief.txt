@@ -1,0 +1,14 @@
+Slot 1 (A, study sheet). Brief title STAG BEETLE STUDY (top view, wing case open, leg details).
+Prompt: One stag beetle, top view, natural history study sheet, black ink on plain white paper, no text, no lettering, no frame, no border, no colour. Six legs, two large antler jaws, the wing cases slightly open. Fine pen line and crosshatching on the shell, detailed joints and texture. Around it a few small sketches: a leg, an antler jaw, an antenna, thin scale lines. Centred, the whole beetle with wide white margins, plain white paper. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+No negative prompt (SDXL-Lightning is CFG-free); the exclusions are in the first sentence.
+Seeds: 30810-30812 (three, main); chosen 30811 (the second)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30811: 30810 has extra legs and spiny antennae for jaws, faint frame and signatures; 30812 has ten limbs and a frame. 30811 is one beetle with six legs, a pair of antennae and a pair of horn-like jaws, drawn whole, with small beetles and bugs round it like a collector's sheet.
+Its jaws are short horns rather than a stag beetle's long branched antlers and the wing cases are closed, so the title is BEETLE STUDY, not STAG BEETLE STUDY.
+Cleaned before one ink (08-1-beetle-study-s30811-cleaned.png): thin cell boxes round the small sketches removed as long isolated straight lines; small fake label text under the sketches painted to paper (around FIG/plate numbers at the top, the left column and the bottom row).
+The odd leaf-like sketch on the right overlapping a leg was left in; it reads as one of the specimens.
+One ink: line (pen brought the cell boxes back as broken lines). fails [], coverage 0.153.
+python3 scripts/studio/oneink.py sources/08-1-beetle-study-s30811-cleaned.png data/studio/sdxl50/08-1-beetle-study beetle-study --mode line --title "BEETLE STUDY" --sub "Nature · Study sheet"
