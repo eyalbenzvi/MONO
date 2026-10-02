@@ -1,0 +1,58 @@
+{
+ "helper": 11,
+ "branch": "studio/sdxl50-11",
+ "started": "2026-10-01T22:37:54Z",
+ "finished": "2026-10-01T23:59:30Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "raven-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s31110",
+   "mode": "pen",
+   "ink_coverage": 0.1806,
+   "note": "31110 the clearest single raven; no skull or sketches came in any seed, so sub 'Pen study'. Double frame cropped. Line screened the body into dots, pen kept the feathers. White tees only. fails [], 20.8 x 35.0 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "arch-bridge",
+   "passed": true,
+   "which": "backup",
+   "images": 6,
+   "chosen": "s31126",
+   "mode": "pen",
+   "ink_coverage": 0.2085,
+   "note": "All three suspension-bridge mains were perspective scenes, not elevations. Backup run at 1216x832; 31126 three stone arches between two towers, a landscape plate rather than a bare elevation, so --edge rect and sub 'Side view'. Frame and small caption cropped. White tees. fails [], 26.7 x 18.8 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "canal-town",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s31131",
+   "mode": "pen",
+   "ink_coverage": 0.2423,
+   "note": "The water came as a canal between houses, not a harbour, so CANAL TOWN (truth rule). 31131 the densest, no frame, no fake text. --edge horizon. White tees. fails [], 21.8 x 35.3 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "hiking-boot-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s31140",
+   "mode": "line",
+   "ink_coverage": 0.1143,
+   "note": "31140 a true patent sheet (side view + view from above), drawn dark on light, which line mode prints white on black. Frame, twelve small fake labels and a faint ghost sketch painted to paper. Black tees. fails [], 21.5 x 34.9 cm."
+  }
+ ],
+ "minutes": {
+  "install": 2,
+  "generate": 75,
+  "process": 15
+ },
+ "generator_fix": "scripts/studio/generate_sdxl.py was OOM-killed at 13.9 GB RSS on the first run (memory cgroup); fixed minimally with malloc_trim after freeing the text encoders and after the UNet upcast, plus attention slicing, run with MALLOC_ARENA_MAX=2: peak 12.9 GB, ~265 s an image."
+}
