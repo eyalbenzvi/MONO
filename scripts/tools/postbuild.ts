@@ -12,6 +12,13 @@
  * 4. Every page gets its Content-Security-Policy meta tag, first in <head>
  *    (right after the charset), listing the sha256 of its own inline scripts
  *    instead of allowing 'unsafe-inline' (lib/csp).
+ * 5. The first screen doesn't wait on the catalogue (it used to, after every
+ *    catalogue change: empty frames for seconds on a phone). The build fails
+ *    when a script carries anything that changes with the catalogue — a
+ *    published data file's name, a design's id — since every catalogue change
+ *    would rename that script and send each returning visitor's phone back to
+ *    the network for it; and when the home page's HTML lacks the first card's
+ *    picture (lib/firstCard).
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -91,8 +98,46 @@ function pruneRetired(): number {
   return removed;
 }
 
+/** Files in out/data named by their content that change with the catalogue (the index, its detail shards, search). */
+const CATALOGUE_DATA = /^(index|search|details-\d+)\.[0-9a-f]{8,}\.json$/;
+
+/** Scripts that carry something which changes with the catalogue: [script, what] (empty when none do). */
+export function catalogueInScripts(out: string): [string, string][] {
+  const data = path.join(out, "data");
+  const names = existsSync(data) ? readdirSync(data).filter((f) => CATALOGUE_DATA.test(f)) : [];
+  const chunks = path.join(out, "_next", "static");
+  const found: [string, string][] = [];
+  for (const f of existsSync(chunks) ? (readdirSync(chunks, { recursive: true }) as string[]) : []) {
+    if (!f.endsWith(".js")) continue;
+    const js = readFileSync(path.join(chunks, f), "utf8");
+    const name = names.find((n) => js.includes(n));
+    if (name) found.push([f, `the name of data/${name}`]);
+    const id = js.match(/["'`]mono-\d{4,5}["'`]/);
+    if (id) found.push([f, `the design id ${id[0]}`]);
+  }
+  return found;
+}
+
+/** The home page's served HTML shows the first card, picture and all (lib/firstCard): what's missing, or null. */
+export function homeFirstCardMissing(html: string): string | null {
+  const card = html.indexOf("data-first-card");
+  if (card < 0) return "no data-first-card";
+  if (!/<img[^>]*data-mockup/.test(html.slice(card, card + 8000))) return "data-first-card has no picture";
+  return null;
+}
+
 function main() {
   const pruned = pruneRetired();
+  const inScripts = catalogueInScripts(OUT);
+  if (inScripts.length) {
+    console.error(
+      `postbuild: scripts carry the catalogue — every catalogue change would rename them, and returning visitors wait for them again (lib/catalogIndex):\n${inScripts
+        .slice(0, 10)
+        .map(([f, what]) => `  _next/static/${f}: ${what}`)
+        .join("\n")}\nRead such data from the page or the index instead of importing it.`,
+    );
+    process.exit(1);
+  }
   if (!existsSync(path.join(OUT, "index.html"))) {
     console.error("postbuild: out/ not found");
     process.exit(1);
@@ -140,6 +185,11 @@ function main() {
 
   const home = path.join(OUT, "index.html");
   const homeHtml = readFileSync(home, "utf8");
+  const noFirst = homeFirstCardMissing(homeHtml);
+  if (noFirst) {
+    console.error(`postbuild: the home page's HTML doesn't show the first card (${noFirst}) — Discover would open on an empty frame until the scripts run (lib/firstCard)`);
+    process.exit(1);
+  }
   if (!homeHtml.includes('type="application/ld+json"')) writeFileSync(home, intoHead(homeHtml, ld(homeJsonLd())));
 
   // Content-Security-Policy, per page, with its inline scripts' hashes.

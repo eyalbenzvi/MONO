@@ -41,19 +41,19 @@ describe("R23: shared SVG files match their sources", () => {
 });
 
 describe("I03: the index is published as hashed static JSON", () => {
-  it("public/data/<manifest file> is data/shirts.index.json, named by its hash", async () => {
+  it("public/data/<manifest file> is data/shirts.index.json (with the designs kept for Make), named by its hash", async () => {
     const { publishedIndex } = await import("../scripts/tools/publishIndex");
     const manifest = JSON.parse(readFileSync(path.join(ROOT, "data", "shirts.index.manifest.json"), "utf8"));
     const { json, file } = publishedIndex();
     expect(manifest.file).toBe(file);
     expect(readFileSync(path.join(ROOT, "public", "data", file), "utf8")).toBe(json);
-    expect(JSON.parse(json)).toEqual(JSON.parse(readFileSync(path.join(ROOT, "data", "shirts.index.json"), "utf8")));
+    expect(JSON.parse(json)).toEqual({ ...JSON.parse(readFileSync(path.join(ROOT, "data", "shirts.index.json"), "utf8")), makeBases: JSON.parse(readFileSync(path.join(ROOT, "data", "make", "bases.json"), "utf8")) });
   });
 
   it("the browser bundle's catalog module doesn't import the index", () => {
     const src = readFileSync(path.join(ROOT, "lib", "catalog.ts"), "utf8");
     expect(src).not.toMatch(/from "@\/data\/shirts\.index\.json"/);
     const loader = readFileSync(path.join(ROOT, "lib", "catalogIndex.ts"), "utf8");
-    expect(loader).toMatch(/typeof window === "undefined"\) return require\("@\/data\/shirts\.index\.json"\)/);
+    expect(loader).toMatch(/typeof window === "undefined"\) return \{ \.\.\.\(require\("@\/data\/shirts\.index\.json"\)/);
   });
 });

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CalibrationComplete } from "@/components/CalibrationComplete";
 import { CardStack } from "@/components/CardStack";
-import { getShirtById } from "@/lib/catalog";
+import { CALIBRATION_IDS, getShirtById } from "@/lib/catalog";
+import { ShirtCard } from "@/components/ShirtCard";
+import { swapCardScript } from "@/lib/firstCard";
 import { archetypeOf, noteOf } from "@/lib/taste";
 import { TasteSheet } from "@/components/TasteSheet";
 import { canUndo, needLine, useCalibrationProgress, useTasteStore } from "@/store/tasteStore";
@@ -223,10 +225,24 @@ function Announcer() {
   );
 }
 
+/**
+ * Until the saved deck is read: a first visit's top card (the taste test's
+ * first design), picture and all, so the served HTML shows it before any
+ * script runs (lib/firstCard). A returning visit whose deck opens elsewhere
+ * gets its own card's picture in it (the script after it), its name hidden
+ * until the deck is read; with no picture kept, it's hidden (globals.css).
+ */
 function CardSkeleton() {
+  const first = CALIBRATION_IDS[0] ? getShirtById(CALIBRATION_IDS[0]) : undefined;
   return (
     <div className="relative mx-auto h-full w-full max-w-[420px]">
       <div className="absolute inset-0 bg-white/[0.04]" />
+      {first && (
+        <div className="pointer-events-none absolute inset-0" aria-hidden data-first-card>
+          <ShirtCard shirt={first} strategy="calibration" score={0} isFlipped={false} isTop />
+        </div>
+      )}
+      {first && <script dangerouslySetInnerHTML={{ __html: swapCardScript() }} />}
     </div>
   );
 }

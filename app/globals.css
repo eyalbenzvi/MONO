@@ -74,3 +74,10 @@ body {
     scrollbar-width: none;
   }
 }
+
+/* A returning visit whose deck opens on another card than the served one (lib/firstCard): the served card shows that
+   card's picture once the page's script has put it in, without the served card's name; with none kept, it stays hidden. */
+html[data-card-other] [data-first-card]:not([data-swapped]),
+html[data-card-other] [data-first-card] h2 {
+  visibility: hidden;
+}

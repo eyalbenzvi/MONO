@@ -99,14 +99,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // first move an old single-store session into the split stores, then load
   // both, then top the deck back up in case the dataset changed.
   useEffect(() => {
+    // "From yours" (the mono-make store) loads apart, so its code isn't on every page; its script is
+    // asked for now, alongside the catalog, not after it (two more round trips before the first card).
+    const makeStore = import("@/store/makeStore");
+    makeStore.catch(() => {});
     // Stored state is checked against the catalog, so it loads after it.
     void catalogReady()
       .then(async () => {
         try {
           migrateLegacySession();
           removeRetiredKeys();
-          // "From yours" (the mono-make store) loads apart, so its code isn't on every page.
-          await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), import("@/store/makeStore").then((m) => m.useMakeStore.persist.rehydrate())]);
+          await Promise.all([useTasteStore.persist.rehydrate(), useCartStore.persist.rehydrate(), makeStore.then((m) => m.useMakeStore.persist.rehydrate())]);
           useTasteStore.getState().fillDeck();
         } catch (e) {
           // One bad stored value mustn't leave every button disabled: the page carries on with what did load.

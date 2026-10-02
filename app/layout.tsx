@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { AppShell } from "@/components/AppShell";
 import { SITE_URL, ogImage } from "@/lib/seo";
-import { INDEX_URL } from "@/lib/catalogIndex";
+import { indexUrl } from "@/lib/catalogIndex";
+import { searchUrl } from "@/lib/search/load";
 import "./globals.css";
 
 const TITLE = "MONO · Black and white tees, one ink";
@@ -46,13 +47,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${sans.variable}`}>
+    // suppressHydrationWarning: the home page's script may mark <html> before hydration (lib/firstCard).
+    <html lang="en" className={`dark ${sans.variable}`} suppressHydrationWarning>
       <head>
         {/* The Content-Security-Policy meta tag is written after the build,
             first in <head>, with this page's script hashes (lib/csp). */}
         <link rel="sitemap" type="application/xml" href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/sitemap.xml`} />
-        {/* The catalog index starts downloading with the page, alongside the scripts. */}
-        <link rel="preload" href={INDEX_URL} as="fetch" crossOrigin="anonymous" />
+        {/* The catalog index starts downloading with the page, alongside the scripts; the app reads its name here (lib/catalogIndex). */}
+        <link rel="preload" href={indexUrl()} as="fetch" crossOrigin="anonymous" data-catalog-index="" />
+        {/* The search index's name, read when search first loads (lib/search/load). */}
+        <meta name="mono-search" content={searchUrl() ?? ""} />
       </head>
       <body className="antialiased">
         <AppShell>{children}</AppShell>

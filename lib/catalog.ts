@@ -1,5 +1,4 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
-import { makeBase } from "@/lib/custom/makeBases";
 import { madeById } from "@/lib/custom/products";
 import { uploadProduct } from "@/lib/upload/designs";
 import { YOURS_ID, isUploadDesign } from "@/lib/upload/keys";
@@ -47,6 +46,8 @@ export const PRERENDERED: ShirtProduct[] = [];
 let shardHashes: string[] = [];
 
 const BY_ID = new Map<string, ShirtProduct>();
+/** The designs Make's products are drawn like that the shop no longer shows (they come inside the index; lib/custom/makeBases). */
+const MAKE_BASES: ShirtProduct[] = [];
 const FAMILIES = new Map<string, ShirtProduct[]>();
 
 /** The index's `medium` column: one letter per design. */
@@ -99,6 +100,7 @@ function init(index: CatalogIndex) {
   checkIndexHead(index);
   SHIRTS.push(...decodeAll(index));
   CALIBRATION_IDS.push(...index.calibration);
+  MAKE_BASES.push(...(index.makeBases ?? []));
   CALIBRATION_TOTAL = CALIBRATION_IDS.length;
   SHARD_SIZE = index.shardSize;
   shardHashes = index.shards;
@@ -149,7 +151,7 @@ function madeProduct(id: string): ShirtProduct | undefined {
   let made = MADE_BY_ID.get(id);
   if (!made) {
     // A base the shop no longer shows is kept for Make alone (lib/custom/makeBases).
-    const base = makeBase(m.base, SHIRTS);
+    const base = SHIRTS.find((s) => s.variant === m.base) ?? MAKE_BASES.find((s) => s.variant === m.base);
     if (!base) return undefined;
     made = { ...base, id: m.id, title: m.name, variant: `make-${m.slug}`, family: m.id, colors: ["black", "white"], rank: Number.MAX_SAFE_INTEGER, weak: false };
     MADE_BY_ID.set(id, made);

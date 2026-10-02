@@ -17,6 +17,7 @@ import { ShirtCard } from "@/components/ShirtCard";
 import { BUTTON_PRIMARY } from "@/components/ui";
 import { useInPlaceZoom } from "@/hooks/useInPlaceZoom";
 import { getShirtById } from "@/lib/catalog";
+import { rememberTopCard } from "@/lib/firstCard";
 import { matchScore } from "@/lib/recommendation";
 import { startOverWithUndo, useTasteStore, type DeckEntry } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
@@ -62,6 +63,9 @@ const INTERACTIVE = "button, a, input, select, textarea, label";
 const fromControl = (e: Event | React.PointerEvent) =>
   e.target instanceof Element && e.target.closest(INTERACTIVE) !== null;
 
+/** Set once a top card has been shown in this page load. */
+let stackShown = false;
+
 export function CardStack() {
   const deck = useTasteStore((s) => s.deck);
   const vector = useTasteStore((s) => s.preferenceVector);
@@ -72,6 +76,10 @@ export function CardStack() {
   const reduceMotion = useReducedMotion();
 
   const visible = deck.slice(0, 3);
+
+  // The next visit opens on this card, its picture asked for with the page (lib/firstCard).
+  const topId = visible[0]?.id;
+  useEffect(() => rememberTopCard(topId ? (getShirtById(topId) ?? null) : null), [topId]);
 
   // A save sends a small heart from the card to the You tab.
   const onLiked = useCallback(
@@ -167,6 +175,9 @@ function TopCard({
   onLiked: (rect: DOMRect) => void;
 }) {
   const shirt = getShirtById(entry.id)!;
+  // The page's first card takes the served card's place as it is: no scale-in (DiscoverPage's CardSkeleton).
+  const firstCard = useRef(!stackShown);
+  useEffect(() => void (stackShown = true), []);
   const commitSwipe = useTasteStore((s) => s.commitSwipe);
   const toggleFlip = useUiStore((s) => s.toggleFlip);
   const queueHead = useUiStore((s) => s.swipeQueue[0]);
@@ -376,7 +387,7 @@ function TopCard({
       aria-describedby={finePointer ? "card-keys" : undefined}
       className={`absolute inset-0 outline-none will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isFlipped ? "" : "cursor-grab touch-none active:cursor-grabbing"} ${isLeaving ? "pointer-events-none" : ""}`}
       style={{ x, y, rotate }}
-      initial={{ scale: 0.95 }}
+      initial={firstCard.current ? false : { scale: 0.95 }}
       animate={{ scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       // Drag is disabled while flipped so the details panel can scroll natively.

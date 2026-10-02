@@ -2,8 +2,10 @@
  * Publishes the catalog index for the browser (I03), before every build
  * (npm "prebuild"): public/data/index.<hash>.json — named by its content, so
  * it's cached forever and a code change never re-downloads it — and
- * data/shirts.index.manifest.json, the small file the app imports to know
- * that name. The server side of the build reads data/shirts.index.json.
+ * data/shirts.index.manifest.json, which app/layout reads to name it in every
+ * page's <head> (the browser takes the name from there, never from a script).
+ * The designs Make keeps after the shop dropped them (data/make/bases.json)
+ * ride in it as `makeBases`. The server side of the build reads data/.
  */
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -13,10 +15,11 @@ const ROOT = path.resolve(__dirname, "../..");
 const SOURCE = path.join(ROOT, "data", "shirts.index.json");
 const DIR = path.join(ROOT, "public", "data");
 const MANIFEST = path.join(ROOT, "data", "shirts.index.manifest.json");
+const MAKE_BASES = path.join(ROOT, "data", "make", "bases.json");
 
 export function publishedIndex() {
   // Compact JSON (the source keeps one column per line for diffs).
-  const json = JSON.stringify(JSON.parse(readFileSync(SOURCE, "utf8")));
+  const json = JSON.stringify({ ...JSON.parse(readFileSync(SOURCE, "utf8")), makeBases: JSON.parse(readFileSync(MAKE_BASES, "utf8")) });
   const hash = createHash("sha256").update(json).digest("hex").slice(0, 10);
   return { json, file: `index.${hash}.json` };
 }

@@ -4,6 +4,10 @@
  * stays here, for Make alone. They have no product page, no place in the
  * grid, Discover or search; a made-for-you tee takes its model photo and its
  * place in the taste from one. Written by scripts/generateCatalog (data/make/bases.json).
+ *
+ * For scripts and tests: the browser gets these inside the catalogue index
+ * (scripts/tools/publishIndex; lib/catalog madeProduct finds them there), so
+ * no script changes when they do. Never import this from the app.
  */
 import bases from "@/data/make/bases.json";
 import type { ShirtProduct } from "@/types/shirt";
