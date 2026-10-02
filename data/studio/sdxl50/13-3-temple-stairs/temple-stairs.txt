@@ -1,0 +1,10 @@
+Title: Temple Stairs
+Category: Architecture
+Subject: A long flight of stone steps with balustrades climbing between pine trees and shrubs to a temple with three curved tiled roofs
+Style: Dense pen and ink, fine cross-hatching
+Medium: Drawn (illustration)
+Description: Stone steps climb between twisted pines to the door of a three-roofed temple, every tile and needle drawn. The view at the top is said to be worth it, which is what people say about all stairs.
+Tee colours: Black, White
+Print size: 21.6 × 35.3 cm
+Keywords: temple, stairs, pagoda, pine trees, stone steps, East Asian architecture, pen and ink, hatching, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

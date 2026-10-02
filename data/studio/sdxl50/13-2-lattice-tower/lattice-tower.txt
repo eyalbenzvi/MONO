@@ -1,0 +1,10 @@
+Title: Lattice Tower
+Category: Architecture
+Subject: One tall steel lattice tower seen side on, two cross-arms near the top, guy wires running to the ground, low bushes at its feet
+Style: Technical elevation, ruled ink lines
+Medium: Drawn (illustration)
+Description: A steel lattice tower rises from a strip of scrub, its girders crossing all the way up to a slim spire. It has stood there a long time without receiving a single compliment.
+Tee colours: Black, White
+Print size: 21.7 × 35.0 cm
+Keywords: lattice tower, pylon, steel tower, girders, engineering, elevation, technical drawing, industrial, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -1,0 +1,14 @@
+Prompt: One long stone stairway climbing to a hilltop temple, front view, on plain white paper, no text, no lettering, no frame, no border, no colour. Wide worn steps rising through the middle, stone lanterns and gnarled pine trees on both sides, small shrines and tiled roofs along the slope, the temple gate and curved roofs at the top. Dense pen and ink drawing, fine cross-hatching, every tile and leaf drawn, edge to edge. The ground ends in a clean straight line at the bottom, empty white sky above.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 31330-31332 (three, main); chosen 31330 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), EulerDiscreteScheduler trailing, guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+Ending: horizon (the family's --edge; the stairs and paving end in a straight cut, the sky above the roofs left as tee)
+
+Why 31330: all three are good dense pen drawings. 31331 puts the pagoda inside a huge tree with a grey hazy sea and cliffs on the right (a grey wash); 31332 has grey haze and a far tower on the right and clouds in the sky. 31330 is the cleanest: a symmetrical flight of stone steps with balustrades climbing straight to a three-roofed temple gate, pines and shrubs edge to edge on both sides, crisp hatching, no haze.
+Cleaned: cropped 8 px off the left, top and right and 16 px off the bottom (crop 8,8,822,1200) to drop a thin paper-edge line and a tiny fake signature in the bottom-right corner. No other text.
+The temple is not a specific place, so the title is the general TEMPLE STAIRS.
+One ink: pen mode on the crop failed (1.1% of the ink under 0.4 mm); line mode passed but screened the pines and roofs into blotchy halftone. Delivered: the crop upscaled 2x (Lanczos) and its dark lines thickened by a 3 px minimum filter, then pen mode: hatching kept as lines, fails [].
+python3 scripts/studio/oneink.py <crop, 2x, MinFilter(3)> data/studio/sdxl50/13-3-temple-stairs temple-stairs --mode pen --edge horizon --title "TEMPLE STAIRS" --sub "Places · Town"
