@@ -1,0 +1,11 @@
+Prompt: One vintage farm tractor, side elevation, a clean technical drawing in black ink on plain white paper, no text, no lettering, no frame, no border, no colour. One tractor only: large spoked rear wheel, small front wheel, engine bonnet, exhaust stack, steering wheel and seat, bolts and plates. Thin construction lines, a thin ground line, faint spec columns of small marks to the side. Fine even pen line. Centred with wide white margins. No ornaments, no grey wash.
+
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, EulerDiscreteScheduler (trailing), guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+No negative prompt (SDXL-Lightning is CFG-free; exclusions are in the first sentence).
+Size: 832x1216
+Seeds: 31220-31222 (three, main); chosen 31221 (the second), the top one of its two tractors
+
+Why 31221: all three seeds repeated the tractor, two or three to a sheet, with fake captions and a ruled frame. 31220 puts two near-identical tractors in a split frame; 31222 three, the lower two of a different make. The top tractor of 31221 is the cleanest single machine: whole, true side view, grille, engine, stack, steering wheel, spoked front wheel and treaded rear wheel all readable.
+Clean-up: cropped to that one tractor (x 90-770, y 50-442), inside the frame, which drops the second tractor and the fake captions under it. A line of small fake text above the stack (x 340-440, y 38-60) was painted to paper, and the frame's top rule (crop rows 0-20, either side of the stack) painted out. A tiny badge-like mark on the bonnet was left.
+One ink: pen mode; line mode passed too but screened the engine and tread into grey blotches, pen keeps them as lines. fails [].
+python3 scripts/studio/oneink.py tractor-clean.png data/studio/sdxl50/12-2-vintage-tractor vintage-tractor --mode pen --title "VINTAGE TRACTOR" --sub "Objects · Elevation"

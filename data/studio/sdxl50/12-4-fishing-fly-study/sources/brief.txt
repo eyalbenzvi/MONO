@@ -1,0 +1,15 @@
+Prompt (backup, used): One large salmon fishing fly, side view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A patent study sheet: the fly in the centre, its curved hook, eye, wrapped body, feather wing, hackle and tail, every fibre drawn in fine white line; around it smaller flies and a bare hook, two small round detail circles. Centred with wide black margins. No ornaments, no grey wash.
+
+Main prompt (FISHING REEL STUDY, rejected): One vintage fishing reel, large, three-quarter view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A patent study sheet: the reel in the centre with its spool, handle, crank and line, and around it its parts exploded, gears, screws, a spinning lure and a fishing fly, two small round detail circles. Fine white line, centred with wide black margins. No ornaments, no grey wash.
+
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, EulerDiscreteScheduler (trailing), guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+No negative prompt (SDXL-Lightning is CFG-free; exclusions are in the first sentence).
+Size: 832x1216
+Seeds: main 31240-31242 (fishing reel), all rejected; backup 31245-31247 (fishing fly), chosen 31245 (the first)
+
+Why backup: none of the three reel seeds shows a recognisable fishing reel. 31240 and 31241 are cream sheets of spoked wheels and pulleys with lines of fake captions; 31242 is the only one on black, but it is two spoked wheels and a spindle in a ruled frame with about fifteen fake labels.
+Why 31245: 31246 is a small faint fish-like lure lost on a big dark sheet with fake captions; 31247 three dragonfly-like insects and a fish with fake labels. 31245 is one whole fly, large and centred, with no text and no frame: head, ribbed body, feather wings and tail, legs and a curved hook beneath, so it reads as a tied fishing fly.
+It is a single fly on a plain mid-grey ground, without the exploded parts or detail circles of a patent sheet; the title says FISHING FLY STUDY because a fishing fly is what it shows.
+Preparation: the drawing is dark line on a mid-grey ground (median 110), so the ground was lifted to paper (value / 110 x 1.08, clipped) before one ink. The ink is the drawing, which prints white on the black tee.
+One ink: line mode (pen thinned the wings to broken strokes). fails [].
+python3 scripts/studio/oneink.py fly-norm.png data/studio/sdxl50/12-4-fishing-fly-study fishing-fly-study --mode line --title "FISHING FLY STUDY" --sub "Objects · Study sheet"

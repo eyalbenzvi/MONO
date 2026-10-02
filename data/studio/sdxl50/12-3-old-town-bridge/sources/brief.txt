@@ -1,0 +1,13 @@
+Prompt: Old houses built on a stone bridge over a river, front view, a dense pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Tall narrow medieval houses with balconies, shutters, timber beams, chimneys and potted plants, stone arches below, fine hatching drawn edge to edge. The ground ends in a clean straight line, empty white sky above. No ornaments, no grey wash.
+
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, EulerDiscreteScheduler (trailing), guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+No negative prompt (SDXL-Lightning is CFG-free; exclusions are in the first sentence).
+Size: 832x1216
+Seeds: 31230-31232 (three, main); chosen 31231 (the second)
+Edge: horizon (the default for C: the ground ends in a straight cut with a rule under it).
+
+Why 31231: none of the three built the houses on the bridge itself; each drew a stone bridge over a canal between timber-framed houses. 31230 is a low, flat footbridge with a lot of plain grey water; 31232 a double arch with small figures that came out smudged. 31231 has the strongest single arch, dense houses, a little tower and an almost white sky.
+Truth rule: the houses stand beside the bridge, not on it, and the town is nowhere in particular, so the title is OLD TOWN BRIDGE, not HOUSES ON A BRIDGE (the slot's title) or a named town.
+No fake text in the picture.
+One ink: pen mode, for the hatching; line mode turned the sunlit walls and the arch into flat light-grey masses. fails [].
+python3 scripts/studio/oneink.py K3-houses-on-a-bridge-s31231.png data/studio/sdxl50/12-3-old-town-bridge old-town-bridge --mode pen --edge horizon --title "OLD TOWN BRIDGE" --sub "Places · Town"

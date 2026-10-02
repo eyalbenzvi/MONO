@@ -1,0 +1,12 @@
+Prompt: One red fox standing, full body, side view, a naturalist's study sheet in black ink on plain white paper, no text, no lettering, no frame, no border, no colour. One fox only, four legs, bushy tail, both ears, fine fur hatching. Around it, small: a fox skull in side view, a paw print and a paw from below, thin scale lines and tiny note marks. Fine pen line, even light. Centred, the whole fox with wide white margins. No ornaments, no grey wash.
+
+No negative prompt (SDXL-Lightning is CFG-free; exclusions are in the first sentence).
+Seeds: 31210-31212 (three, main); chosen 31212 (the third)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, EulerDiscreteScheduler (trailing), guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 31212: 31210 is a front-view fox squeezed to the top and bottom edges with smudgy grey tone; 31211 is coloured orange, inside a ruled frame, its tail lost behind the legs. 31212 is one whole fox, sitting, ears and tail inside the page, with fine engraved fur.
+None of the three drew the skull, paw or scale-line sketches the prompt asked for; the sheet is the animal alone, so the title stays a plain FOX STUDY (a fox is what it shows).
+Clean-up: a small fake signature at bottom left (x 30-240, y 1115-1160) was painted to paper before one ink. The cream paper's darker edges were cropped off (--crop 30,30,802,1190), as they printed as side rules.
+One ink: pen mode, for the fur hatching. fails [].
+python3 scripts/studio/oneink.py fox-clean.png data/studio/sdxl50/12-1-fox-study fox-study --crop 30,30,802,1190 --mode pen --title "FOX STUDY" --sub "Nature · Study sheet"
