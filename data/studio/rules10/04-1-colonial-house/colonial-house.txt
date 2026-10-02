@@ -1,0 +1,11 @@
+Title: Colonial House
+Category: Architecture
+Family: buildings
+Subject: An old colonial house with two storeys of deep arcaded verandas, turned columns, railings and shutters, a palm leaning over the roof
+Style: Pen-and-ink line engraving, cross-hatched, the scene dissolving into the tee at its edges
+Medium: Drawn (illustration)
+Description: A colonial house shown front-on, its verandas stacked two deep under a pedimented roof and a palm. Built for sitting outside in the shade, which is as much as anyone ever did on one.
+Tee colours: White
+Keywords: colonial house, veranda, architecture, tropical, palm tree, pen and ink, engraving, balcony, vintage building
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
