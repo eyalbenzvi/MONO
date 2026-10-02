@@ -542,10 +542,11 @@ def save_ink(ink, colour, path):
     Image.fromarray(rgba, "RGBA").save(path, optimize=True, dpi=(DPI, DPI))
 
 
-def preview(ink, path):
-    """The guidelines' preview: 1500 px wide, the design on a black background."""
+def preview(ink, path, on_white=False):
+    """The guidelines' preview: 1500 px wide, the design on the tee it sells on (black, or white for a
+    drawing that may not print white on black: shown white, it would read as its own negative)."""
     small = cv2.resize(ink.astype(np.float32), (1500, round(1500 * AREA_H / AREA_W)), interpolation=cv2.INTER_AREA)
-    Image.fromarray((small * 255).astype(np.uint8), "L").save(path)
+    Image.fromarray(((1 - small if on_white else small) * 255).astype(np.uint8), "L").save(path)
 
 
 def main():
@@ -640,7 +641,6 @@ def main():
     else:
         save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
         save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
-    preview(black, os.path.join(out, f"{slug}-preview.png"))
     ctx = {"mode": conv, "edge": edge, "title": title, "sub": sub, "views": views, "outline": outline,
            "headRows": (TOP + head.shape[0]) if head is not None else None}
     rep = {"line": check(white, ctx)} if mode == "line" else {"white": check(white, ctx), "black": check(black, ctx)}
@@ -648,6 +648,8 @@ def main():
         json.dump(rep, f, indent=1, ensure_ascii=False)
     # Delivered with the design (the shop reads it): the measures of the print it sells.
     main_rep = rep.get("line") or rep["white"]
+    # An engraving that may not print white on black is previewed on the white tee it sells on.
+    preview(black, os.path.join(out, f"{slug}-preview.png"), on_white=conv == "engrave" and not main_rep["blackTee"])
     with open(os.path.join(out, "print.json"), "w") as f:
         json.dump({"mode": conv, "edge": edge, "views": views, "outline": outline, "ground": ground,
                    "coverage": main_rep["coverage"], "solid": main_rep["solid"], "screened": main_rep["screened"],
