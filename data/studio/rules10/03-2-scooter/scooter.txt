@@ -1,0 +1,12 @@
+Title: Scooter
+Category: Engravings
+Family: vehicles
+Subject: A 1950s Italian motor scooter in three-quarter view: rounded steel body, curved front shield, step-through floor, small wheels, round headlamp on the handlebar, saddle and luggage rack, on its centre stand
+Style: Mid-century technical illustration, fine pen lines and cross-hatching
+Medium: Drawn (illustration)
+Description: A 1950s Italian scooter parked on its centre stand, every curve of the steel cowl drawn in pen. It has clearly never been asked to go uphill with two aboard.
+Tee colours: White
+Print size: 26.0 × 28.9 cm
+Keywords: scooter, motor scooter, Italian, 1950s, vintage, mod, engraving, technical drawing
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
