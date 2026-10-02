@@ -1,0 +1,12 @@
+Title: Sunflower
+Category: Botanical & Nature
+Family: plants
+Subject: One common sunflower, the flower head seen from the front on its stem, with a side bud and four toothed heart-shaped leaves
+Style: Botanical plate, pen-and-ink line engraving with cross-hatching
+Medium: Drawn (illustration)
+Description: A single sunflower faces the viewer on its stout stem, a closed bud and four broad leaves below it. It is, as sunflowers go, unusually willing to look you in the eye.
+Tee colours: White
+Print size: 20.3 × 31.4 cm
+Keywords: sunflower, helianthus annuus, flower, botanical, botanical illustration, engraving, garden, summer, nature, line art
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
