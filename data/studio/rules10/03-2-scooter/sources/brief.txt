@@ -1,0 +1,11 @@
+Brief: SCOOTER (helper 3, slot 2, main prompt). Delivered as SCOOTER.
+Prompt: One 1950s Italian motor scooter, side elevation, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single scooter facing right, rounded steel body, small wheels, step-through floor, curved front shield, handlebar with a round headlamp, saddle. Clean black outline drawing, one even line weight, no shading, no hatching masses, no cast shadow, patent drawing. Centred, the whole scooter inside wide white margins.
+
+Seeds: 40320-40322 (three, main); chosen 40322
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+The model drew all three seeds in three-quarter view, not the side elevation asked for, so the view is named "Three-quarter view" on the print. 40320 is a sound scooter but has a strip of fake exploded-view sketches and fake text under it; 40321 has two mirrors and its headlamp on the handlebar but a smudgy grey wash and fake handwriting at the foot. 40322 is one scooter, mechanically sound: two small wheels (the front on a single fork arm with its hub, the rear under the cowl), centre stand, step-through floor with its runner strips, front shield, round headlamp on the handlebar as briefed, saddle and luggage rack, all inside the page. Chosen.
+Clean-up before one ink: paper levelled to white (x 255/205); the frame lines and the fake lettering at the top (y < 200) and at the foot (y > 1045, a fake title, caption and signatures), and the frame lines at the sides (x < 45, x > 798) painted to white paper; the scooter lies inside x 46-767, y 228-1031, untouched. The light grey cast shadow under it has no line in it and is dropped by engrave as tee.
+One ink: engrave (fails []), cropped to the scooter. The option list in rules10.py has --outline and --view 'Side elevation'; the drawing is shaded (44% of the ink in solid fills, blackTee false) and in three-quarter view, so --outline was left off (rules.md section 3) and the view renamed; offered on white tees only.
+python3 scripts/studio/oneink.py <cleaned image> data/studio/rules10/03-2-scooter scooter --mode engrave --title "SCOOTER" --view 'Three-quarter view' --plate 'Pl. IV' --crop 30,210,800,1045

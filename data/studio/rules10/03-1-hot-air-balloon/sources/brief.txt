@@ -1,0 +1,11 @@
+Brief: HOT AIR BALLOON (helper 3, slot 1, main prompt). Delivered as HOT AIR BALLOON.
+Prompt: One hot air balloon, front elevation, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single tall balloon envelope made of vertical gores, net of ropes, a small wicker basket hanging below on lines, a burner frame. Clean black outline drawing, one even line weight, no shading, no hatching masses, no cast shadow, patent drawing. Centred, the whole balloon and basket inside wide white margins.
+
+Seeds: 40310-40312 (three, main); chosen 40312
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+40310 is a good balloon but carries a large block of fake text in a box beside the basket and fake caption lines; 40311 has a row of fake lettering across the top and scattered fake labels, and a heavier, greyer envelope. 40312 is one balloon and nothing else: an envelope of vertical gores with a load band, the rope net running down to a load ring and one wicker basket, all inside the page, so it is chosen.
+Clean-up before one ink: paper levelled to white (x 255/200); the double frame lines on all four sides and the faint fake lettering under the bottom frame line and the scribble at the right edge painted to white paper (everything outside x 46-770, y 46-1176; the balloon lies inside x 102-719, y 68-1140, untouched).
+One ink: engrave (fails []). The option list in rules10.py has --outline, but the drawing is hatched, not a pure outline (47% of the ink in solid fills, blackTee false either way), so --outline was left off (rules.md section 3) and it is offered on white tees only.
+python3 scripts/studio/oneink.py <cleaned image> data/studio/rules10/03-1-hot-air-balloon hot-air-balloon --mode engrave --title "HOT AIR BALLOON" --view 'Elevation' --plate 'Pl. III'
