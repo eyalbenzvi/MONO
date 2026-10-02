@@ -1,0 +1,12 @@
+Title: Ammonite
+Category: Botanical & Nature
+Family: sea-life
+Subject: One ammonite fossil shell in flat side view, a single tightening spiral with strong outward-curving ribs
+Style: Natural history plate, black ink line engraving with cross-hatching
+Medium: Drawn (illustration)
+Description: An ammonite coils down to a pinpoint centre, every rib of its last whorl swelling outward towards the aperture. It has kept its shape for some hundred million years, which is more than most of us manage over a weekend.
+Tee colours: White
+Print size: 25.0 × 31.8 cm
+Keywords: ammonite, fossil, spiral, shell, palaeontology, natural history, engraving, cephalopod, sea-life
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

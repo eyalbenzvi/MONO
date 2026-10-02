@@ -1,0 +1,16 @@
+Prompt (backup): One ammonite fossil shell, flat side view, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single large spiral shell with strong ribs curving outward, the coils tightening to the centre. Pure black ink line engraving, crisp cross-hatching, no grey shading, no cast shadow, natural history plate. Centred with wide white margins.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Main first (NAUTILUS, seeds 40120-40122, prompt: One chambered nautilus shell cut in half, showing the spiral of pearly chambers inside, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single large shell, the chambers growing in a perfect spiral, thin walls between them, the outer lip smooth. Pure black ink line engraving, crisp cross-hatching, no grey shading, no cast shadow, natural history plate. Centred with wide white margins.)
+All three main images rejected: 40120 two spiral centres merged into one shell (two objects fused); 40121 one centre but irregular blobby lobes instead of septa, with fake handwriting at the left and bottom; 40122 one spiral but the outer whorl runs out into a trumpet-like spout at the bottom right, not a nautilus. So the backup ran.
+
+Seeds (backup): 40125-40127 (three); chosen 40126
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), Euler trailing, guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+Ending: none (not a scene)
+
+Why 40126: one whole ammonite, flat side view, a single spiral tightening to one centre, strong ribs curving outward, the last whorl ending in its aperture; no text, no frame. 40125 is a cut-open shell with the outer whorl breaking into a second curl (not an ammonite in side view); 40127 a flattened oval disc with smeared ribs and a stray outline around it.
+Retouch before one ink: the cream paper and a faint shadow on the right edge painted to white outside the shell's mask; the shell's tones scaled by the paper level (222) so the paper reads white.
+One-ink options: the slot's options were written for the nautilus (--sub 'Nautilus pompilius' --view 'Shell in section'); for the ammonite they became --sub 'Fossil cephalopod' --view 'Side view' --views 1.
+python3 scripts/studio/oneink.py <retouched image> data/studio/rules10/01-2-ammonite ammonite --mode engrave --title "AMMONITE" --sub 'Fossil cephalopod' --view 'Side view' --views 1
