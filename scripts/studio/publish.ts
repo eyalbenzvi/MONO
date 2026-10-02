@@ -1,7 +1,7 @@
 /**
  * The studio's designs into the catalogue (docs/content/studio.md, step 5):
  * each delivered folder (data/studio/<NN>-<slug>, data/studio/run50/<KK>-<slot>-<slug>,
- * data/studio/run50b/<KK>-<slot>-<slug>)
+ * data/studio/run50b/<KK>-<slot>-<slug>, data/studio/sdxl50/<KK>-<slot>-<slug>)
  * becomes a print the shop serves, public/prints/print_<n>.webp (1500 × 2000, black
  * ink whose alpha is the ink, as the archive's), and an entry in
  * data/studio/catalogue.json that scripts/generateCatalog.ts reads (studioSet).
@@ -50,6 +50,8 @@ export interface StudioEntry {
   coverage: number;
   /** The brief behind it (prompt, seed, model). */
   briefUrl: string;
+  /** The model that drew it when it isn't the studio's first (SSD-1B): "sdxl" for SDXL base 1.0 with SDXL-Lightning. */
+  model?: "sdxl";
 }
 
 /**
@@ -70,6 +72,15 @@ const CATEGORY: Record<string, ShirtCategory> = {
   "vintage-camera": "etched", "coffee-pot": "etched", "aviator-goggles": "etched", "rope-knot": "etched",
 };
 
+/** An SDXL design's category: slot 1 study sheet, 2 elevation, 3 street, 4 patent sheet on black. */
+function sdxlCategory(dir: string, label: string): ShirtCategory {
+  const slot = /^\d{2}-(\d)-/.exec(path.basename(dir))?.[1];
+  if (slot === "1") return "specimens";
+  if (slot === "3") return "architecture";
+  if (slot === "2") return /architecture/i.test(label) ? "architecture" : /sky/i.test(label) ? "sky" : "etched";
+  return /sky/i.test(label) ? "sky" : "etched";
+}
+
 /** The details file (guidelines, section 08) as fields. */
 function details(file: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -80,14 +91,14 @@ function details(file: string): Record<string, string> {
   return out;
 }
 
-/** The delivered folders, in a fixed order: the trial's, then the run of fifty's, then the second run's. */
+/** The delivered folders, in a fixed order: the trial's, then the run of fifty's, the second run's, then SDXL's fifty. */
 export function folders(): string[] {
   const trial = readdirSync(STUDIO).filter((d) => /^\d{2}-/.test(d)).sort().map((d) => path.join("data", "studio", d));
   const run = (name: string) =>
     existsSync(path.join(STUDIO, name))
       ? readdirSync(path.join(STUDIO, name)).filter((d) => /^\d{2}-\d-/.test(d)).sort().map((d) => path.join("data", "studio", name, d))
       : [];
-  return [...trial, ...run("run50"), ...run("run50b")];
+  return [...trial, ...run("run50"), ...run("run50b"), ...run("sdxl50")];
 }
 
 async function main() {
@@ -124,8 +135,14 @@ async function main() {
     const small = await sharp(rgba, { raw: { width: 1500, height: 2000, channels: 4 } }).resize(300, 400, { fit: "fill", kernel: "cubic" }).ensureAlpha().raw().toBuffer();
     const raster = rasterInk(small, 300, 400, "ink", "black");
     const a = assessPrint(raster);
-    const category = CATEGORY[slug] ?? "specimens";
+    const sdxl = dir.split(path.sep).includes("sdxl50");
+    // SDXL's fifty go by their family (the folder's slot): study sheets of animals and plants, elevations and
+    // streets as buildings (or engravings of machines), patent sheets of objects as engravings.
+    const category = CATEGORY[slug] ?? (sdxl ? sdxlCategory(dir, d.category ?? "") : "specimens");
     if (!SHIRT_CATEGORIES.includes(category)) throw new Error(`${dir}: category ${category}`);
+    const tees = (d["tee colours"] ?? "").replace(/\s*\(.*$/, "").trim();
+    // An SDXL line design its maker offered on the white tee only (its negative on black didn't hold up).
+    const whiteTee = sdxl && !tone && /^white$/i.test(tees);
     const keywords = (d.keywords ?? "").split(/[,;]/).map((w) => w.trim()).filter(Boolean);
     entries.push({
       n,
@@ -136,14 +153,15 @@ async function main() {
       style: d.style || "Illustration",
       description: d.description,
       keywords,
-      baseColor: whiteOnly ? "white" : "black",
-      // Tonal work, or line work its maker offered on black only ("Black (printed in white …)").
-      single: tone || /^black$/i.test((d["tee colours"] ?? "").replace(/\s*\(.*$/, "").trim()),
+      baseColor: whiteOnly || whiteTee ? "white" : "black",
+      // Tonal work, or line work its maker offered on one tee only ("Black (printed in white …)"; SDXL's "White").
+      single: tone || whiteTee || /^black$/i.test(tees),
       mode: tone ? "tone" : "line",
       quality: a.quality,
       printCm: a.printCm,
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
+      ...(sdxl ? { model: "sdxl" as const } : {}),
     });
     console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${a.quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
   }

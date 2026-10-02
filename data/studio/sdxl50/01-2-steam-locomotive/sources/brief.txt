@@ -1,0 +1,14 @@
+Prompt: One steam locomotive, side elevation, on plain white paper, no text, no lettering, no frame, no border, no colour. A single long engine facing right, tall chimney, round boiler, steam dome, cab at the back, large spoked driving wheels joined by connecting rods, one thin straight ground line under the wheels. Clean black ink technical drawing, fine construction lines, crisp even line weight. Centred, the whole engine with wide white margins, lots of empty space.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 30120-30122 (three, main); chosen 30121 (the second)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), Euler trailing, guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+Ending: none (not a scene; the ground line is the drawing's own)
+
+Why 30121: 30120 is a three-quarter front view on rails, not an elevation, inside a frame with fake captions; 30122 is three locomotives stacked in three panels with fake captions. 30121 has two panels, each one locomotive in clean side elevation; the top one is the better drawn (whole engine, three spoked wheels, a ground line), so only it is used.
+Retouch before one ink: cropped to the top panel (x 24-808, y 40-598), which removes the sheet frame, the panel rules, the second locomotive and the fake corner text; a small fake caption under the ground line (505-650, 560-588) and a tiny fake number on the boiler (645-685, 290-310) inpainted / painted to paper.
+The engine has no cab (an early, open-footplate type), so the text does not mention one.
+One ink: line mode; pen mode broke the boiler shading into thin flecks (1.1% of the ink under 0.4 mm, a fail).
+python3 scripts/studio/oneink.py <retouched image> data/studio/sdxl50/01-2-steam-locomotive steam-locomotive --mode line --title "STEAM LOCOMOTIVE" --sub "Objects · Elevation"

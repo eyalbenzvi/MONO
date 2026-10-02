@@ -1,0 +1,10 @@
+Title: Vintage Car
+Category: Engravings
+Subject: A 1920s touring car with its hood up, in plain side elevation on a thin ground line
+Style: Technical side elevation, fine black line with light hatching
+Medium: Drawn (illustration)
+Description: A four-door touring car of the twenties in exact side view, spoked wheels, folding hood, long bonnet and running board. It has not needed a service since about 1931.
+Tee colours: Black and white (vintage-car.png, one ink: printed white on the black tee, black on the white tee)
+Print size: 26.0 x 11.4 cm (heading included)
+Keywords: vintage car, motor car, touring car, elevation, side view, spoked wheels, automobile, technical drawing, motoring
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

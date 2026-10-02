@@ -1,0 +1,12 @@
+Brief: ISTANBUL SKYLINE (domes and minarets over roofs). Delivered as DOMES AND MINARETS (truth rule: an Ottoman-style mosque over an old town, not a recognisable Istanbul view).
+Prompt: A dense old city skyline with domes and minarets, pen-and-ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. A great mosque with a central dome and slender minarets rising over crowded old houses with wooden balconies, shutters, tiled roofs, trees and plants, drawn edge to edge in fine hatching. The ground ends in a clean straight line, empty white sky above. No ornaments, no grey wash.
+
+Seeds: 30230-30232 (three, main); chosen 30232 (the third)
+Size: 832x1216
+Edge: horizon (chosen before the prompt; the ground ends in oneink's straight cut and rule)
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+Why 30232: the lightest sky and the most depth: a cascade of domes, four minarets all whole to the finial, houses and a square in fine hatching. 30230 has a grey-washed sky and fewer houses; 30231 a heavy toned sky and a large crowd. No text or frame in 30232.
+Clean-up before one ink: a small scribbled cloud in the sky right of the tall minaret painted to the paper colour (x 494-725, y 40-150).
+One ink: pen --edge horizon (fails []); the shadowed walls print as an open mesh. Line mode screened most of the town into grey blotches. White tee only: on black the drawing reads as a negative.
+python3 scripts/studio/oneink.py <cleaned image> data/studio/sdxl50/02-3-domes-and-minarets domes-and-minarets --mode pen --edge horizon --title "DOMES AND MINARETS" --sub "Places · Town"

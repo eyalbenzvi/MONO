@@ -1,0 +1,10 @@
+Title: Space Rocket
+Category: Maps & Sky
+Subject: A single space rocket in side elevation, with nose cone, strap-on boosters, swept fins and landing feet on a thin ground line
+Style: Technical side elevation, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A tall rocket stands on its landing feet, boosters strapped to its sides and fins swept back. It has been ready for launch for some time now and is in no hurry.
+Tee colours: Black, White
+Print size: 10.8 × 35.0 cm
+Keywords: rocket, space rocket, spaceship, space, technical drawing, elevation, blueprint, line art, retro space
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

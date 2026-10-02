@@ -1,0 +1,14 @@
+Brief: TURNTABLE STUDY (main) -> GRAMOPHONE STUDY (backup). Delivered as GRAMOPHONE: no parts or roundels came out, so not called a study.
+Main prompt (rejected): One vintage record player turntable, three-quarter view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. One whole turntable with a record on the platter and a tonearm, large in the centre; around it small separate drawings of the tonearm, the stylus cartridge and the platter, and small circular detail roundels. Fine white lines, a patent drawing study sheet. Wide black margins. No ornaments.
+Main seeds 30240-30242, all rejected: 30240 a grid of six turntables in panels with fake labels; 30241 cream paper with framed panels, roundels and fake text, the record player small; 30242 a tangle of circles and boxes with no object.
+
+Backup prompt: One antique gramophone with a big flared horn, side view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no panels, no colour. Exactly one gramophone: a wooden box with a crank handle, a turntable with a record, a tone arm and one large fluted brass horn, every part drawn in fine white lines with delicate hatching. Two small circles beside it show the needle and the crank. Centred, the whole gramophone with wide black margins. No ornaments.
+
+Seeds: 30245-30247 (three, backup); chosen 30247 (the third)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+Why 30247: one whole gramophone, a crisp fluted horn and a stepped cabinet, all inside the page. 30245 runs its horn and cabinet out to the page edges; 30246 sits in a drawn frame with a crumpled horn and a broken arm. The model ignored "white chalk on black" and drew dark ink on cream paper in all three; that is already the dark-on-light the one-ink step wants (the lines are the ink, printed white on the black tee). The small parts sketches did not come out.
+Clean-up before one ink: paper levelled to white (x 255/215); a small fake signature at the bottom right painted to paper (x>609, y 1135-1200); the soft floor shadow round the cabinet painted to paper (below y 900, everything outside the cabinet's silhouette, and a patch left of the left foot).
+One ink: line (fails []).
+python3 scripts/studio/oneink.py <cleaned image> data/studio/sdxl50/02-4-gramophone gramophone --mode line --title "GRAMOPHONE" --sub "Objects · Wind-up record player"

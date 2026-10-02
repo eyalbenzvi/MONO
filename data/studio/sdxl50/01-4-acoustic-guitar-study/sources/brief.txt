@@ -1,0 +1,15 @@
+Prompt (main, used): One acoustic guitar patent study sheet, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A single large guitar standing upright in the centre, round sound hole, bridge, six strings, long neck with frets, headstock with tuning pegs. Around it small exploded parts: tuning pegs, bridge, and two small round detail circles. Thin crisp white lines, fine hatching. Centred with wide black margins.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 30140-30142 (three, main); chosen 30141 (the second)
+Backup also run (VIOLIN STUDY), seeds 30145-30147, prompt: One violin with its separate parts, white chalk line drawing on a plain black background, no text, no labels, no handwriting, no numbers, no frame, no border, no colour. A single large violin upright in the centre, front view, two f-holes, bridge, four strings, scroll and pegs at the top. Around it on empty black: the bow, a loose peg, the bridge, and two small round close-up circles of the scroll. Thin crisp white lines, fine hatching. Wide black margins.
+All three backups rejected: 30145 a malformed violin on cream paper in an ornamented frame; 30146 two violins, the second deformed, a grey toned panel; 30147 a decent violin but on cream paper, large blocks of fake handwriting top left and right, and a black hole in the lower body. So the main 30141 was retouched instead.
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), Euler trailing, guidance 0, 8 steps, CPU, scripts/studio/generate_sdxl.py --jobs
+Ending: none (not a scene)
+
+Why 30141: 30140 is a solid-body guitar shaped like an electric, not acoustic, among dense fake labels; 30142 is on a grey ground with fake text rows at top and bottom and the parts drawn as faint grey circles. 30141 is one whole acoustic guitar (cutaway body, sound hole, pickguard, bridge, fretted neck, six pegs) with round and boxed part details on a near-black ground.
+Retouch before one ink: the picture had many small fake handwritten labels next to the parts (about 60 patches, each a few words or a number, none over 190 x 40 px) and two fake captions at the bottom edge; all painted to the ground colour, the three that touch the ring of the right-hand circle detail inpainted instead so the ring stays whole. The drawn frame was cropped off (x 38-783, y 44-1178). A tiny scribbled mark on the headstock was left as part of the drawing. Then the picture was inverted to dark lines on light, so that the ink is the drawing (it prints white on the black tee).
+One ink: line mode; delivered for a black tee only (patent sheet on black).
+python3 scripts/studio/oneink.py <retouched, inverted image> data/studio/sdxl50/01-4-acoustic-guitar-study acoustic-guitar-study --mode line --title "ACOUSTIC GUITAR STUDY" --sub "Objects · Study sheet"

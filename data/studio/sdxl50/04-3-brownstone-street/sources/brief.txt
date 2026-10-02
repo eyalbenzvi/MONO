@@ -1,0 +1,14 @@
+Prompt: A dense street of old brownstone row houses, front view, a pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Stone stoops with railings, iron fire escapes zigzagging up the fronts, tall windows with shutters, cornices, potted plants and trees. Fine cross hatching, drawn edge to edge. The ground ends in a clean straight line, empty white sky above.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+Seeds: 30430-30432 (three, main); chosen 30430 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (sdxl_lightning_8step_unet.safetensors), EulerDiscrete trailing, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30430: a clean brownstone row with stoops, railings, balconies, carved window heads and a tree; no text, no frame, no border; the street ends low in the picture. It was processed as soon as it came out (the other two seeds are noted in DONE-4.json). No iron fire escapes as such (balconies instead), but it is plainly a brownstone row with stoops, so the title BROWNSTONE STREET holds.
+No fake text in the picture, nothing painted out.
+
+Preparation before oneink (sources/04-3-brownstone-street-s30430-prepared.png): straight through oneink pen, the dense shading on the ground floor and the tree merged into slabs, which oneink opens into big mesh blotches. So the picture was first divided by its own blurred local light (9 px dilate, sigma 12 blur), which flattens large dark areas and keeps the lines, then levels 0.30-0.85 and gamma 1.5. Pen mode then keeps the drawing as line; a little mesh is left in the doorway shadows. Gamma 0.35-1.0 left 1.1-1.5% of the ink under 0.4 mm (a fail); 1.5 passes.
+Ending: --edge horizon (the brief's family C), the street on a straight ground line with a rule under it.
+python3 scripts/studio/oneink.py sources/04-3-brownstone-street-s30430-prepared.png data/studio/sdxl50/04-3-brownstone-street brownstone-street --mode pen --edge horizon --title "BROWNSTONE STREET" --sub "Places · Street"
+check.json: fails [], coverage 0.2958, 21.9 x 35.3 cm.

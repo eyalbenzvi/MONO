@@ -1,0 +1,14 @@
+Prompt: One chameleon on a branch, side view, natural history study sheet in black ink on plain white paper, no text, no lettering, no frame, no border, no colour. One whole chameleon, curled tail, turret eye, four gripping feet, fine scale texture and casque detail. Around it a small skull drawing, a foot detail and an eye detail, thin scale lines and faint tiny marks. Fine engraved pen line, even light. Centred, the whole subject with wide white margins.
+
+Negative prompt: none (SDXL-Lightning is CFG-free; the exclusions are in the prompt's first sentence)
+
+Seeds: 30610-30612 (three, main); chosen 30610 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (both CreativeML Open RAIL++-M), EulerDiscreteScheduler trailing, 8 steps, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30610: 30611 drew two chameleons with a tangled extra tail and a block of fake script; 30612 has a split head with a row of teeth and a meaningless coil. 30610 is one whole chameleon on a branch, casque, turret eye, gripping feet and curled tail all clear.
+The model ignored the skull and detail sketches, so this is one animal large, not a full study sheet; it is clearly a chameleon (casque, turret eye, gripping feet), so the title stays CHAMELEON STUDY.
+Clean-up before one ink: cropped inside the drawn frame (x 38-794, y 24-1194); a small line of fake handwriting at the bottom right (x 450-800, y 1128-1180) painted to paper. The branch ends at the crop edges.
+One ink: line mode broke the grey shading into halftone blotches; pen mode keeps the scale texture. At full resolution pen left 1.3% of the ink under 0.4 mm (fine scale texture), so the prepared image was downscaled to 0.5x (INTER_AREA) before oneink: 0.97% thin, passes.
+Edge: none (single subject, not a scene).
+python3 scripts/studio/oneink.py <prepared 0.5x image> data/studio/sdxl50/06-1-chameleon-study chameleon-study --mode pen --title "CHAMELEON STUDY" --sub "Nature · Study sheet"

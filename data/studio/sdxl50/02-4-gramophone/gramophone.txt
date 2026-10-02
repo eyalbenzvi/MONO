@@ -1,0 +1,10 @@
+Title: Gramophone
+Category: Geometric
+Subject: An antique wind-up gramophone in three-quarter view: a stepped wooden cabinet on four feet, the turntable and sound box on top, and a great fluted horn flaring up and out
+Style: Engraving-style line drawing, printed as white line on black
+Medium: Drawn (illustration)
+Description: A gramophone raises its fluted horn over a stepped wooden cabinet. It plays one record at a time and has never once asked to be updated.
+Tee colours: Black
+Print size: 17.8 × 35.0 cm
+Keywords: gramophone, phonograph, record player, horn, vintage, music, antique, audio, line art, engraving
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

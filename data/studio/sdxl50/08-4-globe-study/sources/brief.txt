@@ -1,0 +1,14 @@
+Slot 4 (D, patent sheet on black). Brief title GLOBE STUDY (globe on its stand, gears, no lettering).
+Prompt: One antique globe on its stand, front view, white chalk line drawing on a plain black background, no text, no lettering, no frame, no border, no colour. A blank sphere with continents and grid lines only, a brass meridian ring, a turned wooden stand. Around it its parts drawn apart: gears, the axis pin, the ring, and two small detail circles. Fine white line with hatching, patent study sheet. Centred, the whole globe with wide black margins. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+No negative prompt (SDXL-Lightning is CFG-free); the exclusions are in the first sentence.
+Seeds: 30840-30842 (three, main); chosen 30841 (the second)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+All three ignored "white on a black background" and "parts drawn apart": each is one dark-on-light engraved globe on cream paper, so none needed inverting before one ink (its ink, the drawing's dark lines, prints white on the black tee).
+Why 30841: 30840 sits on a flat grey wash with a fake word on the sphere; 30842 has fake text in both top corners, lettering along the meridian ring and a frame. 30841 is the cleanest globe, whole, with the finial, horizon ring, meridian ring and a turned stand; its fake text is outside the globe.
+Cleaned (08-4-globe-study-s30841-cleaned.png): cropped to 40,40-795,1085 (drops the large fake caption at the foot); the two fake text blocks at the top and a caption rule painted to paper; frame lines removed; the table-top hatching round the base painted out (an ellipse round the base and the band either side of the pedestal). Two short stubs of the table edge either side of the pedestal stay, reading as a shelf line. Small faint marks on the meridian ring were left; they are not legible.
+No exploded parts or detail roundels came out, so it is a single-instrument study; the title GLOBE STUDY stays true.
+One ink: pen (line turned the shading into a photographic negative and lost the continents). fails [], coverage 0.225. Tee colours: Black.
+python3 scripts/studio/oneink.py sources/08-4-globe-study-s30841-cleaned.png data/studio/sdxl50/08-4-globe-study globe-study --mode pen --title "GLOBE STUDY" --sub "Maps & Sky · Study sheet"

@@ -1,0 +1,10 @@
+Title: Ferris Wheel
+Category: Architecture
+Subject: A single Ferris wheel seen face on, its spokes, rim and hanging cabins on an A-frame over a small station and a ground line
+Style: Technical elevation, fine pen and construction lines
+Medium: Drawn (illustration)
+Description: A Ferris wheel stands face on, its spokes running in to one hub and its cabins hung round the rim. It goes nowhere at great expense and everyone queues for it anyway.
+Tee colours: Black, White
+Print size: 23.4 × 35.0 cm
+Keywords: ferris wheel, big wheel, fairground, funfair, amusement park, engineering, elevation, technical drawing, line art, seaside
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

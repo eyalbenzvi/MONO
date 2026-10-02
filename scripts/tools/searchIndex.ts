@@ -27,8 +27,8 @@ const CATALOG = path.join(ROOT, "data", "shirts.json");
 const CACHE = path.join(ROOT, "data", "search", "visual.json");
 const DIR = path.join(ROOT, "public", "data");
 const MANIFEST = path.join(ROOT, "data", "search.manifest.json");
-/** The index budget, gzipped. */
-export const BUDGET_GZIP = 100 * 1024;
+/** The index budget, gzipped (100 KB until the catalogue passed 1,750 designs: it grows about 70 bytes a design). */
+export const BUDGET_GZIP = 120 * 1024;
 /** Bump when the measures change: every cached entry is then measured again. */
 const RECIPE = 1;
 const W = 150;

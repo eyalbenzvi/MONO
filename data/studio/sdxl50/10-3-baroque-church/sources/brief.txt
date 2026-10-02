@@ -1,0 +1,11 @@
+Prompt: One baroque colonial church front on a cobbled plaza, front view, pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Twin bell towers, a carved stone facade, arched doors, old houses with wooden balconies, shutters and potted plants on both sides, drawn edge to edge. Fine black hatching, crisp detailed line, the ground ends in a clean straight line, empty white sky above. No ornaments, no grey wash.
+
+Seeds: 31030-31032 (three, main); chosen 31030 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 31030: a full baroque front with towers, rose window and carved doorway, houses with balconies and shutters on both sides, a paved square, no frame and no lettering (nothing painted out). 31031 is a single-tower front with figures in the street and a page edge drawn round it; 31032 a smaller front under an odd conical spire, with grey clouds drawn in the sky and a cut-off wall at the right edge.
+Truth rule: the brief title was COLONIAL CHURCH, but the picture shows a Central European baroque front with onion domes, not a colonial church on a plaza, and three towers rather than two; the title is the generic BAROQUE CHURCH (slug baroque-church).
+Edge: horizon (the brief's --edge for this family): the paving ends in a straight cut with a thin rule under it.
+One ink: plain pen broke the pale facade into blotches of screen; the paper was flattened first (divided by a blurred background, near-white set to white), then pen keeps the lines. Crop 4,4,828,1200 drops the very edges.
+python3 scripts/studio/oneink.py <flattened image> data/studio/sdxl50/10-3-baroque-church baroque-church --mode pen --edge horizon --crop 4,4,828,1200 --title "BAROQUE CHURCH" --sub "Architecture · Town"

@@ -1,0 +1,13 @@
+Prompt: Dense Hong Kong tenement street, front view, a pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Tall old apartment blocks crowded edge to edge, rows of balconies with laundry, air conditioners, plants in pots, blank hanging signboards, tangled wires. Fine black ink lines and delicate hatching, every window drawn. The ground ends in a clean straight line, empty white sky above.
+
+Seed: 30532
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, scripts/studio/generate_sdxl.py
+
+Chosen: seed 30532 of 30530-30532. A mass of old tenement blocks stacked along a market lane in fine pen line on white paper, no frame, no text. 30530 (a balcony canyon street) passed too but its light grey wall shading printed as a mottled screen and an awning carried pseudo-lettering; 30531 is drawn as a framed rectangle with a grey wash on the road, and in one ink its overhead wires dropped out and the shading turned to black masses.
+Title: the eaves with upturned tips and the market lane look East Asian, but nothing makes it plainly Hong Kong (no signs, laundry poles or air-conditioner boxes), so it is titled TENEMENT BLOCKS by the truth rule.
+Clean-up: no text to paint. Levels stretched (black 40, white 190 of 255) to lift the pale shading to paper; in the area behind the blocks at the top right (a faint city of towers that printed as stray specks), a harder stretch (black 30, white 110) keeps only the darker lines (K3-s30532-clean.png).
+Ending: horizon (C family): the lane is cut at the bottom in a straight line with a thin rule; the sky is left as tee.
+Tee: white only (C family); on a black tee the dense line work reads as one light mass.
+python3 scripts/studio/oneink.py K3-s30532-clean.png data/studio/sdxl50/05-3-tenement-blocks tenement-blocks --mode line --edge horizon --title "TENEMENT BLOCKS" --sub "Places · Street"
+(pen mode failed: coverage 32.8%.)

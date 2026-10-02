@@ -616,7 +616,7 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
     if (!existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)} (run scripts/studio/publish.ts)`);
     const subject = subjects.has(e.subject.toLowerCase()) ? e.title : e.subject;
     subjects.add(subject.toLowerCase());
-    const nature = e.category === "specimens" ? 0.9 : e.category === "etched" ? (e.dir.match(/anchor|lantern|hourglass|camera|coffee-pot|goggles|rope-knot/) ? 0.05 : 0.8) : e.category === "brush" ? 0.7 : e.category === "sky" ? 0.3 : 0.25;
+    const nature = e.category === "specimens" ? 0.9 : e.category === "etched" ? (e.dir.match(/anchor|lantern|hourglass|camera|coffee-pot|goggles|rope-knot|sdxl50\/\d{2}-[24]-/) ? 0.05 : 0.8) : e.category === "brush" ? 0.7 : e.category === "sky" ? 0.3 : 0.25;
     const f: Partial<Record<FeatureKey, number>> = {
       line_art: e.mode === "line" ? 0.8 : 0.45,
       halftone_raster: e.mode === "tone" ? 0.4 : 0,
@@ -656,7 +656,7 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
       flags: [],
       printCm: e.printCm,
       features: vector(f),
-      photo: { credit: "MONO Studio", url: e.briefUrl, image: `studio-${slug}`, source: "drawn with Segmind SSD-1B on MONO's own machine", license: "Apache 2.0" },
+      photo: { credit: "MONO Studio", url: e.briefUrl, image: `studio-${slug}`, ...(e.model === "sdxl" ? { source: "drawn with SDXL base 1.0 and SDXL-Lightning on MONO's own machine", license: "CreativeML Open RAIL++-M" } : { source: "drawn with Segmind SSD-1B on MONO's own machine", license: "Apache 2.0" }) },
       dropDate: WAVE_DROP[STUDIO_WAVE],
       wave: STUDIO_WAVE,
     });

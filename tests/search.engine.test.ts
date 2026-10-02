@@ -164,8 +164,8 @@ describe("search: the index file", () => {
     expect(decodeIndex(null as never, ids)).toBeNull();
   });
 
-  it(`fits the budget: at most 100 KB gzipped`, () => {
-    expect(gzipSync(JSON.stringify(file), { level: 9 }).length).toBeLessThanOrEqual(100 * 1024);
+  it(`fits the budget: at most 120 KB gzipped`, () => {
+    expect(gzipSync(JSON.stringify(file), { level: 9 }).length).toBeLessThanOrEqual(120 * 1024);
   });
 
   it("answers fast: p95 at most 8 ms over 500 generated queries", () => {

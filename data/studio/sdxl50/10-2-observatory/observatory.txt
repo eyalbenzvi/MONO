@@ -1,0 +1,10 @@
+Title: Observatory
+Category: Architecture
+Subject: A domed observatory on a round, three-storey stone drum, the shutter slit of the dome open along one rib, steps at its foot
+Style: Architectural elevation, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A stone observatory rises in three ringed storeys to a ribbed dome with its observing slit opened to the sky. The building does its best work at night and keeps its curtains open on purpose.
+Tee colours: Black, White
+Print size: 22.2 × 35.0 cm
+Keywords: observatory, dome, telescope dome, astronomy, architecture, building, elevation, stargazing, line art, technical drawing
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

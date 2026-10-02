@@ -281,11 +281,12 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
       const id = index.termId.get(stem(clean(x)));
       if (id !== undefined) add(id, WEIGHT.expand);
     }
-    // Another form of the word ("engrave" → "engraving"s, "tree" → "trees").
+    // Another form of the word ("engrave" → "engraving"s, "tree" → "trees"): one that keeps the word's own stem
+    // (a swap's "bandde" + ing stems to "band", a shorter word, and would hide the typo from "banded").
     if (!alts.size)
       for (const f of [`${w}s`, `${w.replace(/e$/, "")}ing`, `${w}ed`, `${w}es`]) {
         const id = index.termId.get(stem(f));
-        if (id !== undefined) add(id, WEIGHT.morph);
+        if (id !== undefined && index.file.vocab[id].startsWith(t)) add(id, WEIGHT.morph);
       }
     // Typos last: never for a word the lexicon already resolved, a number, or a query naming a design ("mono-0123" isn't "moon").
     if (!alts.size && !named.length && !literal && !/\d/.test(w)) {

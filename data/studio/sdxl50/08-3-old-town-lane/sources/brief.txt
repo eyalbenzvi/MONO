@@ -1,0 +1,13 @@
+Slot 3 (C, dense street). Brief title EDINBURGH OLD TOWN (tall stone tenements up a hill). Finish: --edge horizon (the family's), chosen before the prompt.
+Prompt: Dense old town street, tall stone tenements climbing a hill, pen and ink drawing on plain white paper, no text, no lettering, no frame, no border, no colour. Narrow gabled stone houses with chimneys, many small windows, a church spire, steps and a cobbled lane, plants in window boxes. Fine pen line with delicate hatching, drawn edge to edge. The ground ends in a clean straight line, empty white sky above. No text, no frame, no border, no ornaments, no colour, no grey wash.
+
+No negative prompt (SDXL-Lightning is CFG-free); the exclusions are in the first sentence.
+Seeds: 30830-30832 (three, main); chosen 30831 (the second)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet, guidance 0, CPU, scripts/studio/generate_sdxl.py --jobs
+
+Why 30831: 30830 has a frame and a fake caption at the foot; 30832 is a gentle street with a frame edge at the bottom. 30831 is the steepest and densest: a cobbled lane climbing between tall stone houses with lamps and steps to a spired building at the top, drawn edge to edge, no frame and no text. No cleaning needed.
+It is a generic old stone town, not recognisably Edinburgh (no Castle Rock, no Royal Mile landmarks), so the title is OLD TOWN LANE, not EDINBURGH OLD TOWN.
+One ink: pen, --edge horizon (the cobbles end in a straight cut with the rule under it). fails [], coverage 0.250.
+Tee colours White only: on a black tee the house fronts read as a negative.
+python3 scripts/studio/oneink.py sources/08-3-old-town-lane-s30831.png data/studio/sdxl50/08-3-old-town-lane old-town-lane --mode pen --edge horizon --title "OLD TOWN LANE" --sub "Places · Town"
