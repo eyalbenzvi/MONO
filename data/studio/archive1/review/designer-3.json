@@ -1,0 +1,16 @@
+{
+ "designer": "K=3",
+ "persona": "natural-history illustrator: truth to the animals and plants, eye for artefacts and implausibility",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.0,
+   "verdict": "PASS",
+   "why": "It is a real artefact traced faithfully, with crisp, bold, even woodcut line that will print cleanly on either tee. The head, the scale-mail legs and the plate rings all hold up at full size, and the 1515 RHINOCERVS title and AD monogram add authenticity. The caption is witty and true to the story: an animal assembled from hearsay, which a natural-history eye enjoys. The weak point is the cut. With the rear gone, the shoulder shield closes into a rounded hood, so at a distance the animal reads as a cowled hump rather than D\u00fcrer's iconic armoured tank. The floating pebbles and ground strokes at lower right also look like leftovers.",
+   "fix": "Show the whole animal, with the full woodcut silhouette including the hindquarters and tail, scaled to the width. Failing that, at least trim the stray ground pebbles so the truncation reads as deliberate.",
+   "title": "Drawn from a Rumor"
+  }
+ ],
+ "best": 1,
+ "overall": "The D\u00fcrer rhino is the honest, printable, characterful tee: a true artefact with a caption that earns its place. The oak and fox den is charming in thumbnail but implausible in its animals and muddy as a halftone, so it needs a real redraw before it belongs next to the octopus."
+}

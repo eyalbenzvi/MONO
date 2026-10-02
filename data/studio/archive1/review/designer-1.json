@@ -1,0 +1,16 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer, 25 years preparing art for one-colour screen printing on tees",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Clean, solid line art. Strokes are about 0.5-0.9 mm at print size and the gaps between hatch lines are open, so it will hold on cotton with no gain trouble and an even ink load. It reads at 3 m and rewards a close look. The D\u00fcrer pedigree plus 'DRAWN FROM A RUMOR.' is a real line that carries the tee. The crop along the shoulder shield mostly works, but the cut-away back still reads slightly as 'half a rhino'.",
+   "fix": "Give the caption more air: it sits too close to the bottom of the print area. Lift it up or tighten the artwork above it. Also clean up the cut edge of the shield so it reads as a deliberate frame edge rather than a missing rump.",
+   "title": "Drawn from a Rumor"
+  }
+ ],
+ "best": 1,
+ "overall": "The rhino is production-ready: true line art with safe line weights, a strong concept and a caption that sells. The oak is a nice idea let down by its photographic halftone. Its key subject sits in highlight dots that won't survive screen-printing on cotton, so it needs re-separating before it's sellable."
+}

@@ -1,0 +1,16 @@
+{
+ "designer": "K=5",
+ "persona": "Merchandiser and buyer for a curated online shop (formerly a museum store), the sceptic: would someone pay $50, does it stand out from generic art and souvenir tees, would it photograph well.",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.0,
+   "verdict": "PASS",
+   "why": "Crisp, bold, high-contrast woodcut line that prints cleanly and photographs well, and the head and armour detail rewards a close look. 'DRAWN FROM A RUMOR.' is the reason to buy: it turns the most over-merchandised public-domain animal in museum shops into a witty, knowing piece. I'd stock it at $50. Docked because the D\u00fcrer rhino is very familiar, and the cut-away rear reads at a glance as a blunt slab on the left rather than a deliberate crop.",
+   "fix": "Make the crop look intentional: either square the cut off with a clean ruled plate edge or frame line, or pull the animal right so the cut edge sits flush with the print boundary. The caption could also be set a touch tighter, so it locks up with the 1515 RHINOCERVS heading as one composition.",
+   "title": "Drawn from a Rumor"
+  }
+ ],
+ "best": 1,
+ "overall": "The rhino wins clearly. The art is strong and well known, and the caption is a real hook that sets it apart from the usual museum-shop D\u00fcrer tee. The oak and fox den is pleasant but generic, and its tonal halftone softens exactly the part a customer would zoom in on."
+}

@@ -1,0 +1,4 @@
+Source: Cleveland Museum of Art open access, object 1993.9 (Albrecht Dürer, The Rhinoceros, 1515), CC0, full TIFF 5000 x 3963 px:
+https://openaccess-cdn.clevelandart.org/1993.9/1993.9_full.tif
+Trace (sources/trace.py): background flattened, cropped to the animal's front along the rear edge of the shoulder shield, upscaled (Lanczos) to 300 DPI before a threshold at 0.55, every line's skeleton redrawn at 0.42 mm minimum, specks removed. Caption: Cinzel Bold, tracked +16%.
+Reviewed by the five-designer panel in four rounds (7.3, 7.5, 8.0, 8.1) against the Oak and Fox Earth anchor; zero Gemini images.

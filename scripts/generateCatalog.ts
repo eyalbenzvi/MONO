@@ -659,7 +659,20 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
       flags: [],
       printCm: e.printCm,
       features: vector(f),
-      photo: { credit: "MONO Studio", url: e.briefUrl, image: `studio-${slug}`, ...(e.model === "sdxl" ? { source: "drawn with SDXL base 1.0 and SDXL-Lightning on MONO's own machine", license: "CreativeML Open RAIL++-M" } : { source: "drawn with Segmind SSD-1B on MONO's own machine", license: "Apache 2.0" }) },
+      photo: {
+        credit: "MONO Studio",
+        url: e.briefUrl,
+        image: `studio-${slug}`,
+        ...(e.model === "code"
+          ? { source: "drawn in code by MONO from its own geometry, with no image model", license: "MONO's own work" }
+          : e.model === "gemini"
+            ? { source: "made with Google Gemini (Gemini 3 Pro Image) from MONO's brief, converted by MONO to one ink", license: "Google Generative AI terms (output owned by MONO)" }
+          : e.model === "archive"
+            ? { source: "a public-domain museum work (see the brief for the work and the museum), traced to one ink and set by MONO", license: "Public domain (CC0)" }
+          : e.model === "sdxl"
+            ? { source: "drawn with SDXL base 1.0 and SDXL-Lightning on MONO's own machine", license: "CreativeML Open RAIL++-M" }
+            : { source: "drawn with Segmind SSD-1B on MONO's own machine", license: "Apache 2.0" }),
+      },
       dropDate: WAVE_DROP[STUDIO_WAVE],
       wave: STUDIO_WAVE,
     });

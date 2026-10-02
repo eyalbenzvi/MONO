@@ -1,0 +1,16 @@
+Oak and Fox Earth (Oct 2026)
+
+Idea: #50 of a hundred visual ideas, ranked first by ten personas ("a tree whose roots below ground mirror its branches above, a fox den among the roots").
+
+Gemini (Gemini 3 Pro Image, the Gemini app), by hand:
+1. Photorealistic black-and-white cross-section prompt (oak above, roots and fox den below, soil fading to white, white sky, whole crown in frame, den lit through the tunnel).
+2. Edit: widen the crown to match the root spread.
+3. Edit: den larger, foxes lit against a dark back wall, soil around lighter.
+4. Edit: den and foxes about 30% larger, no light shaft.
+Result: sources/oak-and-fox-earth-gemini.png.
+
+Prepared by MONO (sources/oak-and-fox-earth-prepared.png): the thin twigs at the crown's edge thickened by one pixel where the crown is sparse; the soil lightened 18%; the den's contrast raised (foxes lighter, the chamber darker) and the soil around it lightened 12%.
+
+Converted: oneink.py --mode halftone --edge dissolve (55 lpi, 45 degrees, dots 8-80%, dark masses scaled to the 80% mesh), white tee only.
+
+Designer review (five designers, against the previous version): 7.5, 8.0, 6.5, 7.5, 7.5; average 7.4.

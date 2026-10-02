@@ -1,0 +1,16 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent graphic-tee labels: would someone wear it on their back, brand piece vs stock graphic, placement and scale on the body, does it feel like a $50 tee",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.0,
+   "verdict": "PASS",
+   "why": "This is a real brand piece: an iconic, bold engraved line that prints clean in one ink, scaled big and confident on the body, with D\u00fcrer's own '1515 RHINOCERVS' and AD monogram kept as built-in typography. 'DRAWN FROM A RUMOR.' is a sharp, witty line that makes the tee a talking point, not museum merch, and it sits right next to the octopus and woodcut tier. Two things cost it: the rear cut along the shield leaves a slightly awkward truncated-bust edge on the left, and the head pushes so far right that the composition sits off-center on the chest.",
+   "fix": "Make the crop read as deliberate. Either finish the cut edge with a clean engraved border or rule, or rebalance the placement so the mass centers on the sternum. Tighten the caption gap so the type and the feet lock up as one unit.",
+   "title": "Drawn from a Rumor"
+  }
+ ],
+ "best": 1,
+ "overall": "The rhino is the tee I'd put on a back at $50: authentic line art, a famous image with a fresh line, and it suits the founder's engraved/patent taste. The oak is a nice idea let down by the photographic halftone render; at the moment it reads as stock poster art."
+}

@@ -1,0 +1,14 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent graphic-tee labels: wearability on the back, brand piece vs stock graphic, placement and scale on the body, $50 feel.",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Oak and Fox Earth",
+   "score": 8.0,
+   "verdict": "PASS",
+   "why": "Same strong composition, but the den is now full: vixen plus four cubs, faces legible, bodies packed edge to edge, so the white family against the dark burrow is the second focal point after the crown and the shirt tells its story from across a room. Feels like an owned brand graphic, natural-history in spirit and at home next to the octopus. Still a photographic halftone rather than a line engraving, so the outer twigs go soft and dotty and the fur is slightly sentimental-pale, which keeps it below the 9.",
+   "fix": "Thicken or prune the finest outer twigs so the crown edge reads as crisp branches at 55 lpi instead of dot dust; add a touch of dark modelling to the fox fur so the den has more punch."
+  }
+ ]
+}

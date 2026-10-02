@@ -1,0 +1,13 @@
+{
+ "run": "gemini1",
+ "approvedAt": "2026-10-02T21:23:06.485Z",
+ "designs": {
+  "01-1-oak-and-fox-earth": {
+   "average": 7.4,
+   "deleteVotes": 0,
+   "family": "tree",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

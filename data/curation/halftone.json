@@ -2225,6 +2225,20 @@
 "src": "ce2771639e57538a",
 "via": "scripts/studio/oneink.py"
 },
+"20150": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "8defc5afacc92635",
+"src": "e1dba88987f78bdc",
+"via": "scripts/studio/oneink.py"
+},
+"20151": {
+"mode": "line",
+"paper": 0.0,
+"sha": "3d0488aff0913370",
+"src": "c3fcf20b6837d45f",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

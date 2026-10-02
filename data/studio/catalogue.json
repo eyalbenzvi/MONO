@@ -4557,5 +4557,70 @@
   "coverage": 0.089,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/04-2-lighthouse/sources/brief.txt",
   "model": "sdxl"
+ },
+ {
+  "n": 20150,
+  "dir": "data/studio/gemini1/01-1-oak-and-fox-earth",
+  "title": "Oak and Fox Earth",
+  "category": "specimens",
+  "subject": "An old English oak in winter cut away below ground: the bare crown above, the roots spreading through the soil below, and a fox earth among the roots with a vixen and her cubs asleep, a tunnel rising to the surface",
+  "style": "Photographic cross-section in a halftone screen",
+  "description": "Above the ground, an old oak stands bare for the winter; below it, a vixen and her cubs sleep in an earth among its roots. The tree, presumably, has not been told.",
+  "keywords": [
+   "oak",
+   "tree",
+   "roots",
+   "fox",
+   "fox earth",
+   "cubs",
+   "winter",
+   "cross-section",
+   "nature",
+   "halftone"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 74,
+  "printCm": {
+   "width": 24,
+   "height": 34
+  },
+  "coverage": 0.244,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini1/01-1-oak-and-fox-earth/sources/brief.txt",
+  "model": "gemini"
+ },
+ {
+  "n": 20151,
+  "dir": "data/studio/archive1/01-1-drawn-from-a-rumor",
+  "title": "Drawn from a Rumor",
+  "category": "brush",
+  "subject": "Albrecht Dürer's 1515 woodcut rhinoceros, the armoured beast he cut without ever seeing one, from a letter and a sketch sent from Lisbon: its head, horn, scaled legs and plated shoulder, with his own \"1515 RHINOCERVS\" and monogram, and the caption \"DRAWN FROM A RUMOR.\" under it",
+  "style": "Woodcut line traced from a museum scan, with a classical-capital caption",
+  "description": "Dürer never saw a rhinoceros. He cut this one in 1515 from a letter and a rough sketch, armour plates and all, and for more than two centuries it was what Europe believed a rhinoceros looked like.",
+  "keywords": [
+   "rhinoceros",
+   "rhino",
+   "Dürer",
+   "Durer",
+   "woodcut",
+   "1515",
+   "Renaissance",
+   "rumor",
+   "armour",
+   "animal",
+   "line art"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "line",
+  "quality": 81,
+  "printCm": {
+   "width": 26,
+   "height": 34
+  },
+  "coverage": 0.199,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/archive1/01-1-drawn-from-a-rumor/sources/brief.txt",
+  "model": "archive"
  }
 ]

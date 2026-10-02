@@ -4,10 +4,11 @@
  * DELETE per design, numbered as review/designs.json numbers them) → review/approved.json, which
  * scripts/studio/publish.ts reads. No human signs off.
  *
- *   npx tsx --tsconfig tsconfig.scripts.json scripts/studio/approve.ts <run> [--max N]
+ *   npx tsx --tsconfig tsconfig.scripts.json scripts/studio/approve.ts <run> [--max N] [--above X]
  *
  * Approved: an average score of APPROVE_AVERAGE or more, fewer than three DELETE votes, and among the PER_FAMILY
  * best of its family (the details' Family line) in the run. --max N keeps the N best of those (the run's target).
+ * --above X raises the run's bar: the average must be over X (code10 asked for designs scored above 8).
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -29,7 +30,7 @@ export interface Listed {
 }
 
 /** The decision for each listed design. */
-export function decide(listed: Listed[], reviews: Review[], max = Infinity): Approval["designs"] {
+export function decide(listed: Listed[], reviews: Review[], max = Infinity, above: number | null = null): Approval["designs"] {
   if (reviews.length < 5) throw new Error(`${reviews.length} reviews: five designers review a run`);
   const out: Approval["designs"] = {};
   const scored = listed.map((d) => {
@@ -44,13 +45,14 @@ export function decide(listed: Listed[], reviews: Review[], max = Infinity): App
   });
   // Passing on its own: the average and fewer than three DELETE votes.
   for (const { d, average, deleteVotes } of scored) {
-    const ok = average >= APPROVE_AVERAGE && deleteVotes < 3;
+    const ok = average >= APPROVE_AVERAGE && (above === null || average > above) && deleteVotes < 3;
+    const bar = above === null ? `${APPROVE_AVERAGE} to pass` : `over ${above} to pass`;
     out[d.folder] = {
       average,
       deleteVotes,
       family: d.family,
       approved: ok,
-      why: ok ? "approved" : deleteVotes >= 3 ? `${deleteVotes} designers said delete` : `average ${average} (${APPROVE_AVERAGE} to pass)`,
+      why: ok ? "approved" : deleteVotes >= 3 ? `${deleteVotes} designers said delete` : `average ${average} (${bar})`,
     };
   }
   // The family cap: the best PER_FAMILY of each family stay (ties go to fewer DELETE votes, then the earlier number).
@@ -76,7 +78,8 @@ function main() {
   const files = readdirSync(dir).filter((f) => /^designer-\d+\.json$/.test(f)).sort();
   const reviews = files.map((f) => JSON.parse(readFileSync(path.join(dir, f), "utf8")) as Review);
   const max = process.argv.includes("--max") ? Number(process.argv[process.argv.indexOf("--max") + 1]) : Infinity;
-  const designs = decide(listed, reviews, max);
+  const above = process.argv.includes("--above") ? Number(process.argv[process.argv.indexOf("--above") + 1]) : null;
+  const designs = decide(listed, reviews, max, above);
   const file = path.join(dir, "approved.json");
   // The first decision's date stays: it fixes the run's place in the shop's numbering.
   const approvedAt = existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as Approval).approvedAt : new Date().toISOString();

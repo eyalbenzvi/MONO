@@ -1,0 +1,14 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer, 25 years preparing art for one-colour screen printing on tees: dot size and dot gain at print size, shadows filling in, highlights dropping out, ink load, how the halftone looks on cotton.",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Oak and Fox Earth",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Same tree, same soil, same halftone issues, but the den is bigger and fills its pocket: a vixen with four cubs tucked against her, with clear faces and ears. It reads as the focal point from across a room, and the light fur against the dark den gives the one real high-contrast moment in the lower half. The cluster is a little crowded (the bodies of the right-hand cub and the vixen merge), and the trunk shadow and twig dot-chains still have the press problems of version 1. The soil fade-out ends in a slightly hard, ragged line of minimum dots at the bottom edge. Printable and sellable, not yet catalogue-best.",
+   "fix": "Lighten the soil midtones so the roots read dark on light like the crown on the sky, and cap the den interior and trunk shadow at about 65% to allow for gain on cotton. That one tonal pass would lift the whole lower half."
+  }
+ ]
+}

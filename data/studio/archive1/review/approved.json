@@ -1,0 +1,13 @@
+{
+ "run": "archive1",
+ "approvedAt": "2026-10-02T22:48:41.892Z",
+ "designs": {
+  "01-1-drawn-from-a-rumor": {
+   "average": 8.1,
+   "deleteVotes": 0,
+   "family": "rhinoceros",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

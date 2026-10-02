@@ -1,0 +1,14 @@
+{
+ "designer": "K=5",
+ "persona": "Merchandiser and buyer for a curated online shop (ex-museum store), the sceptic: would someone pay $50, does it stand out from generic art/souvenir tees, does it photograph well",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Oak and Fox Earth",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Same strong tree, but the den now fills its chamber with the vixen and four cubs as a bright cluster against the dark burrow. That is the moment a customer stops scrolling, it tells a gift-able 'family asleep under the winter oak' story, and it photographs well on a flat-lay. It is still white-tee only and sits close to familiar fantasy-illustration territory, so it falls short of the 8s; up close a couple of cub bodies fuse into each other, and the soil fades out into a grey vignette.",
+   "fix": "Clean up the fox pile so every head and body is a separate, readable animal (the lower-left cub and the right-hand cub blur into the vixen), and firm up the soil fade so the edge ends with a deliberate shape rather than a grey haze."
+  }
+ ]
+}

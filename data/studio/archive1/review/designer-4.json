@@ -1,0 +1,16 @@
+{
+ "designer": "K=4",
+ "persona": "Graphic designer, composition and typography (editorial and poster)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.0,
+   "verdict": "PASS",
+   "why": "Real woodcut line, bold and crisp, with authority and a clean read from across a room. Cutting the animal along the shield edge gives a strong vertical left edge, and the head-and-horn diagonal pushes out to the right, a poster composition with tension. D\u00fcrer's own '1515 RHINOCERVS AD' lettering is placed in the open top-right counter, and the bold, tracked serif caps underneath carry a line that is both true and witty: the joke lands for anyone who knows the story and still sounds intriguing to anyone who doesn't. Weak spots: the bottom-right quarter is empty apart from a stray ground line and pebbles, and the caption sits under the hooves on the full measure, so it reads slightly as a label added afterwards.",
+   "fix": "Tighten the bottom. Cut the trailing ground line and pebbles at the right, or end them at the horn's vertical. Bring the caption up and centre it on the animal's mass. Track it a little tighter and slightly smaller, so the image and the line lock together as one block instead of a picture with a subtitle.",
+   "title": "Drawn from a Rumor"
+  }
+ ],
+ "best": 1,
+ "overall": "The rhino is a finished, shop-grade tee: historical line art, a smart crop and a caption that earns its place. The oak and fox earth has a charming concept but comes across as a halftoned illustration-app picture, too grey and too sweet for this catalogue, and it needs redrawing as line work before it belongs in the shop."
+}
