@@ -1,0 +1,10 @@
+Title: Airship
+Category: Engravings
+Subject: A fanciful airship in side view: a great ribbed gas envelope with pointed ends, a web of rigging lines and a multi-deck ship's hull hanging beneath it
+Style: Victorian technical engraving, fine pen lines
+Medium: Drawn (illustration)
+Description: A gridded balloon lifts an entire steamship by a curtain of ropes. Somebody decided the sea was the slow way round.
+Tee colours: Black, White
+Print size: 24.6 × 35.0 cm
+Keywords: airship, balloon, flying ship, steampunk, aviation, Victorian, elevation, rigging, line art, engraving
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

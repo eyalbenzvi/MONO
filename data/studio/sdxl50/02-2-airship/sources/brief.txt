@@ -1,0 +1,11 @@
+Brief: ZEPPELIN (side elevation, gondola and frame). Delivered as AIRSHIP (truth rule).
+Prompt: One zeppelin airship in strict side view, a technical elevation drawing in black ink on plain white paper, no text, no lettering, no frame, no border, no colour. Exactly one long cigar-shaped airship with its ribbed frame showing, tail fins, a small gondola underneath, thin rigging lines down to a thin ground line. Fine clean pen lines, lots of empty white space around, centred with wide margins. Only one airship. No ornaments, no grey wash.
+
+Seeds: 30220-30222 (three, main); chosen 30220 (the first)
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet (CreativeML Open RAIL++-M), guidance 0, no negative prompt, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+None of the three is a real zeppelin (on a tall page the model made fanciful balloon ships). 30221 is a stack of a balloon, a rocket-like column and repeated discs, no logic; 30222 has three gondola decks and a mast tower, repeated parts, with a big block of fake text. 30220 is one coherent object: a gridded envelope with pointed ends, a rigging curtain and one ship's hull hung below, all inside the page, so it is titled AIRSHIP, not ZEPPELIN.
+Clean-up before one ink: paper levelled to white (x 255/200), then the double frame lines on all four sides and the block of fake lettering and the fake "ZEPPELIN" caption under the hull (y>1083) painted to white paper; the frame lines crossing the envelope's nose tips were cut out column by column so the tips stay.
+One ink: pen (fails []); line mode filled the envelope with flat screen and lost its grid.
+python3 scripts/studio/oneink.py <cleaned image> data/studio/sdxl50/02-2-airship airship --mode pen --title "AIRSHIP" --sub "Objects · Elevation"
