@@ -1,0 +1,15 @@
+Prompt (rules10.py DESIGNS[7] slot 1, backup "COMPASS"): One brass pocket compass, front view, lid open, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A round case, a compass rose with no letters, a needle, the hinged lid. Clean black outline drawing, one even line weight, no shading, no hatching masses, no cast shadow, patent drawing. Centred with wide white margins.
+
+Main prompt (POCKET WATCH, seeds 40710-40712) all rejected: every dial has Roman numerals in the wrong count or order and fake maker's text; 40711 has a single hand; 40712 has a second crown floating on the bow; 40710 a grey card and a heavy cast shadow. So the backup was run.
+Backup seeds: 40715-40717 (three, 832x1216); chosen 40715.
+Model: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning 8-step UNet, CPU, scripts/studio/generate_sdxl.py --jobs (unpatched).
+
+Why 40715: 40716 adds a second, loose compass rose under the instrument, a plate frame and fake captions, and its lid runs off the left edge; 40717 draws a second rose inside the lid, a ring on the lid as well as the case, and a page of fake text. 40715 is one pocket compass, lid open on its hinge, a sixteen-point rose on a pivot with a sighting bar, a bow and ring at the foot: one whole object.
+
+What was painted (sources/K1-compass-s40715-cleaned.png):
+- the degree band round the card was full of pseudo-letters: it was painted to paper and redrawn as a plain scale, two rings and 72 ticks (every 5 degrees, longer at 10 and 30), no figures; the rose's north and south points and the sighting bar were kept;
+- fake engraved lettering painted out on the lid rim and on the bezel's inner wall (a few short scribbles on that wall, right of twelve o'clock, remain and read as wear marks);
+- cream paper set to white (pixels lighter than 212); the faint construction lines in the background go with it.
+
+One ink: python3 scripts/studio/oneink.py sources/K1-compass-s40715-cleaned.png data/studio/rules10/07-1-compass compass --mode engrave --title "COMPASS" --outline --view 'Front view' --plate 'Pl. VI'
+Result: fails [], 17.5 x 31.5 cm. The case is shaded (57% of the ink in solids), so print.json has blackTee false even with --outline: white tee only.

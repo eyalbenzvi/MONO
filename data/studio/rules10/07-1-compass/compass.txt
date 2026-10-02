@@ -1,0 +1,11 @@
+Title: Compass
+Category: Engravings
+Family: instruments
+Subject: A brass pocket compass with its lid open, a sixteen-point compass rose on its pivot, a degree scale and a carrying ring
+Style: Engraved instrument plate, front view
+Medium: Drawn (illustration)
+Description: A pocket compass lies open, its sixteen-point rose turning on a single pivot inside a ring of degree marks. It knows exactly where north is and will never once suggest you ask for directions.
+Tee colours: White
+Keywords: compass, pocket compass, compass rose, navigation, explorer, hiking, orienteering, vintage instrument, engraving
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

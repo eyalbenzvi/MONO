@@ -1,0 +1,29 @@
+{
+ "helper": 7,
+ "branch": "studio/rules10-7",
+ "started": "2026-10-02T06:45Z",
+ "finished": "2026-10-02T07:32Z",
+ "generator": "scripts/studio/generate_sdxl.py, unpatched (no out-of-memory; peak rss about 11 GB)",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "compass",
+   "passed": true,
+   "which": "backup",
+   "images": ["K1-pocket-watch-s40710.png", "K1-pocket-watch-s40711.png", "K1-pocket-watch-s40712.png", "K1-compass-s40715.png", "K1-compass-s40716.png", "K1-compass-s40717.png"],
+   "chosen": "K1-compass-s40715.png",
+   "note": "All three pocket watches rejected (garbled numerals, fake dial text, one hand on 40711, a second crown floating on the bow of 40712), so the COMPASS backup ran. The degree band's pseudo-letters were painted out and redrawn as plain ticks; fake lettering on the lid rim removed. fails []; 17.5 x 31.5 cm; shaded case, so blackTee false: white tee only.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "One pocket compass: case, hinged lid open, sixteen-point rose on a central pivot with a sighting bar, degree scale, bow and ring. It is drawn as a pocket compass with a rose, not a lensatic or prismatic one, so plain COMPASS is right."}
+  },
+  {
+   "slot": 2,
+   "slug": "rangefinder-camera",
+   "passed": true,
+   "which": "main",
+   "images": ["K2-rangefinder-camera-s40720.png", "K2-rangefinder-camera-s40721.png", "K2-rangefinder-camera-s40722.png"],
+   "chosen": "K2-rangefinder-camera-s40720.png",
+   "note": "40721 does not read as a rangefinder; 40722 has two lenses fused. 40720 drew two different cameras stacked; only the upper one is used (cropped), with frame, captions and a stray bracket painted out. Pseudo-markings round the focusing ring left as lens scale. fails []; 28.0 x 16.4 cm with ground and dimension line; leatherette is solid, blackTee false: white tee only.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "One 1930s Leica-type body seen from the front: viewfinder window, two round rangefinder windows, rewind and shutter dials, collapsible lens with focusing ring, self-timer lever, two strap lugs. The second camera of the same image is cut away, not shown as a second view, so no Study and views 1."}
+  }
+ ]
+}
