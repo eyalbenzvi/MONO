@@ -1,0 +1,33 @@
+{
+ "helper": 5,
+ "branch": "studio/rules10-5",
+ "started": "06:45 UTC",
+ "finished": "08:03 UTC",
+ "model": "SDXL base 1.0 + SDXL-Lightning 8-step UNet, scripts/studio/generate_sdxl.py (unpatched, no out-of-memory)",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "stag-beetle",
+   "passed": false,
+   "which": "main+backup+2 rewritten prompts",
+   "images": 14,
+   "chosen": null,
+   "note": "Not delivered. Main STAG BEETLE (40510-40512) and backup RHINOCEROS BEETLE (40515-40517) both failed on anatomy, so the prompt was rewritten twice (in jobs files under /tmp, rules10.py left untouched): 'exactly six legs, three on each side' dorsal (40513, 40514) and side view (40518, 40519), then 'legs folded out of sight' dorsal (40530-40533). All 14 images drew 8-12 leg-like limbs, a doubled thorax or segmented leg-like jaws instead of antler mandibles, and several had fake captions and frames. SDXL-Lightning does not count beetle legs; out of time after minute 75.",
+   "truth": {"anatomy_or_mechanics_ok": false, "one_object": true, "title_matches": false, "note": "No image has six legs and true stag-beetle mandibles; nothing delivered."}
+  },
+  {
+   "slot": 2,
+   "slug": "luna-moth",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "K2-luna-moth-s40520.png",
+   "mode": "engrave",
+   "ink_coverage": 0.0743,
+   "size_cm": [21.3, 21.0],
+   "fails": [],
+   "note": "One symmetrical moth, four veined wings, two long curling hind-wing tails, furry thorax, ringed abdomen, two antennae; no retouch or crop. 40521 had four extra moths, a frame and fake text; 40522 a long forked abdomen in place of tails.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "Four wings, two hind-wing tails, one body with head, thorax and abdomen; legs hidden under the body as in a spread specimen seen from above. Antennae drawn thin rather than feathery and eye spots faint, but the long-tailed silhouette is unmistakably Actias luna."}
+  }
+ ]
+}
