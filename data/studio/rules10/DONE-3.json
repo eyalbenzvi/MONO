@@ -1,0 +1,20 @@
+{
+ "helper": 3,
+ "branch": "studio/rules10-3",
+ "started": "06:45 UTC",
+ "model": "SDXL base 1.0 + SDXL-Lightning 8-step UNet (scripts/studio/generate_sdxl.py, unpatched; peak rss about 11 GB, about 4 minutes an image)",
+ "designs": [
+  {"slot": 1, "slug": "hot-air-balloon", "passed": true, "which": "main",
+   "images": ["K1-hot-air-balloon-s40310.png", "K1-hot-air-balloon-s40311.png", "K1-hot-air-balloon-s40312.png"],
+   "chosen": "K1-hot-air-balloon-s40312.png",
+   "note": "Frame lines and faint fake lettering painted to paper; engrave, fails []. 18.4 x 31.9 cm. --outline left off: the envelope is hatched (47% solid), so white tees only.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "One balloon: envelope of vertical gores with a load band, the rope net to a load ring and one wicker basket hanging below; the burner frame is only a ring, but nothing is wrong or doubled."}},
+  {"slot": 2, "slug": "scooter", "passed": true, "which": "main",
+   "images": ["K2-scooter-s40320.png", "K2-scooter-s40321.png", "K2-scooter-s40322.png"],
+   "chosen": "K2-scooter-s40322.png",
+   "note": "All three seeds came in three-quarter view, so the view reads 'Three-quarter view', not 'Side elevation'. Frame and fake text painted out, cropped; engrave, fails []. 26.0 x 28.9 cm. --outline left off (shaded, 44% solid): white tees only.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "One scooter: two small wheels (front on its fork arm and hub, rear under the cowl), centre stand, step-through floor, front shield, headlamp on the handlebar, saddle and rack. Nothing doubled."}}
+ ]
+}
