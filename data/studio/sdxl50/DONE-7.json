@@ -1,0 +1,59 @@
+{
+ "helper": 7,
+ "branch": "studio/sdxl50-7",
+ "started": "2026-10-01T22:38:03Z",
+ "finished": "2026-10-01T23:44:00Z",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "hummingbird-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30710",
+   "mode": "pen",
+   "ink_coverage": 0.1318,
+   "note": "One large hovering bird with two small ones, cropped from a sheet whose lower birds were malformed; no skeleton or details came out. 30711 a framed flock with fake text, 30712 wing off the edge. Pen over line (line blotched the chest). fails [], 26.0 x 25.7 cm."
+  },
+  {
+   "slot": 2,
+   "slug": "vintage-motorcycle",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30721",
+   "mode": "line",
+   "ink_coverage": 0.0884,
+   "note": "Top one of three repeated bikes, whole and coherent; paper flattened, shadows painted out and a thin ground line drawn. 30720 four overlapping bikes, 30722 a three-quarter view on grey with fake text. fails [], 25.9 x 13.9 cm."
+  },
+  {
+   "slot": 3,
+   "slug": "market-street",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30730",
+   "mode": "pen",
+   "ink_coverage": 0.1781,
+   "note": "Arcades, balconies, plants, fruit carts, a spire; --edge horizon, white tee only. Prepared by local-contrast high-pass so shadows don't become screened masses. 30731 fake sign text, 30732 no market. fails [], 21.1 x 35.3 cm."
+  },
+  {
+   "slot": 4,
+   "slug": "microphone-study",
+   "passed": true,
+   "which": "main",
+   "images": 3,
+   "chosen": "s30740",
+   "mode": "pen",
+   "ink_coverage": 0.0566,
+   "note": "All three on light paper with no parts; 30740 one clean microphone, four small fake marks inpainted, frame cropped, shadow masked. Black tee, Engravings. 30741/30742 fake labels and handwriting. fails [], 13.5 x 35.0 cm."
+  }
+ ],
+ "minutes": {
+  "install": 1.3,
+  "generate": 56.7,
+  "process": 7.9,
+  "total": 66
+ },
+ "issues": "The first generation run was OOM-killed (exit 137) after 5 images because one ink ran alongside it (generator ~13 GB of 15); restarted (it skips finished files), costing ~1 image of time and seed 30722 was regenerated. After that no one ink ran during generation. generate_sdxl.py unchanged. No backups needed."
+}
