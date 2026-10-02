@@ -73,7 +73,14 @@ test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout s
 test("B5: Enter in a Make field closes the keyboard and never adds to the bag", async ({ page }) => {
   await page.goto(night("2021-11-19"));
   await hydrated(page);
-  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  // The size row can sit under the sticky Add bar on a phone, and a tap while the page still scrolls misses it:
+  // brought to the middle first, and tapped again until M is the size.
+  const m = page.getByRole("radio", { name: /^M\b/ }).first();
+  await expect(async () => {
+    await m.evaluate((el) => el.scrollIntoView({ block: "center" }));
+    await m.tap();
+    await expect(m).toHaveAttribute("aria-checked", "true", { timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   const field = page.locator("form input").first();
   await field.focus();
