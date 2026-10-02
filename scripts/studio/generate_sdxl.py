@@ -48,6 +48,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", required=True)
     ap.add_argument("--steps", type=int, default=8, choices=[8, 4])
+    # bfloat16 UNet and VAE: half the memory, for a container capped under 14 GB (fp32 was OOM-killed).
+    ap.add_argument("--bf16", action="store_true")
     a = ap.parse_args()
     jobs = [j for j in json.load(open(a.jobs)) if not os.path.exists(j["out"])]
     if not jobs:
@@ -55,6 +57,7 @@ def main():
     torch.set_num_threads(os.cpu_count())
     torch.set_grad_enabled(False)
     dt = torch.float32
+    udt = torch.bfloat16 if a.bf16 else dt
     base = snapshot_download(BASE, allow_patterns=[
         "model_index.json", "scheduler/*", "tokenizer/*", "tokenizer_2/*", "unet/config.json",
         "text_encoder/config.json", "text_encoder/model.safetensors",
@@ -73,7 +76,7 @@ def main():
     for j in jobs:
         if j["prompt"] not in embeds:
             pe, pooled, _ = encode(enc, j["prompt"])
-            embeds[j["prompt"]] = (pe, pooled)
+            embeds[j["prompt"]] = (pe.to(udt), pooled.to(udt))
     te = (enc.text_encoder, enc.text_encoder_2)
     enc.text_encoder = enc.text_encoder_2 = None
     del enc, te
@@ -86,12 +89,12 @@ def main():
         unet = UNet2DConditionModel.from_config(UNet2DConditionModel.load_config(base, subfolder="unet"))
     with safe_open(ckpt, framework="pt", device="cpu") as f:
         for k in f.keys():
-            set_module_tensor_to_device(unet, k, "cpu", value=f.get_tensor(k).to(dt))
+            set_module_tensor_to_device(unet, k, "cpu", value=f.get_tensor(k).to(udt), dtype=udt)
     unet = unet.eval()
     gc.collect()
     trim()
     print(f"unet loaded, rss {rss():.1f} GB", flush=True)
-    vae = AutoencoderKL.from_pretrained(base, subfolder="vae", torch_dtype=dt)
+    vae = AutoencoderKL.from_pretrained(base, subfolder="vae", torch_dtype=udt)
     vae.enable_tiling()
     sched = EulerDiscreteScheduler.from_pretrained(base, subfolder="scheduler", timestep_spacing="trailing")
     pipe = StableDiffusionXLPipeline(vae=vae, text_encoder=None, text_encoder_2=None, tokenizer=None,

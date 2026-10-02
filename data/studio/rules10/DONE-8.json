@@ -1,0 +1,23 @@
+{
+ "helper": 8,
+ "branch": "studio/rules10-8",
+ "started": "2026-10-02T06:45Z",
+ "generator": "SDXL base 1.0 + SDXL-Lightning 8-step UNet, scripts/studio/generate_sdxl.py --bf16",
+ "generator_patch": "generate_sdxl.py was OOM-killed (anon-rss 13.9 GB, container memory cgroup) while loading the fp32 UNet. Patched minimally on this branch: a --bf16 flag holds the UNet and VAE in bfloat16 (text encoders stay fp32). Peak memory about 5.6 GB, about 60 s an image on this CPU (AMX bf16). All images were made with --bf16.",
+ "designs": [
+  {
+   "slot": 1, "slug": "red-deer", "dir": "08-1-red-deer", "passed": true, "which": "main",
+   "images": ["K1-red-deer-s40810.png", "K1-red-deer-s40811.png", "K1-red-deer-s40812.png", "K1-red-deer-s40813.png", "K1-red-deer-s40814.png", "K1-red-deer-s40815.png"],
+   "chosen": "K1-red-deer-s40811.png",
+   "note": "fails []. Three extra main-prompt seeds (40813-40815) were tried for a cleaner side view; all had scenery. The stag stands three-quarter on, so the view label is 'Standing', not the planned 'Side view'. Before oneink: paper normalised to white, tones lifted (gamma 0.6), the ground cast shadow and the fake corner signatures painted out. Weak spot: the lit flank converts to a large open highlight.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "Four legs, four hooves (two front, two hind), one head with two ears, one pair of branching antlers; the shaggy neck mane fits a red deer stag. One animal, no background."}
+  },
+  {
+   "slot": 2, "slug": "grey-heron", "dir": "08-2-grey-heron", "passed": true, "which": "main",
+   "images": ["K2-grey-heron-s40820.png", "K2-grey-heron-s40821.png", "K2-grey-heron-s40822.png"],
+   "chosen": "K2-grey-heron-s40820.png",
+   "note": "fails []. Before oneink: paper normalised to white, tones lifted (gamma 0.6), which drops the faint hills. Painted out: one tall reed blade, the water hatching below the tussock and a fake signature (bottom right); only the toes were kept there.",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true, "note": "Side view facing left: dagger beak, black eye stripe and crest plume, S-curved neck, one folded wing, two legs, two feet with forward toes on a tussock. One bird; the plumage pattern is a grey heron's."}
+  }
+ ]
+}

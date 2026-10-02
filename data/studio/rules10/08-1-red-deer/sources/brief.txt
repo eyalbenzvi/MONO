@@ -1,0 +1,7 @@
+Prompt (rules10.py DESIGNS[8][0], main): One red deer stag standing, side view, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single animal facing left, large branching antlers, four slim legs with hooves, a shaggy neck, short tail, standing on a little ground. Pure black ink line engraving, crisp cross-hatching, no grey shading, no cast shadow, natural history plate. Centred, the whole animal inside wide white margins.
+Seed: 40811 (SDXL base 1.0 + SDXL-Lightning 8-step UNet, 832x1216, bfloat16 UNet/VAE: see generate_sdxl.py --bf16).
+Seeds tried: 40810, 40811, 40812 (main), then 40813-40815 (same main prompt, extra seeds).
+Why chosen: the only seed with one coherent stag: four legs and four hooves, one pair of branching antlers, one head, and no landscape behind it. 40810 had a doubled antler set and a body that doesn't join up; 40812 had tangled hind legs and a mountain lake; 40813-40815 all had trees, lakes or a vignette, and 40814's hind legs were muddled.
+Not a true side view: the stag stands three-quarter on, head to the viewer, so the plate's view reads "Standing", not "Side view".
+Painted before oneink (red-deer-s40811-prepared.png): cream paper normalised to white and the tones lifted (gamma 0.6) so the body keeps hatching rather than going solid. Below y=1035 only the darkest pixels (the hooves) were kept, which removes the cast shadow on the ground the generator added. Fake signatures in both bottom corners painted out.
+Weak spot: the lit flank converts to a large open highlight.
