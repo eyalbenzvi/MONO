@@ -1,0 +1,10 @@
+Title: Steel Sphere
+Category: Engravings
+Subject: A riveted steel sphere in elevation, banded round its middle, with a round porthole, a ladder up its side and fittings on top and below
+Style: Technical elevation, engraving-style pen lines
+Medium: Drawn (illustration)
+Description: A banded steel sphere hangs in elevation, its one round porthole set in the middle band and a ladder climbing its curve. Whoever drew it left out what it is for, which is either modesty or a secret.
+Tee colours: White
+Print size: 22.8 × 34.9 cm
+Keywords: sphere, steel sphere, elevation, technical drawing, porthole, maritime, machine, engraving, line art
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
