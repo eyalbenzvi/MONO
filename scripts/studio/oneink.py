@@ -33,7 +33,8 @@ ink in screen dots fails the check.
 
 --mode halftone is for a shaded picture (tone that carries the drawing: a lit tower, a
 feathered breast). It is the screen the shop's own photographs and uploads print with
-(scripts/photos/halftone.py, lib/upload/convert.ts): round dots at 30 lpi and 45 degrees, the
+(scripts/photos/halftone.py, lib/upload/convert.ts), but finer: round dots at 55 lpi (the textile
+standard for photographic detail; the catalogue's 1500 px prints and uploads stay at 30) and 45 degrees, the
 lightest dot 8% of a cell, the darkest tone 80% (a dark mass wider than 3.5 mm is held to
 that open mesh, a narrower stroke stays solid), highlights under 4% left as tee. It is
 delivered for the white tee alone (<slug>-white.png: dark dots on a light tee); the dots are
@@ -394,8 +395,9 @@ def engrave_ink(tone):
     return keep[lab].astype(np.uint8)
 
 
-# The shop's screen (scripts/photos/halftone.py, lib/upload/convert.ts), at this file's 300 DPI.
-HT_LPI, HT_ANGLE = 30, 45
+# The shop's screen (scripts/photos/halftone.py, lib/upload/convert.ts), at this file's 300 DPI, at 55 lpi
+# from Oct 2026 (6 px a cell; designs converted before then were screened at 30 and are left as they are).
+HT_LPI, HT_ANGLE = 55, 45
 HT_MAX_TONE = 0.8
 HT_MIN_DOT = 0.08
 # A dark mass: a square 3.5 mm across fits inside it (halftone.py SLAB_PX, 19 px at 1500 px for 28 cm).
