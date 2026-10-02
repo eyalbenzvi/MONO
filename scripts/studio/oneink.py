@@ -107,6 +107,21 @@ def flatten_paper(grey):
     return np.clip(grey / np.maximum(paper, 1e-3), 0, 1)
 
 
+# How much of the source's drawing sits by a sharp line (set in main; of 14 reviewed studio sources under 0.35, one reached 7).
+CRISP = None
+CRISP_WARN = 0.35
+
+
+def crispness(k):
+    """The share of the drawn pixels (darker than 10%) next to a sharp edge in the source: a crisp ink drawing
+    is mostly line; a soft pencil or airbrush picture is mostly grey slope, which the review marked down."""
+    drawn = k > 0.10
+    if not drawn.any():
+        return 0.0
+    lap = np.abs(cv2.Laplacian(cv2.GaussianBlur(k, (0, 0), 1.0), cv2.CV_32F))
+    return float((lap[drawn] > 0.03).mean())
+
+
 def darkness(grey, full_bleed=False):
     """Ink amount 0..1 with the paper taken off: the light end of the picture is paper
     (a full-bleed picture has no paper, so only its lightest tone is taken off)."""
@@ -597,12 +612,16 @@ def check(ink, ctx=None):
     if w_cm < 20 and h_cm < 30:
         fails.append(f"too small on the tee: {w_cm:.0f} × {h_cm:.0f} cm (20 cm wide or 30 cm tall)")
     solid = solid_share(ink)
+    warns = []
+    if CRISP is not None and CRISP < CRISP_WARN:
+        warns.append(f"soft source: {CRISP:.0%} of the drawing by a sharp line ({CRISP_WARN:.0%}; the review marked soft grey pictures down)")
     return {
         "coverage": round(float(cov), 4),
         "thin": round(float(thin), 4), "sizeCm": [round(w_cm, 1), round(h_cm, 1)], "topMm": round(float(top_mm), 1),
         "screened": round(float(screened), 4), "solid": round(solid, 4),
         "blackTee": bool(ctx.get("outline")) and solid < 0.10,
-        "fails": fails,
+        "crisp": round(CRISP, 3) if CRISP is not None else None,
+        "fails": fails, "warns": warns,
     }
 
 
@@ -652,6 +671,8 @@ def main():
     if mode == "halftone":
         g = flatten_paper(g)
     k = darkness(g, bleed)
+    global CRISP
+    CRISP = crispness(k)
     rule = None
     # A wide subject (or --ground): room under it for a ground line and a dimension line.
     kh, kw = k[crop_box(k)].shape if not bleed else k.shape
@@ -739,7 +760,7 @@ def main():
         json.dump({"mode": conv, "edge": edge, "views": views, "outline": outline, "ground": ground,
                    "coverage": main_rep["coverage"], "solid": main_rep["solid"], "screened": main_rep["screened"],
                    "sizeCm": main_rep["sizeCm"], "blackTee": main_rep["blackTee"] and mode == "line",
-                   "fails": main_rep["fails"]}, f, indent=1, ensure_ascii=False)
+                   "crisp": main_rep["crisp"], "fails": main_rep["fails"], "warns": main_rep["warns"]}, f, indent=1, ensure_ascii=False)
     print(slug, json.dumps(rep, ensure_ascii=False))
 
 

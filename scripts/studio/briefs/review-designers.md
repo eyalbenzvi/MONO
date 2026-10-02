@@ -5,7 +5,7 @@ A run's designs reach the catalogue only when five designers approve them. The d
 1. **Sheets.** `npx tsx --tsconfig tsconfig.scripts.json scripts/studio/reviewSheets.ts <run> <out-dir>` (on the shop branch) renders each delivered design three ways: the flat print, on its tee, and on the opposite tee (marked as not offered when it isn't). It writes contact sheets of five rows (`sheet-NN.png`) and `designs.json` (no → folder, title).
 2. **Five reviews.** Run the five agents below in parallel. Each gets the persona, the founder's taste and the sheets, and writes `designer-K.json` into `data/studio/<run>/review/`.
 3. **Decision.** `npx tsx --tsconfig tsconfig.scripts.json scripts/studio/approve.ts <run>` reads the five reviews and writes `data/studio/<run>/review/approved.json`. A design is approved when:
-   - its average score is at least 6.5;
+   - its average score is at least 7;
    - fewer than three designers said DELETE;
    - it is among the two best of its family in the run (the `Family:` line).
 4. **Shop.** `scripts/studio/publish.ts` publishes only the approved designs of a gated run. Their quality score is the average review score × 10.
