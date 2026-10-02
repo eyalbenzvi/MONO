@@ -13,12 +13,20 @@
  * the studio's previews show it; a scene its maker delivered for the white tee alone
  * (only a -white positive: on black its ending reads as a bright patch) on the white tee. Numbers are fixed by the folder's order (20001 on,
  * scripts/sources/ranges.ts), so a re-run gives the same ids.
+ *
+ * Runs after sdxl50 are gated (scripts/studio/briefs/rules.md, review-designers.md): only the
+ * designs five designer reviews approved (data/studio/<run>/review/approved.json, written by
+ * scripts/studio/approve.ts) are published; their quality is the reviews' average × 10, their
+ * tee colours come from the print's own measures (print.json: only an outline drawing prints in
+ * white ink on a black tee), the full-resolution print is kept for production
+ * (assets/prints-hd), a print under 20 cm wide and 30 cm tall stays out, and a run may not
+ * bring more than two designs of one family. The runs before stay exactly as they were.
  */
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
-import { SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "../../types/shirt";
+import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "../../types/shirt";
 import { assessPrint, rasterInk } from "../gen/quality";
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -28,6 +36,14 @@ export const STUDIO_MANIFEST = path.join(STUDIO, "catalogue.json");
 /** The screen's record (scripts/photos/halftone.py's): every raster print's original and the print made from it. */
 const HALFTONE = path.join(ROOT, "data", "curation", "halftone.json");
 const MASTERS = path.join(ROOT, "assets", "masters");
+/** The full-resolution print (300 DPI, 1-bit) of a gated run's design, for production: the shop's 1500 × 2000 is for the screen. */
+const PRINTS_HD = path.join(ROOT, "assets", "prints-hd");
+/** The runs published before the designers' gate: they stay exactly as they were (no back-fixing). */
+export const UNGATED_RUNS = ["run50", "run50b", "sdxl50"];
+/** A gated run's design is approved at this average review score or above (and fewer than three DELETE votes). */
+export const APPROVE_AVERAGE = 6.5;
+/** At most this many designs of one family per run. */
+export const PER_FAMILY = 2;
 const sha16 = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 16);
 const REPO = "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9";
 
@@ -72,6 +88,48 @@ const CATEGORY: Record<string, ShirtCategory> = {
   "vintage-camera": "etched", "coffee-pot": "etched", "aviator-goggles": "etched", "rope-knot": "etched",
 };
 
+/**
+ * A gated design offered on both tees (an outline drawing) leads with the one it reads best on: dense pen work
+ * (ink over 15% of the print) the white tee, as ink drawn on paper; sparse line work the black, a chalk line on
+ * dark cloth. The other tee stays on offer.
+ */
+export const BOTH_WHITE_ABOVE = 0.15;
+
+/** A gated run's review decision (scripts/studio/approve.ts). */
+export interface Approval {
+  run: string;
+  approvedAt: string;
+  designs: Record<string, { average: number; deleteVotes: number; family: string; approved: boolean; why: string }>;
+}
+
+/** What oneink.py measured on the print (delivered beside it). */
+export interface PrintMeasures {
+  mode: string;
+  coverage: number;
+  solid: number;
+  sizeCm: [number, number];
+  blackTee: boolean;
+  fails: string[];
+}
+
+/** A gated design's tees: an outline drawing on both (dense ink leads with white), anything shaded on white alone. */
+export function gatedTees(m: Pick<PrintMeasures, "blackTee" | "coverage">): { baseColor: BaseColor; single: boolean } {
+  if (!m.blackTee) return { baseColor: "white", single: true };
+  return { baseColor: m.coverage > BOTH_WHITE_ABOVE ? "white" : "black", single: false };
+}
+
+/** A gated design's shop category from its details' Category line (a shop label or key); Botanical & Nature otherwise. */
+export function gatedCategory(label: string): ShirtCategory {
+  const l = label.trim().toLowerCase();
+  const byKey = SHIRT_CATEGORIES.find((c) => c === l);
+  if (byKey) return byKey;
+  const byLabel = SHIRT_CATEGORIES.find((c) => CATEGORY_LABELS[c].toLowerCase() === l);
+  return byLabel ?? "specimens";
+}
+
+/** Too small to sell: under 20 cm wide and under 30 cm tall. */
+export const tooSmall = ([w, h]: [number, number]) => w < 20 && h < 30;
+
 /** An SDXL design's category: slot 1 study sheet, 2 elevation, 3 street, 4 patent sheet on black. */
 function sdxlCategory(dir: string, label: string): ShirtCategory {
   const slot = /^\d{2}-(\d)-/.exec(path.basename(dir))?.[1];
@@ -91,20 +149,61 @@ function details(file: string): Record<string, string> {
   return out;
 }
 
-/** The delivered folders, in a fixed order: the trial's, then the run of fifty's, the second run's, then SDXL's fifty. */
+const runFolders = (name: string) =>
+  existsSync(path.join(STUDIO, name))
+    ? readdirSync(path.join(STUDIO, name)).filter((d) => /^\d{2}-\d-/.test(d)).sort().map((d) => path.join("data", "studio", name, d))
+    : [];
+
+/** A gated run's review decision, if the designers have reviewed it. */
+export function approvalOf(run: string): Approval | null {
+  const file = path.join(STUDIO, run, "review", "approved.json");
+  return existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as Approval) : null;
+}
+
+/** The gated runs with a review decision, in the order they were approved (so a new run never moves an older run's ids). */
+export function gatedRuns(): string[] {
+  return readdirSync(STUDIO, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !UNGATED_RUNS.includes(e.name) && !/^\d{2}-/.test(e.name) && runFolders(e.name).length)
+    .map((e) => ({ run: e.name, approval: approvalOf(e.name) }))
+    .filter((r): r is { run: string; approval: Approval } => r.approval !== null)
+    .sort((a, b) => a.approval.approvedAt.localeCompare(b.approval.approvedAt) || a.run.localeCompare(b.run))
+    .map((r) => r.run);
+}
+
+/**
+ * The delivered folders, in a fixed order: the trial's, then the run of fifty's, the second run's, SDXL's fifty
+ * (all as they were), then each gated run's approved designs, runs in the order they were approved.
+ */
 export function folders(): string[] {
   const trial = readdirSync(STUDIO).filter((d) => /^\d{2}-/.test(d)).sort().map((d) => path.join("data", "studio", d));
-  const run = (name: string) =>
-    existsSync(path.join(STUDIO, name))
-      ? readdirSync(path.join(STUDIO, name)).filter((d) => /^\d{2}-\d-/.test(d)).sort().map((d) => path.join("data", "studio", name, d))
-      : [];
-  return [...trial, ...run("run50"), ...run("run50b"), ...run("sdxl50")];
+  const gated = gatedRuns().flatMap((run) => {
+    const approval = approvalOf(run)!;
+    return runFolders(run).filter((dir) => approval.designs[path.basename(dir)]?.approved);
+  });
+  return [...trial, ...UNGATED_RUNS.flatMap(runFolders), ...gated];
 }
+
+/** A gated run brings at most PER_FAMILY designs of one family (approve.ts keeps the best; this guards a hand-edited decision). */
+function checkFamilies(list: string[]) {
+  const count = new Map<string, number>();
+  for (const dir of list) {
+    const run = runOf(dir);
+    if (run === null || UNGATED_RUNS.includes(run)) continue;
+    const family = approvalOf(run)!.designs[path.basename(dir)].family;
+    const key = `${run}|${family}`;
+    count.set(key, (count.get(key) ?? 0) + 1);
+    if (count.get(key)! > PER_FAMILY) throw new Error(`${run}: more than ${PER_FAMILY} designs of the family "${family}"`);
+  }
+}
+
+/** The run a folder belongs to (null for the trial's), and whether it is gated. */
+const runOf = (dir: string) => (dir.split(path.sep).length > 3 ? dir.split(path.sep)[2] : null);
 
 async function main() {
   const entries: StudioEntry[] = [];
   const halftone = JSON.parse(readFileSync(HALFTONE, "utf8")) as Record<string, Record<string, unknown>>;
   const list = folders();
+  checkFamilies(list);
   for (const [k, dir] of list.entries()) {
     const abs = path.join(ROOT, dir);
     const files = readdirSync(abs);
@@ -138,11 +237,25 @@ async function main() {
     const sdxl = dir.split(path.sep).includes("sdxl50");
     // SDXL's fifty go by their family (the folder's slot): study sheets of animals and plants, elevations and
     // streets as buildings (or engravings of machines), patent sheets of objects as engravings.
-    const category = CATEGORY[slug] ?? (sdxl ? sdxlCategory(dir, d.category ?? "") : "specimens");
+    const run = runOf(dir);
+    const gated = run !== null && !UNGATED_RUNS.includes(run);
+    const measures = gated ? (JSON.parse(readFileSync(path.join(abs, "print.json"), "utf8")) as PrintMeasures) : null;
+    const review = gated ? approvalOf(run!)!.designs[path.basename(dir)] : null;
+    if (measures && measures.fails.length) throw new Error(`${dir}: print.json fails ${measures.fails.join("; ")}`);
+    if (measures && tooSmall(measures.sizeCm)) throw new Error(`${dir}: ${measures.sizeCm.join(" × ")} cm, too small to sell (20 cm wide or 30 cm tall)`);
+    const category = gated ? gatedCategory(d.category ?? "") : (CATEGORY[slug] ?? (sdxl ? sdxlCategory(dir, d.category ?? "") : "specimens"));
+    // The print at its own resolution (300 DPI on the 28 × 37 cm area), kept for the printer.
+    if (gated) {
+      mkdirSync(PRINTS_HD, { recursive: true });
+      copyFileSync(src, path.join(PRINTS_HD, `print_${n}.png`));
+    }
     if (!SHIRT_CATEGORIES.includes(category)) throw new Error(`${dir}: category ${category}`);
     const tees = (d["tee colours"] ?? "").replace(/\s*\(.*$/, "").trim();
     // An SDXL line design its maker offered on the white tee only (its negative on black didn't hold up).
     const whiteTee = sdxl && !tone && /^white$/i.test(tees);
+    const tees2 = measures ? gatedTees(measures) : null;
+    // Tonal work, or line work its maker offered on one tee only ("Black (printed in white …)"; SDXL's "White").
+    const single = tees2 ? tees2.single : tone || whiteTee || /^black$/i.test(tees);
     const keywords = (d.keywords ?? "").split(/[,;]/).map((w) => w.trim()).filter(Boolean);
     entries.push({
       n,
@@ -153,17 +266,16 @@ async function main() {
       style: d.style || "Illustration",
       description: d.description,
       keywords,
-      baseColor: whiteOnly || whiteTee ? "white" : "black",
-      // Tonal work, or line work its maker offered on one tee only ("Black (printed in white …)"; SDXL's "White").
-      single: tone || whiteTee || /^black$/i.test(tees),
+      baseColor: tees2 ? tees2.baseColor : whiteOnly || whiteTee ? "white" : "black",
+      single,
       mode: tone ? "tone" : "line",
-      quality: a.quality,
+      quality: review ? Math.round(review.average * 10) : a.quality,
       printCm: a.printCm,
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
-      ...(sdxl ? { model: "sdxl" as const } : {}),
+      ...(sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
     });
-    console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${a.quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
+    console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${entries[entries.length - 1].quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
   }
   writeFileSync(STUDIO_MANIFEST, `${JSON.stringify(entries, null, 1)}\n`);
   // The record is scripts/photos/halftone.py's (json.dump, indent 0, keys sorted as strings, floats as 0.0): every other
