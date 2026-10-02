@@ -41,7 +41,8 @@ describe("search: finding designs by their words", () => {
       const typo = rnd() < 0.5 ? w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2) : w.slice(0, i) + (w[i] === "x" ? "q" : "x") + w.slice(i + 1);
       if (typo === w || index.termId.has(stem(typo))) continue; // the typo is a real word: nothing to correct
       tried++;
-      const r = run(`${clean(s.title).replace(new RegExp(`\\b${w}\\b`), typo)} `);
+      // Word edges by letters, not \b (ASCII only: "tromsø" has no \b after its ø, and the typo wouldn't go in).
+      const r = run(`${clean(s.title).replace(new RegExp(`(?<![\\p{L}\\p{N}])${w}(?![\\p{L}\\p{N}])`, "u"), typo)} `);
       if (!r.results.slice(0, 10).some((h) => h.shirt.family === s.family)) misses.push(`${s.title} → ${typo}`);
       if (!r.corrected.some((c) => c.from === typo)) misses.push(`${typo}: no correction reported`);
     }

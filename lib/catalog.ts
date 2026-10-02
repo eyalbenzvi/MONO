@@ -342,6 +342,27 @@ export function diversify<T extends { shirt: ShirtProduct }>(
         out.push({ ...pool.splice(i, 1)[0], wildcard: true });
         continue;
       }
+      // Only the colour rule blocks it (the unseen categories left are all in the last two cards' colour):
+      // give the previous card back for the next one in another colour that still fits, then place the wildcard.
+      const j = color && slot >= maxRun ? pool.findIndex((x) => !seen.has(x.shirt.category)) : -1;
+      const prev = out[slot - 1];
+      if (j !== -1 && !prev.wildcard) {
+        const blocked = pool[j].shirt.baseColor;
+        const k = pool.findIndex(
+          (x, n) => n !== j && x.shirt.baseColor !== blocked && x.shirt.category !== pool[j].shirt.category &&
+            !(out.length >= maxRun + 1 && out.slice(-maxRun - 1, -1).every((y) => y.shirt.category === x.shirt.category)),
+        );
+        if (k !== -1) {
+          const swap = pool[k];
+          const wild = pool[j];
+          out[slot - 1] = swap;
+          pool.splice(pool.indexOf(swap), 1);
+          pool.splice(pool.indexOf(wild), 1);
+          pool.unshift(prev);
+          out.push({ ...wild, wildcard: true });
+          continue;
+        }
+      }
     }
     const fits = [
       (s: ShirtProduct) => !(category && run((x) => x.category, s)) && !(color && run((x) => x.baseColor, s)) && !recentVariants.has(s.variant),
