@@ -1,0 +1,34 @@
+{
+ "helper": 2,
+ "branch": "studio/rules10-2",
+ "started": "2026-10-02T06:45Z",
+ "finished": "2026-10-02T07:58Z",
+ "generator": "scripts/studio/generate_sdxl.py (SDXL base 1.0 + SDXL-Lightning 8-step UNet), one process at a time, unpatched (no out-of-memory; UNet rss 10.8 GB)",
+ "designs": [
+  {
+   "slot": 1,
+   "slug": "gaff-cutter",
+   "passed": true,
+   "which": "main",
+   "images": ["K1-gaff-cutter-s40210.png", "K1-gaff-cutter-s40211.png", "K1-gaff-cutter-s40212.png"],
+   "chosen": "K1-gaff-cutter-s40211.png",
+   "note": "40210 and 40212 are square-rigged ships, not cutters. 40211 cleaned (paper levelled, frame, fake lettering and numerals painted out, hull contrast raised so the hatching stays lines). Converted with --mode engrave --view 'Sail plan' --plate 'Pl. I', fails []. Delivered without --outline although rules10.py lists it: hull and sails keep hatching and 24% of the ink is solid, so it is a shaded drawing for a White tee (blackTee false either way).",
+   "truth": {"anatomy_or_mechanics_ok": true, "one_object": true, "title_matches": true,
+             "note": "One wooden boat, one mast: high-peaked gaff mainsail on a long overhanging boom, staysail and jib to a bowsprit, hull and keel on a thin strip of water. That is a gaff cutter; the rig is coherent."}
+  },
+  {
+   "slot": 2,
+   "slug": "penny-farthing",
+   "passed": false,
+   "which": "main, backup, revised, main (extra seeds)",
+   "images": ["K2-penny-farthing-s40220.png", "K2-penny-farthing-s40221.png", "K2-penny-farthing-s40222.png",
+              "K2-tandem-bicycle-s40225.png", "K2-tandem-bicycle-s40226.png", "K2-tandem-bicycle-s40227.png",
+              "K2-penny-farthing-r-s40230.png", "K2-penny-farthing-r-s40231.png", "K2-penny-farthing-r-s40232.png",
+              "K2-penny-farthing-s40233.png", "K2-penny-farthing-s40234.png", "K2-penny-farthing-s40235.png"],
+   "chosen": null,
+   "note": "Twelve images, none passes. Main 40220: right layout but no pedals, an oval front wheel and a doubled fork; 40221 a unicycle-like column; 40222 a safety bicycle. Backup TANDEM BICYCLE 40225-40227: three-wheeled hybrids or two bikes stacked, with blocks of fake text. Revised prompt (both failed twice; 88 words, outline wording, 'two crank pedals fixed at its hub', 1216x832 landscape; kept in the job file, rules10.py untouched): 40230 three wheels, 40231 a two-wheeler with no drive, 40232 equal wheels, no pedals. Main prompt with extra seeds 40233-40235: saddle over the small wheel, wheels on different ground levels, no pedals. Stopped at minute 71 (no new image after minute 80). Not delivered; no folder.",
+   "truth": {"anatomy_or_mechanics_ok": false, "one_object": false, "title_matches": false,
+             "note": "No image has pedals on the big wheel's hub with both wheels on one ground line; several show three wheels or two merged bicycles, and none is a true penny-farthing."}
+  }
+ ]
+}
