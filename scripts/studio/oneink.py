@@ -25,8 +25,9 @@ names the view after the subtitle ("Side elevation"). A title or subtitle that s
 more, or the check fails.
 
 --mode engrave (the default for generated drawings) is line and solid only: no dot
-screen anywhere. A flat grey with no line in it is left as tee, not screened; specks
-under 0.5 mm go. line, pen and tone are the older conversions (line and pen screen a
+screen anywhere. Lines are found by local contrast (a generated engraving's hatching is
+finer than a pixel and reads as grey tone), only the truly dark parts print solid, a flat
+grey with no line in it is left as tee; specks under 0.5 mm go. line, pen and tone are the older conversions (line and pen screen a
 flat grey; tone is a dot screen throughout); in every mode but tone, more than 3% of the
 ink in screen dots fails the check.
 
@@ -340,18 +341,17 @@ def to_ink(tone):
 
 
 def engrave_ink(tone):
-    """Line and solid only (the conversion for generated drawings): a threshold, strokes under
-    0.4 mm thickened to it, specks under 0.5 mm dropped. No dot screen anywhere: a flat grey with
-    no line in it (a wash, a smudge, a shaded sky) is left as tee, never screened."""
+    """Line and solid only (the conversion for generated drawings), no dot screen anywhere. A generated
+    "engraving" is mostly grey tone: its hatching is finer than a pixel, so a threshold on darkness turns
+    a mid-grey wing into a black blot and a pale breast into nothing. The lines are found instead by local
+    contrast (darker than their surroundings, at two scales: the hatching and the strokes), and only the
+    truly dark parts print solid; strokes under 0.4 mm are grown to it, specks under 0.5 mm go."""
     global SCREENED
     SCREENED = 0.0
-    mean = cv2.GaussianBlur(tone, (0, 0), 0.8 * PX_MM)
-    var = cv2.GaussianBlur(tone * tone, (0, 0), 0.8 * PX_MM) - mean * mean
-    flat = ((mean > 0.18) & (mean < 0.75) & (var < 0.012)).astype(np.uint8)
-    flat = cv2.morphologyEx(flat, cv2.MORPH_OPEN, disc(1.5 * PX_MM)).astype(bool)
-    ink = ((tone > 0.5) & ~flat).astype(np.uint8)
-    # Strokes under 0.4 mm are grown to it (never dropped: a fine line stays a line), then what is
-    # still thinner (a corner, a frayed end) is trimmed.
+    fine = cv2.GaussianBlur(tone, (0, 0), 0.8 * PX_MM)
+    broad = cv2.GaussianBlur(tone, (0, 0), 2.5 * PX_MM)
+    ridge = ((tone - fine) > 0.04) | ((tone - broad) > 0.10)
+    ink = ((ridge & (tone > 0.12)) | (tone > 0.82)).astype(np.uint8)
     thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
     ink = np.maximum(ink, cv2.dilate(ink & (1 - thick), disc(0.2 * PX_MM + 0.5)))
     ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM - 0.01))
