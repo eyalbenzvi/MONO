@@ -1,0 +1,11 @@
+Brief: GAFF CUTTER (helper 2, slot 1, main prompt), rules10.
+Prompt: One gaff-rigged sailing cutter, side elevation, on plain white paper, no text, no lettering, no numbers, no frame, no border, no colour. A single wooden sailing boat facing right, tall mast, gaff mainsail, two headsails on a long bowsprit, all rigging lines, the hull and keel below a thin waterline. Clean black outline drawing, one even line weight, no shading, no hatching masses, no cast shadow, naval architect's sail plan. Centred, the whole boat inside wide white margins.
+Seeds: 40210-40212 (three, main); chosen 40211.
+Size: 832x1216
+Model: Stability AI SDXL base 1.0 + ByteDance SDXL-Lightning 8-step UNet, guidance 0, CPU, python3 scripts/studio/generate_sdxl.py --jobs
+
+Why 40211: 40210 and 40212 are square-rigged ships (brig / full-rigger with yards on two or three masts), not cutters, so they fail the title. 40211 is one wooden cutter: a single mast, a high-peaked gaff mainsail on a long overhanging boom, two headsails (staysail and jib) set to a bowsprit, hull and keel above a thin strip of water. One boat, the rigging leads to the right places.
+Clean-up before one ink: paper levelled to white (x 255/205, anything above 225 to white); the double frame lines, a fake caption above the mast, two lines of fake script lettering and the bottom marginalia (y > 1018) painted to white paper; three fake numerals on the bulwark by the bow, a faint script word on the staysail foot and a numeral-like mark under the bowsprit painted out. The hull (y 915-1018) was given more contrast (levels 60-185) so its hatching stays as lines and does not close up into one solid.
+Not delivered as outline: rules10 listed --outline, but the hull and sails keep hatching and 24% of the ink is in solid strokes, so it is printed as a shaded drawing (no --outline, White tee).
+python3 scripts/studio/oneink.py <cleaned image> data/studio/rules10/02-1-gaff-cutter gaff-cutter --mode engrave --title "GAFF CUTTER" --view 'Sail plan' --plate 'Pl. I'
+One ink: fails [], 25.8 x 31.9 cm, coverage 6.1%, screened 0.
