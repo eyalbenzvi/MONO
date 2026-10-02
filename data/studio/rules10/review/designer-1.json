@@ -1,0 +1,23 @@
+{"designer":"Designer 1","persona":"Screen-print production designer","designs":[
+{"no":1,"title":"Humpback Whale","score":8,"verdict":"PASS","why":"Strong silhouette and confident engraved lines carry well at 30 lpi; only the grey belly stipple will turn into dot noise, and that is acceptable."},
+{"no":2,"title":"Ammonite","score":8,"verdict":"PASS","why":"Bold rib lines and a clear spiral read from across a room, and the hatching is coarse enough not to fill in."},
+{"no":3,"title":"Gaff Cutter","score":6,"verdict":"NEEDS CHANGE","why":"Rigging hairlines and the pale grey sail wash will break up into 8% dots or vanish on cotton; it needs uniform, heavier line and no tonal wash."},
+{"no":4,"title":"Hot Air Balloon","score":7,"verdict":"PASS","why":"Clean elevation with good line weight; the dense band under the equator is close to plugging but should hold."},
+{"no":5,"title":"Scooter","score":4,"verdict":"DELETE","why":"It is a soft pencil render with smooth grey shading, not line art, so the halftone will turn it into a mushy dot cloud with thin, weak outlines; it is also the least on-brand piece."},
+{"no":6,"title":"Colonial House","score":7,"verdict":"PASS","why":"It is exactly the dense pen-and-ink the founder loves; the dark porch interiors and palm fronds are at risk of plugging into black blobs, so watch dot gain."},
+{"no":7,"title":"Lighthouse","score":8,"verdict":"PASS","why":"Clear vertical form with even, printable line weight and crisp darks; the most production-ready piece in the run."},
+{"no":8,"title":"Luna Moth","score":6,"verdict":"NEEDS CHANGE","why":"Wing veins are thin and pale, and the grey wing wash will halftone into faint noise, so the whole thing reads washed-out on the tee; strengthen the outlines and drop the tone."},
+{"no":9,"title":"Sunflower","score":7,"verdict":"PASS","why":"The dark seed disk anchors it and the leaves read well; the grey petal shading will dot out slightly but the drawing holds."},
+{"no":10,"title":"Compass","score":5,"verdict":"NEEDS CHANGE","why":"The lid interior is a smooth grey gradient that will print as a cheap dot screen, the lines are thin, and the open, stacked layout leaves a weak, empty shape on the back."},
+{"no":11,"title":"Rangefinder Camera","score":6,"verdict":"NEEDS CHANGE","why":"The leatherette body is a large mid-grey mass that will print as a muddy dot field, and the wide, short format plus the stray scale line under it look small and lost on a back print."},
+{"no":12,"title":"Red Deer","score":6,"verdict":"NEEDS CHANGE","why":"The head and antlers are excellent, but the hind leg has a visible cut-out patch and the hooves and ground fade into hairlines that will break."},
+{"no":13,"title":"Grey Heron","score":6,"verdict":"NEEDS CHANGE","why":"The neck and wing are strong, but the lower body and legs fade into broken hairlines that will drop out entirely on cloth, so the bird looks like it is floating."}
+],
+"suggestions":[
+"Generate true line art (engraving or hatch) with no smooth grey shading, and make tone out of line density so the halftone barely has to work.",
+"Set a minimum line weight of about 0.3 mm (roughly 1 pt) at final print size and reject any art whose key outlines go thinner than that.",
+"Keep the darkest masses open with hatching, not solid fill, and leave at least about 0.4 mm of gap between lines so they don't plug with dot gain.",
+"Favour tall, vertical subjects that fill a 30 x 40 cm back area (lighthouses, buildings, standing animals, botanical stems), and avoid short, wide objects like cameras.",
+"Lean further into the reference tees with more dense architecture and technical elevations or patent sheets, with crisp ruled baselines and complete, grounded subjects (no fading legs or hulls)."
+],
+"overall":"A solid run: whale, ammonite, lighthouse and colonial house are print-ready, but too many designs depend on grey wash or fading hairlines that a 30 lpi screen on cotton won't hold, so push the generator toward pure line work."}

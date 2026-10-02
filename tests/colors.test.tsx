@@ -26,7 +26,7 @@ describe("T3: designs that suit one tee colour are sold in that colour only", ()
     expect(SHIRTS.filter((s) => s.medium === "photo").every((s) => s.colors.length === 1)).toBe(true);
     // Brush work and plates are one-ink halftones now (Part 2): white ink on black works, and some start there (Part 3).
     const tonal = SHIRTS.filter((s) => /^archive-(ink-painting|ukiyo-e|botanical|natural-history)$/.test(s.variant));
-    expect(tonal.length).toBeGreaterThan(100);
+    expect(tonal.length).toBeGreaterThan(30); // after the designers' second review (only what averaged 7 stayed)
     expect(tonal.filter((s) => s.colors.length === 2).length).toBeGreaterThan(tonal.length * 0.8);
     expect(tonal.filter((s) => s.baseColor === "black").length).toBeGreaterThan(tonal.length * 0.25);
     // Most line work and drawn prints still come in both.

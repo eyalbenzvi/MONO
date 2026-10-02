@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hydrated, seed } from "./helpers";
+import full from "../data/shirts.json";
 
 const cardTitle = async (page: Page) => (await page.locator('[aria-roledescription="card"]').first().locator("h2").first().textContent())!;
 /** The checkout step of /cart/ (#details): "Checkout" and its Delivery section. */
@@ -69,7 +70,8 @@ test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you
 });
 
 test("You: no Checkout CTA (the Bag tab counts the bag); a saved tee without a size opens its page, then adds in one tap", async ({ page }) => {
-  await seed(page, {}, [{ id: "mono-0004", size: "M", color: "black", qty: 1 }]);
+  const tee = (full as { id: string; colors: string[] }[])[0];
+  await seed(page, {}, [{ id: tee.id, size: "M", color: tee.colors[0], qty: 1 }]);
   await page.goto("me/");
   await hydrated(page);
   await expect(page.getByRole("heading", { level: 1, name: "You" })).toBeVisible();
@@ -107,7 +109,8 @@ test("You: no Checkout CTA (the Bag tab counts the bag); a saved tee without a s
 });
 
 test("You: a long remembered size (Kids 3–4) keeps each row's buttons inside the row", async ({ page }) => {
-  await seed(page, {}, [{ id: "mono-0004", size: "K4", color: "black", qty: 1 }]);
+  const tee = (full as { id: string; colors: string[] }[])[0];
+  await seed(page, {}, [{ id: tee.id, size: "K4", color: tee.colors[0], qty: 1 }]);
   await page.addInitScript(() => {
     const c = JSON.parse(localStorage.getItem("mono-cart") ?? "{}");
     if (c.state) (c.state.preferredSize = "K4"), localStorage.setItem("mono-cart", JSON.stringify(c));

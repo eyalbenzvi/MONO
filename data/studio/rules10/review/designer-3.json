@@ -1,0 +1,24 @@
+{"designer":"Designer 3","persona":"Natural-history and technical illustrator",
+"designs":[
+{"no":1,"title":"Humpback Whale","score":6,"verdict":"NEEDS CHANGE","why":"The fin count is wrong: there is a big dorsal-side fin halfway along the back plus two flippers, while a humpback has a tiny dorsal knob near the tail and two very long pectorals, so it reads as a generic whale with an extra limb."},
+{"no":2,"title":"Ammonite","score":6,"verdict":"NEEDS CHANGE","why":"The inner coil is convincing, but the outer body chamber melts into a lumpy, sagging lobe at lower left, with ribs that fork at random and no suture lines, so it's not yet a real fossil plate."},
+{"no":3,"title":"Gaff Cutter","score":6,"verdict":"NEEDS CHANGE","why":"It's labelled 'Sail plan' but it's a perspective sketch with tangled, made-up rigging and overlapping headsails, far from the clean elevation of the sailboat reference tee."},
+{"no":4,"title":"Hot Air Balloon","score":7,"verdict":"PASS","why":"A believable Montgolfier-style elevation with the load lines meeting at a ring above the basket, though the flame-like smudges on the lower envelope are decoration rather than structure."},
+{"no":5,"title":"Scooter","score":6,"verdict":"NEEDS CHANGE","why":"The center stand looks like two separate legs, there's a fake 'R' badge, and the smooth grey airbrush shading will turn into a flat 30 lpi dot mush instead of reading as line illustration."},
+{"no":6,"title":"Colonial House","score":8,"verdict":"PASS","why":"The closest match to the colonial-building reference: dense, with columns and balconies that stack credibly over three floors, but the soft fade at the edges will halftone into a fuzzy rectangle."},
+{"no":7,"title":"Lighthouse","score":8,"verdict":"PASS","why":"Clean, plausible construction (gallery, lantern, staggered stair windows, door and steps), and it really is close to an elevation."},
+{"no":8,"title":"Luna Moth","score":5,"verdict":"NEEDS CHANGE","why":"The antennae are thin and butterfly-like when a luna's are feathery, the hindwings lack their eyespots, the forewings are shaped like hindwings, and the twisted tails look melted, so a lepidopterist would reject it."},
+{"no":9,"title":"Sunflower","score":8,"verdict":"PASS","why":"An honest botanical plate (alternate serrated leaves, a side bud, a believable head), and the 'Flower and leaf' subtitle is accurate."},
+{"no":10,"title":"Compass","score":7,"verdict":"PASS","why":"The hinge, bail and graduated dial make mechanical sense, but it's an open three-quarter view, not the 'Front view' the title claims, and the rose has no cardinal letters."},
+{"no":11,"title":"Rangefinder Camera","score":7,"verdict":"PASS","why":"A true flat front elevation with plausible Leica-style top-plate dials and windows, but the lens ring lettering is fake, the scale line under the body is detached, and the dark leatherette is heavy at 30 lpi."},
+{"no":12,"title":"Red Deer","score":6,"verdict":"NEEDS CHANGE","why":"Anatomy and antlers are good, but the lower legs suddenly turn white and hollow below the hocks and knees, a conversion artefact that makes the stag look like it's standing on stilts."},
+{"no":13,"title":"Grey Heron","score":6,"verdict":"NEEDS CHANGE","why":"Head, plumes and wing are well drawn, but the legs switch from dark to blank white mid-tibia and the feet disappear into a shapeless blob, the same broken-leg artefact as the deer."}
+],
+"suggestions":[
+"Do a true orthographic bicycle or penny-farthing patent elevation with a correct wheel and spoke count, chainring and fork, closer to the bicycle reference than the perspective objects in this run.",
+"Make whale or fish study sheets with a main figure plus two or three small views (fluke from below, flipper, skull), so 'study' means a real plate and not one dramatic pose.",
+"Draw a schooner or ketch as a strict side elevation with countable stays and shrouds and a waterline, and only call it a 'Sail plan' when it is one.",
+"Do beetle or crab specimen plates in dorsal view, where six legs or ten legs and their segments can be counted and checked before release.",
+"Add a mandatory leg, foot and antenna check plus a no-fade-to-white rule: subjects need solid, finished extremities and a hard edge, never a soft vignette that halftones into mush."
+],
+"overall":"A solid run of objects and architecture (house, lighthouse, sunflower, camera), but every animal fails on anatomy or extremity artefacts (an extra fin, a wrong moth, legs vanishing into white), and some subtitles ('Sail plan', 'Front view') aren't true. Fix those before calling anything a study."}

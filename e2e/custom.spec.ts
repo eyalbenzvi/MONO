@@ -38,11 +38,13 @@ test("Make is in plain sight: a main tab and a way in from the designs it's draw
   await expect(page.locator("main a").first()).toBeVisible();
   await expect(page.locator('main a[href$="/make/"]')).toHaveCount(0);
 
+  // (A base the designers took out of the shop has no page of its own to lead from.)
   for (const [s, slug] of [
     [SKY, "sky"],
     [MOON, "year"],
     [PLANETS, "planets"],
   ] as const) {
+    if (!s) continue;
     await page.goto(`shop/${s.id}/`);
     await hydrated(page);
     await page.locator("[data-make-your-own]").tap();

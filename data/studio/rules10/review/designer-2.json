@@ -1,0 +1,24 @@
+{"designer":"Designer 2","persona":"Apparel art director",
+"designs":[
+{"no":1,"title":"Humpback Whale","score":8,"verdict":"PASS","why":"The breaching arc reads from across a room and sits closest to the founder's whale reference, but the smudgy splash under the tail should be cleaned or cut so the silhouette ends crisply."},
+{"no":2,"title":"Ammonite","score":8,"verdict":"PASS","why":"A dense, graphic spiral that fills the back well and feels like a real natural-history plate; the strongest $50 contender in the run."},
+{"no":3,"title":"Gaff Cutter","score":6,"verdict":"NEEDS CHANGE","why":"The sails are washy, sketchy hatching that will halftone into grey fog on a white tee; it needs the firm ruled lines of a real sail plan to match the founder's technical-elevation reference."},
+{"no":4,"title":"Hot Air Balloon","score":7,"verdict":"PASS","why":"The clean, symmetrical elevation suits the plate format and prints with confidence, though the long narrow shape looks a little small and timid at the current scale."},
+{"no":5,"title":"Scooter","score":4,"verdict":"NEEDS CHANGE","why":"The soft airbrushed shading on the body panels is product-render grey rather than line work, so it will print as muddy dots and reads as a Vespa stock graphic, not a study sheet."},
+{"no":6,"title":"Colonial House","score":8,"verdict":"PASS","why":"Rich pen-and-ink detail with palms, right on the founder's reference; it is the most 'wear it on your back' piece, but the square block sits high and dense, so check that the stairs and foliage edges don't print as a solid patch."},
+{"no":7,"title":"Lighthouse","score":5,"verdict":"NEEDS CHANGE","why":"It's competent but generic clip-art, and the tall thin form leaves the back mostly empty; it needs a cross-section, a light-beam diagram or callouts to earn its place."},
+{"no":8,"title":"Luna Moth","score":7,"verdict":"PASS","why":"A wide, symmetrical shape that is ideal for a back print; the wing tails are anatomically off and the line weight is light, so beef up the contours before printing."},
+{"no":9,"title":"Sunflower","score":6,"verdict":"NEEDS CHANGE","why":"Clean botanical work but the most stock-looking design here (craft-store mug energy); add a seed-head section, root or leaf details to turn it into a real plate."},
+{"no":10,"title":"Compass","score":5,"verdict":"NEEDS CHANGE","why":"The open lid is warped and the stacked figure-eight shape looks odd on the body, with a large empty face in the middle; redraw it flat and symmetrical or as an exploded view."},
+{"no":11,"title":"Rangefinder Camera","score":7,"verdict":"PASS","why":"It has a strong object-tee appeal and a wide shape that fits the chest-to-shoulder area well, but the stray scale-bar line under it and the heavy black body will block up at 30 lpi, so trim the line and open up the shadows."},
+{"no":12,"title":"Red Deer","score":6,"verdict":"NEEDS CHANGE","why":"A handsome stag, but there is a visible rectangular patch and cut-off edge near the hind legs, and the dark tonal body leans toward hunting-lodge stock art; fix the artefact and push the line engraving."},
+{"no":13,"title":"Grey Heron","score":6,"verdict":"NEEDS CHANGE","why":"The elegant pose suits a tall back placement, but the legs fade out and the feet dissolve into a scrappy rock, so the bottom of the print looks unfinished on the tee."}
+],
+"suggestions":[
+"Push every piece toward a true study-sheet layout with multiple views, a cross-section, ruled leader lines and small numbered callouts; that is what made the four reference tees feel like objects rather than clip art.",
+"Ban soft tonal shading in the prompts and ask for pure engraving or pen line with hatching only, since 30 lpi halftone turns airbrushed grey (scooter, deer body, camera shadows) into mud on cotton.",
+"Scale up: most graphics fill only about 25-30 cm on the back; tall subjects (lighthouse, heron, balloon) should run longer, or be paired with a second view so the back isn't mostly blank tee.",
+"Give the collection a signature: a consistent plate frame, plate numbering and a small MONO catalogue mark so the 13 tees read as one series instead of a mixed bag of subjects.",
+"Explore subjects with more streetwear edge that still fit the brand, such as exploded mechanical parts (a carburettor, a pocket watch movement), patent-style tools, deep-sea fish or skeletal studies, rather than greeting-card staples like sunflowers and lighthouses."
+],
+"overall":"About half the run is sellable now (ammonite, colonial house and whale lead); the rest is either too stock or rendered in soft tone that a 30 lpi one-ink print won't hold, so the next round should go for line engraving, bigger scale and real technical-sheet layouts."}

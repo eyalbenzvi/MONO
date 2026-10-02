@@ -397,8 +397,9 @@ function Maker({ made }: { made: MadeProduct }) {
     if (!ok) return;
     setAddedKey(choiceKey);
     // A small like of the design it's drawn like (its taste, never the inputs; once per design).
+    // A base the shop no longer shows (lib/custom/makeBases) is liked through the product, which carries its taste.
     const base = SHIRTS.find((s) => s.variant === made.base);
-    if (base) useTasteStore.getState().likeCustom(base.id);
+    useTasteStore.getState().likeCustom(base ? base.id : made.id);
     track("customize_apply", { template: made.template, caption_edited: capEdited });
   };
   const onBuyRef = useRef(onBuy);

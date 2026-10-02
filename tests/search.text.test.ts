@@ -118,9 +118,11 @@ describe("search: label case", () => {
       expect(label, label).not.toMatch(/\bNew (york|england)\b/);
     }
     const subjects = subjectChips(index, SHIRTS).map((s) => s.label);
-    expect(subjects).toEqual(expect.arrayContaining(["NASA", "New York", "New England"]));
-    expect(file.tables.style.map((e) => e.label)).toEqual(expect.arrayContaining(["Line art", "ASCII art", "Star chart"]));
-    expect(file.tables.variant.find((e) => e.id === "orbit-halley")?.label).toBe("Halley’s orbit");
+    // (The designers' second review took out the NASA photographs: "NASA" is no longer a subject.)
+    expect(subjects).toEqual(expect.arrayContaining(["New York", "New England"]));
+    expect(file.tables.style.map((e) => e.label)).toEqual(expect.arrayContaining(["Line art", "Illustration"]));
+    // (Halley's orbit is no longer in the shop; its label still is the runtime's.)
+    expect(VARIANT_LABELS["orbit-halley"]).toBe("Halley’s orbit");
   });
 
   it("the published index carries the SUBJECT chips, the same as working them out (so opening search runs no searches)", () => {

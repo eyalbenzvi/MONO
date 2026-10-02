@@ -4402,5 +4402,160 @@
   "coverage": 0.07,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/sdxl50/13-4-kite-study/sources/brief.txt",
   "model": "sdxl"
+ },
+ {
+  "n": 20145,
+  "dir": "data/studio/rules10/01-1-humpback-whale",
+  "title": "Humpback Whale",
+  "category": "specimens",
+  "subject": "One humpback whale breaching, side view, long knobbly pectoral fin, throat grooves, small eye and a single fluke",
+  "style": "Natural history plate, black ink line engraving with cross-hatching",
+  "description": "A humpback whale rises out of the frame with its long pectoral fin swept back and its throat grooves drawn line by line. Forty tonnes, and still it insists on jumping.",
+  "keywords": [
+   "humpback whale",
+   "whale",
+   "Megaptera novaeangliae",
+   "marine life",
+   "ocean",
+   "natural history",
+   "engraving",
+   "sea-life"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 74,
+  "printCm": {
+   "width": 23,
+   "height": 35
+  },
+  "coverage": 0.156,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/01-1-humpback-whale/sources/brief.txt",
+  "model": "sdxl"
+ },
+ {
+  "n": 20146,
+  "dir": "data/studio/rules10/01-2-ammonite",
+  "title": "Ammonite",
+  "category": "specimens",
+  "subject": "One ammonite fossil shell in flat side view, a single tightening spiral with strong outward-curving ribs",
+  "style": "Natural history plate, black ink line engraving with cross-hatching",
+  "description": "An ammonite coils down to a pinpoint centre, every rib of its last whorl swelling outward towards the aperture. It has kept its shape for some hundred million years, which is more than most of us manage over a weekend.",
+  "keywords": [
+   "ammonite",
+   "fossil",
+   "spiral",
+   "shell",
+   "palaeontology",
+   "natural history",
+   "engraving",
+   "cephalopod",
+   "sea-life"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 74,
+  "printCm": {
+   "width": 25,
+   "height": 35
+  },
+  "coverage": 0.236,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/01-2-ammonite/sources/brief.txt",
+  "model": "sdxl"
+ },
+ {
+  "n": 20147,
+  "dir": "data/studio/rules10/03-1-hot-air-balloon",
+  "title": "Hot Air Balloon",
+  "category": "etched",
+  "subject": "A hot air balloon in front elevation: a tall envelope of vertical gores with a load band, a net of ropes down to a load ring and a small wicker basket hanging below",
+  "style": "Victorian patent engraving, fine pen lines and cross-hatching",
+  "description": "A hot air balloon drawn gore by gore, its rope net gathered to a single wicker basket. Steering remains, as ever, a matter for the wind.",
+  "keywords": [
+   "hot air balloon",
+   "balloon",
+   "aviation",
+   "flight",
+   "Montgolfier",
+   "Victorian",
+   "engraving",
+   "patent drawing",
+   "basket"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 68,
+  "printCm": {
+   "width": 20,
+   "height": 35
+  },
+  "coverage": 0.142,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/03-1-hot-air-balloon/sources/brief.txt",
+  "model": "sdxl"
+ },
+ {
+  "n": 20148,
+  "dir": "data/studio/rules10/04-1-colonial-house",
+  "title": "Colonial House",
+  "category": "architecture",
+  "subject": "An old colonial house with two storeys of deep arcaded verandas, turned columns, railings and shutters, a palm leaning over the roof",
+  "style": "Pen-and-ink line engraving, cross-hatched, the scene dissolving into the tee at its edges",
+  "description": "A colonial house shown front-on, its verandas stacked two deep under a pedimented roof and a palm. Built for sitting outside in the shade, which is as much as anyone ever did on one.",
+  "keywords": [
+   "colonial house",
+   "veranda",
+   "architecture",
+   "tropical",
+   "palm tree",
+   "pen and ink",
+   "engraving",
+   "balcony",
+   "vintage building"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 74,
+  "printCm": {
+   "width": 23,
+   "height": 34
+  },
+  "coverage": 0.315,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/04-1-colonial-house/sources/brief.txt",
+  "model": "sdxl"
+ },
+ {
+  "n": 20149,
+  "dir": "data/studio/rules10/04-2-lighthouse",
+  "title": "Lighthouse",
+  "category": "architecture",
+  "subject": "A tall tapering stone lighthouse on a rock: glazed lantern and domed cap, railed gallery on corbels, three small windows and the keeper's door at the top of a flight of steps",
+  "style": "Pen-and-ink line engraving, cross-hatched, in front elevation like an architect's plate",
+  "description": "A stone lighthouse in front elevation, from the keeper's door up to the lantern and the finial on its domed cap. One tower, one lamp and one man to wind it, which was considered adequate staffing for an entire coast.",
+  "keywords": [
+   "lighthouse",
+   "coastal",
+   "maritime",
+   "stone tower",
+   "lantern",
+   "architecture",
+   "engraving",
+   "pen and ink",
+   "seaside",
+   "nautical"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 68,
+  "printCm": {
+   "width": 16,
+   "height": 35
+  },
+  "coverage": 0.089,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/rules10/04-2-lighthouse/sources/brief.txt",
+  "model": "sdxl"
  }
 ]

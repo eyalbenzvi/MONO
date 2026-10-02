@@ -1,0 +1,23 @@
+{"designer":"Designer 5","persona":"Merchandiser and buyer","designs":[
+{"no":1,"title":"Humpback Whale","score":7,"verdict":"PASS","why":"Dynamic breaching pose and dense engraving sell it, but it is the most-copied tee on Etsy and too close to the founder's own whale reference to feel new."},
+{"no":2,"title":"Ammonite","score":8,"verdict":"PASS","why":"Best buy in the run: fills the chest, reads from across a room, photographs crisply, and feels like a real museum-store object rather than an AI stock image."},
+{"no":3,"title":"Gaff Cutter","score":5,"verdict":"NEEDS CHANGE","why":"Scratchy, light line work goes faint on the tee and looks like a weak copy of the sailboat reference; it needs a clean technical elevation with a hull section and rigging callouts."},
+{"no":4,"title":"Hot Air Balloon","score":6,"verdict":"NEEDS CHANGE","why":"Charming subject with a clean silhouette, but it prints small and pale, with too much empty envelope; scale it up and add rigging or construction detail to justify $50."},
+{"no":5,"title":"Scooter","score":4,"verdict":"NEEDS CHANGE","why":"Reads as a Vespa (trademark risk), and its soft airbrush shading will turn to mushy halftone grey; it looks like generic AI clip art, not an engraving."},
+{"no":6,"title":"Colonial House","score":8,"verdict":"PASS","why":"Closest to the founder's taste: dense pen-and-ink detail with palms, strong in the hand, and a photo that stands out on the white tee."},
+{"no":7,"title":"Lighthouse","score":5,"verdict":"NEEDS CHANGE","why":"Competent but generic gift-shop lighthouse, thin and small on the back; it needs a cutaway or elevation with dimensions, or a specific named lighthouse, to stand out."},
+{"no":8,"title":"Luna Moth","score":5,"verdict":"NEEDS CHANGE","why":"The wing shapes and eyespots are off for a real Actias luna and the body looks AI-made; it is pale on the tee and competes with thousands of 'witchy moth' shirts."},
+{"no":9,"title":"Sunflower","score":4,"verdict":"DELETE","why":"Stock-image botanical with no point of view; the most generic AI 'vintage engraving' look in the run and nothing a curated shop would pick out."},
+{"no":10,"title":"Compass","score":5,"verdict":"NEEDS CHANGE","why":"Open-lid view stacks two circles into an odd figure-eight on the body, and the dial is nearly empty; show it face-on with a dense rose and bezel markings."},
+{"no":11,"title":"Rangefinder Camera","score":7,"verdict":"PASS","why":"Desirable object with crisp detail and good tonal range, but the wide landscape format prints as a small band, and the Leica-like body needs its branding kept off."},
+{"no":12,"title":"Red Deer","score":6,"verdict":"NEEDS CHANGE","why":"Well rendered but it is the stock AI stag; the hooves fade into nothing, and it would need a study-sheet treatment (antler details, skull) to differ from the forest-tee crowd."},
+{"no":13,"title":"Grey Heron","score":6,"verdict":"NEEDS CHANGE","why":"Elegant silhouette, but the legs and base dissolve into faint hatching that will vanish at 30 lpi, and the bird floats small and top-heavy on the back."}
+],
+"suggestions":[
+"Lean into multi-view study sheets (subject plus 3-5 numbered detail views, as in the whale reference); that layout is the clearest way to stand apart from single-subject AI engraving tees.",
+"Pick specific, named, nerd-pleasing subjects (a particular locomotive, telescope or diving helmet, an Ernst Haeckel-style radiolarian) over generic categories like 'sunflower', 'deer' or 'lighthouse'.",
+"Fill the print area: at least 10-11 inches wide with dense black mass. Thin pale line art and landscape-format art both read as tiny and washed out in photos.",
+"Ban soft airbrush or gradient shading in the source art; ask for hard hatching and stipple only, so the 30 lpi halftone does not turn the midtones into grey mush.",
+"Avoid repeating the founder's references and branded shapes (Vespa, Leica): one sailboat and one whale are enough, so spend the next slots on unexplored types such as maps, anatomy, tools or architecture sections."
+],
+"overall":"Only Ammonite and Colonial House feel like $50 museum-store tees; Whale and Camera are sellable, most of the rest is competent but generic AI engraving that prints too small and pale on white, and Sunflower should go."}

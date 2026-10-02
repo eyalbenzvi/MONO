@@ -41,7 +41,7 @@ const PRINTS_HD = path.join(ROOT, "assets", "prints-hd");
 /** The runs published before the designers' gate: they stay exactly as they were (no back-fixing). */
 export const UNGATED_RUNS = ["run50", "run50b", "sdxl50"];
 /** A gated run's design is approved at this average review score or above (and fewer than three DELETE votes). */
-export const APPROVE_AVERAGE = 6.5;
+export const APPROVE_AVERAGE = 7;
 /** At most this many designs of one family per run. */
 export const PER_FAMILY = 2;
 const sha16 = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 16);

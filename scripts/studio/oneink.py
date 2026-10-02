@@ -4,7 +4,7 @@ illustration on light paper becomes the two print files the MONO Design
 Guidelines ask for, checked against sections 02, 04 and 05.
 
   python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
-      [--mode engrave|line|pen|tone] [--edge horizon|dissolve|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
+      [--mode engrave|halftone|line|pen|tone] [--edge horizon|dissolve|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
       [--plate "Pl. IV"] [--view "Side elevation"] [--views 1] [--outline] [--ground]
 
 Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
@@ -25,10 +25,19 @@ names the view after the subtitle ("Side elevation"). A title or subtitle that s
 more, or the check fails.
 
 --mode engrave (the default for generated drawings) is line and solid only: no dot
-screen anywhere. A flat grey with no line in it is left as tee, not screened; specks
-under 0.5 mm go. line, pen and tone are the older conversions (line and pen screen a
+screen anywhere. Lines are found by local contrast (a generated engraving's hatching is
+finer than a pixel and reads as grey tone), only the truly dark parts print solid, a flat
+grey with no line in it is left as tee; specks under 0.5 mm go. line, pen and tone are the older conversions (line and pen screen a
 flat grey; tone is a dot screen throughout); in every mode but tone, more than 3% of the
 ink in screen dots fails the check.
+
+--mode halftone is for a shaded picture (tone that carries the drawing: a lit tower, a
+feathered breast). It is the screen the shop's own photographs and uploads print with
+(scripts/photos/halftone.py, lib/upload/convert.ts): round dots at 30 lpi and 45 degrees, the
+lightest dot 8% of a cell, the darkest tone 80% (a dark mass wider than 3.5 mm is held to
+that open mesh, a narrower stroke stays solid), highlights under 4% left as tee. It is
+delivered for the white tee alone (<slug>-white.png: dark dots on a light tee); the dots are
+the screen, so the screen, thin-ink and speck measures don't apply to it.
 
 --outline says the picture is drawn as outline, with no cast shadows or shading masses
 (asked for in the prompt). Only such a drawing may print in white ink on a black tee: a
@@ -86,6 +95,31 @@ def load(path, crop=None):
     if crop:
         img = img.crop(crop)
     return np.asarray(img).astype(np.float32) / 255.0
+
+
+def flatten_paper(grey):
+    """The paper made white (halftone): a generated sheet's paper is grey and shaded (a vignette, a cast
+    shadow), and every grey on it would print as dots. The paper's own tone is estimated round the
+    picture (the lightest tone within about 7 mm, smoothed) and divided out."""
+    r = max(15, round(min(grey.shape) * 0.07)) | 1
+    paper = cv2.dilate(grey, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r, r)))
+    paper = cv2.GaussianBlur(paper, (0, 0), r / 2)
+    return np.clip(grey / np.maximum(paper, 1e-3), 0, 1)
+
+
+# How much of the source's drawing sits by a sharp line (set in main; of 14 reviewed studio sources under 0.35, one reached 7).
+CRISP = None
+CRISP_WARN = 0.35
+
+
+def crispness(k):
+    """The share of the drawn pixels (darker than 10%) next to a sharp edge in the source: a crisp ink drawing
+    is mostly line; a soft pencil or airbrush picture is mostly grey slope, which the review marked down."""
+    drawn = k > 0.10
+    if not drawn.any():
+        return 0.0
+    lap = np.abs(cv2.Laplacian(cv2.GaussianBlur(k, (0, 0), 1.0), cv2.CV_32F))
+    return float((lap[drawn] > 0.03).mean())
 
 
 def darkness(grey, full_bleed=False):
@@ -340,18 +374,17 @@ def to_ink(tone):
 
 
 def engrave_ink(tone):
-    """Line and solid only (the conversion for generated drawings): a threshold, strokes under
-    0.4 mm thickened to it, specks under 0.5 mm dropped. No dot screen anywhere: a flat grey with
-    no line in it (a wash, a smudge, a shaded sky) is left as tee, never screened."""
+    """Line and solid only (the conversion for generated drawings), no dot screen anywhere. A generated
+    "engraving" is mostly grey tone: its hatching is finer than a pixel, so a threshold on darkness turns
+    a mid-grey wing into a black blot and a pale breast into nothing. The lines are found instead by local
+    contrast (darker than their surroundings, at two scales: the hatching and the strokes), and only the
+    truly dark parts print solid; strokes under 0.4 mm are grown to it, specks under 0.5 mm go."""
     global SCREENED
     SCREENED = 0.0
-    mean = cv2.GaussianBlur(tone, (0, 0), 0.8 * PX_MM)
-    var = cv2.GaussianBlur(tone * tone, (0, 0), 0.8 * PX_MM) - mean * mean
-    flat = ((mean > 0.18) & (mean < 0.75) & (var < 0.012)).astype(np.uint8)
-    flat = cv2.morphologyEx(flat, cv2.MORPH_OPEN, disc(1.5 * PX_MM)).astype(bool)
-    ink = ((tone > 0.5) & ~flat).astype(np.uint8)
-    # Strokes under 0.4 mm are grown to it (never dropped: a fine line stays a line), then what is
-    # still thinner (a corner, a frayed end) is trimmed.
+    fine = cv2.GaussianBlur(tone, (0, 0), 0.8 * PX_MM)
+    broad = cv2.GaussianBlur(tone, (0, 0), 2.5 * PX_MM)
+    ridge = ((tone - fine) > 0.04) | ((tone - broad) > 0.10)
+    ink = ((ridge & (tone > 0.12)) | (tone > 0.82)).astype(np.uint8)
     thick = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM))
     ink = np.maximum(ink, cv2.dilate(ink & (1 - thick), disc(0.2 * PX_MM + 0.5)))
     ink = cv2.morphologyEx(ink, cv2.MORPH_OPEN, disc(0.2 * PX_MM - 0.01))
@@ -359,6 +392,58 @@ def engrave_ink(tone):
     keep = np.zeros(n, bool)
     keep[1:] = stats[1:, cv2.CC_STAT_AREA] > (0.5 * PX_MM) ** 2 * 1.5
     return keep[lab].astype(np.uint8)
+
+
+# The shop's screen (scripts/photos/halftone.py, lib/upload/convert.ts), at this file's 300 DPI.
+HT_LPI, HT_ANGLE = 30, 45
+HT_MAX_TONE = 0.8
+HT_MIN_DOT = 0.08
+# A dark mass: a square 3.5 mm across fits inside it (halftone.py SLAB_PX, 19 px at 1500 px for 28 cm).
+HT_SLAB_PX = round(19 * AREA_W / 1500) | 1
+_ht_screen = None
+
+
+def halftone_screen():
+    """The AM threshold map: 0 at each dot's centre rising to 1 at the cell's corners (round dots that join past 50%)."""
+    global _ht_screen
+    if _ht_screen is None:
+        cell = AREA_W / (28 / 2.54) / HT_LPI
+        y, x = np.mgrid[0:AREA_H, 0:AREA_W].astype(np.float32) + 0.5
+        t = np.deg2rad(HT_ANGLE)
+        u = (x * np.cos(t) + y * np.sin(t)) / cell
+        v = (-x * np.sin(t) + y * np.cos(t)) / cell
+        _ht_screen = (0.5 - (np.cos(2 * np.pi * u) + np.cos(2 * np.pi * v)) / 4).astype(np.float32)
+    return _ht_screen
+
+
+def subject_only(k):
+    """The picture alone (halftone): tone left only on the subject, the pieces of clear drawing (darker than
+    18%, closed over 2 mm, holes filled) at least a twentieth the size of the largest; a faint paper residue,
+    a rectangle a retouch left, a horizon apart from the subject print nothing."""
+    on = cv2.morphologyEx((k > 0.18).astype(np.uint8), cv2.MORPH_CLOSE, disc(2 * PX_MM))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(on)
+    if n <= 1:
+        return k
+    area = stats[1:, cv2.CC_STAT_AREA]
+    keep = np.zeros(n, bool)
+    keep[1:] = area >= area.max() / 20
+    m = ndi.binary_fill_holes(keep[lab])
+    m = cv2.GaussianBlur(cv2.dilate(m.astype(np.uint8), disc(1.5 * PX_MM)).astype(np.float32), (0, 0), 0.5 * PX_MM)
+    return k * m
+
+
+def halftone_ink(tone):
+    """The shop's photograph screen on a tone (0..1 ink): highlights cleaned ((D - 0.04) / 0.92), the dot
+    floor, a dark mass capped at the open mesh (strokes keep full ink), then ink where the tone beats the screen."""
+    global SCREENED
+    SCREENED = 1.0
+    d = np.clip((tone - 0.04) / 0.92, 0, 1)
+    d = np.where(d < HT_MIN_DOT / 2, 0, np.maximum(d, HT_MIN_DOT) * (d > 0)).astype(np.float32)
+    dark = (d > HT_MAX_TONE).astype(np.uint8)
+    k = np.ones((HT_SLAB_PX, HT_SLAB_PX), np.uint8)
+    mass = cv2.dilate(cv2.erode(dark, k), k).astype(bool)
+    d = np.where(mass, np.minimum(d, HT_MAX_TONE), d)
+    return (d > halftone_screen()).astype(np.uint8)
 
 
 def line_ink(tone):
@@ -495,8 +580,9 @@ def check(ink, ctx=None):
     if not 0.04 <= cov <= 0.32: fails.append(f"coverage {cov:.1%} (4–32%)")
     if bw < 0.3 or bh < 0.3: fails.append(f"too small {bw:.0%} × {bh:.0%}")
     if top_mm > 25: fails.append(f"starts {top_mm:.0f} mm down")
-    if thin > 0.01: fails.append(f"{thin:.1%} of the ink thinner than 0.4 mm")
-    screened = SCREENED if ctx.get("mode") != "tone" else 1.0
+    dots = ctx.get("mode") in ("tone", "halftone")
+    if thin > 0.01 and ctx.get("mode") != "halftone": fails.append(f"{thin:.1%} of the ink thinner than 0.4 mm")
+    screened = SCREENED if not dots else 1.0
     if ctx.get("mode") in ("engrave", "line", "pen") and screened > 0.03:
         fails.append(f"{screened:.0%} of the ink is screen dots (3% at most: line and solid only)")
     if ctx.get("edge") == "rect":
@@ -517,7 +603,7 @@ def check(ink, ctx=None):
     # Specks: pieces under 0.5 mm across.
     n, lab, stats, _ = cv2.connectedComponentsWithStats(ink)
     crumbs = stats[1:, cv2.CC_STAT_AREA][stats[1:, cv2.CC_STAT_AREA] < (0.5 * PX_MM) ** 2 * 1.5].sum() if n > 1 else 0
-    if ctx.get("mode") != "tone" and crumbs / max(1, ink.sum()) > 0.002:
+    if not dots and crumbs / max(1, ink.sum()) > 0.002:
         fails.append(f"{crumbs / max(1, ink.sum()):.1%} of the ink in specks under 0.5 mm")
     says_study = "study" in (ctx.get("title") or "").lower() or "study" in (ctx.get("sub") or "").lower()
     if says_study and ctx.get("views", 1) < 2:
@@ -526,12 +612,16 @@ def check(ink, ctx=None):
     if w_cm < 20 and h_cm < 30:
         fails.append(f"too small on the tee: {w_cm:.0f} × {h_cm:.0f} cm (20 cm wide or 30 cm tall)")
     solid = solid_share(ink)
+    warns = []
+    if CRISP is not None and CRISP < CRISP_WARN:
+        warns.append(f"soft source: {CRISP:.0%} of the drawing by a sharp line ({CRISP_WARN:.0%}; the review marked soft grey pictures down)")
     return {
         "coverage": round(float(cov), 4),
         "thin": round(float(thin), 4), "sizeCm": [round(w_cm, 1), round(h_cm, 1)], "topMm": round(float(top_mm), 1),
         "screened": round(float(screened), 4), "solid": round(solid, 4),
         "blackTee": bool(ctx.get("outline")) and solid < 0.10,
-        "fails": fails,
+        "crisp": round(CRISP, 3) if CRISP is not None else None,
+        "fails": fails, "warns": warns,
     }
 
 
@@ -542,10 +632,11 @@ def save_ink(ink, colour, path):
     Image.fromarray(rgba, "RGBA").save(path, optimize=True, dpi=(DPI, DPI))
 
 
-def preview(ink, path):
-    """The guidelines' preview: 1500 px wide, the design on a black background."""
+def preview(ink, path, on_white=False):
+    """The guidelines' preview: 1500 px wide, the design on the tee it sells on (black, or white for a
+    drawing that may not print white on black: shown white, it would read as its own negative)."""
     small = cv2.resize(ink.astype(np.float32), (1500, round(1500 * AREA_H / AREA_W)), interpolation=cv2.INTER_AREA)
-    Image.fromarray((small * 255).astype(np.uint8), "L").save(path)
+    Image.fromarray(((1 - small if on_white else small) * 255).astype(np.uint8), "L").save(path)
 
 
 def main():
@@ -576,7 +667,12 @@ def main():
     head = heading(title, sub, plate) if title else None
     if head is not None:
         HEAD = head.shape[0] + round(8 * PX_MM)
-    k = darkness(load(src, crop), bleed)
+    g = load(src, crop)
+    if mode == "halftone":
+        g = flatten_paper(g)
+    k = darkness(g, bleed)
+    global CRISP
+    CRISP = crispness(k)
     rule = None
     # A wide subject (or --ground): room under it for a ground line and a dimension line.
     kh, kw = k[crop_box(k)].shape if not bleed else k.shape
@@ -607,6 +703,11 @@ def main():
         white = fit_coverage(k, 1.0, lo=0.04, hi=0.30, inker=engrave_ink)
         black = white
         mode, conv = "line", "engrave"
+    elif mode == "halftone":
+        # The white tee's positive only: dark dots on a light tee (white dots on black would be a negative).
+        white = fit_coverage(subject_only(k), 1.0, lo=0.04, hi=0.32, inker=halftone_ink)
+        black = None
+        mode, conv = "halftone", "halftone"
     elif mode == "pen":
         white = pen_ink(k)
         black = white
@@ -625,34 +726,41 @@ def main():
         else:
             mask = subject_mask(k)
             black = fit_coverage(np.clip(1 - k, 0, 1), mask.astype(np.float32))
+    inks = [i for i in {id(white): white, id(black): black}.values() if i is not None]
     if rule is not None:
-        for ink in {id(white): white, id(black): black}.values():
+        for ink in inks:
             ink |= rule
     if ground and box is not None:
         block = ground_block(box)
-        for ink in {id(white): white, id(black): black}.values():
+        for ink in inks:
             ink |= block
     if head is not None:
-        for ink in {id(white): white, id(black): black}.values():
+        for ink in inks:
             ink[TOP:TOP + head.shape[0]] |= head
     if mode == "line":
         save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}.png"))
+    elif mode == "halftone":
+        save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
     else:
         save_ink(white, (0, 0, 0), os.path.join(out, f"{slug}-white.png"))
         save_ink(black, (255, 255, 255), os.path.join(out, f"{slug}-black.png"))
-    preview(black, os.path.join(out, f"{slug}-preview.png"))
     ctx = {"mode": conv, "edge": edge, "title": title, "sub": sub, "views": views, "outline": outline,
            "headRows": (TOP + head.shape[0]) if head is not None else None}
-    rep = {"line": check(white, ctx)} if mode == "line" else {"white": check(white, ctx), "black": check(black, ctx)}
+    rep = {"line": check(white, ctx)} if mode == "line" else {"white": check(white, ctx)} if mode == "halftone" else {"white": check(white, ctx), "black": check(black, ctx)}
     with open(os.path.join(out, f"{slug}-check.json"), "w") as f:
         json.dump(rep, f, indent=1, ensure_ascii=False)
     # Delivered with the design (the shop reads it): the measures of the print it sells.
     main_rep = rep.get("line") or rep["white"]
+    # An engraving that may not print white on black is previewed on the white tee it sells on.
+    if mode == "halftone":
+        preview(white, os.path.join(out, f"{slug}-preview.png"), on_white=True)
+    else:
+        preview(black, os.path.join(out, f"{slug}-preview.png"), on_white=conv == "engrave" and not main_rep["blackTee"])
     with open(os.path.join(out, "print.json"), "w") as f:
         json.dump({"mode": conv, "edge": edge, "views": views, "outline": outline, "ground": ground,
                    "coverage": main_rep["coverage"], "solid": main_rep["solid"], "screened": main_rep["screened"],
                    "sizeCm": main_rep["sizeCm"], "blackTee": main_rep["blackTee"] and mode == "line",
-                   "fails": main_rep["fails"]}, f, indent=1, ensure_ascii=False)
+                   "crisp": main_rep["crisp"], "fails": main_rep["fails"], "warns": main_rep["warns"]}, f, indent=1, ensure_ascii=False)
     print(slug, json.dumps(rep, ensure_ascii=False))
 
 

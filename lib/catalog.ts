@@ -1,4 +1,5 @@
 import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
+import { makeBase } from "@/lib/custom/makeBases";
 import { madeById } from "@/lib/custom/products";
 import { uploadProduct } from "@/lib/upload/designs";
 import { YOURS_ID, isUploadDesign } from "@/lib/upload/keys";
@@ -147,7 +148,8 @@ function madeProduct(id: string): ShirtProduct | undefined {
   if (!m) return undefined;
   let made = MADE_BY_ID.get(id);
   if (!made) {
-    const base = SHIRTS.find((s) => s.variant === m.base);
+    // A base the shop no longer shows is kept for Make alone (lib/custom/makeBases).
+    const base = makeBase(m.base, SHIRTS);
     if (!base) return undefined;
     made = { ...base, id: m.id, title: m.name, variant: `make-${m.slug}`, family: m.id, colors: ["black", "white"], rank: Number.MAX_SAFE_INTEGER, weak: false };
     MADE_BY_ID.set(id, made);

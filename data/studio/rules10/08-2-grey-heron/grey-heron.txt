@@ -1,0 +1,11 @@
+Title: Grey Heron
+Category: Botanical & Nature
+Family: animals
+Subject: A grey heron (Ardea cinerea) standing on a tussock, side view
+Style: Natural-history line engraving, pen and ink with cross-hatching
+Medium: Drawn (illustration)
+Description: A grey heron at rest on a tussock, drawn as a natural-history engraving with its crest plume and dagger beak. It's the bird every garden pond owner learns to recognise, usually just after the fish have gone.
+Tee colours: White
+Keywords: grey heron, heron, Ardea cinerea, wading bird, birdwatching, riverbank, natural history, engraving, bird
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

@@ -63,6 +63,8 @@ async function main() {
     const file = path.join(abs, files.includes(`${slug}.png`) ? `${slug}.png` : `${slug}-white.png`);
     const cells: { img: Buffer; cap: string }[] = [];
     const flatWhite = await flat(file, "white");
+    // The print at the shop's full size too, for zooming in on the line and the dots (the sheets are small).
+    await sharp(flatWhite.data, { raw: { width: 1500, height: 2000, channels: 1 } }).png().toFile(path.join(out, "img", `${no}-print.png`));
     cells.push({ img: await sharp(flatWhite.data, { raw: { width: 1500, height: 2000, channels: 1 } }).resize(W, H).png().toBuffer(), cap: "the print (ink as black)" });
     const other: BaseColor = tees.baseColor === "black" ? "white" : "black";
     for (const color of [tees.baseColor, other]) {

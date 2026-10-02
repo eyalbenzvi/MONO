@@ -11,7 +11,8 @@ const ALL = shirts as unknown as Entry[];
 /** Every computed design a made-for-you template draws (the canvas is checked on all their prints). */
 const COMPUTED = ALL.filter((s) => ["sky-night", "moon-year", "planets-date"].includes(s.variant));
 /** The designs the made-for-you tees wear (lib/catalog madeProduct: the first of each variant): their model photos are the ones that ship. */
-const WORN = ["sky-night", "moon-year", "planets-date"].map((v) => ALL.find((s) => s.variant === v)!);
+// The bases still in the shop (a base kept for Make alone has no baked pictures of its own to compare with).
+const WORN = ["sky-night", "moon-year", "planets-date"].map((v) => ALL.find((s) => s.variant === v)).filter((s): s is (typeof ALL)[number] => !!s);
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 /** lib/models modelFor, by the same rule (the test runs outside the app's aliases). */
 const modelFor = (n: number, color: "black" | "white") => {
@@ -47,6 +48,7 @@ test.use({ bypassCSP: true });
 test("M4: a personalised print is drawn like the baked pictures (under 2% mean difference, each design a made-for-you tee wears, both colours)", async ({ page }) => {
   await page.goto("about/");
   await page.evaluate(await bundle());
+  expect(WORN.length).toBeGreaterThan(0);
   const results: { n: number; color: string; diff: number }[] = [];
   for (const s of WORN)
     for (const color of ["black", "white"] as const) {

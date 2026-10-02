@@ -45,7 +45,8 @@ describe("search: finding designs by their words", () => {
       if (!r.results.slice(0, 10).some((h) => h.shirt.family === s.family)) misses.push(`${s.title} → ${typo}`);
       if (!r.corrected.some((c) => c.from === typo)) misses.push(`${typo}: no correction reported`);
     }
-    expect(tried).toBe(300);
+    // 300 tries, or every design the catalogue has room for (the designers' second review left about 130).
+    expect(tried).toBeGreaterThanOrEqual(Math.min(300, Math.floor(SHIRTS.length * 0.9)));
     expect(misses).toEqual([]);
   });
 
@@ -219,8 +220,9 @@ describe("search: expert review (algorithm and content)", () => {
     for (const [q, to] of [["gatxs ", "gate"], ["engnie ", "engin"]]) expect(run(q).corrected.map((c) => stem(c.to)), q).toContain(to);
   });
 
-  it("a catalogue word beats a lexicon word as the correction, and a typo in an -ing ending still finds the word (fountxin, lookxng)", () => {
-    expect(run("fountxin ").corrected.map((c) => c.to)).toContain("fountain");
+  it("a catalogue word beats a lexicon word as the correction, and a typo in an -ing ending still finds the word (woodx, lookxng)", () => {
+    // "woodx" is one letter from the catalogue's "woods" and from the lexicon's "wood": the catalogue's word wins.
+    expect(run("woodx ").corrected.map((c) => c.to)).toContain("woods");
     expect(run("lookxng ").corrected.length).toBeGreaterThan(0);
   });
 

@@ -87,12 +87,12 @@ describe("search: the open search box", () => {
   });
 
   it("arrow keys move through the suggestions and Enter takes the one selected", () => {
-    const { field, props } = setup({ query: "wav" });
+    const { field, props } = setup({ query: "ligh" });
     fireEvent.focus(field);
     fireEvent.keyDown(field, { key: "ArrowDown" });
     expect(screen.getAllByRole("option")[0].getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(field, { key: "Enter" });
-    expect(props.onQuery).toHaveBeenCalledWith(expect.stringMatching(/^wav\S* $/));
+    expect(props.onQuery).toHaveBeenCalledWith(expect.stringMatching(/^ligh\S* $/));
     expect(props.onCommit).not.toHaveBeenCalled();
   });
 

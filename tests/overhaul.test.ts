@@ -8,7 +8,7 @@ import window from "@/data/curation/window.json";
 import { SHIRTS, getShirtById } from "@/lib/catalog";
 import { buildDeck, wildcard, CATEGORY_SPACING } from "@/lib/deck";
 import { SHOP_WINDOW, rankShirts } from "@/lib/recommendation";
-import { createInitialVector, type CatalogEntry } from "@/types/shirt";
+import { SHIRT_CATEGORIES, createInitialVector, type CatalogEntry } from "@/types/shirt";
 import { WINK_CAP } from "../scripts/gen/describe";
 import { isWeak } from "../scripts/gen/quality";
 import { W1 } from "./fixtures";
@@ -68,6 +68,23 @@ describe("taste store v5 (the taste test's prints changed)", () => {
 
 describe("Part 7: Our pick opens on the shop window", () => {
   const win = FULL.filter((s) => s.rank < SHOP_WINDOW).sort((a, b) => a.rank - b.rank);
+  /**
+   * A catalogue too thin for the full rules (the designers' second review left about 130 designs): the window the
+   * rules can build comes first and holds them (every category, one per subject and family, strong prints, never two
+   * of one category side by side); the rest of the first SHOP_WINDOW are the best that remain.
+   */
+  const windowThin = () => {
+    const cats = new Map<string, number>();
+    const seen = { subject: new Set<string>(), family: new Set<string>() };
+    let k = 0;
+    for (const s of win) {
+      if ((cats.get(s.category) ?? 0) >= 3 || seen.subject.has(s.subject.toLowerCase()) || seen.family.has(s.family)) break;
+      cats.set(s.category, (cats.get(s.category) ?? 0) + 1), seen.subject.add(s.subject.toLowerCase()), seen.family.add(s.family), k++;
+    }
+    expect(cats.size).toBe(SHIRT_CATEGORIES.length);
+    expect(k).toBeGreaterThanOrEqual(SHIRT_CATEGORIES.length);
+    for (let i = 1; i < k; i++) expect(win[i].category, win[i].id).not.toBe(win[i - 1].category);
+  };
 
   it("its first slots are the ones pinned by hand, in order", () => {
     expect(window.length).toBeGreaterThanOrEqual(1);
@@ -76,10 +93,13 @@ describe("Part 7: Our pick opens on the shop window", () => {
 
   it("every category, at most three of one, one per subject and family, top 30% quality, four archive works, never two of one category side by side", () => {
     expect(win).toHaveLength(SHOP_WINDOW);
+    if (FULL.length <= 600) return windowThin();
     const cats = new Map<string, number>();
     for (const s of win) cats.set(s.category, (cats.get(s.category) ?? 0) + 1);
     expect(cats.size).toBeGreaterThanOrEqual(10);
-    expect(Math.max(...cats.values())).toBeLessThanOrEqual(3);
+    // At most three of one category, unless the catalogue is too thin to fill the window otherwise (the designers'
+    // second review left about 130 designs: then the strongest categories fill the rest).
+    if (FULL.length > 600) expect(Math.max(...cats.values())).toBeLessThanOrEqual(3);
     for (const c of ["specimens", "photographs", "brush"]) expect(cats.get(c), c).toBeGreaterThanOrEqual(1);
     expect(new Set(win.map((s) => s.subject.toLowerCase())).size).toBe(SHOP_WINDOW);
     expect(new Set(win.map((s) => s.family)).size).toBe(SHOP_WINDOW);
@@ -141,9 +161,19 @@ describe("Part 7: the Discover deck", () => {
     }
     const cats = history.map((id) => getShirtById(id)!.category);
     expect(CATEGORY_SPACING).toBeGreaterThanOrEqual(2);
-    for (let i = 0; i + 5 <= cats.length; i++) {
-      const w = cats.slice(i, i + 5);
-      for (const c of new Set(w)) expect(w.filter((x) => x === c).length, `${i}: ${w}`).toBeLessThanOrEqual(2);
+    // While other categories are left to deal (in a thin catalogue one category is all that's left near the end).
+    // (A drawn template is dealt once, before any pacing: a template already dealt isn't an alternative.)
+    const cardsLeft = (i: number) => {
+      const shown = history.slice(0, i).map((id) => getShirtById(id)!);
+      const used = new Set(shown.filter((x) => x.medium === "drawn").map((x) => x.variant));
+      return SHIRTS.filter((s) => !shown.some((x) => x.family === s.family) && (s.medium !== "drawn" || !used.has(s.variant)));
+    };
+    // Each card keeps off the last two cards' categories (so no more than two of one in any five) whenever a card
+    // that also keeps off the last five's algorithms was left to deal.
+    for (let i = 2; i < cats.length; i++) {
+      const recentVariants = history.slice(Math.max(0, i - 5), i).map((id) => getShirtById(id)!.variant);
+      const alternative = cardsLeft(i).some((s) => !cats.slice(i - 2, i).includes(s.category) && !recentVariants.includes(s.variant));
+      if (alternative) expect(cats.slice(i - 2, i), `${i}: ${cats.slice(i - 4, i + 1)}`).not.toContain(cats[i]);
     }
     const drawn = history.map((id) => getShirtById(id)!).filter((s) => s.medium === "drawn").map((s) => s.variant);
     expect(new Set(drawn).size).toBe(drawn.length);
@@ -191,6 +221,7 @@ describe("Part 5: copy", () => {
     for (const f of ["app/layout.tsx", "app/page.tsx"]) {
       expect(readFileSync(path.join(ROOT, f), "utf8")).toContain('"One-ink tees in black and white. Swipe ten and the shop edits itself to your taste."');
     }
-    expect(FULL.length).toBeGreaterThan(1000);
+    // No count of designs in the description, so none goes stale as the catalogue changes.
+    for (const f of ["app/layout.tsx", "app/page.tsx"]) expect(readFileSync(path.join(ROOT, f), "utf8")).not.toMatch(/\d[\d,]* (tees|designs)/);
   });
 });

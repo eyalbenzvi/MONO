@@ -38,6 +38,7 @@ import sharp from "sharp";
 import { DROP_SIZE, PER_CATEGORY, PRICE, SHARD_SIZE, TOTAL } from "./gen/constants";
 import { minifySvg } from "./gen/minify";
 import { wrap } from "../lib/custom/svg";
+import { MADE } from "../lib/custom/products";
 import { alwaysRetired, overhaulRetired, retiredIds } from "./gen/retire";
 import { H, W, mulberry32, shuffle, vector, type Rng, type Signature } from "./gen/core";
 import { LEGACY_CATEGORIES, LEGACY_GENERATORS } from "./gen/legacy";
@@ -117,6 +118,8 @@ const ROOT = path.resolve(__dirname, "..");
 const PRINTS_DIR = path.join(ROOT, "public", "prints");
 /** Full catalog (server-side: product pages, metadata, OG images; tests). */
 const DATA_FILE = path.join(ROOT, "data", "shirts.json");
+/** The designs Make's products are drawn like that the shop no longer shows (lib/custom/makeBases). */
+const MAKE_BASES_FILE = path.join(ROOT, "data", "make", "bases.json");
 /** Lean index bundled with the app. */
 const INDEX_FILE = path.join(ROOT, "data", "shirts.index.json");
 /** Descriptions + neighbours, fetched on demand. */
@@ -772,6 +775,16 @@ function curatedRetirements(): Map<string, string> {
   return new Map(existsSync(file) ? Object.entries(JSON.parse(readFileSync(file, "utf8")) as Record<string, string>) : []);
 }
 
+/**
+ * The catalogue as frozen (data/curation/live.json): these designs stay whatever the rules below say, and
+ * every other design made by then is listed in retired.json, so nothing comes back on its own when another
+ * design goes. Only designs made since (not in either file) meet the rules. A design in both is out.
+ */
+function liveIds(): Set<string> {
+  const file = path.join(ROOT, "data", "curation", "live.json");
+  return new Set(existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as { ids: string[] }).ids : []);
+}
+
 async function main() {
   // Exactly 70% black / 30% white in each set. The first shuffle is the
   // original one, so ids 1–1000 keep their colours (and so on per set).
@@ -949,8 +962,13 @@ async function main() {
   // The titles as generated (an archive work's is its record's name, which is also its subject).
   const generated = new Map(shirts.map((s) => [s.id, s.title]));
   for (const s of shirts) if (titled.has(s.id)) s.title = titled.get(s.id)!;
-  const retired = retiredIds(shirts.map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
+  // A design taken out by hand is out before the rules run: it never makes another the "second photograph of a subject".
+  const retired = retiredIds(shirts.filter((s) => !curated.has(s.id)).map((s) => ({ ...s, category: s.source, photo: s.medium === "photo" && s.source !== "archive" ? s.photo : undefined })));
   for (const [id, why] of curated) if (!retired.has(id)) retired.set(id, why);
+  // The frozen catalogue is out of the rules' reach (only a hand retirement takes one out).
+  const live = liveIds();
+  const ruled = (id: string) => !live.has(id) || curated.has(id);
+  for (const id of live) if (!curated.has(id)) retired.delete(id);
   // The content overhaul's removals (Part 1), on what's left: families first (near-duplicates go by them).
   const alive = shirts.map((s, i) => ({ s, sig: sigs[i] })).filter(({ s }) => !retired.has(s.id));
   const preFamilies = assignFamilies(alive.map((x) => x.sig));
@@ -972,7 +990,7 @@ async function main() {
       recordTitle: s.recordTitle,
     })),
   );
-  for (const [id, why] of overhaul) retired.set(id, why);
+  for (const [id, why] of overhaul) if (ruled(id)) retired.set(id, why);
   // Part 5: titles name what the print shows; a second design showing the same thing goes.
   const remaining = shirts.filter((s) => !retired.has(s.id));
   const plain = plainTitles(remaining, new Set(remaining.filter((s) => s.medium !== "drawn").map((s) => s.title)));
@@ -985,7 +1003,16 @@ async function main() {
     // The first sets followed each sentence with a quip: only the sentence stays.
     if (isWordTitled(s.source)) s.base = firstSentence(s.base);
   }
-  for (const [id, why] of plain.retire) retired.set(id, why);
+  for (const [id, why] of plain.retire) if (ruled(id)) retired.set(id, why);
+  // A Make product's base (lib/custom/products) the shop no longer shows is kept for Make alone: the first
+  // design of its variant, as a product the catalogue never lists (no page, grid, Discover or search).
+  const makeBases = [...new Set(MADE.map((m) => m.base))]
+    .filter((v) => !shirts.some((s) => s.variant === v && !retired.has(s.id)))
+    .map((v) => shirts.filter((s) => s.variant === v).sort((a, b) => a.n - b.n)[0])
+    .filter((s): s is Draft => !!s)
+    .map((s) => ({ id: s.id, n: s.n, no: 0, sku: s.sku, title: s.title, price: s.price, baseColor: s.baseColor, backPrintUrl: s.backPrintUrl, category: s.category, medium: s.medium, colors: s.colors, variant: s.variant, family: s.id, features: s.features, rank: Number.MAX_SAFE_INTEGER, dropDate: Date.parse(`${s.dropDate}T00:00:00Z`), weak: false }));
+  mkdirSync(path.dirname(MAKE_BASES_FILE), { recursive: true });
+  writeFileSync(MAKE_BASES_FILE, `[\n${makeBases.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
   for (let k = shirts.length - 1; k >= 0; k--) {
     if (!retired.has(shirts[k].id)) continue;
     if (shirts[k].medium === "drawn") rmSync(path.join(PRINTS_DIR, `print_${shirts[k].n}.svg`), { force: true });
@@ -1171,8 +1198,13 @@ function editorialRanks(list: Rankable[], pins: string[]): number[] {
   }
   for (const c of SHIRT_CATEGORIES) {
     if (cats.has(c)) continue;
-    const i = byScore.find((j) => list[j].category === c && eligible(j) && fits(j));
-    if (i === undefined) throw new Error(`shop window: no ${c} design in the top 30% for quality`);
+    // The category's best in the top 30% for quality; a small category with none there shows its best design that isn't
+    // weak, and one whose designs are all weak by the print measures (the designers kept them) shows its best.
+    const i =
+      byScore.find((j) => list[j].category === c && eligible(j) && fits(j)) ??
+      byScore.find((j) => list[j].category === c && !weak(j) && fits(j)) ??
+      byScore.find((j) => list[j].category === c && fits(j));
+    if (i === undefined) throw new Error(`shop window: no ${c} design fit for the window`);
     add(i);
   }
   while (win.filter((i) => list[i].source === "archive").length < 4) {

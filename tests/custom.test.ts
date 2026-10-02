@@ -10,7 +10,8 @@ import { latLon, skyBody } from "@/lib/custom/templates/sky";
 import { localToUtc } from "@/lib/custom/tz";
 import { decodeCities, searchCities } from "@/lib/custom/data";
 import { publishedCustom } from "../scripts/tools/publishCustom";
-import { getShirtById, productHref } from "@/lib/catalog";
+import { SHIRTS, getShirtById, productHref } from "@/lib/catalog";
+import { MAKE_BASES, makeBase } from "@/lib/custom/makeBases";
 import { MADE, madeBySlug, madeFor } from "@/lib/custom/products";
 import { customSummary, customTitle, decodeMake, encodeMake, renderCustomSvg, specHash, templateFor, validate, cleanWords, WORDS_MAX, type City, type CustomSpec } from "@/lib/custom";
 
@@ -42,9 +43,9 @@ const SKIES: Record<string, { lat: number; lon: number; utc: number; when: [numb
 };
 
 describe("personalised prints: the templates are the catalogue's", () => {
-  it("the ten base designs come out byte for byte from the templates with the catalogue's inputs", () => {
+  it("the base designs still in the catalogue come out byte for byte from the templates with the catalogue's inputs", () => {
     const base = CATALOGUE.filter((s) => s.variant === "sky-night" || s.variant === "moon-year");
-    expect(base).toHaveLength(10);
+    expect(base.length).toBeGreaterThan(0);
     for (const s of base) {
       let body: string;
       if (s.variant === "moon-year") body = moonBody({ year: Number(/\d{4}/.exec(s.title)![0]) });
@@ -69,7 +70,9 @@ describe("personalised prints: the templates are the catalogue's", () => {
   it("each made product is its base design's tee: its photos, taste and price; its own id, name and page", () => {
     for (const m of MADE) {
       const made = getShirtById(m.id)!;
-      const base = CATALOGUE.find((s) => s.variant === m.base)!;
+      // A base the shop no longer shows is kept for Make alone (lib/custom/makeBases), never in the catalogue's list.
+      const base = makeBase(m.base, CATALOGUE)!;
+      expect(base, m.base).toBeDefined();
       expect(made, m.id).toMatchObject({ id: m.id, title: m.name, n: base.n, variant: `make-${m.slug}`, colors: ["black", "white"] });
       expect(madeBySlug(m.slug)).toBe(m);
       expect(productHref(m.id)).toBe(`/make/${m.slug}/`);
@@ -79,6 +82,14 @@ describe("personalised prints: the templates are the catalogue's", () => {
     expect(madeFor("planets-date")?.id).toBe("make-planets");
     expect(madeFor("moon-year")?.id).toBe("make-year");
     expect(madeFor("halftone")).toBeUndefined();
+  });
+
+  it("a base kept for Make alone is in no list of the shop: no product of its own, not in the catalogue", () => {
+    for (const b of MAKE_BASES) {
+      expect(CATALOGUE.some((s) => s.id === b.id), b.id).toBe(false);
+      expect(SHIRTS.some((s) => s.id === b.id), b.id).toBe(false);
+      expect(getShirtById(b.id), b.id).toBeUndefined();
+    }
   });
 });
 

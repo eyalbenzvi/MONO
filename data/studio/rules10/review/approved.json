@@ -1,0 +1,97 @@
+{
+ "run": "rules10",
+ "approvedAt": "2026-10-02T08:20:52.984Z",
+ "designs": {
+  "01-1-humpback-whale": {
+   "average": 7.4,
+   "deleteVotes": 0,
+   "family": "sea-life",
+   "approved": true,
+   "why": "approved"
+  },
+  "01-2-ammonite": {
+   "average": 7.4,
+   "deleteVotes": 0,
+   "family": "sea-life",
+   "approved": true,
+   "why": "approved"
+  },
+  "02-1-gaff-cutter": {
+   "average": 6.2,
+   "deleteVotes": 0,
+   "family": "ships",
+   "approved": false,
+   "why": "average 6.2 (6.5 to pass)"
+  },
+  "03-1-hot-air-balloon": {
+   "average": 6.8,
+   "deleteVotes": 0,
+   "family": "aircraft",
+   "approved": true,
+   "why": "approved"
+  },
+  "03-2-scooter": {
+   "average": 4.6,
+   "deleteVotes": 1,
+   "family": "vehicles",
+   "approved": false,
+   "why": "average 4.6 (6.5 to pass)"
+  },
+  "04-1-colonial-house": {
+   "average": 7.4,
+   "deleteVotes": 0,
+   "family": "buildings",
+   "approved": true,
+   "why": "approved"
+  },
+  "04-2-lighthouse": {
+   "average": 6.8,
+   "deleteVotes": 0,
+   "family": "buildings",
+   "approved": true,
+   "why": "approved"
+  },
+  "05-2-luna-moth": {
+   "average": 6,
+   "deleteVotes": 0,
+   "family": "insects",
+   "approved": false,
+   "why": "average 6 (6.5 to pass)"
+  },
+  "06-2-sunflower": {
+   "average": 6.4,
+   "deleteVotes": 1,
+   "family": "plants",
+   "approved": false,
+   "why": "average 6.4 (6.5 to pass)"
+  },
+  "07-1-compass": {
+   "average": 5.4,
+   "deleteVotes": 0,
+   "family": "instruments",
+   "approved": false,
+   "why": "average 5.4 (6.5 to pass)"
+  },
+  "07-2-rangefinder-camera": {
+   "average": 6.4,
+   "deleteVotes": 0,
+   "family": "objects",
+   "approved": false,
+   "why": "average 6.4 (6.5 to pass)"
+  },
+  "08-1-red-deer": {
+   "average": 6.2,
+   "deleteVotes": 0,
+   "family": "animals",
+   "approved": false,
+   "why": "average 6.2 (6.5 to pass)"
+  },
+  "08-2-grey-heron": {
+   "average": 6.2,
+   "deleteVotes": 0,
+   "family": "animals",
+   "approved": false,
+   "why": "average 6.2 (6.5 to pass)"
+  }
+ }
+}

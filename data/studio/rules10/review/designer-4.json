@@ -1,0 +1,23 @@
+{"designer":"Designer 4","persona":"Graphic designer for composition and typography","designs":[
+{"no":1,"title":"Humpback Whale","score":8,"verdict":"PASS","why":"The breaching diagonal fills the sheet with energy and the centered title block anchors it well, though the tail almost kisses the bottom margin."},
+{"no":2,"title":"Ammonite","score":7,"verdict":"PASS","why":"A bold, dense mass that reads clearly on the back, but it runs flush to the right edge and the small title is overpowered; the lower-left lobe looks malformed."},
+{"no":3,"title":"Gaff Cutter","score":8,"verdict":"PASS","why":"The tall sail plan gives a clean vertical rhythm and the title, rule and plate number make a convincing technical-sheet header."},
+{"no":4,"title":"Hot Air Balloon","score":7,"verdict":"PASS","why":"A calm, symmetrical elevation with good margins, but it is a bit static and the tiny basket leaves the bottom of the sheet weak."},
+{"no":5,"title":"Scooter","score":5,"verdict":"NEEDS CHANGE","why":"The rear rack and front wheel are cut off at both side edges, so it reads as an awkward crop rather than a laid-out plate; scale it down to sit inside the area."},
+{"no":6,"title":"Colonial House","score":6,"verdict":"NEEDS CHANGE","why":"Closest to the reference in density, but the foliage stops at hard vertical edges and the image lands on the shirt as a flat rectangle; vignette the sides and the ground."},
+{"no":7,"title":"Lighthouse","score":8,"verdict":"PASS","why":"A strong centered vertical with a rock base that vignettes naturally and good breathing room around the title."},
+{"no":8,"title":"Luna Moth","score":7,"verdict":"PASS","why":"A tidy symmetrical spread with a good header, but the wings touch both edges and the light linework may print thin and grey at 30 lpi."},
+{"no":9,"title":"Sunflower","score":7,"verdict":"PASS","why":"Clear hierarchy from head to leaves, but the stem ends in a blunt flat cut at the bottom instead of a deliberate finish."},
+{"no":10,"title":"Compass","score":5,"verdict":"NEEDS CHANGE","why":"The open lid stacked above the dial makes an odd figure-eight silhouette that reads poorly from a distance, and the ring jams into the bottom edge."},
+{"no":11,"title":"Rangefinder Camera","score":5,"verdict":"NEEDS CHANGE","why":"A wide hard-edged band in the top half with a stray dimension line and about 40% empty sheet below; on the tee it floats like a sticker, so re-center it and add a second view or callouts."},
+{"no":12,"title":"Red Deer","score":7,"verdict":"PASS","why":"A good standing profile with a strong antler silhouette, though there is a visible hard-edged light patch by the hind legs and the antlers crowd the left margin."},
+{"no":13,"title":"Grey Heron","score":7,"verdict":"PASS","why":"An elegant tall figure with a clean header, but the beak pushes left, which leaves dead space at top right, and the faded legs and ground scribble feel unresolved."}
+],
+"suggestions":[
+"Lock a fixed plate grid: same header height, rule, Latin name line and plate number on every sheet, and keep the subject inside a consistent safe margin unless a deliberate bleed is planned.",
+"Make horizontal subjects (cameras, vehicles, instruments) into multi-view plates, such as front plus side or an exploded view, so they fill a portrait print area instead of floating as a band.",
+"Never let the generator crop the subject at the edges; ask for the full object with clear space, then vignette the ground and foliage to white so no hard rectangular edges survive.",
+"Push the type hierarchy: the title is tiny on the tee, so try a larger letterspaced title or a bottom caption block with callout numbers, like the bicycle patent sheet.",
+"Add more dense, full-tone line work (architecture, engines, anatomical cutaways) to match the colonial-building reference; the light, airy drawings risk looking grey in a 30 lpi halftone."
+],
+"overall":"A coherent study-sheet family with solid headers. The verticals (whale, cutter, lighthouse) are the strongest, while edge crops, hard rectangles and the weak horizontal layouts (scooter, camera, compass) are what keep it from reading as fully deliberate."}

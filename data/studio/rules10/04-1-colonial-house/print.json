@@ -1,0 +1,16 @@
+{
+ "mode": "halftone",
+ "edge": "dissolve",
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.3138,
+ "solid": 0.2251,
+ "screened": 1.0,
+ "sizeCm": [
+  24.2,
+  32.8
+ ],
+ "blackTee": false,
+ "fails": []
+}

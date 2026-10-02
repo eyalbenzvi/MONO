@@ -1,6 +1,7 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { CALIBRATION_IDS, hydrated, seed } from "./helpers";
+import full from "../data/shirts.json";
 
 /**
  * The overhaul's definition of done, measured on a phone (390 × 844, touch):
@@ -129,7 +130,7 @@ test("the five tabs fit at 320 px, each at least 44 px tall, without wrapping or
 test("the tab bar is always there after the taste test; a page's own bar sits above it; Shop leads back from a tee", async ({ page }) => {
   await seed(page);
   for (const [path, action] of [
-    ["shop/mono-0004/", /^Add to bag/],
+    [`shop/${(full as { id: string }[])[0].id}/`, /^Add to bag/],
     ["make/moon/", /^Add to bag/],
     ["make/yours/", /^Choose a picture$/],
   ] as const) {
@@ -143,7 +144,7 @@ test("the tab bar is always there after the taste test; a page's own bar sits ab
     // Whatever the page's own action is, it ends above the tab bar, never under it.
     await expect.poll(async () => (await own.boundingBox())!.y + (await own.boundingBox())!.height, { message: path }).toBeLessThanOrEqual(tabs.y + 1);
   }
-  await page.goto("shop/mono-0004/");
+  await page.goto(`shop/${(full as { id: string }[])[0].id}/`);
   await hydrated(page);
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Shop", exact: true }).click();
   await expect(page).toHaveURL(/\/shop\/$/);

@@ -17,7 +17,10 @@ describe("V6: removing a saved tee takes it out of the taste", () => {
   it("the taste becomes exactly what it would be had it never been saved — and so does the title", () => {
     // Three nature-leaning saves, then one very different design.
     const nature = SHIRTS.filter((s) => s.features.nature > 0.8).slice(0, 3);
-    const odd = SHIRTS.find((s) => s.features.nature < 0.2 && s.features.geometric > 0.8 && s.features.typography > 0.6) ?? SHIRTS.find((s) => s.features.geometric > 0.9)!;
+    const odd =
+      SHIRTS.find((s) => s.features.nature < 0.2 && s.features.geometric > 0.8 && s.features.typography > 0.6) ??
+      SHIRTS.find((s) => s.features.geometric > 0.9) ??
+      [...SHIRTS].sort((a, b) => a.features.nature - b.features.nature || b.features.geometric - a.features.geometric)[0];
     const { toggleSaved } = useTasteStore.getState();
     for (const s of [...nature, odd]) toggleSaved(s.id);
     let without = createInitialVector();

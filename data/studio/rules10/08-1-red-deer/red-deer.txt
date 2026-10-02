@@ -1,0 +1,11 @@
+Title: Red Deer
+Category: Botanical & Nature
+Family: animals
+Subject: A red deer stag (Cervus elaphus) standing, with a full head of branching antlers
+Style: Natural-history line engraving, pen and ink with cross-hatching
+Medium: Drawn (illustration)
+Description: A red deer stag in full antler, Britain's largest native land mammal, drawn as a natural-history engraving. He has the look of someone who knows the antlers come off every spring and is making the most of them.
+Tee colours: White
+Keywords: red deer, stag, antlers, Cervus elaphus, Highlands, wildlife, natural history, engraving, deer
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).

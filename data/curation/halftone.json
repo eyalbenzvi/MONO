@@ -2190,6 +2190,41 @@
 "src": "a888de32ff96dad5",
 "via": "scripts/studio/oneink.py"
 },
+"20145": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "4892ff3bd25d3959",
+"src": "6a95ba6ecafd94d1",
+"via": "scripts/studio/oneink.py"
+},
+"20146": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "e318a20bb583e6fb",
+"src": "499820cb4aa69b0b",
+"via": "scripts/studio/oneink.py"
+},
+"20147": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "30bed838cdadb397",
+"src": "b934311776b8468e",
+"via": "scripts/studio/oneink.py"
+},
+"20148": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "cdfa9858e0ba6ea2",
+"src": "10dc5c6ca990b2dc",
+"via": "scripts/studio/oneink.py"
+},
+"20149": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "ef6ab1937cab0e54",
+"src": "ce2771639e57538a",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

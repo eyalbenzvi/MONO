@@ -7,13 +7,14 @@
  */
 import { modelFor } from "@/lib/models";
 import type { ShirtProduct } from "@/types/shirt";
+import { makeBase } from "./makeBases";
 import { MADE } from "./products";
 
 export const customModelIds = (shirts: readonly Pick<ShirtProduct, "n" | "variant">[]) =>
   [
     ...new Set(
       MADE.flatMap((m) => {
-        const base = shirts.find((s) => s.variant === m.base);
+        const base = makeBase(m.base, shirts);
         return base ? (["black", "white"] as const).map((c) => modelFor(base, c)?.id) : [];
       }).filter((id): id is string => !!id),
     ),

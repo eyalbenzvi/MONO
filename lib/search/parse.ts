@@ -260,6 +260,8 @@ export function parseQuery(query: string, index: SearchIndex, catalog: readonly 
   const corrected: ParsedQuery["corrected"] = [];
   const slots: Slot[] = [];
   ws.forEach((w, i) => {
+    // A facet phrase read through a typo ("baroxue" → baroque, the 1600s) is used up, and still said back.
+    if (consumed.has(i) && typos.has(i)) corrected.push({ from: w, to: typos.get(i)! });
     if (STOPWORDS.has(w) || consumed.has(i)) return;
     const t = stem(w);
     const alts = new Map<number, number>();

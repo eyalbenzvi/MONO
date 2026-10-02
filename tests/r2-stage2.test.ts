@@ -38,7 +38,8 @@ describe("R11 / I05: topPicks, the one helper for every 'picked for you' row", (
   it("picks come from the top of the ranking", () => {
     const v = leaning(["typography", "wit"]);
     const score = makeScorer(v);
-    const best = Math.max(...SHIRTS.map((s) => score(s.features).score));
+    // (Picks never include a weak print.)
+    const best = Math.max(...SHIRTS.filter((s) => !s.weak).map((s) => score(s.features).score));
     expect(score(topPicks(v, 3)[0].features).score).toBe(best);
   });
 

@@ -22,6 +22,7 @@ import { LANDMARK_IDS } from "../../lib/custom/specs/landmarks";
 import { chestBox } from "../../lib/custom/chest";
 import { decodeCities, decodeCountries, type CitiesFile, type CountriesFile } from "../../lib/custom/data";
 import { CARD_WIDTHS, TWO_KEY, TWO_SPEC, cardPath } from "../../lib/custom/makeCards";
+import { makeBase } from "../../lib/custom/makeBases";
 import { MADE, madeBySlug, type MadeProduct } from "../../lib/custom/products";
 import { loadRenderer, prepareData } from "../../lib/custom/renderers";
 import type { CustomSpec } from "../../lib/custom/spec";
@@ -79,7 +80,7 @@ async function main() {
   const stamps: Record<string, string> = {};
   let baked = 0;
   for (const { key, made, spec } of cards()) {
-    const base = ALL.find((s) => s.variant === made.base);
+    const base = makeBase(made.base, ALL);
     if (!base) throw new Error(`${key}: no base design ${made.base}`);
     const color = base.baseColor;
     const model = modelFor(base, color);
