@@ -35,8 +35,8 @@ ink in screen dots fails the check.
 feathered breast). It is the screen the shop's own photographs and uploads print with
 (scripts/photos/halftone.py, lib/upload/convert.ts), but finer: round dots at 55 lpi (the textile
 standard for photographic detail; the catalogue's 1500 px prints and uploads stay at 30) and 45 degrees, the
-lightest dot 8% of a cell, the darkest tone 80% (a dark mass wider than 3.5 mm is held to
-that open mesh, a narrower stroke stays solid), highlights under 4% left as tee. It is
+lightest dot 8% of a cell, the darkest tone 80% (a dark mass wider than 3.5 mm is scaled down to
+that open mesh, its texture kept, a narrower stroke stays solid), highlights under 4% left as tee. It is
 delivered for the white tee alone (<slug>-white.png: dark dots on a light tee); the dots are
 the screen, so the screen, thin-ink and speck measures don't apply to it.
 
@@ -436,15 +436,19 @@ def subject_only(k):
 
 def halftone_ink(tone):
     """The shop's photograph screen on a tone (0..1 ink): highlights cleaned ((D - 0.04) / 0.92), the dot
-    floor, a dark mass capped at the open mesh (strokes keep full ink), then ink where the tone beats the screen."""
+    floor, a dark mass scaled down to the open mesh (strokes keep full ink), then ink where the tone beats the screen.
+    A mass is scaled, not clipped (Oct 2026): clipping turned a dark limb or trunk into a flat grey slab with
+    straight seams, where scaling keeps its texture (100% prints at HT_MAX_TONE, 60% at 48%), and the mask is
+    feathered so no edge shows."""
     global SCREENED
     SCREENED = 1.0
     d = np.clip((tone - 0.04) / 0.92, 0, 1)
     d = np.where(d < HT_MIN_DOT / 2, 0, np.maximum(d, HT_MIN_DOT) * (d > 0)).astype(np.float32)
     dark = (d > HT_MAX_TONE).astype(np.uint8)
     k = np.ones((HT_SLAB_PX, HT_SLAB_PX), np.uint8)
-    mass = cv2.dilate(cv2.erode(dark, k), k).astype(bool)
-    d = np.where(mass, np.minimum(d, HT_MAX_TONE), d)
+    mass = cv2.dilate(cv2.erode(dark, k), k).astype(np.float32)
+    mass = cv2.GaussianBlur(mass, (0, 0), HT_SLAB_PX / 2)
+    d = d * (1 - mass * (1 - HT_MAX_TONE))
     return (d > halftone_screen()).astype(np.uint8)
 
 
