@@ -1,0 +1,11 @@
+Title: Lighthouse
+Category: Architecture
+Family: buildings
+Subject: A tall tapering stone lighthouse on a rock: glazed lantern and domed cap, railed gallery on corbels, three small windows and the keeper's door at the top of a flight of steps
+Style: Pen-and-ink line engraving, cross-hatched, in front elevation like an architect's plate
+Medium: Drawn (illustration)
+Description: A stone lighthouse in front elevation, from the keeper's door up to the lantern and the finial on its domed cap. One tower, one lamp and one man to wind it, which was considered adequate staffing for an entire coast.
+Tee colours: White
+Keywords: lighthouse, coastal, maritime, stone tower, lantern, architecture, engraving, pen and ink, seaside, nautical
+Model: SDXL
+Credit and source: Original image made with a generative tool: Stability AI SDXL base 1.0 with the ByteDance SDXL-Lightning UNet (both CreativeML Open RAIL++-M, commercial use allowed). Run on MONO's own machine from MONO's brief; no source image. Heading set in Space Grotesk (SIL Open Font License 1.1).
