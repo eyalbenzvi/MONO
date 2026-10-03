@@ -1,0 +1,82 @@
+[
+ {
+  "idea": "The sestina braid: a program draws the six end-words of a sestina as six threads that cross down the shirt, swapping places stanza by stanza in the fixed spiral order (123456, then 615243, and so on) until they come back round, captioned 'Six words. Six stanzas. One rule. Arnaut Daniel, c. 1200.' It turns a medieval troubadour's poetic machine into a beautiful plait, for poets and pattern lovers.",
+  "mode": "code"
+ },
+ {
+  "idea": "All 154 of Shakespeare's sonnets drawn as rhyme arcs: code links each line to the line it rhymes with and overlays every sonnet, so 152 almost identical ABAB CDCD EFEF GG shapes stack into one dense ghost, while two stray lines stick out, captioned '154 sonnets. Sonnet 99 has 15 lines. Sonnet 126 has 12.' It's a gorgeous data texture with a quiet point: even Shakespeare broke his own form.",
+  "mode": "code"
+ },
+ {
+  "idea": "Two syllable-count bar charts drawn by a program, side by side and identical (8, 6, 8, 6), labelled 'Because I could not stop for Death' and 'Amazing Grace', captioned 'Same shape. Try singing it.' Dickinson wrote much of her poetry in common meter, the hymn meter, so her poem really does fit the hymn tune; it's a smart, slightly irreverent shirt for poetry readers.",
+  "mode": "code"
+ },
+ {
+  "idea": "A 10 x 14 grid of tiny dots, one for each line of Raymond Queneau's ten sonnets, with a single plotted path zig-zagging down through it to pick one line per row, captioned 'Cent mille milliards de poèmes. 10 sonnets. 100,000,000,000,000 poems. Queneau, 1961.' His book's cut-up pages really allow 10^14 sonnets, by his own sum about 190 million years of reading, so it's a shirt about how little it takes to make infinity.",
+  "mode": "code"
+ },
+ {
+  "idea": "An alphabet ring generated from the full text of Georges Perec's novel La Disparition, each letter's stroke weight set by how often it appears, with the E position left as a clean empty gap, captioned 'La Disparition, 1969. About 300 pages. No e.' Perec wrote the entire novel without the most common letter in French (and Gilbert Adair's English translation, A Void, also has no e); it's a gorgeous wheel with a hole in it.",
+  "mode": "code"
+ },
+ {
+  "idea": "The palindrome 'A MAN, A PLAN, A CANAL: PANAMA' set in one line, with a program drawing nested arcs above it that join each letter to its mirror twin, all centred on the middle 'C', captioned 'Leigh Mercer, 1948.' The arcs make a perfect rainbow of symmetry, so word nerds get the proof and everyone else gets a beautiful shape.",
+  "mode": "code"
+ },
+ {
+  "idea": "The 7-bit ASCII codes of 'A' and 'a' plotted as two rows of seven dots (1000001 and 1100001), identical except for one dot that the program circles, with the caption 'Capital A and small a differ by exactly one bit.' The difference really is 32, a single binary place, so this is a minimal, clever shirt for programmers and type people about how small the gap between cases is.",
+  "mode": "code"
+ },
+ {
+  "idea": "A pleasant line of text, 'I simply like typefaces, that is all.', set by a program in a mix of roman and italic letters whose pattern secretly spells a word in Francis Bacon's biliteral cipher, with a tiny key underneath (roman = a, italic = b, five per letter) and the caption 'Bacon, 1623. Hide a message in the font.' It looks like a typographic accident, and the people who decode it find the secret word 'READ'.",
+  "mode": "code"
+ },
+ {
+  "idea": "The opening of the Declaration of Independence set in small type, with a program drawing fine lines from the numbers of the second Beale cipher to the words they point to, whose first letters spell out the plaintext, captioned 'Beale cipher No. 2: solved with the Declaration. No. 1 and No. 3: still unread.' The 1885 pamphlet's second cipher really is keyed to the Declaration and the other two have never been convincingly cracked, so it's a lovely web of lines with a treasure-hunt mystery behind it.",
+  "mode": "code"
+ },
+ {
+  "idea": "A 26 x 26 Vigenère square drawn by code as diagonal bands of shifting letters, with the path of one keyword enciphering a short message picked out in bold, captioned 'Le chiffre indéchiffrable. (Broken, 1863.)' The cipher was called 'the indecipherable cipher' for about three centuries until Friedrich Kasiski published a general attack in 1863; the dry footnote is the joke.",
+  "mode": "code"
+ },
+ {
+  "idea": "The Chinese character 永 ('eternity') drawn as eight separate brush strokes generated from stroke-path data, each stroke numbered in writing order and labelled with its name, captioned 'Eight Principles of Yong: every stroke you need is in one word.' Calligraphy students have long practised this one character because it contains the eight basic strokes, so it's a calm, beautiful shirt about mastering the basics.",
+  "mode": "code"
+ },
+ {
+  "idea": "A paragraph set by a program in boustrophedon: the first line runs left to right, the next right to left with every letter mirrored, and so on down the shirt, captioned 'Boustrophedon: \"as the ox turns\" when ploughing. Gortyn law code, Crete, 5th century BC.' Early Greek inscriptions really were written this way, and the shirt makes the reader physically turn the furrow with their eyes.",
+  "mode": "code"
+ },
+ {
+  "idea": "A line of text with a real eye-tracking recording plotted over it: circles for each fixation sized by how long the eye stopped, thin lines for the jumps between them, and a few lines leaping backwards, captioned 'You don't read smoothly. Nobody does.' Eye-tracking research shows readers jump in saccades, skip many short words and send roughly one jump in ten back to reread, so it's a striking drawing of what your eyes are doing right now.",
+  "mode": "code"
+ },
+ {
+  "idea": "The wavy trace of Édouard-Léon Scott de Martinville's 1860 phonautogram, the oldest known recording of a human voice, redrawn by a program from the scanned soot trace, captioned 'Au clair de la lune, 9 April 1860. Written down 17 years before anyone could play sound back.' His machine wrote sound as a line on paper and it was only played back in 2008, so this is the first song turned into handwriting.",
+  "mode": "code"
+ },
+ {
+  "idea": "A grid of the Munsell colour chips used in the World Color Survey with contour lines drawn by code to show where 110 languages put their colour-word boundaries, the strongest line splitting light from dark, captioned 'Every language starts with dark and light. Red comes next. (Berlin & Kay, 1969)' It's a colour study printed in one ink, which is the point: the shirt is about how language carves up colour.",
+  "mode": "code"
+ },
+ {
+  "idea": "The word 'hyphenation' in large letters with small digits slipped between them by Frank Liang's TeX hyphenation patterns, odd numbers allowing a break and even numbers blocking one, so the result reads 'hy-phen-ation', captioned 'Word Hy-phen-a-tion by Com-put-er. Liang, 1983.' That really is the title of Liang's Stanford thesis, whose algorithm still breaks the lines of countless documents; it's an elegant in-joke for typesetters and coders.",
+  "mode": "code"
+ },
+ {
+  "idea": "One full page generated by a program from the 25 symbols Borges allowed (22 letters, the space, the comma and the full stop): 40 lines of 80 random characters, set like a sober book page, captioned 'Page from the Library of Babel. Somewhere in it, this sentence.' Borges's 1941 library holds every possible 410-page book, 25^1,312,000 of them, so the shirt is noise with a philosophy behind it.",
+  "mode": "code"
+ },
+ {
+  "idea": "Michael Ventris's grid for Linear B rebuilt by code from the Unicode syllabary: consonants down the side, vowels across the top, each cell holding its syllabic sign, captioned 'Linear B. Cracked in 1952 by an architect. It was Greek.' Ventris, building on Alice Kober's work, showed the Bronze Age script recorded an early form of Greek, a surprise nobody expected, and the grid is a beautiful sheet of signs.",
+  "mode": "code"
+ },
+ {
+  "idea": "Lewis Carroll's 'Mouse's Tale' from Alice's Adventures in Wonderland (1865), 'Fury said to a mouse...', set by a program along a long winding curve whose type shrinks line by line until it disappears into a tiny tip, with only 'A long and a sad tale.' as a heading. Carroll printed the poem in the shape of a tail as a pun on 'tale', so it's a 160-year-old shape poem made new in code.",
+  "mode": "code"
+ },
+ {
+  "idea": "A Huffman coding tree built by a program from the letters of 'To be, or not to be, that is the question', with common letters like T, O and E near the root and rare ones at the deepest branches, captioned 'Huffman, 1952: short codes for common letters. He worked it out instead of sitting the exam.' David Huffman devised it as an MIT student whose professor offered a term paper in place of the final, and the tree it makes looks like a branching botanical drawing.",
+  "mode": "code"
+ }
+]
