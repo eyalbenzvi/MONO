@@ -35,8 +35,8 @@ publish.ts, generate) is the owner's, after review.
      10 seeds that give the best shirts and writes one idea per seed: `printed` (exactly what is on the shirt: the
      image, the layout, the exact words; no explanation of the joke, no audience), `why`, and `tee`. List the
      designs already in the shop as excluded.
-   - **Rank on the print alone.** Five persona rankers (template `scripts/studio/competition/RANK.md`; the panel's
-     five personas, the customer chosen to fit the shop) each score all 50, 0–10, from a list of `id|printed`
+   - **Rank on the print alone.** Six persona rankers (template `scripts/studio/competition/RANK.md`; the panel's
+     six personas, the customer chosen to fit the shop) each score all 50, 0–10, from a list of `id|printed`
      only, each in its own shuffled order: the `why` stays out, so an idea can't sell itself with an
      explanation the shirt won't carry. Average the scores.
    - **The owner looks.** Show the owner the top 20 (the printed text, the score, which are black-tee ideas) and
@@ -65,7 +65,7 @@ publish.ts, generate) is the owner's, after review.
    - **Black only** when the design is made for a dark tee (a night sky, neon, a chalkboard) and not for white.
    When teeBalance says a black-only design is wanted, give part of the next idea competition's seeds a "made for
    white ink on a black tee" attribute, and brief the image model for a dark garment.
-4. **Panel.** Five reviewer agents score the print on its own (template below). They are not calibrated:
+4. **Panel.** Six reviewer agents score the print on its own (template below). They are not calibrated:
    each is defined only by its persona, with no reference tees, no example scores, no anchor design and no
    word about the shop's taste or best sellers (an earlier panel told those drifted towards archive engraving
    and kept marking a photographic design down). On a white tee: ink where alpha > 127, colour (22,22,22),
@@ -105,9 +105,10 @@ publish.ts, generate) is the owner's, after review.
 **Writer** and **Ranker**: `scripts/studio/competition/GEN.md` and `RANK.md` (each agent gets the template, its
 seed or list file and its output file).
 
-**Panel** (five reviewers, each defined only by its persona: screen-print production designer; apparel art
+**Panel** (six reviewers, each defined only by its persona: screen-print production designer; apparel art
 director for independent labels; graphic designer for composition and typography; a buyer for an online
-t-shirt shop; and one everyday customer chosen to fit the design's likely buyer): "This is a design for a $50
+t-shirt shop; a head designer at RVCA (the owner's choice, on every panel and every ranking from October 2026);
+and one everyday customer chosen to fit the design's likely buyer): "This is a design for a $50
 t-shirt printed in one ink: <one neutral sentence of what it shows>. Open the print whole (scaled down, as from
 3 m) and crop into details at full size. From your own point of view, give ONE score 1–10 (halves allowed),
 a verdict PASS / NEEDS CHANGE / DELETE, a short why, and the one fix that would raise it most. JSON to <file>:
