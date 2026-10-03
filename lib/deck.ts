@@ -98,9 +98,9 @@ export const CATEGORY_SPACING = 2;
 /** Share of cards that probe taste the profile hasn't committed to. */
 export const EXPLORE_SHARE = 0.2;
 /** Greedy cards are drawn from this many best matches, not always the very best. */
-export const SAMPLE_TOP = 15;
+export const SAMPLE_TOP = 20;
 /** Softness of that draw: higher spreads the picks wider over the top matches. */
-export const SAMPLE_TEMP = 8;
+export const SAMPLE_TEMP = 12;
 
 /**
  * A good match, not always the same one: one of the SAMPLE_TOP best, drawn

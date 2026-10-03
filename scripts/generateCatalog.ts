@@ -631,6 +631,8 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
       contrast: 0.7,
       density: Math.min(1, e.coverage * 2.5),
       ...(e.baseColor === "black" ? { dark_industrial: 0.12 } : { clean_minimal: 0.12 }),
+      // The designer's own reading of the design (print.json), where it has one.
+      ...e.features,
     };
     const slug = path.basename(e.dir).replace(/^\d{2}-(\d-)?/, "");
     sigs.push({ key: `studio|${slug}`, vec: [] });

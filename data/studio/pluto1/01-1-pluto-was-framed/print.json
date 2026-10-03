@@ -17,5 +17,15 @@
  "crisp": null,
  "fails": [],
  "warns": [],
- "tees": "black"
+ "tees": "black",
+ "features": {
+  "typography": 0.6,
+  "wit": 0.8,
+  "halftone_raster": 0.6,
+  "retro": 0.5,
+  "classic": 0.1,
+  "nature": 0.1,
+  "pictorial": 0.6,
+  "abstract": 0.1
+ }
 }

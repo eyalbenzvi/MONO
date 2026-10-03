@@ -4621,6 +4621,12 @@
   },
   "coverage": 0.199,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/archive1/01-1-drawn-from-a-rumor/sources/brief.txt",
+  "features": {
+   "wit": 0.6,
+   "typography": 0.3,
+   "classic": 0.8,
+   "figurative": 0.3
+  },
   "model": "archive",
   "credit": "Albrecht Dürer, The Rhinoceros, 1515, woodcut. Cleveland Museum of Art, 1993.9, open access (CC0): https://www.clevelandart.org/art/1993.9. Traced to one ink, cropped and captioned by MONO.",
   "licence": "Public domain (CC0)"
@@ -4691,6 +4697,13 @@
   },
   "coverage": 0.104,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini2/01-1-pasta-field-guide/sources/brief.txt",
+  "features": {
+   "wit": 0.7,
+   "typography": 0.3,
+   "classic": 0.6,
+   "nature": 0.2,
+   "pictorial": 0.8
+  },
   "model": "gemini"
  },
  {
@@ -4725,6 +4738,16 @@
   },
   "coverage": 0.106,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini3/01-1-horsepower-vs-poor-decisions/sources/brief.txt",
+  "features": {
+   "wit": 0.9,
+   "typography": 0.5,
+   "geometric": 0.3,
+   "retro": 0.3,
+   "classic": 0.1,
+   "nature": 0,
+   "pictorial": 0.6,
+   "clean_minimal": 0.3
+  },
   "model": "gemini"
  },
  {
@@ -4758,6 +4781,15 @@
   },
   "coverage": 0.16,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini4/01-1-the-end/sources/brief.txt",
+  "features": {
+   "typography": 0.8,
+   "wit": 0.5,
+   "clean_minimal": 0.5,
+   "classic": 0.2,
+   "nature": 0.4,
+   "pictorial": 0.4,
+   "abstract": 0.2
+  },
   "model": "gemini"
  },
  {
@@ -4795,6 +4827,16 @@
   },
   "coverage": 0.147,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/pluto1/01-1-pluto-was-framed/sources/brief.txt",
+  "features": {
+   "typography": 0.6,
+   "wit": 0.8,
+   "halftone_raster": 0.6,
+   "retro": 0.5,
+   "classic": 0.1,
+   "nature": 0.1,
+   "pictorial": 0.6,
+   "abstract": 0.1
+  },
   "model": "gemini"
  }
 ]

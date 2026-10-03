@@ -18,5 +18,11 @@
  "fails": [],
  "warns": [],
  "tees": "both",
- "teeDefault": "white"
+ "teeDefault": "white",
+ "features": {
+  "wit": 0.6,
+  "typography": 0.3,
+  "classic": 0.8,
+  "figurative": 0.3
+ }
 }

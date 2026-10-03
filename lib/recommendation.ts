@@ -268,7 +268,7 @@ export const SHOP_WINDOW = 24;
 export const ROTATION = 0.5;
 export const ROTATION_RANKS = 120;
 /** What a design already shown in Discover gives up in the shop (in score sd). */
-export const SEEN_PENALTY = 0.3;
+export const SEEN_PENALTY = 0.6;
 
 /** A stable pseudo-random number in [0, 1) for a string (FNV-1a). */
 export function hash01(s: string): number {

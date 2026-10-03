@@ -26,7 +26,7 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
-import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type ShirtCategory } from "../../types/shirt";
+import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type FeatureKey, type ShirtCategory } from "../../types/shirt";
 import { assessPrint, rasterInk } from "../gen/quality";
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -71,6 +71,8 @@ export interface StudioEntry {
   /** An archive work's source and licence, from its details' "Credit and source" and "Licence" lines (an open licence such as CC BY needs the credit shown). */
   credit?: string;
   licence?: string;
+  /** The designer's own taste features (print.json "features"), over the studio's defaults in the generator. */
+  features?: Partial<Record<FeatureKey, number>>;
 }
 
 /**
@@ -121,6 +123,11 @@ export interface PrintMeasures {
   tees?: "both" | "white" | "black";
   /** With tees "both": the tee it leads with, picked to keep the shop's defaults balanced (scripts/studio/teeBalance.ts). */
   teeDefault?: BaseColor;
+  /**
+   * What the design is, for the recommender (0..1 per feature): the designer's call, over the studio's defaults
+   * (which describe an archive plate: classic, pictorial, no type, no wit). Only the keys that differ are needed.
+   */
+  features?: Partial<Record<FeatureKey, number>>;
 }
 
 /**
@@ -289,6 +296,7 @@ async function main() {
       printCm: a.printCm,
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
+      ...(measures?.features ? { features: measures.features } : {}),
       ...(gated && /^code$/i.test(d.model ?? "") ? { model: "code" as const } : gated && /^gemini$/i.test(d.model ?? "") ? { model: "gemini" as const } : gated && /^archive$/i.test(d.model ?? "") ? { model: "archive" as const, credit: d["credit and source"], licence: d.licence } : sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
     });
     console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${entries[entries.length - 1].quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
