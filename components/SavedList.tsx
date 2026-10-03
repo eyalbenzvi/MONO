@@ -119,6 +119,9 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.7}
+        // No momentum: let go and the row springs straight back. With it, a fast flick kept sliding out after
+        // the finger lifted, brought the white backdrop up with nothing done, and now and then added the tee.
+        dragMomentum={false}
         dragDirectionLock
         onDragStart={() => {
           dragged.current = true;
