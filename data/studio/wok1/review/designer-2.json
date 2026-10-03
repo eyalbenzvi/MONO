@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director, independent labels, graphic tees $40-60",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Strong one-ink image. The flame, the rice and prawn burst and the hand read clearly from 3 m, and the halftone is crisp. The black shirt acts as the shadows, so the print looks premium and not like a pasted photo. The hand fades out cleanly. Weak spot: on the model the art sits low in the standard area and looks small, with a lot of empty black above it. The rice cloud is also a bit gritty at distance.",
+   "fix": "Scale the artwork up about 15-20% and shift it up inside the standard print area, so the flame and toss sit between the shoulder blades and fill the back, with the burner fading at the bottom."
+  }
+ ]
+}

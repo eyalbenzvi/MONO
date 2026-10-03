@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer (composition, placement, typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Strong diagonal from the flame at lower left through the wok to the toss at upper right. Reads clearly at 3 m, and the hand and burner fades are soft and natural. On the model it sits a little low and left of centre on the back, so the empty upper right feels slightly unbalanced. The thin burner base and the hand are the weakest, faintest parts, and the hand edge near the right looks a bit ragged. No type, so there are no typography issues.",
+   "fix": "Shift or scale the artwork so its visual mass sits higher and more centred on the back (the print starts mid-back on the model). Strengthen the burner and hand edges slightly so the lower right anchors the composition."
+  }
+ ]
+}

@@ -5033,5 +5033,57 @@
    "density": 0.4
   },
   "model": "gemini"
+ },
+ {
+  "n": 20161,
+  "dir": "data/studio/wok1/01-1-wok-hei",
+  "title": "Wok Hei",
+  "category": "photographs",
+  "subject": "A carbon-steel wok mid-toss over a roaring burner at night: a sheet of flame rolls over the lip, fried rice, whole prawns and spring-onion rings hang frozen in the air above it, and the cook's hand grips the handle at the lower right, the arm lost in the dark; the burner fades out at the bottom",
+  "style": "Halftone photograph, white on black, lit only by the flame",
+  "description": "The breath of the wok: the second the flame jumps the lip and the rice leaves the pan. Only what the fire lights is printed; the rest of the kitchen is the shirt.",
+  "keywords": [
+   "wok",
+   "wok hei",
+   "cook",
+   "chef",
+   "kitchen",
+   "fire",
+   "flame",
+   "fried rice",
+   "prawns",
+   "stir fry",
+   "chinese food",
+   "cantonese",
+   "line cook",
+   "foodie",
+   "cooking",
+   "restaurant",
+   "halftone",
+   "photography",
+   "night",
+   "gift"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 79,
+  "printCm": {
+   "width": 21,
+   "height": 33
+  },
+  "coverage": 0.151,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/wok1/01-1-wok-hei/sources/brief.txt",
+  "features": {
+   "halftone_raster": 0.9,
+   "pictorial": 0.9,
+   "figurative": 0.75,
+   "dark_industrial": 0.5,
+   "contrast": 0.8,
+   "retro": 0.2,
+   "classic": 0.3,
+   "typography": 0
+  },
+  "model": "gemini"
  }
 ]

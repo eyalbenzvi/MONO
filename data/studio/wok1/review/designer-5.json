@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer, RVCA",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads from 3 m: flame, rice and prawns make a strong silhouette, the halftone looks like a real print, and the black shirt does the shadow work. On the model it sits a bit low and small in the standard area, and the hand and handle end a little abruptly at the right instead of fading.",
+   "fix": "Soften the right edge of the hand and handle into a longer, more even fade, and scale the whole art up about 10 percent so it sits higher on the back."
+  }
+ ]
+}

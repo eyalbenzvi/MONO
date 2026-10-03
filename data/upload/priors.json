@@ -1,23 +1,23 @@
 {
  "categories": {
   "photographs": {
-   "geometric": 0.021,
-   "typography": 0.014,
-   "architectural": 0.021,
-   "abstract": 0.021,
-   "line_art": 0.086,
-   "halftone_raster": 0.171,
-   "density": 0.491,
-   "contrast": 0.74,
-   "dark_industrial": 0.503,
-   "clean_minimal": 0.483,
-   "pictorial": 0.636,
+   "geometric": 0.019,
+   "typography": 0.013,
+   "architectural": 0.025,
+   "abstract": 0.019,
+   "line_art": 0.131,
+   "halftone_raster": 0.263,
+   "density": 0.478,
+   "contrast": 0.748,
+   "dark_industrial": 0.502,
+   "clean_minimal": 0.423,
+   "pictorial": 0.669,
    "wit": 0,
-   "retro": 0.5,
-   "nature": 0.036,
-   "figurative": 0.114,
-   "classic": 0.229,
-   "photographic": 0.793
+   "retro": 0.463,
+   "nature": 0.063,
+   "figurative": 0.194,
+   "classic": 0.238,
+   "photographic": 0.694
   },
   "specimens": {
    "geometric": 0.022,
@@ -192,7 +192,7 @@
   }
  },
  "coverage": {
-  "p5": 0.023,
+  "p5": 0.025,
   "p95": 0.248
  }
 }

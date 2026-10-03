@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production manager (one-ink white on black cotton)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads clearly from 3 m: flame, rice cloud, prawns and rings are the highlights, and the black shirt does the rest. The halftone is coarse enough to hold on cotton. Soft fades at the hand and burner leave no hard edges. There are no hairlines or large solid flood areas, so the print should be soft and easy to run. Minor risks: the fine rice specks and tiny stray dots will fill in or lose some sharpness, the dark wok interior and rim detail is mostly mid-tone dots that may go muddy, and the hand edge is faint. On the model the image sits low and small on the back with a lot of empty shirt above it.",
+   "fix": "Drop out the isolated tiny specks and the faintest highlight dots (under about 5 percent) so nothing fills in or breaks up on press. Then scale the art up or move it about 3-4 cm higher in the standard print area so it sits centred between the shoulders."
+  }
+ ]
+}

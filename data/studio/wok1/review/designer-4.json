@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Instantly readable from 3 m: the flame, the airborne rice, prawns and rings, and the wok silhouette all read at once. The halftone looks like a real print, not a muddy photo. It is dramatic and giftable, and a cook, foodie or BBQ buyer will pay $50 for it. The black tee works as the shadow. Weaknesses: the wok bowl and the hand are dim and low-contrast, so the hand reads as a blob. The print sits low and a bit small on the back, so the top half of the back is empty.",
+   "fix": "Lift the contrast and highlights on the hand and wok interior so the grip reads clearly. Scale the art up a little so it sits higher on the back."
+  }
+ ]
+}

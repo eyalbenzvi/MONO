@@ -1,0 +1,13 @@
+{
+ "designer": "K=6",
+ "persona": "40-year-old Cantonese wok chef, buys tees for off shift",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This looks like a real toss: the flame rolls off the lip the way it does when the wok is hot, and the rice, prawns and scallion rings are caught mid-air with proper spread. The hand grips the handle correctly and the arm vanishes into the dark. Bright flame and dark wok read clearly from 3 m. On the model, though, it sits low and small on the back, and the hand is a bit faint.",
+   "fix": "Print it bigger and move it up so the flame and toss sit between the shoulder blades. It currently floats in the lower back, and a bigger print would make the hand and prawns stand out more."
+  }
+ ]
+}

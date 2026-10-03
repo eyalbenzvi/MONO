@@ -1,0 +1,31 @@
+{
+ "mode": "halftone",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.1494,
+ "thin": 0.1935,
+ "sizeCm": [
+  22.9,
+  33.6
+ ],
+ "topMm": 9.3,
+ "screened": 1.0,
+ "solid": 0.5284,
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": [],
+ "tees": "black",
+ "features": {
+  "halftone_raster": 0.9,
+  "pictorial": 0.9,
+  "figurative": 0.75,
+  "dark_industrial": 0.5,
+  "contrast": 0.8,
+  "retro": 0.2,
+  "classic": 0.3,
+  "typography": 0.0
+ }
+}

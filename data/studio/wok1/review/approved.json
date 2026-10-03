@@ -1,0 +1,13 @@
+{
+ "run": "wok1",
+ "approvedAt": "2026-10-03T21:47:43.000Z",
+ "designs": {
+  "01-1-wok-hei": {
+   "average": 7.92,
+   "deleteVotes": 0,
+   "family": "cooking",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}
