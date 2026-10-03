@@ -1,0 +1,16 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer (composition and typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "It reads as a real cut-and-paste zine page. The three-line ransom headline has a good rhythm: serif, slab, blackletter and grotesk letters, black and screened scraps alternating, slight rotations. From 3 m it reads clearly as 'PLUTO WAS FRAMED'. The taped print is one strong, heavy block, and at full size the heart region holds up well in a clean, coarse, printable dot. Weak spots: the 'WAS' line is small and pushed right, which leaves a dead pocket on the left with a single star. The probe and the stamp-like label make a nice secondary group, but the dotted flight path is a short, timid hook that stops in empty space at the print's edge. So the probe-to-Pluto story, and the lower-right quadrant with it, fizzle out. The light-grey dot fill around the planet inside the print also muddies the planet's edge a little.",
+   "fix": "Turn the flight path into a longer, bolder dotted arc that starts at the probe's dish and sweeps down and left over the torn edge, ending in an arrowhead on Pluto's heart. That links the two halves of the story and gives the empty lower right some movement and weight.",
+   "title": "Pluto Was Framed"
+  }
+ ],
+ "best": 1,
+ "overall": "It reads as a real cut-and-paste zine page. The three-line ransom headline has a good rhythm: serif, slab, blackletter and grotesk letters, black and screened scraps alternating, slight rotations. From 3 m it reads clearly as 'PLUTO WAS FRAMED'. The taped print is one strong, heavy block, and at full size the heart region holds up well in a clean, coarse, printable dot. Weak spots: the 'WAS' line is small and pushed right, which leaves a dead pocket on the left with a single star. The probe and the stamp-like label make a nice secondary group, but the dotted flight path is a short, timid hook that stops in empty space at the print's edge. So the probe-to-Pluto story, and the lower-right quadrant with it, fizzle out. The light-grey dot fill around the planet inside the print also muddies the planet's edge a little."
+}

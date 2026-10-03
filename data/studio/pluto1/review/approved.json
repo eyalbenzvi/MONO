@@ -1,0 +1,13 @@
+{
+ "run": "pluto1",
+ "approvedAt": "2026-10-03T12:34:04.814Z",
+ "designs": {
+  "01-1-pluto-was-framed": {
+   "average": 8.2,
+   "deleteVotes": 0,
+   "family": "space",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

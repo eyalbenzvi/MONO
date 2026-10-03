@@ -1,0 +1,16 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Reads instantly from 3 m: three clean ransom-note lines, and the halftone Pluto with its heart is recognisable at a glance. The type mix (slab, blackletter M, grotesk e, stencil-ish D) feels cut out by hand rather than generated. At full size the Pluto halftone is a coarse, even screen (dots around 1.5 mm) that will hold in one white ink, and the letter-scrap dots (around 0.5 mm) are printable. Probe, dotted path and the NEW HORIZONS / 14 JULY 2015 caption add a credible zine-evidence note without crowding. Minor issues: the black gaps in the tape hatching are only about 0.25 mm and will likely fill in with white plastisol, and the left-heavy Pluto block leaves the right column a little thin.",
+   "fix": "Open the black gaps in the masking-tape hatching to 0.5 mm or more (fewer, thicker stripes) so the tape doesn't flood into a solid white slab on press.",
+   "title": "Pluto Was Framed"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly from 3 m: three clean ransom-note lines, and the halftone Pluto with its heart is recognisable at a glance. The type mix (slab, blackletter M, grotesk e, stencil-ish D) feels cut out by hand rather than generated. At full size the Pluto halftone is a coarse, even screen (dots around 1.5 mm) that will hold in one white ink, and the letter-scrap dots (around 0.5 mm) are printable. Probe, dotted path and the NEW HORIZONS / 14 JULY 2015 caption add a credible zine-evidence note without crowding. Minor issues: the black gaps in the tape hatching are only about 0.25 mm and will likely fill in with white plastisol, and the left-heavy Pluto block leaves the right column a little thin."
+}

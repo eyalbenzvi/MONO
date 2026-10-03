@@ -1,0 +1,303 @@
+{
+ "slug": "pluto-was-framed",
+ "seed": 7,
+ "fonts_dir": "../wt-shop/assets/fonts",
+ "line_mm": 0.6,
+ "max_tone": 0.72,
+ "pluto_src": "PIA19857.jpg",
+ "pluto_disc": [
+  960,
+  533,
+  420
+ ],
+ "pluto_mm": 142,
+ "pluto_levels": [
+  0.2,
+  0.76,
+  1.55
+ ],
+ "pluto_cell_mm": 1.4,
+ "photo_margin_mm": 10,
+ "letter_overlap_mm": 2.5,
+ "lines": [
+  {
+   "word": "PLuTO",
+   "width": 200,
+   "x": 16,
+   "top": 10,
+   "jitter": 0,
+   "letters": [
+    {
+     "font": "libre-caslon-text-bold.ttf",
+     "size": 60,
+     "style": "line",
+     "rot": -8,
+     "pad": 5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": 2
+    },
+    {
+     "font": "oswald-bold.ttf",
+     "size": 46,
+     "style": "paper",
+     "rot": 6,
+     "pad": 4,
+     "grey": 0.66,
+     "angle": 15,
+     "tear": 1.1,
+     "dy": -3
+    },
+    {
+     "font": "playfair-display.ttf",
+     "size": 54,
+     "style": "line",
+     "rot": -4,
+     "pad": 4.5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": 5
+    },
+    {
+     "font": "space-grotesk-bold.ttf",
+     "size": 70,
+     "style": "screen",
+     "rot": 9,
+     "pad": 4,
+     "grey": 0.4,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -4
+    },
+    {
+     "font": "ibm-plex-mono-bold.ttf",
+     "size": 50,
+     "style": "line",
+     "rot": -11,
+     "pad": 5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": 3
+    }
+   ]
+  },
+  {
+   "word": "WaS",
+   "width": 122,
+   "x": 86,
+   "top": 72,
+   "jitter": 0,
+   "letters": [
+    {
+     "font": "cinzel-bold.ttf",
+     "size": 56,
+     "style": "line",
+     "rot": -6,
+     "pad": 4.5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -2
+    },
+    {
+     "font": "libre-caslon-text-bold.ttf",
+     "size": 44,
+     "style": "paper",
+     "rot": 10,
+     "pad": 4.5,
+     "grey": 0.66,
+     "angle": 75,
+     "tear": 1.1,
+     "dy": 6
+    },
+    {
+     "font": "oswald-bold.ttf",
+     "size": 64,
+     "style": "screen",
+     "rot": -9,
+     "pad": 4,
+     "grey": 0.4,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -3
+    }
+   ]
+  },
+  {
+   "word": "FRAMeD",
+   "width": 258,
+   "x": 10,
+   "top": 128,
+   "jitter": 0,
+   "letters": [
+    {
+     "font": "space-grotesk-bold.ttf",
+     "size": 52,
+     "style": "line",
+     "rot": 7,
+     "pad": 4.5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -4
+    },
+    {
+     "font": "playfair-display-bold.ttf",
+     "size": 66,
+     "style": "screen",
+     "rot": -10,
+     "pad": 4,
+     "grey": 0.4,
+     "angle": 15,
+     "tear": 1.1,
+     "dy": 4
+    },
+    {
+     "font": "oswald-bold.ttf",
+     "size": 72,
+     "style": "paper",
+     "rot": 5,
+     "pad": 4,
+     "grey": 0.66,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -2
+    },
+    {
+     "font": "unifraktur-maguntia.ttf",
+     "size": 56,
+     "style": "line",
+     "rot": -7,
+     "pad": 5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": 6
+    },
+    {
+     "font": "ibm-plex-mono-bold.ttf",
+     "size": 44,
+     "style": "line",
+     "rot": 11,
+     "pad": 4.5,
+     "grey": 0.38,
+     "angle": 45,
+     "tear": 1.1,
+     "dy": -5
+    },
+    {
+     "font": "libre-caslon-text-bold.ttf",
+     "size": 62,
+     "style": "screen",
+     "rot": -6,
+     "pad": 4.5,
+     "grey": 0.4,
+     "angle": 75,
+     "tear": 1.1,
+     "dy": 2
+    }
+   ]
+  }
+ ],
+ "layout": {
+  "photo_rot": -4,
+  "photo_x": 18,
+  "photo_y": 186,
+  "tapes": [
+   {
+    "len": 46,
+    "wid": 14,
+    "rot": 38,
+    "x": 6,
+    "y": 178
+   },
+   {
+    "len": 46,
+    "wid": 14,
+    "rot": -35,
+    "x": 150,
+    "y": 176
+   }
+  ],
+  "stars": [
+   {
+    "x": 228,
+    "y": 18,
+    "size": 12
+   },
+   {
+    "x": 256,
+    "y": 48,
+    "size": 7
+   },
+   {
+    "x": 28,
+    "y": 84,
+    "size": 9
+   },
+   {
+    "x": 228,
+    "y": 88,
+    "size": 10
+   },
+   {
+    "x": 214,
+    "y": 326,
+    "size": 10
+   },
+   {
+    "x": 252,
+    "y": 312,
+    "size": 12
+   },
+   {
+    "x": 262,
+    "y": 180,
+    "size": 8
+   }
+  ],
+  "path": [
+   [
+    205,
+    262
+   ],
+   [
+    210,
+    284
+   ],
+   [
+    205,
+    300
+   ],
+   [
+    197,
+    308
+   ]
+  ],
+  "probe_size": 80,
+  "probe_rot": -8,
+  "probe_x": 184,
+  "probe_y": 184,
+  "arrow": true,
+  "label": {
+   "lines": [
+    "NEW HORIZONS",
+    "14 JULY 2015"
+   ],
+   "font": "ibm-plex-mono-bold.ttf",
+   "cap_mm": 4.2,
+   "x": 216,
+   "y": 272,
+   "rot": -3
+  }
+ },
+ "photo_border_mm": 6,
+ "photo_border_grey": 0.2,
+ "probe_line_mm": 0.7,
+ "probe_src": "gemini-probe.jpg",
+ "cut_mm": 2.5,
+ "tape_hatch_mm": 2.2
+}

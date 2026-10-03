@@ -4759,5 +4759,42 @@
   "coverage": 0.16,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini4/01-1-the-end/sources/brief.txt",
   "model": "gemini"
+ },
+ {
+  "n": 20156,
+  "dir": "data/studio/pluto1/01-1-pluto-was-framed",
+  "title": "Pluto Was Framed",
+  "category": "type",
+  "subject": "A punk-zine photocopy collage: ransom-note letters cut from different typefaces spell \"PLUTO WAS FRAMED\"; below, a coarse halftone print of New Horizons' photograph of Pluto, heart and all, taped down on a torn print, with a cut-out of the New Horizons probe, its dotted flight path and a typed label \"NEW HORIZONS / 14 JULY 2015\"",
+  "style": "Cut-and-paste ransom note and photocopy collage",
+  "description": "Pluto was reclassified as a dwarf planet in 2006; nine years later New Horizons flew past it on 14 July 2015 and photographed the heart-shaped plain on its face. The evidence, pasted up like a punk flyer.",
+  "keywords": [
+   "pluto",
+   "dwarf planet",
+   "new horizons",
+   "space",
+   "astronomy",
+   "nasa",
+   "ransom note",
+   "punk",
+   "zine",
+   "collage",
+   "halftone",
+   "photocopy",
+   "funny",
+   "science",
+   "gift"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 82,
+  "printCm": {
+   "width": 27,
+   "height": 36
+  },
+  "coverage": 0.147,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/pluto1/01-1-pluto-was-framed/sources/brief.txt",
+  "model": "gemini"
  }
 ]

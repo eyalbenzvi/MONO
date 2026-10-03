@@ -1,0 +1,16 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Reads instantly from 3 m: PLUTO WAS FRAMED in mixed-typeface ransom scraps with genuinely torn edges, and the halftone Pluto shows its heart clearly. One white ink with no greys, because tone comes from the halftone dots and hatched tape (about 19 lpi, roughly 0.7 mm dots, which a 110\u2013156 mesh holds). The probe line art has an even stroke weight with a knock-out halo, and the date label is crisp. Small flaw: the Pluto disc sits a bit mid-grey and flat, so the heart could pop harder. In the shadowed terminator and at the disc rim there are about 50 isolated white specks under 10 px (under 0.3 mm) that will drop out or fill in on press.",
+   "fix": "Clean up the Pluto halftone: drop or merge the white dots and black holes under about 0.35 mm on the terminator and rim, and push its contrast (deeper shadows, a brighter heart) so the heart reads as the brightest shape on the shirt.",
+   "title": "Pluto Was Framed"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly from 3 m: PLUTO WAS FRAMED in mixed-typeface ransom scraps with genuinely torn edges, and the halftone Pluto shows its heart clearly. One white ink with no greys, because tone comes from the halftone dots and hatched tape (about 19 lpi, roughly 0.7 mm dots, which a 110\u2013156 mesh holds). The probe line art has an even stroke weight with a knock-out halo, and the date label is crisp. Small flaw: the Pluto disc sits a bit mid-grey and flat, so the heart could pop harder. In the shadowed terminator and at the disc rim there are about 50 isolated white specks under 10 px (under 0.3 mm) that will drop out or fill in on press."
+}

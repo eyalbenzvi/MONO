@@ -1,0 +1,16 @@
+{
+ "designer": "K=5",
+ "persona": "30-year-old everyday customer into space, old punk flyers and band tees",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "I'd buy this. From across the room it reads right away: PLUTO WAS FRAMED in ransom letters over a big halftone Pluto with the heart showing, and the joke lands. The mix of typefaces works, the blackletter M especially, and the halftone dots look properly coarse up close. The NEW HORIZONS 14 JULY 2015 label is a nice nerdy touch. What keeps it short of a 9 is that it looks too clean to pass as a photocopy. The letter scraps have smooth vector edges and solid fills, with no toner grit, and the probe is a large, neat CAD-style outline rather than a small sketch, so next to the collage it looks like clip art.",
+   "fix": "Run photocopy grit over the whole print: speckle, broken edges and slight ink dropout on the letter scraps and tape. Redraw the probe smaller and rougher in the same scribbly hand as the stars, so it all feels xeroxed and cut out by hand instead of vector-clean.",
+   "title": "Pluto Was Framed"
+  }
+ ],
+ "best": 1,
+ "overall": "I'd buy this. From across the room it reads right away: PLUTO WAS FRAMED in ransom letters over a big halftone Pluto with the heart showing, and the joke lands. The mix of typefaces works, the blackletter M especially, and the halftone dots look properly coarse up close. The NEW HORIZONS 14 JULY 2015 label is a nice nerdy touch. What keeps it short of a 9 is that it looks too clean to pass as a photocopy. The letter scraps have smooth vector edges and solid fills, with no toner grit, and the probe is a large, neat CAD-style outline rather than a small sketch, so next to the collage it looks like clip art."
+}

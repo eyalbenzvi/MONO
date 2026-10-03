@@ -1,0 +1,16 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop (thinks about thumbnail pull, conversion and printability at a $50 price point)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads instantly at thumbnail and from 3 m: the three-line ransom headline is loud, the joke lands, and the taped-down Pluto print plus line-art probe make it feel like a real zine page, not clip art. Close up it holds up: torn edges, halftone screens on the scraps, and a clean probe drawing with a cut-out halo, all printable in one ink on black at a dot size a screen can hold. The weak spot is the hero image. The Pluto halftone is a large, flat grey disc, and the heart, which is what makes it obviously Pluto and makes the 'framed' pun work, is soft and sits low in the frame. Buyers who don't already know the picture may just see a blurry moon, and that big field of halftone also adds a lot of ink weight to the lower half.",
+   "fix": "Push the contrast and levels on the Pluto photo before screening, so the bright heart (Tombaugh Regio) pops as clean white against darker dot fields around it and the limb darkens toward the edge. That makes Pluto recognisable at thumbnail size and lightens the heavy grey mass at the bottom of the print.",
+   "title": "Pluto Was Framed"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly at thumbnail and from 3 m: the three-line ransom headline is loud, the joke lands, and the taped-down Pluto print plus line-art probe make it feel like a real zine page, not clip art. Close up it holds up: torn edges, halftone screens on the scraps, and a clean probe drawing with a cut-out halo, all printable in one ink on black at a dot size a screen can hold. The weak spot is the hero image. The Pluto halftone is a large, flat grey disc, and the heart, which is what makes it obviously Pluto and makes the 'framed' pun work, is soft and sits low in the frame. Buyers who don't already know the picture may just see a blurry moon, and that big field of halftone also adds a lot of ink weight to the lower half."
+}

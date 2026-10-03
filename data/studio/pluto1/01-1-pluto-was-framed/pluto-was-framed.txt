@@ -1,0 +1,13 @@
+Title: Pluto Was Framed
+Category: Type
+Family: space
+Subject: A punk-zine photocopy collage: ransom-note letters cut from different typefaces spell "PLUTO WAS FRAMED"; below, a coarse halftone print of New Horizons' photograph of Pluto, heart and all, taped down on a torn print, with a cut-out of the New Horizons probe, its dotted flight path and a typed label "NEW HORIZONS / 14 JULY 2015"
+Style: Cut-and-paste ransom note and photocopy collage
+Medium: NASA photograph in coarse halftone, ransom type and collage drawn by MONO, probe drawn with a generative tool
+Description: Pluto was reclassified as a dwarf planet in 2006; nine years later New Horizons flew past it on 14 July 2015 and photographed the heart-shaped plain on its face. The evidence, pasted up like a punk flyer.
+Tee colours: Black (printed in white ink)
+Print size: 26.8 × 35.8 cm
+Keywords: pluto, dwarf planet, new horizons, space, astronomy, nasa, ransom note, punk, zine, collage, halftone, photocopy, funny, science, gift
+Model: Gemini
+Credit and source: Pluto: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute, New Horizons, image PIA19857 (https://images.nasa.gov/details/PIA19857), public domain (NASA imagery is not copyrighted). Contrast adjusted (the heart lifted, the north held back) and screened to one ink by MONO. New Horizons probe: line drawing made with a generative tool, Google Gemini, from MONO's brief, traced to one ink. Ransom letters (the shop's fonts, SIL OFL), tape, stars, path and label drawn in code by MONO.
+Licence: Public domain (NASA image); MONO
