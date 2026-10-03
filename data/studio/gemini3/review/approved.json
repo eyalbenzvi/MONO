@@ -1,0 +1,13 @@
+{
+ "run": "gemini3",
+ "approvedAt": "2026-10-03T06:58:04.439Z",
+ "designs": {
+  "01-1-horsepower-vs-poor-decisions": {
+   "average": 7.7,
+   "deleteVotes": 0,
+   "family": "vehicles",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

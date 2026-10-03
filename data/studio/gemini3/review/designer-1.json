@@ -1,0 +1,16 @@
+{
+ "designer": "K=1",
+ "persona": "screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Single-ink, clean solid fills and consistent line weight; vehicles read clearly at 3 m, big title block has strong hierarchy, the curve running off the top edge and the minivan outlier carry the joke. Print-safe weights, no tints or halftones. Weak spots: the minivan dot is tucked against the roof/rear corner and reads like a stray blob rather than a data point, the axis labels are small for a tee, and the bicycle spokes and motorcycle engine detail are fine and may fill in on mesh.",
+   "fix": "Move the minivan dot clear of the van body (a visible gap, matching the other dots' offset) so it reads as its own data point; secondarily thicken the finest spoke/engine lines to at least 0.5 mm.",
+   "title": "Horsepower vs. Poor Decisions"
+  }
+ ],
+ "best": 1,
+ "overall": "Single-ink, clean solid fills and consistent line weight; vehicles read clearly at 3 m, big title block has strong hierarchy, the curve running off the top edge and the minivan outlier carry the joke. Print-safe weights, no tints or halftones. Weak spots: the minivan dot is tucked against the roof/rear corner and reads like a stray blob rather than a data point, the axis labels are small for a tee, and the bicycle spokes and motorcycle engine detail are fine and may fill in on mesh."
+}

@@ -1,0 +1,16 @@
+{
+ "designer": "K=3",
+ "persona": "graphic designer judging composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Strong, legible title stack in a condensed bold face with clear hierarchy (small 'vs.'), and the curve plus dots reads at 3 m. The title sits in the empty upper left and the vehicles fill the lower right along a diagonal, so the page is well balanced. The minivan with its stray dot is a clear gag. Weaknesses: the line-art vehicles are thin and fine next to the heavy type and curve, so the weight is uneven and the detail may fill in on fabric. The dragster crowds the curve and the title's right edge. The axis labels are small, and the bicycle and minivan sit close to the bottom axis. The empty lower-left area is a little dead.",
+   "fix": "Thicken the vehicle outlines (and simplify interior detail) so their weight sits closer to the title and curve, and give the dragster more clearance from the 'HORSEPOWER' word and the curve.",
+   "title": "Horsepower vs. Poor Decisions"
+  }
+ ],
+ "best": 1,
+ "overall": "Strong, legible title stack in a condensed bold face with clear hierarchy (small 'vs.'), and the curve plus dots reads at 3 m. The title sits in the empty upper left and the vehicles fill the lower right along a diagonal, so the page is well balanced. The minivan with its stray dot is a clear gag. Weaknesses: the line-art vehicles are thin and fine next to the heavy type and curve, so the weight is uneven and the detail may fill in on fabric. The dragster crowds the curve and the title's right edge. The axis labels are small, and the bicycle and minivan sit close to the bottom axis. The empty lower-left area is a little dead."
+}

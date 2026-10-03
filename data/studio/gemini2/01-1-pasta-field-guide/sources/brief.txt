@@ -1,0 +1,6 @@
+Idea: "PASTA: A FIELD GUIDE" — neutral 200-idea competition (uncalibrated persona rankers), chosen from the top 20 by the owner.
+Source: Google Gemini (Gemini 3 Pro Image): gemini-g1.png (first image), gemini-g2.png (after one edit: orecchiette and campanelle redrawn). No source artwork.
+Build: build.py g2.jpg p8 270 6.8 13 3.1 0.42 — Gemini's own labels erased; Lanczos upscale, threshold 0.55, skeleton redrawn at 0.52 mm (thinner, stricter in dense areas and in the spaghetti and radiatori cells); cells cut apart, cut fragments dropped, re-set on an even grid; heading Playfair Display Bold + Libre Caslon; labels Libre Caslon Bold 6.8 mm on one baseline per row.
+Panel (uncalibrated, persona only): round 1 7.6, round 2 7.7, round 3 7.9, round 4 8.0, round 5 7.9.
+Stopped: five-round limit, never above 8. Delivered version: round 4 (8.0), above the 7.5 catalogue bar.
+Comparison: the same chart drawn wholly in code (no image model) read as clip art and failed the thin-line check; not pursued.

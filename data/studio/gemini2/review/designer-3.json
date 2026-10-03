@@ -1,0 +1,16 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer judging composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Strong hierarchy: a heavy high-contrast serif PASTA over a lighter letterspaced A FIELD GUIDE with a rule reads instantly at 3 m, and the bold serif labels are centred, consistent and legible. The 4x4 grid is calm and the line weight is even across the sixteen engravings, so it prints well in one ink. Weaknesses: shapes differ a lot in visual mass and footprint (spaghetti nest, rigatoni and lasagne sit off-centre or run wide; campanelle is a tall odd shape), so the rhythm and gutters feel slightly uneven. The bottom margin is looser than the top and side margins. The labels are a little small next to the illustrations. The heading rule is thin and the subtitle is slightly light against the massive title.",
+   "fix": "Optically normalise the sixteen illustrations (centre each on its column axis, equalise visual weight and size for the outliers such as rigatoni, lasagne and campanelle) and set the labels about 10-15% larger with the bottom margin matched to the top.",
+   "title": "Pasta: A Field Guide"
+  }
+ ],
+ "best": 1,
+ "overall": "Strong hierarchy: a heavy high-contrast serif PASTA over a lighter letterspaced A FIELD GUIDE with a rule reads instantly at 3 m, and the bold serif labels are centred, consistent and legible. The 4x4 grid is calm and the line weight is even across the sixteen engravings, so it prints well in one ink. Weaknesses: shapes differ a lot in visual mass and footprint (spaghetti nest, rigatoni and lasagne sit off-centre or run wide; campanelle is a tall odd shape), so the rhythm and gutters feel slightly uneven. The bottom margin is looser than the top and side margins. The labels are a little small next to the illustrations. The heading rule is thin and the subtitle is slightly light against the massive title."
+}

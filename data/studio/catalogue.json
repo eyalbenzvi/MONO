@@ -4658,5 +4658,106 @@
   "model": "archive",
   "credit": "Robert Hooke, Micrographia (1665), Schem. XXXIV, the flea. Wellcome Collection, L0084699, CC BY 4.0: https://wellcomecollection.org/works/jrp59aem. Traced to one ink, cropped and captioned by MONO.",
   "licence": "CC BY 4.0 (Wellcome Collection)"
+ },
+ {
+  "n": 20153,
+  "dir": "data/studio/gemini2/01-1-pasta-field-guide",
+  "title": "Pasta: A Field Guide",
+  "category": "etched",
+  "subject": "Sixteen pasta shapes drawn like the plates of a naturalist's field guide, in a four-by-four chart under the heading \"PASTA / A FIELD GUIDE\", each shape named below it: spaghetti, penne rigate, farfalle, fusilli, rigatoni, conchiglie, orecchiette, rotelle, cavatappi, tortellini, ravioli, gemelli, radiatori, ditalini, campanelle, lasagne",
+  "style": "Engraving-style line drawing with a serif heading and labels",
+  "description": "Sixteen pasta shapes, drawn and named the way a naturalist would catalogue beetles. From spaghetti to radiatori, every one is a different answer to holding sauce.",
+  "keywords": [
+   "pasta",
+   "field guide",
+   "Italian food",
+   "spaghetti",
+   "farfalle",
+   "rigatoni",
+   "ravioli",
+   "cooking",
+   "chart",
+   "line art",
+   "foodie",
+   "gift"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "line",
+  "quality": 80,
+  "printCm": {
+   "width": 26,
+   "height": 33
+  },
+  "coverage": 0.104,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini2/01-1-pasta-field-guide/sources/brief.txt",
+  "model": "gemini"
+ },
+ {
+  "n": 20154,
+  "dir": "data/studio/gemini3/01-1-horsepower-vs-poor-decisions",
+  "title": "Horsepower vs. Poor Decisions",
+  "category": "type",
+  "subject": "A scatter chart titled \"HORSEPOWER VS. POOR DECISIONS\": a bicycle, a scooter, a family hatchback, a motorcycle, a 1960s sports car and a dragster climb a trend curve that runs off the top of the print, while a family minivan sits alone well below it",
+  "style": "Clean line drawings of vehicles on a chart, with a heavy condensed title",
+  "description": "The more horsepower, the worse the decisions, plotted from a bicycle to a dragster that leaves the chart altogether. One minivan sits far below the curve.",
+  "keywords": [
+   "horsepower",
+   "poor decisions",
+   "chart",
+   "graph",
+   "cars",
+   "motorcycle",
+   "dragster",
+   "minivan",
+   "funny",
+   "petrolhead",
+   "gift",
+   "line art"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "line",
+  "quality": 77,
+  "printCm": {
+   "width": 27,
+   "height": 35
+  },
+  "coverage": 0.106,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini3/01-1-horsepower-vs-poor-decisions/sources/brief.txt",
+  "model": "gemini"
+ },
+ {
+  "n": 20155,
+  "dir": "data/studio/gemini4/01-1-the-end",
+  "title": "The End",
+  "category": "brush",
+  "subject": "The words \"the end\" in large lowercase type, \"end\" sitting on the horizon of a calm sea at sunset, with a striped half sun setting just after it, the sun's glittering path on the water, a small sailboat heading out and two gulls, drawn in linocut ripple lines",
+  "style": "Linocut-style sunset in horizontal ripple lines, with bold lowercase type",
+  "description": "The closing shot of an old film: the sun goes down on the horizon, a small boat sails off, and \"the end\" sits on the water. Quiet, and final.",
+  "keywords": [
+   "the end",
+   "sunset",
+   "sea",
+   "sailboat",
+   "linocut",
+   "film",
+   "closing credits",
+   "horizon",
+   "ocean",
+   "minimal",
+   "gift"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "line",
+  "quality": 78,
+  "printCm": {
+   "width": 27,
+   "height": 33
+  },
+  "coverage": 0.16,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/gemini4/01-1-the-end/sources/brief.txt",
+  "model": "gemini"
  }
 ]

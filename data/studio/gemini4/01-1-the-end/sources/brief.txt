@@ -1,0 +1,6 @@
+Idea: "the end" over a horizon — seeded 50-idea competition round 2 (100 seeds, writers chose 10 of 20; rankers saw only what is printed), ranked #3 (7.8); chosen by the owner, who asked for a richer picture (Gemini scene) rather than type alone.
+Code-only version (type, horizon, striped reflection): panel 7.2 — not taken further.
+Source: Google Gemini (Gemini 3 Pro Image), gemini-g1.png, no text. No source artwork.
+Build: build.py params.json — boat (with reflection) moved right of the sun and its old place refilled with neighbouring ripples; gulls enlarged; sea stretched 1.3x; long ripples redrawn at one weight (~0.75 mm); four white cuts across the sun; "the end" in Space Grotesk Bold with slightly roughened edges, "end" on the horizon. After round 5, one leftover thick ripple segment at the lower right was thinned (a defect two reviewers named).
+Panel (uncalibrated, persona only): round 1 7.4, round 2 7.5, round 3 7.5, round 4 7.6, round 5 7.8. A reflection of "end" in the water was tried in rounds 1–2 and dropped (all five reviewers read it as noise).
+Stopped: five-round limit, never above 8. Delivered version: round 5 (7.8), above the 7.5 catalogue bar.

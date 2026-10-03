@@ -1,0 +1,6 @@
+Idea: "HORSEPOWER VS. POOR DECISIONS" — seed-based 50-idea competition (random format/subject/reference/persona + attribute vectors, farthest-point sampling), ranked #3 (7.0) by five uncalibrated persona rankers; chosen by the owner.
+Sources: Google Gemini (Gemini 3 Pro Image): gemini-g1.png (five vehicles), gemini-g2.png (dragster and minivan, added at the owner's suggestion). No source artwork.
+Build: build.py params.json — vehicles traced (Lanczos upscale, threshold 0.55, skeleton redrawn at 0.7 mm), wheels simplified, motorcycle engine opened; each vehicle placed automatically 2.5 mm from its data point clear of the curve; trend curve (PCHIP through the points) at 1.8 mm, drawn by distance from a centreline; title and axes in Oswald Bold.
+Panel (uncalibrated, persona only): round 1 7.3, round 2 7.1, round 3 7.5, round 4 7.4, round 5 7.7.
+Stopped: five-round limit, never above 8. Delivered version: round 5 (7.7), above the 7.5 catalogue bar.
+Owner's edits: two vehicles added; the "OUTLIER" label removed; after the loop, the data-point dots removed (the curve alone; panel round 5 judged the version with dots).

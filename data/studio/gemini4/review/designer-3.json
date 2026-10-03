@@ -1,0 +1,16 @@
+{
+ "designer": "K=3",
+ "persona": "graphic designer judging composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads instantly at 3 m: a heavy rounded lowercase 'the / end' with tight leading, 'end' truly sitting on the horizon, and the half sun as a strong counterweight just after the word. The sun-glitter column leads the eye down and to the boat, and the line spacing opens up toward the bottom for depth. Gulls and boat balance the type nicely. Weaknesses: the top water lines are very tight and may clog or moire on a tee, the boat crowds the right edge, and a stray dark dash at the right margin (about 1380,1150 in the small view) looks like a glitch.",
+   "fix": "Remove the stray dash at right (about y=1150) and pull the boat and right-edge lines in a little from the margin, while opening up the line spacing just under the horizon so it will not fill in at print.",
+   "title": "The End"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly at 3 m: a heavy rounded lowercase 'the / end' with tight leading, 'end' truly sitting on the horizon, and the half sun as a strong counterweight just after the word. The sun-glitter column leads the eye down and to the boat, and the line spacing opens up toward the bottom for depth. Gulls and boat balance the type nicely. Weaknesses: the top water lines are very tight and may clog or moire on a tee, the boat crowds the right edge, and a stray dark dash at the right margin (about 1380,1150 in the small view) looks like a glitch."
+}

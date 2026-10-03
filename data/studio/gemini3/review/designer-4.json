@@ -1,0 +1,16 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads instantly at 3 m: the huge title and the rising curve carry the joke, and the minivan sitting off the curve is a clear punchline. The one-ink look is clean and the layout is balanced. Weaknesses: the vehicle linework is much thinner than the title and curve, so interior detail (spokes, engine, windows) will go grey or clog at distance and in print. The dragster is squeezed against the right edge, and the small dots are easy to miss.",
+   "fix": "Thicken the vehicle outline strokes (and simplify the fine interior detail on the bicycle spokes and motorcycle engine) so they match the weight of the curve and title.",
+   "title": "Horsepower vs. Poor Decisions"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly at 3 m: the huge title and the rising curve carry the joke, and the minivan sitting off the curve is a clear punchline. The one-ink look is clean and the layout is balanced. Weaknesses: the vehicle linework is much thinner than the title and curve, so interior detail (spokes, engine, windows) will go grey or clog at distance and in print. The dragster is squeezed against the right edge, and the small dots are easy to miss."
+}

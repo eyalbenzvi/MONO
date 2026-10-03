@@ -1,0 +1,13 @@
+{
+ "run": "gemini2",
+ "approvedAt": "2026-10-03T06:17:36.635Z",
+ "designs": {
+  "01-1-pasta-field-guide": {
+   "average": 8,
+   "deleteVotes": 0,
+   "family": "pasta",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

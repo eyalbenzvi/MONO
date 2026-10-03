@@ -1,0 +1,20 @@
+{
+ "mode": "line",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.1016,
+ "thin": 0.0004,
+ "sizeCm": [
+  26.1,
+  33.1
+ ],
+ "topMm": 14.0,
+ "screened": 0.0,
+ "solid": 0.1409,
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": []
+}

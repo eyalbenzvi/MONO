@@ -1,0 +1,16 @@
+{
+ "designer": "K=2",
+ "persona": "apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The joke lands at 3 m: a huge condensed title, one bold curve climbing off the top edge, and the minivan sitting off the curve is the punchline. One ink, clean line work, and a layout that is balanced and printable. Weaknesses: the vehicles' hairline detail will go soft on cotton, the dots sit far from their vehicles (scooter, bike, minivan) so the data-point link is loose, and the minivan's dot is tiny and easy to miss, which weakens the gag. The axis labels are small and the lower area feels a bit empty.",
+   "fix": "Make the minivan punchline unmissable: enlarge its dot and move it closer to the van. Then thicken the vehicle outlines slightly so they hold up in screenprint.",
+   "title": "Horsepower vs. Poor Decisions"
+  }
+ ],
+ "best": 1,
+ "overall": "The joke lands at 3 m: a huge condensed title, one bold curve climbing off the top edge, and the minivan sitting off the curve is the punchline. One ink, clean line work, and a layout that is balanced and printable. Weaknesses: the vehicles' hairline detail will go soft on cotton, the dots sit far from their vehicles (scooter, bike, minivan) so the data-point link is loose, and the minivan's dot is tiny and easy to miss, which weakens the gag. The axis labels are small and the lower area feels a bit empty."
+}

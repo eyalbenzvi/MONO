@@ -1,0 +1,16 @@
+{
+ "designer": "K=4",
+ "persona": "Online t-shirt shop buyer judging sellability at $50 and print feasibility",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads instantly from 3 m: bold serif PASTA headline, tidy 4x4 grid, consistent confident line weight, clear labels, genuinely hand-drawn feel, and a witty field-guide concept that suits a gift-y foodie tee. One ink, clean heavy strokes with no halftone or tiny hairlines, so it screen-prints well. Weak spots: the dense interior hatching on spaghetti, radiatori and campanelle will clog a bit at tee scale, and the full 28x37 cm block is a big, ink-heavy print. Rows are not perfectly balanced in visual weight, with lasagne and campanelle sprawling to the edge.",
+   "fix": "Thin out the finest interior hatch lines and open up the densest shapes (spaghetti nest, radiatori, campanelle) so they stay crisp in screen-print and read at distance. Optionally trim the print size slightly.",
+   "title": "Pasta: A Field Guide"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly from 3 m: bold serif PASTA headline, tidy 4x4 grid, consistent confident line weight, clear labels, genuinely hand-drawn feel, and a witty field-guide concept that suits a gift-y foodie tee. One ink, clean heavy strokes with no halftone or tiny hairlines, so it screen-prints well. Weak spots: the dense interior hatching on spaghetti, radiatori and campanelle will clog a bit at tee scale, and the full 28x37 cm block is a big, ink-heavy print. Rows are not perfectly balanced in visual weight, with lasagne and campanelle sprawling to the edge."
+}

@@ -1,0 +1,12 @@
+Title: The End
+Category: Brush & Woodblock
+Family: sunset
+Subject: The words "the end" in large lowercase type, "end" sitting on the horizon of a calm sea at sunset, with a striped half sun setting just after it, the sun's glittering path on the water, a small sailboat heading out and two gulls, drawn in linocut ripple lines
+Style: Linocut-style sunset in horizontal ripple lines, with bold lowercase type
+Medium: Generated (linocut-style drawing), type set by MONO
+Description: The closing shot of an old film: the sun goes down on the horizon, a small boat sails off, and "the end" sits on the water. Quiet, and final.
+Tee colours: White
+Print size: 27.2 × 33.0 cm
+Keywords: the end, sunset, sea, sailboat, linocut, film, closing credits, horizon, ocean, minimal, gift
+Model: Gemini
+Credit and source: Original sunset drawing made with a generative tool: Google Gemini (Gemini 3 Pro Image), from MONO's brief; no source image. Boat moved, sea stretched and evened, sun cut and type set in code by MONO.

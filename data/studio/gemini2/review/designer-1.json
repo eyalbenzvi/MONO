@@ -1,0 +1,16 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer (one-ink, cotton tee, retail $50)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Clean one-ink line art: crisp solid black, no halftones or greys, confident outer contours (~8-10px at 300DPI, well above the 0.5pt/~2px safe minimum) with finer interior hatching that still holds (about 3-4px) so it won't fill in on a 110+ mesh. Strong hierarchy from 3 m: heavy PASTA, light subtitle with rule, tidy 4x4 grid with even rhythm and labels that are bold and legible. All sixteen shapes read distinctly (Rotelle, Farfalle, Ravioli, Conchiglie are instantly clear). Weak spots: very dense hatching in Spaghetti, Radiatori and Campanelle clots into dark blobs at distance and is the most fill-in risk; the Campanelle and Rigatoni interior hatch is hairline-thin; labels are a little small relative to the art on a 28 cm width; outer margins are tight at the bottom-right (Lasagne extends close to the right edge) while there is slack below the last row.",
+   "fix": "Thicken or thin out the densest hatching (Spaghetti, Radiatori, Campanelle) to a minimum ~0.35 mm line with fewer, more open strokes so they stay clean on press and read at distance, and bump the label size by ~15%.",
+   "title": "Pasta: A Field Guide"
+  }
+ ],
+ "best": 1,
+ "overall": "Clean one-ink line art: crisp solid black, no halftones or greys, confident outer contours (~8-10px at 300DPI, well above the 0.5pt/~2px safe minimum) with finer interior hatching that still holds (about 3-4px) so it won't fill in on a 110+ mesh. Strong hierarchy from 3 m: heavy PASTA, light subtitle with rule, tidy 4x4 grid with even rhythm and labels that are bold and legible. All sixteen shapes read distinctly (Rotelle, Farfalle, Ravioli, Conchiglie are instantly clear). Weak spots: very dense hatching in Spaghetti, Radiatori and Campanelle clots into dark blobs at distance and is the most fill-in risk; the Campanelle and Rigatoni interior hatch is hairline-thin; labels are a little small relative to the art on a 28 cm width; outer margins are tight at the bottom-right (Lasagne extends close to the right edge) while there is slack below the last row."
+}

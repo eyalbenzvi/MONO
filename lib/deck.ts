@@ -84,7 +84,7 @@ export function buildDeck(
         ? sampleTop(vector, pool, rng)
         : probePick(pool, shown)
       : rng() < EXPLORE_SHARE
-        ? wildcard(pool, shown)
+        ? wildcard(pool, shown, rng)
         : sampleTop(vector, pool, rng);
     if (!pick) break;
     next.push({ id: pick.shirt.id, strategy: pick.strategy });
@@ -99,6 +99,8 @@ export const CATEGORY_SPACING = 2;
 export const EXPLORE_SHARE = 0.2;
 /** Greedy cards are drawn from this many best matches, not always the very best. */
 export const SAMPLE_TOP = 15;
+/** Softness of that draw: higher spreads the picks wider over the top matches. */
+export const SAMPLE_TEMP = 8;
 
 /**
  * A good match, not always the same one: one of the SAMPLE_TOP best, drawn
@@ -110,7 +112,7 @@ function sampleTop(vector: UserProfileVector, pool: ShirtProduct[], rng: () => n
   if (!pool.length) return null;
   const score = makeScorer(vector);
   const top = pool.map((shirt) => ({ shirt, s: score(shirt.features).score })).sort((a, b) => b.s - a.s).slice(0, SAMPLE_TOP);
-  const w = top.map((t) => Math.exp((t.s - top[0].s) / 4));
+  const w = top.map((t) => Math.exp((t.s - top[0].s) / SAMPLE_TEMP));
   let r = rng() * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < top.length; i++) if ((r -= w[i]) <= 0) return { shirt: top[i].shirt, strategy: "greedy" as const };
   return { shirt: top[0].shirt, strategy: "greedy" as const };
@@ -121,7 +123,7 @@ function sampleTop(vector: UserProfileVector, pool: ShirtProduct[], rng: () => n
  * quality) from the category shown least so far — a probe of taste the
  * profile hasn't met, never a weak print.
  */
-export function wildcard(pool: ShirtProduct[], shown: string[]) {
+export function wildcard(pool: ShirtProduct[], shown: string[], rng?: () => number) {
   const strong = pool.filter((s) => !s.weak);
   const from = strong.length ? strong : pool;
   if (!from.length) return null;
@@ -131,9 +133,14 @@ export function wildcard(pool: ShirtProduct[], shown: string[]) {
     if (c) count.set(c, (count.get(c) ?? 0) + 1);
   }
   const least = Math.min(...from.map((s) => count.get(s.category) ?? 0));
-  const best = from.filter((s) => (count.get(s.category) ?? 0) === least).reduce((a, b) => (b.rank < a.rank ? b : a));
+  const cands = from.filter((s) => (count.get(s.category) ?? 0) === least).sort((a, b) => a.rank - b.rank);
+  // One of the few best in that category, so the probe isn't the same card every session.
+  const best = rng ? cands[Math.floor(rng() * Math.min(WILDCARD_TOP, cands.length))] : cands[0];
   return { shirt: best, strategy: "explore" as const };
 }
+
+/** A wildcard is one of this many best (by editorial rank) in the least-shown category. */
+export const WILDCARD_TOP = 3;
 
 /** How many recent cards a probe keeps away from. */
 export const PROBE_WINDOW = 20;

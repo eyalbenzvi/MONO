@@ -1,0 +1,16 @@
+{
+ "designer": "K=4",
+ "persona": "t-shirt shop buyer",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads instantly from 3 m: bold lowercase 'the end' sitting on the horizon, clear half sun, and a tidy sailboat. The one-ink linocut ripple lines look handmade and would print cleanly. The top is strong, but the lower half is a big field of thin lines that feels empty and may fade on the tee. The gulls are small, and the sun's stripes are fine detail.",
+   "fix": "Thicken and simplify the thinnest ripple lines in the lower half (fewer, bolder lines) so they hold up in screen printing and the bottom reads as sea rather than faint texture.",
+   "title": "The End"
+  }
+ ],
+ "best": 1,
+ "overall": "Reads instantly from 3 m: bold lowercase 'the end' sitting on the horizon, clear half sun, and a tidy sailboat. The one-ink linocut ripple lines look handmade and would print cleanly. The top is strong, but the lower half is a big field of thin lines that feels empty and may fade on the tee. The gulls are small, and the sun's stripes are fine detail."
+}

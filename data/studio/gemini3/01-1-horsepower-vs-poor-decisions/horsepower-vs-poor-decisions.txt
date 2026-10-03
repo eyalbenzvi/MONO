@@ -1,0 +1,12 @@
+Title: Horsepower vs. Poor Decisions
+Category: Type
+Family: vehicles
+Subject: A scatter chart titled "HORSEPOWER VS. POOR DECISIONS": a bicycle, a scooter, a family hatchback, a motorcycle, a 1960s sports car and a dragster climb a trend curve that runs off the top of the print, while a family minivan sits alone well below it
+Style: Clean line drawings of vehicles on a chart, with a heavy condensed title
+Medium: Generated (line drawing), set on a chart by MONO
+Description: The more horsepower, the worse the decisions, plotted from a bicycle to a dragster that leaves the chart altogether. One minivan sits far below the curve.
+Tee colours: White
+Print size: 27.0 × 34.7 cm
+Keywords: horsepower, poor decisions, chart, graph, cars, motorcycle, dragster, minivan, funny, petrolhead, gift, line art
+Model: Gemini
+Credit and source: Original vehicle drawings made with a generative tool: Google Gemini (Gemini 3 Pro Image), from MONO's brief; no source image. Traced to one ink, wheels simplified, and set on a chart drawn in code by MONO.
