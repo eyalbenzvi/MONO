@@ -3,13 +3,14 @@
 Each seed is a random format, subject, visual reference and person, seven attributes in [0, 1] and a tee.
 3000 candidates are drawn; farthest-point sampling keeps the 100 most different. Five writer files of 20.
 
-  python seeds.py <out-dir> [--seed N] [--black 0.3]
+  python seeds.py <out-dir> [--seed N] [--black 0.3] [--subject "a sailing yacht"]
 
 --black: the share of seeds marked "made for white ink on a BLACK tee" (when teeBalance.ts says a
-black-only design is wanted; 0 otherwise). Writes seeds.json and seeds-1.txt … seeds-5.txt."""
+black-only design is wanted; 0 otherwise). --subject: the owner's subject for every seed (the
+diversity then comes from the format, the reference, the person and the attributes). Writes seeds.json and seeds-1.txt … seeds-5.txt."""
 import argparse, json, os, random, numpy as np
 ap = argparse.ArgumentParser()
-ap.add_argument("out"); ap.add_argument("--seed", type=int, default=303); ap.add_argument("--black", type=float, default=0.0)
+ap.add_argument("out"); ap.add_argument("--seed", type=int, default=303); ap.add_argument("--black", type=float, default=0.0); ap.add_argument("--subject")
 A = ap.parse_args()
 os.makedirs(A.out, exist_ok=True)
 random.seed(A.seed); rng=np.random.default_rng(A.seed)
@@ -39,6 +40,7 @@ ATTR=[("humour","earnest","very funny"),("text","no words","words only"),("densi
  ("size","small chest mark","big full-front print")]
 def word(v,lo,hi): return lo if v<0.2 else (f"leaning {lo}" if v<0.4 else ("balanced" if v<0.6 else (f"leaning {hi}" if v<0.8 else hi)))
 N=3000
+if A.subject: SUBJECTS=[A.subject]
 C=[dict(type=random.choice(TYPES),subject=random.choice(SUBJECTS),ref=random.choice(REFS),persona=random.choice(PERSONAS),
         vec=rng.random(len(ATTR)).round(2).tolist()) for _ in range(N)]
 def feat(c):

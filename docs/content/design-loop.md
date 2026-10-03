@@ -6,10 +6,15 @@ publish.ts, generate) is the owner's, after review.
 
 ## Hard rules
 
-- No paid or external generators: no Gemini, no image APIs. Sources are public-domain or openly licensed
-  works fetched from museum and library APIs (the Met, Cleveland Museum of Art, Art Institute of Chicago,
-  Wellcome Collection IIIF, Library of Congress, Internet Archive), or drawings and type made in code here.
-  Wikimedia's API rate-limits scripts (429): fetch from the holding institution instead.
+- Sources: public-domain or openly licensed works fetched from museum and library APIs (the Met, Cleveland
+  Museum of Art, Art Institute of Chicago, Wellcome Collection IIIF, Library of Congress, Internet Archive,
+  NASA), or drawings and type made in code here. Wikimedia's API rate-limits scripts (429): fetch from the
+  holding institution instead.
+- An image model (Google Gemini) draws a subject only when the owner asks for one: write the owner a prompt
+  (one subject, black line drawing on white, even line weight, no shading, no text, nothing else in the
+  picture), the owner runs it and hands back the picture, and code does everything else (trace, type, layout,
+  edits). The details file says so (Model: Gemini; Credit: "made with a generative tool"). No paid image API is
+  called from here.
 - Never edit `data/studio/catalogue.json`, `data/shirts*.json`, `public/`, or run publish/generate.
 - Every agent you start gets its exact output file path (agents told "designer-K.json" overwrite each other).
 - Facts in captions and details are checked, or left out.
@@ -20,7 +25,8 @@ publish.ts, generate) is the owner's, after review.
    differ. `python scripts/studio/competition/seeds.py <dir> --seed <new number> --black <share>` draws 3000
    candidate seeds (a format, a subject, a visual reference, a person, seven attributes in [0, 1]: humour, amount
    of text, density, abstraction, era, how niche, print size; and a tee) and keeps the 100 farthest apart, in
-   five files of 20. `--black 0.3` when teeBalance says a black-only design is wanted, else 0.
+   five files of 20. `--black 0.3` when teeBalance says a black-only design is wanted, else 0. When the owner
+   sets the subject, `--subject "<it>"` fixes it on every seed.
    - **Write.** Five writer agents, one seed file each, template `scripts/studio/competition/GEN.md`: each picks the
      10 seeds that give the best shirts and writes one idea per seed: `printed` (exactly what is on the shirt: the
      image, the layout, the exact words; no explanation of the joke, no audience), `why`, and `tee`. List the
@@ -32,7 +38,8 @@ publish.ts, generate) is the owner's, after review.
    - **The owner looks.** Show the owner the top 20 (the printed text, the score, which are black-tee ideas) and
      recommend three to five. A ranker can like a joke the owner doesn't get or wouldn't wear: the owner reads
      the top ideas and chooses; explain any joke that needs it (the owner is the shop's first customer).
-2. **Check the pick.** The chosen idea must (a) be buildable under the rules above, (b) not repeat a
+2. **Check the pick.** The chosen idea must (a) be buildable under the rules above (code, the shop's fonts, a public-domain source, or a subject the owner
+   has an image model draw), (b) not repeat a
    design in the shop, and (c) pass the printability check: the composition the idea describes can print in one
    ink. For a traced source, measure its hatch spacing (autocorrelation of a row of the scan, in px) and the
    print scale the idea needs: spacing × scale must be ≥ 9 px (0.75 mm at 300 DPI), or the lines merge into
