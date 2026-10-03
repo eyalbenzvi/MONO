@@ -265,7 +265,7 @@ export function rankShirts(
 /** "Our pick" opens on this many designs in a fixed order (the generator's shop window). */
 export const SHOP_WINDOW = 24;
 /** How far the rotation can move a design: a share of the profile's score spread (sd); editorial ranks. */
-export const ROTATION = 0.5;
+export const ROTATION = 0.55;
 export const ROTATION_RANKS = 120;
 /** What a design already shown in Discover gives up in the shop (in score sd). */
 export const SEEN_PENALTY = 0.6;
