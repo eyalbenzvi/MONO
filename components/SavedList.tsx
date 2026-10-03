@@ -67,11 +67,8 @@ function shareList(items: ShirtProduct[]) {
   });
 }
 
-/** How far a row travels before letting go acts (px), and how fast a flick must be. */
+/** How far the row itself travels before its action's backdrop turns white and letting go acts (px). */
 const SWIPE_AT = 90;
-const FLICK = 500;
-/** A flick counts only once the row has moved this far (px): far enough that the action under it showed. */
-const FLICK_MIN = 40;
 /** The first time Saved shows (on this device), the first row slides aside once to show what a swipe does (skipped with reduced motion). */
 const HINT_KEY = "mono-saved-hint";
 
@@ -113,7 +110,7 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
   return (
     <motion.li layout exit={{ opacity: 0, transition: { duration: 0.15 } }} data-saved-row={shirt.id} className="relative overflow-hidden border-b border-white/10">
       {/* What letting go will do, under the row. */}
-      <div aria-hidden className={`absolute inset-0 flex items-center px-4 text-sm ${pull.dir === "remove" ? "justify-end" : "justify-start"} ${pull.armed ? "bg-white text-black" : "bg-white/[0.06] text-neutral-300"}`} data-swipe-action={pull.dir ?? undefined}>
+      <div aria-hidden className={`absolute inset-0 flex items-center px-4 text-sm ${pull.dir === "remove" ? "justify-end" : "justify-start"} ${pull.armed ? "bg-white text-black" : "bg-white/[0.06] text-neutral-300"}`} data-swipe-action={pull.dir ?? undefined} data-swipe-armed={pull.armed || undefined}>
         {pull.dir === "add" && addLabel}
         {pull.dir === "remove" && "Remove"}
       </div>
@@ -134,13 +131,14 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
           e.preventDefault();
           e.stopPropagation();
         }}
-        onDragEnd={(_, info) => {
+        onDragEnd={() => {
           setTimeout(() => (dragged.current = false), 300);
           if (axis.current === "y") return;
-          // A swipe past SWIPE_AT, or a flick once the row has moved far enough to show what it does.
-          const dx = info.offset.x;
-          if (dx < -SWIPE_AT || (dx < -FLICK_MIN && info.velocity.x < -FLICK)) onRemove();
-          else if (dx > SWIPE_AT || (dx > FLICK_MIN && info.velocity.x > FLICK)) add();
+          // Only what the row shows when it is let go: the action acts only once its white backdrop is up (the
+          // row's own position, not the finger's: with the drag's elasticity the row trails the finger).
+          const at = x.get();
+          if (at <= -SWIPE_AT) onRemove();
+          else if (at >= SWIPE_AT) add();
         }}
         className="relative flex items-center gap-3 bg-[#0a0a0a] py-2"
       >

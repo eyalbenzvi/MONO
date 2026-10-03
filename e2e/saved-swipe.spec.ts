@@ -36,7 +36,7 @@ async function touchSwipe(page: Page, id: string, dx: number, dy = 0, steps = 10
   await touch("touchEnd", x + dx, y + dy);
 }
 
-/** A fast flick, as a finger makes one: pointer events a few ms apart (velocity well over the flick threshold). */
+/** A fast flick, as a finger makes one: pointer events a few ms apart. */
 async function flick(page: Page, id: string, dx: number, dy = 0) {
   const box = (await page.locator(`[data-saved-row="${id}"] > div`).last().boundingBox())!;
   await page.evaluate(
@@ -72,6 +72,7 @@ test("Saved: swiping a row right says Add to bag · M while it moves, and adds i
   await swipe(page, B9, 160, async () => {
     await expect(row.locator("[data-swipe-action]")).toHaveAttribute("data-swipe-action", "add");
     await expect(row.locator("[data-swipe-action]")).toHaveText("Add to bag · M");
+    await expect(row.locator("[data-swipe-action]")).toHaveAttribute("data-swipe-armed", "true");
   });
   await expect.poll(() => cart(page)).toEqual([expect.objectContaining({ id: B9, size: "M" })]);
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
@@ -83,9 +84,32 @@ test("Saved: swiping a row left says Remove while it moves, and removes it (with
   const row = page.locator(`[data-saved-row="${B1}"]`);
   await swipe(page, B1, -160, async () => {
     await expect(row.locator("[data-swipe-action]")).toHaveText("Remove");
+    await expect(row.locator("[data-swipe-action]")).toHaveAttribute("data-swipe-armed", "true");
   });
   await expect(row).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+  expect(await cart(page)).toEqual([]);
+});
+
+test("Saved: letting go before the white backdrop is up does nothing, though the finger has moved well past it", async ({ page }) => {
+  // The row trails the finger (the drag is elastic): at 110 px of finger the row is short of the mark.
+  for (const [id, dx] of [[B9, 110], [B1, -110]] as const) {
+    const row = page.locator(`[data-saved-row="${id}"]`);
+    await swipe(page, id, dx, async () => {
+      await expect(row.locator("[data-swipe-action]")).not.toHaveAttribute("data-swipe-armed", /.*/);
+    });
+    await page.waitForTimeout(400);
+    await expect(row).toBeVisible();
+  }
+  expect(await cart(page)).toEqual([]);
+});
+
+test("Saved: a fast flick that never brings the white backdrop up does nothing", async ({ page }) => {
+  await flick(page, B9, 100);
+  await flick(page, B1, -100);
+  await page.waitForTimeout(400);
+  await expect(page.locator(`[data-saved-row="${B9}"]`)).toBeVisible();
+  await expect(page.locator(`[data-saved-row="${B1}"]`)).toBeVisible();
   expect(await cart(page)).toEqual([]);
 });
 
@@ -153,7 +177,7 @@ test("Saved: scrolling the list with a finger that drifts sideways is not a swip
   await expect(page.locator(`[data-saved-row="${B9}"]`)).toBeVisible();
 });
 
-test("Saved: a long fast flick right still adds (the row moved far enough to show Add to bag)", async ({ page }) => {
+test("Saved: a long fast flick right still adds (the row moved far enough for the white Add to bag)", async ({ page }) => {
   await flick(page, B9, 140);
   await expect.poll(() => cart(page)).toEqual([expect.objectContaining({ id: B9, size: "M" })]);
 });
