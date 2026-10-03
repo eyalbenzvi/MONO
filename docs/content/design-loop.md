@@ -16,15 +16,29 @@ publish.ts, generate) is the owner's, after review.
 
 ## The steps
 
-1. **Idea competition, 200 ideas.** Ten generator agents write 20 ideas each, two per mode: type, diagram,
-   code, photo, hybrid (a real object or artwork with words or a drawn twist). Template: below. Then ten
-   persona agents score all 200, 0–10, each reading the list in its own shuffled order. Average the scores.
-2. **Pick.** The highest-ranked idea that (a) you can build alone with the rules above, (b) is not on the
-   excluded list, and (c) passes the printability check: the composition the idea describes can print in one
+1. **Idea competition, 50 ideas from 100 seeds.** Diversity comes from the seeds, not from asking writers to
+   differ. `python scripts/studio/competition/seeds.py <dir> --seed <new number> --black <share>` draws 3000
+   candidate seeds (a format, a subject, a visual reference, a person, seven attributes in [0, 1]: humour, amount
+   of text, density, abstraction, era, how niche, print size; and a tee) and keeps the 100 farthest apart, in
+   five files of 20. `--black 0.3` when teeBalance says a black-only design is wanted, else 0.
+   - **Write.** Five writer agents, one seed file each, template `scripts/studio/competition/GEN.md`: each picks the
+     10 seeds that give the best shirts and writes one idea per seed: `printed` (exactly what is on the shirt: the
+     image, the layout, the exact words; no explanation of the joke, no audience), `why`, and `tee`. List the
+     designs already in the shop as excluded.
+   - **Rank on the print alone.** Five persona rankers (template `scripts/studio/competition/RANK.md`; the panel's
+     five personas, the customer chosen to fit the shop) each score all 50, 0–10, from a list of `id|printed`
+     only, each in its own shuffled order: the `why` stays out, so an idea can't sell itself with an
+     explanation the shirt won't carry. Average the scores.
+   - **The owner looks.** Show the owner the top 20 (the printed text, the score, which are black-tee ideas) and
+     recommend three to five. A ranker can like a joke the owner doesn't get or wouldn't wear: the owner reads
+     the top ideas and chooses; explain any joke that needs it (the owner is the shop's first customer).
+2. **Check the pick.** The chosen idea must (a) be buildable under the rules above, (b) not repeat a
+   design in the shop, and (c) pass the printability check: the composition the idea describes can print in one
    ink. For a traced source, measure its hatch spacing (autocorrelation of a row of the scan, in px) and the
    print scale the idea needs: spacing × scale must be ≥ 9 px (0.75 mm at 300 DPI), or the lines merge into
    black under the shop's 0.4 mm minimum line. (Hooke's whole flea at 27 cm: 0.43 mm, can't print; the idea
-   lost a point to that.) Get the largest scan there is.
+   lost a point to that.) Get the largest scan there is. Check the idea's facts (a probe that never went there,
+   a date) and fix them before building.
 3. **Build.** Line sources: `scripts/studio/archive/trace.py` (crop, seam or circle; upscale before the
    threshold; skeleton at 0.42 mm). Photographs and tone: `scripts/studio/oneink.py` (55 lpi halftone).
    Type: the shop's fonts in `assets/fonts`. `oneink.check` must report no fails. Zoom-check at full size for
@@ -77,22 +91,8 @@ publish.ts, generate) is the owner's, after review.
 
 ## Templates
 
-**Generator** (each agent: its mode and file): "A small online shop sells $50 t-shirts printed in ONE ink
-(black on a white tee or white on a black tee). Write 20 t-shirt ideas excellent in your mode that people would
-want to buy and wear, each with its own subject and angle, in any style (contemporary, graphic, illustrated,
-photographic, typographic, technical...; no style is preferred, and no more than a few of your 20 may lean on
-old archive engravings). Avoid: flat-pack instructions, 'how to hug', ensō circles, introvert/coffee/Monday
-jokes, job slogans, 404 jokes, periodic-table puns, Great Wave parodies, 'I survived', wolves howling, bingo
-cards, meme formats, and everything on the excluded list. For each idea, one or two sentences: what exactly is
-on the shirt (exact words, if any) and why someone would want it. Write a JSON array
-[{"idea":"...","mode":"..."}] to <file>."
-
-**Ranker** (ten personas: screen-print production designer; apparel art director; natural-history
-illustrator; editorial and poster typographer; sceptical museum-shop buyer; 28-year-old engineer who buys
-few, smart, understated tees; science teacher who likes conversation-starting shirts; a gift buyer for a
-curious, design-literate friend; streetwear and vintage-tee collector; art-history graduate working in a
-gallery): "Each line of <list file> is 'id|idea'. Score each 0–10: how much people would want to buy and wear
-it. Write {"scores":{"id":score,...},"top5":[{"id":..,"why":".."}]} to <file>."
+**Writer** and **Ranker**: `scripts/studio/competition/GEN.md` and `RANK.md` (each agent gets the template, its
+seed or list file and its output file).
 
 **Panel** (five reviewers, each defined only by its persona: screen-print production designer; apparel art
 director for independent labels; graphic designer for composition and typography; a buyer for an online

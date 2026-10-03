@@ -26,14 +26,33 @@ async function swipe(page: Page, id: string, dx: number, look?: () => Promise<vo
 }
 
 /** The same swipe with a finger (touch events), as on a phone. */
-async function touchSwipe(page: Page, id: string, dx: number) {
+async function touchSwipe(page: Page, id: string, dx: number, dy = 0, steps = 10) {
   const box = (await page.locator(`[data-saved-row="${id}"] > div`).last().boundingBox())!;
   const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
   const cdp = await page.context().newCDPSession(page);
-  const touch = (type: "touchStart" | "touchMove" | "touchEnd", px: number) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: px, y }] });
-  await touch("touchStart", x);
-  for (let i = 1; i <= 10; i++) await touch("touchMove", x + (dx * i) / 10);
-  await touch("touchEnd", x + dx);
+  const touch = (type: "touchStart" | "touchMove" | "touchEnd", px: number, py: number) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: px, y: py }] });
+  await touch("touchStart", x, y);
+  for (let i = 1; i <= steps; i++) await touch("touchMove", x + (dx * i) / steps, y + (dy * i) / steps);
+  await touch("touchEnd", x + dx, y + dy);
+}
+
+/** A fast flick, as a finger makes one: pointer events a few ms apart (velocity well over the flick threshold). */
+async function flick(page: Page, id: string, dx: number, dy = 0) {
+  const box = (await page.locator(`[data-saved-row="${id}"] > div`).last().boundingBox())!;
+  await page.evaluate(
+    async ({ x, y, dx, dy, id }) => {
+      const el = document.querySelector(`[data-saved-row="${id}"] > div:last-child`)!;
+      const ev = (type: string, px: number, py: number) =>
+        new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 7, pointerType: "touch", isPrimary: true, clientX: px, clientY: py, buttons: type === "pointerup" ? 0 : 1 });
+      el.dispatchEvent(ev("pointerdown", x, y));
+      for (let i = 1; i <= 4; i++) {
+        await new Promise((r) => setTimeout(r, 8));
+        window.dispatchEvent(ev("pointermove", x + (dx * i) / 4, y + (dy * i) / 4));
+      }
+      window.dispatchEvent(ev("pointerup", x + dx, y + dy));
+    },
+    { x: box.x + box.width / 2, y: box.y + box.height / 2, dx, dy, id },
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -118,4 +137,23 @@ test("Saved: with no size known, a finger swipe right opens the tee's page too",
   await openSaved(page);
   await touchSwipe(page, B9, 160);
   await expect(page).toHaveURL(new RegExp(`/shop/${B9}/?$`));
+});
+
+test("Saved: a quick short flick (the row hardly moves, nothing shows under it) does nothing", async ({ page }) => {
+  await flick(page, B9, 30);
+  await page.waitForTimeout(400);
+  await expect(page.locator(`[data-saved-row="${B9}"]`)).toBeVisible();
+  expect(await cart(page)).toEqual([]);
+});
+
+test("Saved: scrolling the list with a finger that drifts sideways is not a swipe", async ({ page }) => {
+  await flick(page, B9, 30, -120);
+  await page.waitForTimeout(400);
+  expect(await cart(page)).toEqual([]);
+  await expect(page.locator(`[data-saved-row="${B9}"]`)).toBeVisible();
+});
+
+test("Saved: a long fast flick right still adds (the row moved far enough to show Add to bag)", async ({ page }) => {
+  await flick(page, B9, 140);
+  await expect.poll(() => cart(page)).toEqual([expect.objectContaining({ id: B9, size: "M" })]);
 });

@@ -70,6 +70,8 @@ function shareList(items: ShirtProduct[]) {
 /** How far a row travels before letting go acts (px), and how fast a flick must be. */
 const SWIPE_AT = 90;
 const FLICK = 500;
+/** A flick counts only once the row has moved this far (px): far enough that the action under it showed. */
+const FLICK_MIN = 40;
 /** The first time Saved shows (on this device), the first row slides aside once to show what a swipe does (skipped with reduced motion). */
 const HINT_KEY = "mono-saved-hint";
 
@@ -80,6 +82,8 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
   const x = useMotionValue(0);
   // A drag that ends over a link isn't a tap on it.
   const dragged = useRef(false);
+  // The axis the drag locked to: a vertical scroll of the list is never a swipe.
+  const axis = useRef<"x" | "y" | null>(null);
   const [pull, setPull] = useState<{ dir: "add" | "remove" | null; armed: boolean }>({ dir: null, armed: false });
   useMotionValueEvent(x, "change", (v) => {
     const dir = v > 4 ? "add" : v < -4 ? "remove" : null;
@@ -119,7 +123,11 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.7}
         dragDirectionLock
-        onDragStart={() => (dragged.current = true)}
+        onDragStart={() => {
+          dragged.current = true;
+          axis.current = null;
+        }}
+        onDirectionLock={(a) => (axis.current = a)}
         onClickCapture={(e) => {
           if (!dragged.current) return;
           dragged.current = false;
@@ -128,8 +136,11 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
         }}
         onDragEnd={(_, info) => {
           setTimeout(() => (dragged.current = false), 300);
-          if (info.offset.x < -SWIPE_AT || info.velocity.x < -FLICK) onRemove();
-          else if (info.offset.x > SWIPE_AT || info.velocity.x > FLICK) add();
+          if (axis.current === "y") return;
+          // A swipe past SWIPE_AT, or a flick once the row has moved far enough to show what it does.
+          const dx = info.offset.x;
+          if (dx < -SWIPE_AT || (dx < -FLICK_MIN && info.velocity.x < -FLICK)) onRemove();
+          else if (dx > SWIPE_AT || (dx > FLICK_MIN && info.velocity.x > FLICK)) add();
         }}
         className="relative flex items-center gap-3 bg-[#0a0a0a] py-2"
       >
