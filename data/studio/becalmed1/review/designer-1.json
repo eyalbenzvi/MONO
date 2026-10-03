@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "From 3 m it reads right away: a detailed sloop with limp sails, a striped half-sun that gets thinner towards the top, and quiet monospaced type. Black and white versions both hold up. One ink, nothing that needs halftones, and the rigging and outlines are about 0.5-0.7 mm, so they will print. The weak part is the boat's reflection. Up close it is a sparse V of short dashes, where only the mast column and the stays survive. The hull and the draped sails, which are the heart of the drawing, disappear after the first three rows, so it reads as a dotted triangle rather than the boat flipped over. The tiny stipple and hatching low on the hull (2-3 px) will fill in or drop out on cotton.",
+   "fix": "Make the boat's reflection dense enough to read as the boat. Keep the first 6-8 dash rows under the waterline close together and at full coverage, so the hull, cabin and limp-sail shapes come through flipped before the fade starts. Then thin it with depth the way the sun's column does (fewer and shorter dashes, not just wider gaps), so both reflections clearly share one dash language. While doing this, clean up the sub-0.3 mm stipple on the lower hull."
+  }
+ ]
+}

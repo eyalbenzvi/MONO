@@ -2274,6 +2274,13 @@
 "src": "10f776ce25f7a96c",
 "via": "scripts/studio/oneink.py"
 },
+"20157": {
+"mode": "line",
+"paper": 0.0,
+"sha": "cbab8021219736e6",
+"src": "b1c32f5bcc4558da",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

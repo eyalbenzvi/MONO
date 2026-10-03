@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer (composition and typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "Strong, legible concept. The boat on the left and the sun on the right balance well on a crisp horizon, and the letter-spaced mono line is centred under the scene with good air above it, so the joke lands. The trouble is below the waterline. The boat's reflection reads as a stick-figure V of shrouds plus a ladder-like mast column. The hull, which is the mass that should anchor the mirror, is almost gone after a few rows. Meanwhile the sun's reflection is a dense, heavy block of full-weight dashes. So the 'same dashes' don't match in weight or rhythm, and the lower half pulls right. The boat is also a fussy engraved drawing (hull planking, crumpled sail lines) next to a flat geometric sun. Up close that is a style clash, and on a 1-ink screen the tiny reflection specks (dots under 1 mm) will fill in or drop out.",
+   "fix": "Rebuild the boat's reflection to match the sun's: the same dash weight, length and gap, with the hull and limp sails reflected as solid masses that thin out with depth. Drop or thin out the lone rigging lines that make the V. Raise the minimum dash length so no specks are under about 1 mm."
+  }
+ ]
+}

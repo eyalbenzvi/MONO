@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "From 3 m it works: a clear silhouette, a deadpan line that lands, and a strong pairing of the dashed sun with the dashed reflection, which reads as one ink and prints the same on black and on white. Up close the boat lets it down. It looks like a traced photo, with wobbly, broken strokes, scribbly fold lines on the limp sails and hairline plank hatching. At the waterline there are stipple specks under about 1 pt that will fill in or drop out on cotton. All of that clashes with the crisp geometric sun and dashes, so the print looks like two styles pasted together. The bow pulpit also nearly touches the sun, which crowds the middle of the composition.",
+   "fix": "Redraw the yacht in one clean, even stroke that matches the weight of the dashes (about 1.5 pt minimum). Simplify the sail folds to a few deliberate curves, remove the hull hatching and stipple, and regenerate the reflection from that cleaner drawing. While doing it, move the boat or the sun so there is at least 8 mm of clear space between the bow and the sun."
+  }
+ ]
+}

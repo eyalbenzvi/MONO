@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "40-year-old weekend sailor of a small yacht, many hours spent becalmed",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "It's my boat on my worst Saturday. It's a proper sloop with the main dumped on the boom and the jib hanging off the forestay, which is exactly what it looks like when the wind has died. The mirror-flat reflection and the dashed sun column say 'glassy calm' with no explanation, and MAKING EXCELLENT PROGRESS is the deadpan line every sailor has said over the VHF. From 3 m it reads clearly as boat, sun and stillness, and it works on both tee colours. The only thing that bothers me: up close the hull's fine planking and the scratchy shading at the waterline are thin, crowded lines that will probably fill in or break up in one-colour screen print on a $50 shirt, and the rest of the line work is cleaner than that.",
+   "fix": "Simplify and slightly thicken the hull detail. Use fewer, bolder plank lines and remove the tiny hatching marks along the waterline at bow and stern, so the hull prints as cleanly as the rigging and the sun stripes."
+  }
+ ]
+}

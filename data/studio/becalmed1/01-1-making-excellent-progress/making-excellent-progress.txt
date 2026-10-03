@@ -1,0 +1,13 @@
+Title: Making Excellent Progress
+Category: Type
+Family: ships
+Subject: A small sloop becalmed at sunset, side on, its mainsail dumped on the boom and its jib hanging slack; the glassy water mirrors it as the same drawing flipped and broken into horizontal dashes that fade with depth. A striped seventies half sun sits on the horizon, its reflection a column of short broken dashes. Below, in letter-spaced monospaced capitals: MAKING EXCELLENT PROGRESS
+Style: Fine line drawing with a seventies striped sunset
+Medium: Sloop drawn with a generative tool and traced to one ink; sun, reflections, horizon and type drawn in code by MONO
+Description: A sailing boat is becalmed when the wind dies and it can no longer move under sail; the sails hang slack and still water can mirror the hull. Every sailor has sat through it, and most have said this line over the radio.
+Tee colours: Black (printed in white ink), White (printed in black ink)
+Print size: 23.1 × 30.4 cm
+Keywords: sailing, yacht, sloop, sailboat, becalmed, no wind, sunset, reflection, sea, boat, seventies, retro, funny, sailor, gift
+Model: Gemini
+Credit and source: Sloop: line drawing made with a generative tool, Google Gemini, from MONO's brief, traced to one ink and thickened to the print minimum by MONO. Sun, reflections, horizon and caption (IBM Plex Mono, SIL OFL) drawn in code by MONO.
+Licence: MONO

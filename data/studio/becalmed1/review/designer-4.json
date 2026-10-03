@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop (judging sell-through at $50, from the thumbnail first and then up close)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads at once from 3 m: a fine-line yacht with slack, draped sails next to a striped seventies half-sun on one hard horizon, with a dry, funny caption underneath. That combination sells well to sailors and to people who get the office joke. It works on both tees in one ink. The sun and its dash column are clean and confident. The weak spot is the boat's reflection. At full size it breaks into a sparse inverted V of rigging dashes, and the hull and drooping sails, which carry the 'becalmed' idea, are barely there. In the thumbnail it reads more like a funnel or a radio tower than a mirrored yacht, and it runs deeper than the sun's reflection, so the lower left feels thin and noisy. The hull hatching near the bow and stern is a little scribbly, but it disappears on fabric.",
+   "fix": "Redraw the boat reflection so it is recognisably the boat. Make the first 6 to 8 dash rows under the waterline denser and closer together so the hull, the cabin and the hanging sail shapes clearly mirror the drawing above. Then thin out and shorten the rigging V faster, so the whole reflection ends at about the same depth as the sun's column."
+  }
+ ]
+}
