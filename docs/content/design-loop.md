@@ -29,9 +29,11 @@ publish.ts, generate) is the owner's, after review.
    threshold; skeleton at 0.42 mm). Photographs and tone: `scripts/studio/oneink.py` (55 lpi halftone).
    Type: the shop's fonts in `assets/fonts`. `oneink.check` must report no fails. Zoom-check at full size for
    artefacts before every panel (stray marks, frame remnants, clipped rings, broken lines).
-4. **Panel.** Five designer agents (personas below) score the print against the fixed anchor, Oak and Fox
-   Earth (`assets/prints-hd/print_20150.png`; on a white tee: ink where alpha > 127, colour (22,22,22), paper
-   (244,243,240)). Template: below. Design 1 is always the anchor.
+4. **Panel.** Five reviewer agents score the print on its own (template below). They are not calibrated:
+   each is defined only by its persona, with no reference tees, no example scores, no anchor design and no
+   word about the shop's taste or best sellers (an earlier panel told those drifted towards archive engraving
+   and kept marking a photographic design down). On a white tee: ink where alpha > 127, colour (22,22,22),
+   paper (244,243,240).
 5. **Repeat 3–4.** Apply the fixes most designers agree on (two or more). Stop when the average is **above
    8** (done), or when the fixes stop helping: they contradict each other, ask for something the source can't
    give, or the score hasn't risen for two rounds; at most five rounds.
@@ -54,19 +56,18 @@ publish.ts, generate) is the owner's, after review.
   average, why the loop stopped), the trace script or command with its parameters, the source image (PNG,
   ≤ 2400 px).
 - `<run>/review/designs.json` (`[{no, folder, title, family}]`) and `designer-1.json` … `designer-5.json`
-  from the panel round of the delivered version, with the design renumbered to its `no` (the anchor removed).
+  from the panel round of the delivered version, with the design renumbered to its `no`.
 
 ## Templates
 
 **Generator** (each agent: its mode and file): "A small online shop sells $50 t-shirts printed in ONE ink
-(black on a white tee or white on a black tee). Its best sellers include an archive octopus engraving, Dürer's
-1515 rhinoceros woodcut captioned 'Drawn from a rumor.', Hooke's flea captioned 'Nobody had looked this closely
-before.', a Lorenz attractor drawn in code, a golden-angle seed head and Haeckel radiolaria plates. Customers
-like things that are beautiful, smart, and have a point of view. Write 20 ideas excellent in your mode, each
-with its own subject and angle. Avoid: flat-pack instructions, 'how to hug', ensō circles, introvert/coffee/
-Monday jokes, job slogans, 404 jokes, periodic-table puns, Great Wave parodies, 'I survived', wolves howling,
-bingo cards, meme formats, and everything on the excluded list. For each idea, one or two sentences: what
-exactly is on the shirt (exact words, if any) and why someone would want it. Write a JSON array
+(black on a white tee or white on a black tee). Write 20 t-shirt ideas excellent in your mode that people would
+want to buy and wear, each with its own subject and angle, in any style (contemporary, graphic, illustrated,
+photographic, typographic, technical...; no style is preferred, and no more than a few of your 20 may lean on
+old archive engravings). Avoid: flat-pack instructions, 'how to hug', ensō circles, introvert/coffee/Monday
+jokes, job slogans, 404 jokes, periodic-table puns, Great Wave parodies, 'I survived', wolves howling, bingo
+cards, meme formats, and everything on the excluded list. For each idea, one or two sentences: what exactly is
+on the shirt (exact words, if any) and why someone would want it. Write a JSON array
 [{"idea":"...","mode":"..."}] to <file>."
 
 **Ranker** (ten personas: screen-print production designer; apparel art director; natural-history
@@ -76,17 +77,19 @@ curious, design-literate friend; streetwear and vintage-tee collector; art-histo
 gallery): "Each line of <list file> is 'id|idea'. Score each 0–10: how much people would want to buy and wear
 it. Write {"scores":{"id":score,...},"top5":[{"id":..,"why":".."}]} to <file>."
 
-**Panel** (five designers: screen-print production designer, 25 years; apparel art director for independent
-labels; natural-history illustrator, truth and artefacts; graphic designer for composition and typography;
-merchandiser and buyer for a curated online shop, the sceptic): describe the shop and its four reference tees
-(a whale study sheet, a sailboat technical elevation, a dense pen-and-ink colonial building, a bicycle patent
-sheet in white on black), each design in neutral words, the calibration (best so far 9.0, an archive octopus
-engraving; 8.0 for strong woodcuts and ship prints), then: open each print whole (scaled down, as from 3 m)
-and crop into details at full size; give ONE score 1–10 (halves allowed), a verdict PASS / NEEDS CHANGE /
-DELETE, a short why, and the one fix that would raise it most; name the best. JSON to <file>:
-{"designer","persona","designs":[{"no","score","verdict","why","fix"}],"best","overall"}.
+**Panel** (five reviewers, each defined only by its persona: screen-print production designer; apparel art
+director for independent labels; graphic designer for composition and typography; a buyer for an online
+t-shirt shop; and one everyday customer chosen to fit the design's likely buyer): "This is a design for a $50
+t-shirt printed in one ink: <one neutral sentence of what it shows>. Open the print whole (scaled down, as from
+3 m) and crop into details at full size. From your own point of view, give ONE score 1–10 (halves allowed),
+a verdict PASS / NEEDS CHANGE / DELETE, a short why, and the one fix that would raise it most. JSON to <file>:
+{"reviewer","persona","score","verdict","why","fix"}." No reference designs, example scores or shop taste.
 
 ## What we learned (keep)
+
+These come from rounds judged by a calibrated panel (reference tees and example scores that favoured
+archive engraving); treat them as production notes, not as what sells.
+
 
 - The panel is not consistent round to round: judge by averages, and stop when fixes contradict.
 - A cut edge at the print boundary reads as a mistake; a cut along a natural seam (an armour plate) or a
