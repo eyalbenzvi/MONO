@@ -4885,5 +4885,51 @@
    "clean_minimal": 0.5
   },
   "model": "gemini"
+ },
+ {
+  "n": 20158,
+  "dir": "data/studio/cutter1/01-1-nearly-finished",
+  "title": "Nearly Finished",
+  "category": "type",
+  "subject": "A photograph in halftone of a classic wooden gaff cutter hauled out in a boatyard, seen from the side: the front half of her topsides sanded to clean bare planking, the back half still in old dark paint, chipped and peeling; tape along the waterline, a ladder against her, her mast on trestles behind. Above, in letter-spaced condensed capitals: NEARLY FINISHED, and under it, small: SINCE 1987",
+  "style": "Halftone photograph with a letter-spaced headline",
+  "description": "A wooden boat hauled out for a refit is sanded back to bare wood and painted again, one stretch of hull at a time. Some refits take a season; some outlast the people who started them.",
+  "keywords": [
+   "sailing",
+   "wooden boat",
+   "boatyard",
+   "restoration",
+   "refit",
+   "gaff cutter",
+   "sailboat",
+   "boat owner",
+   "project",
+   "funny",
+   "halftone",
+   "photograph",
+   "gift",
+   "dad",
+   "grandad"
+  ],
+  "baseColor": "white",
+  "single": true,
+  "mode": "tone",
+  "quality": 58,
+  "printCm": {
+   "width": 24,
+   "height": 13
+  },
+  "coverage": 0.079,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/cutter1/01-1-nearly-finished/sources/brief.txt",
+  "features": {
+   "typography": 0.6,
+   "wit": 0.8,
+   "halftone_raster": 0.8,
+   "pictorial": 0.75,
+   "classic": 0.3,
+   "retro": 0.3,
+   "nature": 0.1
+  },
+  "model": "gemini"
  }
 ]

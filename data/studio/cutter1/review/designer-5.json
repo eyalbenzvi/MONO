@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "60-year-old who has spent years restoring an old wooden boat in a boatyard",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The joke is me exactly: half sanded to clean planks, half old chipped paint, tape on the waterline, ladder up her side, mast on trestles. The planking looks right up close and the halftone is clean. But the whole thing sits in the top 40% of the print area, with about 60% of the back left blank under it. On my back it'd be a small strip across the shoulders, and the yard stops at a fairly hard dotted edge at the bottom instead of fading out. Small things too: the underbody is one flat dark mass, so you can't really pick out the keel blocks, and the chipped paint could be rougher.",
+   "fix": "Scale the boat picture up so it fills the print area under the title (or move the block down and enlarge it), and make the fade at the bottom and sides much longer and softer so the yard really melts into the shirt."
+  }
+ ]
+}

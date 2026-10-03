@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer judging composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The type works: condensed, evenly letter-spaced capitals with a clear step down to SINCE 1987, and the headline is about as wide as the hull, so the lockup and the picture read as one unit. The halftone is clean at full size, and the story reads from 3 m: dark chipped stern, bare planked bow, ladder, mast on trestles. The composition is the weak part. The whole print sits in the top ~38% of a 28x37 cm area, as a short, wide strip. It is supposed to fade out with no frame, but it ends in a hard straight bottom edge and near-vertical side edges, so it reads as a cropped rectangle of photo pasted under the title, not a vignette dissolving into the shirt. The underbody is one flat dark blob with almost no keel or rudder shape, and the stands and blocks are lost in the dot texture. That weighs the picture down without giving it detail.",
+   "fix": "Replace the hard rectangular cut-off with a real long vignette: let the ground and stands dissolve gradually into thinner and thinner dots over about 4-6 cm at the bottom and the sides, with no straight edge anywhere. Then scale the picture up a little so the lockup and picture together fill more of the print height."
+  }
+ ]
+}

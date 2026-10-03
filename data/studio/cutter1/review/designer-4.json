@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop (white tees, one-ink back prints)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The joke and the type are strong: big letter-spaced NEARLY FINISHED with small SINCE 1987 is clean and confident, and the half-sanded/half-peeling hull with the ladder reads instantly, even from 3 m. The halftone is coarse but printable in one ink. But the whole print sits in the top ~38% of the 28x37 cm area. On a back print that looks like a shoulder-blade banner with an empty shirt below it, and it is a hard sell at $50. The yard is cut off in a hard horizontal line at the bottom where the brief calls for a fade. The sky edge and side fades are thin, so it reads as a rectangle-ish cutout. Small story details are weak: the mast on trestles reads as a plank, the keel blocks are lost under the dark underbody, and the peeling paint is uniform white blobs that look stamped on.",
+   "fix": "Rebalance the layout. Scale the photo up so the boat fills the print width, with the image running down to about 60\u201365% of the print height. Replace the hard bottom cut with a long soft halftone fade into the shirt. Push the yard ground and the sides to dissolve gradually, so the picture has presence on the back and no visible edge."
+  }
+ ]
+}

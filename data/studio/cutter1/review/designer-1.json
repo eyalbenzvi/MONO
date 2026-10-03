@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "score": 4.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The halftone is clean and holds on press: an even, well-sized dot, solid darks on the painted half, readable plank seams on the sanded half, and the type is strong. The bow-forward story with ladder, stands and mast on trestles reads at 3 m. But the art stops at about y=1666 of 4370, so it fills only the top 38% of the 28x37 cm area and leaves a big empty back with a small strip at the shoulders. The yard does not fade out either. The ground ends in hard, slightly wobbly straight edges on the left, right and bottom (crops d1-left and d1-right), so the photo prints as a rough rectangular slab, which is the 'frame' the brief says to avoid. The mast and bowsprit also poke past that cut edge on the right.",
+   "fix": "Rebuild the ground with a real tonal vignette, with dots shrinking to nothing over 300-500 px at the sides and bottom and no hard cut line. Then scale the whole picture and title up and re-lay them so the art takes about 70-80% of the print-area height (or width-limits at about 3000 px) instead of sitting as a strip in the top third."
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "run": "cutter1",
+ "approvedAt": "2026-10-03T16:49:33.455Z",
+ "designs": {
+  "01-1-nearly-finished": {
+   "average": 5.8,
+   "deleteVotes": 0,
+   "family": "ships",
+   "approved": true,
+   "why": "approved by the owner below the bar (average 5.8, 7 to pass)"
+  }
+ }
+}

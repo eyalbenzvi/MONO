@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels (screen-print back graphics, one-ink small-run drops)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The idea lands: from 3 m it reads instantly as a hauled-out boat that's half sanded, half flaking, and NEARLY FINISHED / SINCE 1987 is a good self-deprecating line set in tidy, well-spaced condensed caps. The halftone is clean and printable, the ladder knocked out as negative space is nice, and the chipped-paint stern versus the clean planked bow tells the story. What lets it down: the yard doesn't fade. The ground is a hard-edged rectangle with a sharp horizon and a blunt rounded left corner, so it reads as a photo strip pasted under the type, not a vignette. The underbody is one heavy, flat black blob with a rounded, bathtub-like bottom. There is no visible keel sitting on blocks, so the stands look like they're holding nothing, and that big ink mass will sit stiff and heavy on a white tee. The art also fills only the top ~40% of the 28\u00d737 area, which is fine for a yoke print but leaves the 'photograph' feeling small and strip-like.",
+   "fix": "Re-vignette the yard: feather the ground into dot-free shirt on the left, right and bottom over 3\u20134 cm, losing the hard horizon line and rectangle corners, and let the fade carry the keel down onto visible blocks with the stands. While you're in there, open up the underbody tone (lighter dots, some modelling) so it isn't a solid black slab."
+  }
+ ]
+}

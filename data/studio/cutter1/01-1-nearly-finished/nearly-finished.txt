@@ -1,0 +1,13 @@
+Title: Nearly Finished
+Category: Type
+Family: ships
+Subject: A photograph in halftone of a classic wooden gaff cutter hauled out in a boatyard, seen from the side: the front half of her topsides sanded to clean bare planking, the back half still in old dark paint, chipped and peeling; tape along the waterline, a ladder against her, her mast on trestles behind. Above, in letter-spaced condensed capitals: NEARLY FINISHED, and under it, small: SINCE 1987
+Style: Halftone photograph with a letter-spaced headline
+Medium: Photograph made with a generative tool, screened to one ink; type set by MONO
+Description: A wooden boat hauled out for a refit is sanded back to bare wood and painted again, one stretch of hull at a time. Some refits take a season; some outlast the people who started them.
+Tee colours: White (printed in black ink)
+Print size: 24.6 × 13.1 cm
+Keywords: sailing, wooden boat, boatyard, restoration, refit, gaff cutter, sailboat, boat owner, project, funny, halftone, photograph, gift, dad, grandad
+Model: Gemini
+Credit and source: Boat: a photograph made with a generative tool, Google Gemini, from MONO's brief (a 26-foot wooden gaff cutter half sanded in a boatyard), screened to one ink by MONO in the shop's 55 lpi halftone. Caption (Oswald, SIL OFL) set by MONO.
+Licence: MONO

@@ -1,0 +1,49 @@
+{
+ "slug": "nearly-finished",
+ "src": "gemini-cutter.png",
+ "oneink_dir": "../../../../../scripts/studio",
+ "fonts_dir": "../../../../../assets/fonts",
+ "crop": {
+  "x0": 0,
+  "x1": 1376,
+  "y0": 150,
+  "y1": 768
+ },
+ "photo": {
+  "width_mm": 262,
+  "x_mm": 9,
+  "top_mm": 40,
+  "lo": 0.08,
+  "hi": 1.22,
+  "gamma": 0.8,
+  "soften_px": 1.6,
+  "local_amount": 0.8,
+  "local_mm": 3,
+  "shoulder": {
+   "knee": 0.5,
+   "rate": 0.42
+  }
+ },
+ "fade": {
+  "kind": "edges",
+  "side": 0.06,
+  "bottom": 0.3,
+  "ground_from": 0.7,
+  "texture_mm": 4,
+  "horizon": 0.6
+ },
+ "lone_density": 0.1,
+ "caption": {
+  "text": "NEARLY FINISHED",
+  "font": "oswald-bold.ttf",
+  "cap_mm": 16,
+  "track_mm": 3.0,
+  "gap_mm": 5,
+  "sub": "SINCE 1987",
+  "sub_font": "oswald.ttf",
+  "sub_cap_mm": 5.2,
+  "sub_track_mm": 2.4,
+  "cx_mm": 140,
+  "y_mm": 10
+ }
+}
