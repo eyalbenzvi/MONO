@@ -1,7 +1,9 @@
 # Score t-shirt ideas
 
 Each line of the list file named in your instructions is "id|idea": an idea for a $50 t-shirt printed in one
-ink colour (black on white, or white on black). Read all of them, then, from your own point of view as the
+ink colour (black on white, or white on black). The shop prints ONE print on the BACK of the shirt, at least 20 cm
+wide or 30 cm tall (at most 28 × 37 cm); an idea made as a chest mark, a front print or anything smaller scores 0.
+Read all of them, then, from your own point of view as the
 person described in your instructions, score each from 0 to 10: how much people would want to buy and wear it,
 and how good it would look.
 

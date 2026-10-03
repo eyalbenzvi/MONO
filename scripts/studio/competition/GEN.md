@@ -1,6 +1,8 @@
 # T-shirt ideas from seeds
 
-A small online shop sells $50 t-shirts printed in ONE ink colour (black on a white tee, or white on a black tee).
+A small online shop sells $50 t-shirts printed in ONE ink colour (black on a white tee, or white on a black tee). Every
+shirt carries ONE print, on the BACK: at least 20 cm wide or 30 cm tall, at most 28 × 37 cm. No chest marks, no front
+prints, no sleeve or pocket prints; say how much of the back the print takes.
 
 The seed file named in your instructions has 20 lines. Each is a random seed: a format, a subject, a visual
 reference, who it is made for, and seven attributes scored 0–1 (humour, amount of text, density, abstraction, era,

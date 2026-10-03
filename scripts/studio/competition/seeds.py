@@ -37,7 +37,7 @@ PERSONAS=["teenage gamer","retired engineer","marathon runner","new parent","art
  "dog owner","architect","grandparent buying a gift","office worker"]
 ATTR=[("humour","earnest","very funny"),("text","no words","words only"),("density","minimal, lots of empty space","intricate, dense detail"),
  ("abstraction","literal","abstract"),("era","historical","futuristic"),("niche","anyone gets it","an in-joke for a small group"),
- ("size","small chest mark","big full-front print")]
+ ("size","a back print at the minimum (20 cm wide or 30 cm tall)","fills the whole back (28 × 37 cm)")]
 def word(v,lo,hi): return lo if v<0.2 else (f"leaning {lo}" if v<0.4 else ("balanced" if v<0.6 else (f"leaning {hi}" if v<0.8 else hi)))
 N=3000
 if A.subject: SUBJECTS=[A.subject]

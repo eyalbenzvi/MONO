@@ -24,9 +24,13 @@ publish.ts, generate) is the owner's, after review.
 1. **Idea competition, 50 ideas from 100 seeds.** Diversity comes from the seeds, not from asking writers to
    differ. `python scripts/studio/competition/seeds.py <dir> --seed <new number> --black <share>` draws 3000
    candidate seeds (a format, a subject, a visual reference, a person, seven attributes in [0, 1]: humour, amount
-   of text, density, abstraction, era, how niche, print size; and a tee) and keeps the 100 farthest apart, in
+   of text, density, abstraction, era, how niche, how much of the back the print takes; and a tee) and keeps the
+   100 farthest apart, in
    five files of 20. `--black 0.3` when teeBalance says a black-only design is wanted, else 0. When the owner
-   sets the subject, `--subject "<it>"` fixes it on every seed.
+   sets the subject, `--subject "<it>"` fixes it on every seed. Every shirt carries one print, on the back (at
+   least 20 cm wide or 30 cm tall, at most 28 × 37 cm): both templates say so, and a ranker scores a chest mark or a
+   front print 0. (The size attribute once ran from "small chest mark" to "big full-front print", and the writers
+   followed it.)
    - **Write.** Five writer agents, one seed file each, template `scripts/studio/competition/GEN.md`: each picks the
      10 seeds that give the best shirts and writes one idea per seed: `printed` (exactly what is on the shirt: the
      image, the layout, the exact words; no explanation of the joke, no audience), `why`, and `tee`. List the
