@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "RVCA head designer (graphic tees, back-print)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Strong, ownable one-ink back print: the lit flank vs. dark north face reads clearly from 3 m, the engraved line quality is fine and premium, and the headlamp dots add a story. Weak spots: the right-edge lines trail off in ragged horizontal streaks that look like a glitch rather than a deliberate vignette, the bottom fades into a flat stack of lines that feels unfinished, and the dashed shadow texture on the north face turns noisy and muddy at distance.",
+   "fix": "Tidy the vignette: end the right and bottom lines in a smooth, even oval fade (graduated spacing and staggered ends instead of long ragged streaks) so the edge looks deliberate."
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "t-shirt shop buyer deciding what sells",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads from 3 m as a striking mountain: bright moonlit flank, graphic stars, lamp dots give a story. Engraving look is premium and one-ink friendly. Weak spots: the shadowed north face is murky and dashed at distance, the right-edge fringe looks ragged/glitchy, and the bottom horizontal lines feel like a cut-off base rather than a deliberate vignette. Subject is niche (Eiger fans) but climbers/hikers will pay $50.",
+   "fix": "Clean up the right-flank edge fringe and the bottom line fade so the vignette feels deliberate and smooth, and strengthen the north face tone so the silhouette and face read more clearly from a distance."
+  }
+ ]
+}

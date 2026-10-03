@@ -1,5 +1,6 @@
 {"recipe":1,"entries":{"003024057634cc443fbded5e39968b9c034fb523:ink:white":{"symmetry":0.538,"detail":0.137,"coverage":0.1885,"extent":0.6864,"aspect":0.8462,"dhash":"f180c5d95155c961"},
 "037b798120bc459fbe6bbf1fbfc00ee4a840f70d:ink:black":{"symmetry":0.5697,"detail":0.0989,"coverage":0.0545,"extent":0.3384,"aspect":0.2872,"dhash":"0a162a2e2e0e1a2e"},
+"03eff86d2e73c7c47dab384cda813a91b538822c:ink:black":{"symmetry":0.642,"detail":0.1396,"coverage":0.0882,"extent":0.6532,"aspect":1.029,"dhash":"250e1333391f0000"},
 "041d36c99cd6fdc3f42ed6342dba868d2853a3b5:ink:white":{"symmetry":0.6887,"detail":0.2425,"coverage":0.0739,"extent":0.7083,"aspect":0.7353,"dhash":"290d0d2d494b3715"},
 "05ceab011f9b0c66eb629fa912aacc318359330e:ink:white":{"symmetry":0.4673,"detail":0.0927,"coverage":0.142,"extent":0.6113,"aspect":0.6127,"dhash":"d88c0a1a4b8f0341"},
 "06a905191582b895de1d6ecffc2079552a3c543c:ink:black":{"symmetry":0.7163,"detail":0.2773,"coverage":0.0881,"extent":0.7014,"aspect":0.7545,"dhash":"734f45170f4d4d48"},

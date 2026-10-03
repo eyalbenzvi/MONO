@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "graphic designer (composition, placement, typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Strong, legible mountain silhouette with a clear light/dark split and a good vignette; stars frame the summit well and the headlamps read as a rising diagonal. Placement on the model is good (upper back, centred). Weaknesses: the print area has a large empty lower third, so the artwork sits high and the block feels slightly top-heavy; the right-flank lines ending in ragged horizontal streaks look a bit like a glitch/scan artefact rather than a deliberate engraver's fade; the dark north face is dense with broken dashes that go muddy from a distance.",
+   "fix": "Tighten and soften the right-flank line ends (stagger them more gradually along a smooth vignette curve instead of long ragged streaks) so the vignette reads as intentional engraving rather than a rendering artefact."
+  }
+ ]
+}

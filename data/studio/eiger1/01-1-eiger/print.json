@@ -1,0 +1,31 @@
+{
+ "mode": "line",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.0884,
+ "thin": 0.0003,
+ "sizeCm": [
+  26.5,
+  25.5
+ ],
+ "topMm": 8.0,
+ "screened": 0.0,
+ "solid": 0.0178,
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": [],
+ "tees": "black",
+ "features": {
+  "line_art": 0.85,
+  "pictorial": 0.8,
+  "nature": 0.6,
+  "classic": 0.5,
+  "contrast": 0.7,
+  "clean_minimal": 0.3,
+  "retro": 0.3,
+  "typography": 0.0
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "apparel art director, independent labels, graphic tees $40-60",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads from 3 m as a striking, confident mountain: the lit west flank against the dark north face is a clear focal point, the line engraving feels premium and one-ink-honest, and the headlamp pairs add a small story. The ragged right-edge fade and the stars are a nice touch. Weaknesses: the north-face dashes get noisy and broken, the face is hard to read as a face, the bottom ground lines look sparse and a bit unresolved, and on the model the print sits mid-back and a little small, so fine detail disappears.",
+   "fix": "Clean up the shadowed north face: make the dashes longer and more regular so the face reads as one calm dark mass with the headlamps clearly popping, and tighten the bottom vignette so the base feels intentionally finished."
+  }
+ ]
+}

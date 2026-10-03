@@ -1,0 +1,13 @@
+{
+ "designer": "K=6",
+ "persona": "45-year-old IFMGA guide from Grindelwald, Eiger N face x3, buys tees off duty",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7,
+   "verdict": "PASS",
+   "why": "From 3 m it reads as a mountain at night. The moonlit west flank against the dark face is striking, and the headlamp pairs are a nice touch that a climber will spot. It is more generic pyramid than the Eiger though: the Eiger from Scheidegg is a huge wall with the Mittellegi ridge and a broad shoulder, and this face looks narrow and the summit too pointed. The ragged horizontal streaks on the right and the broken dashes on the face look a bit like glitch.",
+   "fix": "Make the silhouette more recognisably Eiger (wider north wall, clearer left ridge and shoulder) and tidy the ragged right-hand line ends into a cleaner vignette."
+  }
+ ]
+}

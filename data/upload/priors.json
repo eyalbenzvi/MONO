@@ -78,21 +78,21 @@
   },
   "etched": {
    "geometric": 0,
-   "typography": 0.026,
-   "architectural": 0.196,
+   "typography": 0.025,
+   "architectural": 0.191,
    "abstract": 0,
-   "line_art": 0.776,
+   "line_art": 0.779,
    "halftone_raster": 0,
-   "density": 0.599,
-   "contrast": 0.751,
-   "dark_industrial": 0.033,
-   "clean_minimal": 0.11,
-   "pictorial": 0.685,
-   "wit": 0.026,
-   "retro": 0.069,
-   "nature": 0.293,
+   "density": 0.586,
+   "contrast": 0.749,
+   "dark_industrial": 0.036,
+   "clean_minimal": 0.117,
+   "pictorial": 0.689,
+   "wit": 0.025,
+   "retro": 0.077,
+   "nature": 0.304,
    "figurative": 0,
-   "classic": 0.722,
+   "classic": 0.714,
    "photographic": 0
   },
   "brush": {
@@ -193,6 +193,6 @@
  },
  "coverage": {
   "p5": 0.025,
-  "p95": 0.248
+  "p95": 0.243
  }
 }

@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "screen-print production manager (one-ink white on black cotton)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Reads clearly from 3 m and on the model: strong pyramid silhouette, lit west flank vs dark north face, headlamps pop, stars are sparse and printable. One ink, no halftones, no words. Risks are production only: the broken dashes in the shadow face and the very fine lines at the vignette edges and bottom may fill in or drop out on cotton, and the long ragged line ends on the right side look slightly unfinished.",
+   "fix": "Make sure the thinnest lines and dash fragments are at or above the mesh/press minimum (about 0.2 to 0.25 mm), and drop or merge the tiniest dash specks in the north-face shadow so nothing clogs or breaks up in print."
+  }
+ ]
+}

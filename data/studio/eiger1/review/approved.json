@@ -1,0 +1,13 @@
+{
+ "run": "eiger1",
+ "approvedAt": "2026-10-03T22:51:23.000Z",
+ "designs": {
+  "01-1-eiger": {
+   "average": 7.5,
+   "deleteVotes": 0,
+   "family": "mountains",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

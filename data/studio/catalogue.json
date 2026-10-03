@@ -5085,5 +5085,57 @@
    "typography": 0
   },
   "model": "gemini"
+ },
+ {
+  "n": 20162,
+  "dir": "data/studio/eiger1/01-1-eiger",
+  "title": "Eiger",
+  "category": "etched",
+  "subject": "The Eiger (3,967 m, Bernese Alps) at night, seen from the west-north-west near Kleine Scheidegg: the summit pyramid, the north face on the left in deep shadow, the moonlit west flank on the right running up to the summit, the skyline as a fine line and stars above. On the north face, the headlamps of five rope teams climb towards the summit; the drawing fades out at its foot and sides in an oval vignette",
+  "style": "Engraving in horizontal lines, white on black",
+  "description": "The Nordwand at night, with five rope teams' headlamps on it. The mountain is the real one: every line comes from swisstopo's two-metre survey of the Eiger, cut like an old engraving and lit only by the moon.",
+  "keywords": [
+   "eiger",
+   "north face",
+   "nordwand",
+   "mountain",
+   "alps",
+   "swiss alps",
+   "switzerland",
+   "grindelwald",
+   "bernese oberland",
+   "climbing",
+   "alpinism",
+   "mountaineering",
+   "climber",
+   "headlamp",
+   "night",
+   "stars",
+   "engraving",
+   "line art",
+   "outdoors",
+   "gift"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "line",
+  "quality": 75,
+  "printCm": {
+   "width": 26,
+   "height": 25
+  },
+  "coverage": 0.09,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/eiger1/01-1-eiger/sources/brief.txt",
+  "features": {
+   "line_art": 0.85,
+   "pictorial": 0.8,
+   "nature": 0.6,
+   "classic": 0.5,
+   "contrast": 0.7,
+   "clean_minimal": 0.3,
+   "retro": 0.3,
+   "typography": 0
+  },
+  "model": "code"
  }
 ]

@@ -1,0 +1,13 @@
+Title: Eiger
+Category: Engravings
+Family: mountains
+Subject: The Eiger (3,967 m, Bernese Alps) at night, seen from the west-north-west near Kleine Scheidegg: the summit pyramid, the north face on the left in deep shadow, the moonlit west flank on the right running up to the summit, the skyline as a fine line and stars above. On the north face, the headlamps of five rope teams climb towards the summit; the drawing fades out at its foot and sides in an oval vignette
+Style: Engraving in horizontal lines, white on black
+Medium: Drawn in code from the real terrain (swissALTI3D elevation model), engraved to one ink by MONO
+Description: The Nordwand at night, with five rope teams' headlamps on it. The mountain is the real one: every line comes from swisstopo's two-metre survey of the Eiger, cut like an old engraving and lit only by the moon.
+Tee colours: Black (printed in white ink)
+Print size: 26.5 × 25.5 cm
+Keywords: eiger, north face, nordwand, mountain, alps, swiss alps, switzerland, grindelwald, bernese oberland, climbing, alpinism, mountaineering, climber, headlamp, night, stars, engraving, line art, outdoors, gift
+Model: code
+Credit and source: Terrain: swissALTI3D, © swisstopo (Swiss federal open government data), 2 m grid; the relief raised by 15% as the Alpine panorama painters did. Drawn as an engraving in code by MONO.
+Licence: MONO

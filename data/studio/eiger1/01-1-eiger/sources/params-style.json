@@ -1,0 +1,94 @@
+{
+ "light": [
+  -0.8,
+  -0.4,
+  0.45
+ ],
+ "t_lo": 0.1,
+ "t_hi": 0.9,
+ "t_gamma": 1.2,
+ "rock_gain": 0.9,
+ "snow_lo": 45,
+ "snow_hi": 60,
+ "snow_z0": 2420.0,
+ "snow_base": 0.4,
+ "interval_m": 7,
+ "w_min": 0,
+ "w_max": 13,
+ "w_frac": 0.72,
+ "w_floor": 5.4,
+ "t_cut": 0.08,
+ "edge_px": 6,
+ "fade_start": 0.6,
+ "fade_end": 0.84,
+ "stars": 300,
+ "zsmooth": 1.2,
+ "lit_sx": 4,
+ "lit_sy": 2,
+ "foot_z0": 1960.0,
+ "foot_dz": 500,
+ "warp": 0.35,
+ "warp_sigma": 4,
+ "period": 16,
+ "route": [
+  [
+   880,
+   2880.0
+  ],
+  [
+   960,
+   3167.5
+  ],
+  [
+   1080,
+   3455.0
+  ],
+  [
+   1150,
+   3685.0
+  ],
+  [
+   1260,
+   3915.0
+  ],
+  [
+   1380,
+   4145.0
+  ],
+  [
+   1500,
+   4294.5
+  ]
+ ],
+ "dot_gap": 70,
+ "dot_r": 21,
+ "dot_halo": 40,
+ "teams": [
+  0.22,
+  0.4,
+  0.58,
+  0.76,
+  0.9
+ ],
+ "per_team": 2,
+ "side_fade": 0.18,
+ "dash_len": 48,
+ "dash_gamma": 0.75,
+ "rock_min_area": 700,
+ "clean_below_fade": 0.7,
+ "fade_by_spacing": true,
+ "fade_steps": 1.6,
+ "fade_cut": 0.06,
+ "fade_solid": 0.8,
+ "sky_fs": 0.5,
+ "side_end_lo": 0.1,
+ "side_end_span": 0.85,
+ "sky_xmax": 0.9,
+ "oval": [
+  0.48,
+  0.4,
+  0.58,
+  0.52
+ ],
+ "oval_soft": 0.22
+}
