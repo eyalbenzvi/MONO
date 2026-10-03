@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production manager (daily one-ink back prints on cotton)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This is a clean one-screen job. The halftone is coarse, about 27 lpi with dots of roughly 0.34 mm, so it will hold in white on black cotton without filling in. The frame lines are about 0.7 mm and will stay solid. Most of the shirt shows through as black, so the ink load is light and the print will feel soft. Placement down the spine looks right. From 3 m it reads as a film strip, and the story of the four frames comes across: fire, raise, strike, quench. The sparks in frame 3 are the strongest part. Weak spot: in frame 4 the barrel reads as a wide shallow tub with a fuzzy dot bottom. It does not read as a tall wooden barrel with staves, and the steam is one chunky plume rather than a few thin threads. Frame 4 is the end of the story and it is the softest frame.",
+   "fix": "Redraw frame 4 with a tall barrel. Show clear vertical staves and a hoop in the light from the forge, with a crisp lit rim. Thin the steam to 2 or 3 fine wisps so the last frame is as sharp as frame 3."
+  }
+ ]
+}

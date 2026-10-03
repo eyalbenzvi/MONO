@@ -1,0 +1,13 @@
+Title: Four Blows
+Category: Photographs
+Family: trades
+Subject: A 35 mm contact strip running down the back, four frames of the same moustached blacksmith at night, lit only by the forge: pulling a glowing bar from the coal fire with tongs; hammer raised over the anvil, the bar held in the tongs; the hammer landing in a fan of sparks; the bar plunged into a wooden water barrel, thin threads of steam rising. Sprocket holes down both edges, frame numbers 1 2 3 4 in the gaps
+Style: Halftone photographs in a film contact strip
+Medium: Photographs made with a generative tool, screened to one ink; the film strip drawn by MONO
+Description: Draw the bar from the fire, raise the hammer, strike, quench. Four frames off one roll, and the whole of a smith's work in each of them. Only what the forge lights is printed; the night of the shop is the shirt.
+Tee colours: Black (printed in white ink)
+Print size: 13.2 × 35.5 cm
+Keywords: blacksmith, forge, smith, anvil, hammer, sparks, quench, tongs, metalwork, craftsman, maker, film strip, contact sheet, 35mm, photography, halftone, night, workwear, gift, dad
+Model: Gemini
+Credit and source: Photographs: made with a generative tool, Google Gemini, from MONO's brief (a blacksmith at night in four frames: out of the fire, hammer up, the blow, the quench), screened to one ink by MONO in the shop's 55 lpi halftone. The film strip and its numbers (Space Grotesk, SIL OFL) drawn by MONO.
+Licence: MONO

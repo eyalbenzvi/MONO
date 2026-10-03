@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels (graphic tees, $40-60 tier)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "This is a strong, sellable back print. The narrow spine strip on black looks considered and premium on the body. The open-dot rebate and knocked-out perforations read as real film, and the four-frame forge sequence tells its story from 3 m. Panels 1-3 hold up at full size: same moustached smith, clean forge light, and a great spark fan in 3. The finale lets it down. In panel 4 the 'tall' barrel reads as a low, wide tub (the staves only show as a dotted band under the rim). The steam is one thick, blotchy, tree-like column that reads as smoke or a crack, not a few thin threads. Smaller issues: in panel 2 the bar on the anvil is a halftone smear, and in panel 3 the hammer head is lost in the sparks. So the strike never quite lands as an object.",
+   "fix": "Redraw panel 4: a tall barrel cropped by the bottom of the frame, with lit staves and hoops down its side and a bright rim ellipse. Replace the blotchy column with 3-4 fine, separate, wispy steam threads rising off the water around the bar. That turns the payoff frame into the strongest one instead of the weakest."
+  }
+ ]
+}

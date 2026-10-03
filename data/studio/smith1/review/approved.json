@@ -1,0 +1,13 @@
+{
+ "run": "smith1",
+ "approvedAt": "2026-10-03T19:18:45.000Z",
+ "designs": {
+  "01-1-four-blows": {
+   "average": 7.25,
+   "deleteVotes": 0,
+   "family": "trades",
+   "approved": true,
+   "why": "approved by the owner below the bar (average 7.25 in the last panel round, 7.5 to enter)"
+  }
+ }
+}

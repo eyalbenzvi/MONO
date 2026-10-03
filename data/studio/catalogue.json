@@ -4931,5 +4931,57 @@
    "nature": 0.1
   },
   "model": "gemini"
+ },
+ {
+  "n": 20159,
+  "dir": "data/studio/smith1/01-1-four-blows",
+  "title": "Four Blows",
+  "category": "photographs",
+  "subject": "A 35 mm contact strip running down the back, four frames of the same moustached blacksmith at night, lit only by the forge: pulling a glowing bar from the coal fire with tongs; hammer raised over the anvil, the bar held in the tongs; the hammer landing in a fan of sparks; the bar plunged into a wooden water barrel, thin threads of steam rising. Sprocket holes down both edges, frame numbers 1 2 3 4 in the gaps",
+  "style": "Halftone photographs in a film contact strip",
+  "description": "Draw the bar from the fire, raise the hammer, strike, quench. Four frames off one roll, and the whole of a smith's work in each of them. Only what the forge lights is printed; the night of the shop is the shirt.",
+  "keywords": [
+   "blacksmith",
+   "forge",
+   "smith",
+   "anvil",
+   "hammer",
+   "sparks",
+   "quench",
+   "tongs",
+   "metalwork",
+   "craftsman",
+   "maker",
+   "film strip",
+   "contact sheet",
+   "35mm",
+   "photography",
+   "halftone",
+   "night",
+   "workwear",
+   "gift",
+   "dad"
+  ],
+  "baseColor": "black",
+  "single": true,
+  "mode": "tone",
+  "quality": 73,
+  "printCm": {
+   "width": 10,
+   "height": 35
+  },
+  "coverage": 0.055,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/smith1/01-1-four-blows/sources/brief.txt",
+  "features": {
+   "halftone_raster": 0.9,
+   "pictorial": 0.85,
+   "figurative": 0.8,
+   "dark_industrial": 0.7,
+   "contrast": 0.7,
+   "retro": 0.5,
+   "classic": 0.4,
+   "typography": 0.1
+  },
+  "model": "gemini"
  }
 ]

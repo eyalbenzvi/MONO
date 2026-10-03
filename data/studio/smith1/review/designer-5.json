@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer, RVCA (graphic tees, back-print artwork)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "This is a back print I'd put on the line. The narrow film strip down the spine looks deliberate and premium on the model, the open-dot rebate and knocked-out perfs look like real film, and frames 1 to 3 work as a sequence: same moustached smith, forge light, a strong spark fan in frame 3, and halftone that holds up in one white ink. Frame 4 is the weak link. The 'tall wooden barrel' reads as a wide, shallow tub, with only a scrap of staves at the bottom. The steam reads as a ragged, flecked smoke plume that looks almost like flame, not a few thin threads. The bar going into the water reads as a flat white plank lying on the surface. That's the payoff frame, and it's muddy from 3 m.",
+   "fix": "Redraw frame 4: a taller barrel cropped so its rim and several lit vertical staves fill the lower third, the tongs pushing the bar down into the water at an angle, and 3 to 4 clean, thin, separate steam threads rising off the water. Remove the speckled plume."
+  }
+ ]
+}

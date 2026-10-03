@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer (composition, placement, typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The strong part is the composition. A narrow vertical strip down the spine is a confident, gallery-like placement. It sits well under the collar on the model and reads as film from 3 m. The rebate is evenly dotted with clean knocked-out perforations, the frame lines are crisp, and the four windows have a steady rhythm. The small centred numerals are well judged: quiet, legible, not competing. Frames 1-3 tell the story clearly: figure on the left, light source and action on the right, consistent scale. The weak link is frame 4, the payoff. The 'tall wooden barrel' reads as a shallow tub or bowl seen from above. The staves are a ragged smudge at the bottom edge, and the steam is one heavy wandering plume, not a few thin threads, so the last beat is muddy next to the crisp spark fan of frame 3. A smaller point: the window frame lines butt straight onto the dotted rebate with no black margin, so the edges look slightly cramped up close.",
+   "fix": "Redraw frame 4 so the barrel reads as a tall, upright wooden barrel. Show the lit rim as an ellipse, with clear vertical staves and a hoop running down into the lower part of the frame. Replace the heavy plume with 2-4 fine, separate steam threads rising off the water."
+  }
+ ]
+}

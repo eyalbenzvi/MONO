@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop who decides what sells",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "Sells as a premium back print: a contact strip down the spine looks like a gallery piece, one white ink keeps cost down, and frames 1-3 (forge glow, raised hammer, spark fan) tell the story clearly at thumbnail size and from 3 m. The film itself is clean (even dotted rebate, knocked-out perfs, white frame lines, numbers 1-4). Frame 4 lets it down, and it's the payoff frame. The 'tall wooden water barrel' reads as a shallow tub or pan: only the rim and a short band of staves are lit. The steam is a big smoky blob, not a few thin threads, so the quench looks like smoke off a pan. Frame 2 is a bit murky too: the hammer is small and gripped up by the head, and the bar on the anvil is lost in the dots. On the model the strip looks narrow on a big back, but that's the shop's standard placement and still reads as a deliberate spine print.",
+   "fix": "Redraw frame 4 so the barrel is clearly tall and wooden: show more height of lit staves and a hoop below the rim. Swap the smoky blob for 2-3 thin, separate steam threads rising off the water, so the last frame lands as a clear quench."
+  }
+ ]
+}

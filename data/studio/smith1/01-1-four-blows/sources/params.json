@@ -1,0 +1,117 @@
+{
+ "slug": "four-blows",
+ "src": "gemini-smith-2.png",
+ "oneink_dir": "../../../../../scripts/studio",
+ "fonts_dir": "../../../../../assets/fonts",
+ "frames": [
+  [
+   143,
+   613,
+   9,
+   376
+  ],
+  [
+   762,
+   1233,
+   9,
+   376
+  ],
+  [
+   143,
+   613,
+   393,
+   760
+  ],
+  [
+   0,
+   1152,
+   8,
+   908,
+   "gemini-smith-quench.png"
+  ]
+ ],
+ "top_mm": 8,
+ "window_w_mm": 100,
+ "gap_mm": 9,
+ "end_mm": 8,
+ "rebate_mm": 16,
+ "hole_w_mm": 10.4,
+ "hole_h_mm": 7.3,
+ "hole_pitch_mm": 17.6,
+ "hole_r_mm": 1.4,
+ "edge_mm": 0,
+ "hole_line_mm": 0,
+ "window_line_mm": 0.6,
+ "num_font": "space-grotesk-bold.ttf",
+ "num_cap_mm": 5,
+ "lo": 0.1,
+ "hi": 0.95,
+ "gamma": 1.0,
+ "soften_px": 1.4,
+ "local_amount": 0.5,
+ "local_mm": 3,
+ "speck_px": 4,
+ "adjust": {
+  "2": {
+   "lifts": [
+    {
+     "x0": 0.28,
+     "x1": 0.92,
+     "y0": 0.6599999999999999,
+     "y1": 1.02,
+     "lo": 0.05,
+     "hi": 0.45,
+     "gamma": 1.0,
+     "max": 0.8,
+     "feather": 0.05
+    }
+   ]
+  },
+  "3": {
+   "lifts": [
+    {
+     "x0": 0.3,
+     "x1": 0.85,
+     "y0": 0.72,
+     "y1": 1.02,
+     "lo": 0.05,
+     "hi": 0.45,
+     "gamma": 1.0,
+     "max": 0.8,
+     "feather": 0.05
+    }
+   ]
+  },
+  "4": {
+   "threads": [
+    {
+     "x0": 0.52,
+     "x1": 0.74,
+     "y0": 0.03,
+     "y1": 0.74,
+     "lo": 0.012,
+     "hi": 0.06,
+     "max": 0.8,
+     "bg_mm": 1.5,
+     "smooth_px": 1.5,
+     "feather": 0.04
+    }
+   ],
+   "lifts": [
+    {
+     "x0": 0.33,
+     "x1": 0.85,
+     "y0": 0.74,
+     "y1": 1.02,
+     "lo": 0.03,
+     "hi": 0.32,
+     "gamma": 0.9,
+     "max": 0.85,
+     "feather": 0.04
+    }
+   ]
+  }
+ },
+ "base_pitch_mm": 0.85,
+ "base_dot_mm": 0.36
+}

@@ -1,0 +1,13 @@
+{
+ "designer": "K=6",
+ "persona": "45-year-old working blacksmith and farrier, 25 years running a forge, buys work tees",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "I like it. A strip down the spine at that size is a shirt I'd wear to the shop and out after, and it doesn't shout. The film looks right. Same face and moustache in every frame, and I can follow the order of the work: out of the fire, hammer up, strike, quench. Frames 1 and 2 are honest. Your tongs are in the fire and the bar is on the anvil. Frame 3 is where it falls apart for anyone who swings a hammer. That's the money shot, and there's no hammer in it. His right fist just stops on top of a white burst. No handle, and the head is a dark blob you'd never pick out. It reads like he punched the anvil and it blew up. The anvil is lost too. It's only a lit smear, no face, no horn, so in frames 2 and 3 you can't really tell what he's working on. Frame 4: that's a wide shallow tub, not a tall barrel. And the bar looks like a white slab floating on top of the water, not plunged in. Real quench steam comes off hard and fast in a hiss. This is one thick smoke column, more like a chimney. The hammer in frame 2 is also small, more like a carpenter's hammer than a forging hammer.",
+   "fix": "Redo frame 3 so the strike is clear. Show a proper cross-pein forging hammer with the handle in his fist and the head square on the bar. Light up the anvil face and horn, and make the sparks fly off the point where the hammer hits. Right now his fist just stops on a white burst."
+  }
+ ]
+}
