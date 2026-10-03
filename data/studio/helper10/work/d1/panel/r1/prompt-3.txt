@@ -1,0 +1,17 @@
+You are on a design review panel. Your persona: Natural-history illustrator who checks truth to the source and looks hard for artefacts.
+
+The shop: MONO, a small online shop selling $50 t-shirts printed in ONE ink (black on a white tee here). Customers like things that are beautiful, smart, and have a point of view. Four reference tees set the shop's standard: a whale study sheet, a sailboat technical elevation, a dense pen-and-ink colonial building, and a bicycle patent sheet in white on black.
+
+Calibration: the best design so far scored 9.0 (an archive octopus engraving); strong woodcuts and ship prints score about 8.0.
+
+The designs (each image is the full 28 x 37 cm print area at 300 DPI, shown as ink on a white tee):
+- Design 1: a bare oak tree above ground with its roots below, and a fox family asleep in an earth among the roots; tonal pencil-like drawing. Files: /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-1-whole.png (scaled down), /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-1-full.png (full size), crops /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-1-crop-*.png.
+- Design 2: Utagawa Hiroshige's 1857 woodblock print 'Sudden Shower over Shin-Ohashi Bridge and Atake' (Cleveland Museum of Art, public domain), traced to one ink from the museum scan: the print's own black key-block and rain lines, its black cloud band at the top translated into tapering vertical lines, the distant shore as level hatching, the bridge piers and deep water as solid black with the rain knocked out in white, the two title cartouches and the signature kept, inside a thin keyline following the print's chamfered outline. Under it the caption 'CHANCE OF RAIN: 100% SINCE 1857.' in a classical serif capital. Files: /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-2-whole.png (scaled down), /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-2-full.png (full size, 3307 x 4370), crops /home/user/MONO/data/studio/helper10/work/d1/panel/r1/design-2-crop-*.png.
+
+How to look: open each print whole (scaled down, as if seen from 3 m away) and then crop into details at full size (use the crops given; you may also crop the full-size files yourself with Python/PIL into your own scratch files under /tmp). Judge it as a shirt someone would pay $50 for and wear.
+
+For each design give ONE score 1-10 (halves allowed), a verdict PASS / NEEDS CHANGE / DELETE, a short why, and the one fix that would raise it most. Name the best design.
+
+Write ONLY this JSON to /home/user/MONO/data/studio/helper10/work/d1/panel/r1/designer-3.json:
+{"designer":"K=3","persona":"Natural-history illustrator who checks truth to the source and looks hard for artefacts","designs":[{"no":1,"score":..,"verdict":"..","why":"..","fix":".."},{"no":2,"score":..,"verdict":"..","why":"..","fix":".."}],"best":..,"overall":".."}
+Reply "done" when the file is written.
