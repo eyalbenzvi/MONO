@@ -25,6 +25,17 @@ async function swipe(page: Page, id: string, dx: number, look?: () => Promise<vo
   await page.mouse.up();
 }
 
+/** The same swipe with a finger (touch events), as on a phone. */
+async function touchSwipe(page: Page, id: string, dx: number) {
+  const box = (await page.locator(`[data-saved-row="${id}"] > div`).last().boundingBox())!;
+  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (type: "touchStart" | "touchMove" | "touchEnd", px: number) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: px, y }] });
+  await touch("touchStart", x);
+  for (let i = 1; i <= 10; i++) await touch("touchMove", x + (dx * i) / 10);
+  await touch("touchEnd", x + dx);
+}
+
 test.beforeEach(async ({ page }) => {
   await seed(page, { likedIds: [B9, B1] });
   await page.addInitScript(() => {
@@ -76,4 +87,35 @@ test("Saved: the first time it opens, the first row slides aside once to show th
   await expect(label).toHaveAttribute("data-swipe-action", "add", { timeout: 4000 });
   await expect(label).toHaveCount(0, { timeout: 4000 });
   expect(await page.evaluate(() => localStorage.getItem("mono-saved-hint"))).toBe("1");
+});
+
+test("Saved: with no size known, swiping a row right says Select size and opens the tee's page", async ({ page }) => {
+  // Runs after the size set in beforeEach, on every load: no size remembered.
+  await page.addInitScript(() => {
+    const c = JSON.parse(localStorage.getItem("mono-cart")!);
+    delete c.state.preferredSize;
+    localStorage.setItem("mono-cart", JSON.stringify(c));
+  });
+  await page.reload();
+  await hydrated(page);
+  await openSaved(page);
+  const row = page.locator(`[data-saved-row="${B9}"]`);
+  await swipe(page, B9, 160, async () => {
+    await expect(row.locator("[data-swipe-action]")).toHaveText("Select size");
+  });
+  await expect(page).toHaveURL(new RegExp(`/shop/${B9}/?$`));
+  expect(await cart(page)).toEqual([]);
+});
+
+test("Saved: with no size known, a finger swipe right opens the tee's page too", async ({ page }) => {
+  await page.addInitScript(() => {
+    const c = JSON.parse(localStorage.getItem("mono-cart")!);
+    delete c.state.preferredSize;
+    localStorage.setItem("mono-cart", JSON.stringify(c));
+  });
+  await page.reload();
+  await hydrated(page);
+  await openSaved(page);
+  await touchSwipe(page, B9, 160);
+  await expect(page).toHaveURL(new RegExp(`/shop/${B9}/?$`));
 });

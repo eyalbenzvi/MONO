@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { Icon } from "@/components/Icon";
 import { TeeMockup } from "@/components/TeeMockup";
@@ -97,10 +98,11 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
     return () => run.stop();
   }, [hint, x]);
   const addLabel = size ? `Add to bag · ${SIZE_LABELS[size]}` : "Select size";
-  const link = useRef<HTMLAnchorElement>(null);
+  const router = useRouter();
   const add = () => {
-    // No size yet: the tee's page, to select one.
-    if (!size) return link.current?.click();
+    // No size yet: the tee's page, to select one. Navigate directly: a click on the
+    // link right after a swipe is swallowed by the drag guard below.
+    if (!size) return router.push(productHref(shirt.id));
     useCartStore.getState().addToCart(shirt.id, size, color, 1, { source: "saved" });
   };
 
@@ -135,7 +137,7 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
           <TeeMockup shirt={shirt} color={color} sizes={SIZES.thumb} className="pointer-events-none w-full" />
         </Link>
         <div className="min-w-0 flex-1">
-          <Link ref={link} href={productHref(shirt.id)} draggable={false} className="block py-0.5">
+          <Link href={productHref(shirt.id)} draggable={false} className="block py-0.5">
             <p className="line-clamp-2 text-sm">{shirt.title}</p>
             <p className="truncate text-xs text-muted">{top ? "Top pick" : CATEGORY_LABELS[shirt.category]}</p>
           </Link>

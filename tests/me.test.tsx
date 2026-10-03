@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { MeView } from "@/components/MeView";
 import { Header } from "@/components/Header";
@@ -7,6 +7,7 @@ import { CALIBRATION_IDS, SHIRTS } from "@/lib/catalog";
 import { useCartStore } from "@/store/cartStore";
 import { useTasteStore } from "@/store/tasteStore";
 import { useUiStore } from "@/store/useUiStore";
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, back() {} }), usePathname: () => "/me/" }));
 
 afterEach(cleanup);
 // jsdom has no ResizeObserver (the header measures itself).
