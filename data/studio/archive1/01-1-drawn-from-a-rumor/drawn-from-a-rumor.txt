@@ -5,7 +5,7 @@ Subject: Albrecht Dürer's 1515 woodcut rhinoceros, the armoured beast he cut wi
 Style: Woodcut line traced from a museum scan, with a classical-capital caption
 Medium: Public-domain woodcut, traced and set by MONO
 Description: Dürer never saw a rhinoceros. He cut this one in 1515 from a letter and a rough sketch, armour plates and all, and for more than two centuries it was what Europe believed a rhinoceros looked like.
-Tee colours: White
+Tee colours: White (default), Black (printed in white ink)
 Print size: 25.5 × 34.1 cm
 Keywords: rhinoceros, rhino, Dürer, Durer, woodcut, 1515, Renaissance, rumor, armour, animal, line art
 Model: Archive

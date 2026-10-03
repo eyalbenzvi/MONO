@@ -16,5 +16,7 @@
  "blackTee": false,
  "crisp": null,
  "fails": [],
- "warns": []
+ "warns": [],
+ "tees": "both",
+ "teeDefault": "white"
 }

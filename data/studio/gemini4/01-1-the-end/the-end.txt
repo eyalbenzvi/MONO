@@ -5,7 +5,7 @@ Subject: The words "the end" in large lowercase type, "end" sitting on the horiz
 Style: Linocut-style sunset in horizontal ripple lines, with bold lowercase type
 Medium: Generated (linocut-style drawing), type set by MONO
 Description: The closing shot of an old film: the sun goes down on the horizon, a small boat sails off, and "the end" sits on the water. Quiet, and final.
-Tee colours: White
+Tee colours: White (default), Black (printed in white ink)
 Print size: 27.2 × 33.0 cm
 Keywords: the end, sunset, sea, sailboat, linocut, film, closing credits, horizon, ocean, minimal, gift
 Model: Gemini

@@ -4612,7 +4612,7 @@
    "line art"
   ],
   "baseColor": "white",
-  "single": true,
+  "single": false,
   "mode": "line",
   "quality": 81,
   "printCm": {
@@ -4682,7 +4682,7 @@
    "gift"
   ],
   "baseColor": "white",
-  "single": true,
+  "single": false,
   "mode": "line",
   "quality": 80,
   "printCm": {
@@ -4716,7 +4716,7 @@
    "line art"
   ],
   "baseColor": "white",
-  "single": true,
+  "single": false,
   "mode": "line",
   "quality": 77,
   "printCm": {
@@ -4749,7 +4749,7 @@
    "gift"
   ],
   "baseColor": "white",
-  "single": true,
+  "single": false,
   "mode": "line",
   "quality": 78,
   "printCm": {

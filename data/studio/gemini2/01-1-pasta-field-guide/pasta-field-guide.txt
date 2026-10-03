@@ -5,7 +5,7 @@ Subject: Sixteen pasta shapes drawn like the plates of a naturalist's field guid
 Style: Engraving-style line drawing with a serif heading and labels
 Medium: Generated (line drawing), traced and set by MONO
 Description: Sixteen pasta shapes, drawn and named the way a naturalist would catalogue beetles. From spaghetti to radiatori, every one is a different answer to holding sauce.
-Tee colours: White
+Tee colours: White (default), Black (printed in white ink)
 Print size: 26.1 × 33.1 cm
 Keywords: pasta, field guide, Italian food, spaghetti, farfalle, rigatoni, ravioli, cooking, chart, line art, foodie, gift
 Model: Gemini

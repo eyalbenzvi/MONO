@@ -5,7 +5,7 @@ Subject: A scatter chart titled "HORSEPOWER VS. POOR DECISIONS": a bicycle, a sc
 Style: Clean line drawings of vehicles on a chart, with a heavy condensed title
 Medium: Generated (line drawing), set on a chart by MONO
 Description: The more horsepower, the worse the decisions, plotted from a bicycle to a dragster that leaves the chart altogether. One minivan sits far below the curve.
-Tee colours: White
+Tee colours: White (default), Black (printed in white ink)
 Print size: 27.0 × 34.7 cm
 Keywords: horsepower, poor decisions, chart, graph, cars, motorcycle, dragster, minivan, funny, petrolhead, gift, line art
 Model: Gemini
