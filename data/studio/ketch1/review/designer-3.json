@@ -1,0 +1,13 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer (composition, placement, typography)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A strong, classic vertical layout: the ketch's tall triangle fills the portrait print area well, the bowsprit-left side view reads instantly, and the stippled reflection fading down is a nice soft way to end the print instead of a hard edge. The heading is well set, with even letter-spacing on KETCH, a clean grotesk, a sensible step down to the subline and a tidy rule. Weak points: (1) the heading is timid next to the drawing. KETCH has about a 1 cm cap height on a 28 cm wide area, so at 3 m and on the model it reads as a caption, not a title, and the rule is only about 60% of the hull's width, so the top block feels disconnected from the art. (2) The weight is uneven: the hull, deck clutter and the dotted seams around the main mast build into a near-solid black band and column low in the print, while the upper sails are faint. The print is bottom-heavy, and the main mast area looks smudged rather than drawn at viewing distance. Placement on the back is standard and fine.",
+   "fix": "Make the heading about 1.4\u20131.5x larger (KETCH around 1.5 cm cap height) and widen the rule to match the hull length (bowsprit tip to stern), so the title and the drawing lock into one centred block. As a secondary fix, thin the seam dots beside the main mast so they don't merge into a black column."
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "run": "ketch1",
+ "approvedAt": "2026-10-03T20:43:36.000Z",
+ "designs": {
+  "01-1-ketch": {
+   "average": 6.25,
+   "deleteVotes": 0,
+   "family": "ships",
+   "approved": true,
+   "why": "approved by the owner below the bar (average 6.25 in the panel round on an earlier build of this drawing, 7.5 to enter)"
+  }
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer at RVCA (graphic tees, back-print artwork)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The drawing itself is good. The hull planking, the black spars and spreaders, and the stippled reflection fading into broken lines all hold up at full size and print cleanly in one ink. On the model, though, it reads as a polite museum-shop print rather than a back graphic. The ship sits small and pale in the middle of an empty back. The thin rigging and the dotted sail seams turn to grey fuzz from 3 m, and along the main mast the dot rows clump into uneven blobs that look like a halftone that filled in. The heading is a generic letter-spaced grotesque at caption size. It is unreadable at a distance and adds no attitude, so the lockup feels like a stock vintage-illustration template instead of a brand piece.",
+   "fix": "Rebuild the type and scale together as one lockup. Make KETCH a big, characterful heading (condensed or hand-drawn, about the width of the hull, with stroke weight matched to the hull line). Enlarge the drawing to fill more of the standard print area. Thicken the sail outlines and even out the seam dots so the sails stay crisp from 3 m instead of turning to noise."
+  }
+ ]
+}

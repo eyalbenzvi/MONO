@@ -1,0 +1,13 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels (graphic tees, $40-60 tier)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The hull, plank lines and the stippled reflection are good: firm, printable and nicely nautical, and on the model the placement and scale feel right for a back print. The rig lets it down. Up close the sails don't read as separate shapes. Outlines overlap and cross each other, a stray curved line runs diagonally through the main, and the 'dotted seams' are uneven blobs and dashes. They pile up into a dark vertical smear along the mainmast and spreaders, so from 3 m the middle of the drawing turns to noise when it should look like crisp canvas. The header is generic. A plain grotesk 'KETCH / Maritime \u00b7 Sail plan' over a rule reads like a stock template, not a label's mark. As it stands it looks like cleaned-up clip art, which is hard to sell at $50.",
+   "fix": "Redraw the sail plan cleanly. Make jib, staysail, main and mizzen distinct closed shapes with no lines crossing through them, use evenly spaced seam dots of one size (at least 0.3 mm), and clear the clutter and dark build-up around the mainmast and spreaders so the sails read as light, airy canvas against the solid black spars and hull."
+  }
+ ]
+}

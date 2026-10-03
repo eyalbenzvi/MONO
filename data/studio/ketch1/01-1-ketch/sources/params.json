@@ -1,0 +1,83 @@
+{
+ "slug": "ketch",
+ "src": "gemini-ketch.png",
+ "oneink_dir": "../../../../../scripts/studio",
+ "crop": {
+  "x0": 10,
+  "x1": 810,
+  "y0": 30,
+  "y1": 1236
+ },
+ "title": "KETCH",
+ "sub": "Maritime \u00b7 Sail plan",
+ "top_mm": 8,
+ "gap_mm": 11,
+ "max_w_mm": 260,
+ "bottom_mm": 1,
+ "water_fade": {
+  "from": 2,
+  "soft": 1
+ },
+ "firm": null,
+ "near_px": 15,
+ "pre_blur": 0.6,
+ "lines": {
+  "bg_mm": 1.0,
+  "ridge": 0.04,
+  "firm": 0.45,
+  "floor": 0.06,
+  "close_px": 1.5,
+  "crumb_mm": 0.35,
+  "dot_mm": 0.78,
+  "pinhole_mm": 0.35,
+  "dot_max_mm": 1.0,
+  "dot_gap_mm": 1.15
+ },
+ "water_up_px": 20,
+ "cap_title_mm": 12.5,
+ "cap_sub_mm": 5.6,
+ "rule_mm": 215,
+ "hull_px": [
+  175,
+  745
+ ],
+ "title_stroke_mm": 0.0,
+ "head_gap_k": 0.55,
+ "rule_gap_mm": 7,
+ "water": {
+  "cut_y": 1089,
+  "water_x": [
+   20,
+   805
+  ],
+  "hull_x": [
+   185,
+   730
+  ],
+  "line_mm": 0.55,
+  "rows_mm": [
+   3,
+   6,
+   9.5,
+   13.5,
+   18
+  ],
+  "row_shrink": 0.6,
+  "dash_mm": [
+   3,
+   12
+  ],
+  "gap_mm": [
+   1.5,
+   5
+  ],
+  "pitch_mm": 1.35,
+  "depth_mm": 24,
+  "density": 0.85,
+  "fall": 1.4,
+  "taper": 0.5,
+  "clear_mm": 0.9,
+  "seed": 3
+ },
+ "fonts_dir": "../../../../../assets/fonts"
+}

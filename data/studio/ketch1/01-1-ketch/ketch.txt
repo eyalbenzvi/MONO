@@ -1,0 +1,13 @@
+Title: Ketch
+Category: Engravings
+Family: ships
+Subject: A fine pen-and-ink drawing of a two-masted ketch under full sail on still water, seen from the side, bowsprit to the left: firm spars and hull with thin plank lines, the sails light outlines with their seams in rows of round dots, a waterline, broken water lines and a stippled reflection that fades out downward. Above it, light and letter-spaced: KETCH, under it Maritime · Sail plan, over a rule as long as the hull
+Style: Pen-and-ink sail plan with a letter-spaced heading
+Medium: Drawing made with a generative tool, cleaned to one ink; heading and water drawn by MONO
+Description: A ketch carries her sail on two masts, the taller forward, so the canvas is split into pieces a small crew can handle. Drawn here the way a sail plan is: every seam, stay and plank.
+Tee colours: White (printed in black ink)
+Print size: 20.5 × 29.8 cm
+Keywords: sailing, sailboat, ketch, yacht, sail plan, boat, wooden boat, sea, ocean, nautical, maritime, sailor, line drawing, pen and ink, classic, gift, dad, grandad
+Model: Gemini
+Credit and source: Drawing: made with a generative tool, Google Gemini, redrawn from the owner's pictures of a ketch, cleaned to one ink by MONO. Heading (Space Grotesk, SIL OFL), the seam dots and the water drawn by MONO.
+Licence: MONO

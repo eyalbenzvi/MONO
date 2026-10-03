@@ -1,0 +1,13 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop who decides what sells",
+ "designs": [
+  {
+   "no": 1,
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The idea works: a nautical line drawing on a white tee in black ink is a reliable seller, and the hull, water and reflection look good from 3 m. The letter-spaced heading looks tidy too. But at $50 it has to look better than the generic sailboat tees that sell for $25, and the rig lets it down. The sails pile on top of each other in a tangle with no clearly drawn mainsail and boom, so it does not read as a proper ketch, and that is a problem under a heading that says 'Sail plan'. Sailors, the people most likely to buy this, will spot it. Up close (in the full-size crops) the dotted seams are blobby, uneven dashes that look like a degraded auto-trace, not fine pen work. On the model the light sail lines fade into the white cotton, so all that reads is a small dark hull with grey scribble above it.",
+   "fix": "Redraw the rig as a clean, correct ketch: a main and a mizzen, each with its boom, plus a jib and staysail, with sails that don't overlap. Use one even, fine line weight with small, regular seam dots, so the sail area reads as crisp engraving from a distance and stands up to close inspection."
+  }
+ ]
+}

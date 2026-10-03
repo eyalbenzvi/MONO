@@ -1,0 +1,13 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production manager (one-ink back prints on cotton daily)",
+ "designs": [
+  {
+   "no": 1,
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "This is a film-ready one-colour job. It's already pure black and white, with no greys to halftone. Most lines are 5-8 px at 300 DPI (0.4-0.7 mm), which holds fine on 156-200 mesh with plastisol. The smallest stipple dot is above 16 px (about 0.35 mm), so the reflection fade won't drop dots or wash out. The heading is crisp and well spaced. On the model the placement looks right for the standard back area, and the drawing reads as a clear ship from 3 m. What's holding it back is the deck/cabin band and the main mast. Those areas are solid black full of about 380 tiny white pinholes and gaps of 0.25 mm or less. With dot gain on cotton they'll fill in, so the deckhouse detail and the mast texture print as one blotchy black bar. The sail-seam dots also vary in size, from fat beads down to fine ones. That's printable, but it will look uneven from shirt to shirt.",
+   "fix": "Clean up the deck/cabin band and the mast in the art. Merge the pinhole-mottled areas into clean solids, and open the deckhouse/rail detail to at least 0.3 mm white gaps (4 px at 300 DPI). Then it holds as drawn instead of clogging into a black bar."
+  }
+ ]
+}

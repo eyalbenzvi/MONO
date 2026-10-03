@@ -1,0 +1,13 @@
+{
+ "designer": "K=6",
+ "persona": "50-year-old who has sailed and restored wooden boats for 30 years, owns an old ketch, buys sailing tees",
+ "designs": [
+  {
+   "no": 1,
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The hull is the best part: honest sheer, believable plank lines, a decent counter stern and bowsprit, and the stippled reflection sits it on the water nicely. The heading is clean and the placement on the back is right. The rig is where it falls apart for anyone who sails. There is no main boom and no mizzen boom to be seen, so the main reads as a narrow tower of vertical dotted streaks hugging the mast, not a sail with a luff, foot and leech. The seams run vertically, parallel to the mast, which no cross-cut sail does. A long curved line sweeps from the masthead down to the mizzen with nothing attached to it, so you can't tell if it's a leech, a backstay or a stray stroke. The spreaders are drawn as crossed triangles, and the headsails and stays cross each other in a tangle. From 3 m it looks like a pretty sailboat. Up close, a ketch owner sees a rig that couldn't set or hold a sail, and the shirt is called KETCH and 'Sail plan', so that's the part that has to be right.",
+   "fix": "Redraw the rig as a real ketch sail plan: a firm main boom and mizzen boom, a gaff or Bermuda main and mizzen with a clear luff on the mast, foot on the boom and a fair leech, seams running across the sail (perpendicular to the leech), jib and staysail tacked to the bowsprit and stemhead on their own stays, and simple straight spreaders. Remove the stray masthead-to-mizzen curve and any lines that don't belong to a stay, sheet or sail edge."
+  }
+ ]
+}
