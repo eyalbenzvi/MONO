@@ -1,0 +1,82 @@
+[
+ {
+  "idea": "A letter-frequency bar chart computed from Georges Perec's 1969 novel La Disparition, 26 bars sorted A to Z with an empty gap where E should be, captioned 'Something is missing. (Perec, 1969: a whole novel without an e.)' The book really is a lipogram that never uses the letter e, and the chart makes the absence the subject, which is the novel's own point.",
+  "mode": "code"
+ },
+ {
+  "idea": "Ten rows of fourteen tiny line-strips, a program-drawn lattice of Raymond Queneau's Cent mille milliards de poèmes, with one path traced through it in solid ink and the caption '10¹⁴ sonnets. Queneau reckoned 190 million years to read them all.' His 1961 book of ten sonnets cut into interchangeable line strips really does make a hundred thousand billion poems, and the shirt wears one of them.",
+  "mode": "code"
+ },
+ {
+  "idea": "A full page of random text generated from Borges's 25-symbol alphabet (22 letters, space, comma, full stop), 40 lines of about 80 characters, with one accidental real word circled, captioned 'Library of Babel. Every book that could exist is in here somewhere.' It's the 1941 story's thought experiment printed as an actual page, for readers who like infinity with a library card.",
+  "mode": "code"
+ },
+ {
+  "idea": "The palindrome 'A MAN, A PLAN, A CANAL: PANAMA' set around a circle, with a program drawing a chord between each letter and its mirror twin so the lines fall into a perfectly symmetrical web. Leigh Mercer published the line in 1948, and the shirt shows the hidden symmetry that makes it work.",
+  "mode": "code"
+ },
+ {
+  "idea": "All 31,102 verses of the King James Bible plotted as thin horizontal lines, one under another, each as long as the verse, with a single tiny stub picked out and labelled 'John 11:35. Jesus wept.' It's the shortest verse in the KJV, and the data shows how two words can stand out in a book of nearly 800,000.",
+  "mode": "code"
+ },
+ {
+  "idea": "Every rhythm a poet can build from short (1 beat) and long (2 beats) syllables, drawn by code as stacked tilings for 1 to 7 beats, with the counts 1, 2, 3, 5, 8, 13, 21 at the end of each row, captioned 'Indian poets counted these before Fibonacci did.' Sanskrit prosodists such as Virahāṅka (c. 7th century) worked out this sequence while counting metres, centuries before Leonardo of Pisa.",
+  "mode": "code"
+ },
+ {
+  "idea": "Six end-words braided through six stanzas by the sestina's spiral permutation (6-1-5-2-4-3), drawn as six crossing lines that weave down the shirt like a plait, captioned 'Sestina. Arnaut Daniel, c. 1200.' The form really does reshuffle its six words the same way every stanza, and drawing that rule gives a beautiful knot for poets.",
+  "mode": "code"
+ },
+ {
+  "idea": "The edit-distance grid between WRITER and EDITOR, a 7×7 table of numbers computed by the Levenshtein algorithm, with the cheapest path traced through it to the answer in the corner: 'writer → editor: 3 edits.' It's true, it looks like a precise little circuit board, and it makes the point every editor already believes.",
+  "mode": "code"
+ },
+ {
+  "idea": "Galileo's 1610 anagram 'SMAISMRMILMEPOETALEUMIBUNENUGTTAUIRAS' on top, with program-drawn lines carrying each letter down into its place in 'ALTISSIMUM PLANETAM TERGEMINUM OBSERVAVI' ('I have observed the highest planet three-formed'). Galileo scrambled his Saturn discovery to claim priority without giving it away, and Kepler famously unscrambled it wrongly, so it's science, secrecy and wordplay in one tangle.",
+  "mode": "code"
+ },
+ {
+  "idea": "The Huffman coding tree for the line 'to be or not to be', drawn by the algorithm itself: frequent letters (o, t, space) sit on short branches near the root and rare ones (r, n) hang low, captioned 'Huffman, 1952. Say the common things briefly.' David Huffman devised the method as an MIT student, and it still sits inside ZIP and JPEG compression, so it's good writing advice from information theory.",
+  "mode": "code"
+ },
+ {
+  "idea": "The 26×26 tabula recta of the Vigenère cipher, every row the alphabet shifted one more place, so the repeating letters form clean diagonal stripes, captioned 'le chiffre indéchiffrable'. The 'indecipherable cipher' held up for about three centuries until Friedrich Kasiski published a general attack in 1863, so it's a beautiful grid with a lesson about confidence.",
+  "mode": "code"
+ },
+ {
+  "idea": "The Chinese character 永 ('eternity') drawn as five separate vector strokes with numbered stroke order and arrows, each stroke type labelled, captioned 'Eight principles of Yong.' Calligraphy students have long practised this one character because it contains all eight basic stroke types, so it's a whole writing system's technique packed into a single, elegant mark.",
+  "mode": "code"
+ },
+ {
+  "idea": "A program-drawn map of all 1,114,112 Unicode code points as 17 big squares of tiny cells, with the assigned blocks inked in and most of the space left blank, captioned 'Room for every script. Still mostly empty.' It's the real shape of the standard behind every letter on every screen, and a hopeful picture of how much writing it has room for.",
+  "mode": "code"
+ },
+ {
+  "idea": "The 128 characters of 1963 ASCII drawn as a grid of seven-bit binary rows, ones as filled dots and zeros as empty, with one row highlighted: 'A = 1000001'. Every letter you type is stored as a number, and the shirt shows the alphabet the way the machine reads it.",
+  "mode": "code"
+ },
+ {
+  "idea": "The word 'DERMATOGLYPHICS' drawn as a path around a circle of the 26 letters, a program connecting them in spelling order, and the line never lands on the same letter twice, captioned '15 letters. None twice.' It's one of the longest English isograms, and fittingly it means the study of fingerprints, which never repeat either.",
+  "mode": "code"
+ },
+ {
+  "idea": "A line of text with an eye-tracking scanpath plotted over it: circles for fixations sized by how long the eye rested, and thin jumps between them, with some short words skipped altogether, captioned 'Reading isn't smooth. Your eyes jump about four times a second.' Readers really do move in saccades with fixations of roughly a quarter of a second, and the graphic reveals what you're doing right now.",
+  "mode": "code"
+ },
+ {
+  "idea": "The 100 tiles of an English Scrabble set drawn as a grid of squares, grouped by letter and sorted by count, from twelve E's down to the single J, K, Q, X and Z, plus two blanks, captioned 'Alfred Butts counted letters in newspapers to decide.' His 1938 frequency count is still the distribution, so it's a data visualisation everyone has played with without knowing it.",
+  "mode": "code"
+ },
+ {
+  "idea": "A computer concordance of King Lear: every line containing 'nothing' stacked with the word aligned in one central column, so the 'nothing's form a vertical spine down the shirt, headed by 'Nothing will come of nothing.' It's a keyword-in-context plot that shows how a play keeps coming back to its own void.",
+  "mode": "code"
+ },
+ {
+  "idea": "An arc diagram of the villanelle form: 19 lines as dots in a column, with arcs linking every rhyme and two heavier arcs tying each refrain back to its first appearance, until both refrains meet in the final couplet, captioned 'Villanelle: two lines that won't let go.' The form's strict 19-line, two-refrain design is drawn as pure structure, for poets and people who can't stop thinking about something.",
+  "mode": "code"
+ },
+ {
+  "idea": "A justified block of text with a fine ruler above it, and a program counting characters along each line so every line is exactly 66 long, captioned '66 characters. The ideal line.' Robert Bringhurst's Elements of Typographic Style calls 45 to 75 characters a satisfactory measure and 66 widely regarded as ideal, so this is a quiet, well-spaced manifesto for readable pages.",
+  "mode": "code"
+ }
+]
