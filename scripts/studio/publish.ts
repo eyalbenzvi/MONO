@@ -17,8 +17,8 @@
  * Runs after sdxl50 are gated (scripts/studio/briefs/rules.md, review-designers.md): only the
  * designs five designer reviews approved (data/studio/<run>/review/approved.json, written by
  * scripts/studio/approve.ts) are published; their quality is the reviews' average × 10, their
- * tee colours come from the print's own measures (print.json: only an outline drawing prints in
- * white ink on a black tee), the full-resolution print is kept for production
+ * tee colours come from print.json (the designer's tees / teeDefault; without them, the print's own
+ * measures: only an outline drawing prints in white ink on a black tee), the full-resolution print is kept for production
  * (assets/prints-hd), a print under 20 cm wide and 30 cm tall stays out, and a run may not
  * bring more than two designs of one family. The runs before stay exactly as they were.
  */
@@ -113,10 +113,23 @@ export interface PrintMeasures {
   sizeCm: [number, number];
   blackTee: boolean;
   fails: string[];
+  /**
+   * The designer's call, from this build process on (older deliveries lack it and keep the rule below):
+   * "both" when the print still reads in white ink on black (type, silhouettes, line drawings — ink is
+   * shape, not shadow), "white" or "black" when it is made for one tee only.
+   */
+  tees?: "both" | "white" | "black";
+  /** With tees "both": the tee it leads with, picked to keep the shop's defaults balanced (scripts/studio/teeBalance.ts). */
+  teeDefault?: BaseColor;
 }
 
-/** A gated design's tees: an outline drawing on both (dense ink leads with white), anything shaded on white alone. */
-export function gatedTees(m: Pick<PrintMeasures, "blackTee" | "coverage">): { baseColor: BaseColor; single: boolean } {
+/**
+ * A gated design's tees: the designer's call when print.json carries one (tees, teeDefault); otherwise the
+ * earlier rule — an outline drawing on both (dense ink leads with white), anything shaded on white alone.
+ */
+export function gatedTees(m: Pick<PrintMeasures, "blackTee" | "coverage" | "tees" | "teeDefault">): { baseColor: BaseColor; single: boolean } {
+  if (m.tees === "both") return { baseColor: m.teeDefault ?? "white", single: false };
+  if (m.tees === "white" || m.tees === "black") return { baseColor: m.tees, single: true };
   if (!m.blackTee) return { baseColor: "white", single: true };
   return { baseColor: m.coverage > BOTH_WHITE_ABOVE ? "white" : "black", single: false };
 }

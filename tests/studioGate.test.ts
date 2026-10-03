@@ -46,6 +46,11 @@ describe("studio gate: what the shop makes of an approved design", () => {
     expect(gatedTees({ blackTee: true, coverage: 0.1 })).toEqual({ baseColor: "black", single: false });
     expect(gatedTees({ blackTee: true, coverage: 0.2 })).toEqual({ baseColor: "white", single: false });
     expect(gatedTees({ blackTee: false, coverage: 0.1 })).toEqual({ baseColor: "white", single: true });
+    // From this build process on, the designer's call in print.json wins over the measures.
+    expect(gatedTees({ blackTee: false, coverage: 0.4, tees: "both", teeDefault: "black" })).toEqual({ baseColor: "black", single: false });
+    expect(gatedTees({ blackTee: false, coverage: 0.4, tees: "both" })).toEqual({ baseColor: "white", single: false });
+    expect(gatedTees({ blackTee: true, coverage: 0.1, tees: "white" })).toEqual({ baseColor: "white", single: true });
+    expect(gatedTees({ blackTee: false, coverage: 0.3, tees: "black" })).toEqual({ baseColor: "black", single: true });
   });
 
   it("files a design by its Category line (a shop label or key)", () => {

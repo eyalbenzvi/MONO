@@ -29,6 +29,17 @@ publish.ts, generate) is the owner's, after review.
    threshold; skeleton at 0.42 mm). Photographs and tone: `scripts/studio/oneink.py` (55 lpi halftone).
    Type: the shop's fonts in `assets/fonts`. `oneink.check` must report no fails. Zoom-check at full size for
    artefacts before every panel (stray marks, frame remnants, clipped rings, broken lines).
+   **Tees.** Decide the tees before the panel, and look at the print in white ink on black as well as in black on
+   white. The aim for the shop: most designs on both tees, leading with white and black about equally; small
+   white-only and black-only groups of similar size. `scripts/studio/teeBalance.ts` prints the current counts, the
+   tee the next both-tee design should lead with, and the one-tee group that is behind.
+   - **Both** when the print still reads in white ink on black: type, silhouettes, line drawings, where ink is a
+     shape and not a shadow. Lead with the tee teeBalance names, unless the design plainly reads better on the
+     other (a night scene on black).
+   - **White only** when ink is shadow and inverting it makes a negative (engraving hatching, halftone tone).
+   - **Black only** when the design is made for a dark tee (a night sky, neon, a chalkboard) and not for white.
+   When teeBalance says a black-only design is wanted, give part of the next idea competition's seeds a "made for
+   white ink on a black tee" attribute, and brief the image model for a dark garment.
 4. **Panel.** Five reviewer agents score the print on its own (template below). They are not calibrated:
    each is defined only by its persona, with no reference tees, no example scores, no anchor design and no
    word about the shop's taste or best sellers (an earlier panel told those drifted towards archive engraving
@@ -47,10 +58,13 @@ publish.ts, generate) is the owner's, after review.
 
 - `<slug>.png`: line art, RGBA 3307 × 4370, ink in alpha (a tonal print: `<slug>-white.png`).
 - `<slug>-preview.png`: 1500 px wide, black on white.
-- `print.json`: `oneink.check`'s output with `mode`, `edge`, `views`, `outline`, `ground`; `fails` empty.
+- `print.json`: `oneink.check`'s output with `mode`, `edge`, `views`, `outline`, `ground`; `fails` empty; and the
+  tees decided above: `tees` (`both`, `white` or `black`) and, with `both`, `teeDefault` (`white` or `black`).
+  publish.ts follows them; a delivery without them falls back to the earlier rule (an outline drawing with under
+  10% solid ink on both, anything else on white only), so designs already in the shop are unchanged.
 - `<slug>.txt`: Title, Category (a shop label: Engravings, Brush & Woodblock, Botanical & Nature, Maps & Sky,
   Architecture, Pattern, Geometric, Type, Photographs, ASCII & Code), Family, Subject, Style, Medium,
-  Description (two sentences, checked facts), Tee colours, Print size, Keywords, Model (`Archive` or
+  Description (two sentences, checked facts), Tee colours (as decided under Tees), Print size, Keywords, Model (`Archive` or
   `Code`), Credit and source (work, maker, date, institution, object id, URL, licence), Licence.
 - `sources/`: `brief.txt` (source URL and licence, the idea's competition rank and score, every panel round's
   average, why the loop stopped), the trace script or command with its parameters, the source image (PNG,
