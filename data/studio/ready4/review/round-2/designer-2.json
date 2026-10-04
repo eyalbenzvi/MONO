@@ -1,0 +1,30 @@
+{
+  "designer": "K=2",
+  "persona": "Apparel art director for independent labels",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 6.5,
+      "verdict": "NEEDS CHANGE",
+      "why": "A competent souvenir badge, but there's nothing that is only Venao apart from the horseshoe bay. 'Surf / Nature / Good People' and 'Pacific Vibes' are filler copy any shop could print.",
+      "fix": "Swap the filler copy for one specific Venao detail (the point break, its coordinates, a local nickname) so it reads like it came from a label, not a gift shop."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "The strongest of the set because it has a real landmark: the Cristo on the north headland and the bay with moored boats make it unmistakably SJdS. Craft is consistent and the engraved style feels heritage.",
+      "fix": "Replace the 'Tacos / Amigos' sign boards, which feel like a Mexican cliché, with Nicaraguan or local references (Maderas, Remanso, gallo pinto)."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 6,
+      "verdict": "NEEDS CHANGE",
+      "why": "Well drawn, but the mountain is plainly Diamond Head, which is in Waikiki, not the North Shore. Anyone who knows Hawaii will call it out, and 'Aloha Vibes' is tourist copy.",
+      "fix": "Redraw the backdrop as the Waianae range / Mt Ka'ala as seen from Haleiwa (or add the Anahulu rainbow bridge) and put the okina in Hale'iwa."
+    }
+  ]
+}

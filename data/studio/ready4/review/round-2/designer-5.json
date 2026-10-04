@@ -1,0 +1,30 @@
+{
+  "designer": "K=5",
+  "persona": "Head designer at RVCA",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 6,
+      "verdict": "NEEDS CHANGE",
+      "why": "Nicely engraved, but it's the AI-era 'vintage surf badge' formula: palm, sign post, wave, birds, 'good vibes'. It has no point of view and nothing that says core surf rather than souvenir.",
+      "fix": "Strip the sign post and slogans and push the engraving: just the bay and the wave with a bold name. Fewer clichés, more confidence."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 6.5,
+      "verdict": "NEEDS CHANGE",
+      "why": "The best of the three, thanks to the Cristo and the real bay, but it carries the same template DNA as the others, and the 'Tacos / Amigos' signs undercut its credibility.",
+      "fix": "Lose the sign post and slogan copy and let the town, the Cristo and the wave carry it; let the art earn the $50."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 5.5,
+      "verdict": "NEEDS CHANGE",
+      "why": "For the North Shore, the most storied surf zone there is, this is generic and geographically wrong (Diamond Head). 'Shave Ice / Aloha Vibes' is airport-gift-shop. Core surfers will pass.",
+      "fix": "Redraw it around a real North Shore reference (Waianae range, Hale'iwa bridge, the harbour break) and cut the tourist slogans."
+    }
+  ]
+}

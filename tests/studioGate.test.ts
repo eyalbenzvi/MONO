@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decide, type Listed, type Review, type Verdict } from "../scripts/studio/approve";
-import { APPROVE_AVERAGE, UNGATED_RUNS, approvalOf, folders, gatedCategory, gatedTees, tooSmall } from "../scripts/studio/publish";
+import { APPROVE_AVERAGE, UNGATED_RUNS, approvalOf, byOwner, checkFamilies, folders, gatedCategory, gatedTees, tooSmall, type Approval } from "../scripts/studio/publish";
 
 const listed = (family: string[]): Listed[] => family.map((f, i) => ({ no: i + 1, folder: `0${i + 1}-1-d${i + 1}`, title: `D${i + 1}`, family: f }));
 /** Five reviews giving each design the scores in `scores[i]` and the verdicts in `verdicts[i]`. */
@@ -20,6 +20,17 @@ describe("studio gate: the designers' decision", () => {
     expect(d["03-1-d3"]).toMatchObject({ deleteVotes: 3, approved: false });
     expect(d["04-1-d4"]).toMatchObject({ average: 7.2, approved: true });
     expect(APPROVE_AVERAGE).toBe(6.5);
+  });
+
+  it("lets the owner's approval over the family cap through publishing, and nothing else", () => {
+    const decision = (why: string) => ({ average: 7, deleteVotes: 0, family: "badges", approved: true, why });
+    const run = (whys: string[]): Approval => ({ run: "ready9", approvedAt: "2026-10-04T00:00:00.000Z", designs: Object.fromEntries(whys.map((w, i) => [`0${i + 1}-1-b${i + 1}`, decision(w)])) });
+    const dirs = [1, 2, 3, 4].map((i) => `data/studio/ready9/0${i}-1-b${i}`);
+    const owner = "approved by the owner over the family cap (average 7)";
+    expect(() => checkFamilies(dirs, () => run(["approved", "approved", owner, owner]))).not.toThrow();
+    expect(() => checkFamilies(dirs, () => run(["approved", "approved", "approved", owner]))).toThrow(/more than 2 designs of the family "badges"/);
+    expect(byOwner("approved by the owner below the bar (average 6.5)")).toBe(true);
+    expect(byOwner("approved")).toBe(false);
   });
 
   it("keeps the two best of a family in a run", () => {

@@ -1,0 +1,78 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The Cape Byron lighthouse makes this one specific to the place rather than a stock beach. The engraving is crisp at full size and holds as a single ink on both tees. The 'Good Vibes' and 'Ocean People Freedom' filler lines feel generic, and there's a break in the outer ring at 3 o'clock that reads as a defect, not distressing.",
+   "fix": "Close the gap in the outer ring and swap the filler taglines for one local detail, like the coordinates or 'Cape Byron'.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "A competent souvenir badge, but there's nothing that is only Venao apart from the horseshoe bay. 'Surf / Nature / Good People' and 'Pacific Vibes' are filler copy any shop could print.",
+   "fix": "Swap the filler copy for one specific Venao detail (the point break, its coordinates, a local nickname) so it reads like it came from a label, not a gift shop.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This is the strongest of the set. The clifftop whitewash town, stone stairs and leaning board are unmistakably Portugal, and the engraving texture really pays off up close. 'Small Town Big Waves' is the one tagline here with some wit. It works on the white main tee and also carries on black.",
+   "fix": "Repair the break in the outer ring at the right edge. Ericeira is a World Surfing Reserve, which is a nice optional nod.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The strongest of the set because it has a real landmark: the Cristo on the north headland and the bay with moored boats make it unmistakably SJdS. Craft is consistent and the engraved style feels heritage.",
+   "fix": "Replace the 'Tacos / Amigos' sign boards, which feel like a Mexican cliché, with Nicaraguan or local references (Maderas, Remanso, gallo pinto).",
+   "round": 2
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "Well drawn, but the mountain is plainly Diamond Head, which is in Waikiki, not the North Shore. Anyone who knows Hawaii will call it out, and 'Aloha Vibes' is tourist copy.",
+   "fix": "Redraw the backdrop as the Waianae range / Mt Ka'ala as seen from Haleiwa (or add the Anahulu rainbow bridge) and put the okina in Hale'iwa.",
+   "round": 2
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The Mexican Pipeline barrel is right for the spot and the wave is the best-rendered one in the set. But the title arc runs far down the left side and touches the ring, and there's a stray cloud with a vertical squiggle near the sun that reads as an artefact up close. The taglines are generic.",
+   "fix": "Tighten the title so it sits within the top arc like the others, and clean up the stray cloud mark beside the sun.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The palapa bar and signposts (Surf/Food/Music/Friends) suit Montañita's party-town character, and the Ñ is handled properly. But the left third is very dense: hut, sign, palms and a 4-line text block all fighting, so at 3 m it turns into a dark mass on the black tee.",
+   "fix": "Remove the 'Good Waves Better People' side text and thin the foliage behind the hut so the left side breathes.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "It's the most generic of the eight: palm, wave and sun with nothing that says Tamarindo. 'Pura Vida Siempre' is at least correct for Costa Rica. The execution is clean, but at $50 a template beach with a name swapped in won't hold up next to independent-label product.",
+   "fix": "Add one local signifier, such as the estuary mouth, Isla Capitán or a leatherback turtle, in place of a duplicated palm.",
+   "round": 1
+  }
+ ]
+}

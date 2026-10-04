@@ -1,0 +1,62 @@
+{
+ "run": "ready4",
+ "approvedAt": "2026-10-04T18:25:22.163Z",
+ "designs": {
+  "01-1-byron-bay": {
+   "average": 7.25,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 7.25, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  },
+  "02-1-playa-venao": {
+   "average": 6.75,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.75, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  },
+  "03-1-ericeira": {
+   "average": 7.75,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved"
+  },
+  "04-1-san-juan-del-sur": {
+   "average": 7.33,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved"
+  },
+  "05-1-haleiwa": {
+   "average": 6.67,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.67, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  },
+  "06-1-puerto-escondido": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.92, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  },
+  "07-1-montanita": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.92, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  },
+  "08-1-tamarindo": {
+   "average": 6.5,
+   "deleteVotes": 0,
+   "family": "surf town badges",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.5, above the bar; all eight are one series of surf-town badges, 2 per family a run)"
+  }
+ }
+}

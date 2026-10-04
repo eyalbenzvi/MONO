@@ -119,7 +119,8 @@ function titleCaseWords(s: string): string {
       const bare = core.replace(/[,:;.!?)\]’”"]+$/, "");
       const lower = bare.toLowerCase();
       const small = SMALL.has(lower) || ELIDED.test(bare) || SMALL.has(lower.replace(/’$/, ""));
-      if (atStart || lead.includes("(")) return lead + core[0].toUpperCase() + core.slice(1);
+      // The first word, a bracket's first, and the last word keep a capital ("San Juan del Sur", not "del sur").
+      if (atStart || lead.includes("(") || (i === words.length - 1 && !ELIDED.test(bare))) return lead + core[0].toUpperCase() + core.slice(1);
       if (small) {
         // "A" after "Letter" names a letter; an all-capitals word is an acronym.
         if (bare === "A" && i > 0 && NAMED_LETTER.test(words[i - 1])) return w;

@@ -5,7 +5,7 @@ Guidelines ask for, checked against sections 02, 04 and 05.
 
   python scripts/studio/oneink.py <image> <out-dir> <slug> [--crop x0,y0,x1,y1] [--size 0.9]
       [--mode engrave|halftone|line|pen|tone] [--edge horizon|dissolve|circle|arch|oval] [--title "OCTOPUS"] [--sub "Octopus vulgaris"]
-      [--plate "Pl. IV"] [--view "Side elevation"] [--views 1] [--outline] [--ground]
+      [--plate "Pl. IV"] [--view "Side elevation"] [--views 1] [--outline] [--ground] [--anchor 0.4]
 
 Writes the files of the guidelines' delivery folder (section 09), at 300 DPI on
 the 28 x 37 cm print area (3307 x 4370 px):
@@ -79,6 +79,10 @@ PX_MM = DPI / 25.4
 AREA_W, AREA_H = round(280 * PX_MM), round(370 * PX_MM)  # 3307 x 4370
 DESIGN_W, DESIGN_H = 260 * PX_MM, 350 * PX_MM
 TOP = round(10 * PX_MM)
+# The share of the spare height left above the picture (the optical centre: 40% above, 60% below). A
+# picture as wide as it is tall (a round badge) placed so leaves the back empty for 4.6 cm and fails
+# the 25 mm start: --anchor 0.15 sets it higher, still clear of the top.
+ANCHOR = 0.4
 # The heading's height and the space under it (px), when there is one (set in main).
 HEAD = 0
 # The screen: a 45-degree clustered dot, cell 1.1 mm (about 23 lines an inch).
@@ -303,7 +307,7 @@ def fit_one(k, size, below=0):
     x0 = (AREA_W - nw) // 2
     # The optical centre: 40% of the spare height above the picture (and its ground block), 60% below.
     spare = max(0, round(TOP + DESIGN_H) - (TOP + HEAD) - nh - below)
-    top = TOP + HEAD + round(0.4 * spare)
+    top = TOP + HEAD + round(ANCHOR * spare)
     canvas[top:top + nh, x0:x0 + nw] = up[: AREA_H - top]
     LAST_BOX = (x0, top, nw, min(nh, AREA_H - top))
     return canvas
@@ -646,8 +650,10 @@ def preview(ink, path, on_white=False):
 
 
 def main():
-    global HEAD
+    global HEAD, ANCHOR
     args = sys.argv[1:]
+    if "--anchor" in args:
+        ANCHOR = float(args[args.index("--anchor") + 1])
     src, out, slug = args[0], args[1], args[2]
     crop = None
     size = 1.0

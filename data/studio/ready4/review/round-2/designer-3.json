@@ -1,0 +1,30 @@
+{
+  "designer": "K=3",
+  "persona": "Graphic designer, composition and typography",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 7,
+      "verdict": "PASS",
+      "why": "Balanced roundel: the arched slab serif is evenly spaced, the scene has clear depth from palm to headland, and the sun and birds open up the right side. The left side is crowded: sign post, side text and palms compete, and the inner tagline floats.",
+      "fix": "Drop the 'Pacific Vibes' side text so the left edge breathes and the scene weight evens out."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 7,
+      "verdict": "PASS",
+      "why": "The long name fills the arc well with tight, even letterspacing. The Cristo gives the composition a clear focal point at the top of the hill. The left margin is overloaded, with four lines of side text next to four sign boards.",
+      "fix": "Remove the 'Good People Better Days' side block; the sign boards already carry that voice, and the ring gets clean air on the left."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "The short name gives the widest, calmest letterspacing of the three. The scene has the best value structure, with a dark barrel against an open sky and the sun echoing the ring. Three stacked tagline lines plus side text plus sign boards is too much copy.",
+      "fix": "Cut the inner tagline to one line ('North Shore') to drop the copy load and let the headline lead."
+    }
+  ]
+}

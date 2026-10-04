@@ -1,0 +1,78 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Byron is a top-selling surf name and the lighthouse on the headland makes it read as the real place, not a stock beach. Engraving holds up full size, and the title and ring are clean on both tees. The side and top taglines are generic filler and vanish at chest size.",
+   "fix": "Drop or enlarge the tiny 'Ocean People Freedom' side text so the scene gets more room and the thumbnail reads cleaner.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Looks good as a thumbnail on both tees, but Venao is a small search term. Without a hook beyond 'surf town badge', it relies on people who have been there, which is a narrow market at $50.",
+   "fix": "Add a stronger destination cue in the copy (e.g. 'Los Santos, Panama' or 'Pacific Coast'). It helps search and makes the shirt feel worth $50.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest sense of place in the set: whitewashed clifftop town, stone walls, agave, a board leaning on the steps. It reads as Europe straight away and stands out on a page full of palm trees. Strong on the white main tee and solid on black.",
+   "fix": "Swap the generic 'Surf Tradition Ocean Spirit' for a real hook like 'World Surfing Reserve', which Ericeira fans actually wear with pride.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "SJdS is a well-known backpacker and surf stop, the Cristo makes it instantly recognisable in a product photo, and it reads cleanly on black and white. It's a likely steady seller.",
+   "fix": "Tighten the side-copy so the thumbnail stays legible; the small left text turns to grey noise at listing size.",
+   "round": 2
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Hawaii and the North Shore carry the biggest audience of the three, so it's the best traffic driver. The mockups read crisply. The landmark error is a review risk, since Hawaii buyers will notice Diamond Head.",
+   "fix": "Fix the backdrop to a true North Shore view before launch to avoid 'that's not Haleiwa' reviews and returns.",
+   "round": 2
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Big name, and the heavy barreling wave fits Zicatela's 'Mexican Pipeline' reputation. 'Big Waves Wild Energy' is the one tagline in the set that sells. The long title is a bit cramped and lopsided on the left of the arc.",
+   "fix": "Rebalance the title arc so PUERTO and ESCONDIDO sit symmetrically around top center, and make the wave a bit bigger as the hero.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The beach bar with signposts and string lights catches Montañita's party-surf vibe better than a plain beach, and the Ñ is handled correctly. The left half is busy and dark, so on the black tee it turns a bit muddy at a distance.",
+   "fix": "Open up the hut area (fewer leaves, more white space) so the left half doesn't clump at thumbnail and chest scale.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Popular destination, and 'Pura Vida Siempre' is the right slogan here and sells. The wave rendering is the cleanest in the set. But the scene is the most generic of the eight: palm, beach, headland, sunset, nothing Tamarindo-specific.",
+   "fix": "Add a recognizable local cue such as Isla Capitán offshore or the estuary mouth to give it a reason to buy over any Costa Rica tee.",
+   "round": 1
+  }
+ ]
+}

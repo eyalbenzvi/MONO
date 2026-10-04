@@ -1,0 +1,78 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer at RVCA",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The strongest of the set. The lighthouse headland and the pandanus palms are actually Byron, not stock tropics, and there's no signpost gimmick. The engraving holds up at full size and the badge reads cleanly from 3 m on both tees. It's still a familiar souvenir-badge format.",
+   "fix": "Swap the filler 'Ocean People Freedom' / 'Surf Nature Good Vibes' copy for something with local credibility (The Pass, coordinates, 'Cape Byron'). Or drop the side stack and let the scene breathe.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "Nicely engraved, but it's the AI-era 'vintage surf badge' formula: palm, sign post, wave, birds, 'good vibes'. It has no point of view and nothing that says core surf rather than souvenir.",
+   "fix": "Strip the sign post and slogans and push the engraving: just the bay and the wave with a bold name. Fewer clichés, more confidence.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The whitewashed cliff-top village and stone walls are true to Ericeira and set this apart from the palm-tree badges. The hierarchy is good and the line work is crisp at full size. The surfboard against the wall is the only prop that feels staged.",
+   "fix": "Replace the 'Small Town Big Waves' side text with a real reference such as 'World Surfing Reserve' or a break name (Ribeira d'Ilhas, Coxos) to give it insider credibility.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The best of the three, thanks to the Cristo and the real bay, but it carries the same template DNA as the others, and the 'Tacos / Amigos' signs undercut its credibility.",
+   "fix": "Lose the sign post and slogan copy and let the town, the Cristo and the wave carry it; let the art earn the $50.",
+   "round": 2
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "For the North Shore, the most storied surf zone there is, this is generic and geographically wrong (Diamond Head). 'Shave Ice / Aloha Vibes' is airport-gift-shop. Core surfers will pass.",
+   "fix": "Redraw it around a real North Shore reference (Waianae range, Hale'iwa bridge, the harbour break) and cut the tourist slogans.",
+   "round": 2
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A heavy barreling wave is right for Zicatela, and it's the best wave drawing in the set: clear lip and foam detail at full size. The palapa on the bluff adds place. The copy ('Big Waves Good People Wild Energy') is generic, and the long title arc runs tight to the ring.",
+   "fix": "Make the barrel the clear hero (bigger, more central) and replace the tagline stack with 'Zicatela' or 'Mexican Pipeline'.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The palapa bar with string lights fits Montañita's party-town character, and the headland on the right is a real cue. But it's the third signpost in the set ('Surf Food Music Friends'), and the left side gets dense and murky in white ink on black.",
+   "fix": "Remove the signpost and open up the hut's left side so the engraving breathes on the black tee. Let the point break and headland carry the place.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Competently drawn but the most generic of the eight: palm, sun, birds, wave, with no Tamarindo-specific feature. 'Pura Vida Siempre' is airport-shop copy. As a line, it's the template showing through.",
+   "fix": "Add a real Tamarindo landmark (the estuary river mouth, Isla Capitán, or the Playa Grande point across the bay) and drop the 'Pura Vida' side text.",
+   "round": 1
+  }
+ ]
+}

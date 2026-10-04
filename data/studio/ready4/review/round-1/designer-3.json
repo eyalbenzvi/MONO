@@ -1,0 +1,70 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer, composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "The serif arch is evenly spaced and sits well inside the ring. The headland and lighthouse give the badge a real landmark, and the tagline block is centred with good air around it. The left side reads heavy: the pandanus crowds right up to the ring while the right side is empty sky. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge."
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The title arc and the PANAMA arch are clean. But the scene is generic tropical beach, and the four-plank SURF/EXPLORE/RELAX/REPEAT signpost adds a third and fourth layer of text that competes with the title, the tagline and the two-word side note ('PACIFIC VIBES'). That is too many type voices for one ink. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge. Then drop the signpost so the title leads."
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 7.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The strongest composition. The whitewashed town and church on the cliff make it unmistakably this place, the wide tracking on ERICEIRA has a confident engraved-seal feel, and the cliff on the left balances the open sea on the right. The side note 'SMALL TOWN BIG WAVES' is witty. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge."
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The long name is set tight and wraps about 200 degrees of the ring, so the top feels cramped against the double ring. The scene has a palm, a signpost (SURF/TACOS/SUNSET/AMIGOS), the Christ statue and boats, and it reads busy at 3 m. The Christ-on-the-hill detail is a nice local touch but gets lost. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge. Then drop the signpost and set the title a size smaller, so it sits on a shorter arc with breathing room under the ring."
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The generous tracking on HALEIWA is elegant and the arcs are well balanced. But the mountain is drawn like Diamond Head, which is in Honolulu, not on the North Shore, and locals would notice. The signpost repeats the side text and the tagline, so there are three stacked lists of words. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge. Then replace the Diamond Head silhouette with a real Haleiwa landmark (the Anahulu bridge, or a low North Shore ridge)."
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Fitting the long name forced a very tight arc that nearly touches the inner ring, with crowded letter pairs (ESCO, DIDO), while MEXICO below sits loose. That mismatch in weight and spacing between top and bottom unbalances the seal. The barrel wave is the best wave of the eight. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge. Then set the title slightly smaller, with tracking that matches MEXICO, so the top and bottom arcs balance."
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "The thatched beach bar with string lights gives the badge character and a clear focal point on the left, balanced by the headland on the right. The Ñ tilde is drawn properly. The left half is dense (the signpost plus 'GOOD WAVES BETTER PEOPLE' in the hut), so it tips heavy against the light sea. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge."
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "The calmest and most open layout: one palm, a clear bay, generous white space under the title, and COSTA RICA arched evenly. 'PURA VIDA SIEMPRE' is a good local voice. It plays safe and the scene could be any beach, but it reads cleanly at 3 m on both tees. Every print has the same production fault: the outer double ring breaks and jogs out of line on the right, about two-thirds of the way down, and the sea hatching beside it stops in hard rectangular notches. You can see it as a nick in the circle even from 3 m.",
+   "fix": "Redraw the outer double ring as one continuous circle, and fill in or vignette the notched sea hatching so the scene fades softly at the right edge."
+  }
+ ]
+}

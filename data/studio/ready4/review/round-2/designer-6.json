@@ -1,0 +1,30 @@
+{
+  "designer": "K=6",
+  "persona": "Everyday customer: travelling surfer",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 7,
+      "verdict": "PASS",
+      "why": "I've been to Venao, and the horseshoe beach with the wave peeling in looks right. I'd buy it as a trip memento, though at $50 it feels a bit generic.",
+      "fix": "Show the actual left/right peak in the middle of the bay a bit more clearly; that's what surfers remember."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 8,
+      "verdict": "PASS",
+      "why": "Instantly recognisable: the Jesus statue on the hill, the bay full of boats, sunset. That's exactly SJdS, and I'd wear it. The 'Tacos' sign is a bit off for Nicaragua.",
+      "fix": "Change 'Tacos' to something Nica, like 'Toña' or 'Gallo Pinto'."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 6,
+      "verdict": "NEEDS CHANGE",
+      "why": "Looks nice, but that's Diamond Head; you can't see it from Haleiwa. Anyone who's surfed the North Shore will notice, and I wouldn't pay $50 for a shirt that gets the place wrong.",
+      "fix": "Put the right mountains in, the Waianae side as seen from Haleiwa, and it's a buy."
+    }
+  ]
+}

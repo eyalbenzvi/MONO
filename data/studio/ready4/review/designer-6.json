@@ -1,0 +1,78 @@
+{
+ "designer": "K=6",
+ "persona": "Everyday customer: travelling surfer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The Cape Byron lighthouse on the headland, with the long sweep of beach below, is exactly the view you remember from the walk up. The engraving is crisp and the name is big and readable from across a room. It looks like a souvenir I'd actually wear rather than a tourist-shop tee. The small 'Ocean People Freedom' slogans are generic filler.",
+   "fix": "Clip the scene to the inner circle. At about 3 o'clock it ends in a straight vertical edge with a notch where the ring steps, and up close that looks like a production mistake.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "I've been to Venao, and the horseshoe beach with the wave peeling in looks right. I'd buy it as a trip memento, though at $50 it feels a bit generic.",
+   "fix": "Show the actual left/right peak in the middle of the bay a bit more clearly; that's what surfers remember.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This is the best of the set. The whitewashed village on the cliffs, the stone stairs and the board leaning on the wall really feel like Ericeira, and they break away from the palm-tree formula the others share. It reads well on both tees, and 'Small Town Big Waves' is a line I'd actually repeat.",
+   "fix": "Fix the straight-cut edge and broken ring segment on the right side so the badge outline is a clean circle.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Instantly recognisable: the Jesus statue on the hill, the bay full of boats, sunset. That's exactly SJdS, and I'd wear it. The 'Tacos' sign is a bit off for Nicaragua.",
+   "fix": "Change 'Tacos' to something Nica, like 'Toña' or 'Gallo Pinto'.",
+   "round": 2
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "Looks nice, but that's Diamond Head; you can't see it from Haleiwa. Anyone who's surfed the North Shore will notice, and I wouldn't pay $50 for a shirt that gets the place wrong.",
+   "fix": "Put the right mountains in, the Waianae side as seen from Haleiwa, and it's a buy.",
+   "round": 2
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The thick, heaving barrel is the hero of the scene, and that is exactly what Zicatela is known for. 'Big Waves Wild Energy' fits the place too. The cliff-top palapa is a nice touch, and the long name still arcs neatly and readably.",
+   "fix": "Push the wave even bigger and hollower, close to Mexican Pipeline scale, so it's unmistakably Puerto rather than a generic peeling wave.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The bamboo bar with string lights and the 'Surf Food Music Friends' signs capture Montañita's party-town feel well, and the Ñ is spelled properly. The left side gets busy, though, with the hut, signs and palms crowding together, so from a distance it reads as a dark mass.",
+   "fix": "Thin out the foliage around the bar so the hut and signs stand apart from it, and fix the clipped right edge of the ring.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "It's an easy sell. 'Pura Vida Siempre' is right for Costa Rica, the sunset-and-palm scene suits Tamarindo's vibe, and 'Costa Rica' sits clean along the bottom. But it's the most generic scene of the eight and could be any tropical beach.",
+   "fix": "Add a Tamarindo marker, such as the river-mouth break or Isla Capitán offshore, so it feels like that specific beach.",
+   "round": 1
+  }
+ ]
+}

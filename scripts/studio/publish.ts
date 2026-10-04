@@ -66,8 +66,8 @@ export interface StudioEntry {
   coverage: number;
   /** The brief behind it (prompt, seed, model). */
   briefUrl: string;
-  /** The model that drew it when it isn't the studio's first (SSD-1B): "sdxl" for SDXL base 1.0 with SDXL-Lightning; "code" for a drawing made in code (no image model); "gemini" for Google Gemini (Gemini 3 Pro Image); "archive" for a public-domain work traced and set by MONO (no image model; the details' Credit line names the work and the museum). */
-  model?: "sdxl" | "code" | "gemini" | "archive";
+  /** The model that drew it when it isn't the studio's first (SSD-1B): "sdxl" for SDXL base 1.0 with SDXL-Lightning; "code" for a drawing made in code (no image model); "gemini" for Google Gemini (Gemini 3 Pro Image); "gpt" for OpenAI's image model in ChatGPT; "archive" for a public-domain work traced and set by MONO (no image model; the details' Credit line names the work and the museum). */
+  model?: "sdxl" | "code" | "gemini" | "gpt" | "archive";
   /** An archive work's source and licence, from its details' "Credit and source" and "Licence" lines (an open licence such as CC BY needs the credit shown). */
   credit?: string;
   licence?: string;
@@ -206,13 +206,21 @@ export function folders(): string[] {
   return [...trial, ...UNGATED_RUNS.flatMap(runFolders), ...gated];
 }
 
-/** A gated run brings at most PER_FAMILY designs of one family (approve.ts keeps the best; this guards a hand-edited decision). */
-function checkFamilies(list: string[]) {
+/** The owner's word over the panel's gate (ready-images skill): recorded in approved.json's why. */
+export const byOwner = (why: string) => /^approved by the owner\b/.test(why);
+
+/**
+ * A gated run brings at most PER_FAMILY designs of one family (approve.ts keeps the best; this guards a hand-edited
+ * decision). A design the owner approved over the cap doesn't count against it.
+ */
+export function checkFamilies(list: string[], approval: (run: string) => Approval | null = approvalOf) {
   const count = new Map<string, number>();
   for (const dir of list) {
     const run = runOf(dir);
     if (run === null || UNGATED_RUNS.includes(run)) continue;
-    const family = approvalOf(run)!.designs[path.basename(dir)].family;
+    const decision = approval(run)!.designs[path.basename(dir)];
+    if (byOwner(decision.why)) continue;
+    const family = decision.family;
     const key = `${run}|${family}`;
     count.set(key, (count.get(key) ?? 0) + 1);
     if (count.get(key)! > PER_FAMILY) throw new Error(`${run}: more than ${PER_FAMILY} designs of the family "${family}"`);
@@ -297,7 +305,7 @@ async function main() {
       coverage: Math.round(a.ink * 1000) / 1000,
       briefUrl: `${REPO}/${dir}/sources/brief.txt`,
       ...(measures?.features ? { features: measures.features } : {}),
-      ...(gated && /^code$/i.test(d.model ?? "") ? { model: "code" as const } : gated && /^gemini$/i.test(d.model ?? "") ? { model: "gemini" as const } : gated && /^archive$/i.test(d.model ?? "") ? { model: "archive" as const, credit: d["credit and source"], licence: d.licence } : sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
+      ...(gated && /^code$/i.test(d.model ?? "") ? { model: "code" as const } : gated && /^gemini$/i.test(d.model ?? "") ? { model: "gemini" as const } : gated && /^(gpt|chatgpt)$/i.test(d.model ?? "") ? { model: "gpt" as const } : gated && /^archive$/i.test(d.model ?? "") ? { model: "archive" as const, credit: d["credit and source"], licence: d.licence } : sdxl || (gated && /sdxl/i.test(d.model ?? "sdxl")) ? { model: "sdxl" as const } : {}),
     });
     console.log(`${n} ${dir} ${whiteOnly ? "tone/white" : tone ? "tone/black" : entries[entries.length - 1].single ? "line/black" : "line/both"} q${entries[entries.length - 1].quality} ${category} ${a.flags.length ? `flags ${a.flags.join(",")}` : ""}`);
   }

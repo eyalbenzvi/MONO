@@ -669,6 +669,8 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
           ? { source: "drawn in code by MONO from its own geometry, with no image model", license: "MONO's own work" }
           : e.model === "gemini"
             ? { source: "made with Google Gemini (Gemini 3 Pro Image) from MONO's brief, converted by MONO to one ink", license: "Google Generative AI terms (output owned by MONO)" }
+          : e.model === "gpt"
+            ? { source: "made with ChatGPT (OpenAI's image model), supplied by MONO's owner, converted by MONO to one ink", license: "OpenAI terms of use (output owned by MONO)" }
           : e.model === "archive"
             ? { source: e.credit ?? "a public-domain museum work (see the brief for the work and the museum), traced to one ink and set by MONO", license: e.licence ?? "Public domain" }
           : e.model === "sdxl"

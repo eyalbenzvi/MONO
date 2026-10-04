@@ -1,0 +1,8 @@
+Ericeira: the owner's image (ready-images track, run ready4)
+
+Source: an illustration made with ChatGPT (OpenAI), supplied by MONO's owner (1254 x 1254, sources/gpt-ericeira.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready4/03-1-ericeira/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: a travelling surfer), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1 was judged on a version whose 'EST' had been cleared with a box that cut the ring and the scene (a straight edge at 3 o'clock, three judges): fixed for all eight (only the lettering's own marks taken out).
+Round 1: 7.75 (7.5, 8, 7.5, 8, 7.5, 8).
+Result: approved: average 7.75 in round 1; the family cap (two a run, all eight being one series of badges) waived by the owner.

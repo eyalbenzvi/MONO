@@ -1,0 +1,47 @@
+{
+ "fixes": [
+  {
+   "op": "erase",
+   "box": [
+    1035,
+    777,
+    1190,
+    903
+   ],
+   "why": "'EST 2007': a founding year the picture makes up (no source gives it), taken out with its rule"
+  },
+  {
+   "op": "erase",
+   "box": [
+    525,
+    280,
+    735,
+    318
+   ],
+   "why": "round 1: 'PURA VIDA' is Costa Rica's saying, not Nicaragua's (four judges)"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave",
+  "--anchor",
+  "0.15"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.9,
+   "pictorial": 0.8,
+   "typography": 0.55,
+   "retro": 0.6,
+   "nature": 0.6,
+   "contrast": 0.75,
+   "density": 0.6
+  }
+ }
+}

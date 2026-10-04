@@ -6,6 +6,7 @@
  * trimDangling) and the hand-set titles in data/curation/titles.json.
  */
 import { describe, expect, it } from "vitest";
+import { houseTitle } from "../scripts/gen/titles";
 import full from "@/data/shirts.json";
 import index from "@/data/shirts.index.json";
 
@@ -90,5 +91,12 @@ describe("catalogue titles", () => {
 
   it("titles are unique", () => {
     expect(new Set(shirts.map((s) => s.title.toLowerCase())).size).toBe(shirts.length);
+  });
+});
+
+describe("houseTitle: the last word", () => {
+  it("keeps its capital, but an elided article keeps its own case", () => {
+    expect(houseTitle("San Juan del Sur")).toBe("San Juan del Sur");
+    expect(houseTitle("La Tour de l’Horloge")).toBe("La Tour de l’Horloge");
   });
 });

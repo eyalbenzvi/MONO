@@ -1,0 +1,30 @@
+{
+  "designer": "K=1",
+  "persona": "Screen-print production designer",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "Clean one-ink art: no stroke under ~0.4 mm, no specks, solid ring and type. Only risk is the dense water hatching and fern clusters, where paper gaps drop to ~0.4 mm and can close up on the black tee with a white underbase.",
+      "fix": "Open the tightest gaps in the wave lines and foliage to at least 0.5 mm (6 px), or choke the white-ink film a touch, so the black version holds."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "Same clean film as the others: lines all at least ~0.4 mm, zero specks. The town rooftops under the Cristo and the boats are the busiest small detail and the likeliest to fill in with white ink.",
+      "fix": "Simplify the rooftop/window hatching on the hill so the gaps there are at least 0.5 mm before burning the white-ink screen."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 8,
+      "verdict": "PASS",
+      "why": "Easiest of the three to print: fewest tight gaps, open sky, crisp sign lettering, a solid ring. The wave barrel's fine curl lines are the only spot to watch on white ink.",
+      "fix": "Thicken the spray and curl lines in the barrel slightly so they don't break up on a 156-mesh white print."
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Byron Bay",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Clean binary art (no partial alpha, no specks), strong arched title and the lighthouse reads as Byron at 3 m. The left pandanus thicket is a near-solid mass, so white ink on black gets heavy there, and the wave face holds hundreds of 0.3-0.4 mm reverse slits that will plug with ink spread on a dark tee.",
+   "fix": "Open up the left foliage mass and widen the reverse slits in the wave face to at least 0.5 mm (6 px) so the white-ink print on black keeps its engraving instead of going solid.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Playa Venao",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Clean one-ink art: no stroke under ~0.4 mm, no specks, solid ring and type. Only risk is the dense water hatching and fern clusters, where paper gaps drop to ~0.4 mm and can close up on the black tee with a white underbase.",
+   "fix": "Open the tightest gaps in the wave lines and foliage to at least 0.5 mm (6 px), or choke the white-ink film a touch, so the black version holds.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Ericeira",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Most specific scene in the set (whitewashed clifftop town, stone steps, longboard), so it doesn't read as a generic beach. Big area of open sky, so ink coverage is lighter and the black-ink-on-white main tee will print crisp. The building windows and stonework are dense, but still above the plug-in threshold for black on white.",
+   "fix": "Thin out the hatching on the cliff face under the town so that on the black tee (white ink) the cliff doesn't merge into one solid block.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "San Juan del Sur",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Same clean film as the others: lines all at least ~0.4 mm, zero specks. The town rooftops under the Cristo and the boats are the busiest small detail and the likeliest to fill in with white ink.",
+   "fix": "Simplify the rooftop/window hatching on the hill so the gaps there are at least 0.5 mm before burning the white-ink screen.",
+   "round": 2
+  },
+  {
+   "no": 5,
+   "title": "Haleiwa",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Easiest of the three to print: fewest tight gaps, open sky, crisp sign lettering, a solid ring. The wave barrel's fine curl lines are the only spot to watch on white ink.",
+   "fix": "Thicken the spray and curl lines in the barrel slightly so they don't break up on a 156-mesh white print.",
+   "round": 2
+  },
+  {
+   "no": 6,
+   "title": "Puerto Escondido",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The barrel wave is the hero and it's big and correct for Zicatela. The palapa and headland frame it well and the sky stays open, so coverage is moderate. The long title fits the arc with good clearance from the ring. The dark tube interior is made of 0.3-0.4 mm reverse slits that ink gain will fill, so on the black tee it turns into a white blob.",
+   "fix": "Rework the tube interior with fewer, wider reverse slits (6-8 px) so the barrel keeps its form through ink spread on both tees.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Montañita",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Best storytelling in the set: the beach bar with the SURF/FOOD/MUSIC/FRIENDS sign, string lights and steps gives it a real vibe, and the Ñ tilde is drawn cleanly. Heavy black mass under the thatch roof is the main ink-load spot, but overall coverage is about 30%, which is OK for a soft plastisol hand.",
+   "fix": "Break up the solid shadow under the thatch with a few wider reverse lines so it doesn't print as a stiff, solid white patch on the black main tee.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Tamarindo",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Simplest, calmest scene with the most negative space, so it's the easiest separation to hold and the lightest hand on a $50 tee. The sun breaking the ring on the right is a nice badge move. It's a little generic (palm, wave, headland) with fewer local cues than the others, and the wave slits share the set's plug-in risk.",
+   "fix": "Add one Tamarindo-specific cue (for example the estuary mouth or a surfboard rack) in the empty lower-right beach, and open the wave slits to 0.5 mm or more.",
+   "round": 1
+  }
+ ]
+}

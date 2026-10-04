@@ -1,0 +1,30 @@
+{
+  "designer": "K=4",
+  "persona": "Buyer for an online t-shirt shop",
+  "designs": [
+    {
+      "no": 2,
+      "title": "Playa Venao",
+      "score": 6.5,
+      "verdict": "NEEDS CHANGE",
+      "why": "Looks good as a thumbnail on both tees, but Venao is a small search term. Without a hook beyond 'surf town badge', it relies on people who have been there, which is a narrow market at $50.",
+      "fix": "Add a stronger destination cue in the copy (e.g. 'Los Santos, Panama' or 'Pacific Coast'). It helps search and makes the shirt feel worth $50."
+    },
+    {
+      "no": 4,
+      "title": "San Juan del Sur",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "SJdS is a well-known backpacker and surf stop, the Cristo makes it instantly recognisable in a product photo, and it reads cleanly on black and white. It's a likely steady seller.",
+      "fix": "Tighten the side-copy so the thumbnail stays legible; the small left text turns to grey noise at listing size."
+    },
+    {
+      "no": 5,
+      "title": "Haleiwa",
+      "score": 7,
+      "verdict": "PASS",
+      "why": "Hawaii and the North Shore carry the biggest audience of the three, so it's the best traffic driver. The mockups read crisply. The landmark error is a review risk, since Hawaii buyers will notice Diamond Head.",
+      "fix": "Fix the backdrop to a true North Shore view before launch to avoid 'that's not Haleiwa' reviews and returns."
+    }
+  ]
+}

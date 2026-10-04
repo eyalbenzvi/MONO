@@ -1,0 +1,58 @@
+{
+ "fixes": [
+  {
+   "op": "erase",
+   "box": [
+    1035,
+    786,
+    1190,
+    912
+   ],
+   "why": "'EST 2008': a founding year the picture makes up (no source gives it), taken out with its rule"
+  },
+  {
+   "op": "white",
+   "box": [
+    60,
+    684,
+    185,
+    722
+   ],
+   "why": "'SOUTH' of 'SOUTH PACIFIC VIBES': Playa Venao is at 7° N, on the Pacific north of the equator"
+  },
+  {
+   "op": "move",
+   "box": [
+    58,
+    722,
+    200,
+    796
+   ],
+   "dy": -36,
+   "why": "PACIFIC VIBES moved up into the line freed"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave",
+  "--anchor",
+  "0.15"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.9,
+   "pictorial": 0.8,
+   "typography": 0.55,
+   "retro": 0.6,
+   "nature": 0.6,
+   "contrast": 0.75,
+   "density": 0.6
+  }
+ }
+}
