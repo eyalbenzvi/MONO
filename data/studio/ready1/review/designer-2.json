@@ -1,0 +1,33 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "title": "How Beer Is Made",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Clean, consistent pen line art with solid strokes that will hold in white ink on black; the flow chart is legible, captions are correct and readable at full size, and the piece reads well as a tidy column on the back. The genre is familiar and at 3 m it reads more as a poster diagram than a graphic, but it is production-safe and sellable.",
+   "fix": "Give the heading more presence (larger, heavier type) so the piece has a strong graphic anchor from a distance, not just a small label over a diagram.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Gin Botanicals",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "The strongest artwork of the three: a well balanced plate, convincing engraving, correct Latin names in a fitting italic, and the subject has a clear audience. But at full size the tone is a 1-pixel dither at 300 DPI (about 0.08 mm dots at a 2-3 px pitch). That will not hold on a screen and will plug or drop out on cotton, so the delicate shading turns crunchy or blotchy.",
+   "fix": "Re-screen the tone as a coarser, print-safe halftone (about 45-55 lpi with a minimum dot of about 0.15-0.2 mm), or convert the shading to true engraved line hatching.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Vineyard",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "From 3 m it reads right away: the arched window, the clean spaced-out VINEYARD heading and the keyline turn a busy engraving into a tidy, label-like badge that looks good on white. It has good depth, running from the grapes and posts up front, through the curving stone terraces, to the farmhouse and cypresses. The leaves, posts and house hold up crisply at full size. Two weaknesses. First, the middle terraces turn into an even grey texture of dots with no clear light-to-dark contrast. Second, the halftone is too fine to print: about 13.6k loose dots of 1-2 px (0.08-0.17 mm) and about 10k pinholes that will drop out or fill in on cotton, so the mid-tones will print muddy or patchy. The subject is also a familiar Tuscan postcard scene, so it is solid rather than distinctive for $50.",
+   "fix": "Rework the halftone for screen printing. Use a coarser screen, about 45-55 lpi, with the smallest dot and the smallest gap each at least 0.2 mm. While doing that, push the contrast in the middle ground: lighten the terrace tops and darken the shadows under the walls, so the curving terraces read as clear bands instead of a grey field.",
+   "round": 3
+  }
+ ]
+}

@@ -1,0 +1,111 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    921,
+    198,
+    939,
+    230
+   ],
+   "why": "the arrowhead pointing back into the mash tun (the flow runs mash -> boil)"
+  },
+  {
+   "op": "line",
+   "box": [
+    921,
+    210,
+    939,
+    212
+   ],
+   "why": "the pipe's upper line, continued"
+  },
+  {
+   "op": "line",
+   "box": [
+    921,
+    216,
+    939,
+    218
+   ],
+   "why": "the pipe's lower line, continued"
+  },
+  {
+   "op": "white",
+   "box": [
+    203,
+    583,
+    247,
+    591
+   ],
+   "why": "fake lettering inside the boil kettle's neck cap"
+  },
+  {
+   "op": "white",
+   "box": [
+    166,
+    55,
+    197,
+    63
+   ],
+   "why": "fake lettering inside the malting vessel's cap"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line",
+  "--title",
+  "HOW BEER IS MADE"
+ ],
+ "despeck": 300,
+ "protect": [
+  [
+   0,
+   30,
+   1024,
+   75
+  ],
+  [
+   0,
+   350,
+   1024,
+   475
+  ],
+  [
+   0,
+   620,
+   120,
+   660
+  ],
+  [
+   0,
+   940,
+   1024,
+   1065
+  ],
+  [
+   0,
+   1395,
+   1024,
+   1500
+  ]
+ ],
+ "protect_why": "the lettering: headings and captions keep their i-dots, commas and full stops",
+ "binarize": 140,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.9,
+   "pictorial": 0.75,
+   "typography": 0.45,
+   "architectural": 0.3,
+   "dark_industrial": 0.4,
+   "clean_minimal": 0.5,
+   "classic": 0.3,
+   "retro": 0.35,
+   "wit": 0.1,
+   "contrast": 0.7
+  }
+ }
+}

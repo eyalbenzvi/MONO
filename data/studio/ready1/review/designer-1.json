@@ -1,0 +1,33 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "How Beer Is Made",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Clean, solid, line-only art with no halftone and no isolated specks. The step headings and captions (caps about 5 mm) are crisp and will hold on a 156–200 mesh. The flow reads clearly from 3 m and the 10% coverage keeps the white underbase soft on the black tee. The only risk is the tightest cross-hatching inside the vessels: about 260 openings are 4 px (0.17 mm) or smaller, and white ink on black will bleed into them and fill them.",
+   "fix": "Open the densest hatching inside the tanks and kegs to at least 0.25 mm gaps, or knock out the sub-0.2 mm holes, so the white ink doesn't fill in on the black tee.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Gin Botanicals",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A handsome engraving plate with a well-balanced 2-2-1 layout. The halftone is around 39 lpi, which is a sensible, printable ruling for cotton on 230 mesh. The italic Latin names are clean and legible. The highlight dots of 1–4 px (around 13k of them) will drop out, but they sit in light areas, so the loss reads as natural vignetting. The shadows in the angelica and orris roots sit close to plugging.",
+   "fix": "Set a minimum dot of about 0.2 mm and cap the shadows at about 85% (open the darkest root and peel shading slightly) so dot gain on the white tee doesn't fill the dark areas.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Vineyard",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "From 3 m it reads well: a strong arched vignette, clear depth from the grape leaves up to the farmhouse, and a clean heading and keyline. It earns its place on a white tee. Up close the art won't print as it is. The file is 1-bit, but all the tone is a single-pixel checkerboard/stochastic dither at 300 dpi: dots of about 0.085 mm, with roughly 13.5k isolated 1–2 px specks and about 10k 1–2 px open holes. On a 160–230 mesh on cotton, the highlight dots will wash out or fail to hold on the screen, so the distant hills, sky-side village and wall faces fade to nothing. The shadow gaps in the leaf canopy and terraces will fill in and turn into mud. Ink gain will make the mid-ground terraces heavier than the proof. The type, keyline and line work are fine.",
+   "fix": "Re-screen the tonal areas as a coarse AM halftone at about 45–55 lpi, 22.5°, round/elliptical dot. Clamp it at about 10% minimum and 85% maximum so no dot or gap is under about 0.15–0.2 mm (3+ px at 300 dpi), or convert the tone to engraved line hatching. Keep the keyline, title and outlines as solid vector line.",
+   "round": 3
+  }
+ ]
+}

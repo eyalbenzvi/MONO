@@ -39,6 +39,15 @@ catalogue step, the checks, the commit and the report are each done **once for t
    shaded picture or a photograph (as Wok Hei). A scene drawn to its edges gets an ending (`--edge`).
    `print.json` must have `fails: []`. Then zoom-check the result at full size for specks, frame remnants,
    broken lines and muddy masses.
+   Lessons from ready1:
+   - Keep the source as `sources/<model>-<slug>.png` (decode a JPEG losslessly), because `publish.ts` takes the
+     first `.png` in `sources/`. Don't leave a stale `<slug>.png` beside a halftone's `<slug>-white.png`.
+   - A 1024 px generated engraving breaks into speckle in `engrave` mode at print size, because its
+     hatching is finer than its pixels. `--mode halftone` (55 lpi) keeps it faithful. That mode keeps only
+     the subject, so set the picture's lettering again as real type (`set_captions` in
+     `data/studio/ready1/02-1-gin-botanicals/sources/build.py`).
+   - Never run a median at the original's scale (it erases i-dots and full stops). Grow lettering dots
+     that would print under 0.5 mm, and despeck outside the lettering only.
 4. **Tees.** Decide them before the panel (design-loop.md, step 3, "Tees"; `scripts/studio/teeBalance.ts`),
    look at the print in white ink on black as well as in black on white, and write `tees` (and `teeDefault`
    with `both`) and `features` into `print.json`.

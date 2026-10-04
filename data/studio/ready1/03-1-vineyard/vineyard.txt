@@ -1,0 +1,13 @@
+Title: Vineyard
+Category: Engravings
+Family: vineyards
+Subject: A terraced hillside vineyard seen through an arched window under the heading VINEYARD: curving rows of vines held by dry-stone walls climb to a stone farmhouse among cypresses and an olive tree, a hill town on the far ridge; in the foreground vines on wooden posts hang with bunches of grapes over a dirt track
+Style: Landscape engraving, screened as a fine halftone
+Medium: An illustration made with a generative tool, retouched and screened to one ink
+Description: Terraces of vines climbing a hill to a stone farmhouse and its cypresses, with the harvest hanging heavy in the front row. A landscape drawn the old way, line by line.
+Tee colours: White (printed in black ink)
+Print size: 21.8 × 33.6 cm
+Keywords: vineyard, wine, vines, grapes, harvest, winery, wine lover, terraces, cypress, farmhouse, countryside, landscape, olive tree, hills, italy, tuscany, sommelier, engraving, line art, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the midground lightened, the scene set in an arch with a keyline, the picture's own caption replaced by a heading in Space Grotesk, SIL OFL 1.1) and screened to one ink in a 55 lpi halftone.
+Licence: MONO

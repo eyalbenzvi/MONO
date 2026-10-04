@@ -1,0 +1,33 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "title": "How Beer Is Made",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Clear, giftable concept that reads instantly as a beer tee from 3 m; clean bold line art and type hold up at full size, captions are legible, and white-on-black is the right main colorway for this buyer. Busy for a back print, but the grid keeps it orderly.",
+   "fix": "Make the Malting vessel read as malting (barley/germinating grain) rather than a generic tank, so the weakest panel matches the rest.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Gin Botanicals",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Tasteful vintage-plate look with a premium feel that suits a niche gin audience; italic Latin names are crisp and the five specimens are well spaced. Halftone is fine-grained and in the lighter areas (orris and angelica roots) reads somewhat grainy and gray, which flattens it at a distance.",
+   "fix": "Push contrast on the lightest specimens (orris and angelica roots) so the halftone prints as firm engraving, not a gray speckle that can lose dots on fabric.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Vineyard",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "It's an attractive wine-country gift tee. The arched window gives it a clean label shape and suits a white tee. The halftone is a coarse, even screen that will hold, and the grapes and leaves in the foreground look crisp at full size. But from 3 m and in a store thumbnail, the middle of the picture (rows of terraces, walls and olive trees) turns into one even grey texture. Only the house, the cypresses and the foreground vines stand out, so it reads as a generic engraved landscape. The plain heading VINEYARD adds no story or reason to buy. At $50 it needs more pull than this.",
+   "fix": "Open up the busy middle: cut the number of terrace rows and leave more white paper between them, and push the dark tones into the cypresses, the house and the foreground vines. That gives the picture a clear focal point and depth, so it reads well from across the room and in a thumbnail.",
+   "round": 3
+  }
+ ]
+}

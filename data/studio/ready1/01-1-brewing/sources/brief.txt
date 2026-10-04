@@ -1,0 +1,8 @@
+How Beer Is Made: the owner's image (ready-images track, run ready1)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-brewing.png); MONO licence.
+Build: python data/studio/ready1/01-1-brewing/sources/build.py (params.json holds every fix and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, gin and wine fan), up to three rounds; votes per round in review/round-N/.
+Round 1 (line conversion of the 3x upscale, the mash-tun arrowhead removed): 6.50 (7.5, 5.5, 6.5, 7, 5.5, 7).
+Round 2 (+ the heading HOW BEER IS MADE, invented lettering removed from two vessel caps): 7.33 (8, 7.5, 7, 8, 5.5, 8). Passed.
+Result: approved: average 7.33 in round 2.

@@ -1,0 +1,20 @@
+[
+ {
+  "no": 1,
+  "folder": "01-1-brewing",
+  "title": "How Beer Is Made",
+  "family": "brewing"
+ },
+ {
+  "no": 2,
+  "folder": "02-1-gin-botanicals",
+  "title": "Gin Botanicals",
+  "family": "botanicals"
+ },
+ {
+  "no": 3,
+  "folder": "03-1-vineyard",
+  "title": "Vineyard",
+  "family": "vineyards"
+ }
+]

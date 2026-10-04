@@ -1,0 +1,27 @@
+{
+ "run": "ready1",
+ "approvedAt": "2026-10-04T10:23:19.583Z",
+ "designs": {
+  "01-1-brewing": {
+   "average": 7.33,
+   "deleteVotes": 0,
+   "family": "brewing",
+   "approved": true,
+   "why": "approved"
+  },
+  "02-1-gin-botanicals": {
+   "average": 7.42,
+   "deleteVotes": 0,
+   "family": "botanicals",
+   "approved": true,
+   "why": "approved"
+  },
+  "03-1-vineyard": {
+   "average": 6.5,
+   "deleteVotes": 0,
+   "family": "vineyards",
+   "approved": false,
+   "why": "average 6.5 (7 to pass)"
+  }
+ }
+}

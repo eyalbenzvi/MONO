@@ -1,0 +1,9 @@
+Vineyard: the owner's image (ready-images track, run ready1)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-vineyard.png); MONO licence.
+Build: python data/studio/ready1/03-1-vineyard/sources/build.py (params.json holds every fix and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, gin and wine fan), up to three rounds; votes per round in review/round-N/.
+Round 1 (engrave, the straight-cut sides faded): 5.92 (6, 6.5, 6, 5.5, 5, 6.5).
+Round 2 (55 lpi halftone; the generated VINEYARD. caption replaced by a heading): 6.08 (6.5, 4.5, 6.5, 6.5, 6, 6.5).
+Round 3 (midground lightened 20%, the scene set in an arch with a keyline): 6.50 (6.5, 7, 7, 6.5, 5, 7). Still read as an even grey middle; three judges asked for a coarser screen.
+Result: not approved: average 6.5 after three rounds (7 to pass); kept here for the owner's decision.

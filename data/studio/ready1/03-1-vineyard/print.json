@@ -1,0 +1,30 @@
+{
+ "mode": "halftone",
+ "edge": "arch",
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.2081,
+ "solid": 0.079,
+ "screened": 1.0,
+ "sizeCm": [
+  21.8,
+  33.6
+ ],
+ "blackTee": false,
+ "crisp": 0.609,
+ "fails": [],
+ "warns": [],
+ "tees": "white",
+ "features": {
+  "line_art": 0.85,
+  "pictorial": 0.9,
+  "nature": 0.7,
+  "architectural": 0.3,
+  "classic": 0.7,
+  "density": 0.8,
+  "typography": 0.1,
+  "retro": 0.4,
+  "contrast": 0.7
+ }
+}

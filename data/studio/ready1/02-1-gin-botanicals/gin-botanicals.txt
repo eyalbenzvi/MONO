@@ -1,0 +1,13 @@
+Title: Gin Botanicals
+Category: Botanical & Nature
+Family: botanicals
+Subject: A plate of the five classic gin botanicals under the heading GIN BOTANICALS, each with its Latin name in italic: a sprig of juniper with berries (Juniperus communis), coriander in flower with its seeds (Coriandrum sativum), angelica root with a cut slice (Angelica archangelica), a curl of bitter orange peel (Citrus × aurantium), and orris, the iris rhizome with slices and a flower (Iris germanica)
+Style: Botanical engraving, screened as a fine halftone
+Medium: An illustration made with a generative tool, retypeset and screened to one ink
+Description: Juniper, coriander, angelica, bitter orange and orris: the five botanicals at the heart of a classic dry gin. Juniper leads, as it must: a gin is a spirit that tastes first of juniper.
+Tee colours: White (printed in black ink)
+Print size: 21.6 × 32.9 cm
+Keywords: gin, botanicals, juniper, juniper berries, coriander, angelica, orris, iris, orange peel, distilling, distillery, cocktail, gin and tonic, bartender, botanical, plants, herbs, latin names, engraving, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; the picture's lettering replaced by MONO with type (the Latin names in Libre Caslon Text Italic, the heading in Space Grotesk, both SIL OFL 1.1), screened to one ink in a 55 lpi halftone.
+Licence: MONO

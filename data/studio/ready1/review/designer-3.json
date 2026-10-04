@@ -1,0 +1,33 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer, composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "title": "How Beer Is Made",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Clear 3-3-1 grid with a readable path, consistent line weight, and good hierarchy from the wide-tracked heading to bold step heads to captions. From 3 m it reads as a tidy diagram. Up close the caption face has rendered-looking glyphs (diamond i-dots, blobby commas), the captions are small for a back print at about 3 mm cap height, and the packaging connector starts under the CONDITIONING caption instead of at the tank, which breaks the flow logic.",
+   "fix": "Reset all step heads and captions in one clean real typeface, with captions about 20% larger, and run the packaging connector from the conditioning tank's outlet rather than from below its text.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Gin Botanicals",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A convincing engraved plate: fine, even halftone, a well-tracked heading with a matching rule, and italic Latin names that give it real editorial character. It is the strongest of the three as a composition. The weaknesses are in the grid. Caption baselines do not line up (Juniperus sits higher than Coriandrum, and Angelica is lower than Citrus), the caption alignment wanders between left-leaning and centred, and the bottom orris/iris group is crowded and wider than the rows above, so the plate feels bottom-heavy.",
+   "fix": "Put the plate on a strict two-column grid: a shared caption baseline for each row, all captions centred under their specimens, and the iris group scaled down slightly to sit within the column widths.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Vineyard",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A strong, sellable composition. The arched window gives the back a clear architectural silhouette, and the S-curves of the terraces pull the eye from the foreground grapes up to the farmhouse and cypresses, so it holds together whole, even from 3 m. At full size the engraving and the fine screen are rich: the leaves, grape bunches and stone walls read cleanly, and the cypresses cropped by the arch look intentional. What keeps it from premium is the typography and the fit to the frame. VINEYARD is a small, widely tracked mono-grotesk that becomes a caption on the shirt, and its rule (about 55% of the arch width) matches neither the word nor the arch. The image also sits inside the keyline unevenly: a white gutter runs down both straight sides, the right side cuts off in a hard vertical edge short of the line, and at the top the trees run into the curve. The midtones are dense and grey overall, with little pure white for air.",
+   "fix": "Bring the image and the type into one system. Mask the engraving to the arch with one even inset all around (or bleed it to the keyline everywhere), and set VINEYARD about 1.5-2x larger and heavier, with the rule as wide as the arch (or as wide as the word), so the heading reads at the same scale as the window.",
+   "round": 3
+  }
+ ]
+}

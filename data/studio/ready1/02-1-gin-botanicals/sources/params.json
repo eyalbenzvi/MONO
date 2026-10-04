@@ -1,0 +1,69 @@
+{
+ "fixes": [],
+ "oneink": [
+  "--mode",
+  "halftone",
+  "--title",
+  "GIN BOTANICALS"
+ ],
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.9,
+   "pictorial": 0.85,
+   "nature": 0.9,
+   "classic": 0.7,
+   "density": 0.6,
+   "typography": 0.15,
+   "retro": 0.4,
+   "contrast": 0.7
+  }
+ },
+ "captions": [
+  {
+   "text": "Juniperus communis",
+   "box": [
+    150,
+    559,
+    412,
+    588
+   ]
+  },
+  {
+   "text": "Coriandrum sativum",
+   "box": [
+    666,
+    579,
+    931,
+    601
+   ]
+  },
+  {
+   "text": "Angelica archangelica",
+   "box": [
+    147,
+    1112,
+    423,
+    1142
+   ]
+  },
+  {
+   "text": "Citrus × aurantium",
+   "box": [
+    669,
+    1044,
+    912,
+    1066
+   ]
+  },
+  {
+   "text": "Iris germanica",
+   "box": [
+    419,
+    1465,
+    602,
+    1494
+   ]
+  }
+ ]
+}

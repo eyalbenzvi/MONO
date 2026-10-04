@@ -1,0 +1,33 @@
+{
+ "designer": "K=6",
+ "persona": "Everyday customer: home-brewer, gin and wine fan",
+ "designs": [
+  {
+   "no": 1,
+   "title": "How Beer Is Made",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "As a home-brewer this is the one I'd buy. The seven steps are right and in order, the drawings are clean and bold, and the arrows make it easy to follow. White on black looks sharp, and it starts a conversation at a brewery. Up close the captions are crisp and readable. From a few metres away it reads as a neat technical chart rather than a big graphic, which suits me fine.",
+   "fix": "Make the HOW BEER IS MADE heading bigger and heavier so it reads from across a taproom. Right now it's the weakest thing on the shirt from a distance.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Gin Botanicals",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "It looks like a vintage botanical print, the kind you'd see framed in a good gin bar. The juniper, peel and orris are lovely up close, and the italic Latin names make it feel classy without being in-jokey. The five subjects are balanced in a tidy grid. The halftone holds up at full size. The angelica and orris roots are a bit lumpy and hard to identify, but nobody will mind.",
+   "fix": "Make the GIN BOTANICALS heading a touch larger and give it more breathing room above the juniper so the plate looks finished from a distance.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Vineyard",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "It looks like the wine trip I'd want to remember: the arched window, the cypresses and stone farmhouse, and the big grape leaves and bunches up front all read clearly. It feels like a wine-label print, not a cartoon, and it sits well on a white tee. Two things hold it back. From a few metres the middle terraces turn into an even grey speckle, so the whole thing looks a bit faint and washed out on the back. And the small, plain VINEYARD heading is generic, so it doesn't give me a reason to pick this one over any other wine shirt.",
+   "fix": "Open up the crowded middle terraces: lighten the halftone so the rows separate with white between them, and make the darks in the foreground vines and cypresses stronger. That way the picture reads crisp and confident from across a room instead of as a grey patch.",
+   "round": 3
+  }
+ ]
+}

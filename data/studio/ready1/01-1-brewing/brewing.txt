@@ -1,0 +1,13 @@
+Title: How Beer Is Made
+Category: Engravings
+Family: brewing
+Subject: The brewing process as a flow chart of pen drawings under the heading HOW BEER IS MADE: malting, milling and mashing across the top, boiling (with hops added), fermenting and conditioning across the middle, and packaging into bottles, cans and a keg below, each step with its vessel, a heading and one line saying what happens
+Style: Technical pen drawing with headings and captions, a diagram
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: The whole road from barley to the bottle, step by step: malt, grist, mash, a hopped boil, the fermenter and the conditioning tank. Each vessel is drawn as a brewer knows it and labelled with what it does.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 21.4 × 32.9 cm
+Keywords: beer, brewing, brewery, how beer is made, homebrew, homebrewer, craft beer, malt, barley, hops, mash, wort, fermentation, yeast, keg, bottles, cans, diagram, flow chart, brewer, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the return line's arrowhead that pointed back into the mash tun removed, so the flow runs mash to boil; invented lettering on two vessel caps removed; the punctuation grown to print), the heading set in Space Grotesk, and converted to one ink.
+Licence: MONO
