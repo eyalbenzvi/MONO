@@ -11,10 +11,23 @@ const night = (d: string) => `make/moon/?make=${make({ t: "night", v: 1, p: { d 
 const buy = (page: Page) => page.locator("div.sticky button").filter({ hasText: /Add|Save|Select|In your bag/ });
 const cartItems = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("mono-cart") ?? "{}").state?.cart ?? []) as { size: string; qty: number; color: string; upload?: { id: string } }[]);
 
+/**
+ * Picks a size. The size row can sit under the sticky Add bar on a phone, and a tap while the page still scrolls
+ * misses it: brought to the middle first, and tapped again until the size is checked.
+ */
+async function pickSize(page: Page, size: string) {
+  const radio = page.getByRole("radio", { name: new RegExp(`^${size}\\b`) }).first();
+  await expect(async () => {
+    await radio.evaluate((el) => el.scrollIntoView({ block: "center" }));
+    await radio.tap();
+    await expect(radio).toHaveAttribute("aria-checked", "true", { timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+}
+
 async function addNight(page: Page, d: string, size = "M") {
   await page.goto(night(d));
   await hydrated(page);
-  await page.getByRole("radio", { name: new RegExp(`^${size}\\b`) }).first().tap();
+  await pickSize(page, size);
   await expect(buy(page)).toHaveText(new RegExp(`^Add to bag · ${size} · \\$75$`), { timeout: 20_000 });
   await buy(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
@@ -32,7 +45,7 @@ test("B1: Edit from the bag replaces the Make line and keeps its quantity", asyn
   await page.getByRole("link", { name: "Edit" }).first().tap();
   await expect(page).toHaveURL(/\/make\/moon\/\?make=.*&edit=/);
   await expect(buy(page)).toHaveText(/^Save changes · M · \$75$/, { timeout: 20_000 });
-  await page.getByRole("radio", { name: /^L\b/ }).first().tap();
+  await pickSize(page, "L");
   await expect(buy(page)).toHaveText(/^Save changes · L · \$75$/);
   await buy(page).tap();
   // A client-side step (router.push): polled, not waited for as a page load.
@@ -46,7 +59,7 @@ test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout s
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "First" } })}`);
   await hydrated(page);
-  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await pickSize(page, "M");
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   await expect(page.getByRole("img", { name: /personalised/ }).first()).toBeVisible();
   await buy(page).tap();
@@ -73,14 +86,7 @@ test("B2 + B6: two Make prints of one kind tell apart in the bag, and checkout s
 test("B5: Enter in a Make field closes the keyboard and never adds to the bag", async ({ page }) => {
   await page.goto(night("2021-11-19"));
   await hydrated(page);
-  // The size row can sit under the sticky Add bar on a phone, and a tap while the page still scrolls misses it:
-  // brought to the middle first, and tapped again until M is the size.
-  const m = page.getByRole("radio", { name: /^M\b/ }).first();
-  await expect(async () => {
-    await m.evaluate((el) => el.scrollIntoView({ block: "center" }));
-    await m.tap();
-    await expect(m).toHaveAttribute("aria-checked", "true", { timeout: 2_000 });
-  }).toPass({ timeout: 20_000 });
+  await pickSize(page, "M");
   await expect(buy(page)).toHaveText(/^Add to bag · M · \$75$/, { timeout: 20_000 });
   const field = page.locator("form input").first();
   await field.focus();
@@ -98,7 +104,7 @@ test("A tap on Add before the print is ready (a slow phone) is kept, and adds on
   });
   await page.goto(`make/moon/?make=${make({ t: "night", v: 1, p: { d: "2021-11-19", w: "Late" } })}`);
   await hydrated(page);
-  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await pickSize(page, "M");
   await buy(page).tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible({ timeout: 10_000 });
   expect(await cartItems(page)).toEqual([expect.objectContaining({ size: "M", qty: 1 })]);
@@ -120,7 +126,7 @@ test("M1 + B3: From yours is Your print, then Size; the rights are one line abov
   await expect(page).toHaveURL(/#print$/);
   await expect(page.locator('[data-step="print"]')).toBeVisible();
   await page.locator("[data-primary]").tap();
-  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await pickSize(page, "M");
   await page.locator("[data-primary]").tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   // No rights step anywhere in the flow.
@@ -133,7 +139,7 @@ test("B8: editing an upload from the bag keeps each of its lines' size and quant
   await page.locator("#upload-file").setInputFiles({ name: "rings.png", mimeType: "image/png", buffer: await drawing() });
   await expect(page.locator('[data-upload-preview="ready"]')).toBeVisible({ timeout: 45_000 });
   await page.locator("[data-primary]").tap();
-  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await pickSize(page, "M");
   await page.locator("[data-primary]").tap();
   await expect(page.getByRole("region", { name: "Added to bag" })).toBeVisible();
   // The same print three times in M and once in L.
