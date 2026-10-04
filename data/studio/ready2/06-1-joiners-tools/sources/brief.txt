@@ -1,0 +1,7 @@
+Joiner's Tools: the owner's image (ready-images track, run ready2)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-joiners-tools.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready2/06-1-joiners-tools/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, whisky and wine drinker, garage tinkerer, surfer), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1 (line conversion, two tool names corrected): 8.00 (8.5, 8, 8.5, 7.5, 7.5, 8). Passed.
+Result: approved: average 8.00 in round 1.

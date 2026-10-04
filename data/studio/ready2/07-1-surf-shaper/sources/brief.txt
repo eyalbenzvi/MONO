@@ -1,0 +1,8 @@
+Shaping: the owner's image (ready-images track, run ready2)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-surf-shaper.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready2/07-1-surf-shaper/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, whisky and wine drinker, garage tinkerer, surfer), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1 (halftone (55 lpi) under the heading SHAPING): 5.50 (3.5, 5, 6.5, 6.5, 6, 5.5). All six: a photographic dither, not line; redraw as line engraving.
+Round 2: 5.42 (4.5, 5.5, 6, 5, 6, 5.5). Converted as engraving with the greys held back. All six: still reads as a thresholded photo; redraw as clean line art (the source can't give it). Round 3 tried (the greys held back further, a dissolve or oval edge): it cropped the boards and read worse, so the panel stopped at round 2.
+Result: not approved: average 5.50 in round 1, 5.42 in round 2 (the bar 6.5). Waiting on the owner.

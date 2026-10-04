@@ -1,0 +1,78 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "True line art: clean binary strokes, no specks under 10px, open negative space, 9% coverage. Serif captions at full size are crisp and will hold on a 156-160 mesh. Reads well from a distance as a botanical plate and works on both white and black tees.",
+   "fix": "Thicken the finest dashed hatching inside the grains and ear by about 1px so it doesn't break up when printed as white ink on the black tee.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Clean, very printable one-ink plate: 12% coverage, no strokes under ~0.3 mm, no specks, open counters, captions big enough to hold on a 230-mesh screen. It reads well on white from 3 m. Up close at full size the contours wobble and bead the way auto-traced scans do, and the leaf hatching breaks into scattered dashes. That cheapens it next to a real engraved plate. The pruned cane floats off on the right, which leaves the layout lopsided.",
+   "fix": "Redraw or smooth the outlines and hatching into steady, tapered, continuous strokes (no beaded edges, no broken dash fields). Then pull the pruned cane in closer so the plate sits as one balanced block.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Strong subject and composition. The tank linework and valve hardware are crisp, the labels are clean serif type at a holdable size, and coverage is a light 9%. On a black tee in white ink, the near-solid bubble field along the tank walls and the yeast-in-suspension band will gain and fill into flat blobs. At chest size the labels go illegible from a distance. There are also a few stray ticks and specks, for example one beside the cone on the right, and the Kräusen umlaut renders oddly.",
+   "fix": "Separate it for white-on-black: choke the dense bubble and wall-shading zones open by about 0.1-0.15 mm so they don't fill in under white ink. While doing that, remove the stray marks and fix the ä glyph.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Cleanest technical drawing in the set: even line weights, open space, no specks, dimension lines and arrowheads will hold as white ink on black. It reads as a real cooper's sheet.",
+   "fix": "Scale the small-caps spec text (stave and material notes) up about 15% and fix the uneven spacing ('75mm', 'QUANTITY'): at about 2.5mm cap height it's right at the limit for white on black.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Strong old-engraving look with a bold, legible silhouette from a distance, and the labels are solid serif. But at 18% coverage it's heavy, and the tight crosshatch mesh in the firebox, the worm-tub shadows and the still's shoulder has openings only 2-3px wide, which will plug and print as solid blobs.",
+   "fix": "Open up the crosshatch in the shadow areas (wider spacing or parallel hatching instead of tight mesh) so the gaps are at least 4px.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Bold catalogue engraving with confident outlines and parallel hatching, and big, crisp serif numbering. It's trouble-free to separate and print, and reads well on the tee.",
+   "fix": "Correct the mallet caption glyph ('HEAD 2•½ IN.' should be '2½ IN.') and check the fraction glyphs across the sheet.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 4.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "At full size this is a thresholded photo, not drawn art. Every tone is broken, wormy noise, the board and blank outlines are dashed and unclosed, and coverage is heavy (27%), with lots of hairline paper gaps in the textured areas. Those gaps will fill and mottle on press and give a stiff, blotchy hand. It reads at 3 m, but up close it looks like a cheap photocopy for a $50 shirt. The mono SHAPING header is fine.",
+   "fix": "Redraw the figure as deliberate line-and-hatch illustration: closed board outline, controlled hatching instead of threshold noise, and large dark areas opened up. That brings coverage under about 18% and removes the fine gaps that will plug.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Good workshop-sheet layout. The monospace specs and dimension type are clean and legible, lines are solid, and it will print fine as white on black. The bike itself looks auto-traced in the engine and frame area, with blobby fills and stray broken strokes.",
+   "fix": "Hand-clean the main bike drawing (engine, frame and rear wheel): replace the blobby traced fills with crisp outlines and remove stray fragments.",
+   "round": 1
+  }
+ ]
+}

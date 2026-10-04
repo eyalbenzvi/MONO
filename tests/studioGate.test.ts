@@ -13,12 +13,13 @@ function reviews(scores: number[][], verdicts: Verdict[][]): Review[] {
 const PASS5: Verdict[] = ["PASS", "PASS", "PASS", "PASS", "PASS"];
 
 describe("studio gate: the designers' decision", () => {
-  it("approves at an average of 7 or more with fewer than three DELETE votes", () => {
-    const d = decide(listed(["animals", "animals", "streets"]), reviews([[8, 7, 7, 7, 7], [7, 7, 7, 6, 6], [9, 9, 9, 9, 9]], [PASS5, PASS5, ["DELETE", "DELETE", "DELETE", "PASS", "PASS"]]));
-    expect(d["01-1-d1"]).toMatchObject({ average: 7.2, approved: true });
-    expect(d["02-1-d2"]).toMatchObject({ average: 6.6, approved: false });
+  it("approves at an average of 6.5 or more with fewer than three DELETE votes", () => {
+    const d = decide(listed(["animals", "animals", "streets", "birds"]), reviews([[7, 7, 6, 6, 6.5], [7, 7, 6, 6, 6], [9, 9, 9, 9, 9], [8, 7, 7, 7, 7]], [PASS5, PASS5, ["DELETE", "DELETE", "DELETE", "PASS", "PASS"], PASS5]));
+    expect(d["01-1-d1"]).toMatchObject({ average: 6.5, approved: true });
+    expect(d["02-1-d2"]).toMatchObject({ average: 6.4, approved: false });
     expect(d["03-1-d3"]).toMatchObject({ deleteVotes: 3, approved: false });
-    expect(APPROVE_AVERAGE).toBe(7);
+    expect(d["04-1-d4"]).toMatchObject({ average: 7.2, approved: true });
+    expect(APPROVE_AVERAGE).toBe(6.5);
   });
 
   it("keeps the two best of a family in a run", () => {

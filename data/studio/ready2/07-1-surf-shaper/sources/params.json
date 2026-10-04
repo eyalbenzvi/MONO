@@ -1,0 +1,41 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    100,
+    1325,
+    930,
+    1460
+   ],
+   "why": "the generated SHAPING lettering, replaced by the house heading"
+  },
+  {
+   "op": "lift",
+   "amount": 0.3,
+   "keep": 0.85,
+   "why": "round 1: line, not tone (all six): the greys held back so the face and hands convert to lines, not mud"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave",
+  "--title",
+  "SHAPING"
+ ],
+ "print": {
+  "tees": "white",
+  "features": {
+   "pictorial": 0.9,
+   "line_art": 0.7,
+   "density": 0.7,
+   "contrast": 0.7,
+   "retro": 0.3,
+   "typography": 0.2
+  }
+ },
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true
+}

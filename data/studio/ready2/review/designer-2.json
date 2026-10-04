@@ -1,0 +1,78 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Real engraved-plate feel: clean solid line hatching that will screen well on both tees, good serif typography, a story (grain to malt) a brewery-adjacent customer gets. Composition is tidy but a bit textbook-even; the four-stage row reads small from 3 m.",
+   "fix": "Enlarge the barley ear to own the top two-thirds as the hero and tighten the malting row into a single band so there is a clear focal point instead of an even grid.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The most retail-ready of the three. It has real engraving-plate line quality: the stipple shading on the grapes and the serrated leaf edges hold up crisp at full size, and the single-ink line weight sits nicely on a white tee without a heavy ink block. The italic Latin name with the plain-English caption in parentheses reads like a proper herbarium plate, which a wine or natural-history buyer will pay $50 for. Its weak spot is the layout: the pruned cane floats off to the right as a separate island, and the left caption hangs in empty space, so from 3 m the piece reads as a branch plus an afterthought.",
+   "fix": "Bring the pruned cane into the main group: move it closer and align its top and its caption baseline with the branch, so the whole plate reads as one block with a deliberate border of white space.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A strong idea for brewers, and the inverted white-on-black version leads well: the cutaway tank, the CO2 bubble field and the magnified yeast inset make a clear patent-diagram shape, and the serif labels are readable at full size. On the back, though, the print sits as a tall, thin column, and at a glance the dense bubble field turns into grey noise. The yeast inset also has drafting slips. The 'Budding yeast cell' leader forks, and one branch points at a stray speck. There are loose specks and ticks around the circle that look like scan dirt rather than intent.",
+   "fix": "Clean up the yeast inset: give each label one leader that lands on its target, and delete the stray specks and ticks. Then thin the bubble field slightly so the tank interior reads as texture rather than grey when the shirt is seen from a few metres away.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest blueprint here: crisp single-weight technical line, real dimensions, exploded staves and hoop details make a credible cooper's sheet that looks great white-on-black. Clean vectors that will print sharp; type is legible at full size.",
+   "fix": "Bump the stroke weight of the hoop and dimension lines slightly (thin lines approach the limit for a one-colour screen on black) and give the elevation drawing more scale as the hero.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Strong silhouette and a satisfying copper-still cutaway with old-engraving character; reads well from distance. Heavy solid areas and cross-hatch dither in the fire and brick zones are dense and will print heavy and stiff on the white tee.",
+   "fix": "Open up the darkest zones (firebox, worm tub interior) by thinning hatching and replacing the cross-hatch dither with line hatching to cut ink coverage and keep the print soft.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Charming vintage catalogue page with clean engraved tools and convincing No./size labelling; the kind of graphic an indie workwear label actually sells. Line quality holds up at full size and will screen cleanly.",
+   "fix": "Fill the slight dead space at bottom left and tighten the layout so the plane, chisels and saw sit on a stronger grid with a small catalogue header to frame it.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The subject is right for a surf label, but the execution looks auto-traced rather than drawn. Up close the line breaks into broken dashes and gritty clumps: the board's outline is a dotted, interrupted edge, the hands and planer go mushy, and the stools and dust are fuzzy blobs. At about 27% ink coverage it is a heavy, uneven block on the tee. The generic spaced sans 'SHAPING' over a hairline rule feels like a default placeholder, not a label mark.",
+   "fix": "Redraw it as clean, controlled linework: a solid board outline, deliberate hatching instead of gritty texture, and a clear read of the hands and planer. Then replace the stock heading with typography that has character and belongs to the illustration's era.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Workshop-manual concept is very sellable and the layout with detail views and spec table is right, but the line work is wobbly and broken in places (engine casing, brake section) with blobby artefacts that read as auto-traced. Looks cheap next to the barrel sheet.",
+   "fix": "Clean up and redraw the bike and engine line work with consistent stroke weight and closed shapes, keeping the existing layout and spec table.",
+   "round": 1
+  }
+ ]
+}

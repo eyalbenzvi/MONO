@@ -1,0 +1,13 @@
+Title: Motorcycle
+Category: Engravings
+Family: motorcycles
+Subject: A workshop sheet of a classic motorcycle: its side view with dimensions (1980 mm long, 1330 mm wheelbase, 1000 mm high) and four callouts (side panel, exhaust pipe, engine, seat); details A to E of the carburettor in two views, the front drum brake in section, the rear sprocket, the engine from the right and a rear shock absorber, each with its sizes; and a short table of specifications
+Style: Technical drawing with dimension lines and typewriter lettering
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: A classic motorcycle drawn as a workshop sheet: the side view with its dimensions, and the carburettor, the front drum brake, the rear sprocket, the engine and a rear shock in detail. Callouts and a table of specifications in a draughtsman's typewriter lettering.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 23.1 × 35.0 cm
+Keywords: motorcycle, motorbike, classic motorcycle, vintage motorcycle, cafe racer, biker, rider, garage, mechanic, workshop, engine, carburettor, drum brake, blueprint, technical drawing, engineering, specifications, petrolhead, gift for dad, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (a maker's trademark removed from the tank and from both engine badges, and makers' names from the parts list; the parts list set again to match the drawing's four callouts, in IBM Plex Mono, SIL OFL 1.1; the details lettered A to E so their numbers don't read as the callouts'; the overall height given as the drawing's own 1000 mm where the table said 1040; the sprocket's tooth count and the table's sprocket row removed, the drawn sprocket not having 48 teeth; garbled figures and marks removed or set again: the carburettor's Ø38, the engine's 338, the callout 2, a scribble on the front hub, marks inside the sprocket and its lower dimension), converted to one ink.
+Licence: MONO

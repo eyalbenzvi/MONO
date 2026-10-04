@@ -1,0 +1,62 @@
+{
+ "run": "ready2",
+ "approvedAt": "2026-10-04T15:30:01.337Z",
+ "designs": {
+  "01-1-barley-malting": {
+   "average": 7.75,
+   "deleteVotes": 0,
+   "family": "brewing",
+   "approved": true,
+   "why": "approved"
+  },
+  "02-1-grapevine": {
+   "average": 7.5,
+   "deleteVotes": 0,
+   "family": "wine",
+   "approved": true,
+   "why": "approved"
+  },
+  "03-1-fermenter": {
+   "average": 7.33,
+   "deleteVotes": 0,
+   "family": "brewing",
+   "approved": true,
+   "why": "approved"
+  },
+  "04-1-oak-barrel": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "cooperage",
+   "approved": true,
+   "why": "approved"
+  },
+  "05-1-pot-still": {
+   "average": 7.42,
+   "deleteVotes": 0,
+   "family": "distilling",
+   "approved": true,
+   "why": "approved"
+  },
+  "06-1-joiners-tools": {
+   "average": 8,
+   "deleteVotes": 0,
+   "family": "woodworking",
+   "approved": true,
+   "why": "approved"
+  },
+  "07-1-surf-shaper": {
+   "average": 5.42,
+   "deleteVotes": 0,
+   "family": "surf",
+   "approved": false,
+   "why": "average 5.42 (6.5 to pass)"
+  },
+  "08-1-motorcycle": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "motorcycles",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

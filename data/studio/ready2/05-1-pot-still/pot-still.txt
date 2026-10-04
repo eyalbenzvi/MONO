@@ -1,0 +1,13 @@
+Title: Pot Still
+Category: Engravings
+Family: distilling
+Subject: A copper pot still drawn in cutaway over a wood fire in a brick hearth, its parts named: the fermented wash boiling in the pot, the cut-away neck showing the vapour's path, the swan neck, the lyne arm (vapour pipe), the manway, the worm tub (condenser) with its copper worm coiled in cooling water, cold water in and warm water out, the condensate (spirit) dripping into a jug for the distillate
+Style: Engraving with crosshatching, arrows and serif captions
+Medium: An illustration made with a generative tool, converted to one ink
+Description: How a spirit is made in copper: the wash boils in the pot, its vapour climbs the swan neck and runs down the lyne arm into a worm coiled in cold water, and comes out as spirit. A wood fire underneath and every part named, the way the old distillers drew it.
+Tee colours: White (printed in black ink)
+Print size: 25.0 × 35.0 cm
+Keywords: pot still, still, distilling, distillery, distiller, whisky, whiskey, scotch, gin, rum, moonshine, spirits, copper, condenser, worm tub, alembic, craft spirits, diagram, engraving, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; the lettering's full stops grown to print, converted to one ink.
+Licence: MONO

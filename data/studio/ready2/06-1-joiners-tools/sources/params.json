@@ -1,0 +1,58 @@
+{
+ "fixes": [
+  {
+   "op": "text",
+   "like": [
+    805,
+    872,
+    915,
+    894
+   ],
+   "text": "DIVIDERS",
+   "font": "libre-caslon-text-bold.ttf",
+   "align": "center",
+   "why": "the tool drawn is a pair of spring dividers (straight pointed legs), not calipers"
+  },
+  {
+   "op": "text",
+   "like": [
+    148,
+    1388,
+    302,
+    1410
+   ],
+   "text": "BRACE",
+   "font": "libre-caslon-text-bold.ttf",
+   "align": "center",
+   "why": "the tool drawn is a carpenter's brace, not a hand drill"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 120,
+ "final_despeck": true,
+ "protect_extra": [
+  [
+   556,
+   893,
+   700,
+   921
+  ]
+ ],
+ "protect_extra_why": "the mallet's size line (split by the lettering finder at the fraction)",
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.85,
+   "typography": 0.3,
+   "classic": 0.6,
+   "retro": 0.6,
+   "contrast": 0.8,
+   "density": 0.5
+  }
+ }
+}

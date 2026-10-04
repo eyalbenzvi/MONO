@@ -1,0 +1,53 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    520,
+    168,
+    1024,
+    622
+   ],
+   "why": "round 1: the fermentation chart taken out (four of six judges), so the tank leads at a larger scale"
+  },
+  {
+   "op": "white",
+   "box": [
+    528,
+    1183,
+    1024,
+    1392
+   ],
+   "why": "round 1: the phase bar taken out with the chart"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 175,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.9,
+   "typography": 0.45,
+   "dark_industrial": 0.4,
+   "clean_minimal": 0.4,
+   "retro": 0.35,
+   "contrast": 0.7
+  }
+ },
+ "protect_exclude": [
+  [
+   125,
+   290,
+   360,
+   1010
+  ]
+ ],
+ "protect_exclude_why": "the tank's bubble field, which the lettering finder took for a line of type (it grew a rectangle of dots there in round 1)"
+}

@@ -1,0 +1,78 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer at RVCA",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Cleanest engraving of the set: confident line weight, the ear holds up at full size, and the italic serif captions are crisp. The layout breathes. It does read as a library plate more than a brand piece, and the four malting stages at the bottom are small and fussy from 3 m.",
+   "fix": "Drop the four malting stages to two, scale the ear and the grain section up about 20%, and let negative space carry the bottom of the print.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads as a real engraved botanical plate from across the room: strong diagonal cane, the grape cluster carries the weight, airy negative space keeps it light on a white tee. The caption type is restrained, and the pruned cane on the right gives it an archival, collected feel. At full size the berry hatching is a little crunchy and the edges are wobbly, but that passes for hand engraving. It is quiet, maybe too polite to make anyone stop.",
+   "fix": "Push the contrast in the grape cluster (deeper shadow hatching on the back berries) so the cluster pops as a focal point at 3 m, and trim the stray tendril tails that drift off the bottom left.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Good idea and on trend: a technical cutaway in white ink on black reads like brewery workwear. But on the tee the 13 labels go grey and unreadable, and the rendering is dense with thin lines that will fill in on black. At full size there are stray marks (a loose tick between the tank and the yeast circle, a 'Budding yeast cell' leader that forks to nothing, specks inside the circle). The tank and the inset compete, and neither leads.",
+   "fix": "Cut the labels down to about 5 key callouts set larger, enlarge the yeast inset so it overlaps the tank leg as a deliberate second focal point, and clean up the stray marks and dead leader lines.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 6,
+   "verdict": "PASS",
+   "why": "Honest cooper's drawing with clean open linework and legible material text. It prints easily and looks right on black. It is thin and light overall, though: lots of hairline dimensions and small hoop details that disappear at distance, so it lacks a focal punch.",
+   "fix": "Push the line weight of the elevation and exploded staves up about 1.5x and cut the three hoop-detail rows to one, so the barrel reads from across the room.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 6.5,
+   "verdict": "PASS",
+   "why": "The strongest graphic silhouette of the drinks prints: copper pot, swan neck and worm tub make a great shape, and the fire and coil engraving has real character. The crosshatch shadows under the fire and the plinth are tight mesh patterns that will plug on a tee.",
+   "fix": "Open up the crosshatch-mesh shadows into coarser parallel hatching, or solid black, so the darks print clean and do not fill in.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Best of the set to wear: a vintage catalogue look with confident engraved hatching, great tool silhouettes and charming No./size type. It reads as a grid of objects from 3 m and rewards close looking. The small checker-mesh fills in the plane and mallet are the only print risk.",
+   "fix": "Replace the little checker-mesh fills with solid black and nudge the catalogue numbers up a point or two, so the type survives the tee.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The subject is right at home for a surf brand, and a shaper in a respirator under a heading has real workwear authenticity. The execution looks like a filtered photo trace, though: blotchy speckle texture, the face reduced to a black blob, broken dashed outlines on the blank, and about 27% ink coverage, so it prints as a heavy, muddy patch. The tracked SHAPING header in a generic grotesk with a hairline rule feels like a template.",
+   "fix": "Redraw it as clean line work with intentional hatching instead of the noise texture: give the face and hands clear readable lines, close the blank's outline, cut the ink to roughly half, and set the heading in a custom or hand-drawn lettering.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 6.5,
+   "verdict": "PASS",
+   "why": "Workshop-manual charm with a good typewriter spec table and nice exploded views. The main bike is busy, though, with broken and dashed artifact lines in the frame and engine. From 3 m the five detail views make it a scatter of small parts around a modest bike.",
+   "fix": "Clean up the broken linework on the main bike and scale it up to dominate, then keep only two detail views plus the spec table.",
+   "round": 1
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+  "designer": "K=5",
+  "persona": "Head designer at RVCA",
+  "designs": [
+    {
+      "no": 1,
+      "title": "Barley and Malt",
+      "score": 7,
+      "verdict": "PASS",
+      "why": "Cleanest engraving of the set: confident line weight, the ear holds up at full size, and the italic serif captions are crisp. The layout breathes. It does read as a library plate more than a brand piece, and the four malting stages at the bottom are small and fussy from 3 m.",
+      "fix": "Drop the four malting stages to two, scale the ear and the grain section up about 20%, and let negative space carry the bottom of the print."
+    },
+    {
+      "no": 2,
+      "title": "Vitis vinifera",
+      "score": 5,
+      "verdict": "NEEDS CHANGE",
+      "why": "The leaves and grapes are handsome, but all the tone is a fine stochastic dither at roughly 3 px dots. On cotton that fills in muddy or drops out, depending on mesh. The wine bottle with its little vineyard label and the glass turns a botanical plate into wine-shop merch.",
+      "fix": "Cut the bottle and glass and rebuild the tone as line hatching, engraving-style, instead of dither dots, so it screens cleanly in one ink."
+    },
+    {
+      "no": 3,
+      "title": "Fermentation",
+      "score": 5.5,
+      "verdict": "NEEDS CHANGE",
+      "why": "The tank linework is solid and the chart type is clean. But the krausen and wort bubbles break into wormy squiggle artifacts at full size, and the chart, yeast circles and phase timeline make it a textbook page. From 3 m on a black tee it is a grey rectangle of small parts.",
+      "fix": "Redraw the bubble field as deliberate round stipple and cut the chart or the phase timeline, so the tank is the hero at a larger scale."
+    },
+    {
+      "no": 4,
+      "title": "Oak Barrel",
+      "score": 6,
+      "verdict": "PASS",
+      "why": "Honest cooper's drawing with clean open linework and legible material text. It prints easily and looks right on black. It is thin and light overall, though: lots of hairline dimensions and small hoop details that disappear at distance, so it lacks a focal punch.",
+      "fix": "Push the line weight of the elevation and exploded staves up about 1.5x and cut the three hoop-detail rows to one, so the barrel reads from across the room."
+    },
+    {
+      "no": 5,
+      "title": "Pot Still",
+      "score": 6.5,
+      "verdict": "PASS",
+      "why": "The strongest graphic silhouette of the drinks prints: copper pot, swan neck and worm tub make a great shape, and the fire and coil engraving has real character. The crosshatch shadows under the fire and the plinth are tight mesh patterns that will plug on a tee.",
+      "fix": "Open up the crosshatch-mesh shadows into coarser parallel hatching, or solid black, so the darks print clean and do not fill in."
+    },
+    {
+      "no": 6,
+      "title": "Joiner's Tools",
+      "score": 7.5,
+      "verdict": "PASS",
+      "why": "Best of the set to wear: a vintage catalogue look with confident engraved hatching, great tool silhouettes and charming No./size type. It reads as a grid of objects from 3 m and rewards close looking. The small checker-mesh fills in the plane and mallet are the only print risk.",
+      "fix": "Replace the little checker-mesh fills with solid black and nudge the catalogue numbers up a point or two, so the type survives the tee."
+    },
+    {
+      "no": 7,
+      "title": "Shaping",
+      "score": 6,
+      "verdict": "NEEDS CHANGE",
+      "why": "This is the only one that lives in our world: surf, craft and a human in it. The subject is right. Execution is not: the whole figure is a dense photographic dither (26% coverage) that turns muddy at full size, the face behind the respirator is lost, and the blank and the wall have no clear separation. SHAPING in tracked caps is too timid.",
+      "fix": "Re-render it as a bold hand-cut woodcut or linocut with line hatching instead of a photo dither, crop tighter on the shaper and the blank, and give SHAPING real scale."
+    },
+    {
+      "no": 8,
+      "title": "Motorcycle",
+      "score": 6.5,
+      "verdict": "PASS",
+      "why": "Workshop-manual charm with a good typewriter spec table and nice exploded views. The main bike is busy, though, with broken and dashed artifact lines in the frame and engine. From 3 m the five detail views make it a scatter of small parts around a modest bike.",
+      "fix": "Clean up the broken linework on the main bike and scale it up to dominate, then keep only two detail views plus the spec table."
+    }
+  ]
+}

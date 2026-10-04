@@ -1,0 +1,78 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Clean engraved botanical plate that reads well as a thumbnail and on the tee. It is a gift-friendly item for homebrewers and craft-beer fans, and it works on white and black. At 3 m it is a tidy, airy grid, but there is no hook in one word.",
+   "fix": "Add a small header line (e.g. BARLEY & MALT or MALTING) so the listing image and the back say beer at a glance.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads as a grape cluster from across the room and as a proper engraved botanical plate up close. Clean confident linework, strong tendrils, nice bud detail, legible captions. Wine-lover gift appeal is clear and it looks worth $50 on a white tee. The pruned cane sits apart on the right like a second plate, so the thumbnail looks lopsided and the main figure ends up smaller on the shirt.",
+   "fix": "Bring the pruned cane in closer, or tuck it under the main branch, so the composition is one tighter block. The grapevine can then print larger and fill the chest and back width better in the listing thumbnail.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Homebrew/craft-beer buyers are a proven niche, and a cutaway with Krausen, wort and yeast labels is the kind of nerdy-accurate detail they pay for. The engraving holds up at full size and works white-on-black. But the tall narrow tank makes a skinny print that looks thin and small on the tee, the small labels turn to grey specks in the thumbnail, there is a stray tick mark between the tank leg and the yeast circle (about x1700 y2925), and one yeast cell accidentally reads as a smiley face.",
+   "fix": "Make the layout wider: scale the tank up and let the magnified-yeast inset overlap it, so the print fills more of the shirt. Delete the stray mark and the face-like dots on that yeast cell while doing it.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A barrel is an instantly readable icon for whiskey and wine buyers, and the blueprint style is sharp and prints cleanly. On black it looks like a proper workshop drawing. The many small hoop drawings and text blocks make the lower half busy and thin from a distance.",
+   "fix": "Shrink or drop the three hoop detail rows and make the elevation and exploded staves larger, so the barrel dominates the print.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest seller here. It has a bold, heavy-line copper still, fire and worm tub that read from 3 m and look great on white. Whiskey fans are a high-spend gift audience, and the labels are big enough to read. Since it holds up on black, it is a shame not to offer it there.",
+   "fix": "Offer it on the black tee as well; the dense line work carries in a light ink and doubles the listing.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A vintage tool catalogue is a proven evergreen seller for dads and woodworkers. The engraving is crisp and the No./size captions add charm. On the back it is a bit small and scattered, with white space around the brace and saw. Some captions, like MALLET and PANEL SAW, sit close together.",
+   "fix": "Tighten the layout into a fuller block (larger tools, even spacing) and add a small catalogue header such as JOINER'S TOOLS to anchor it.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Surf-shop culture is a good, sellable story and the SHAPING header works as a hook. But at full size the art is a noisy threshold texture of wormy dots, not drawn lines. It reads as a filtered photo, not illustration. The face is lost under the respirator and the speckle, it looks muddy and cheap at $50, and the dense noise will fill in or crack on a one-ink print.",
+   "fix": "Redraw it as clean line art with deliberate hatching instead of the photo-threshold speckle. Open up the face and hands, and keep the shaped blank as the bright hero shape.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Café-racer and classic-bike buyers spend well, and the side view is iconic and clean on black. The sheet is crowded with five detail views plus a spec table and parts list. Those shrink to tiny type on the back, and the carb and sprocket line work is a bit lumpy at full size.",
+   "fix": "Enlarge the bike to dominate the sheet and keep at most two detail views, dropping the spec table and parts list.",
+   "round": 1
+  }
+ ]
+}

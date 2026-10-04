@@ -1,0 +1,78 @@
+{
+ "designer": "K=6",
+ "persona": "Everyday customer: home-brewer, whisky drinker, garage tinkerer, surfer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This is the one I'd buy as a home-brewer. Steeping, germination, kilning, malt is my hobby in four pictures, and it looks like an old seed-catalogue plate rather than a beer joke. Up close the engraving is clean, the rootlets are crisp and the labels are sharp. It reads well on both white and black.",
+   "fix": "Make the four malting stages and their captions a little bigger. From 3 m the bottom row turns into small specks under the big ear.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Reads instantly as a grapevine from across the room, and up close the grapes have real weight and the leaf serrations are crisp. The pruned cane with its dormant bud is the part that makes it mine: anyone who has pruned a vine knows that bud, so it doesn't feel like a generic wine-bar grape cluster. Clean line work that sits well on a white tee. Captions like 'Grapes (fruit)' feel a bit obvious, and the cane floats off to the side as its own little island.",
+   "fix": "Make the captions earn their place: swap 'Grapes (fruit)' for something a grower would actually say (e.g. 'Cluster / bunch' or a variety note), and tie the pruned cane to the branch visually (a shared baseline or a thin plate rule) so the right side doesn't look tacked on.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "This is the one I'd buy. It's a conical I recognize: blow-off on top, PRV, cooling jacket in/out, krausen, yeast dump at the bottom of the cone, and the labels are correct, not just made up. The magnified budding yeast is the nerdy bonus that starts conversations at a brew club. Bubbles and foam hold up at full size, and the labels stay sharp. On black it glows like a blueprint.",
+   "fix": "Clean up the yeast inset: the 'Budding yeast cell' leader forks and one prong ends on a stray tick in empty space, and there's a loose stray mark just left of the circle. Point every leader at a real cell and remove the stray marks. At this level of detail, a brewer will notice.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "As a whisky drinker I like a cooper's drawing with real numbers (570 mm heads, 24 staves, hoop sizes). The exploded staves look good. On the back of a tee, though, it's a lot of small text and thin dimension lines, and from across the room it reads as a grey spec sheet rather than a barrel.",
+   "fix": "Make the barrel elevation and the exploded staves noticeably bigger, and cut or shrink the three hoop-detail rows. The barrel should be the hero, not the hoop table.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "My favourite of the set. The copper pot over a wood fire, swan neck, worm tub and a jug catching the drips tell the whole distilling story at a glance, and it's strong and dark enough to read from 3 m. Up close the engraving is bold and printable. The fire and brickwork are great.",
+   "fix": "A few patches use a fine cross-hatch screen (the still shoulder and the tub edge) that may fill in or look muddy on cotton. Swap them for line hatching like the rest.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "A vintage catalogue page of a smoothing plane, chisels, mallet, brace and panel saw is exactly what hangs on my garage wall. Up close the lines are clean and the type is solid, and No. 601 / LENGTH 22 IN. gives it that old-catalogue charm. It's simple and honest.",
+   "fix": "The layout leaves a gap in the bottom-right and feels a bit loose as a block. Tighten the spacing, or add one more tool (a square or a marking gauge) so it sits as a full page.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "I love the subject, and the respirator, foam dust and blanks racked behind him feel like a real shaping bay. But up close it falls apart: the face is a mush of black blobs with no readable eyes, the legs and shaping stands turn into dense dotted black slabs that are hard to read, and the heavy ink areas would make a stiff, sweaty patch across the back of a $50 shirt. From 3 m it reads more like a photocopied photo than a drawing, and next to the other two it looks like it was drawn by a different hand.",
+   "fix": "Redraw it in open line work like the fermenter and the vine: a clean, readable face and hands, the stands and shorts done in light hatching instead of solid black, and less overall ink. Keep the board and the planer as the star.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A classic British-style twin in a workshop-manual layout with carb, drum brake, sprocket, engine and shock is right up my street, and the dimensions add up (325 + 1330 + 325 = 1980). The bike itself is good. Up close some of it is rough: the spokes are scribbly, the sprocket teeth are wobbly and uneven, and there's odd garbled marking on the front tyre.",
+   "fix": "Redraw the sprocket with even, regular teeth and clean up the wheel spokes and tyre. A mechanic will spot a wonky sprocket immediately.",
+   "round": 1
+  }
+ ]
+}

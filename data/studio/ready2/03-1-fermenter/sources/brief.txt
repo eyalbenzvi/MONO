@@ -1,0 +1,8 @@
+Fermentation: the owner's image (ready-images track, run ready2)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-fermenter.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready2/03-1-fermenter/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, whisky and wine drinker, garage tinkerer, surfer), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1 (line conversion): 5.92 (6, 5.5, 5, 6, 5.5, 7.5). Five: garbled bubbles and a noise patch (the lettering finder's false box in the bubble field, which grew a rectangle of dots); four: cut the chart and phases so the tank leads.
+Round 2: 7.33 (7, 7.5, 8, 7, 6.5, 8). No lettering boxes in the tank, a lighter cut so the bubbles stay closed, the chart and phase bar taken out. Passed.
+Result: approved: average 7.33 in round 2.

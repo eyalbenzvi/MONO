@@ -1,0 +1,8 @@
+Grapevine (Vitis vinifera): the owner's image (ready-images track, run ready2)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-grapevine.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready2/02-1-grapevine/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: home-brewer, whisky and wine drinker, garage tinkerer, surfer), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1 (halftone (55 lpi), the captions reset as type): 5.67 (5, 6, 6, 6, 5, 6). All six: tone as dither dots, not line; four: drop the bottle and glass.
+Round 2: 7.50 (7, 8, 7.5, 7.5, 7.5, 7.5). Converted as engraving (line and solid) with the greys held back, the bottle, glass and their caption taken out, the picture's own captions kept. Passed.
+Result: approved: average 7.50 in round 2.

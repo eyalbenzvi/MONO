@@ -1,0 +1,60 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    636,
+    680,
+    730,
+    940
+   ],
+   "why": "round 1: the bottle and glass taken out (four of six judges), so the vine, grapes and cane carry the plate"
+  },
+  {
+   "op": "white",
+   "box": [
+    545,
+    850,
+    790,
+    1452
+   ],
+   "why": "round 1: the bottle and glass taken out (four of six judges), so the vine, grapes and cane carry the plate"
+  },
+  {
+   "op": "white",
+   "box": [
+    784,
+    978,
+    1012,
+    1462
+   ],
+   "why": "round 1: the bottle and glass taken out (four of six judges), so the vine, grapes and cane carry the plate (with the wine's caption)"
+  },
+  {
+   "op": "lift",
+   "amount": 0.3,
+   "keep": 0.85,
+   "why": "round 1: line, not tone (all six): the greys held back so the engraving converts to lines with fewer solid masses"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.85,
+   "nature": 0.9,
+   "pictorial": 0.85,
+   "classic": 0.7,
+   "density": 0.6,
+   "typography": 0.15,
+   "contrast": 0.7
+  }
+ }
+}

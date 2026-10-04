@@ -1,0 +1,13 @@
+Title: Oak Barrel
+Category: Engravings
+Family: cooperage
+Subject: A cooper's drawing of an oak barrel: its elevation with dimensions (900 mm tall, heads 570 mm across), the stave construction in an exploded view with a stave's sizes (24 staves), the top, middle and bottom hoops, the riveted lap joint and its rivet, and a material key: European oak (Quercus robur / Quercus petraea) staves and heads, galvanised steel hoops, steel rivets
+Style: Technical drawing with hatching and dimension lines
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: An oak barrel drawn the way a cooper plans one: the elevation, the 24 staves fanned out in an exploded view, the hoops in three pairs and the riveted joint that closes each. Quarter-sawn European oak, galvanised steel, and every part with its size.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 23.4 × 35.0 cm
+Keywords: barrel, oak barrel, cask, cooper, cooperage, whisky, bourbon, wine, winery, distillery, brewery, oak, woodworking, blueprint, technical drawing, exploded view, dimensions, engineering, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the bottom head and hoop given the top's 570 mm, as drawn, where the picture said 430; the middle hoop at the bilge given 690 mm where it said 520, less than the head; a stave's end width given 75 mm where it said 50, which wouldn't close round the head; garbled lettering under the rivet removed; the full stops grown to print), converted to one ink.
+Licence: MONO

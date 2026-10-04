@@ -1,0 +1,13 @@
+Title: Fermentation
+Category: Engravings
+Family: brewing
+Subject: A conical fermenter drawn in cutaway, its parts named: CO2 to the blow-off, a pressure relief valve, kräusen (yeast foam), fermenting wort, rising CO2 bubbles, yeast in suspension, a cooling jacket and the yeast dump valve; beside it budding yeast cells under magnification, the budding cell, the daughter cell and a CO2 bubble named
+Style: Technical pen drawing with stipple and captions
+Medium: An illustration made with a generative tool, converted to one ink
+Description: A conical fermenter at work: kräusen on top, CO2 rising through the wort, and yeast settling towards the cone's dump valve. Beside it the yeast itself under magnification, budding and giving off the gas.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 24.3 × 35.0 cm
+Keywords: fermentation, fermenter, brewing, homebrew, homebrewer, beer, craft beer, yeast, wort, krausen, specific gravity, brewery, brewer, cellar, science, diagram, chart, technical drawing, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the fermentation chart and the phase bar taken out, so the tank leads; the lettering's full stops grown to print), converted to one ink.
+Licence: MONO

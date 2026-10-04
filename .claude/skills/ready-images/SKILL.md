@@ -48,6 +48,22 @@ catalogue step, the checks, the commit and the report are each done **once for t
      `data/studio/ready1/02-1-gin-botanicals/sources/build.py`).
    - Never run a median at the original's scale (it erases i-dots and full stops). Grow lettering dots
      that would print under 0.5 mm, and despeck outside the lettering only.
+   Lessons from ready2 (start from `data/studio/ready2/*/sources/build.py`, the same file in every folder):
+   - The panel marks a halftone dither down on a drawing ("a thresholded photo"). Convert a drawing as line:
+     `line` keeps small numerals and lettering crisp; `engrave` (no screen at all) thickens strokes under
+     0.4 mm and closes small counters (a 6 reads as 8), so keep it for pictures without small type. Hold the
+     greys back first (`lift`, 0.3) so engrave makes lines, not masses. A photographic picture with no line
+     structure stays below the bar either way.
+   - `"protect": "auto"` finds the lettering (`text_boxes`); check its boxes on an overlay. Add `protect_extra`
+     for a number standing apart from its words ("1.  SIDE PANEL") and `protect_exclude` where a texture reads
+     as type (a bubble field: the dot growth turns it into a black rectangle).
+   - `despeck` at 100 (the check's own speck size at 3x), not 300: 300 eats 1s, 7s and fine hatching.
+     `binarize` 120–175 to keep the screen share under 3% in line mode; `final_despeck` takes oneink's own
+     crumbs out of the delivered print.
+   - Correct lettering with the picture's own glyphs (`swap`, digits from another label in the same face)
+     before setting type (`text`, `like` measures the cap height and baseline from the lettering it replaces).
+     Check every figure against the drawing: Gemini's sheets carry wrong dimensions, wrong tool names,
+     garbled figures, and makers' trademarks (removed: `disc` and `ring` clear a badge and keep its ring).
 4. **Tees.** Decide them before the panel (design-loop.md, step 3, "Tees"; `scripts/studio/teeBalance.ts`),
    look at the print in white ink on black as well as in black on white, and write `tees` (and `teeDefault`
    with `both`) and `features` into `print.json`.
@@ -69,7 +85,7 @@ catalogue step, the checks, the commit and the report are each done **once for t
   `{"designer","persona","designs":[{"no","title","score","verdict","why","fix"}]}` to its **exact**
   path, `data/studio/ready<N>/review/round-<R>/designer-<K>.json`. No reference designs, no example scores,
   no shop taste.
-- **After each round, per design:** it **passes** at an average of 7 or more with fewer than three DELETE votes
+- **After each round, per design:** it **passes** at an average of 6.5 or more with fewer than three DELETE votes
   (approve.ts's bar), and it leaves the review. A design that doesn't pass gets the fixes that two or more
   judges agree on (back to step 2, in its `build.py`) and goes into the next round with the others still in
   review. After round 3, or when the fixes contradict each other or ask for what the image can't give, it

@@ -1,0 +1,78 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer, composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Barley and Malt",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Classic plate structure: the tall ear on the left balances the grain pair on the right, and the four malting stages make a calm baseline. One serif family is used with clear roman caps and italic hierarchy, the labels line up on a shared grid, and the line work is clean and solid at full size. It reads as a plate from 3 m.",
+   "fix": "Close the dead space under the grain section (between BARLEY GRAIN and the stages row) by moving the grain pair down slightly or enlarging it, so the upper right carries as much weight as the ear.",
+   "round": 1
+  },
+  {
+   "no": 2,
+   "title": "Grapevine (Vitis vinifera)",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Strong diagonal from the branch, a clear focal mass in the grape cluster, and a varied, confident line that holds up at full size. The captions are set in a fitting old-style serif with an italic binomial, which feels right for a plate. The weak points are that the pruned cane floats high on the right with a dead quadrant below it, and the captions sit loose with no leader lines, so 'Grapes (fruit)' reads as an orphan in the gap at lower centre.",
+   "fix": "Rebalance the right column: drop the pruned cane so it sits lower and aligns with the cluster (or move its caption to the bottom margin), then set all three captions on one shared baseline grid so they read as a deliberate system.",
+   "round": 2
+  },
+  {
+   "no": 3,
+   "title": "Fermentation",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Best-organised sheet of the three. The tall vessel anchors a strong vertical. The magnified yeast roundel gives a secondary focal point and fills the right-hand negative space. Labels are set in one consistent serif with proper subscript CO2, and leader arrows are clean, so it reads like a real technical plate. White ink on black works well because the dense wort texture glows. In the full-size crops, the 'Budding yeast cell' leader forks into two lines, and one ends in stray specks. There is also a loose tick mark left of the roundel. The 'Yeast Activity (magnified)' heading is bold while every other label is regular, which jumps the hierarchy.",
+   "fix": "Clean up the label layer: give each label a single leader, remove the stray marks near the roundel, and set the roundel heading in the same weight as the other labels (small caps or letterspaced) so the label system is uniform.",
+   "round": 2
+  },
+  {
+   "no": 4,
+   "title": "Oak Barrel",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The top half (elevation plus exploded staves) is a good blueprint composition. The lower half is three near-identical hoop ellipses stacked down the left, which is repetitive and dull. Type is inconsistent: the stave spec block mixes fake small caps with a different numeral face ('75mm' with no space), and the centre line cuts through the bottom 'Ø570 mm' dimension. The hoops are drawn the same size despite labelled diameters of 570 and 690.",
+   "fix": "Crop to the elevation and exploded view, scale them up to fill the sheet, and reset all labels in one consistent caps style, with dimension text clear of the centre lines.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Pot Still",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A strong, readable silhouette. The swan neck and lyne arm lead the eye in an arc into the worm tub and down to the jug, which is a natural reading path. The engraving is confident and holds up at full size. Labels are a single bold serif with tidy leaders, though some are wordy and 'Cold Water In' / 'Warm Water Out' are set smaller than the rest.",
+   "fix": "Edit the labels down (drop redundant parentheticals such as '(Cold Water Surrounds)' and '(shows vapour path)') and set every label at one size.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Joiner's Tools",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "The best typography of the set: an authentic catalogue system of 'No.' numerals, bold caps names and letterspaced small-caps sizes, applied consistently. The engraved tools have crisp, printable line and a clear rhythm (plane as header, the chisel row, then mallet and dividers). It reads well from distance.",
+   "fix": "Tighten the bottom row: the brace and saw drift apart and sit lower than the grid above, so align their captions on one baseline and pull them up to match the spacing of the upper rows.",
+   "round": 1
+  },
+  {
+   "no": 7,
+   "title": "Shaping",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The figure has energy, and the white foam blank makes a good bright ellipse at centre. But the drawing is a near-rectangular slab of heavy, broken scratch texture cut off flat at the bottom, so it reads as a scanned photo block rather than a shaped T-shirt graphic. Up close, the sawdust and shelf areas break up into noisy, mottled marks. The heading is a generic, widely tracked geometric sans with a thin rule. It has no relationship to the gritty illustration and looks pasted on, too small and too timid for the image beneath it.",
+   "fix": "Give the image a designed silhouette (vignette or fade out the shelf and legs instead of a hard bottom crop) and redraw the heading so it belongs to the illustration: a heavier condensed or hand-cut letterform sized to the full blank width, locked closer to the head.",
+   "round": 2
+  },
+  {
+   "no": 8,
+   "title": "Motorcycle",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The workshop-sheet grid is good: the hero side view is framed by lettered detail views, and a typewriter mono is used consistently with a tidy specs table. Up close the drafting falls apart. Dimension lines are broken and dangling (the stray ticks at 72, the floating Ø38 arrows, the fragmented 1980/325 lines), arrowheads are missing, and the engine detail's kickstart is crude. A technical drawing lives or dies on that precision.",
+   "fix": "Redraw every dimension as a continuous line with proper extension lines and arrowheads, figures centred in gaps, so the drafting looks as exact as the subject.",
+   "round": 1
+  }
+ ]
+}

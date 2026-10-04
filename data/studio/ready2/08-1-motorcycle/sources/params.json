@@ -1,0 +1,429 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    530,
+    484,
+    637,
+    520
+   ],
+   "why": "the BSA trademark and wing on the tank (a maker's mark the shop can't print)"
+  },
+  {
+   "op": "disc",
+   "c": [
+    530,
+    709
+   ],
+   "r": 17,
+   "why": "the BSA trademark on the crankcase badge (the badge's ring kept)"
+  },
+  {
+   "op": "white",
+   "box": [
+    496,
+    696,
+    517,
+    711
+   ],
+   "why": "the trademark's wing, outside the badge"
+  },
+  {
+   "op": "ring",
+   "c": [
+    531,
+    708
+   ],
+   "r": 21,
+   "why": "the badge's ring, drawn again where the wing crossed it"
+  },
+  {
+   "op": "disc",
+   "c": [
+    594,
+    1243
+   ],
+   "r": 22,
+   "why": "the BSA trademark on the engine detail's badge (the ring kept)"
+  },
+  {
+   "op": "white",
+   "box": [
+    554,
+    1225,
+    579,
+    1242
+   ],
+   "why": "the trademark's wing, outside the badge"
+  },
+  {
+   "op": "ring",
+   "c": [
+    592,
+    1242
+   ],
+   "r": 28,
+   "why": "the badge's ring, drawn again where the wing crossed it"
+  },
+  {
+   "op": "white",
+   "box": [
+    146,
+    199,
+    194,
+    215
+   ],
+   "why": "garbled lettering on the carburettor body"
+  },
+  {
+   "op": "text",
+   "box": [
+    277,
+    190,
+    297,
+    222
+   ],
+   "text": "Ø38",
+   "font": "ibm-plex-mono.ttf",
+   "h": 10,
+   "x": 287,
+   "y": 206,
+   "rotate": 90,
+   "why": "the garbled 'Ø.8' dimension, set again"
+  },
+  {
+   "op": "text",
+   "box": [
+    722,
+    1160,
+    744,
+    1199
+   ],
+   "text": "338",
+   "font": "ibm-plex-mono.ttf",
+   "h": 10,
+   "x": 733,
+   "y": 1179,
+   "rotate": 90,
+   "why": "the engine's height, garbled ('328'), set again"
+  },
+  {
+   "op": "text",
+   "box": [
+    604,
+    566,
+    619,
+    582
+   ],
+   "text": "2",
+   "font": "ibm-plex-mono.ttf",
+   "h": 10,
+   "x": 611,
+   "y": 579,
+   "align": "center",
+   "why": "the callout's figure, garbled, set again"
+  },
+  {
+   "op": "white",
+   "box": [
+    820,
+    620,
+    842,
+    640
+   ],
+   "why": "a stray scribble on the front hub"
+  },
+  {
+   "op": "white",
+   "box": [
+    88,
+    1147,
+    100,
+    1166
+   ],
+   "why": "stray marks inside the sprocket"
+  },
+  {
+   "op": "white",
+   "box": [
+    84,
+    1203,
+    100,
+    1221
+   ],
+   "why": "stray marks inside the sprocket"
+  },
+  {
+   "op": "white",
+   "box": [
+    190,
+    1200,
+    210,
+    1219
+   ],
+   "why": "stray marks inside the sprocket"
+  },
+  {
+   "op": "white",
+   "box": [
+    92,
+    1250,
+    192,
+    1279
+   ],
+   "why": "the sprocket's lower dimension, garbled and smaller than the bore it should clear"
+  },
+  {
+   "op": "white",
+   "box": [
+    110,
+    1305,
+    186,
+    1334
+   ],
+   "why": "'Z = 48': the drawn sprocket has about 32 teeth"
+  },
+  {
+   "op": "white",
+   "box": [
+    28,
+    1370,
+    320,
+    1512
+   ],
+   "why": "the parts list: it didn't match the callouts and named makers (AMAL, BSA)"
+  },
+  {
+   "op": "text",
+   "text": "1. SIDE PANEL",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 33,
+   "y": 1390,
+   "why": "the parts list set again to match the four callouts"
+  },
+  {
+   "op": "text",
+   "text": "2. EXHAUST PIPE",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 33,
+   "y": 1413,
+   "why": "the parts list set again to match the four callouts"
+  },
+  {
+   "op": "text",
+   "text": "3. ENGINE",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 33,
+   "y": 1435,
+   "why": "the parts list set again to match the four callouts"
+  },
+  {
+   "op": "text",
+   "text": "4. SEAT",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 33,
+   "y": 1458,
+   "why": "the parts list set again to match the four callouts"
+  },
+  {
+   "op": "text",
+   "like": [
+    72,
+    24,
+    86,
+    42
+   ],
+   "text": "A",
+   "font": "ibm-plex-mono.ttf",
+   "align": "center",
+   "why": "the detail views lettered A-E, so their numbers don't read as the callouts'"
+  },
+  {
+   "op": "text",
+   "like": [
+    598,
+    24,
+    612,
+    42
+   ],
+   "text": "B",
+   "font": "ibm-plex-mono.ttf",
+   "align": "center",
+   "why": "the detail views lettered A-E, so their numbers don't read as the callouts'"
+  },
+  {
+   "op": "text",
+   "like": [
+    30,
+    971,
+    44,
+    992
+   ],
+   "text": "C",
+   "font": "ibm-plex-mono.ttf",
+   "align": "center",
+   "why": "the detail views lettered A-E, so their numbers don't read as the callouts'"
+  },
+  {
+   "op": "text",
+   "like": [
+    416,
+    971,
+    430,
+    992
+   ],
+   "text": "D",
+   "font": "ibm-plex-mono.ttf",
+   "align": "center",
+   "why": "the detail views lettered A-E, so their numbers don't read as the callouts'"
+  },
+  {
+   "op": "text",
+   "like": [
+    774,
+    971,
+    788,
+    992
+   ],
+   "text": "E",
+   "font": "ibm-plex-mono.ttf",
+   "align": "center",
+   "why": "the detail views lettered A-E, so their numbers don't read as the callouts'"
+  },
+  {
+   "op": "white",
+   "box": [
+    824,
+    1358,
+    886,
+    1378
+   ],
+   "why": "'(MAIN)' after SPECIFICATIONS, half-drawn"
+  },
+  {
+   "op": "text",
+   "box": [
+    684,
+    1404,
+    830,
+    1428
+   ],
+   "text": "OVERALL HEIGHT",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 688,
+   "y": 1421,
+   "why": "the faded row set again"
+  },
+  {
+   "op": "swap",
+   "src": [
+    927,
+    1408,
+    937,
+    1424
+   ],
+   "dst": [
+    937,
+    1408,
+    947,
+    1424
+   ],
+   "align": "center",
+   "why": "the height as the drawing's own dimension (1000 mm), not 1040: the 4 replaced by the row's own 0"
+  },
+  {
+   "op": "white",
+   "box": [
+    684,
+    1470,
+    998,
+    1522
+   ],
+   "why": "the sprocket row (48 teeth, not as drawn) and the row under it, moved up"
+  },
+  {
+   "op": "text",
+   "text": "DRY WEIGHT (APPROX.)",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 688,
+   "y": 1491,
+   "why": "the last row, moved up"
+  },
+  {
+   "op": "text",
+   "text": "185 kg",
+   "font": "ibm-plex-mono.ttf",
+   "h": 11,
+   "x": 987,
+   "y": 1491,
+   "align": "right",
+   "why": "the last row, moved up"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 120,
+ "final_despeck": true,
+ "protect_extra": [
+  [
+   28,
+   1374,
+   53,
+   1464
+  ],
+  [
+   65,
+   21,
+   100,
+   44
+  ],
+  [
+   590,
+   21,
+   622,
+   46
+  ],
+  [
+   26,
+   969,
+   60,
+   994
+  ],
+  [
+   412,
+   969,
+   446,
+   994
+  ],
+  [
+   770,
+   969,
+   802,
+   993
+  ]
+ ],
+ "protect_extra_why": "the numbers before the parts list and the detail letters (two glyphs apart from their words, which the lettering finder leaves out)",
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.95,
+   "typography": 0.45,
+   "dark_industrial": 0.5,
+   "retro": 0.6,
+   "clean_minimal": 0.4,
+   "contrast": 0.7
+  }
+ }
+}
