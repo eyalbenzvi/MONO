@@ -88,10 +88,11 @@ publish.ts, generate) is the owner's, after review.
   publish.ts follows them; a delivery without them falls back to the earlier rule (an outline drawing with under
   10% solid ink on both, anything else on white only), so designs already in the shop are unchanged. And
   `features`: what the design is, for the recommender (0..1 on the shop's feature keys: `typography`, `wit`,
-  `retro`, `classic`, `nature`, …; `photographic` is for the Photographs category alone), only the keys that differ from the studio's defaults, which describe an
+  `retro`, `classic`, `nature`, …; `photographic` is for photographs alone), only the keys that differ from the studio's defaults, which describe an
   archive plate (classic 0.6, pictorial 0.85, no type, no wit). A joke set in type needs at least `typography` and `wit`.
-- `<slug>.txt`: Title, Category (a shop label: Engravings, Brush & Woodblock, Botanical & Nature, Maps & Sky,
-  Architecture, Pattern, Geometric, Type, Photographs, ASCII & Code), Family, Subject, Style, Medium,
+- `<slug>.txt`: Title, Category (a shop label, by what the design shows: Plants & Gardens, Animals, Under the
+  Microscope, Ships & Sea, Travel & Landscapes, Architecture & Towns, Sky & Science, Workshop & Kitchen, Type & Wit,
+  Pattern & Ornament; a delivery from before carries an old label, Engravings and the rest, and keeps it), Family, Subject, Style, Medium,
   Description (two sentences, checked facts), Tee colours (as decided under Tees), Print size, Keywords, Model (`Archive` or
   `Code`), Credit and source (work, maker, date, institution, object id, URL, licence), Licence.
 - `sources/`: `brief.txt` (source URL and licence, the idea's competition rank and score, every panel round's

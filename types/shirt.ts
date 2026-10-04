@@ -75,38 +75,51 @@ export const SOURCE_CATEGORIES = [
 export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
 
 /**
- * The shop's categories (the brand book's scheme, content overhaul Part 4):
- * what a design shows and how it was made, in the order the shop lists them.
+ * The generator's own filing (content overhaul Part 4: what a design shows
+ * and how it was made). Scripts only: it decides each design's features,
+ * screen and SKU code, so those never change. The shop groups designs by
+ * ShirtCategory, by subject (see shopCategory in scripts/gen/categories).
+ */
+export const LEGACY_CATEGORIES = ["photographs", "specimens", "sky", "architecture", "etched", "brush", "pattern", "systems", "type", "terminal"] as const;
+export type LegacyCategory = (typeof LEGACY_CATEGORIES)[number];
+
+/**
+ * The shop's categories, by subject: what a design shows, in the order the
+ * shop lists them. Every category holds at least 5% of the shop.
  */
 export const SHIRT_CATEGORIES = [
-  "photographs",
-  "specimens",
-  "sky",
+  "plants",
+  "animals",
+  "microscope",
+  "ships",
+  "travel",
   "architecture",
-  "etched",
-  "brush",
-  "pattern",
-  "systems",
+  "sky",
+  "workshop",
   "type",
-  "terminal",
+  "pattern",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
-  photographs: "Photographs",
-  specimens: "Botanical & Nature",
-  sky: "Maps & Sky",
-  architecture: "Architecture",
-  etched: "Engravings",
-  brush: "Brush & Woodblock",
-  pattern: "Pattern",
-  systems: "Geometric",
-  type: "Type",
-  terminal: "ASCII & Code",
+  plants: "Plants & Gardens",
+  animals: "Animals",
+  microscope: "Under the Microscope",
+  ships: "Ships & Sea",
+  travel: "Travel & Landscapes",
+  architecture: "Architecture & Towns",
+  sky: "Sky & Science",
+  workshop: "Workshop & Kitchen",
+  type: "Type & Wit",
+  pattern: "Pattern & Ornament",
 };
 
-/** SKU code per category: MN-<code>-<B|W>-<n>. */
-export const SKU_CODES: Record<ShirtCategory, string> = {
+/**
+ * SKU code per category: MN-<code>-<B|W>-<n>. A design keeps the code it was
+ * first sold under, so the generator's designs take their legacy category's
+ * code and only new categories bring new codes.
+ */
+export const SKU_CODES: Record<LegacyCategory | ShirtCategory, string> = {
   photographs: "PHO",
   specimens: "SPC",
   sky: "MAP",
@@ -117,20 +130,47 @@ export const SKU_CODES: Record<ShirtCategory, string> = {
   systems: "SYS",
   type: "TYP",
   terminal: "TRM",
+  plants: "PLT",
+  animals: "ANI",
+  microscope: "MIC",
+  ships: "SHP",
+  travel: "TRV",
+  workshop: "WRK",
 };
+
+/**
+ * Where each legacy category's designs mostly went: the shop category for a design that isn't filed by hand,
+ * an old address (?cat=specimens) or an upload accepted on this device before the change.
+ */
+export const LEGACY_TO_SHOP: Record<LegacyCategory, ShirtCategory> = {
+  photographs: "workshop",
+  specimens: "plants",
+  sky: "sky",
+  architecture: "architecture",
+  etched: "travel",
+  brush: "travel",
+  pattern: "pattern",
+  systems: "sky",
+  type: "type",
+  terminal: "type",
+};
+
+/** A shop category from a stored or typed key, old or new (null for anything else). */
+export const asShopCategory = (c: unknown): ShirtCategory | null =>
+  typeof c !== "string" ? null : (SHIRT_CATEGORIES as readonly string[]).includes(c) ? (c as ShirtCategory) : (LEGACY_TO_SHOP[c as LegacyCategory] ?? null);
 
 /** One short line on each category. */
 export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
-  photographs: "Animals, aircraft, engines and patent models from the Smithsonian, as one-ink halftones.",
-  specimens: "Botanical and natural history plates, and plants grown by rule.",
-  sky: "Star charts of the real sky, orbits and the moon, computed.",
-  architecture: "Buildings and cities: elevations, views and measured drawings.",
-  etched: "Etchings, engravings and woodcuts: lines cut by hand.",
-  brush: "Ink painting and woodblock prints from Japan and China.",
-  pattern: "Lace, stencils, rosettes and tiles.",
-  systems: "Curves, grids, circuits and dials drawn from their equations.",
-  type: "Real data set in type: scales, alphabets, tables.",
-  terminal: "Characters from the command line: ASCII, punch cards, displays.",
+  plants: "Botanical plates, gardens, herbs and the plants we brew, cook and grow.",
+  animals: "Birds, beasts, insects and fish: field studies, engravings and photographs.",
+  microscope: "Cells, crystals, diatoms and the small world, drawn as the naturalists saw it.",
+  ships: "Sail plans, hulls, knots, lighthouses and the sea.",
+  travel: "Places worth the trip: coasts, towns, mountains and the badges they leave.",
+  architecture: "Buildings and towns: elevations, views and measured drawings.",
+  sky: "Star charts of the real sky, orbits, maps and the instruments that read them.",
+  workshop: "Tools, machines, engines and the kitchen bench, drawn to be made.",
+  type: "Words, alphabets, slogans and real data set in type.",
+  pattern: "Lace, stencils, rosettes, tiles and curves drawn from their equations.",
 };
 
 /** A photograph (Medium "photo"): never inverted for the other tee colour — that would make a negative. */

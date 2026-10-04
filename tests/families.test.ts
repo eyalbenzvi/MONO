@@ -169,12 +169,12 @@ describe("precomputed calibration (I8)", () => {
     expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));
   });
 
-  it("Part 7: the taste test is ten categories (specimens and brush among them), one or two photographs, a graphic first, all strong prints", () => {
+  it("Part 7: the taste test is ten categories (plants and animals among them), one or two photographs, a graphic first, all strong prints", () => {
     const test = CALIBRATION_IDS.map((id) => FULL.find((s) => s.id === id)!);
     expect(test).toHaveLength(10);
     // One per category, for every category that still has a strong print (the second review left type and ASCII thin).
     expect(new Set(test.map((s) => s.category)).size).toBe(Math.min(10, strongCategories()));
-    expect(test.some((s) => s.category === "specimens") && test.some((s) => s.category === "brush")).toBe(true);
+    expect(test.some((s) => s.category === "plants") && test.some((s) => s.category === "animals")).toBe(true);
     const photos = test.filter((s) => s.medium === "photo").length;
     expect(photos).toBeGreaterThanOrEqual(1);
     expect(photos).toBeLessThanOrEqual(2);

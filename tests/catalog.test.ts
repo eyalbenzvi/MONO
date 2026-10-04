@@ -9,7 +9,7 @@ import { MAKE_BASES } from "@/lib/custom/makeBases";
 import { PRICE, TOTAL } from "../scripts/gen/constants";
 import full from "@/data/shirts.json";
 import { CATEGORY_LABELS, CATEGORY_VIBES, FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type CatalogEntry } from "@/types/shirt";
-import { displayCategory } from "../scripts/gen/categories";
+import { displayCategory, shopCategory } from "../scripts/gen/categories";
 import { W1 } from "./fixtures";
 
 const FULL = full as unknown as CatalogEntry[];
@@ -73,21 +73,29 @@ describe("generated catalog (data/shirts.json)", () => {
     }
   });
 
-  it("Part 4: the brand book's ten categories, in its order, each with depth and none swamping the shop", () => {
-    expect([...SHIRT_CATEGORIES]).toEqual(["photographs", "specimens", "sky", "architecture", "etched", "brush", "pattern", "systems", "type", "terminal"]);
-    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Photographs", "Botanical & Nature", "Maps & Sky", "Architecture", "Engravings", "Brush & Woodblock", "Pattern", "Geometric", "Type", "ASCII & Code"]);
-    expect(SHIRT_CATEGORIES.map((c) => SKU_CODES[c])).toEqual(["PHO", "SPC", "MAP", "ARC", "ETC", "BRU", "PAT", "SYS", "TYP", "TRM"]);
+  it("the shop's ten categories by subject, in their order, each at least 5% of the shop and none swamping it", () => {
+    expect([...SHIRT_CATEGORIES]).toEqual(["plants", "animals", "microscope", "ships", "travel", "architecture", "sky", "workshop", "type", "pattern"]);
+    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Plants & Gardens", "Animals", "Under the Microscope", "Ships & Sea", "Travel & Landscapes", "Architecture & Towns", "Sky & Science", "Workshop & Kitchen", "Type & Wit", "Pattern & Ornament"]);
     for (const c of SHIRT_CATEGORIES) {
       const count = SHIRTS.filter((s) => s.category === c).length;
-      // Every category keeps designs after the designers' second review (only what averaged 7 stayed, so some are thin);
-      // none swamps the shop.
-      expect(count, c).toBeGreaterThanOrEqual(1);
-      expect(count, c).toBeLessThan(SHIRTS.length * 0.45);
-      expect(CATEGORY_LABELS[c].length).toBeGreaterThan(2);
+      expect(count, c).toBeGreaterThanOrEqual(Math.ceil(SHIRTS.length * 0.05));
+      expect(count, c).toBeLessThan(SHIRTS.length * 0.25);
       expect(SKU_CODES[c]).toMatch(/^[A-Z]{3}$/);
-      expect(SHIRTS.filter((s) => s.category === c).every((s) => s.sku.startsWith(`MN-${SKU_CODES[c]}-`))).toBe(true);
     }
-    expect(new Set(Object.values(SKU_CODES)).size).toBe(SHIRT_CATEGORIES.length);
+    // A design keeps the SKU it was first sold under (its legacy category's code), whatever category it is in now.
+    const codes = new Set(Object.values(SKU_CODES));
+    expect(codes.size).toBe(Object.keys(SKU_CODES).length);
+    for (const s of SHIRTS) expect(codes.has(s.sku.split("-")[1]), s.id).toBe(true);
+    expect(new Set(SHIRTS.map((s) => s.sku)).size).toBe(SHIRTS.length);
+  });
+
+  it("every design in the shop is filed by hand in a shop category (scripts/gen/shopCategories.json)", () => {
+    const filed = JSON.parse(readFileSync(path.join(process.cwd(), "scripts/gen/shopCategories.json"), "utf8")) as Record<string, string>;
+    for (const s of SHIRTS) expect(filed[s.id], s.id).toBe(s.category);
+    expect(shopCategory("mono-0", "specimens", "studio")).toBe("plants");
+    expect(shopCategory("mono-0", "photographs", "wildlife")).toBe("animals");
+    expect(shopCategory("mono-0", "etched", "archive")).toBe("travel");
+    expect(shopCategory("mono-0", "ships", "studio")).toBe("ships");
   });
 
   it("T8: designs are filed by what they show, whichever generator made them", () => {
@@ -109,7 +117,8 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(displayCategory("archive", "archive-etching", "The Arch of Marcus Aurelius")).toBe("architecture");
     // In the data: every drawn template sits in one category (archive groups split off their buildings).
     const byVariant = new Map<string, Set<string>>();
-    for (const s of SHIRTS.filter((x) => !x.variant.startsWith("archive-"))) byVariant.set(s.variant, (byVariant.get(s.variant) ?? new Set()).add(s.category));
+    // (The archive's and the studio's designs are filed one by one.)
+    for (const s of SHIRTS.filter((x) => !x.variant.startsWith("archive-") && !x.variant.startsWith("studio-"))) byVariant.set(s.variant, (byVariant.get(s.variant) ?? new Set()).add(s.category));
     for (const [v, cats] of byVariant) expect(cats.size, v).toBe(1);
   });
 

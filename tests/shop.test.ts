@@ -4,10 +4,10 @@ import { TIER_LABEL, matchTier, tierOf, topFraction } from "@/lib/match";
 import { rankShirts, updateUserVector } from "@/lib/recommendation";
 import { createInitialVector } from "@/types/shirt";
 
-/** A formed profile: liked a run of systems prints (op art, curves), passed on the rest. */
+/** A formed profile: liked a run of sky and science prints (charts, curves), passed on the rest. */
 function profile() {
   let v = createInitialVector();
-  for (const s of SHIRTS.slice(0, 60)) v = updateUserVector(v, s.features, s.category === "systems" ? "like" : "dislike");
+  for (const s of SHIRTS.slice(0, 60)) v = updateUserVector(v, s.features, s.category === "sky" ? "like" : "dislike");
   return v;
 }
 
@@ -98,10 +98,10 @@ describe("the shop's filters: tee colour and categories (no sort)", () => {
     const { filterShop } = await import("@/lib/catalog");
     const { SHIRT_CATEGORIES } = await import("@/types/shirt");
     expect(filterShop(all, { tee: null, cats: [] })).toHaveLength(all.length);
-    const two = filterShop(all, { tee: null, cats: ["photographs", "sky"] });
-    expect(two.length).toBe(SHIRTS.filter((s) => s.category === "photographs" || s.category === "sky").length);
-    const whitePhotos = filterShop(all, { tee: "white", cats: ["photographs"] });
-    expect(whitePhotos.every(({ shirt }) => shirt.category === "photographs" && shirt.colors.includes("white"))).toBe(true);
+    const two = filterShop(all, { tee: null, cats: ["workshop", "sky"] });
+    expect(two.length).toBe(SHIRTS.filter((s) => s.category === "workshop" || s.category === "sky").length);
+    const whiteWorkshop = filterShop(all, { tee: "white", cats: ["workshop"] });
+    expect(whiteWorkshop.every(({ shirt }) => shirt.category === "workshop" && shirt.colors.includes("white"))).toBe(true);
     // Every category has designs with no colour chosen (a colour can empty one: its row is then disabled).
     for (const c of SHIRT_CATEGORIES) expect(filterShop(all, { tee: null, cats: [c] }).length, c).toBeGreaterThan(0);
   });
@@ -109,21 +109,22 @@ describe("the shop's filters: tee colour and categories (no sort)", () => {
   it("toggling keeps the catalogue's order, and choosing every category is the same as all", async () => {
     const { toggleCategory } = await import("@/lib/catalog");
     const { SHIRT_CATEGORIES } = await import("@/types/shirt");
-    expect(toggleCategory(["sky"], "photographs")).toEqual(SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "photographs"));
-    expect(toggleCategory(["sky", "photographs"], "sky")).toEqual(["photographs"]);
+    expect(toggleCategory(["sky"], "workshop")).toEqual(SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "workshop"));
+    expect(toggleCategory(["sky", "workshop"], "sky")).toEqual(["workshop"]);
     let cats: (typeof SHIRT_CATEGORIES)[number][] = [];
     for (const c of SHIRT_CATEGORIES) cats = toggleCategory(cats, c);
     expect(cats).toEqual([]);
   });
 
-  it("the address: ?c=&cat=a.b, unknown values dropped, every category = all, an old ?m=photo = photographs", async () => {
+  it("the address: ?c=&cat=a.b, unknown values dropped, every category = all, an old key or ?m=photo = the category its designs went to", async () => {
     const { filtersFromQuery } = await import("@/lib/catalog");
     const { SHIRT_CATEGORIES } = await import("@/types/shirt");
     const q = (s: string) => filtersFromQuery(new URLSearchParams(s));
-    expect(q("c=black&cat=sky.photographs.nope")).toEqual({ tee: "black", cats: SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "photographs") });
+    expect(q("c=black&cat=sky.photographs.nope")).toEqual({ tee: "black", cats: SHIRT_CATEGORIES.filter((c) => c === "sky" || c === "workshop") });
     expect(q("c=grey")).toEqual({ tee: null, cats: [] });
     expect(q(`cat=${SHIRT_CATEGORIES.join(".")}`).cats).toEqual([]);
-    expect(q("c=white&m=photo")).toEqual({ tee: "white", cats: ["photographs"] });
+    expect(q("c=white&m=photo")).toEqual({ tee: "white", cats: ["workshop"] });
+    expect(q("cat=specimens.etched.brush").cats).toEqual(["plants", "travel"]);
     expect(q("m=ink").cats).toEqual([]);
   });
 });

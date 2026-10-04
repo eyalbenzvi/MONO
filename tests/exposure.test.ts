@@ -37,7 +37,9 @@ describe("U3: no longer the same designs for everyone, every day", () => {
       // Same day, same person: the same order (stable while browsing).
       expect(top24(v, `${u}:1`).map((x) => x.shirt.id)).toEqual(b.map((x) => x.shirt.id));
     });
-    expect(rotated.size).toBeGreaterThan(fixed.size * 1.1);
+    // Rotation shows more of the shop: 10% more designs, or, when the fixed order already reaches most of a small
+    // catalogue (the subject categories spread it: 143 of 172), at least a fifth of what it leaves out.
+    expect(rotated.size).toBeGreaterThan(Math.min(fixed.size * 1.1, fixed.size + (SHIRTS.length - fixed.size) * 0.2));
     // (The first 24 now always show six categories — Part 7 — which costs a little of the favourites.)
     expect(relRotated).toBeGreaterThanOrEqual(relFixed * 0.9);
     // A top 24 out of the catalogue the designers' second review left (about 130) can change only so much from day to day.

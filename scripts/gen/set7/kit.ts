@@ -4,13 +4,13 @@
  * standard circuits, instrument faces. White ink on the 300 × 400 canvas
  * (the generator swaps the inks for a white tee).
  */
-import type { FeatureKey, ShirtCategory } from "../../../types/shirt";
+import type { FeatureKey, LegacyCategory } from "../../../types/shirt";
 
 export interface Set7Design {
   body: string;
   variant: string;
   /** The shop category it is filed under (Part 4). */
-  category: ShirtCategory;
+  category: LegacyCategory;
   title: string;
   /** What the print shows, for its page title and search; the title when unset. */
   subject?: string;

@@ -39,14 +39,16 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   expect(await print.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(`/img/p/${photo.n}-${photo.baseColor}-`);
 });
 
-test("the shop's Photographs category shows the photographs", async ({ page }) => {
+test("a shop category by subject holds its photographs with its drawings (Workshop & Kitchen)", async ({ page }) => {
+  const workshop = new Set((full as unknown as Entry[]).filter((s) => s.category === "workshop").map((s) => s.id));
+  expect(PHOTOS.some((s) => workshop.has(s.id))).toBe(true);
   await page.goto("shop/");
   await hydrated(page);
-  await pickCategories(page, ["Photographs"]);
+  await pickCategories(page, ["Workshop & Kitchen"]);
   const cards = page.locator('main a[href*="/shop/mono-"]');
   await expect(cards.first()).toBeVisible();
-  const ids = await cards.evaluateAll((as) => as.slice(0, 12).map((a) => Number(a.getAttribute("href")!.match(/mono-(\d+)/)![1])));
-  expect(ids.every((n) => n > 2800)).toBe(true);
+  const ids = await cards.evaluateAll((as) => as.slice(0, 12).map((a) => a.getAttribute("href")!.match(/mono-\d+/)![0]));
+  for (const id of ids) expect(workshop.has(id), id).toBe(true);
 });
 
 test("someone who took the taste test before the photographs: not sent back into it, profile upgraded, a photo dealt first", async ({ page }) => {

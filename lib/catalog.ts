@@ -2,10 +2,10 @@ import { loadIndex, type CatalogIndex } from "@/lib/catalogIndex";
 import { madeById } from "@/lib/custom/products";
 import { uploadProduct } from "@/lib/upload/designs";
 import { YOURS_ID, isUploadDesign } from "@/lib/upload/keys";
-import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, asShopCategory, type BaseColor, type FeatureKey, type FeatureVector, type Medium, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 /** The index format this code reads (written by the generator's writeIndex). */
-export const INDEX_VERSION = 6;
+export const INDEX_VERSION = 7;
 /** A stale or mismatched index would decode into nonsense: stop at once. */
 export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
   if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
@@ -75,7 +75,7 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
       id: `mono-${pad4(n)}`,
       n,
       no,
-      sku: `MN-${SKU_CODES[cat]}-${white ? "W" : "B"}-${pad4(n)}`,
+      sku: `MN-${index.skus[index.sku[i]]}-${white ? "W" : "B"}-${pad4(n)}`,
       title,
       price: index.price[i],
       baseColor,
@@ -167,7 +167,7 @@ function madeProduct(id: string): ShirtProduct | undefined {
 function yoursProduct(id: string): ShirtProduct | undefined {
   if (id === YOURS_ID) {
     let made = MADE_BY_ID.get(id);
-    const base = made ?? SHIRTS.find((s) => s.category === "photographs");
+    const base = made ?? SHIRTS.find((s) => s.medium === "photo") ?? SHIRTS[0];
     if (!made && base) {
       made = { ...base, id, title: "Your file", variant: "upload", family: id, colors: ["black", "white"], rank: Number.MAX_SAFE_INTEGER, weak: false };
       MADE_BY_ID.set(id, made);
@@ -420,11 +420,12 @@ export function toggleCategory(cats: readonly ShirtCategory[], c: ShirtCategory)
 
 export type ShopFilters = { tee: BaseColor | null; cats: ShirtCategory[] };
 /**
- * The shop's filters from its address (/shop/?c=black&cat=photographs.sky): shareable, and back from a product
- * restores them. Unknown values are dropped; an old ?m=photo (the style filter) is the photographs.
+ * The shop's filters from its address (/shop/?c=black&cat=plants.sky): shareable, and back from a product
+ * restores them. Unknown values are dropped; an old category key (?cat=specimens) or an old ?m=photo (the
+ * style filter) opens the category its designs went to.
  */
 export function filtersFromQuery(q: URLSearchParams): ShopFilters {
-  const asked = new Set([...(q.get("cat")?.split(".") ?? []), ...(q.get("m") === "photo" ? ["photographs"] : [])]);
+  const asked = new Set([...(q.get("cat")?.split(".") ?? []), ...(q.get("m") === "photo" ? ["photographs"] : [])].map((c) => asShopCategory(c) ?? c));
   const cats = SHIRT_CATEGORIES.filter((c) => asked.has(c));
   const tee = q.get("c");
   return { tee: tee === "black" || tee === "white" ? tee : null, cats: cats.length === SHIRT_CATEGORIES.length ? [] : cats };

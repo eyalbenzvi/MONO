@@ -8,7 +8,7 @@ import { track } from "@/lib/analytics";
 import { OFFER_LINE, OFFER_MS, offerState, parseOfferForce, shopId } from "@/lib/upload/openCall";
 import { useMakeStore, FORCE_KEY } from "@/store/makeStore";
 import { useUiStore } from "@/store/useUiStore";
-import { CATEGORY_LABELS, SHIRT_CATEGORIES, type ShirtCategory } from "@/types/shirt";
+import { CATEGORY_LABELS, SHIRT_CATEGORIES, asShopCategory, type ShirtCategory } from "@/types/shirt";
 
 const INPUT =
   "h-11 w-full rounded-control bg-white/[0.06] px-3 text-sm text-white ring-1 ring-white/10 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-white [color-scheme:dark]";
@@ -25,7 +25,7 @@ function Sheet({ uploadId, onClose }: { uploadId: string; onClose: () => void })
   const panel = useRef<HTMLDivElement>(null);
   useFocusTrap(panel, true, onClose);
   const [title, setTitle] = useState(meta?.title ?? "");
-  const [category, setCategory] = useState<ShirtCategory>(meta?.category ?? "pattern");
+  const [category, setCategory] = useState<ShirtCategory>(asShopCategory(meta?.category) ?? "pattern");
   const [credit, setCredit] = useState("");
   const [own, setOwn] = useState(false);
   const [error, setError] = useState<string | null>(null);

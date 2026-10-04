@@ -10,7 +10,7 @@
 import { MAKE_KEY, YOURS_ID, isUploadDesign, offerState } from "./keys";
 import type { Offer } from "./openCall";
 import { STORE_POLICY } from "@/lib/store-policy";
-import type { FeatureVector, ShirtCategory, ShirtProduct } from "@/types/shirt";
+import { asShopCategory, type FeatureVector, type ShirtCategory, type ShirtProduct } from "@/types/shirt";
 
 export { MAKE_KEY, YOURS_ID };
 
@@ -53,7 +53,8 @@ export function uploadProduct(id: string, base: ShirtProduct | undefined, offers
     ...base,
     id,
     title: d.title,
-    category: d.category,
+    // Accepted before the categories went by subject: the category its kind went to.
+    category: asShopCategory(d.category) ?? base.category,
     features: d.features,
     colors: d.colors,
     baseColor: d.colors[0],

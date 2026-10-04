@@ -213,10 +213,10 @@ export function measured(conv: Converted, m: Measures, priors: Priors = PRIORS a
 
 /** The shop category an upload lands in (brief 6.6). */
 export function category(conv: Converted, f: Pick<FeatureVector, "typography" | "geometric">, m: Pick<Measures, "detail">): ShirtCategory {
-  if (conv.cls === "photo") return "photographs";
+  if (conv.cls === "photo") return "travel";
   if (f.typography >= 0.5) return "type";
-  if (f.geometric >= 0.6) return "systems";
-  if (m.detail >= 0.5) return "etched";
+  if (f.geometric >= 0.6) return "pattern";
+  if (m.detail >= 0.5) return "travel";
   return "pattern";
 }
 

@@ -3,7 +3,7 @@
  * each wave's drop date, each source's institution, and how a kept picture is filed.
  */
 import type { ArchiveGroup } from "../archive/source";
-import type { ShirtCategory } from "../../types/shirt";
+import type { LegacyCategory } from "../../types/shirt";
 import { trimDangling } from "../gen/titles";
 import { LICENSE_LABEL, type License } from "./_license";
 import type { Selected } from "./_types";
@@ -73,7 +73,7 @@ const BUILDING_3 = /\belevations?\b|ground plan|floor plan|\bsections?\b|fa[cç]
 const KNOT_3 = /\bknots?\b|\bsplices?\b|\bhitch(?:es)?\b|signal flags?|code of signals|signal code/i;
 
 /** The archive group whose character (features, screen, tee) a kept picture takes, and its shop category. */
-export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: ShirtCategory } {
+export function filing(s: Pick<Selected, "mode" | "classification" | "title" | "tags" | "source" | "wave">): { group: ArchiveGroup; category: LegacyCategory } {
   const text = [s.classification, s.title, ...s.tags].join(" · ");
   if (s.mode !== "ink" || PHOTO.test(s.classification)) return { group: "art-photo", category: "photographs" };
   const later = s.wave !== undefined && s.wave >= 2;

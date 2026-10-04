@@ -136,7 +136,7 @@ describe("Part 8: For you, simulated for three tastes", () => {
   it("each sees at least six categories in the first 24, and no subject twice", async () => {
     const { dedupeByFamily, diversify } = await import("@/lib/catalog");
     const { updateUserVector } = await import("@/lib/recommendation");
-    const tastes: ((s: (typeof SHIRTS)[number]) => boolean)[] = [(s) => s.medium === "photo", (s) => s.category === "systems" || s.category === "pattern", (s) => ["etched", "brush", "specimens"].includes(s.category)];
+    const tastes: ((s: (typeof SHIRTS)[number]) => boolean)[] = [(s) => s.medium === "photo", (s) => s.category === "sky" || s.category === "pattern", (s) => ["plants", "animals", "microscope"].includes(s.category)];
     for (const likes of tastes) {
       let v = createInitialVector();
       const strong = SHIRTS.filter((s) => !s.weak);
@@ -180,10 +180,10 @@ describe("Part 7: the Discover deck", () => {
   });
 
   it("a wildcard is the best print from the category shown least", () => {
-    const shown = SHIRTS.filter((s) => s.category === "etched").slice(0, 3).map((s) => s.id);
+    const shown = SHIRTS.filter((s) => s.category === "travel").slice(0, 3).map((s) => s.id);
     const pool = SHIRTS.filter((s) => !shown.includes(s.id));
     const pick = wildcard(pool, shown)!;
-    expect(pick.shirt.category).not.toBe("etched");
+    expect(pick.shirt.category).not.toBe("travel");
     expect(pick.shirt.weak).toBe(false);
     const same = pool.filter((s) => s.category === pick.shirt.category && !s.weak);
     expect(Math.min(...same.map((s) => s.rank))).toBe(pick.shirt.rank);

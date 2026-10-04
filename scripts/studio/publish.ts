@@ -26,7 +26,7 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
-import { CATEGORY_LABELS, SHIRT_CATEGORIES, type BaseColor, type FeatureKey, type ShirtCategory } from "../../types/shirt";
+import { CATEGORY_LABELS, LEGACY_CATEGORIES, SHIRT_CATEGORIES, type BaseColor, type FeatureKey, type LegacyCategory, type ShirtCategory } from "../../types/shirt";
 import { assessPrint, rasterInk } from "../gen/quality";
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -52,7 +52,8 @@ export interface StudioEntry {
   /** The delivery folder, from the repo root. */
   dir: string;
   title: string;
-  category: ShirtCategory;
+  /** Its filing: a shop category (a design delivered since the categories went by subject), or the legacy filing it was made under. */
+  category: LegacyCategory | ShirtCategory;
   subject: string;
   style: string;
   description: string;
@@ -80,7 +81,7 @@ export interface StudioEntry {
  * were loose: "Nature", "Maritime", a lantern filed as Photographs). Landscapes are
  * engravings, the sky is the sky, buildings architecture, the woodblock wave brush work.
  */
-const CATEGORY: Record<string, ShirtCategory> = {
+const CATEGORY: Record<string, LegacyCategory> = {
   patagonia: "etched", "pine-on-the-cliff": "etched", lighthouse: "architecture",
   "alpine-peak": "etched", "alpine-lake": "etched", "desert-cliffs": "etched", waterfall: "etched", "pine-forest-in-mist": "etched",
   "sea-stacks": "etched", "breaking-wave": "brush", "rocky-islet": "etched", "chalk-cliffs": "etched", "fishing-hut-on-stilts": "architecture",
@@ -141,20 +142,38 @@ export function gatedTees(m: Pick<PrintMeasures, "blackTee" | "coverage" | "tees
   return { baseColor: m.coverage > BOTH_WHITE_ABOVE ? "white" : "black", single: false };
 }
 
-/** A gated design's shop category from its details' Category line (a shop label or key); Botanical & Nature otherwise. */
-export function gatedCategory(label: string): ShirtCategory {
+/** The shop's labels before the categories went by subject: a design delivered under one keeps that filing (its features and SKU). */
+const LEGACY_LABELS: Record<string, LegacyCategory> = {
+  photographs: "photographs",
+  "botanical & nature": "specimens",
+  "maps & sky": "sky",
+  architecture: "architecture",
+  engravings: "etched",
+  "brush & woodblock": "brush",
+  pattern: "pattern",
+  geometric: "systems",
+  type: "type",
+  "ascii & code": "terminal",
+};
+
+/**
+ * A gated design's category from its details' Category line: a shop label or key (Plants & Gardens), or a
+ * label from before the categories went by subject (Engravings), which keeps its legacy filing; Botanical &
+ * Nature otherwise.
+ */
+export function gatedCategory(label: string): LegacyCategory | ShirtCategory {
   const l = label.trim().toLowerCase();
-  const byKey = SHIRT_CATEGORIES.find((c) => c === l);
+  const byKey = SHIRT_CATEGORIES.find((c) => c === l) ?? LEGACY_CATEGORIES.find((c) => c === l);
   if (byKey) return byKey;
   const byLabel = SHIRT_CATEGORIES.find((c) => CATEGORY_LABELS[c].toLowerCase() === l);
-  return byLabel ?? "specimens";
+  return byLabel ?? LEGACY_LABELS[l] ?? "specimens";
 }
 
 /** Too small to sell: under 20 cm wide and under 30 cm tall. */
 export const tooSmall = ([w, h]: [number, number]) => w < 20 && h < 30;
 
 /** An SDXL design's category: slot 1 study sheet, 2 elevation, 3 street, 4 patent sheet on black. */
-function sdxlCategory(dir: string, label: string): ShirtCategory {
+function sdxlCategory(dir: string, label: string): LegacyCategory {
   const slot = /^\d{2}-(\d)-/.exec(path.basename(dir))?.[1];
   if (slot === "1") return "specimens";
   if (slot === "3") return "architecture";
@@ -280,7 +299,7 @@ async function main() {
       mkdirSync(PRINTS_HD, { recursive: true });
       copyFileSync(src, path.join(PRINTS_HD, `print_${n}.png`));
     }
-    if (!SHIRT_CATEGORIES.includes(category)) throw new Error(`${dir}: category ${category}`);
+    if (!(SHIRT_CATEGORIES as readonly string[]).includes(category) && !(LEGACY_CATEGORIES as readonly string[]).includes(category)) throw new Error(`${dir}: category ${category}`);
     const tees = (d["tee colours"] ?? "").replace(/\s*\(.*$/, "").trim();
     // An SDXL line design its maker offered on the white tee only (its negative on black didn't hold up).
     const whiteTee = sdxl && !tone && /^white$/i.test(tees);

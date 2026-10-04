@@ -46,7 +46,7 @@ describe("T8: the fifth set — generated from real data and maths", () => {
     for (const s of fifth) {
       expect(s.medium).toBe("drawn");
       expect(existsSync(path.join(PUBLIC, s.backPrintUrl)), s.id).toBe(true);
-      expect(["sky", "systems", "specimens", "pattern"], s.id).toContain(s.category);
+      expect(["sky", "plants", "pattern"], s.id).toContain(s.category);
     }
   });
 });

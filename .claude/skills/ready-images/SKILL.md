@@ -68,7 +68,8 @@ catalogue step, the checks, the commit and the report are each done **once for t
    look at the print in white ink on black as well as in black on white, and write `tees` (and `teeDefault`
    with `both`) and `features` into `print.json`.
 5. **Details.** Write `<slug>.txt` in the shape of design-loop.md's "Delivery": Title (what it shows),
-   Category (a shop label), Family, Subject, Style, Medium, Description (two sentences, facts checked or left
+   Category (a shop label, by subject: Plants & Gardens, Animals, Under the Microscope, Ships & Sea, Travel &
+   Landscapes, Architecture & Towns, Sky & Science, Workshop & Kitchen, Type & Wit, Pattern & Ornament), Family, Subject, Style, Medium, Description (two sentences, facts checked or left
    out), Tee colours, Print size (from `print.json`), Keywords, Model, Credit and source (from the intake
    answer, plus every retouch you made, as Wok Hei's does), Licence. Read the subject from the picture, and
    don't make it up: an object you can't identify gets a plain title.
@@ -106,6 +107,7 @@ Run in this order, once, for all the approved designs:
 
 ```
 npx tsx --tsconfig tsconfig.scripts.json scripts/studio/publish.ts
+# file each new mono-<n> in scripts/gen/shopCategories.json (the shop's categories by subject)
 npm run generate
 npm run search:index
 npx tsx --tsconfig tsconfig.scripts.json scripts/tools/uploadPriors.ts

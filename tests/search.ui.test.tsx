@@ -140,7 +140,7 @@ describe("search: the shop without a search is the shop as it was", () => {
   it("no words and no facets: the same grid, card for card", () => {
     const v = createInitialVector();
     for (const sort of ["popular", "match"] as const)
-      for (const [tee, cats] of [[null, []], ["black", []], [null, ["photographs"]]] as const) {
+      for (const [tee, cats] of [[null, []], ["black", []], [null, ["workshop"]]] as const) {
         const ranked = rankShirts(v, SHIRTS, sort, { rotate: "x" });
         // Before search, ShopView computed this.
         const filtered = dedupeByFamily(filterShop(ranked, { tee, cats: [...cats] }));

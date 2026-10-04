@@ -11,7 +11,7 @@ test("V3: switching categories never shows a tee without its print — one baked
   });
   await page.goto("shop/");
   await hydrated(page);
-  await pickCategories(page, ["Engravings"]);
+  await pickCategories(page, ["Travel & Landscapes"]);
   // Sample the grid while it loads: a mockup is one picture — the print can't arrive apart from the tee. Every card on
   // screen has its picture from the first frame; one further down has none until it comes within reach (hooks/useNear),
   // never a second one.

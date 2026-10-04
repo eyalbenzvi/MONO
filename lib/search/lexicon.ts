@@ -115,11 +115,11 @@ export const LEXICON: LexiconEntry[] = [
   subject(["church", "cathedral", "gothic"], ["church", "cathedral", "abbey", "chapel", "lancet", "arch"]),
   subject(["bridge", "bridges"], ["bridge", "arch", "viaduct"]),
   subject(["japan", "japanese"], ["japan", "japanese", "ukiyo", "edo", "fuji", "hokusai", "hiroshige"]),
-  // Techniques: the category that holds them, and their near words.
-  { phrases: ["printmaking", "lithograph", "lithography", "litho", "aquatint", "mezzotint", "drypoint", "intaglio", "linocut"], facet: { kind: "category", value: "etched" }, expand: ["etching", "engraving", "woodcut"] },
-  { phrases: ["sumi e", "sumi", "ink wash", "brush painting", "zen"], facet: { kind: "category", value: "brush" }, expand: ["painting", "bamboo", "pine"] },
-  { phrases: ["china", "chinese"], expand: ["china", "chinese", "ming", "qing"], facet: { kind: "category", value: "brush" } },
-  { phrases: ["asia", "asian", "oriental"], expand: ["japan", "china", "woodblock"], facet: { kind: "category", value: "brush" } },
+  // Techniques: their near words.
+  { phrases: ["printmaking", "lithograph", "lithography", "litho", "aquatint", "mezzotint", "drypoint", "intaglio", "linocut"], expand: ["etching", "engraving", "woodcut"] },
+  { phrases: ["sumi e", "sumi", "ink wash", "brush painting", "zen"], expand: ["painting", "bamboo", "pine"] },
+  { phrases: ["china", "chinese"], expand: ["china", "chinese", "ming", "qing"] },
+  { phrases: ["asia", "asian", "oriental"], expand: ["japan", "china", "woodblock"] },
   subject(["new york", "nyc", "manhattan"], ["york", "brooklyn", "manhattan", "hudson"]),
   subject(["new england"], ["maine", "massachusetts", "vermont", "connecticut", "boston", "nantucket"]),
   subject(["italy", "italian"], ["rome", "roman", "venice", "tivoli", "florence", "trevi"]),

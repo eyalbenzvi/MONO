@@ -28,7 +28,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type BaseColor, type CatalogEntry, type FeatureKey, type Medium, type ShirtCategory, type SourceCategory } from "../types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, SKU_CODES, isPhoto, type BaseColor, type CatalogEntry, type FeatureKey, type LegacyCategory, type Medium, type ShirtCategory, type SourceCategory } from "../types/shirt";
 import { CALIBRATION_SIZE, centeredCosine, cosineSimilarity, getCalibrationQueue } from "../lib/recommendation";
 import { finishDescriptions, sentence } from "./gen/describe";
 import { firstSentence, houseTitle, isWordTitled, plainTitles } from "./gen/titles";
@@ -56,7 +56,7 @@ import { INSTITUTION, SOURCE_LINE, STUDIO_WAVE, WAVE_DROP, filing, licenseLine, 
 import { STUDIO_MANIFEST, type StudioEntry } from "./studio/publish";
 import { ADDITIONS_FIRST_N, ARCHIVE_FIRST_N, ARCHIVE_GROUPS, ARCHIVE_UNITS, type ArchiveAddition, type ArchiveGroup, type ArchiveSource } from "./archive/source";
 import { archiveOrder } from "./archive/curation";
-import { displayCategory } from "./gen/categories";
+import { displayCategory, shopCategory } from "./gen/categories";
 import { INK_HEAVY, TONAL_INK, TONAL_ON_BLACK, offeredColors } from "./gen/colors";
 
 const SEED = 0x6d6f6e6f; // "mono"
@@ -284,7 +284,14 @@ const colourSplit = (rng: Rng, n: number): BaseColor[] =>
     ...Array<BaseColor>(n - Math.round(n * BLACK_SHARE)).fill("white"),
   ]);
 
-type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank"> & {
+/** Files every design in the shop's categories, by subject (scripts/gen/categories shopCategory). */
+function fileInShop(list: Draft[]): asserts list is (Draft & { category: ShirtCategory })[] {
+  for (const s of list) s.category = shopCategory(s.id, s.category, s.source);
+}
+
+type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar" | "rank" | "category"> & {
+  /** The generator's filing while it builds (features, screen, SKU); the shop's category replaces it (shopCategory). */
+  category: LegacyCategory | ShirtCategory;
   base: string;
   /** The generator family (or archive) it came from: titles, closing lines and retirement go by it. */
   source: SourceCategory;
@@ -294,7 +301,7 @@ type Draft = Omit<CatalogEntry, "family" | "description" | "summary" | "similar"
   ownDescription?: string;
 };
 
-const skuOf = (category: ShirtCategory, baseColor: BaseColor, n: number) => `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`;
+const skuOf = (category: LegacyCategory | ShirtCategory, baseColor: BaseColor, n: number) => `MN-${SKU_CODES[category]}-${baseColor === "black" ? "B" : "W"}-${String(n).padStart(4, "0")}`;
 
 /**
  * One name per subject. Where two different subjects shorten to the same
@@ -517,7 +524,7 @@ function archiveDraft(
   taken: Set<string>,
   n: number,
   a: Omit<ArchiveSource, "unit">,
-  from: { unit: string; url: string; credit?: string; source?: string; license?: string; wave?: number; dropDate?: string; category?: ShirtCategory },
+  from: { unit: string; url: string; credit?: string; source?: string; license?: string; wave?: number; dropDate?: string; category?: LegacyCategory },
 ): number {
   const print = path.join(PRINTS_DIR, `print_${n}.webp`);
   if (!existsSync(print)) throw new Error(`missing ${path.relative(ROOT, print)} (run scripts/archive/fetchArchive.ts select)`);
@@ -619,7 +626,7 @@ function studioSet(shirts: Draft[], sigs: Signature[], taken: Set<string>): numb
     if (!existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)} (run scripts/studio/publish.ts)`);
     const subject = subjects.has(e.subject.toLowerCase()) ? e.title : e.subject;
     subjects.add(subject.toLowerCase());
-    const nature = e.category === "specimens" ? 0.9 : e.category === "etched" ? (e.dir.match(/anchor|lantern|hourglass|camera|coffee-pot|goggles|rope-knot|sdxl50\/\d{2}-[24]-/) ? 0.05 : 0.8) : e.category === "brush" ? 0.7 : e.category === "sky" ? 0.3 : 0.25;
+    const nature = e.category === "plants" || e.category === "animals" || e.category === "microscope" || e.category === "specimens" ? 0.9 : e.category === "ships" || e.category === "travel" ? 0.8 : e.category === "etched" ? (e.dir.match(/anchor|lantern|hourglass|camera|coffee-pot|goggles|rope-knot|sdxl50\/\d{2}-[24]-/) ? 0.05 : 0.8) : e.category === "brush" ? 0.7 : e.category === "sky" ? 0.3 : 0.25;
     const f: Partial<Record<FeatureKey, number>> = {
       line_art: e.mode === "line" ? 0.8 : 0.45,
       halftone_raster: e.mode === "tone" ? 0.4 : 0,
@@ -1027,7 +1034,7 @@ async function main() {
     .filter((v) => !shirts.some((s) => s.variant === v && !retired.has(s.id)))
     .map((v) => shirts.filter((s) => s.variant === v).sort((a, b) => a.n - b.n)[0])
     .filter((s): s is Draft => !!s)
-    .map((s) => ({ id: s.id, n: s.n, no: 0, sku: s.sku, title: s.title, price: s.price, baseColor: s.baseColor, backPrintUrl: s.backPrintUrl, category: s.category, medium: s.medium, colors: s.colors, variant: s.variant, family: s.id, features: s.features, rank: Number.MAX_SAFE_INTEGER, dropDate: Date.parse(`${s.dropDate}T00:00:00Z`), weak: false }));
+    .map((s) => ({ id: s.id, n: s.n, no: 0, sku: s.sku, title: s.title, price: s.price, baseColor: s.baseColor, backPrintUrl: s.backPrintUrl, category: shopCategory(s.id, s.category, s.source), medium: s.medium, colors: s.colors, variant: s.variant, family: s.id, features: s.features, rank: Number.MAX_SAFE_INTEGER, dropDate: Date.parse(`${s.dropDate}T00:00:00Z`), weak: false }));
   mkdirSync(path.dirname(MAKE_BASES_FILE), { recursive: true });
   writeFileSync(MAKE_BASES_FILE, `[\n${makeBases.map((s) => JSON.stringify(s)).join(",\n")}\n]\n`);
   for (let k = shirts.length - 1; k >= 0; k--) {
@@ -1058,6 +1065,8 @@ async function main() {
   }
   // A colour in the title ("Scarlet Globe Mallow"): the description says the print is one ink.
   for (const s of shirts) if (COLOUR_WORD.test(s.title) && !/one[- ]ink/i.test(s.base)) s.base = `${sentence(s.base)} Printed in one ink; the colour is only in the name.`;
+  // The shop's categories, by subject (scripts/gen/categories shopCategory): SKUs keep the code they were made with.
+  fileInShop(shirts);
   const perCategory: Partial<Record<ShirtCategory, number>> = {};
   for (const s of shirts) s.no = perCategory[s.category] = (perCategory[s.category] ?? 0) + 1;
 
@@ -1318,6 +1327,9 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
   });
   const variants = [...new Set(catalog.map((s) => s.variant))];
   const categories = [...new Set(catalog.map((s) => s.category))];
+  // A design's SKU keeps the code it was first sold under (a legacy category's), so it is stored, not derived.
+  const codeOf = (s: CatalogEntry) => s.sku.split("-")[1];
+  const skus = [...new Set(catalog.map(codeOf))];
   const col = <T>(f: (s: CatalogEntry) => T) => catalog.map(f);
   const columns = {
     // Design numbers (ids are mono-<n>): increasing, with gaps where designs were retired.
@@ -1325,6 +1337,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     family: col((s) => Number(s.family.slice(4))),
     variant: col((s) => variants.indexOf(s.variant)),
     category: col((s) => categories.indexOf(s.category)),
+    sku: col((s) => skus.indexOf(codeOf(s))),
     // Sold in its original colour only (T3): 0/1 per design.
     single: col((s) => (s.colors.length === 1 ? 1 : 0)).join(""),
     // How each print is made: d(rawn) SVG, i(nk) or p(hoto) WebP (lib/catalog MEDIUM_CODES).
@@ -1343,6 +1356,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     digits: FEATURE_DIGITS,
     variants,
     categories,
+    skus,
     calibration,
     dropEpoch: new Date(DROP_EPOCH).toISOString().slice(0, 10),
     shardSize: SHARD_SIZE,
@@ -1355,7 +1369,7 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
 }
 
 /** Index format version (lib/catalog refuses any other). */
-const INDEX_VERSION = 6;
+const INDEX_VERSION = 7;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar
