@@ -2330,6 +2330,13 @@
 "src": "d5138976a3da6b06",
 "via": "scripts/studio/oneink.py"
 },
+"20165": {
+"mode": "halftone",
+"paper": 0.0,
+"sha": "20b673b2428c8bac",
+"src": "23e9092231fbf420",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

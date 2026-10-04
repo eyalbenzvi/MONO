@@ -20,8 +20,8 @@
    "average": 6.5,
    "deleteVotes": 0,
    "family": "vineyards",
-   "approved": false,
-   "why": "average 6.5 (7 to pass)"
+   "approved": true,
+   "why": "approved by the owner below the bar (average 6.5 after three rounds, 7 to pass)"
   }
  }
 }
