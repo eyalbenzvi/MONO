@@ -1,8 +1,8 @@
 /**
- * The short tag a shared link carries after its # instead of UTM parameters (the link itself is a short
- * TinyURL, data/share/short.json): one letter for the channel, then "-b" or "-w" when the tee was shared
- * in a colour other than the design's own ("#w", "#t-w"). The fragment survives the short link's
- * redirect, never reaches a server or a chat app's link preview, and is read on landing (the product
+ * The short tag a shared link carries after its # instead of UTM parameters (the link itself is the
+ * design's short page, /s/<n>/): one letter for the channel, then "-b" or "-w" when the tee was shared
+ * in a colour other than the design's own ("#w", "#t-w"). The fragment rides on to the product page
+ * (app/s/[n] keeps it), never reaches a server or a chat app's link preview, and is read on landing (the product
  * page's colour and "Shared with you" line, analytics' landing source).
  */
 export type TagChannel = "native" | "whatsapp" | "instagram" | "facebook" | "tiktok" | "telegram" | "x" | "email" | "sms" | "copy" | "download";

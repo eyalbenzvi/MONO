@@ -130,3 +130,18 @@ test("a short link lands with its # tag: the channel says Shared with you, the c
   const landing = await page.evaluate(() => (window.dataLayer ?? []).find((e: { event?: string }) => e.event === "landing"));
   expect(landing).toMatchObject({ utm_source: "whatsapp", utm_medium: "share", utm_campaign: "tee_share" });
 });
+
+test("the short share page /s/<n>/ carries the product's link preview in its own HTML and sends a visitor to the product with the # tag", async ({ page }) => {
+  // No redirect for a chat app to follow: the preview (with its picture) is in the short page itself.
+  const n = W1.slice(5);
+  const short = html(`s/${n}`);
+  expect(short).toMatch(new RegExp(`<meta property="og:image" content="[^"]*/og/(${W1}|default)\\.jpg"/>`));
+  expect(short).toMatch(/<meta property="og:title" content="[^"]+"\/>/);
+  expect(short).toContain('<meta name="robots" content="noindex"/>');
+  expect(short).toMatch(new RegExp(`<link rel="canonical" href="[^"]*/shop/${W1}/"/>`));
+  await page.goto(`s/${n}/#w-b`);
+  await expect(page).toHaveURL(new RegExp(`/shop/${W1}/`));
+  await hydrated(page);
+  await expect(page.getByText("Shared with you", { exact: true })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /^Black tee/ })).toBeChecked();
+});

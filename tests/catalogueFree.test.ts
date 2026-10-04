@@ -27,7 +27,7 @@ const STABLE_DATA: Record<string, string> = {
   "data/upload/priors.json": "an upload's category means",
 };
 /** App files that read data on the server (or in scripts) only: never in a browser script. */
-const SERVER_ONLY = new Set(["lib/catalogServer.ts", "lib/catalogIndex.node.ts", "lib/custom/makeBases.ts"]);
+const SERVER_ONLY = new Set(["lib/catalogServer.ts", "lib/catalogIndex.node.ts", "lib/custom/makeBases.ts", "lib/productMeta.ts"]);
 
 function sources(dir: string): string[] {
   return (readdirSync(path.join(ROOT, dir), { recursive: true }) as string[]).filter((f) => /\.tsx?$/.test(f) && !f.endsWith(".d.ts")).map((f) => path.join(dir, f));

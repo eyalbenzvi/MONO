@@ -216,8 +216,6 @@ export interface ShirtDetails {
   printCm?: { width: number; height: number };
   /** Photographs: who took it and the museum record it comes from. */
   photo?: PhotoCredit;
-  /** Its short link for sharing (data/share/short.json, scripts/tools/shortLinks.ts). */
-  short?: string;
 }
 
 /** Where a photograph comes from (Smithsonian Open Access, CC0). */
@@ -235,7 +233,7 @@ export interface PhotoCredit {
 
 /** Full catalog entry (generator output, server-side and tests). */
 export type CatalogEntry = Omit<ShirtProduct, "dropDate" | "weak"> &
-  Required<Omit<ShirtDetails, "photo" | "short">> & Pick<ShirtDetails, "photo"> & {
+  Required<Omit<ShirtDetails, "photo">> & Pick<ShirtDetails, "photo"> & {
     /** The design's own sentence (without the closing line): meta descriptions. */
     summary: string;
     /** The print style for the SEO title ("Line-Art"). */

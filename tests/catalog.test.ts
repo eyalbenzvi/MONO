@@ -258,11 +258,10 @@ describe("detail shards (public/data)", () => {
     return shards.get(k)!;
   };
 
-  it("hold every design's description, similar list, subject and print size (and a photograph's credit, and its short link to share)", () => {
-    const short = JSON.parse(readFileSync(path.join(__dirname, "..", "data", "share", "short.json"), "utf8")) as Record<string, string>;
+  it("hold every design's description, similar list, subject and print size (and a photograph's credit)", () => {
     for (const f of FULL) {
       const entry = shard(shardOf(f))[f.id];
-      expect(entry, f.id).toEqual({ d: f.description, s: f.similar, t: f.subject, p: [f.printCm.width, f.printCm.height], ...(f.photo ? { c: f.photo.credit, u: f.photo.url } : {}), ...(short[f.id] ? { l: short[f.id] } : {}) });
+      expect(entry, f.id).toEqual({ d: f.description, s: f.similar, t: f.subject, p: [f.printCm.width, f.printCm.height], ...(f.photo ? { c: f.photo.credit, u: f.photo.url } : {}) });
     }
   });
 

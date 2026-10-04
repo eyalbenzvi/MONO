@@ -1357,14 +1357,11 @@ const INDEX_VERSION = 6;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar
- * ids, t: subject, p: [print width, height] cm, l: short link to share } } per SHARD_SIZE designs.
+ * ids, t: subject, p: [print width, height] cm } } per SHARD_SIZE designs.
  * The content hash in the name lets them be cached forever; the index lists
  * the hashes. Returns them.
  */
 function writeShards(catalog: CatalogEntry[]): string[] {
-  // The short links a share sends (scripts/tools/shortLinks.ts): here, not in the app's scripts, which never carry the catalogue.
-  const shortFile = path.join(ROOT, "data", "share", "short.json");
-  const short: Record<string, string> = existsSync(shortFile) ? JSON.parse(readFileSync(shortFile, "utf8")) : {};
   rmSync(SHARD_DIR, { recursive: true, force: true });
   mkdirSync(SHARD_DIR, { recursive: true });
   // Shard k holds designs n = k·SHARD_SIZE+1 … (k+1)·SHARD_SIZE (lib/catalog shardOf).
@@ -1374,7 +1371,7 @@ function writeShards(catalog: CatalogEntry[]): string[] {
     const part = Object.fromEntries(
       catalog
         .filter((s) => Math.floor((s.n - 1) / SHARD_SIZE) === k)
-        .map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height], ...(s.photo ? { c: s.photo.credit, u: s.photo.url } : {}), ...(short[s.id] ? { l: short[s.id] } : {}) }]),
+        .map((s) => [s.id, { d: s.description, s: s.similar, t: s.subject, p: [s.printCm.width, s.printCm.height], ...(s.photo ? { c: s.photo.credit, u: s.photo.url } : {}) }]),
     );
     const json = JSON.stringify(part);
     const hash = createHash("sha256").update(json).digest("hex").slice(0, 10);

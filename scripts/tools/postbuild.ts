@@ -172,6 +172,14 @@ function main() {
     writeFileSync(file, intoHead(html, ld(productJsonLd(shirt))));
   }
 
+  // The short share pages (app/s/[n]) carry the same link preview: the same fallback picture without npm run og.
+  if (!ogRan && hasDefault) {
+    for (const { id } of pages) {
+      const file = path.join(OUT, "s", id.slice(5), "index.html");
+      if (existsSync(file)) writeFileSync(file, readFileSync(file, "utf8").replace(new RegExp(`/og/${id}\\.jpg`, "g"), "/og/default.jpg"));
+    }
+  }
+
   // Make products: their structured data, typed as products (their link-preview images are the examples, npm run og).
   for (const m of MADE) {
     const file = path.join(OUT, "make", m.slug, "index.html");

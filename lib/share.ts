@@ -28,25 +28,25 @@ export function siteRoot(origin?: string) {
 export const SHARE_PARAMS = ["c", "ref", "utm_source", "utm_medium", "utm_campaign"] as const;
 
 /**
- * The link a share sends. A catalogue design: its short link (TinyURL, a plain 301 to the product page,
- * so the chat app's preview is the page's own) with the channel, and the colour when it isn't the
- * design's own, in a short # tag (lib/shareTag): "tinyurl.com/28uhvx3z#w". A made-for-you print, or a
- * design without a short link yet: the product page itself, tagged with standard UTM parameters
- * (utm_source = channel, utm_medium = share, utm_campaign = tee_share).
+ * The link a share sends. A catalogue design: its short page on the site itself, /s/<n>/ (app/s/[n]),
+ * which carries the product's own link preview in its HTML (no redirect, so WhatsApp gets the picture)
+ * and sends a visitor on to the product page; the channel, and the colour when it isn't the design's
+ * own, ride in a short # tag (lib/shareTag): ".../MONO/s/5261/#w". A made-for-you print, or a page with
+ * no short page: the product page itself, tagged with standard UTM parameters (utm_source = channel,
+ * utm_medium = share, utm_campaign = tee_share).
  */
-/**
- * `make` is a made-for-you print's spec (lib/custom encodeMake): the link opens that print. `short`: the
- * design's short link, from its details (data/share/short.json rides in the details shards, not the scripts).
- */
-export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string, make?: string, short?: string) {
-  if (short && !make) return `${short}${encodeShareTag(ref, color !== shirt.baseColor ? color : undefined)}`;
+/** `make` is a made-for-you print's spec (lib/custom encodeMake): the link opens that print. */
+export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string, make?: string) {
+  const href = productHref(shirt.id);
+  if (!make && /^mono-\d+$/.test(shirt.id) && href === `/shop/${shirt.id}/`) {
+    return `${siteRoot(origin)}/s/${shirt.id.slice(5)}/${encodeShareTag(ref, color !== shirt.baseColor ? color : undefined)}`;
+  }
   const q = new URLSearchParams();
   if (make) q.set("make", make);
   if (color !== shirt.baseColor) q.set("c", color);
   q.set("utm_source", ref);
   q.set("utm_medium", "share");
   q.set("utm_campaign", "tee_share");
-  const href = productHref(shirt.id);
   return `${siteRoot(origin)}${href}${href.includes("?") ? "&" : "?"}${q.toString()}`;
 }
 export function shareTitle(shirt: ShirtProduct) {
@@ -63,8 +63,8 @@ export function shareMessage(shirt: ShirtProduct, _color: BaseColor, make?: stri
   return `“${shirt.title}”, a one-ink tee from MONO.`;
 }
 /** Web share intents. Each opens in a new tab / the app when installed. */
-export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string, make?: string, short?: string): string | null {
-  const url = productShareUrl(shirt, color, channel, origin, make, short);
+export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string, make?: string): string | null {
+  const url = productShareUrl(shirt, color, channel, origin, make);
   const msg = shareMessage(shirt, color, make);
   const enc = encodeURIComponent;
   switch (channel) {

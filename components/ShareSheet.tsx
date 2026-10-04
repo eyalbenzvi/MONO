@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { getShirtById } from "@/lib/catalog";
-import { useShirtDetails } from "@/lib/details";
 import { channelLink, productShareUrl, shareFileName, shareTitle, type ShareChannel } from "@/lib/share";
 import { renderShareImage, type ShareFormat } from "@/lib/shareImage";
 import { Sheet } from "@/components/Sheet";
@@ -126,8 +125,6 @@ export function ShareSheet() {
 function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct; initialColor: BaseColor; make?: string; upload?: string }) {
   const showToast = useUiStore((s) => s.showToast);
   const [color, setColor] = useState<BaseColor>(teeColor(shirt, initialColor));
-  // Its short link (the details shard), fetched while the sheet opens; until then a share sends the long link.
-  const short = useShirtDetails(make || upload ? null : shirt.id)?.short;
   const [format, setFormat] = useState<ShareFormat>("story");
   const [blob, setBlob] = useState<Blob | null>(null);
   const [failed, setFailed] = useState(false);
@@ -159,7 +156,7 @@ function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct;
   const canShareFiles = !!file && canShare && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
 
   const nativeShare = async (ref: ShareChannel, withFile: boolean) => {
-    const url = productShareUrl(shirt, color, ref, undefined, make, short);
+    const url = productShareUrl(shirt, color, ref, undefined, make);
     try {
       // The link alone (the chat app's preview card says the rest); with the picture, the link rides as its text.
       if (withFile && file) await navigator.share({ files: [file], title: shareTitle(shirt), text: url });
@@ -176,7 +173,7 @@ function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct;
   const act = async (ch: ShareChannel) => {
     setHint(null);
     const done = (method: string) => track("share", { id: shirt.id, channel: ch, method, color, format });
-    const url = productShareUrl(shirt, color, ch, undefined, make, short);
+    const url = productShareUrl(shirt, color, ch, undefined, make);
     if (ch === "copy") {
       const copied = await copyText(url);
       showToast(copied ? "Link copied" : "Couldn’t copy the link");
@@ -201,7 +198,7 @@ function ShareBody({ shirt, initialColor, make, upload }: { shirt: ShirtProduct;
       setHint(HOW_TO[ch]!);
       return;
     }
-    const link = channelLink(ch, shirt, color, undefined, make, short);
+    const link = channelLink(ch, shirt, color, undefined, make);
     if (!link) return;
     // The app's own share screen opens; whether it's sent there can't be known.
     if (link.startsWith("mailto:") || link.startsWith("sms:")) window.location.href = link;
