@@ -75,7 +75,13 @@ const ok = (cond, msg) => {
     // The grid fills in once the catalogue has loaded.
     await p.waitForFunction(() => document.querySelectorAll('[data-product-card] a[href*="/shop/"]').length >= 12, null, { timeout: 10000 }).catch(() => {});
     ok((await p.locator('[data-product-card] a[href*="/shop/"]').count()) >= 12, "shop grid renders products");
-    await firstProduct.tap();
+    // Open the first design that comes in both tee colours: a one-colour design has no colour toggle,
+    // and which design leads the grid shifts with the catalogue and the swipes above.
+    const twoColour = require("../../data/shirts.json").filter((t) => t.colors.length > 1).map((t) => t.id);
+    const hrefs = await p.locator('[data-product-card] a[href*="/shop/"]').evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    const pick = hrefs.findIndex((h) => twoColour.some((id) => h.includes(`/shop/${id}/`)));
+    ok(pick >= 0, "shop grid has a design in both colours");
+    await p.locator('[data-product-card] a[href*="/shop/"]').nth(Math.max(pick, 0)).tap();
     await p.waitForURL(/\/shop\/(mono-\d+|p\/)/);
     const toggle = p.getByRole("radiogroup", { name: /tee colou?r/i }).first();
     await toggle.waitFor();
