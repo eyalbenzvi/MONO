@@ -214,7 +214,12 @@ let savedToastShown = false;
  * - "sm": over a grid card (callers position it; 44px)
  * - "lg": 48px next to the buy button
  */
-export function SaveButton({ id, title, size = "sm", className = "" }: { id: string; title?: string; size?: "sm" | "lg"; className?: string }) {
+/**
+ * The heart. "sm": bare, on a picture; "lg": the product page's square control beside the buy button;
+ * "overlay": a shop card's corner, on every card on every device: a 44 px target around a dark round
+ * backdrop, so the outline (not saved) or the filled heart (saved) reads on a light photo and a dark one.
+ */
+export function SaveButton({ id, title, size = "sm", className = "" }: { id: string; title?: string; size?: "sm" | "lg" | "overlay"; className?: string }) {
   const hydrated = useUiStore((s) => s.hydrated);
   const saved = useTasteStore((s) => s.likedIds.includes(id)) && hydrated;
   const name = title ? ` ${title}` : "";
@@ -240,11 +245,17 @@ export function SaveButton({ id, title, size = "sm", className = "" }: { id: str
       }}
       aria-pressed={saved}
       aria-label={saved ? `Remove${name} from Saved` : `Save${name}`}
-      className={`flex items-center justify-center transition-[color,background-color,transform] duration-150 active:scale-95 motion-reduce:active:scale-100 ${size === "sm" ? "h-11 w-11" : "h-12 w-12 shrink-0 rounded-control ring-1 ring-inset ring-white/25"} ${
-        saved ? (size === "sm" ? "text-white" : "bg-white text-black") : size === "sm" ? "text-white drop-shadow hover:text-neutral-200" : "text-white hover:bg-white/5"
+      className={`flex items-center justify-center transition-[color,background-color,transform] duration-150 active:scale-95 motion-reduce:active:scale-100 ${size === "lg" ? "h-12 w-12 shrink-0 rounded-control ring-1 ring-inset ring-white/25" : "h-11 w-11"} ${
+        size === "lg" ? (saved ? "bg-white text-black" : "text-white hover:bg-white/5") : size === "overlay" ? "text-white" : saved ? "text-white" : "text-white drop-shadow hover:text-neutral-200"
       } ${className}`}
     >
-      <Icon name="heart" className={`${size === "sm" ? "h-5 w-5" : "h-5 w-5"} ${saved ? "fill-current" : ""}`} />
+      {size === "overlay" ? (
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/45 ring-1 ring-inset ring-white/15 backdrop-blur-[2px]">
+          <Icon name="heart" className={`h-[18px] w-[18px] ${saved ? "fill-current" : ""}`} />
+        </span>
+      ) : (
+        <Icon name="heart" className={`h-5 w-5 ${saved ? "fill-current" : ""}`} />
+      )}
     </button>
   );
 }

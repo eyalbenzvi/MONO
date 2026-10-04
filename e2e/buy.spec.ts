@@ -50,7 +50,9 @@ test("V1: with a remembered size it's two taps to checkout; Add to bag keeps you
   await sheet.getByRole("radio", { name: /^L\b/ }).tap();
   await sheet.getByRole("button", { name: "Add to bag", exact: true }).tap();
   await expect(sheet).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText("✓ Added · L");
+  // The confirmation names the tee that went in, with its colour and size.
+  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText(`✓ Added: ${title}`);
+  await expect(page.getByRole("region", { name: "Added to bag" })).toContainText(/(Black|White) · L/);
   // The deck didn't move.
   expect(await cardTitle(page)).toBe(title);
 
@@ -100,7 +102,7 @@ test("You: no Checkout CTA (the Bag tab counts the bag); a saved tee without a s
   await expect(add.first()).toBeVisible();
   await add.last().tap();
   // (The previous confirmation may still be animating out: the newest one is last.)
-  await expect(page.getByRole("region", { name: "Added to bag" }).last()).toContainText("Added · M");
+  await expect(page.getByRole("region", { name: "Added to bag" }).last()).toContainText(/(Black|White) · M/);
   await expect(tab(page, /^Bag/)).toHaveAccessibleName("Bag 3");
   await tab(page, /^Bag/).tap();
   await page.waitForURL(/\/cart\/$/);

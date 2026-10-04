@@ -67,11 +67,69 @@ test("shop search on a phone: what's typed is never cut off", async ({ page }) =
   expect(fits).toBe(true);
 });
 
-test("shop grid on touch: tapping a card's corner opens the tee (the hidden heart doesn't take the tap)", async ({ page }) => {
+test("shop grid on touch: the corner heart saves and unsaves without opening the tee; the rest of the card opens it", async ({ page }) => {
   await page.goto("shop/");
   await hydrated(page);
   const card = page.locator("[data-product-card]").first();
   const box = (await card.boundingBox())!;
-  await page.touchscreen.tap(box.x + box.width - 18, box.y + 18);
+  const heart = card.getByRole("button", { name: /^Save / });
+  await expect(heart).toHaveAttribute("aria-pressed", "false");
+  await page.touchscreen.tap(box.x + box.width - 22, box.y + 22);
+  await expect(card.getByRole("button", { name: /^Remove .+ from Saved$/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page).toHaveURL(/\/shop\/$/);
+  await page.touchscreen.tap(box.x + box.width - 22, box.y + 22);
+  await expect(card.getByRole("button", { name: /^Save / })).toHaveAttribute("aria-pressed", "false");
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 3);
   await expect(page).toHaveURL(/\/shop\/(p\/\?id=)?mono-/);
+});
+
+test("shop grid: a design in the bag says so on its card (In bag); the others don't", async ({ page }) => {
+  await seed(page, {}, [{ id: B1, size: "M", color: "black", qty: 1 }]);
+  await page.goto(`shop/${B1}/`);
+  await hydrated(page);
+  const title = (await page.getByRole("heading", { level: 1 }).first().textContent())!.trim();
+  // Find it by its name (the shop's order rotates): its card carries the tag, and the link says so.
+  await page.goto(`shop/?q=${encodeURIComponent(title)}`);
+  await hydrated(page);
+  const b1 = page.locator("[data-product-card]").filter({ has: page.locator(`a[href*="/shop/${B1}/"]`) }).first();
+  await expect(b1.locator("[data-in-bag]")).toHaveText("In bag");
+  await expect(b1.getByRole("link")).toHaveAccessibleName(/, in your bag/);
+  const others = page.locator("[data-product-card]").filter({ hasNot: page.locator(`a[href*="/shop/${B1}/"]`) });
+  await expect(others.locator("[data-in-bag]")).toHaveCount(0);
+});
+
+test("a white message bar swipes away to the left: the bag confirmation and a toast with Undo; a short drag springs back", async ({ page }) => {
+  const swipe = async (box: { x: number; y: number; width: number; height: number }, dx: number) => {
+    const y = box.y + box.height / 2;
+    const x = box.x + box.width * 0.4;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(x + (dx * i) / 8, y, { steps: 2 });
+    await page.mouse.up();
+  };
+  await seed(page);
+  await page.goto(`shop/${B1}/`);
+  await hydrated(page);
+  await page.getByRole("radio", { name: /^M\b/ }).first().tap();
+  await page.getByRole("button", { name: /^Add to bag · M/ }).last().tap();
+  const added = page.getByRole("region", { name: "Added to bag" });
+  await expect(added).toBeVisible();
+  // A short drag: it stays.
+  await swipe((await added.boundingBox())!, -40);
+  await page.waitForTimeout(400);
+  await expect(added).toBeVisible();
+  // A swipe left: it goes, long before its 5 s.
+  await swipe((await added.boundingBox())!, -220);
+  await expect(added).toHaveCount(0, { timeout: 1500 });
+  // A toast with Undo (unsaving a tee from a shop card) swipes away the same way.
+  await page.goto("shop/");
+  await hydrated(page);
+  const card = page.locator("[data-product-card]").first();
+  await card.getByRole("button", { name: /^Save / }).tap();
+  await card.getByRole("button", { name: /^Remove .+ from Saved$/ }).tap();
+  const toast = page.getByRole("status").filter({ hasText: "Removed from Saved" });
+  await expect(toast).toBeVisible();
+  // (The first save's "Saved" may still be leaving: take the bar that says "Removed from Saved".)
+  await swipe((await toast.locator("div").filter({ hasText: "Removed from Saved" }).last().boundingBox())!, -220);
+  await expect(page.getByText("Removed from Saved")).toHaveCount(0, { timeout: 1500 });
 });

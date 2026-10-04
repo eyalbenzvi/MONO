@@ -177,7 +177,7 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(grid.getByRole("button", { name: /^Share / })).toHaveCount(0);
   });
 
-  test("T1: a grid card is one link — no quick add, no price; on touch the heart shows only once saved", async ({ page }) => {
+  test("T1: a grid card is one link and one heart — no quick add, no price; the heart is on every card, outlined until saved", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await seed(page);
     await page.goto("shop/");
@@ -185,7 +185,9 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     const cards = page.locator("main .grid > div");
     const card = cards.filter({ hasNot: page.getByRole("button", { name: /from Saved$/ }) }).nth(1);
     await expect(card.getByRole("link")).toHaveCount(1);
-    await expect(card.getByRole("button")).toHaveCount(0);
+    await expect(card.getByRole("button")).toHaveCount(1);
+    await expect(card.getByRole("button", { name: /^Save / })).toBeVisible();
+    await expect(card.getByRole("button", { name: /^Save / })).toHaveAttribute("aria-pressed", "false");
     await expect(card.getByText(/\$\d/)).toHaveCount(0);
     // A saved tee keeps its heart, to unsave. The taste test's saves step back in the shop (seen in
     // Discover) and the order rotates per browser and day, so they need not be on the first page:
@@ -207,14 +209,15 @@ test.describe("Shop, product and bag (R12, F10, R13, R15, R18, R20, I07, I08, I1
     await expect(saved.getByRole("button", { name: /^Remove .+ from Saved$/ })).toBeVisible();
   });
 
-  test("R13: every add confirms in one row (Added · M, Checkout) — nothing else to press", async ({ page }) => {
+  test("R13: every add confirms in one row (the tee, its colour and size, Checkout) — nothing else to press", async ({ page }) => {
     await seed(page);
     await page.goto(`shop/${W1}/`);
     await hydrated(page);
     await page.getByRole("radio", { name: /^M\b/ }).first().tap();
     await buyButton(page).tap();
     const sheet = page.getByRole("region", { name: "Added to bag" });
-    await expect(sheet).toContainText("✓ Added · M");
+    await expect(sheet).toContainText("✓ Added");
+    await expect(sheet).toContainText(/(Black|White) · M/);
     await expect(sheet.getByRole("link", { name: "Checkout" })).toBeVisible();
     await expect(sheet.getByRole("button")).toHaveCount(0);
     // The buy button now leads to the bag, and never adds a second one silently.

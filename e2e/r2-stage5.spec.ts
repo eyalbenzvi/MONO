@@ -74,7 +74,9 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
     await expect(page.getByRole("button", { name: /Save & find more like it/ })).toHaveCount(0);
     await expect(page.getByRole("radio", { name: /^White tee/ })).toBeChecked();
     // Saving is the tee's own heart; Discover then starts from it.
-    await page.getByRole("button", { name: /^Save / }).filter({ visible: true }).tap();
+    // (The cards of "more like this" carry hearts too: this tee's own is named by its title, outside them.)
+    const title = (await page.getByRole("heading", { level: 1 }).first().textContent())!.trim();
+    await page.locator(":not([data-product-card]) > button").and(page.getByRole("button", { name: `Save ${title}`, exact: true })).filter({ visible: true }).first().tap();
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("mono-taste")!).state.likedIds)).toContain(B2);
     await page.getByRole("button", { name: "Dismiss" }).tap();
     await expect(line).toHaveCount(0);

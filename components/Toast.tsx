@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUiStore } from "@/store/useUiStore";
+import { SWIPE_AWAY, exitFor, swipedAway } from "@/lib/swipeAway";
 
-/** A toast with an action ("Removed from Saved · Undo") stays this long; a plain one shorter. */
+/** Swipe it left to dismiss it (lib/swipeAway). A toast with an action ("Removed from Saved · Undo") stays this long; a plain one shorter. */
 const ACTION_MS = 5000;
 const PLAIN_MS = 2500;
 
@@ -12,6 +13,9 @@ export function Toast() {
   const toast = useUiStore((s) => s.toast);
   // Held while the pointer or focus is on it, so its action can still be used.
   const [held, setHeld] = useState(false);
+  // Swiped left: it leaves to the left (the exit reads this).
+  const [swiped, setSwiped] = useState(false);
+  useEffect(() => setSwiped(false), [toast?.nonce]);
 
   useEffect(() => {
     if (!toast || held) return;
@@ -32,8 +36,14 @@ export function Toast() {
             key={toast.nonce}
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 8, opacity: 0 }}
+            exit={exitFor(swiped)}
             transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+            {...SWIPE_AWAY}
+            onDragEnd={(_, info) => {
+              if (!swipedAway(info)) return;
+              setSwiped(true);
+              useUiStore.setState({ toast: null });
+            }}
             onPointerEnter={() => setHeld(true)}
             onPointerLeave={() => setHeld(false)}
             onFocus={() => setHeld(true)}

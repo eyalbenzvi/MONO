@@ -68,11 +68,12 @@ describe("ProductCard", () => {
 });
 
 describe("MiniBag", () => {
-  it("confirms an add in one line at the bottom — '✓ Added · M' and Checkout (to the delivery form), no other buttons", () => {
+  it("confirms an add at the bottom, naming the tee — '✓ Added: <title>', 'Black · M' — and Checkout (to the delivery form), no other buttons", () => {
     render(<MiniBag />);
     act(() => void useCartStore.getState().addToCart(shirt.id, "M", "black", 1, { source: "grid" }));
     const region = screen.getByRole("region", { name: "Added to bag" });
-    expect(region.textContent).toContain("Added · M");
+    expect(region.textContent).toContain(`Added: ${shirt.title}`);
+    expect(region.textContent).toContain("Black · M");
     const checkout = screen.getByRole("link", { name: "Checkout" });
     expect(checkout.getAttribute("href")).toBe("/cart/");
     act(() => checkout.click());

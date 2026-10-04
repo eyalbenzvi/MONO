@@ -23,7 +23,7 @@ test("I14 / T1: on desktop the shop's controls are one row: Black · White, Sear
   await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
 });
 
-test("R12 / T1: with a mouse, a card's heart shows on hover only; no quick add", async ({ page }) => {
+test("R12 / T1: with a mouse too, every card shows its heart (no hover needed); no quick add", async ({ page }) => {
   await seed(page);
   await page.goto("shop/");
   await hydrated(page);
@@ -33,10 +33,8 @@ test("R12 / T1: with a mouse, a card's heart shows on hover only; no quick add",
   const heart = card.getByRole("button", { name: /^Save / });
   const opacity = () => heart.evaluate((el) => Number(getComputedStyle(el).opacity));
   await page.waitForTimeout(400);
-  expect(await opacity()).toBe(0);
-  await card.hover();
-  await page.waitForTimeout(400);
   expect(await opacity()).toBe(1);
+  await expect(heart).toBeVisible();
 });
 
 test("R30: a product 404 is no dead end: the Shop link is readable (black on white) and leads to the shop", async ({ page }) => {
