@@ -7,8 +7,9 @@
  * device share sheet with an image file (see lib/shareImage), or by saving the
  * image and posting it from the app.
  */
-import { COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
+import type { BaseColor, ShirtProduct } from "@/types/shirt";
 import { productHref } from "@/lib/catalog";
+import { decodeShareTag, encodeShareTag } from "@/lib/shareTag";
 
 export type ShareChannel = "native" | "whatsapp" | "instagram" | "facebook" | "tiktok" | "telegram" | "x" | "email" | "sms" | "copy" | "download";
 
@@ -27,12 +28,18 @@ export function siteRoot(origin?: string) {
 export const SHARE_PARAMS = ["c", "ref", "utm_source", "utm_medium", "utm_campaign"] as const;
 
 /**
- * Link to the product page, opening in `color`, tagged with the channel as
- * standard UTM parameters (utm_source = channel, utm_medium = share,
- * utm_campaign = tee_share), so any analytics tool attributes the visit.
+ * The link a share sends. A catalogue design: its short link (TinyURL, a plain 301 to the product page,
+ * so the chat app's preview is the page's own) with the channel, and the colour when it isn't the
+ * design's own, in a short # tag (lib/shareTag): "tinyurl.com/28uhvx3z#w". A made-for-you print, or a
+ * design without a short link yet: the product page itself, tagged with standard UTM parameters
+ * (utm_source = channel, utm_medium = share, utm_campaign = tee_share).
  */
-/** `make` is a made-for-you print's spec (lib/custom encodeMake): the link opens that print. */
-export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string, make?: string) {
+/**
+ * `make` is a made-for-you print's spec (lib/custom encodeMake): the link opens that print. `short`: the
+ * design's short link, from its details (data/share/short.json rides in the details shards, not the scripts).
+ */
+export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: ShareChannel, origin?: string, make?: string, short?: string) {
+  if (short && !make) return `${short}${encodeShareTag(ref, color !== shirt.baseColor ? color : undefined)}`;
   const q = new URLSearchParams();
   if (make) q.set("make", make);
   if (color !== shirt.baseColor) q.set("c", color);
@@ -42,48 +49,53 @@ export function productShareUrl(shirt: ShirtProduct, color: BaseColor, ref: Shar
   const href = productHref(shirt.id);
   return `${siteRoot(origin)}${href}${href.includes("?") ? "&" : "?"}${q.toString()}`;
 }
-
 export function shareTitle(shirt: ShirtProduct) {
   return `${shirt.title} · MONO`;
 }
-
-/** The message sent with the link (WhatsApp, SMS, X, Telegram, native share). */
-export function shareMessage(shirt: ShirtProduct, color: BaseColor, make?: string) {
-  if (make) return `Made on MONO: “${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee.`;
-  return `“${shirt.title}”, ${COLOR_LABELS[color].toLowerCase()} tee. MONO`;
+/**
+ * The words sent with the link, only where no link preview shows reliably (SMS, email): the chat apps
+ * (WhatsApp, Telegram, X, the device share sheet) send the link alone, because their preview card
+ * already shows the picture, the name, the category, the price and the way in, and the sharer's own
+ * words beat ours. A made-for-you print says so.
+ */
+export function shareMessage(shirt: ShirtProduct, _color: BaseColor, make?: string) {
+  if (make) return `Made on MONO: “${shirt.title}”, a one-ink tee.`;
+  return `“${shirt.title}”, a one-ink tee from MONO.`;
 }
-
 /** Web share intents. Each opens in a new tab / the app when installed. */
-export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string, make?: string): string | null {
-  const url = productShareUrl(shirt, color, channel, origin, make);
+export function channelLink(channel: ShareChannel, shirt: ShirtProduct, color: BaseColor, origin?: string, make?: string, short?: string): string | null {
+  const url = productShareUrl(shirt, color, channel, origin, make, short);
   const msg = shareMessage(shirt, color, make);
   const enc = encodeURIComponent;
   switch (channel) {
     case "whatsapp":
-      return `https://wa.me/?text=${enc(`${msg}\n${url}`)}`;
+      return `https://wa.me/?text=${enc(url)}`;
     case "facebook":
       return `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`;
     case "telegram":
-      return `https://t.me/share/url?url=${enc(url)}&text=${enc(msg)}`;
+      return `https://t.me/share/url?url=${enc(url)}`;
     case "x":
-      return `https://twitter.com/intent/tweet?text=${enc(msg)}&url=${enc(url)}`;
+      return `https://twitter.com/intent/tweet?url=${enc(url)}`;
     case "email":
       return `mailto:?subject=${enc(shareTitle(shirt))}&body=${enc(`${msg}\n\n${url}`)}`;
     case "sms":
-      return `sms:?&body=${enc(`${msg} ${url}`)}`;
+      return `sms:?&body=${enc(`${msg}\n${url}`)}`;
     default:
       return null;
   }
 }
 
-/** Reads ?c= and the channel (utm_source, or ?ref= on older links) from a product page URL. */
-export function parseShareParams(search: string): { color: BaseColor | null; ref: ShareChannel | null } {
+/** Reads ?c= and the channel (utm_source, or ?ref= on older links, or a short link's # tag) from a product page URL. */
+export function parseShareParams(search: string, hash = ""): { color: BaseColor | null; ref: ShareChannel | null; tagged: boolean } {
   const q = new URLSearchParams(search);
   const c = q.get("c");
   const r = (q.get("utm_source") ?? q.get("ref")) as ShareChannel | null;
+  // A short link's # tag (lib/shareTag), when the query says nothing.
+  const tag = decodeShareTag(hash);
   return {
-    color: c === "black" || c === "white" ? c : null,
-    ref: r && REF_CHANNELS.includes(r) ? r : null,
+    color: c === "black" || c === "white" ? c : tag.color,
+    ref: r && REF_CHANNELS.includes(r) ? r : tag.ref,
+    tagged: !!tag.ref,
   };
 }
 

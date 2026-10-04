@@ -72,6 +72,13 @@ describe("R06: commerce events in GA4's shape", () => {
 });
 
 describe("R02: landing and first touch", () => {
+  it("a short link's # tag lands as its channel (share, tee_share), as UTM parameters did", async () => {
+    vi.resetModules();
+    const s = await import("@/lib/analytics");
+    s.captureLanding({ search: "", hash: "#w", pathname: "/shop/mono-2803/" } as unknown as Location, "");
+    expect(events("landing").at(-1)).toMatchObject({ utm_source: "whatsapp", utm_medium: "share", utm_campaign: "tee_share" });
+  });
+
   it("landing records the tags once per page load; the session's first touch is kept", async () => {
     const s = await fresh();
     s.captureLanding({ search: "?utm_source=a&taste=abc", pathname: "/" } as Location, "");

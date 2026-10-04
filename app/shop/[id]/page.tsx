@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProductView } from "@/components/shop/ProductView";
 import { PRERENDERED, familyMembers, getShirtById, productHref } from "@/lib/catalog";
 import { getDetails, getEntry } from "@/lib/catalogServer";
-import { ogImage, pageMeta, productDescription, productTitle } from "@/lib/seo";
+import { ogImage, pageMeta, productDescription, productOgAlt, productOgDescription, productOgTitle, productTitle } from "@/lib/seo";
 import type { ShirtProduct } from "@/types/shirt";
 
 // Only the pages built exist in the export; `next dev` (which errors on false with output: "export") renders any.
@@ -24,7 +24,8 @@ export function generateMetadata({ params }: { params: { id: string } }): Metada
     path: `/shop/${shirt.id}/`,
     title: productTitle(entry),
     description: productDescription(entry),
-    image: { ...ogImage(shirt.id), alt: `${shirt.title} on a ${shirt.baseColor} tee` },
+    og: { title: productOgTitle(entry), description: productOgDescription(entry) },
+    image: { ...ogImage(shirt.id), alt: productOgAlt(entry) },
   });
 }
 

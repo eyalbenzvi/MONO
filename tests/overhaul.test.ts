@@ -209,12 +209,13 @@ describe("Part 5: copy", () => {
     for (const s of coloured) expect(s.description, s.id).toMatch(/one[- ]ink/i);
   });
 
-  it("a title that is its subject isn't said twice in the meta description", async () => {
+  it("the meta description is the design's own sentence, its tees and the price — never the subject sentence", async () => {
     const { productDescription } = await import("@/lib/seo");
-    const same = FULL.find((s) => s.title === s.subject)!;
-    expect(productDescription(same).startsWith(`${same.title}. `)).toBe(true);
-    const other = FULL.find((s) => s.title !== s.subject)!;
-    expect(productDescription(other).startsWith(`${other.title}: ${other.subject}. `)).toBe(true);
+    for (const s of FULL) {
+      const d = productDescription(s);
+      expect(d, s.id).toMatch(/tee(, also in (black|white)| only) · \$\d+\.$/);
+      if (s.subject.length > 40 && s.subject !== s.summary && !s.title.includes(s.subject)) expect(d, s.id).not.toContain(s.subject);
+    }
   });
 
   it("the site's description: one ink, black and white, ten swipes edit the shop (and no false count)", () => {

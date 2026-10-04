@@ -1,4 +1,5 @@
 import full from "@/data/shirts.json";
+import shortLinks from "@/data/share/short.json";
 import type { CatalogEntry, ShirtDetails } from "@/types/shirt";
 
 /**
@@ -12,5 +13,5 @@ export const getEntry = (id: string) => BY_ID.get(id);
 
 export function getDetails(id: string): ShirtDetails | null {
   const s = BY_ID.get(id);
-  return s ? { description: s.description, similar: s.similar, subject: s.subject, printCm: s.printCm, ...(s.photo ? { photo: { credit: s.photo.credit, url: s.photo.url } } : {}) } : null;
+  return s ? { description: s.description, similar: s.similar, subject: s.subject, printCm: s.printCm, ...(s.photo ? { photo: { credit: s.photo.credit, url: s.photo.url } } : {}), ...((shortLinks as Record<string, string>)[id] ? { short: (shortLinks as Record<string, string>)[id] } : {}) } : null;
 }

@@ -90,6 +90,7 @@ Run in this order, once, for all the approved designs:
 
 ```
 npx tsx --tsconfig tsconfig.scripts.json scripts/studio/publish.ts
+npx tsx --tsconfig tsconfig.scripts.json scripts/tools/shortLinks.ts   # the new designs' short share links (network)
 npm run generate
 npm run search:index
 npx tsx --tsconfig tsconfig.scripts.json scripts/tools/uploadPriors.ts

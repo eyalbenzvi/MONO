@@ -68,7 +68,7 @@ describe("photographs: where they come from", () => {
     }
     expect(new Set(PHOTO_DESIGNS.map((s) => s.subject)).size).toBe(PHOTO_DESIGNS.length);
     const seal = PHOTO_DESIGNS.find((s) => s.title === s.subject);
-    if (seal) expect(productTitle(seal)).toBe(`${seal.subject} Photo Tee | MONO`);
+    if (seal) expect(productTitle(seal)).toMatch(new RegExp(`^${seal.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} · (Black|White|Black or White) (One-Ink )?T-Shirt \\| MONO$`));
   });
 });
 

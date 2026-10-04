@@ -21,34 +21,52 @@ export interface SeoFields {
 }
 
 /**
- * The product page's title: the name, then what the print actually shows
- * ("Northern Pines — Solar Eclipse Line-Art Tee | MONO"). The style is left
- * out when the subject already says it ("ASCII Rocket").
+ * A product page's text, in two places that want different things (the content review, Oct 2026):
+ * search shows no picture, so the page title and meta description carry the words people search
+ * (the name, the tee colour, "T-Shirt", the price); a chat app's link preview sits under the og
+ * image card, which already shows the tee, the name, the category, the price, the colours and the
+ * way in, so the og title is only the name and the one idea the card doesn't say ("one ink"), and the
+ * og description only the design's own sentence. No subject sentence anywhere: it read as alt text
+ * and ran to hundreds of characters.
  */
-/** Subjects that already name their kind of print ("ASCII Sphere", "Great Wave Homage"). */
-const SAYS_ITS_KIND = /\b(ascii|homage|poster|icon|sprite|sign|badge|crest|stamp|label|receipt|quote|caricature|mugshot|bobblehead|linocut|diagram|banner|wordmark|repeat|halftone|dot-matrix|stub|screen|session)\b/i;
-
-export function productTitle(s: Pick<SeoFields, "title" | "subject" | "style">) {
-  const styleWord = s.style.split("-")[0].toLowerCase();
-  const kind = s.subject.toLowerCase().includes(styleWord) || SAYS_ITS_KIND.test(s.subject) ? s.subject : `${s.subject} ${s.style}`;
-  // Photographs are named after their subject: "Gray Seal Photo Tee", not "Gray Seal — Gray Seal Photo Tee".
-  if (s.title === s.subject) return `${kind} Tee | MONO`;
-  return `${s.title} · ${kind} Tee | MONO`;
-}
-
-/**
- * Its meta description: the name and subject, the design's own sentence,
- * the tee and the price. Unique per design (the name is), with no stock
- * sentence repeated across the catalog.
- */
-export function productDescription(s: SeoFields) {
-  const other = s.baseColor === "black" ? "white" : "black";
-  const price = Number.isInteger(s.price) ? `$${s.price}` : `$${s.price.toFixed(2)}`;
+const TAGLINE = "Black. White. One ink. Your taste.";
+/** "Black", "White", or "Black or White" (the tees it's sold in). */
+const teeWords = (s: Pick<SeoFields, "colors" | "baseColor">) =>
+  s.colors.length > 1 ? "Black or White" : s.colors[0] === "white" || (s.colors.length === 0 && s.baseColor === "white") ? "White" : "Black";
+/** "Black tee only", "White tee, also in black". */
+const teeLine = (s: Pick<SeoFields, "colors" | "baseColor">) => {
   const tee = s.baseColor === "black" ? "Black" : "White";
-  // A title that is its subject ("Solar Eclipse") isn't said twice.
-  const named = s.title.toLowerCase() === s.subject.toLowerCase() ? s.title : `${s.title}: ${s.subject}`;
-  return `${named}. ${s.summary} ${s.colors.length > 1 ? `${tee} tee, also in ${other}` : `${tee} tee only`} · ${price}.`;
+  return s.colors.length > 1 ? `${tee} tee, also in ${s.baseColor === "black" ? "white" : "black"}` : `${tee} tee only`;
+};
+const money = (price: number) => (Number.isInteger(price) ? `$${price}` : `$${price.toFixed(2)}`);
+
+/** The page title (browser tab, search): "Gin Botanicals · White One-Ink T-Shirt | MONO", at most 60 characters. */
+export function productTitle(s: Pick<SeoFields, "title" | "colors" | "baseColor">) {
+  for (const t of [`${s.title} · ${teeWords(s)} One-Ink T-Shirt | MONO`, `${s.title} · ${teeWords(s)} T-Shirt | MONO`]) if (t.length <= 60) return t;
+  return `${s.title} | MONO`;
 }
+
+/** The meta description (search): the design's sentence, the tees and the price, at most 160 characters. */
+export function productDescription(s: SeoFields) {
+  const tail = `${teeLine(s)} · ${money(s.price)}.`;
+  const full = `${s.summary.trim()} ${tail}`;
+  return s.summary.trim() && full.length <= 160 ? full : `${s.title}. ${TAGLINE} ${tail}`;
+}
+
+/** The link preview's bold line: "Gin Botanicals · One-ink tee · MONO", at most 50 characters. */
+export function productOgTitle(s: Pick<SeoFields, "title">) {
+  const t = `${s.title} · One-ink tee · MONO`;
+  return t.length <= 50 ? t : `${s.title} · MONO`;
+}
+
+/** The link preview's line under it (where an app shows one): the design's sentence alone, or the tagline. */
+export function productOgDescription(s: Pick<SeoFields, "summary">) {
+  const t = s.summary.trim();
+  return t && t.length <= 160 ? t : TAGLINE;
+}
+
+/** The preview image's alt text: "Gin Botanicals, printed in one ink on a white tee." */
+export const productOgAlt = (s: Pick<SeoFields, "title" | "baseColor">) => `${s.title}, printed in one ink on a ${s.baseColor} tee.`;
 
 /* ------------------------------------------------------------------ */
 /* Page metadata (R22: every page states its URL and canonical)        */
@@ -57,18 +75,22 @@ export function productDescription(s: SeoFields) {
 const OG_DEFAULT = { ...ogImage("default"), alt: "MONO — monochrome tees" };
 
 /**
- * Title, description, canonical and Open Graph for a page at `path`
+ * Title, description, canonical and Open Graph for a page at `path` (`og`: the link preview's own
+ * title and description, when they aren't the search ones)
  * (relative to the site, e.g. "/shop/"). Open Graph in Next replaces the
  * layout's object wholesale, so the site name and image come along.
  */
-export function pageMeta({ path, title, description, image = OG_DEFAULT, index = true }: { path: string; title: string; description: string; image?: { url: string; width: number; height: number; alt: string }; index?: boolean }) {
+export function pageMeta({ path, title, description, image = OG_DEFAULT, index = true, og }: { path: string; title: string; description: string; image?: { url: string; width: number; height: number; alt: string }; index?: boolean; og?: { title: string; description: string } }) {
   const url = `${SITE_URL}${path}`;
+  // The link preview's words, when they differ from the search ones (a product page).
+  const ogTitle = og?.title ?? title;
+  const ogDescription = og?.description ?? description;
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { type: "website" as const, siteName: "MONO", title, description, url, images: [image] },
-    twitter: { card: "summary_large_image" as const, title, description, images: [image.url] },
+    openGraph: { type: "website" as const, siteName: "MONO", title: ogTitle, description: ogDescription, url, images: [image] },
+    twitter: { card: "summary_large_image" as const, title: ogTitle, description: ogDescription, images: [image.url] },
     ...(index ? {} : { robots: { index: false } }),
   };
 }

@@ -120,3 +120,13 @@ test.describe("shared links (F04) and the empty bag (F05)", () => {
     await expect(page).toHaveURL(/\/shop\/$/);
   });
 });
+
+test("a short link lands with its # tag: the channel says Shared with you, the colour opens, and the tag leaves the address", async ({ page }) => {
+  await page.goto(`shop/${W1}/#w-b`);
+  await hydrated(page);
+  await expect(page.getByText("Shared with you", { exact: true })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /^Black tee/ })).toBeChecked();
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
+  const landing = await page.evaluate(() => (window.dataLayer ?? []).find((e: { event?: string }) => e.event === "landing"));
+  expect(landing).toMatchObject({ utm_source: "whatsapp", utm_medium: "share", utm_campaign: "tee_share" });
+});

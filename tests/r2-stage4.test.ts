@@ -11,7 +11,7 @@ import searchManifest from "@/data/search.manifest.json";
 import { SHIRTS, CALIBRATION_IDS, checkIndexHead, dedupeByFamily, diversify, getShirtById, shardFile } from "@/lib/catalog";
 import { topPicks } from "@/lib/match";
 import { rankShirts } from "@/lib/recommendation";
-import { productDescription, productTitle } from "@/lib/seo";
+import { productDescription, productOgDescription, productOgTitle, productTitle } from "@/lib/seo";
 import { FEATURE_KEYS, createInitialVector, type CatalogEntry } from "@/types/shirt";
 import { WEAK_QUALITY, isWeak, measurePrint } from "../scripts/gen/quality";
 import { SUBJECT_NOUN_CATEGORIES } from "../scripts/gen/subject";
@@ -21,14 +21,23 @@ import { W1 } from "./fixtures";
 const FULL = full as unknown as CatalogEntry[];
 
 describe("I01: names that say what the print shows", () => {
-  it("every design has a subject, and the SEO title reads 'Name · Subject Style Tee | MONO'", () => {
+  it("every design has a subject; the page title names it, its tees and 'One-Ink T-Shirt'; the link preview's title is short (content review)", () => {
     for (const s of FULL) expect(s.subject.length, s.id).toBeGreaterThan(2);
-    const orion = { title: "Orion, the Hunter", subject: "Orion Constellation", style: "Star-Chart" };
-    expect(productTitle(orion)).toBe("Orion, the Hunter · Orion Constellation Star-Chart Tee | MONO");
-    // A title that is its subject isn't said twice.
-    expect(productTitle({ ...orion, title: "Solar Eclipse", subject: "Solar Eclipse", style: "Line-Art" })).toBe("Solar Eclipse Line-Art Tee | MONO");
-    // The style isn't repeated when the subject already names it.
-    expect(productTitle({ ...orion, title: "ASCII Owl", subject: "ASCII Owl", style: "ASCII-Art" })).toBe("ASCII Owl Tee | MONO");
+    const gin = { title: "Gin Botanicals", colors: ["white" as const], baseColor: "white" as const, summary: "Juniper, coriander, angelica, bitter orange and orris: the five botanicals at the heart of a classic dry gin." };
+    expect(productTitle(gin)).toBe("Gin Botanicals · White One-Ink T-Shirt | MONO");
+    expect(productTitle({ ...gin, title: "How Beer Is Made", colors: ["black", "white"], baseColor: "black" })).toBe("How Beer Is Made · Black or White One-Ink T-Shirt | MONO");
+    expect(productOgTitle(gin)).toBe("Gin Botanicals · One-ink tee · MONO");
+    expect(productOgDescription(gin)).toBe(gin.summary);
+    // Too long for its line: the shorter form, never the subject sentence.
+    const long = "A Very Long Design Name That Keeps On Going";
+    expect(productOgTitle({ title: long })).toBe(`${long} · MONO`);
+    for (const s of FULL) {
+      expect(productTitle(s).length, s.id).toBeLessThanOrEqual(Math.max(60, s.title.length + 7));
+      expect(productTitle(s), s.id).not.toContain(s.subject.length > 40 && !s.title.includes(s.subject) ? s.subject : "\u0000");
+      expect(productOgTitle(s).length, s.id).toBeLessThanOrEqual(Math.max(50, s.title.length + 7));
+      expect(productOgDescription(s).length, s.id).toBeLessThanOrEqual(160);
+      expect(productDescription(s).length, s.id).toBeLessThanOrEqual(Math.max(160, s.title.length + 80));
+    }
   });
 
   it("no two meta descriptions are the same, and none carries the stock closing line", () => {

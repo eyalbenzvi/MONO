@@ -91,7 +91,7 @@ export function ProductView({
   const [sharedVia, setSharedVia] = useState<string | null>(null);
   useEffect(() => {
     if (!hydrated || !shirt) return;
-    const { color: c, ref } = parseShareParams(window.location.search);
+    const { color: c, ref, tagged } = parseShareParams(window.location.search, window.location.hash);
     if (c) setColor(shirt.id, c);
     if (ref) {
       setSharedVia(ref);
@@ -102,7 +102,7 @@ export function ProductView({
       }
     }
     // Clean the URL so a reload or a re-share doesn't carry the tag along.
-    if (c || ref) updateQuery((q) => SHARE_PARAMS.forEach((k) => q.delete(k)));
+    if (c || ref) updateQuery((q) => SHARE_PARAMS.forEach((k) => q.delete(k)), tagged ? { keepHash: false } : undefined);
   }, [hydrated, shirt, setColor]);
 
   useEffect(() => {

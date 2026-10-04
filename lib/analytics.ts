@@ -11,6 +11,7 @@
  * are product events. Nothing personal is sent (no name, email or address).
  */
 import { MAKE_PRICE } from "@/lib/prices";
+import { decodeShareTag } from "@/lib/shareTag";
 import type { BaseColor, ShirtProduct, ShirtSize } from "@/types/shirt";
 import { CATEGORY_LABELS } from "@/types/shirt";
 
@@ -176,14 +177,16 @@ const originOf = (u: string) => {
   }
 };
 
-export function captureLanding(loc: Pick<Location, "search" | "pathname"> = window.location, referrer = document.referrer): Landing | null {
+export function captureLanding(loc: Pick<Location, "search" | "pathname"> & { hash?: string } = window.location, referrer = document.referrer): Landing | null {
   if (landed) return null;
   landed = true;
   const q = new URLSearchParams(loc.search);
+  // A shared short link says where it went out in its # tag (lib/shareTag) instead of UTM parameters.
+  const tag = q.get("utm_source") ? null : decodeShareTag(loc.hash ?? "").ref;
   const landing: Landing = {
-    utm_source: q.get("utm_source"),
-    utm_medium: q.get("utm_medium"),
-    utm_campaign: q.get("utm_campaign"),
+    utm_source: q.get("utm_source") ?? tag,
+    utm_medium: q.get("utm_medium") ?? (tag ? "share" : null),
+    utm_campaign: q.get("utm_campaign") ?? (tag ? "tee_share" : null),
     ref: q.get("ref"),
     has_taste: q.has("taste"),
     has_list: q.has("list"),
