@@ -1,0 +1,28 @@
+{
+ "mode": "line",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.1093,
+ "solid": 0.1766,
+ "screened": 0.0291,
+ "sizeCm": [
+  25.3,
+  35.0
+ ],
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": [],
+ "tees": "white",
+ "features": {
+  "line_art": 0.85,
+  "nature": 0.9,
+  "pictorial": 0.85,
+  "classic": 0.7,
+  "typography": 0.35,
+  "density": 0.6,
+  "contrast": 0.7
+ }
+}

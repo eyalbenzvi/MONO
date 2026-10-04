@@ -1,0 +1,36 @@
+{
+ "fixes": [
+  {
+   "op": "thicken",
+   "box": [
+    330,
+    100,
+    880,
+    850
+   ],
+   "size": 3,
+   "why": "the kite's four lines, a pixel wide, broke into dashes in the conversion: thickened and set in full ink",
+   "ink": 215
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 120,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.85,
+   "pictorial": 0.8,
+   "typography": 0.15,
+   "contrast": 0.8,
+   "clean_minimal": 0.5,
+   "retro": 0.2
+  }
+ }
+}

@@ -1,0 +1,13 @@
+Title: El Calafate
+Category: Type
+Family: signposts
+Subject: A wooden signpost at El Calafate, 0 km, its arms pointing to Buenos Aires 2,727 km, Ushuaia 878 km, Bariloche 1,493 km, Torres del Paine 316 km, Puerto Natales 270 km, El Chaltén 220 km and Río Gallegos 314 km
+Style: Woodcut-style drawing with bold serif lettering
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: A signpost at El Calafate, the gateway to the glaciers: Ushuaia at the end of the world, El Chaltén for Fitz Roy, Torres del Paine across the border, and Buenos Aires more than two and a half thousand kilometres north. The road distances of a Patagonian trip in one post.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with White
+Print size: 18.7 × 35.0 cm
+Keywords: el calafate, patagonia, argentina, signpost, road trip, ruta 40, ushuaia, bariloche, el chalten, torres del paine, puerto natales, buenos aires, travel, backpacking, distances, adventure, gift for traveller, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (two distances corrected with the sign's own figures: Buenos Aires 2,727 km where it said 2,781, and Puerto Natales 270 km by road where it said 528), converted to one ink.
+Licence: MONO

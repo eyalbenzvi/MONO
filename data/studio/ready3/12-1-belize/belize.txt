@@ -1,0 +1,13 @@
+Title: Belize
+Category: Engravings
+Family: islands
+Subject: A palm-fringed caye with a wooden hut and a jetty running out over clear water and patches of coral, under the heading BELIZE, the coordinates 17.3167° N 87.5342° W beneath
+Style: Engraving, line and hatching
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: A caye off Belize with a hut under the palms and a jetty over coral heads and clear water. The coordinates beneath fall on Lighthouse Reef, the atoll of the Great Blue Hole.
+Tee colours: White (printed in black ink)
+Print size: 26.0 × 21.4 cm
+Keywords: belize, caribbean, caye, island, palm trees, beach, jetty, reef, coral reef, diving, snorkelling, blue hole, lighthouse reef, tropical, travel, nautical chart, compass, engraving, gift for diver, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the reef chart and compass rose taken out so the caye leads; the caption set as the house heading in Space Grotesk, SIL OFL 1.1, the coordinates moved up under the scene), converted to one ink.
+Licence: MONO

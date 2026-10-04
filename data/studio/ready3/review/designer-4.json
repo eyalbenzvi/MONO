@@ -1,0 +1,114 @@
+{
+ "designer": "K=4",
+ "persona": "Buyer for an online t-shirt shop",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The roped climbers are the hook, and up close they read cleanly. From a thumbnail, though, the print is two loose clusters: the far range floats above the near ridge with a white band between them, the bottom edge fades out unevenly, and there is no word on it. A gift buyer can't tell what this shirt is about, and nothing makes it a search term.",
+   "fix": "Tie it into one shape: close the gap between the far range and the ridge and give it a firm base, for example a small serif caption under it like the others (a peak name or 'ROPE TEAM' with an altitude). That gives the listing a title and keeps the tee from looking unfinished.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Clear, dynamic action for a defined niche that buys gear-themed shirts; the line work is clean and holds up on black. About half the print area is just kite lines, so the rider is small on the back.",
+   "fix": "Shorten the lines and bring the kite closer so the rider can be drawn about 30% larger.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A decorative vintage-plate look that sells across beach and nature buyers and works on both tees. Up close the coral texture is a uniform bubbly pattern, so it reads a bit generic, and the CORAL. caption is small.",
+   "fix": "Vary the texture so the polyp tips are crisp and the trunk is shaded more darkly, giving the main coral depth instead of an even bubbly texture.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Penguins are a reliable seller and the heading is clean, but the 'chick' is drawn as a small adult with adult markings. Wildlife buyers will notice and leave reviews. The art also stops well above the bottom of the print area.",
+   "fix": "Redraw the chick as a fluffy, down-covered emperor chick with the dark cap and white face mask.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A strong graphic that reads from across the room as a spiral and then rewards a close look with individual fish; very good on black. It has no text, so it travels well.",
+   "fix": "Thin out the solid black mass near the core so it doesn't print as a heavy patch, and trim the loose stray fish at the edge so the outline stays clean.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The strongest single-subject silhouette of the four. It reads as a whale at once, even as a thumbnail, it looks good on black, and the specimen-label caption sells the naturalist gift angle. The stipple holds up at full size. One flaw: the colon in 'RANGE: ARCTIC OCEAN' prints as a malformed ornamental glyph, which customers will spot in a zoomed product photo.",
+   "fix": "Replace the broken colon glyph in the caption with a clean colon or a thin rule, and make the caption a little larger and heavier so it survives on black at arm's length.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The scientific-chart look sells well to whale and natural-history fans, and the drawing quality is high. The anatomy labels are tiny and won't be readable on a shirt, so they look like noise from a distance.",
+   "fix": "Drop or enlarge the small anatomy labels: keep 4-5 key labels at a readable size and leave the rest out.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "The best seller in the set: one bold, well-known subject with eight arms, rich detail and a centred silhouette that fills the back well. The clean serif caption adds credibility.",
+   "fix": "Lighten the fine crosshatch screens in the eyes and under the arms, which may fill in when screen printed.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Fills the back like a premium print and has a clear, recognisable outline built around the Fitz Roy spire. The named peaks and coordinates reward a close look and make it a trip souvenir people search for by name. It works on black and on white. A buyer's caution: 'PATAGONIA' set large on a garment can draw a trademark complaint from the apparel brand, so the listing needs care.",
+   "fix": "Remove the trademark risk while keeping the place: retitle the caption as 'FITZ ROY · PATAGONIA' or 'EL CHALTÉN', with 'Patagonia' smaller, so the shirt still sells to the travel crowd without the brand word being the headline.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "An instant souvenir: readable at a glance, with plausible distances, a big town name and a traveller-friendly idea that works for gifts. Strong on both tees.",
+   "fix": "Cut down to five arms so the remaining place names and distances can be set larger.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A rich, atmospheric harbour scene with real wow factor and good destination appeal. It is very ink-heavy (about 30% coverage), so it will print as a stiff patch, and the dense hillside hatching may fill in.",
+   "fix": "Open up the dark middle-ground hatching (forest and slopes) to cut ink coverage and keep the town and boats crisp.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Sellable: the engraved caye, hut and jetty are crisp, confident one-ink linework that reads clearly as a tropical getaway in a thumbnail and suits the travel/vacation-memory buyer at $50. What holds it back is the layout. BELIZE is small and floats roughly 650 px above the palms over empty sky, and the coordinates are tiny. On the white tee the type and the art come apart, so the piece looks like a small postcard scene with a separate label. The fine crosshatch patches on the posts and hut are close to filling in when printed.",
+   "fix": "Drop BELIZE right down so it sits just above the palm crowns, and make it about 1.5x bigger with the coordinates scaled up to match. Heading, scene and coordinates then read as one tight lockup instead of a word floating over a picture.",
+   "round": 3
+  }
+ ]
+}

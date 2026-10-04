@@ -1,0 +1,35 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    330,
+    1222,
+    700,
+    1310
+   ],
+   "why": "the caption: ANTARCTICA set as the house heading above the picture (a wide picture left the sheet's top empty), and the South Pole's coordinates out (90° S: emperor penguins breed on the coast and the sea ice, not at the pole)"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "engrave",
+  "--title",
+  "ANTARCTICA"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 120,
+ "final_despeck": true,
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.85,
+   "nature": 0.9,
+   "pictorial": 0.85,
+   "classic": 0.5,
+   "contrast": 0.8,
+   "typography": 0.2
+  }
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "fixes": [
+  {
+   "op": "lift",
+   "amount": 0.15,
+   "keep": 0.85,
+   "why": "the densest of the batch (30% ink): the greys held back a little"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.85,
+   "pictorial": 0.9,
+   "architectural": 0.5,
+   "nature": 0.6,
+   "density": 0.8,
+   "contrast": 0.8,
+   "typography": 0.2,
+   "classic": 0.5
+  }
+ }
+}

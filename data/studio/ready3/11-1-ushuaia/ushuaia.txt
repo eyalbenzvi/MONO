@@ -1,0 +1,13 @@
+Title: Ushuaia
+Category: Engravings
+Family: harbours
+Subject: Ushuaia from the water: snow-capped peaks behind forested hills, the town on the shore with its church spire, sailing boats and a ship at the quay reflected in the Beagle Channel; the caption USHUAIA and the coordinates 54.8019° S 68.3030° W
+Style: Engraving, line and crosshatching
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: The southernmost city in the world, seen from the Beagle Channel: snow on the peaks, the town along the shore, boats at the quay. Its coordinates written beneath, as on an old view.
+Tee colours: White (printed in black ink)
+Print size: 25.6 × 35.0 cm
+Keywords: ushuaia, tierra del fuego, beagle channel, argentina, patagonia, end of the world, fin del mundo, harbour, port, mountains, antarctica expedition, travel, cruise, sailing, town, engraving, gift for traveller, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the greys held back a little, the densest print of the batch), converted to one ink.
+Licence: MONO

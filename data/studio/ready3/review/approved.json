@@ -1,0 +1,90 @@
+{
+ "run": "ready3",
+ "approvedAt": "2026-10-04T17:46:00.664Z",
+ "designs": {
+  "01-1-summit-ridge": {
+   "average": 7.08,
+   "deleteVotes": 0,
+   "family": "mountains",
+   "approved": true,
+   "why": "approved"
+  },
+  "02-1-kitesurfing": {
+   "average": 6.83,
+   "deleteVotes": 0,
+   "family": "kitesurfing",
+   "approved": true,
+   "why": "approved"
+  },
+  "03-1-coral": {
+   "average": 7.5,
+   "deleteVotes": 0,
+   "family": "coral",
+   "approved": true,
+   "why": "approved"
+  },
+  "04-1-emperor-penguins": {
+   "average": 6.5,
+   "deleteVotes": 0,
+   "family": "penguins",
+   "approved": true,
+   "why": "approved"
+  },
+  "05-1-bait-ball": {
+   "average": 7.92,
+   "deleteVotes": 0,
+   "family": "fish",
+   "approved": true,
+   "why": "approved"
+  },
+  "06-1-beluga": {
+   "average": 6.5,
+   "deleteVotes": 0,
+   "family": "whales",
+   "approved": true,
+   "why": "approved"
+  },
+  "07-1-humpback-whale": {
+   "average": 6.75,
+   "deleteVotes": 0,
+   "family": "whales",
+   "approved": true,
+   "why": "approved"
+  },
+  "08-1-octopus": {
+   "average": 8.08,
+   "deleteVotes": 0,
+   "family": "octopus",
+   "approved": true,
+   "why": "approved"
+  },
+  "09-1-patagonia": {
+   "average": 7.33,
+   "deleteVotes": 0,
+   "family": "mountains",
+   "approved": true,
+   "why": "approved"
+  },
+  "10-1-el-calafate-signpost": {
+   "average": 7.25,
+   "deleteVotes": 0,
+   "family": "signposts",
+   "approved": true,
+   "why": "approved"
+  },
+  "11-1-ushuaia": {
+   "average": 7.5,
+   "deleteVotes": 0,
+   "family": "harbours",
+   "approved": true,
+   "why": "approved"
+  },
+  "12-1-belize": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "islands",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

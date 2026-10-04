@@ -1,0 +1,28 @@
+{
+ "mode": "engrave",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.0568,
+ "solid": 0.4358,
+ "screened": 0.0,
+ "sizeCm": [
+  26.0,
+  34.4
+ ],
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": [],
+ "tees": "both",
+ "teeDefault": "black",
+ "features": {
+  "line_art": 0.85,
+  "nature": 0.9,
+  "pictorial": 0.8,
+  "clean_minimal": 0.6,
+  "contrast": 0.5,
+  "typography": 0.15
+ }
+}

@@ -1,0 +1,13 @@
+Title: Summit Ridge
+Category: Engravings
+Family: mountains
+Subject: A high mountain range drawn in pen, peak behind peak; in the foreground five climbers roped up on a snow ridge, heading for the top
+Style: Pen engraving, line and hatching
+Medium: An illustration made with a generative tool, converted to one ink
+Description: Five climbers on a snow ridge, roped and climbing, and the range rising peak behind peak beyond them. The long day before the top, drawn line by line.
+Tee colours: White (printed in black ink)
+Print size: 26.0 × 33.3 cm
+Keywords: mountains, mountaineering, climbing, alpinism, climbers, summit, peak, ridge, snow, expedition, trekking, hiking, himalaya, adventure, outdoors, rope team, engraving, line art, gift for climber, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the height label of an unnamed peak taken out; the lettering's dots grown to print), converted to one ink.
+Licence: MONO

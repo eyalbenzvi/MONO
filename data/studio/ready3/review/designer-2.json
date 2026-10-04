@@ -1,0 +1,114 @@
+{
+ "designer": "K=2",
+ "persona": "Apparel art director for independent labels",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Honest, confident pen work with a real story: the five roped climbers give a human scale and a narrative hook, and the dense black near ridge against the airy far range creates depth that holds from across a room. No type, which suits it. The weak spot is the upper third, where the distant peaks break into scattered dashes and loose specks (about 60 tiny islands), so at 3 m the top reads unfinished rather than atmospheric.",
+   "fix": "Consolidate the far range: join the broken contour dashes into continuous ridgelines and clear the stray specks, so the top fades on purpose instead of crumbling.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "It has a good dynamic diagonal and the lines carry the eye up to the kite. But the rider is a near-solid black mass while the kite is thin outline, so the two halves don't feel drawn by the same hand. The tracked KITESURFING caption is so light it disappears on the black main tee, and the middle is all lines and empty space.",
+   "fix": "Even out the weights: open up the rider's solid blacks with hatching, give the kite canopy some tone, and set the caption a step heavier and larger.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A convincing natural-history plate. The main colony, small colony and two corallite studies make a balanced, collectible composition, and the small serif 'CORAL.' has the right antique tone. It works on both tees. The line is a bit blotchy and traced up close, but that reads as engraving texture at wearing distance.",
+   "fix": "Clean the clotted spots where the branch texture fills in, so it doesn't plug in one ink, and add a plate number or a small Latin name to finish the plate.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The family grouping round the chick is sweet and easy to read. But the adults are mostly empty outline with fuzzy, hairy contours, so on the white main tee the bodies go blank. The geometric sans heading with its rule fights the engraved drawing, and the whole thing sits bottom-heavy under a lone word.",
+   "fix": "Model the bodies with proper engraved tone (back and flank hatching, a firm contour) and swap the heading for a serif that matches the illustration.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "The strongest graphic in the set: an instantly readable spiral that works as a pure shape from across the street and needs no words. It owns the black main tee. Up close the dense centre turns into fused blobs rather than fish, and it may plug in one ink.",
+   "fix": "Thin the fish toward the core (more space between bodies, crisp tail shapes) so the centre stays open and reads as fish when printed.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Good subject and an elegant pose, and the stipple is clean and printable. But most of the body is an empty outline, so on the lead black tee it reads as a white line cartoon of a whale with a blank belly patch, not as a naturalist plate. The caption is very small for its role and the colon in RANGE: sets as an odd glyph.",
+   "fix": "Carry the stipple tone across the body (dorsal ridge, melon and flank) to build real volume, and enlarge the caption about 1.5x with a clean colon.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A rich, credible anatomy plate (body, skeleton, baleen) with lovely line hatching, and the kind of print that sells to nerdy-cool customers. But the callout labels are about 2 mm tall and won't survive a print or a glance, 'WHALE' over 'Humpback Whale' is redundant, and there are digital checker patches in the shadows.",
+   "fix": "Cut the labels to a few and set them at least 50% larger, and drop the redundant 'WHALE' heading.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Confident symmetric spread, good curl rhythm, and the serif caption with its Latin name is well judged. It reads well on the white main tee. It's a familiar subject in apparel, and close up the body texture is scratchy, with checker-dither patches round the eyes that look digital.",
+   "fix": "Replace the checker-dither patches with real hatching or stipple so the shadows look drawn, not filtered.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest of the four: a dense, rhythmic panorama with a clear hero peak (Fitz Roy), a lake that leads the eye in, and restrained spaced-serif type. It works on black and on white and feels like an indie outdoor-label staple at $50. Two nitpicks: the peak labels go illegible at wearing distance, and Cerro San Lorenzo (3,706 m) is drawn lower than Fitz Roy and is not really part of this view, which invites corrections from people who know the place.",
+   "fix": "Drop or replace the San Lorenzo callout and set the peak labels one size up so they still read on the body.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Clean, legible, well crafted: alternating arm directions, a strong hierarchy with EL CALAFATE / 0 km, and the post and grass are nicely detailed. It reads from 3 m on both tees. It leans souvenir-shop rather than indie label, and the distances are uneven (Torres del Paine further than Puerto Natales).",
+   "fix": "Check every distance against the same road source, and loosen the type slightly so it feels less like a stock sign font.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "A dramatic, detailed harbour scene and the caption type is handsome. But at about 30% ink it's a heavy rectangular block, a plastisol 'brick' on a white tee that will feel stiff and photographic. The mid-ground slopes fill to near solid, and there are checker patches in the town.",
+   "fix": "Vignette the edges into open paper (let the sky, flanks and water fade out) and lighten the mid-ground hatching to cut the coverage roughly in half.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The engraving is good and it holds up at full size: confident palms, a jetty in strong perspective that leads the eye into the caye, and coral patches that read as shapes in the water. It is clean one-ink line work and fine on white. As a layout it falls apart. BELIZE and its rule sit about 2.5 in (roughly 750 px) above the treeline, with dead air between, so from 3 m the heading floats off on its own and the piece reads as a postcard picture with a caption rather than a designed chest or back graphic. The left water edge also fades out raggedly while the jetty is cut hard at the right, so the art has no clear outer shape. Small mechanical dot-screen patches on the posts and hut look pasted in next to the hand line work, though at about 38 lpi they will print. At $50 the lockup needs to look intentional.",
+   "fix": "Tighten the lockup: bring BELIZE and its rule down to about 0.75 in above the palm tops and pull the coordinates up the same amount under the coral, so the heading, art and coordinates read as one compact badge. As part of the same pass, give the scene a deliberate outer edge so the left fade and the right crop match.",
+   "round": 3
+  }
+ ]
+}

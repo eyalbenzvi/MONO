@@ -1,0 +1,23 @@
+{
+ "fixes": [],
+ "oneink": [
+  "--mode",
+  "line"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.8,
+   "nature": 0.9,
+   "pictorial": 0.75,
+   "density": 0.7,
+   "contrast": 0.7,
+   "clean_minimal": 0.4
+  }
+ }
+}

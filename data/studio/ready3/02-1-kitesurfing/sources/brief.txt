@@ -1,0 +1,7 @@
+Kitesurfing: the owner's image (ready-images track, run ready3)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-kitesurfing.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready3/02-1-kitesurfing/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: traveller, trekker, diver, kitesurfer, wildlife lover), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1: 6.83 (7.5, 6.5, 7, 7, 6, 7). Passed.
+Result: approved: average 6.83 in round 1.

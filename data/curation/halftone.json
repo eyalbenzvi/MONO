@@ -2386,6 +2386,90 @@
 "src": "07dfa588cfab4f6b",
 "via": "scripts/studio/oneink.py"
 },
+"20173": {
+"mode": "line",
+"paper": 0.0,
+"sha": "8cb188a89007c03b",
+"src": "ec0201604040bd04",
+"via": "scripts/studio/oneink.py"
+},
+"20174": {
+"mode": "line",
+"paper": 0.0,
+"sha": "3fdb831a7a5dee61",
+"src": "561b09fec2f22187",
+"via": "scripts/studio/oneink.py"
+},
+"20175": {
+"mode": "line",
+"paper": 0.0,
+"sha": "0a0825258d71a176",
+"src": "ce271ea4e6b20e61",
+"via": "scripts/studio/oneink.py"
+},
+"20176": {
+"mode": "line",
+"paper": 0.0,
+"sha": "2b5bc9066cad8b1c",
+"src": "1368b20c2ca3ecb6",
+"via": "scripts/studio/oneink.py"
+},
+"20177": {
+"mode": "line",
+"paper": 0.0,
+"sha": "a8c27f07f61a1335",
+"src": "c86571a639adcf23",
+"via": "scripts/studio/oneink.py"
+},
+"20178": {
+"mode": "line",
+"paper": 0.0,
+"sha": "dc024cbdae72e7b0",
+"src": "cdedbdaa67d3cf51",
+"via": "scripts/studio/oneink.py"
+},
+"20179": {
+"mode": "line",
+"paper": 0.0,
+"sha": "102004bd18813d94",
+"src": "7e56dbeb31da1ec2",
+"via": "scripts/studio/oneink.py"
+},
+"20180": {
+"mode": "line",
+"paper": 0.0,
+"sha": "c18a9fdf57b13d0f",
+"src": "6369b1aac459c3cc",
+"via": "scripts/studio/oneink.py"
+},
+"20181": {
+"mode": "line",
+"paper": 0.0,
+"sha": "eb9be8a317d3b3a9",
+"src": "e7a5ed0880b5cf2c",
+"via": "scripts/studio/oneink.py"
+},
+"20182": {
+"mode": "line",
+"paper": 0.0,
+"sha": "a185f865fe0325f0",
+"src": "85f2bcb3704cd349",
+"via": "scripts/studio/oneink.py"
+},
+"20183": {
+"mode": "line",
+"paper": 0.0,
+"sha": "db1e9516d31186da",
+"src": "0845737454a94677",
+"via": "scripts/studio/oneink.py"
+},
+"20184": {
+"mode": "line",
+"paper": 0.0,
+"sha": "033c854596d6b8c8",
+"src": "557314e234caf4ad",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

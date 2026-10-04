@@ -1,0 +1,114 @@
+{
+ "designer": "K=1",
+ "persona": "Screen-print production designer",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Solid, confident pen work. Strokes are mostly 6px or wider at 300 DPI and there are no stray specks, so it separates and burns cleanly. The roped climbers read as figures even from 3 m and give the piece its story. The weak point is composition: the upper range and the lower ridge sit as two separate clusters with a white band between them, so at a distance the print reads as two drawings stacked.",
+   "fix": "Join the two masses: run the ridge or some foreground snow up into the gap so it reads as one piece, and tighten the hairline 1-2px gaps in the darkest rock shadows so they don't plug on press.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Bold solids and clean line make a strong one-hit print on the black main tee. The long kite lines hold at about 0.5 mm, and there are no plugging areas apart from the harness detail. The letterspaced KITESURFING word is thin and tiny next to the figure.",
+   "fix": "Make the wordmark heavier and about 1.5x larger so it holds on black and balances the figure.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A handsome plate with good coverage (13%) and clean edges. The bubbly shadow texture in the trunk carries clusters of pinhole openings that will fill in on a 156 mesh and turn to mottled solid, and the CORAL. caption is undersized.",
+   "fix": "Open the trunk shadow texture so the gaps are at least 0.3 mm (or commit those areas to solid) and enlarge the caption.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A clear silhouette group with a strong heading, and it reads at distance. The penguin backs are a mesh of 1-3 px openings (about 1,900 holes) that will fill in to muddy, uneven blacks, and the lineup is stiff and symmetrical.",
+   "fix": "Make the dark plumage either clean solid or hatching with at least 0.3 mm openings, so the backs print as an intended black rather than gained-up mud.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest graphic idea here: the spiral reads instantly from 3 m and suits one ink on black. The core is about 70% ink, so fish merge there and will gain into a blotch, while the outermost fish are tiny.",
+   "fix": "Thin the fish in the centre of the spiral with clear negative space between bodies so the core stays readable after dot gain.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The easiest of the four to print. Coverage is low (about 6%), the outline is heavy, and the stipple dots are big enough to hold on a 156 mesh, so white ink on a black tee prints clean with little hand. The silhouette is instantly recognisable. The caption is the weak part. The RANGE line is about 1.7 mm cap height and the colon renders as a blob. The fin patch on the body also reads more like a hole than a fin.",
+   "fix": "Bring the RANGE line up to at least 2.5 mm cap height with a clean colon, and shade the pectoral-fin patch so it reads as a fin rather than a white disc.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A well-organised plate with good engraving and clean separation. The labels are about 2 mm cap height and cannot be read beyond arm's length, and mechanical checker-dot tone patches sit inside hand-drawn hatching and will fill in or mottle.",
+   "fix": "Raise the label type to at least 3 mm cap height (or cut half the labels), and replace the checker-dot tone with line hatching.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "The best print in the set: a strong silhouette, good 16% coverage, rhythmic suckers and clean edges that will print crisp. The only flaw is a mechanical checker-tone patch around the eye and mantle, with 4 px openings that will partly fill in and looks out of place in hand engraving.",
+   "fix": "Replace the checker tone at the eye and mantle with hand stipple or hatching with openings of at least 0.35 mm.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "A handsome panorama, but it is the hardest to run. It has the finest hatching of the set (only about 21% of the ink survives a 3px erosion) and lots of 1px gaps, so white ink on black over an underbase will gain and close up. The peak labels are about 2 mm cap height on hairline leaders, which will plug or break on a tee. San Lorenzo (3,706 m) is also drawn lower than Fitz Roy (3,405 m), and a buyer who knows the range will spot it.",
+   "fix": "Enlarge the peak labels to at least 3 mm cap height and thicken the leader lines to at least 0.3 mm (or drop the labels altogether), and open up the densest hatching so it holds in white on black.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Crisp, legible type and very clean separation (few small openings), so it is the easiest print here. The El Calafate 0 km arm anchors it well. It is narrow (7.4 in) and type-heavy, so it reads as a souvenir sign more than a drawing.",
+   "fix": "Scale up to about 9 in wide and give the post and arms more wood-grain character so the illustration carries more than the type.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "An attractive scene that reads well, but it is 30% ink with dense hillside hatching that will fill in to a solid slab. At that coverage plastisol becomes a heavy, stiff patch on the back, and that hand is not acceptable on a $50 shirt.",
+   "fix": "Knock out 30-40% of the dark hillside and water hatching (open the gaps to at least 0.35 mm) to cut coverage under 20% and keep the print soft and detailed.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A clean one-ink job: the alpha is hard-edged (no partial pixels), there are no specks under 9 px, and most strokes are 4-6 px (0.35-0.5 mm), which holds on a 156-160 mesh. The scene reads at 3 m (palms, hut, a jetty running into the frame, coral patches as dark masses) and fits the tee at roughly 28 cm wide. The type is solid and the coordinates are big enough (about 6 mm caps). The one weak spot is the machine crosshatch tint on the pilings, the hut walls and under the dock: its reversed holes are only about 4-5 px (around 0.4 mm), so with plastisol on ringspun they will half-plug into blotchy grey patches. They look different from the hand-cut linework around them and are the only part that will print unevenly from shirt to shirt. The empty gap between the BELIZE rule and the treetops is generous but works as breathing room.",
+   "fix": "Remove the crosshatch tint patches and redraw those shadows as solid ink or open hand hatching, keeping the white gaps at least 0.5 mm (6 px at 300 DPI), so every shadow prints the same and matches the engraved linework.",
+   "round": 3
+  }
+ ]
+}

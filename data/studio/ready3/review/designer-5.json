@@ -1,0 +1,114 @@
+{
+ "designer": "K=5",
+ "persona": "Head designer at RVCA",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Real pen-and-ink energy. The rock hatching is confident, and the five roped climbers are crisp silhouettes that hold up at full size, so the story reads from 3 m. It is the most honest drawing of the four. The weak spots are the top third, where the far range breaks into scattered flecks and floats, and the empty white bottom corners, which make the art look like a page cut from a sketchbook rather than a placed graphic.",
+   "fix": "Lock the composition: tighten or fade the far peaks into a deliberate vignette, and give the base a hard edge or a small type lockup so the piece sits on the back as a unit instead of drifting.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The rider and spray are well drawn and the lines carry the eye up, but almost half the print is thin lines and empty air. On the back it reads as a small figure with strings, and the tiny spaced-out KITESURFING caption is generic, not a brand voice.",
+   "fix": "Tighten the composition: bring the kite down and in so rider and kite fill one compact block, and give the word more weight, either bigger or set as a locked-up badge.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A good-looking natural history plate. The branching coral is a strong, dense silhouette with real engraved texture, and the corallite details and CORAL. caption feel authentic. It works on white and black.",
+   "fix": "Scale up the main coral so it owns the back, and let the smaller colony and details tuck in tighter. Right now the plate feels a touch sparse at the lower right.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 5.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "Nice heading and a good family grouping, but the white bellies are huge open outline areas that print as nothing on the tee, so the penguins look unfinished and weak next to the heavily textured backs. The lower half of the canvas is empty.",
+   "fix": "Add stipple or engraved shading to the bellies and chick so the figures carry tonal weight, then scale the group up to fill the print height.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The strongest graphic in the set. The spiral reads instantly from across a room as pure shape, and up close it rewards you with individual fish. No text is needed. It feels like a surf brand's art-series tee, and it pops on black.",
+   "fix": "Hold the dense core open just enough that it does not fill in on press: open up the darkest centre ring slightly so the fish-shape gaps survive ink gain.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The pose is great: the upward S-curve fills the vertical frame and works well in white on black. Up close, though, the stipple is clumped and noisy rather than drawn. The tail-stock shadow turns into a solid blob, and the flipper patch reads like a hole. The caption is set tiny in a degraded serif, and the colon in RANGE: has filled in. At $50 the type looks like an afterthought.",
+   "fix": "Redraw the stipple as clean, evenly sized dots that grade cleanly from dense to open, with no clumps, and reset the caption larger in a crisp face with a proper colon.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "Beautiful engraving and an authentic plate layout, but it is a museum poster, not a tee. Three stacked studies with tiny labels read as a busy rectangle from 3 m, and the fine halftone dot screens in the shading will plug or drop out in single-ink print.",
+   "fix": "Lead with the whale body big and drop or shrink the baleen studies. Replace the dot-screen tones with line hatching so the ink holds.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Classic and bold. The radial curling arms make a strong, symmetrical shape that reads from distance, the engraving detail holds up close, and the serif caption with the Latin name is restrained and right. A sure seller.",
+   "fix": "Swap the few small halftone-dot patches on the mantle and arms for line work so the whole piece is true single-ink line art.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "This is the most complete layout: the labeled-peaks panorama is clean line work with good depth, and it prints well on black. But a tee whose biggest word is PATAGONIA reads as a knockoff of the outdoor brand, which is a real legal and credibility problem for a $50 shirt. The labels render with dotless i's ('Vespıgnanı'), and the five labels are too small to read on the body.",
+   "fix": "Lead with the place rather than the brand name (e.g. FITZ ROY / EL CHALTÉN as the headline, Patagonia only in the coordinates line), and fix the dotless-i glyphs in the peak labels.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Fun, readable, souvenir-shop energy done well. The signs are crisp and bold, the wood grain is nicely drawn, and the vertical totem suits a back print. It is less art-driven and more tourist-tee, but it is executed cleanly.",
+   "fix": "Push the craft so it feels less clip-art: angle a couple of the arms off-axis and roughen the type slightly so it looks hand-painted, not set in a font.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "Rich, dense engraving with a clear focal peak, a good tonal range from snow to dark slopes, and a sharp town and reflection band. It reads as a full scene from 3 m and the caption is classy. Busy, but the busyness has structure.",
+   "fix": "Open up the darkest hillside and town hatching a little and replace the small crosshatch dot areas on the houses so the mid-section does not clog on press.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "The engraving itself is strong: confident line work, the jetty pulls a real perspective into the caye, and the one-ink reads cleanly at full size. But as a garment it's a postcard. A thin, timid BELIZE plus a hairline rule plus small mono coordinates is the default souvenir-shop lockup, and the art floats in a tall canvas with about a quarter of it empty below the coordinates, so on the back it prints small and timid. At $50 it needs attitude, not a gift-shop caption. The open water on the left also thins into loose dashes and coral blobs that go muddy from 3 m away.",
+   "fix": "Rebuild the type to match the art: set BELIZE big and heavy (or hand-cut) right up against the island, maybe tucked behind the palms, crop the empty canvas so the illustration fills a full back-print width, and keep the coordinates small as a secondary detail, so it reads as a surf-brand graphic rather than a captioned postcard.",
+   "round": 3
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "fixes": [
+  {
+   "op": "white",
+   "box": [
+    502,
+    1217,
+    517,
+    1236
+   ],
+   "why": "a garbled glyph among the chart's depth figures"
+  },
+  {
+   "op": "white",
+   "box": [
+    0,
+    872,
+    1024,
+    1262
+   ],
+   "why": "round 1: the reef chart and compass rose taken out (five of six judges: one hero image)"
+  },
+  {
+   "op": "white",
+   "box": [
+    240,
+    1290,
+    790,
+    1345
+   ],
+   "why": "the caption BELIZE set as the house heading above the scene (without the chart the sheet would start low)"
+  },
+  {
+   "op": "text",
+   "box": [
+    240,
+    1350,
+    790,
+    1420
+   ],
+   "text": "17.3167° N   87.5342° W",
+   "font": "space-grotesk.ttf",
+   "h": 17,
+   "x": 512,
+   "y": 935,
+   "align": "center",
+   "why": "round 2: the coordinates set in the heading's face (three judges: the sans heading clashed with the serif figures), moved up under the scene"
+  },
+  {
+   "op": "fade",
+   "x0": 0,
+   "x1": 1024,
+   "y0": 470,
+   "y1": 880,
+   "width": 70,
+   "seed": 3,
+   "why": "round 2: the jetty and the water ran off the sides as a cut edge (two judges): faded into the tee"
+  }
+ ],
+ "oneink": [
+  "--mode",
+  "line",
+  "--title",
+  "BELIZE"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "white",
+  "features": {
+   "line_art": 0.85,
+   "pictorial": 0.85,
+   "nature": 0.7,
+   "typography": 0.25,
+   "density": 0.5,
+   "contrast": 0.6,
+   "retro": 0.3
+  }
+ }
+}

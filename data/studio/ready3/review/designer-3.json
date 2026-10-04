@@ -1,0 +1,114 @@
+{
+ "designer": "K=3",
+ "persona": "Graphic designer, composition and typography",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Strong diagonal: the ridge climbs from lower left to the far summit at top right, and the five roped climbers sit right where the eye lands, crisp at full size. No type is needed. The weak spot is the pale band between the far range and the near ridge, where the mid-ground breaks into loose dashes and specks. From 3 m that makes the design read as two separate blocks, not one deep scene.",
+   "fix": "Close the middle gap with a few more connecting slopes, or move the near ridge up about 300 px, and clean up the stray specks. The far range and the climbers' ridge should read as one continuous mass.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The diagonal from kite to rider has real energy, and the rider and spray are well drawn. But the middle is mostly empty line-space, and the widely tracked thin sans caption is tiny and stylistically apart from the drawing, so it disappears on the tee.",
+   "fix": "Make the KITESURFING caption bigger and heavier (about twice the cap height, tracking cut by half) and centre it under the board's spray line so it locks to the figure.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "A classic plate with a clear main specimen, a secondary colony and detail studies that balance it. 'CORAL.' in spaced roman caps with the period is well judged. Small screen-dot moiré patches show up in the branch shading.",
+   "fix": "Replace the crosshatch dither patches in the main branch with line or stipple so the texture matches the rest and prints cleanly.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The family group makes a readable, symmetrical cluster that works from a distance. The heavy geometric sans heading with its rule clashes with the engraved drawing, and the ink stops dead on a flat baseline with no ground, so the bottom feels cut off.",
+   "fix": "Set ANTARCTICA in a spaced roman serif that matches the engraving, and add a light ice-line or shadow under the feet to seat the group.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "The strongest pure graphic of the set. The spiral reads instantly from 3 m, the density gradient from the dense core to scattered outer fish is beautifully paced, and with no type there is nothing to go wrong.",
+   "fix": "Tighten the few stray outer fish at the lower left so the silhouette's edge is a deliberate taper rather than a random scatter.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The S-curve of the body is elegant and the letterspaced serif caption is tasteful. But the outline is so thin and the stipple so sparse that the whale is mostly empty shape. Along the edges the stipple breaks into dash fragments that look like noise, not tone. The caption sits small, off to the right under the tail, so it doesn't hold the page's axis, and a large dead area is left at lower right.",
+   "fix": "Thicken the outline and pack the stipple into a deliberate tonal gradient along the belly and flank. Then center the caption on the page axis at about 1.3x its current size so it anchors the composition.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "A well-organised plate with fine engraving and a sensible three-tier layout. The title is redundant ('WHALE' over 'Humpback Whale'), and a dozen small labels make it fussy and illegible from 3 m. Some labels, such as 'Fluke (ventral view)', float without a leader.",
+   "fix": "Drop the redundant 'WHALE' line, cut the labels to the five or six essential ones and give each a leader.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Excellent radial composition: the arms curl out to fill the rectangle, the silhouette is strong and the caption pairs roman caps with an italic binomial in a textbook way. The only flaw is screen-dot dither patches in the eyes and mantle shading.",
+   "fix": "Redraw the dithered patches around the eyes as line hatching so they don't moiré or fill in on the print.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 7,
+   "verdict": "NEEDS CHANGE",
+   "why": "The best composition of the four. The centered Fitz Roy spire makes a clear apex, the ranges recede well into a single vertical panel, and the PATAGONIA plus coordinates lockup is well spaced and well matched. The labels let it down. At about 2.5 mm cap height they are too small to read and risky as white ink on black. San Lorenzo is labeled 3,706 m but drawn far lower than the 3,405 m Fitz Roy, which looks like an error to anyone who reads it.",
+   "fix": "Enlarge the peak labels to at least 5 mm cap height with heavier leader lines. Either drop San Lorenzo or acknowledge the perspective, so the drawn heights no longer contradict the numbers.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "A strong typographic object with a clear focal arm (EL CALAFATE 0 km) and an even rhythm of condensed caps down the post. It reads well from 3 m. Wood-grain dashes sit right on the type baseline between name and distance and look like stray underscores.",
+   "fix": "Clear the wood-grain strokes from the text line on each arm so names and distances sit on clean board.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "Composed as a confident vignette: peaks, town and reflected water build a solid rectangle, and the spaced roman title with small coordinates below is well proportioned. Most finished-looking piece here.",
+   "fix": "Shorten the coordinates to two decimals (54.80° S 68.30° W) so the line is quieter and matches the title width better.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The engraving is strong and holds up in one ink: palms stepping down to the hut, a jetty that leads the eye in from the right, coral that breaks up the water, and the solid blacks print cleanly at full size. The type lockup is the weak part. BELIZE and its rule sit about 650 px (roughly 5.5 cm) above the palm tops, so on the tee the heading floats off as a separate label instead of capping the scene. The heading is a slab typewriter face but the coordinates are a geometric grotesk, two voices that don't match. The coordinates are set small and sit tight under the coral while the space above is wasted. The scene is also lopsided: the jetty is cut hard at the right edge while the left fades out into scattered coral.",
+   "fix": "Close the dead band: move BELIZE and its rule down to about 150-200 px above the tallest palm (or scale the scene up into that space), so heading, scene and coordinates read as one tight centred block. Then set the coordinates in the heading's slab face, tracked to the width of the rule.",
+   "round": 3
+  }
+ ]
+}

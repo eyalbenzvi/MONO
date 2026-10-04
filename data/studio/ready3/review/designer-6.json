@@ -1,0 +1,114 @@
+{
+ "designer": "K=6",
+ "persona": "Everyday customer: traveller, trekker, diver, kitesurfer, wildlife lover",
+ "designs": [
+  {
+   "no": 1,
+   "title": "Summit Ridge",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The roped team on the ridge is the hook. Up close the five climbers with packs and axes look right, and it feels like a day I've actually had. The hatched rock is lively and the print sits well on white. But it names no place, so it reads as generic mountain art and I'd think twice at $50 when the Patagonia shirt next to it tells a story.",
+   "fix": "Tie it to a real place: add a small caption under the bottom ridge, either a named route/peak with its altitude or simply coordinates, set in the same type as the other shirts. That turns it from a nice drawing into a souvenir.",
+   "round": 2
+  },
+  {
+   "no": 2,
+   "title": "Kitesurfing",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "The pose is right: rider sitting back against the pull, spray coming off the rail, kite well up on long lines. It looks great on black and I'd wear it to the beach. A lot of the middle is just empty lines, though, and the KITESURFING word is tiny.",
+   "fix": "Make the KITESURFING caption bigger and bolder so it holds up at the same scale as the rider.",
+   "round": 1
+  },
+  {
+   "no": 3,
+   "title": "Coral",
+   "score": 7.5,
+   "verdict": "PASS",
+   "why": "A natural history plate that feels like a museum print. The branching texture is rich and holds up up close, and the corallite views reward a diver who looks closer. Works on both tees.",
+   "fix": "Name the species under CORAL. (for example Acropora) to make it feel like a real plate and less like generic coral.",
+   "round": 1
+  },
+  {
+   "no": 4,
+   "title": "Antarctica",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "Clean, readable family group with a chick that gets an 'aww'. It's a memory piece for anyone who has done the expedition cruise. The penguins lean a bit cartoony, and the heavy sans-serif heading doesn't match the engraved drawing.",
+   "fix": "Set ANTARCTICA in the same serif style as the other plates and add a little ice or ground shading so the group isn't floating.",
+   "round": 1
+  },
+  {
+   "no": 5,
+   "title": "Bait Ball",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "The one people would ask me about. It reads instantly as a bait ball from across a dive shop, the spiral has real movement, and the scattered fish at the edge are drawn properly. Best on black.",
+   "fix": "Add a hint of a predator (a sailfish or a diver's silhouette) cutting the edge of the ball to give it a story; otherwise leave it.",
+   "round": 1
+  },
+  {
+   "no": 6,
+   "title": "Beluga",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "It's a gentle, field-guide whale and looks clean in white on black. The 'RANGE: ARCTIC OCEAN' caption is a nice naturalist touch. The problem is the pale oval patch in the middle of the back. Belugas have no marking there, and at a distance it looks like a hole or a stain, which a wildlife person spots right away. The body is mostly empty outline, so it feels thin next to the stippled tail.",
+   "fix": "Remove the oval patch and replace it with a low dorsal ridge plus continuous stipple shading along the back, so the body reads as one solid rounded animal.",
+   "round": 2
+  },
+  {
+   "no": 7,
+   "title": "Humpback Anatomy",
+   "score": 6.5,
+   "verdict": "NEEDS CHANGE",
+   "why": "I love the subject and the body engraving is excellent, but as a shirt it's a textbook page. The labels are too small to read on the body, the leader ticks float without touching anything, and 'Fluke (ventral view)' is wrong on a side-view whale.",
+   "fix": "Cut most of the labels (keep the body, maybe the baleen) or connect every leader line properly and fix the wrong annotations.",
+   "round": 1
+  },
+  {
+   "no": 8,
+   "title": "Octopus",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Bold, balanced, full of texture, with curling arms that read from across the street. The Latin name is a nice touch for divers. Instantly wearable.",
+   "fix": "Offer it on black too; it looks even better there.",
+   "round": 1
+  },
+  {
+   "no": 9,
+   "title": "Fitz Roy Range",
+   "score": 8.5,
+   "verdict": "PASS",
+   "why": "This is the one I'd buy. Fitz Roy, Torre and the surrounding peaks are labelled with correct heights, and the lake-and-valley foreground pulls you into the panorama. Coordinates near El Chalten make it personal for anyone who's done the trek. The line work stays crisp at full size and it pops on black. The only niggle is that the five label blocks read as tiny specks from across a room.",
+   "fix": "Enlarge the peak labels and their leader pins by about 30% so the names still read at arm's length. Everything else can stay as it is.",
+   "round": 2
+  },
+  {
+   "no": 10,
+   "title": "El Calafate",
+   "score": 6,
+   "verdict": "NEEDS CHANGE",
+   "why": "The distances look believable and the hand-drawn signpost is well made, but it reads like an airport souvenir shirt: lots of text and little feeling. I'd buy Ushuaia or Patagonia before this.",
+   "fix": "Put a small Perito Moreno glacier or Fitz Roy skyline behind the post to give it a sense of place, and cut it to five arms.",
+   "round": 1
+  },
+  {
+   "no": 11,
+   "title": "Ushuaia",
+   "score": 8,
+   "verdict": "PASS",
+   "why": "Dense and beautifully engraved: peaks, town and reflections. It reads like a real place from 3 m, and the caption and coordinates are crisp and correct. The end-of-the-world shirt I'd want after the trip.",
+   "fix": "Offer it on black as well; the snow peaks pop there.",
+   "round": 1
+  },
+  {
+   "no": 12,
+   "title": "Belize",
+   "score": 7,
+   "verdict": "PASS",
+   "why": "This feels like the cayes I've stayed on: the palms, the stilt hut and the jetty are drawn with real etching skill, and the clean BELIZE heading over the coordinates looks quiet and grown-up on a white tee. I spotted that the coordinates are the Great Blue Hole, which is a lovely nod for divers. But the reef is the reason I went, and the coral patches read as dark shapeless blotches, a bit like oil slicks, rather than coral heads seen through clear water. On the back the art also sits small and high, with a lot of empty fabric under the coordinates, so at $50 it looks a little underscaled.",
+   "fix": "Redraw the coral patches as recognisable reef (brain and elkhorn shapes, with lighter shallow-water hatching around them) so the reef reads as reef. Scale the whole print up about 15-20% to fill the back better.",
+   "round": 3
+  }
+ ]
+}

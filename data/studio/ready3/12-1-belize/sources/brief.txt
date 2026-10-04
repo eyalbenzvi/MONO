@@ -1,0 +1,9 @@
+Belize: the owner's image (ready-images track, run ready3)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-belize.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready3/12-1-belize/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: traveller, trekker, diver, kitesurfer, wildlife lover), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1: 6.33 (6.5, 6, 7, 5.5, 6.5, 6.5). Five: drop the chart for one hero image.
+Round 2: 6.42 (7.5, 6.5, 6.5, 6, 5, 7). The chart and compass rose out, BELIZE set as the house heading, the coordinates moved under the scene. Three judges: the sans heading and serif figures clashed; two: the jetty cut off at the edge.
+Round 3: 6.92 (7.5, 6.5, 7, 7, 6.5, 7). The coordinates set in the heading's face, the scene's sides faded into the tee. Passed.
+Result: approved: average 6.92 in round 3.

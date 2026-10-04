@@ -1,0 +1,13 @@
+Title: Fitz Roy Range
+Category: Maps & Sky
+Family: mountains
+Subject: A pen panorama of the peaks of southern Patagonia, five of them named with their heights: Cerro Fitz Roy 3,405 m, Cerro San Lorenzo 3,706 m, Cerro Torre 3,128 m, Cerro Huemul 2,677 m and Cerro Vespignani 2,146 m, a lake winding between the ranges; the heading PATAGONIA and the coordinates 49.3° S 73.1° W
+Style: Line drawing with labels
+Medium: An illustration made with a generative tool, retouched and converted to one ink
+Description: Fitz Roy at the centre, Cerro Torre at its side and San Lorenzo, the range's highest, to the left, each peak named with its height. A trekker's panorama of the southern Andes, drawn in line.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 25.1 × 35.0 cm
+Keywords: patagonia, fitz roy, cerro torre, el chalten, andes, mountains, argentina, chile, trekking, hiking, climbing, mountaineering, panorama, travel, south america, peaks, line art, gift for hiker, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (two heights corrected: Cerro Huemul 2,677 m where the picture said 2,670, and Cerro Vespignani 2,146 m where it said 2,647, set in Libre Caslon Text, SIL OFL 1.1; the line 'ANDES AUSTRALIS', not a name the range goes by, taken out with its rule; the line weight raised), converted to one ink.
+Licence: MONO

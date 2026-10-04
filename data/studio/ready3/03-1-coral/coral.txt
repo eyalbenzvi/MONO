@@ -1,0 +1,13 @@
+Title: Coral
+Category: Botanical & Nature
+Family: coral
+Subject: A natural history plate of a branching stony coral under the caption CORAL.: a large branch with its knobbed tips, a smaller colony, and a single corallite seen from above and cut in section
+Style: Natural history engraving with stipple
+Medium: An illustration made with a generative tool, converted to one ink
+Description: A branching stony coral drawn as an old museum plate: the colony, a smaller piece, and one corallite from above and in section, its radiating walls laid open. The animal that builds reefs, one polyp cup at a time.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with White
+Print size: 22.5 × 35.0 cm
+Keywords: coral, coral reef, reef, ocean, sea, marine biology, diving, scuba, snorkelling, natural history, specimen, plate, stony coral, corallite, underwater, nature, engraving, stipple, gift for diver, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; the lettering's dots grown to print, converted to one ink.
+Licence: MONO

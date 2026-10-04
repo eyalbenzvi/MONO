@@ -1,0 +1,13 @@
+Title: Beluga
+Category: Botanical & Nature
+Family: whales
+Subject: A beluga whale rising through the water, drawn in outline with stipple shading, its flippers and fluke spread; the caption BELUGA and RANGE: ARCTIC OCEAN beneath
+Style: Stipple drawing, line and dot
+Medium: An illustration made with a generative tool, converted to one ink
+Description: The white whale of the Arctic, rising through the water with its rounded melon and its flippers out. Drawn in outline and stipple, its range written underneath.
+Tee colours: Black (printed in white ink) and White (printed in black ink); leads with Black
+Print size: 26.0 × 34.4 cm
+Keywords: beluga, beluga whale, white whale, whale, arctic, arctic ocean, ocean, sea, marine, cetacean, wildlife, nature, animals, polar, stipple, line art, gift
+Model: Gemini
+Credit and source: Illustration: made with a generative tool, Google Gemini, supplied by MONO's owner; retouched by MONO (the stipple that models the body grown so it prints), converted to one ink.
+Licence: MONO

@@ -1,0 +1,7 @@
+Bait Ball: the owner's image (ready-images track, run ready3)
+
+Source: an illustration made with Google Gemini, supplied by MONO's owner (1024 x 1536, sources/gemini-bait-ball.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence.
+Build: python data/studio/ready3/05-1-bait-ball/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: traveller, trekker, diver, kitesurfer, wildlife lover), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1: 7.92 (8, 7.5, 8.5, 7.5, 8, 8). Passed.
+Result: approved: average 7.92 in round 1.
