@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QuickAdd } from "@/components/QuickAdd";
+import { InBagTag } from "@/components/InBagTag";
 import { TeeMockup } from "@/components/TeeMockup";
 import { SIZES } from "@/lib/images";
 import { productHref } from "@/lib/catalog";
@@ -73,6 +74,7 @@ export function ShirtStrip({
                 </span>
               )}
               <TeeMockup shirt={s} color={color} sizes={SIZES.thumb} className="w-full" />
+              <InBagTag id={s.id} size="sm" className="absolute left-1 top-1 z-10" />
             </Link>
             {names && <p className="truncate px-0.5 text-xs text-neutral-300">{s.title}</p>}
             {/* The tile is narrow: the add button keeps to its width (the size shortened: "+ 3–4"). */}

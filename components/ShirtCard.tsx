@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { TeeMockup } from "@/components/TeeMockup";
+import { InBagTag } from "@/components/InBagTag";
 import { SIZES } from "@/lib/images";
 import { BUTTON_PRIMARY, useShowMatch } from "@/components/ui";
 import { becauseOf } from "@/lib/because";
@@ -86,6 +87,8 @@ export const ShirtCard = memo(function ShirtCard({ shirt, strategy, score, isFli
             >
               <TeeMockup shirt={shirt} priority={isTop} sizes={SIZES.card} zoomed={zoomed} style={{ width: "min(100cqw, calc(100cqh * 512 / 704))" }} />
             </motion.div>
+            {/* Bought from the card (Buy): it says so, as the shop's cards do. */}
+            <InBagTag id={shirt.id} className="absolute left-3 top-3 z-10" />
           </div>
 
           <div className={`flex items-end justify-between gap-3 px-5 pb-4 pt-3 transition-opacity duration-200 ${zoomed ? "opacity-40" : ""}`}>

@@ -133,3 +133,27 @@ test("a white message bar swipes away to the left: the bag confirmation and a to
   await swipe((await toast.locator("div").filter({ hasText: "Removed from Saved" }).last().boundingBox())!, -220);
   await expect(page.getByText("Removed from Saved")).toHaveCount(0, { timeout: 1500 });
 });
+
+test("In bag shows wherever the design is shown: the product page's picture, the saved list, and a Discover card bought with Buy", async ({ page }) => {
+  // Product page and saved list: a design already in the bag (an earlier visit).
+  await seed(page, { likedIds: [B1] }, [{ id: B1, size: "M", color: "black", qty: 1 }]);
+  await page.goto(`shop/${B1}/`);
+  await hydrated(page);
+  await expect(page.locator("main [data-in-bag]").first()).toHaveText("In bag");
+  await page.goto("me/");
+  await hydrated(page);
+  await expect(page.locator(`[data-saved-row="${B1}"] [data-in-bag]`)).toContainText("In bag");
+  await expect(page.locator("[data-saved-row]").filter({ hasNot: page.locator("[data-in-bag]") }).first()).toBeVisible();
+  // Discover: Buy on the card, and the card says so.
+  await page.goto("");
+  await hydrated(page);
+  const card = page.locator('[aria-roledescription="card"]').first();
+  const title = (await card.locator("h2").first().textContent())!;
+  await expect(card.locator("[data-in-bag]")).toHaveCount(0);
+  await page.getByRole("button", { name: `Buy ${title}` }).tap();
+  const sheet = page.getByRole("dialog", { name: `Buy ${title}` });
+  await sheet.getByRole("radio", { name: /^M\b/ }).tap();
+  await sheet.getByRole("button", { name: "Add to bag", exact: true }).tap();
+  await expect(sheet).toHaveCount(0);
+  await expect(card.locator("[data-in-bag]")).toHaveText("In bag");
+});

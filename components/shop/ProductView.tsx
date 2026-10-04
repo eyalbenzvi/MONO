@@ -9,6 +9,7 @@ import { PrintImage } from "@/components/PrintImage";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ShirtStrip } from "@/components/ShirtStrip";
 import { TeeMockup } from "@/components/TeeMockup";
+import { InBagTag } from "@/components/InBagTag";
 import { TasteSheet } from "@/components/TasteSheet";
 import { SIZES } from "@/lib/images";
 import { ZoomViewer } from "@/components/ZoomViewer";
@@ -493,6 +494,8 @@ function Gallery({ shirt, color, view, setView, onZoom, alt }: { shirt: ShirtPro
           </div>
         ))}
       </div>
+      {/* In the bag (any colour, any size, this visit or an earlier one): it says so on the picture, as everywhere. */}
+      <InBagTag id={shirt.id} className="absolute left-3 top-3 z-10" />
       {/* Thin dots: which of the two is on screen (each a 44px target). */}
       <div className="absolute inset-x-0 bottom-1 flex justify-center">
         {views.map((v) => (

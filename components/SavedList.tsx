@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useInBag } from "@/components/InBagTag";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
@@ -99,6 +100,7 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
     return () => run.stop();
   }, [hint, x]);
   const addLabel = size ? `Add to bag · ${SIZE_LABELS[size]}` : "Select size";
+  const inBag = useInBag(shirt.id);
   const router = useRouter();
   const add = () => {
     // No size yet: the tee's page, to select one. Navigate directly: a click on the
@@ -151,13 +153,19 @@ function SavedRow({ shirt, hint = false, vector, onRemove }: { shirt: ShirtProdu
         <div className="min-w-0 flex-1">
           <Link href={productHref(shirt.id)} draggable={false} className="block py-0.5">
             <p className="line-clamp-2 text-sm">{shirt.title}</p>
-            <p className="truncate text-xs text-muted">{top ? "Top pick" : CATEGORY_LABELS[shirt.category]}</p>
+            {inBag ? (
+              <p className="flex items-center gap-1 truncate text-xs font-medium text-white" data-in-bag>
+                <Icon name="check" className="h-3 w-3" strokeWidth={3} /> In bag
+              </p>
+            ) : (
+              <p className="truncate text-xs text-muted">{top ? "Top pick" : CATEGORY_LABELS[shirt.category]}</p>
+            )}
           </Link>
         </div>
         <button
           type="button"
           onClick={add}
-          aria-label={size ? `Add ${shirt.title} to bag, size ${SIZE_LABELS[size]}` : `Select size for ${shirt.title}`}
+          aria-label={size ? `Add ${shirt.title} to bag, size ${SIZE_LABELS[size]}${inBag ? " (in your bag)" : ""}` : `Select size for ${shirt.title}`}
           className="flex h-11 w-11 shrink-0 items-center justify-center text-white hover:bg-white/5"
         >
           <Icon name="plus" className="h-5 w-5" />
