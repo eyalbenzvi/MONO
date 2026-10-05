@@ -1,0 +1,34 @@
+{
+ "run": "ready5",
+ "approvedAt": "2026-10-05T05:33:39.319Z",
+ "designs": {
+  "01-1-fanad-head": {
+   "average": 6.92,
+   "deleteVotes": 0,
+   "family": "lighthouses of the world",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 6.92, above the bar; all four are one series of lighthouse posters, 2 per family a run)"
+  },
+  "02-1-portland-head": {
+   "average": 7.08,
+   "deleteVotes": 0,
+   "family": "lighthouses of the world",
+   "approved": true,
+   "why": "approved"
+  },
+  "03-1-cape-agulhas": {
+   "average": 7.08,
+   "deleteVotes": 0,
+   "family": "lighthouses of the world",
+   "approved": true,
+   "why": "approved by the owner over the family cap (average 7.08, above the bar; all four are one series of lighthouse posters, 2 per family a run)"
+  },
+  "04-1-saint-mathieu": {
+   "average": 7.33,
+   "deleteVotes": 0,
+   "family": "lighthouses of the world",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

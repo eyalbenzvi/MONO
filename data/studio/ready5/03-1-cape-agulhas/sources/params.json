@@ -1,0 +1,97 @@
+{
+ "oneink": [
+  "--mode",
+  "engrave"
+ ],
+ "despeck": 100,
+ "protect": "auto",
+ "binarize": 140,
+ "final_despeck": true,
+ "print": {
+  "tees": "both",
+  "teeDefault": "black",
+  "features": {
+   "line_art": 0.9,
+   "pictorial": 0.85,
+   "typography": 0.45,
+   "retro": 0.6,
+   "classic": 0.7,
+   "nature": 0.45,
+   "architectural": 0.5,
+   "contrast": 0.75,
+   "density": 0.65
+  }
+ },
+ "fixes": [
+  {
+   "op": "erase",
+   "box": [
+    55,
+    452,
+    330,
+    515
+   ],
+   "why": "'LOCAL LIMESTONE' and its rule: the sources give a sandstone tower (Wikipedia, the 1848 tower's crumbling sandstone walls), so the claim is taken out"
+  },
+  {
+   "op": "white",
+   "box": [
+    40,
+    512,
+    425,
+    700
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  },
+  {
+   "op": "white",
+   "box": [
+    40,
+    700,
+    150,
+    812
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  },
+  {
+   "op": "white",
+   "box": [
+    235,
+    700,
+    425,
+    792
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  },
+  {
+   "op": "white",
+   "box": [
+    612,
+    450,
+    978,
+    770
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  },
+  {
+   "op": "white",
+   "box": [
+    612,
+    770,
+    800,
+    810
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  },
+  {
+   "op": "white",
+   "box": [
+    870,
+    770,
+    978,
+    810
+   ],
+   "why": "the sky's fine hatching and clouds: one ink keeps only their darkest strokes, which print as stray crumbs, so the sky is left as the tee (the tower against a clear sky)"
+  }
+ ]
+}

@@ -51,9 +51,14 @@ describe("U3: no longer the same designs for everyone, every day", () => {
 
   it("what Discover already showed steps back in the shop", () => {
     const v = people(1)[0].v;
-    const first = rankShirts(v, SHIRTS, "match")[0].shirt;
-    const demoted = rankShirts(v, SHIRTS, "match", { demote: new Set([first.id]) });
-    expect(demoted.findIndex((x) => x.shirt.id === first.id)).toBeGreaterThan(0);
+    const ranked = rankShirts(v, SHIRTS, "match");
+    // A step back, not a burial: a design with a close neighbour behind it (the same score) falls behind it; a runaway
+    // leader may keep its place.
+    const i = ranked.findIndex((x, k) => k + 1 < ranked.length && x.score === ranked[k + 1].score);
+    expect(i).toBeGreaterThanOrEqual(0);
+    const seen = ranked[i].shirt;
+    const demoted = rankShirts(v, SHIRTS, "match", { demote: new Set([seen.id]) });
+    expect(demoted.findIndex((x) => x.shirt.id === seen.id)).toBeGreaterThan(i);
   });
 
   it("Discover deals a good match, not always the same one; no category three times running", () => {

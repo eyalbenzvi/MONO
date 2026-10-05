@@ -59,21 +59,21 @@
   },
   "ships": {
    "geometric": 0,
-   "typography": 0.031,
-   "architectural": 0.196,
+   "typography": 0.129,
+   "architectural": 0.268,
    "abstract": 0,
-   "line_art": 0.731,
+   "line_art": 0.771,
    "halftone_raster": 0,
-   "density": 0.618,
-   "contrast": 0.761,
-   "dark_industrial": 0.037,
-   "clean_minimal": 0.108,
-   "pictorial": 0.7,
+   "density": 0.626,
+   "contrast": 0.758,
+   "dark_industrial": 0.056,
+   "clean_minimal": 0.083,
+   "pictorial": 0.735,
    "wit": 0,
-   "retro": 0.1,
-   "nature": 0.35,
+   "retro": 0.218,
+   "nature": 0.374,
    "figurative": 0,
-   "classic": 0.792,
+   "classic": 0.771,
    "photographic": 0
   },
   "travel": {
@@ -193,6 +193,6 @@
  },
  "coverage": {
   "p5": 0.033,
-  "p95": 0.243
+  "p95": 0.286
  }
 }

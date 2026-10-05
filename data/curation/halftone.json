@@ -2526,6 +2526,34 @@
 "src": "f49371e89e607ad8",
 "via": "scripts/studio/oneink.py"
 },
+"20193": {
+"mode": "line",
+"paper": 0.0,
+"sha": "f48ebb7438b7b52e",
+"src": "2c2016819bd2444a",
+"via": "scripts/studio/oneink.py"
+},
+"20194": {
+"mode": "line",
+"paper": 0.0,
+"sha": "8d684329b861ea9e",
+"src": "d8a0c05bea505c63",
+"via": "scripts/studio/oneink.py"
+},
+"20195": {
+"mode": "line",
+"paper": 0.0,
+"sha": "6bfa1ca8028c345c",
+"src": "67107de1139bab88",
+"via": "scripts/studio/oneink.py"
+},
+"20196": {
+"mode": "line",
+"paper": 0.0,
+"sha": "aaed4c9fda336f26",
+"src": "b32b7e9f86a1593c",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

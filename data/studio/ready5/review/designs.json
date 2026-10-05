@@ -1,0 +1,26 @@
+[
+ {
+  "no": 1,
+  "folder": "01-1-fanad-head",
+  "title": "Fanad Head Lighthouse",
+  "family": "lighthouses of the world"
+ },
+ {
+  "no": 2,
+  "folder": "02-1-portland-head",
+  "title": "Portland Head Light",
+  "family": "lighthouses of the world"
+ },
+ {
+  "no": 3,
+  "folder": "03-1-cape-agulhas",
+  "title": "Cape Agulhas Lighthouse",
+  "family": "lighthouses of the world"
+ },
+ {
+  "no": 4,
+  "folder": "04-1-saint-mathieu",
+  "title": "Phare de Saint-Mathieu",
+  "family": "lighthouses of the world"
+ }
+]

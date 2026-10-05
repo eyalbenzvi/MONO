@@ -1,0 +1,8 @@
+Fanad Head Lighthouse: the owner's image (ready-images track, run ready5)
+
+Source: an illustration made with ChatGPT (OpenAI), supplied by MONO's owner (1024 x 1536, sources/gpt-fanad-head.png, the JPEG it came as in sources/original.jpg, decoded losslessly); MONO licence. Under 2000 px on the long side: upscaled 3x in the build, checked at full size.
+Build: python data/studio/ready5/01-1-fanad-head/sources/build.py (params.json holds every fix, each with its why, and the oneink arguments).
+Facts checked: Wikipedia (and its list of Irish lighthouses for Fanad Head).
+Panel: six judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer: a coastal traveller who collects lighthouses), up to three rounds, the bar an average of 6.5; votes per round in review/round-N/.
+Round 1: 6.92 (6.5, 6.5, 7.5, 7, 6, 8).
+Result: approved: average 6.92 in round 1; the family cap (two a run, all four being one series of posters) waived by the owner.
