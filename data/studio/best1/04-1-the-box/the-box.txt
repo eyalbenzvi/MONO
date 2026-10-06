@@ -1,0 +1,13 @@
+Title: The Box
+Category: Animals
+Family: the box
+Subject: Three numbered panels, no words: 1, hands lift a plush round cat bed out of its cardboard delivery box; 2, they offer it to a tabby cat, who looks away; 3, the tabby sits in the empty box, eyes half shut, content, the bed abandoned on the floor beside it
+Style: Clean comic line drawing in three framed panels with bold numerals
+Medium: An illustration made with a generative tool, set by MONO and converted to one ink
+Description: A plush new bed, a cat, and the cardboard box it came in: three panels, one outcome. No words needed.
+Tee colours: White (printed in black ink) and Black (printed in white ink); leads with White
+Print size: 18.4 × 35.2 cm
+Keywords: cat, cats, cat lover, cat owner, tabby, cardboard box, if it fits I sits, cat bed, funny, comic, three panels, cute, gift for cat lover, gift for cat mom, gift for cat dad, gift
+Model: GPT
+Credit and source: Illustration: made with a generative tool, ChatGPT (OpenAI), supplied by MONO's owner (the third of three runs of one prompt); set by MONO with numerals and line in Oswald (SIL Open Font License), converted to one ink.
+Licence: MONO

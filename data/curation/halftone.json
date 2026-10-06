@@ -2554,6 +2554,34 @@
 "src": "b32b7e9f86a1593c",
 "via": "scripts/studio/oneink.py"
 },
+"20197": {
+"mode": "line",
+"paper": 0.0,
+"sha": "fe9d99eafb2e51db",
+"src": "c1d7550e40d49b3f",
+"via": "scripts/studio/oneink.py"
+},
+"20198": {
+"mode": "line",
+"paper": 0.0,
+"sha": "09760da1fd5d7932",
+"src": "f406c13e79c11208",
+"via": "scripts/studio/oneink.py"
+},
+"20199": {
+"mode": "line",
+"paper": 0.0,
+"sha": "6ce0c7dd9d9f2821",
+"src": "3669b247d61b373d",
+"via": "scripts/studio/oneink.py"
+},
+"20200": {
+"mode": "line",
+"paper": 0.0,
+"sha": "4a0da8d7822f0e9d",
+"src": "3645895337b53ba1",
+"via": "scripts/studio/oneink.py"
+},
 "2801": {
 "mode": "halftone",
 "recipe": 2,

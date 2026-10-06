@@ -1,0 +1,13 @@
+Title: Pisa
+Category: Architecture & Towns
+Family: pisa
+Subject: A large postage stamp with a perforated edge and a double frame, lettered PISA with the value 3.97°, the Leaning Tower of Pisa inside it leaning its true 3.97 degrees over a level paved piazza, cancelled with a circular postmark (PISA ITALIA, TOSCANA, 9 VIII 1173, the day building began) and wavy bars
+Style: Bold architectural line drawing inside a vintage postage-stamp frame
+Medium: An illustration made with a generative tool, set by MONO and converted to one ink
+Description: Postage paid in degrees: the Leaning Tower at its true lean, 3.97°, on a classic perforated stamp.
+Tee colours: White (printed in black ink) and Black (printed in white ink); leads with White
+Print size: 22.4 × 32.3 cm
+Keywords: pisa, leaning tower, tower of pisa, italy, tuscany, italian, postage stamp, stamp, travel, architecture, landmark, line art, vintage stamp, gift for traveller, gift
+Model: GPT
+Credit and source: Illustration of the tower: made with a generative tool, ChatGPT (OpenAI), supplied by MONO's owner (the first of three runs of one prompt); stamp drawn by MONO with lettering in Cinzel (SIL Open Font License), converted to one ink.
+Licence: MONO

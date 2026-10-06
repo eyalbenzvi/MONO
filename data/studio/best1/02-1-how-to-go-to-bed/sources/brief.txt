@@ -1,0 +1,10 @@
+How to Go to Bed: the best-design run (best1), one of four candidates picked by the owner from a competition of fifty ideas ranked by six judges, to beat the shop's best panel score (8.2).
+
+Source: the owner's ChatGPT drawings (sources/original-*.jpg; gpt-*.png the run used), MONO licence.
+Build: python data/studio/best1/02-1-how-to-go-to-bed/sources/build.py (data/studio/best1/kit.py composes it as SVG in mm, renders it at 300 DPI and checks it as one ink).
+Panel: six blind judges (screen-print production designer, apparel art director, composition and typography designer, t-shirt shop buyer, head designer at RVCA, an everyday customer), the same brief, up to three rounds, fixes only where two or more agreed; votes in review/.
+Round 1: 7.92 (8, 8.5, 7.5, 8, 7.5, 8).
+Round 2: 8.08 (8, 8, 8, 8.5, 7.5, 8.5).
+Round 3: 7.83 (7.5, 8, 8.5, 8, 7, 8).
+Confirm: 7.58 (8, 7.5, 7.5, 7.5, 7, 8).
+Result: approved: average 7.58 in the confirmation panel, the moon taken out, above the bar of 6.5; the record (8.2) not beaten.

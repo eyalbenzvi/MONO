@@ -221,8 +221,10 @@ describe("catalog copy (R13)", () => {
 
   it("titles never repeat a word (\"Postcard Postcard\")", () => {
     // Generated names (an archive work keeps its record's title: "Molds for Casting Blocks for Printing").
+    // Short joining words may come twice in a written title ("How to Go to Bed").
+    const joining = new Set(["a", "an", "the", "of", "to", "in", "on", "and", "or"]);
     for (const s of SHIRTS.filter((x) => !x.variant.startsWith("archive-"))) {
-      const words = s.title.split(" ");
+      const words = s.title.split(" ").filter((w) => !joining.has(w.toLowerCase()));
       expect(new Set(words).size, s.title).toBe(words.length);
     }
   });

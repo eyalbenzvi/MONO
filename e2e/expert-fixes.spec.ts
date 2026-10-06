@@ -124,7 +124,10 @@ test("a white message bar swipes away to the left: the bag confirmation and a to
   // A toast with Undo (unsaving a tee from a shop card) swipes away the same way.
   await page.goto("shop/");
   await hydrated(page);
-  const card = page.locator("[data-product-card]").first();
+  // The first card not saved already (the seeded taste likes its calibration designs, and those rank first).
+  const unsaved = page.locator("[data-product-card]").filter({ has: page.getByRole("button", { name: /^Save / }) }).first();
+  const href = await unsaved.getByRole("link").first().getAttribute("href");
+  const card = page.locator("[data-product-card]").filter({ has: page.locator(`a[href="${href}"]`) }).first();
   await card.getByRole("button", { name: /^Save / }).tap();
   await card.getByRole("button", { name: /^Remove .+ from Saved$/ }).tap();
   const toast = page.getByRole("status").filter({ hasText: "Removed from Saved" });

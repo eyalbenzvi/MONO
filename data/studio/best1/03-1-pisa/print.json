@@ -1,0 +1,34 @@
+{
+ "mode": "line",
+ "edge": null,
+ "views": 1,
+ "outline": false,
+ "ground": false,
+ "coverage": 0.1401,
+ "thin": 0.0019,
+ "sizeCm": [
+  22.4,
+  32.3
+ ],
+ "topMm": 13.3,
+ "screened": 0.0,
+ "solid": 0.3037,
+ "blackTee": false,
+ "crisp": null,
+ "fails": [],
+ "warns": [],
+ "tees": "both",
+ "teeDefault": "white",
+ "features": {
+  "architectural": 0.85,
+  "wit": 0.6,
+  "line_art": 0.85,
+  "classic": 0.65,
+  "pictorial": 0.7,
+  "retro": 0.5,
+  "typography": 0.3,
+  "clean_minimal": 0.45,
+  "contrast": 0.75,
+  "density": 0.4
+ }
+}
