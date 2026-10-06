@@ -21,21 +21,21 @@
   },
   "animals": {
    "geometric": 0,
-   "typography": 0.084,
-   "architectural": 0.077,
+   "typography": 0.115,
+   "architectural": 0.076,
    "abstract": 0.007,
-   "line_art": 0.764,
+   "line_art": 0.763,
    "halftone_raster": 0,
-   "density": 0.465,
-   "contrast": 0.721,
-   "dark_industrial": 0.049,
-   "clean_minimal": 0.155,
-   "pictorial": 0.77,
-   "wit": 0.107,
-   "retro": 0.111,
-   "nature": 0.732,
-   "figurative": 0.07,
-   "classic": 0.641,
+   "density": 0.464,
+   "contrast": 0.725,
+   "dark_industrial": 0.047,
+   "clean_minimal": 0.166,
+   "pictorial": 0.765,
+   "wit": 0.141,
+   "retro": 0.122,
+   "nature": 0.711,
+   "figurative": 0.067,
+   "classic": 0.626,
    "photographic": 0
   },
   "microscope": {
@@ -192,7 +192,7 @@
   }
  },
  "coverage": {
-  "p5": 0.033,
+  "p5": 0.04,
   "p95": 0.286
  }
 }

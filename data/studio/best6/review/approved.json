@@ -1,0 +1,13 @@
+{
+ "run": "best6",
+ "approvedAt": "2026-10-06T18:00:00.000Z",
+ "designs": {
+  "01-1-no": {
+   "average": 7.25,
+   "deleteVotes": 0,
+   "family": "no",
+   "approved": true,
+   "why": "approved"
+  }
+ }
+}

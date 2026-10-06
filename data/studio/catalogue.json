@@ -7048,5 +7048,54 @@
    "density": 0.45
   },
   "model": "gpt"
+ },
+ {
+  "n": 20201,
+  "dir": "data/studio/best6/01-1-no",
+  "title": "No.",
+  "category": "animals",
+  "subject": "A cat lies along the top of a huge hand-cut NO, tail hanging down beside the N, staring straight out with a deadpan, half-lidded look, one front paw pressed on the full stop at the end of the line, about to push it off",
+  "style": "Bold brush-and-pen drawing in one ink: heavy capitals cut with wide white strokes, a brush-line cat, a dry-brush tail",
+  "description": "Every cat owner knows the look. The last word on the matter, and the cat has its paw on the full stop.",
+  "keywords": [
+   "cat",
+   "cats",
+   "cat lover",
+   "cat owner",
+   "no",
+   "funny",
+   "typography",
+   "full stop",
+   "period",
+   "grumpy cat",
+   "sassy cat",
+   "cat humour",
+   "deadpan",
+   "gift for cat lover",
+   "gift"
+  ],
+  "baseColor": "white",
+  "single": false,
+  "mode": "line",
+  "quality": 73,
+  "printCm": {
+   "width": 27,
+   "height": 17
+  },
+  "coverage": 0.134,
+  "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/best6/01-1-no/sources/brief.txt",
+  "features": {
+   "wit": 0.9,
+   "typography": 0.8,
+   "pictorial": 0.65,
+   "nature": 0.25,
+   "line_art": 0.75,
+   "retro": 0.35,
+   "classic": 0.3,
+   "clean_minimal": 0.4,
+   "contrast": 0.8,
+   "density": 0.45
+  },
+  "model": "gemini"
  }
 ]

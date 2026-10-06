@@ -208,8 +208,9 @@ describe("catalog copy (R13)", () => {
   it("titles carry no catalog number (that's `no`, 1–N per category)", () => {
     for (const s of SHIRTS) {
       // No catalogue number, and no numeral added to tell repeats apart (Part 5); a date or a figure in what it names stays
-      // ("Moon Phases of 1969", "Pi to 500 Places"; an archive work's own "Plate IX").
-      expect(s.title, s.id).not.toMatch(/No\.|#/);
+      // ("Moon Phases of 1969", "Pi to 500 Places"; an archive work's own "Plate IX"). The word itself may be the
+      // title ("No.", the cat's last word); a "No." before a number is a catalogue number.
+      expect(s.title, s.id).not.toMatch(/No\.\s*\d|#/);
       if (s.medium === "drawn") expect(s.title, s.id).not.toMatch(/\s(II|III|IV|V|VI|VII|VIII|IX|X)$/);
       expect(s.no).toBeGreaterThanOrEqual(1);
     }
