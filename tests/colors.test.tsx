@@ -198,7 +198,7 @@ describe("T2: the tee worn — model photos", () => {
     const { container } = render(<TeeMockup shirt={both} color="black" sizes="300px" />);
     const imgs = [...container.querySelectorAll("img")];
     expect(imgs).toHaveLength(1);
-    expect(imgs[0].getAttribute("srcset")).toBe(MOCKUP_WIDTHS.map((w) => `/img/m/${both.n}-black-${w}.webp ${w}w`).join(", "));
+    expect(imgs[0].getAttribute("srcset")).toBe(MOCKUP_WIDTHS.map((w) => `/img/m/${both.n}-black-${w}.webp?v=${both.pic} ${w}w`).join(", "));
     expect(container.innerHTML).not.toMatch(/mix-blend|invert|\/models\/|\/prints\//);
   });
 });

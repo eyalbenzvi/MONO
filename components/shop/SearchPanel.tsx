@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Icon } from "@/components/Icon";
-import { SHIRTS, assetUrl, getShirtById } from "@/lib/catalog";
-import { printPath } from "@/lib/images";
+import { SHIRTS, getShirtById } from "@/lib/catalog";
+import { pictureUrl, printPath } from "@/lib/images";
 import type { SearchResult } from "@/lib/search/engine";
 import { sameFacet, type Facet } from "@/lib/search/facetCodec";
 import { teeColor } from "@/types/shirt";
@@ -354,6 +354,6 @@ function LikeThumb({ id }: { id: string }) {
   const c = teeColor(s, null);
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={assetUrl(printPath(s, c, 480))} alt="" className={`h-5 w-4 rounded-sm object-contain ${c === "black" ? "bg-black" : "bg-white ring-1 ring-black/10"}`} />
+    <img src={pictureUrl(s, printPath(s, c, 480))} alt="" className={`h-5 w-4 rounded-sm object-contain ${c === "black" ? "bg-black" : "bg-white ring-1 ring-black/10"}`} />
   );
 }

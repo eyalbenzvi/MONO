@@ -7,6 +7,8 @@
  * empty meanwhile. Here:
  * - the shop's pictures (img/, prints/) are shown from the device at once and
  *   refreshed behind the scenes (a re-made picture shows from the next view);
+ *   a re-made print's pictures get new addresses (?v=<the print's version>, lib/images),
+ *   so they are never shown from an old copy;
  * - files whose name carries their content's hash (_next/static, data/*.<hash>.json)
  *   never change, so they're kept as they are;
  * - pages and everything else go to the network as before (never a stale shop).

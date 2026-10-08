@@ -109,7 +109,7 @@ describe("T8: ink prints turn for a black tee; photographs never do", () => {
     const ink = SHIRTS.find((s) => s.medium === "ink" && s.colors.length === 2)!;
     const { container, rerender } = render(<PrintImage shirt={ink} color="black" sizes="300px" />);
     let img = container.querySelector("img")!;
-    expect(img.getAttribute("srcset")).toBe(`/img/p/${ink.n}-black-480.webp 480w, /img/p/${ink.n}-black-1500.webp 1500w`);
+    expect(img.getAttribute("srcset")).toBe(`/img/p/${ink.n}-black-480.webp?v=${ink.pic} 480w, /img/p/${ink.n}-black-1500.webp?v=${ink.pic} 1500w`);
     expect(img.className).not.toMatch(/\binvert\b|\bbg-/);
     rerender(<PrintImage shirt={ink} color="white" sizes="300px" />);
     expect(container.querySelector("img")!.getAttribute("src")).toContain(`/img/p/${ink.n}-white-`);
@@ -117,7 +117,7 @@ describe("T8: ink prints turn for a black tee; photographs never do", () => {
     const drawn = SHIRTS.find((s) => s.medium === "drawn")!;
     rerender(<PrintImage shirt={drawn} color={otherColor(drawn.baseColor)} sizes="300px" />);
     img = container.querySelector("img")!;
-    expect(img.getAttribute("src")).toBe(`/img/p/${drawn.n}-${otherColor(drawn.baseColor)}.svg`);
+    expect(img.getAttribute("src")).toBe(`/img/p/${drawn.n}-${otherColor(drawn.baseColor)}.svg?v=${drawn.pic}`);
     expect(img.getAttribute("srcset")).toBeNull();
   });
 });

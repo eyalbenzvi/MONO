@@ -116,8 +116,8 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
     const photo = SHIRTS.find(isPhoto)!;
     const { container } = render(<PrintImage shirt={photo} color={otherColor(photo.baseColor)} sizes="300px" />);
     const img = container.querySelector("img")!;
-    expect(img.getAttribute("src")).toBe(`/img/p/${photo.n}-${photo.baseColor}-1500.webp`);
-    expect(img.getAttribute("srcset")).toContain(`/img/p/${photo.n}-${photo.baseColor}-1500.webp 1500w`);
+    expect(img.getAttribute("src")).toBe(`/img/p/${photo.n}-${photo.baseColor}-1500.webp?v=${photo.pic}`);
+    expect(img.getAttribute("srcset")).toContain(`/img/p/${photo.n}-${photo.baseColor}-1500.webp?v=${photo.pic} 1500w`);
     expect(img.className).not.toMatch(/\binvert\b/);
   });
 
@@ -126,7 +126,7 @@ describe("photographs: whole, sharp, greyscale — and never inverted", () => {
     Object.defineProperty(HTMLImageElement.prototype, "decode", { configurable: true, value: () => Promise.resolve() });
     const { loadMockup } = await import("@/lib/shareImage");
     const img = await loadMockup(photo, photo.baseColor);
-    expect(img.src).toMatch(new RegExp(`/img/m/${photo.n}-${photo.baseColor}-1080\\.webp$`));
+    expect(img.src).toMatch(new RegExp(`/img/m/${photo.n}-${photo.baseColor}-1080\\.webp\\?v=${photo.pic}$`));
   });
 });
 

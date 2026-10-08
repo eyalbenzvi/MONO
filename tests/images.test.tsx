@@ -77,7 +77,7 @@ describe("TeeMockup: one picture; zoomed, a close-up covers the print's area", (
     expect(container.querySelector("[data-detail]")).toBeNull();
     rerender(<TeeMockup shirt={s} color="white" sizes="300px" zoomed />);
     const d = container.querySelector<HTMLImageElement>("[data-detail]")!;
-    expect(d.getAttribute("src")).toBe(`/img/d/${s.n}-white.webp`);
+    expect(d.getAttribute("src")).toBe(`/img/d/${s.n}-white.webp?v=${s.pic}`);
     const [x, y, w, h] = modelFor(s, "white")!.box;
     expect(d.style.left).toBe(`${x * 100}%`);
     expect(d.style.top).toBe(`${y * 100}%`);

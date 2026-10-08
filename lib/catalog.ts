@@ -6,6 +6,8 @@ import { FEATURE_KEYS, SHIRT_CATEGORIES, asShopCategory, type BaseColor, type Fe
 
 /** The index format this code reads (written by the generator's writeIndex). */
 export const INDEX_VERSION = 7;
+/** Hex characters of each print's version in the index's `pic` (scripts/generateCatalog). */
+const PIC_CHARS = 6;
 /** A stale or mismatched index would decode into nonsense: stop at once. */
 export function checkIndexHead(head: { v: number; keys: readonly string[] }) {
   if (head.v !== INDEX_VERSION) throw new Error(`catalog index v${head.v}, expected v${INDEX_VERSION} — run npm run generate`);
@@ -91,6 +93,8 @@ function decodeAll(index: CatalogIndex): ShirtProduct[] {
       rank: index.rank[i],
       dropDate: dropEpoch + index.drop[i] * DAY,
       weak: index.weak[i] === "1",
+      // The print's version, for its pictures' addresses (absent in an index from before it).
+      ...(index.pic ? { pic: index.pic.slice(i * PIC_CHARS, (i + 1) * PIC_CHARS) } : {}),
       ...(waveOf.has(n) ? { wave: waveOf.get(n) } : {}),
     };
   });

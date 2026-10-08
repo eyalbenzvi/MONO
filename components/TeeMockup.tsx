@@ -6,8 +6,7 @@ import { isUploadDesign } from "@/lib/upload/keys";
 import { Sharper } from "@/components/Sharper";
 import { useNear } from "@/hooks/useNear";
 import { usePageZoom } from "@/hooks/usePageZoom";
-import { MODEL_ASPECT, detailBox, detailPath, mockupImage } from "@/lib/images";
-import { assetUrl } from "@/lib/catalog";
+import { MODEL_ASPECT, detailBox, detailPath, mockupImage, pictureUrl } from "@/lib/images";
 import { teeColor, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
 interface TeeMockupProps {
@@ -116,7 +115,7 @@ function BakedMockup({ shirt, color: wanted, className = "", style, priority, si
         />
       )}
       {page > 1 && <Sharper key={page} srcSet={srcSet} sizes={sizes} factor={page} />}
-      {zoomed && box && <Detail src={assetUrl(detailPath(shirt, color))} box={box} />}
+      {zoomed && box && <Detail src={pictureUrl(shirt, detailPath(shirt, color))} box={box} />}
     </div>
   );
 }

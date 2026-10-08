@@ -1353,6 +1353,9 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
     rank: col((s) => s.rank),
     drop: col((s) => Math.round((Date.parse(`${s.dropDate}T00:00:00Z`) - DROP_EPOCH) / DAY)),
     weak: col((s) => (isWeak(s) ? 1 : 0)).join(""),
+    // The print's version (PIC_CHARS hex of its file's hash) for its pictures' addresses (lib/images): a changed print
+    // gets new addresses, so no device keeps showing the old pictures (public/sw.js keeps them a day).
+    pic: col((s) => createHash("sha256").update(readFileSync(path.join(ROOT, "public", s.backPrintUrl))).digest("hex").slice(0, PIC_CHARS)).join(""),
     features: FEATURE_KEYS.map((k) => col((s) => FEATURE_DIGITS[Math.round(s.features[k] * 100)]).join("")),
   };
   const head = {
@@ -1375,6 +1378,8 @@ function writeIndex(catalog: CatalogEntry[], calibration: string[], shards: stri
 
 /** Index format version (lib/catalog refuses any other). */
 const INDEX_VERSION = 7;
+/** Hex characters of each print's version in the index's `pic` (lib/catalog PIC_CHARS). */
+const PIC_CHARS = 6;
 
 /**
  * public/data/details-<k>.<hash>.json: { id: { d: description, s: similar

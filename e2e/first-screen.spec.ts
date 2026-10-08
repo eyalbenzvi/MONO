@@ -49,7 +49,7 @@ test("a returning visit asks for its own top card with the page and never shows 
   await expect(page.locator("html")).toHaveAttribute("data-card-other", "");
   await hydrated(page);
   const card = page.getByRole("group", { name: /,/ }).locator("img[data-mockup]");
-  await expect.poll(() => card.evaluate((el: HTMLImageElement) => el.currentSrc)).toContain(kept.srcset.split(" ")[0].replace(/-\d+\.webp$/, "-"));
+  await expect.poll(() => card.evaluate((el: HTMLImageElement) => el.currentSrc)).toContain(kept.srcset.split(" ")[0].replace(/-\d+\.webp(\?v=\w+)?$/, "-"));
 });
 
 test("a returning visit's own card is on screen with the scripts still loading", async ({ page }) => {
@@ -68,5 +68,5 @@ test("a returning visit's own card is on screen with the scripts still loading",
   const img = served.locator("img[data-mockup]");
   await expect(img).toHaveAttribute("srcset", kept.srcset);
   await expect(img).toBeVisible();
-  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0 && el.currentSrc)).toContain(kept.srcset.split(" ")[0].replace(/-\d+\.webp$/, "-"));
+  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0 && el.currentSrc)).toContain(kept.srcset.split(" ")[0].replace(/-\d+\.webp(\?v=\w+)?$/, "-"));
 });

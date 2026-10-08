@@ -30,7 +30,7 @@ test("a photo tee: credit and source link; the whole greyscale photograph, on it
   await page.getByRole("button", { name: "Print", exact: true }).tap();
   await expect(page.getByRole("button", { name: "Print", exact: true })).toHaveAttribute("aria-pressed", "true");
   const print = page.locator(`main img[alt="${photo.title} print"]`).first();
-  await expect(print).toHaveAttribute("src", new RegExp(`/img/p/${photo.n}-${photo.baseColor}-1500\\.webp$`));
+  await expect(print).toHaveAttribute("src", new RegExp(`/img/p/${photo.n}-${photo.baseColor}-1500\\.webp(\\?v=\\w+)?$`));
   // T3: a photograph is sold on its own tee only — no colour choice, never inverted.
   await expect(page.getByText(`${photo.baseColor === "black" ? "Black" : "White"} tee only`)).toBeVisible();
   await expect(page.getByRole("radio", { name: new RegExp(`^${other === "black" ? "Black" : "White"} tee`) })).toHaveCount(0);

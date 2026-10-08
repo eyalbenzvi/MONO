@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -195,7 +196,10 @@ describe("generated catalog (data/shirts.json)", () => {
     expect(SHIRTS).toHaveLength(FULL.length);
     FULL.forEach((f, i) => {
       const { description: _d, similar: _s, subject: _t, printCm: _p, photo: _c, summary: _u, style: _y, quality: _q, flags: _f, dropDate, ...lean } = f;
-      expect(SHIRTS[i]).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: isWeak(f) });
+      const { pic, ...decoded } = SHIRTS[i];
+      expect(decoded).toEqual({ ...lean, dropDate: Date.parse(`${dropDate}T00:00:00Z`), weak: isWeak(f) });
+      // The print's version: the start of its file's hash (its pictures' addresses carry it, lib/images).
+      expect(createHash("sha256").update(readFileSync(path.join("public", f.backPrintUrl))).digest("hex").startsWith(pic!), f.id).toBe(true);
     });
   });
 

@@ -10,7 +10,7 @@ import { assetUrl } from "@/lib/catalog";
 import { MODEL_ASPECT, modelFor, type ModelPhoto } from "@/lib/models";
 import type { BaseColor, ShirtProduct } from "@/types/shirt";
 
-type Print = Pick<ShirtProduct, "n" | "backPrintUrl">;
+type Print = Pick<ShirtProduct, "n" | "backPrintUrl" | "pic">;
 
 /** Widths of the design on its model photo (a grid card at 1× up to a Discover card at 3×). */
 export const MOCKUP_WIDTHS = [360, 720, 1080] as const;
@@ -27,15 +27,22 @@ export const mockupPath = (s: Print, color: BaseColor, w: number) => `/img/m/${k
 export const printPath = (s: Print, color: BaseColor, w?: number) => (isVector(s) ? `/img/p/${key(s, color)}.svg` : `/img/p/${key(s, color)}-${w}.webp`);
 export const detailPath = (s: Print, color: BaseColor) => `/img/d/${key(s, color)}.webp`;
 
-const set = (widths: readonly number[], url: (w: number) => string) => widths.map((w) => `${assetUrl(url(w))} ${w}w`).join(", ");
+/**
+ * A picture's address on the page: the file, plus the print's version. A re-made print keeps its file names, and a
+ * device keeps the pictures it has (public/sw.js, a day); the version makes them new addresses, so nobody sees the
+ * old picture on the tee while the close-up shows the new one.
+ */
+export const pictureUrl = (s: Print, file: string) => `${assetUrl(file)}${s.pic ? `?v=${s.pic}` : ""}`;
+
+const set = (s: Print, widths: readonly number[], url: (w: number) => string) => widths.map((w) => `${pictureUrl(s, url(w))} ${w}w`).join(", ");
 
 export function mockupImage(s: Print, color: BaseColor) {
-  return { src: assetUrl(mockupPath(s, color, MOCKUP_WIDTHS[1])), srcSet: set(MOCKUP_WIDTHS, (w) => mockupPath(s, color, w)) };
+  return { src: pictureUrl(s, mockupPath(s, color, MOCKUP_WIDTHS[1])), srcSet: set(s, MOCKUP_WIDTHS, (w) => mockupPath(s, color, w)) };
 }
 
 export function printImage(s: Print, color: BaseColor) {
-  if (isVector(s)) return { src: assetUrl(printPath(s, color)), srcSet: undefined };
-  return { src: assetUrl(printPath(s, color, PRINT_WIDTHS[PRINT_WIDTHS.length - 1])), srcSet: set(PRINT_WIDTHS, (w) => printPath(s, color, w)) };
+  if (isVector(s)) return { src: pictureUrl(s, printPath(s, color)), srcSet: undefined };
+  return { src: pictureUrl(s, printPath(s, color, PRINT_WIDTHS[PRINT_WIDTHS.length - 1])), srcSet: set(s, PRINT_WIDTHS, (w) => printPath(s, color, w)) };
 }
 
 /** Where the close-up sits on the mockup (fractions: left, top, width, height) — the model photo's print box. */

@@ -5,8 +5,7 @@
  * Two formats: "story" 1080×1920 (Instagram / TikTok / WhatsApp status) and
  * "square" 1080×1080 (feeds and chats).
  */
-import { assetUrl } from "@/lib/catalog";
-import { MODEL_ASPECT, mockupPath } from "@/lib/images";
+import { MODEL_ASPECT, mockupPath, pictureUrl } from "@/lib/images";
 import { siteRoot } from "@/lib/share";
 import { CATEGORY_LABELS, COLOR_LABELS, type BaseColor, type ShirtProduct } from "@/types/shirt";
 
@@ -22,7 +21,7 @@ const MONO_FONT = `ui-monospace, "SF Mono", Menlo, "Courier New", monospace`;
 /** The tee as the site shows it, in `color`, at the largest size made. */
 export async function loadMockup(shirt: ShirtProduct, color: BaseColor): Promise<HTMLImageElement> {
   const img = new Image();
-  img.src = assetUrl(mockupPath(shirt, color, 1080));
+  img.src = pictureUrl(shirt, mockupPath(shirt, color, 1080));
   await img.decode();
   return img;
 }
