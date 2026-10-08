@@ -72,12 +72,34 @@ function circuits(): Set7Design[] {
     part("AC", [60, 100], [60, 190]) + wire([60, 100], [60, 70], [100, 70]) + part("D", [100, 70], [200, 70], "D") + wire([200, 70], [240, 70]) + part("R", [240, 70], [240, 190], "RL") + wire([240, 190], [60, 190]) + path("M252 110l6 -8l6 8l6 -8", 0.9),
     "An alternating supply, one diode and a load: the diode passes only the positive half of each cycle."]);
   // Full-wave bridge.
-  list.push(["Bridge Rectifier", "bridge", "Four diodes turn both halves of the cycle one way",
-    part("AC", [50, 90], [50, 190]) + wire([50, 90], [50, 60], [150, 60]) + wire([50, 190], [50, 220], [150, 220]) +
-      `<g transform="translate(125 115) rotate(-45)">${BODIES.D}</g><g transform="translate(175 115) rotate(45)">${BODIES.D}</g><g transform="translate(125 165) rotate(45)">${BODIES.D}</g><g transform="translate(175 165) rotate(-45)">${BODIES.D}</g>` +
-      wire([150, 60], [150, 90]) + wire([150, 190], [150, 220]) + wire([150, 90], [136, 104]) + wire([150, 90], [164, 104]) + wire([150, 190], [136, 176]) + wire([150, 190], [164, 176]) +
-      wire([114, 126], [100, 140]) + wire([114, 154], [100, 140]) + wire([186, 126], [200, 140]) + wire([186, 154], [200, 140]) + node(100, 140) + node(200, 140) +
-      wire([200, 140], [250, 140]) + part("R", [250, 140], [250, 250], "RL") + wire([250, 250], [100, 250], [100, 140]),
+  // Full-wave bridge, drawn planar and symmetric: + at the top, − at the bottom, the load inside the
+  // diamond between them, the supply below feeding the side corners, so no wire crosses another.
+  list.push(["Bridge Rectifier", "bridge", "AC in, DC out, whichever way it swings",
+    (() => {
+      const W = 1.5, H = 64;
+      const [T, B, Lf, Rt]: [number, number][] = [[150, 150 - H], [150, 150 + H], [150 - H, 150], [150 + H, 150]];
+      const diode = line(-15, 0, -6, 0, W) + `<path d="M-6 -6.5L-6 6.5L6.5 0Z" fill="none" stroke="${INK}" stroke-width="${W}" stroke-linejoin="round"/>` + line(6.5, -7, 6.5, 7, 1.9) + line(6.5, 0, 15, 0, W);
+      const on = (a: [number, number], b: [number, number]) => {
+        const m: [number, number] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        const ang = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
+        const ux = (b[0] - a[0]) / Math.hypot(b[0] - a[0], b[1] - a[1]), uy = (b[1] - a[1]) / Math.hypot(b[0] - a[0], b[1] - a[1]);
+        return wire(a, [m[0] - ux * 15, m[1] - uy * 15]) + `<g transform="translate(${f1(m[0])} ${f1(m[1])}) rotate(${f1(ang)})">${diode}</g>` + wire([m[0] + ux * 15, m[1] + uy * 15], b);
+      };
+      const w = (...pts: [number, number][]) => path(polyline(pts), W);
+      const ySup = B[1] + 36;
+      let c = on(Lf, T) + on(Rt, T) + on(B, Lf) + on(B, Rt);
+      // The load between + and −, inside the bridge.
+      c += w(T, [150, 135]) + `<g transform="translate(150 150) rotate(90)">${path(polyline([[-15, 0], [-12.5, -5], [-7.5, 5], [-2.5, -5], [2.5, 5], [7.5, -5], [12.5, 5], [15, 0]]), W)}</g>` + w([150, 165], B);
+      c += text(160, 153, "RL", 8.5, { anchor: "start", bold: true });
+      // What the load sees: every half of the wave the same way up.
+      c += path("M112 156q3.5 -13 7 0q3.5 -13 7 0q3.5 -13 7 0", 1.2);
+      // The supply, below, to the side corners.
+      c += w(Lf, [Lf[0] - 0, ySup], [140, ySup]) + w([160, ySup], [Rt[0], ySup], Rt);
+      c += `<g transform="translate(150 ${ySup})">${circle(0, 0, 10, W)}${path("M-6 0q3 -7 6 0t6 0", 1.2)}</g>`;
+      c += node(...T) + node(...B) + node(...Lf) + node(...Rt);
+      c += text(150, T[1] - 7, "+", 11, { bold: true }) + text(150, B[1] + 14, "−", 11, { bold: true });
+      return c;
+    })(),
     "Four diodes in a ring feeding a load: whichever way the supply swings, current flows through the load the same way."]);
   // Common-emitter amplifier.
   list.push(["Common-Emitter Amplifier", "ce-amp", "Gain ≈ − Rc / Re",
@@ -145,14 +167,67 @@ function gates(): Set7Design {
 /* Dials                                                                */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The aneroid barometer as an instrument: 28 to 31 inches of mercury over
+ * 270°, graduated in twentieths on a tick track, the weather words on their
+ * traditional readings, the maker's lettering in the lower half, a needle with
+ * its counterweight tail on a centred hub, and the set hand a reader turns to
+ * the last reading, left at Fair while the needle has dropped to Stormy.
+ */
+function barometer(): string {
+  const CX = 150, CY = 164, R = 105;
+  const frac = (inHg: number) => (inHg - 28) / 3;
+  const ang = (t: number) => (-135 + 270 * t - 90) * DEG;
+  const pt = (t: number, r: number): [number, number] => [CX + Math.cos(ang(t)) * r, CY + Math.sin(ang(t)) * r];
+  let s = circle(CX, CY, R + 14, 2) + circle(CX, CY, R + 10, 0.6);
+  // The tick track and its graduations: every 0.05, longer at 0.1, longer at 0.5, longest at the whole inch.
+  const track: [number, number][] = [];
+  for (let k = 0; k <= 90; k++) track.push(pt(k / 90, R));
+  s += path(polyline(track), 0.8);
+  for (let i = 0; i <= 60; i++) {
+    const t = i / 60;
+    const [len, w] = i % 20 === 0 ? [14, 1.8] : i % 10 === 0 ? [10, 1.3] : i % 2 === 0 ? [6.5, 0.8] : [3.5, 0.5];
+    s += line(...pt(t, R), ...pt(t, R - len), w);
+    if (i % 20 === 0) {
+      const [x, y] = pt(t, R - 26);
+      s += text(x, y + 4, String(28 + i / 20), 11, { bold: true });
+    }
+  }
+  for (const [inHg, w] of [[28.5, "STORMY"], [29, "RAIN"], [29.5, "CHANGE"], [30, "FAIR"], [30.75, "VERY DRY"]] as [number, string][]) {
+    const a = ang(frac(inHg));
+    const [x, y] = pt(frac(inHg), R - 44);
+    s += `<text x="${f1(x)}" y="${f1(y)}" fill="${INK}" font-size="6.5" font-family="DejaVu Sans Mono, monospace" text-anchor="middle" letter-spacing="1" transform="rotate(${f1(a / DEG + 90)} ${f1(x)} ${f1(y)})">${w}</text>`;
+  }
+  // The maker's lettering, as engraved on the dial.
+  s += text(CX, CY + 46, "COMPENSATED", 5.5, { spacing: 1.6 }) + line(CX - 16, CY + 51, CX + 16, CY + 51, 0.5) + text(CX, CY + 59, "INCHES · MERCURY", 4.6, { spacing: 1 });
+  // The set hand: thin, with its open tip, left at the morning's reading.
+  {
+    const t = frac(30.45), a = ang(t);
+    const [tx, ty] = pt(t, R - 14);
+    const [bx, by] = pt(t, R - 22);
+    const [nx, ny] = [-Math.sin(a), Math.cos(a)];
+    s += line(CX, CY, bx, by, 0.8) + `<path d="M${f1(tx)} ${f1(ty)}L${f1(bx + nx * 2.6)} ${f1(by + ny * 2.6)}L${f1(bx - nx * 2.6)} ${f1(by - ny * 2.6)}Z" fill="none" stroke="${INK}" stroke-width=".8" stroke-linejoin="round"/>`;
+  }
+  // The needle: tapered to its point, a counterweight ring on its tail, the hub centred on the pivot.
+  {
+    const t = frac(28.2), a = ang(t);
+    const [ux, uy] = [Math.cos(a), Math.sin(a)];
+    const [nx, ny] = [-uy, ux];
+    const P = (along: number, side: number): string => `${f1(CX + ux * along + nx * side)} ${f1(CY + uy * along + ny * side)}`;
+    s += `<path d="M${P(R - 6, 0)}L${P(0, 2)}L${P(-20, 1.3)}L${P(-20, -1.3)}L${P(0, -2)}Z" fill="${INK}"/>`;
+    s += circle(CX - ux * 26, CY - uy * 26, 5.5, 1.6) + circle(CX, CY, 6.5, 1.6) + dot(CX, CY, 2.4);
+  }
+  return s;
+}
+
 function dials(): Set7Design[] {
   const list: [string, string, string, string, string][] = [
     ["Altimeter", "altimeter", "Hundreds of feet, 0 to 9",
       dial({ from: 0, to: 360, ticks: 50, major: 5, labels: (i) => (i < 50 ? String(i / 5) : ""), needle: 0.37 }) + text(150, 196, "ALT", 8, { bold: true, spacing: 2 }) + text(150, 207, "100 FEET", 5.5),
       "An aircraft altimeter face: 0 to 9 around the dial in hundreds of feet, fifty divisions of twenty feet."],
-    ["Aneroid Barometer", "barometer", "28 to 31 inches of mercury",
-      dial({ from: -135, to: 135, ticks: 30, major: 5, labels: (i) => ["28", "", "29", "", "30", "", "31"][i / 5] ?? "", needle: 0.62, words: [[0.08, "STORMY"], [0.3, "RAIN"], [0.5, "CHANGE"], [0.7, "FAIR"], [0.92, "VERY DRY"]] }),
-      "An aneroid barometer's face from 28 to 31 inches of mercury, with the traditional words from Stormy to Very Dry."],
+    ["Aneroid Barometer", "barometer", "It was fair this morning",
+      barometer(),
+      "An aneroid barometer's face from 28 to 31 inches of mercury in twentieths, with the traditional words from Stormy to Very Dry: the set hand left at 30.45, set fair, and the needle since fallen to 28.2, Stormy."],
     ["VU Meter", "vu", "Volume units, −20 to +3",
       (() => {
         const marks: [number, string][] = [[-20, "20"], [-10, "10"], [-7, "7"], [-5, "5"], [-3, "3"], [-2, "2"], [-1, "1"], [0, "0"], [1, "1"], [2, "2"], [3, "3"]];
@@ -202,7 +277,7 @@ function dials(): Set7Design[] {
       "A moving-coil voltmeter's scale, 0 to 15 volts in fifths of a volt, with the mirror strip for reading the needle square on."],
   ];
   return list.map(([title, key, sub, body, how]) => ({
-    body: body + caption(318, title, sub),
+    body: body + caption(key === "barometer" ? 314 : 318, title, sub),
     variant: "dial",
     category: "systems" as const,
     title: `${title} Dial`,

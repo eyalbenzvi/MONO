@@ -9,8 +9,8 @@
  */
 import { readFileSync } from "node:fs";
 import nodePath from "node:path";
-import { DEG, caption, circle, dot, julian, line, longDate, path, polyline, shortMonth, text, type Set7Design } from "./kit";
-import { latLon, skyChart } from "../../../lib/custom/templates/sky";
+import { DEG, INK, caption, circle, dot, f1, julian, line, longDate, path, polyline, shortMonth, text, type Set7Design } from "./kit";
+import { latLon, skyBody, skyChart } from "../../../lib/custom/templates/sky";
 import { moonBody } from "../../../lib/custom/templates/moon";
 import { planetsBody } from "../../../lib/custom/templates/planets";
 export { moonPhase } from "../../../lib/custom/astro";
@@ -72,12 +72,13 @@ function skyDesigns(): Set7Design[] {
   ];
   for (const [p, when, what, sub] of events)
     out.push({
-      body: chartAt(stars, lines, p, when) + caption(318, p.name, sub, latLon(p.lat, p.lon)),
+      // The template's own body: on the night of a recorded launch (Sputnik 1) it draws the launch on the sky.
+      body: skyBody({ place: p, jd: julian(when.y, when.mo, when.d, when.h, when.mi) - p.utc / 24, caption: { title: p.name, sub, sub2: latLon(p.lat, p.lon) } }, { stars, lines }),
       variant: "sky-night",
       category: "sky",
       title: `Night Sky over ${p.name}, ${longDate(when.y, when.mo, when.d)}`,
       subject: `Night Sky over ${p.name}`,
-      description: `The stars above ${p.name} at the moment ${what}: every star to magnitude 4.8 in its real place, the constellation figures, the horizon as the circle.`,
+      description: `The stars above ${p.name} at the moment ${what}: every star to magnitude 4.8 in its real place, the constellation figures, the horizon as the circle${p.name === "Baikonur" ? ", and the plane of PS-1's first orbit across the sky, the satellite heading north-east" : ""}.`,
       features,
       sigKey: `night-${p.name}`,
     });
@@ -103,7 +104,7 @@ function moonDesigns(): Set7Design[] {
       category: "sky",
       title: `Moon Phases of ${year}`,
       subject: `Moon Phases of ${year}`,
-      description: `The moon's phase for every day of ${year}${why ? `, ${why}` : ""}, month by month, computed for midnight UTC.`,
+      description: `The moon's phase for every day of ${year}${why ? `, ${why}` : ""}, month by month, computed for midnight UTC.${year === 1969 ? " 20 July, the day Apollo 11 landed, is marked." : ""}`,
       features: { nature: 0.45, geometric: 0.55, clean_minimal: 0.5, typography: 0.25, abstract: 0.35, density: 0.35, contrast: 0.7, classic: 0.35, line_art: 0.3 },
       sigKey: `moon-${year}`,
     });
@@ -152,6 +153,60 @@ function sun(doy: number): { decl: number; eqt: number } {
 }
 const MONTH_START = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
+/**
+ * Daylight above the Arctic Circle (Tromsø): a bar a week, wide enough to
+ * print as solid ink, with the two things the shape is about named on it:
+ * the plateau of midnight sun and the weeks of polar night at the year's ends.
+ */
+function polarDaylight(name: string, lat: number, hours: number[]): Set7Design {
+  const X0 = 40, XW = 220, Y0 = 272, YH = 214;
+  const X = (doy: number) => X0 + ((doy - 1) / 364) * XW;
+  const Yh = (h: number) => Y0 - (h / 24) * YH;
+  let body = line(X0, Y0, X0 + XW, Y0, 0.9) + line(X0, Y0, X0, Y0 - YH, 0.9);
+  for (const h of [0, 12, 24]) body += line(X0 - 3, Yh(h), X0, Yh(h), 0.9) + text(X0 - 6, Yh(h) + 2.4, String(h), 7, { anchor: "end" });
+  // A bar a week, as tall as the daylight on the week's middle day.
+  for (let w = 0; w < 52; w++) {
+    const mid = w * 7 + 4;
+    const h = hours[mid - 1];
+    if (h < 0.05) continue;
+    const x = X(mid);
+    body += `<rect x="${(x - 1.5).toFixed(1)}" y="${Yh(h).toFixed(1)}" width="3" height="${(Y0 - Yh(h)).toFixed(1)}" fill="${INK}"/>`;
+  }
+  MONTH_START.forEach((doy, m) => (body += text(X(doy + 15), Y0 + 11, shortMonth(m + 1)[0], 6.5)));
+  // The runs of 24 h and of 0 h, bracketed and named.
+  const runs = (test: (h: number) => boolean) => {
+    const out: [number, number][] = [];
+    hours.forEach((h, i) => {
+      if (!test(h)) return;
+      const last = out[out.length - 1];
+      if (last && last[1] === i) last[1] = i + 1;
+      else out.push([i + 1, i + 1]);
+    });
+    return out;
+  };
+  const bracket = (x1: number, x2: number, y: number, dir: number) => path(`M${f1(x1)} ${f1(y + dir * 3)}L${f1(x1)} ${f1(y)}L${f1(x2)} ${f1(y)}L${f1(x2)} ${f1(y + dir * 3)}`, 0.7);
+  for (const [a, b] of runs((h) => h >= 24)) {
+    body += bracket(X(a), X(b), Yh(24) - 6, 1) + text((X(a) + X(b)) / 2, Yh(24) - 11, "MIDNIGHT SUN", 6, { bold: true, spacing: 0.6 });
+  }
+  const nights = runs((h) => h <= 0);
+  nights.forEach(([a, b], i) => {
+    body += bracket(X(a), X(b), Y0 + 17, -1);
+    if (i === 0) body += text(X(a), Y0 + 25, "POLAR NIGHT", 6, { bold: true, spacing: 0.6, anchor: "start" });
+    if (i === nights.length - 1 && i > 0) body += text(X(b), Y0 + 25, "POLAR NIGHT", 6, { bold: true, spacing: 0.6, anchor: "end" });
+  });
+  body += caption(322, `Daylight, ${name}`, `Hours of daylight each day · ${Math.abs(lat).toFixed(2)}°N`, "Longest 24h (midnight sun) · shortest 0h (polar night)");
+  return {
+    body,
+    variant: "daylight",
+    category: "sky",
+    title: `Hours of Daylight in ${name}`,
+    subject: `Daylight Chart, ${name}`,
+    description: `How long the sun is up in ${name} on each day of the year, from sunrise to sunset, one bar a week, computed from the sun's declination at ${Math.abs(lat).toFixed(1)}° north: weeks of midnight sun at the top, polar night at both ends of the year.`,
+    features: { geometric: 0.55, clean_minimal: 0.5, line_art: 0.55, abstract: 0.45, typography: 0.2, density: 0.4, contrast: 0.7, nature: 0.3 },
+    sigKey: `daylight-${name}`,
+  };
+}
+
 function sunDesigns(): Set7Design[] {
   const out: Set7Design[] = [];
   for (const [name, lat] of [["Greenwich", 51.477]] as const) {
@@ -172,12 +227,34 @@ function sunDesigns(): Set7Design[] {
     const X = (z: number) => 150 + (z / DEG) * 4 * 3.2;
     const Y = (a: number) => 280 - ((a - a0) / (a1 - a0)) * 230;
     let body = line(40, 290, 260, 290, 0.8);
-    for (let k = 0; k < 365; k += 2) body += dot(X(dz[k]), Y(alts[k]), 1.05);
+    // Each month marker: a ring on the 1st with one dot at its centre; the trail's dots are knocked out under the rings.
+    const marks = MONTH_START.map((doy): [number, number] => [X(dz[doy - 1]), Y(alts[doy - 1])]);
+    for (let k = 0; k < 365; k += 2) {
+      const [x, y] = [X(dz[k]), Y(alts[k])];
+      if (marks.every(([mx, my]) => Math.hypot(x - mx, y - my) > 4.6)) body += dot(x, y, 1.25);
+    }
     MONTH_START.forEach((doy, m) => {
-      const [x, y] = [X(dz[doy - 1]), Y(alts[doy - 1])];
-      body += circle(x, y, 3, 0.7) + text(x + (dz[doy - 1] >= 0 ? 8 : -8), y + 2, shortMonth(m + 1), 5.5, { anchor: dz[doy - 1] >= 0 ? "start" : "end" });
+      const [x, y] = marks[m];
+      body += circle(x, y, 3.2, 0.8) + dot(x, y, 1.25) + text(x + (dz[doy - 1] >= 0 ? 8 : -8), y + 2, shortMonth(m + 1), 5.5, { anchor: dz[doy - 1] >= 0 ? "start" : "end" });
     });
-    body += text(260, 285, `${Math.round(a0 / DEG)}°`, 5.5, { anchor: "end" }) + text(260, Y(a1) + 2, `${Math.round(a1 / DEG)}°`, 5.5, { anchor: "end" });
+    // Where the figure crosses itself: the two days of the year the sun stands at the same noon place (nearest pair, spring and late summer).
+    let cross = [0, 0], gap = Infinity;
+    for (let i = 60; i < 150; i++)
+      for (let j = 200; j < 290; j++) {
+        const g = Math.hypot(X(dz[i]) - X(dz[j]), Y(alts[i]) - Y(alts[j]));
+        if (g < gap) (gap = g), (cross = [i, j]);
+      }
+    const dayName = (k: number) => {
+      const m = MONTH_START.filter((s) => s <= k + 1).length;
+      return `${k + 2 - MONTH_START[m - 1]} ${shortMonth(m)}`;
+    };
+    const [cx, cy] = [(X(dz[cross[0]]) + X(dz[cross[1]])) / 2, (Y(alts[cross[0]]) + Y(alts[cross[1]])) / 2];
+    body += text(cx + 10, cy + 1.6, `${dayName(cross[0])} = ${dayName(cross[1])}`, 4.5, { anchor: "start" });
+    // The altitude scale: a thin axis at the right, a tick every 10°, the year's lowest and highest noon labelled on their ticks.
+    const AX = 252;
+    body += line(AX, Y(a0), AX, Y(a1), 0.5);
+    for (let d = Math.ceil(a0 / DEG / 10) * 10; d < a1 / DEG; d += 10) if (d - a0 / DEG > 3 && a1 / DEG - d > 3) body += line(AX, Y(d * DEG), AX + 2.5, Y(d * DEG), 0.5);
+    for (const a of [a0, a1]) body += line(AX, Y(a), AX + 5, Y(a), 0.8) + text(AX + 8, Y(a) + 2, `${Math.round(a / DEG)}°`, 5.5, { anchor: "start" });
     body += caption(318, `Analemma, ${name}`, "The sun at 12:00 every day of a year", `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"} · east–west ×4`);
     out.push({
       body,
@@ -199,6 +276,12 @@ function sunDesigns(): Set7Design[] {
       hours.push(c <= -1 ? 24 : c >= 1 ? 0 : (2 * Math.acos(c)) / DEG / 15);
     }
     const X0 = 40, XW = 220, Y0 = 280, YH = 220;
+    const longest = Math.max(...hours), shortest = Math.min(...hours);
+    const fmt = (h: number) => `${Math.floor(h)}h ${String(Math.round((h % 1) * 60)).padStart(2, "0")}m`;
+    if (longest >= 24 && shortest <= 0) {
+      out.push(polarDaylight(name, lat, hours));
+      continue;
+    }
     let body = line(X0, Y0, X0 + XW, Y0, 0.8) + line(X0, Y0, X0, Y0 - YH, 0.8);
     for (const h of [6, 12, 18, 24]) body += line(X0 - 3, Y0 - (h / 24) * YH, X0, Y0 - (h / 24) * YH, 0.8) + text(X0 - 6, Y0 - (h / 24) * YH + 2, String(h), 5.5, { anchor: "end" });
     for (let doy = 1; doy <= 365; doy += 3) {
@@ -206,8 +289,6 @@ function sunDesigns(): Set7Design[] {
       if (hours[doy - 1] > 0.05) body += line(x, Y0, x, Y0 - (hours[doy - 1] / 24) * YH, 0.7);
     }
     MONTH_START.forEach((doy, m) => (body += text(X0 + ((doy + 14) / 364) * XW, Y0 + 10, shortMonth(m + 1)[0], 5.5)));
-    const longest = Math.max(...hours), shortest = Math.min(...hours);
-    const fmt = (h: number) => `${Math.floor(h)}h ${String(Math.round((h % 1) * 60)).padStart(2, "0")}m`;
     body += caption(318, `Daylight, ${name}`, `Hours of daylight each day · ${Math.abs(lat).toFixed(2)}°N`, `Longest ${longest >= 24 ? "24h (midnight sun)" : fmt(longest)} · shortest ${shortest <= 0 ? "0h (polar night)" : fmt(shortest)}`);
     out.push({
       body,

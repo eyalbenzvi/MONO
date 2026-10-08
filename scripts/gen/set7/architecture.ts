@@ -54,6 +54,97 @@ function archDrawing(arcs: Arc[], spring: number, x0: number, x1: number, depth:
   return s;
 }
 
+const dashed = (x1: number, y1: number, x2: number, y2: number, w: number, dash: string) =>
+  `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${INK}" stroke-width="${w}" stroke-dasharray="${dash}"/>`;
+
+/**
+ * The horseshoe arch, its springing resolved: the intrados runs back in to the
+ * springing points and the jambs' inner faces rise straight into it; the last
+ * voussoir sits on a level bed at the springing line, the extrados carried down
+ * to that line, and the jamb's outer face rises from where it lands. Heavier
+ * lines than the other arches, so it holds at a distance; the radii from the
+ * centre to the crown and to the springing points show the centre above the line.
+ */
+function horseshoeDrawing(a: Arc, spring: number, depth: number): string {
+  const W = { intrados: 2.6, extrados: 1.7, joint: 1.1, jamb: 2.6, jambOut: 1.7 };
+  const at = (r: number, t: number): [number, number] => [a.cx + r * Math.cos(t), a.cy - r * Math.sin(t)];
+  const below = Math.asin((spring - a.cy) / a.r); // the springing, below the centre
+  const belowE = Math.asin((spring - a.cy) / (a.r + depth));
+  const arc = (r: number, t0: number, t1: number) => {
+    const pts: [number, number][] = [];
+    for (let k = 0; k <= 80; k++) pts.push(at(r, t0 + ((t1 - t0) * k) / 80));
+    return polyline(pts);
+  };
+  let s = path(arc(a.r, Math.PI + below, -below), W.intrados) + path(arc(a.r + depth, Math.PI + belowE, -belowE), W.extrados);
+  // Radial joints between the springers, about every 8°.
+  const span = Math.PI + 2 * below;
+  const n = Math.round(span / (8 * DEG));
+  for (let k = 1; k < n; k++) {
+    const t = Math.PI + below - (span * k) / n;
+    s += line(...at(a.r, t), ...at(a.r + depth, t), W.joint);
+  }
+  const [xi0, xi1] = [a.cx - a.r * Math.cos(below), a.cx + a.r * Math.cos(below)];
+  const [xe0, xe1] = [a.cx - (a.r + depth) * Math.cos(belowE), a.cx + (a.r + depth) * Math.cos(belowE)];
+  const foot = spring + 70;
+  // The level beds at the springing, and the jambs under them.
+  s += line(xe0, spring, xi0, spring, W.joint) + line(xi1, spring, xe1, spring, W.joint);
+  s += line(xi0, spring, xi0, foot, W.jamb) + line(xi1, spring, xi1, foot, W.jamb);
+  s += line(xe0, spring, xe0, foot, W.jambOut) + line(xe1, spring, xe1, foot, W.jambOut);
+  s += dashed(xe0 - 22, spring, xe1 + 22, spring, 0.6, "3 3");
+  s += dot(a.cx, a.cy, 2);
+  for (const t of [Math.PI / 2, Math.PI + below, -below]) s += dashed(a.cx, a.cy, ...at(a.r, t), 0.55, "2 2.5");
+  return s;
+}
+
+/**
+ * The lancet arch, closed at the crown by a keystone: each extrados runs on
+ * from its centre until the two meet in a point above the intrados' point, and
+ * the key is the wedge between the last joints of the two arcs. The setting
+ * out is drawn whole: each compass stroke carried past the crown, the radii
+ * from each centre to its springing and to the crown, the jambs standing on a
+ * common ground line.
+ */
+function lancetDrawing(arcs: Arc[], spring: number, x0: number, x1: number, depth: number): string {
+  const at = (a: Arc, r: number, t: number): [number, number] => [a.cx + r * Math.cos(t), a.cy - r * Math.sin(t)];
+  const trace = (a: Arc, r: number, t0: number, t1: number) => {
+    const pts: [number, number][] = [];
+    for (let k = 0; k <= 60; k++) pts.push(at(a, r, t0 + ((t1 - t0) * k) / 60));
+    return pts;
+  };
+  const [L, R] = arcs; // L: the left half (struck from the right centre); R: the right half
+  const c = L.cx - 150;
+  const top = Math.acos(c / L.r), topE = Math.acos(c / (L.r + depth));
+  const key = 4.5 * DEG; // half the keystone, at the intrados
+  // The outer compass strokes run on past the crown, hairline.
+  let s = path(polyline(trace(L, L.r + depth, Math.PI - topE, Math.PI - topE - 12 * DEG)), 0.45) + path(polyline(trace(R, R.r + depth, topE, topE + 12 * DEG)), 0.45);
+  s += path(polyline([...trace(L, L.r, Math.PI, Math.PI - top), ...trace(R, R.r, top, 0)]), 2);
+  s += path(polyline([...trace(L, L.r + depth, Math.PI, Math.PI - topE), ...trace(R, R.r + depth, topE, 0)]), 1.2);
+  // Radial joints up each side to the keystone's, whose two sides meet the extrados.
+  const joints = (a: Arc, t0: number, t1: number) => {
+    const n = Math.max(2, Math.round(Math.abs(t1 - t0) / (8 * DEG)));
+    let j = "";
+    for (let k = 0; k <= n; k++) {
+      const t = t0 + ((t1 - t0) * k) / n;
+      j += line(...at(a, a.r, t), ...at(a, a.r + depth, t), 0.8);
+    }
+    return j;
+  };
+  s += joints(L, Math.PI, Math.PI - top + key) + joints(R, 0, top - key);
+  // Jambs, on a common ground line.
+  const foot = spring + 70;
+  s += line(x0, spring, x0, foot, 2) + line(x1, spring, x1, foot, 2);
+  s += line(x0 - depth, spring, x0 - depth, foot, 1.2) + line(x1 + depth, spring, x1 + depth, foot, 1.2);
+  s += line(x0 - depth - 14, foot, x1 + depth + 14, foot, 1.2);
+  // The springing line out to the two centres; from each centre, its radii through the joints it set out.
+  s += dashed(R.cx - 6, spring, L.cx + 6, spring, 0.6, "3 3");
+  for (const [a, t0, t1] of [[L, Math.PI, Math.PI - top + key], [R, 0, top - key]] as [Arc, number, number][]) {
+    s += dot(a.cx, a.cy, 1.8);
+    const n = Math.max(2, Math.round(Math.abs(t1 - t0) / (8 * DEG)));
+    for (let k = 1; k <= n; k++) s += dashed(a.cx, a.cy, ...at(a, a.r, t0 + ((t1 - t0) * k) / n), 0.4, "1.6 2.2");
+  }
+  return s;
+}
+
 function archDesigns(): Set7Design[] {
   const x0 = 75, x1 = 225, w = x1 - x0, mid = 150, spring = 220, depth = 16;
   const list: [string, string, string, Arc[]][] = [
@@ -93,7 +184,12 @@ function archDesigns(): Set7Design[] {
   return list.map(([title, how, key, arcs]) => {
     const jx0 = key === "horseshoe" ? arcs[0].cx - arcs[0].r * Math.cos(25 * DEG) : x0;
     const jx1 = key === "horseshoe" ? arcs[0].cx + arcs[0].r * Math.cos(25 * DEG) : x1;
-    const body = archDrawing(arcs, spring, jx0, jx1, depth) + caption(330, title, how);
+    const body =
+      key === "horseshoe"
+        ? horseshoeDrawing(arcs[0], spring, depth) + caption(320, title, "One arc carried past the half circle")
+        : key === "lancet"
+          ? lancetDrawing(arcs, spring, x0, x1, depth) + caption(330, title, how)
+          : archDrawing(arcs, spring, jx0, jx1, depth) + caption(330, title, how);
     return {
       body,
       variant: "arch",

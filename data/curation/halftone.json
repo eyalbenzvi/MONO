@@ -302,10 +302,10 @@
 },
 "10044": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "c7cc916ca55021cb",
-"src": "291df7de6e7827f3"
+"sha": "27edb735cba2a50b",
+"src": "f43b5824d5eb3ccf"
 },
 "10045": {
 "mode": "halftone",
@@ -428,10 +428,10 @@
 },
 "10062": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "54cd54c094c1d1e1",
-"src": "1bfaf82ce4704386"
+"sha": "69f0ffc4735fdd5f",
+"src": "1be6533ae28110ce"
 },
 "10063": {
 "mode": "halftone",
@@ -561,17 +561,17 @@
 },
 "10081": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "2bd4560a199567dd",
-"src": "416b0780bc0ce948"
+"sha": "efe813c12fd14bd9",
+"src": "f0b3c8ea7d74656b"
 },
 "10082": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "ba677102de870e7e",
-"src": "c71b9d2cc287ad48"
+"sha": "2a699e5aa5205684",
+"src": "d9c1e727aafcc458"
 },
 "10083": {
 "mode": "halftone",
@@ -666,10 +666,10 @@
 },
 "11004": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "eb95170bd58cc2f6",
-"src": "4845fb98f95026f5"
+"sha": "617d0058bf6a85ab",
+"src": "9989c4421993a4b3"
 },
 "11005": {
 "mode": "halftone",
@@ -1339,7 +1339,7 @@
 "20023": {
 "mode": "line",
 "paper": 0.0,
-"sha": "bc0ce1e962eda406",
+"sha": "f784c51c45ef188b",
 "src": "2c779eb5decfa04d",
 "via": "scripts/studio/oneink.py"
 },
@@ -1542,7 +1542,7 @@
 "20052": {
 "mode": "line",
 "paper": 0.0,
-"sha": "2c374f4ba426a119",
+"sha": "7f3a424d435e8d61",
 "src": "366e53507d60d3fe",
 "via": "scripts/studio/oneink.py"
 },
@@ -1955,7 +1955,7 @@
 "20111": {
 "mode": "line",
 "paper": 0.0,
-"sha": "18ba99f630152ec3",
+"sha": "f7fb3e7b33adf57b",
 "src": "9312dd4abc1a94d4",
 "via": "scripts/studio/oneink.py"
 },
@@ -2242,7 +2242,7 @@
 "20152": {
 "mode": "line",
 "paper": 0.0,
-"sha": "610df88c3aa13515",
+"sha": "c8f1aff91509f07b",
 "src": "ed70b402616d6659",
 "via": "scripts/studio/oneink.py"
 },
@@ -2312,7 +2312,7 @@
 "20162": {
 "mode": "line",
 "paper": 0.0,
-"sha": "63c44c83d9bb926a",
+"sha": "5849e392119680a7",
 "src": "e51b8d29894bb6e2",
 "via": "scripts/studio/oneink.py"
 },
@@ -2354,14 +2354,14 @@
 "20168": {
 "mode": "line",
 "paper": 0.0,
-"sha": "d70477d4c7e88b58",
+"sha": "f6fa4232b07799b1",
 "src": "fc2784542f3988ba",
 "via": "scripts/studio/oneink.py"
 },
 "20169": {
 "mode": "line",
 "paper": 0.0,
-"sha": "ed1c3813d931b66c",
+"sha": "d8639032254ac284",
 "src": "a36367dd3a1d0fbf",
 "via": "scripts/studio/oneink.py"
 },
@@ -2389,7 +2389,7 @@
 "20173": {
 "mode": "line",
 "paper": 0.0,
-"sha": "8cb188a89007c03b",
+"sha": "862917edb60226a3",
 "src": "ec0201604040bd04",
 "via": "scripts/studio/oneink.py"
 },
@@ -2452,7 +2452,7 @@
 "20182": {
 "mode": "line",
 "paper": 0.0,
-"sha": "a185f865fe0325f0",
+"sha": "50a3ebab659535e0",
 "src": "85f2bcb3704cd349",
 "via": "scripts/studio/oneink.py"
 },
@@ -2466,7 +2466,7 @@
 "20184": {
 "mode": "line",
 "paper": 0.0,
-"sha": "033c854596d6b8c8",
+"sha": "5b9106c8a8c787ad",
 "src": "557314e234caf4ad",
 "via": "scripts/studio/oneink.py"
 },
@@ -2494,7 +2494,7 @@
 "20188": {
 "mode": "line",
 "paper": 0.0,
-"sha": "d46d006142077b24",
+"sha": "1edf83bf75dc9464",
 "src": "a272e376f062493f",
 "via": "scripts/studio/oneink.py"
 },
@@ -2557,7 +2557,7 @@
 "20197": {
 "mode": "line",
 "paper": 0.0,
-"sha": "fe9d99eafb2e51db",
+"sha": "b92b27e90e68a703",
 "src": "c1d7550e40d49b3f",
 "via": "scripts/studio/oneink.py"
 },
@@ -2606,8 +2606,8 @@
 "2803": {
 "mode": "halftone",
 "recipe": 2,
-"sha": "a205be26d659e073",
-"src": "5dd63c971b3ae21f",
+"sha": "613ec73f0877f1ee",
+"src": "af50beb35a452ce1",
 "tee": "white"
 },
 "2804": {
@@ -7017,8 +7017,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "b60f15a106f9d216",
-"src": "1c66da69eb3ce59a"
+"sha": "2bf3c7abadab3cf8",
+"src": "78c03f5b6aa9e553"
 },
 "3864": {
 "mode": "halftone",
@@ -8872,8 +8872,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "b319e915b742b8d4",
-"src": "72930ca815266379"
+"sha": "6c4f56fdb2660051",
+"src": "0ca664a4b1d0ddcc"
 },
 "4129": {
 "mode": "halftone",
@@ -8963,8 +8963,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "bc132a9f309f68f4",
-"src": "95c352f36e0f65f6"
+"sha": "53b34f1e2c32101d",
+"src": "6bec41b866001a9a"
 },
 "4142": {
 "mode": "halftone",
@@ -9061,8 +9061,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "d2b7e900d6aedc7a",
-"src": "b2ac2a81109d6442"
+"sha": "8a0c70f47a0361d9",
+"src": "73237f0d77f4b232"
 },
 "4156": {
 "mode": "halftone",
@@ -9166,8 +9166,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "6653d2e03cacb09a",
-"src": "97a3520401180ed1"
+"sha": "a316dcb309f5578b",
+"src": "e1cce1771c32a80f"
 },
 "4171": {
 "mode": "halftone",
@@ -9360,10 +9360,10 @@
 },
 "4198": {
 "mode": "halftone",
-"paper": 0.365,
+"paper": 0.0,
 "recipe": 2,
-"sha": "8f6dc68e582fd602",
-"src": "96c3d663e59e2501"
+"sha": "a26fd422917c419a",
+"src": "4b097be147c2d23c"
 },
 "4199": {
 "mode": "halftone",
@@ -9628,8 +9628,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "985ff178841f4cc4",
-"src": "be0951134717cb1e"
+"sha": "e881ecba95b8bf10",
+"src": "be81bb0392e86cdb"
 },
 "4237": {
 "mode": "halftone",
@@ -10221,10 +10221,10 @@
 },
 "4321": {
 "mode": "halftone",
-"paper": 0.0,
+"paper": 0.098,
 "recipe": 2,
-"sha": "cfeff8164a0b90bf",
-"src": "64c42dc732c93a3b"
+"sha": "462c9cba38e163d1",
+"src": "7c176b87ff4a126d"
 },
 "4322": {
 "mode": "halftone",
@@ -11924,8 +11924,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "dcb4146ad5fca536",
-"src": "75b016f9e31ee328"
+"sha": "b8bfbc6a3c40a097",
+"src": "59db1ce9f3b275cf"
 },
 "4565": {
 "mode": "halftone",
@@ -12028,8 +12028,8 @@
 "4579": {
 "mode": "halftone",
 "recipe": 2,
-"sha": "1c32ecce588fa511",
-"src": "2916c1f9cbac8a60",
+"sha": "684a7c0f80627b2c",
+"src": "984dff4b3fec0a16",
 "tee": "black"
 },
 "4580": {
@@ -12442,8 +12442,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "e5f3759247cc321e",
-"src": "489297a0e99e4859"
+"sha": "4059b15d930bd8e7",
+"src": "df76d21269259c6f"
 },
 "4639": {
 "mode": "halftone",
@@ -12876,8 +12876,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "dc944fd7845dddbe",
-"src": "2b6e97598f9d3845"
+"sha": "b4ddda4e30037b71",
+"src": "e3eef015639e2e78"
 },
 "4701": {
 "mode": "halftone",
@@ -12967,8 +12967,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "8d83a09047419fee",
-"src": "4637cb2c9d447c9e"
+"sha": "d061047c5d8b7d26",
+"src": "d5db79507d8a3d11"
 },
 "4714": {
 "mode": "halftone",
@@ -13436,8 +13436,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "97b0985469fe00f0",
-"src": "8fd4d6c736166da7"
+"sha": "e62876cc50ba0db7",
+"src": "7c454f122686b3a1"
 },
 "4781": {
 "mode": "halftone",
@@ -13758,8 +13758,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "cfce800eed19f993",
-"src": "ea5cae1ad8a97886"
+"sha": "d20336141045966f",
+"src": "9c02390dafc95a33"
 },
 "4827": {
 "mode": "halftone",
@@ -14766,8 +14766,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "86c9862c0c6618b0",
-"src": "4ea32fe68da5615e"
+"sha": "f217a115291551ee",
+"src": "30a45c88a45076f2"
 },
 "4971": {
 "mode": "halftone",
@@ -15480,8 +15480,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "d35076562c7c0dfa",
-"src": "2b8f6ae254a19e60"
+"sha": "6ce79929f955b02e",
+"src": "cf059b56cd42ad70"
 },
 "5073": {
 "mode": "halftone",
@@ -15704,8 +15704,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "b6f419d4e3989ade",
-"src": "61934d06b88a8954"
+"sha": "a9672b0ed05c3b0c",
+"src": "13e81aa3caf99179"
 },
 "5105": {
 "mode": "halftone",
@@ -15788,8 +15788,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "dd977e86d7afa4db",
-"src": "aea9f5b3c4c58f66"
+"sha": "2a976ac9634ca96f",
+"src": "2d13ea4199aba5f6"
 },
 "5117": {
 "mode": "halftone",
@@ -16383,8 +16383,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "4ae2fe6db12919f9",
-"src": "400bdabb72e0a912"
+"sha": "6caa72cc7daf1db7",
+"src": "52b57b4dfd20b2ee"
 },
 "5202": {
 "mode": "halftone",
@@ -16607,8 +16607,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "43213193a2351755",
-"src": "64d3da7a5e1bf4df"
+"sha": "9bf756b742e43521",
+"src": "1f22dd8eadaaa64a"
 },
 "5234": {
 "mode": "halftone",
@@ -16803,8 +16803,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "e49cac56b06d2cf2",
-"src": "eb0838d901d587c8"
+"sha": "34952a3d6fd02978",
+"src": "57b6051c75ef345e"
 },
 "5262": {
 "mode": "halftone",
@@ -17153,8 +17153,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "15ec1b4674345dbd",
-"src": "8a08579bbe4c5c95"
+"sha": "33ef04acf8d0f49a",
+"src": "1c6cfb22036b42d0"
 },
 "5312": {
 "mode": "halftone",
@@ -17230,8 +17230,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "9da51e3b449615ed",
-"src": "006d137fb1518239"
+"sha": "6bd19967a567315c",
+"src": "a8ab6e07bce21d04"
 },
 "5323": {
 "mode": "halftone",
@@ -17335,8 +17335,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "d20c06617d9cad25",
-"src": "bc8aba44409caaf5"
+"sha": "1d3ddfc5bbea7122",
+"src": "b1e9528f72aa8645"
 },
 "5338": {
 "mode": "halftone",
@@ -17818,8 +17818,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "6a9aaabb73e7356b",
-"src": "ab63ab01e95eb239"
+"sha": "3524a28f7db05c82",
+"src": "6b20d53fa9626cff"
 },
 "5407": {
 "mode": "halftone",
@@ -18623,8 +18623,8 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "96b9867d36f273b9",
-"src": "f244a61925083a0f"
+"sha": "b4a97594767740b8",
+"src": "a8227224f50e111a"
 },
 "5522": {
 "mode": "halftone",
@@ -18833,15 +18833,15 @@
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "5c73ec59c6e5769f",
-"src": "a73df6a026b63c44"
+"sha": "25d3103cc2c2af8f",
+"src": "97a708789283f938"
 },
 "5552": {
 "mode": "halftone",
 "paper": 0.0,
 "recipe": 2,
-"sha": "9abee012471ed1af",
-"src": "3e4ea147cdab3cd2"
+"sha": "acb1b35ec56d75b8",
+"src": "e14c3e8e9fd93a93"
 },
 "5553": {
 "mode": "halftone",
@@ -19041,17 +19041,17 @@
 },
 "8002": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "c8ae056e60ce0f48",
-"src": "8e225c464c5fd67b"
+"sha": "95e75f1c4ae97207",
+"src": "8fd2a3c451f64ee7"
 },
 "8003": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "4e7a448fdb19dc6b",
-"src": "1f1d2cc41bcbece2"
+"sha": "a5068eb0c1b2a72c",
+"src": "6d2dd96ddc2b1087"
 },
 "8004": {
 "mode": "halftone",
@@ -19076,10 +19076,10 @@
 },
 "8007": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "e1353455db464af3",
-"src": "83c5953039c00a7f"
+"sha": "d5330cca5f7b4d36",
+"src": "e51addee562f6d9d"
 },
 "8008": {
 "mode": "halftone",
@@ -19125,10 +19125,10 @@
 },
 "8014": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "76e9a56dbce545ce",
-"src": "4c7aac8e4d5c93fb"
+"sha": "ffa15486d6aa79c0",
+"src": "c4bb524d0d506394"
 },
 "8015": {
 "mode": "halftone",
@@ -19139,10 +19139,10 @@
 },
 "8016": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "3758be60f6b4efad",
-"src": "3a57f90491b10612"
+"sha": "ade661a884e3f64f",
+"src": "36fbfe13af04dc14"
 },
 "8017": {
 "mode": "halftone",
@@ -19167,17 +19167,17 @@
 },
 "8020": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "3d3d55c8848d7cb8",
-"src": "bb0c5b09316ff23e"
+"sha": "3a58699f127f9d3f",
+"src": "dc5187a1ffe0d30e"
 },
 "8021": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "911177a84b448b42",
-"src": "1cc9149fb5235da8"
+"sha": "734fc71771190cb4",
+"src": "586395fdcb0db607"
 },
 "8022": {
 "mode": "halftone",
@@ -19216,10 +19216,10 @@
 },
 "8027": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "f7465658a39f72f1",
-"src": "3ffe531535766976"
+"sha": "5c46df60e6d1d83b",
+"src": "83fc7709088b6454"
 },
 "8028": {
 "mode": "halftone",
@@ -19265,17 +19265,17 @@
 },
 "8034": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "d3bfc38f41966816",
-"src": "8b60e199723ea664"
+"sha": "86ade11c40d58b4a",
+"src": "bb8b85b0bd6b9534"
 },
 "8035": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "263dd8c28c71dfca",
-"src": "f970ac8180d2aeda"
+"sha": "922e84f917b0918d",
+"src": "da48c8413ac32413"
 },
 "8036": {
 "mode": "halftone",
@@ -19356,24 +19356,24 @@
 },
 "8047": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "605b19f34a9f92f8",
-"src": "42d5f7e0d1c89fcd"
+"sha": "ed5e9cb225ee8e77",
+"src": "936664d4d1b8179e"
 },
 "8048": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "1ff0fbd1cf16ad48",
-"src": "158617b37a39a486"
+"sha": "1ab46b786a1ec956",
+"src": "74195d2f3cda9450"
 },
 "8049": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "5ccb43e72e6b0240",
-"src": "aeff9f9e0bb17d04"
+"sha": "c0d785bc18cca185",
+"src": "32faa6ea41522037"
 },
 "8050": {
 "mode": "halftone",
@@ -19405,10 +19405,10 @@
 },
 "8054": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "342f6cb62a0ac12d",
-"src": "49ec2b26fa1520d1"
+"sha": "316953579b8d4433",
+"src": "1463cd1970d0dd2c"
 },
 "8055": {
 "mode": "halftone",
@@ -19489,17 +19489,17 @@
 },
 "8066": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "2eb169b6f10ba5ce",
-"src": "c20abda9821e37f8"
+"sha": "f30685a8ae9eabba",
+"src": "2cf56b3d800a74d0"
 },
 "8067": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "78fbbe3bc435208d",
-"src": "a03ccc63ac2aa79f"
+"sha": "d976d02673146e50",
+"src": "8eb1bb24849b448e"
 },
 "8068": {
 "mode": "halftone",
@@ -19811,10 +19811,10 @@
 },
 "8112": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "cfd16d8e74106f02",
-"src": "94d1fdeec59a4683"
+"sha": "5e12bf6ca40f02bd",
+"src": "3a9536288b8b5754"
 },
 "8113": {
 "mode": "halftone",
@@ -20476,10 +20476,10 @@
 },
 "9039": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "8d9403ba309e4c76",
-"src": "e3e4b3c53b58174d"
+"sha": "fcf6402bb00f038c",
+"src": "2d284e467bb1ddf0"
 },
 "9040": {
 "mode": "halftone",
@@ -20574,10 +20574,10 @@
 },
 "9053": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "f8b452c167979d1f",
-"src": "fde84cc850e49769"
+"sha": "c1fb95326a740610",
+"src": "2f5fbadaf5a3365d"
 },
 "9054": {
 "mode": "halftone",
@@ -20616,10 +20616,10 @@
 },
 "9059": {
 "mode": "halftone",
-"paper": 0,
+"paper": 0.0,
 "recipe": 2,
-"sha": "85fb127213d69c29",
-"src": "c625a1dfb1d10672"
+"sha": "f0b78edf6691a393",
+"src": "d837795b2039a809"
 },
 "9060": {
 "mode": "halftone",

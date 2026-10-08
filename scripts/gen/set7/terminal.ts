@@ -71,12 +71,20 @@ const MATRIX: Record<string, string[]> = {
   Y: ["10001", "10001", "10001", "01010", "00100", "00100", "00100"], Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
 };
 
+/**
+ * The alphabet as a character LCD shows it: seven to a row, so A to Z fill
+ * four rows with the last two cells a space and the block cursor (every dot
+ * of the cell lit), as if the alphabet had just been typed in.
+ */
 function dotMatrix(): string {
   let s = "";
-  Object.entries(MATRIX).forEach(([, rows], i) => {
-    const col = i % 6, row = Math.floor(i / 6);
-    const x0 = 36 + col * 40, y0 = 40 + row * 56;
-    rows.forEach((bits, r) => [...bits].forEach((b, c) => (s += b === "1" ? dot(x0 + c * 5.4, y0 + r * 5.4, 2) : dot(x0 + c * 5.4, y0 + r * 5.4, 0.5))));
+  const cells = [...Object.values(MATRIX), null, Array(7).fill("11111")];
+  const P = 5.6, CW = 36.5, RH = 56;
+  const gw = 4 * P, gh = 6 * P;
+  const x00 = 150 - (6 * CW + gw) / 2, y00 = 186 - (3 * RH + gh) / 2;
+  cells.forEach((rows, i) => {
+    const x0 = x00 + (i % 7) * CW, y0 = y00 + Math.floor(i / 7) * RH;
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 5; c++) s += rows?.[r][c] === "1" ? dot(x0 + c * P, y0 + r * P, 2.05) : dot(x0 + c * P, y0 + r * P, 0.65);
   });
   return s;
 }
@@ -107,7 +115,7 @@ export function terminalSet(): Set7Design[] {
   add("Paper Tape, ITA2", "tape", paperTape("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG"), "Five-hole teleprinter tape punched with a pangram in ITA2, the Baudot–Murray code: five holes per character, the small feed hole between the third and fourth.", ["Paper Tape", "ITA2 five-hole code"], "Teleprinter Paper Tape");
   add("Seven-Segment Digits", "7seg", sevenSegment(), "The ten digits of a seven-segment display, lit segments filled and the rest outlined, with the segments each digit uses, a to g.", ["Seven Segments", "The ten digits, segments a to g"], "Seven-Segment Display Digits");
   add("Punched Card, a COBOL Line", "card-cobol", punchCard("       IDENTIFICATION DIVISION."), "An 80-column punched card carrying IDENTIFICATION DIVISION., the first line of every COBOL program, in columns 8 on, in IBM 029 keypunch code.", ["Punched Card", "IBM 029 code · IDENTIFICATION DIVISION."]);
-  add("5 × 7 Dot-Matrix Alphabet", "dotmatrix", dotMatrix(), "The alphabet in a five-by-seven dot matrix, the grid of character LCDs and dot-matrix printers, lit dots full and the rest pinpricks.", ["Dot Matrix", "A to Z in five by seven"], "Dot-Matrix Alphabet");
+  add("5 × 7 Dot-Matrix Alphabet", "dotmatrix", dotMatrix(), "The alphabet in a five-by-seven dot matrix, the grid of character LCDs and dot-matrix printers, lit dots full and the rest pinpricks, seven letters a row and the block cursor waiting after Z.", ["Dot Matrix", "A to Z in five by seven"], "Dot-Matrix Alphabet");
   add("HELLO in Binary", "binary-hello", binaryText("HELLO, WORLD"), "HELLO, WORLD spelled in eight-bit ASCII: each character's code as eight bits, ones filled and zeros open, its hexadecimal value beside it.", ["ASCII in Binary", "HELLO, WORLD, eight bits a letter"], "Binary ASCII Text");
   add("ANSI Escape Codes", "ansi-sgr", tableRows([["Code", "Effect"], ["ESC[0m", "reset"], ["ESC[1m", "bold"], ["ESC[2m", "faint"], ["ESC[3m", "italic"], ["ESC[4m", "underline"], ["ESC[5m", "slow blink"], ["ESC[7m", "reverse video"], ["ESC[8m", "conceal"], ["ESC[9m", "crossed out"], ["ESC[30–37m", "foreground colour"], ["ESC[40–47m", "background colour"], ["ESC[2J", "clear screen"], ["ESC[H", "cursor home"]]), "Select Graphic Rendition and screen codes of ANSI X3.64 (ECMA-48), the escape sequences terminals still obey.", ["ANSI Escapes", "ECMA-48 · ESC = 0x1B"], "ANSI Escape Code Table");
   add("Unix Signals", "signals", tableRows([["No", "Signal", "Default"], ["1", "SIGHUP", "terminate"], ["2", "SIGINT", "terminate"], ["3", "SIGQUIT", "core dump"], ["4", "SIGILL", "core dump"], ["5", "SIGTRAP", "core dump"], ["6", "SIGABRT", "core dump"], ["7", "SIGBUS", "core dump"], ["8", "SIGFPE", "core dump"], ["9", "SIGKILL", "terminate"], ["10", "SIGUSR1", "terminate"], ["11", "SIGSEGV", "core dump"], ["12", "SIGUSR2", "terminate"], ["13", "SIGPIPE", "terminate"], ["14", "SIGALRM", "terminate"], ["15", "SIGTERM", "terminate"]]), "The first fifteen POSIX signals with their Linux numbers and default actions, from the hangup to the polite request to terminate.", ["Unix Signals", "Linux numbering, 1 to 15"], "Unix Signal Table");

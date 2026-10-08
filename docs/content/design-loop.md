@@ -70,6 +70,7 @@ publish.ts, generate) is the owner's, after review.
    word about the shop's taste or best sellers (an earlier panel told those drifted towards archive engraving
    and kept marking a photographic design down). On a white tee: ink where alpha > 127, colour (22,22,22),
    paper (244,243,240).
+   (Scoring the shop's existing designs is a different job, with a calibrated brief: [panel-oct-2026.md](panel-oct-2026.md).)
 5. **Repeat 3–4.** Apply the fixes most designers agree on (two or more). Stop when the average is **above
    8** (done), or when the fixes stop helping: they contradict each other, ask for something the source can't
    give, or the score hasn't risen for two rounds; at most five rounds.

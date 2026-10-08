@@ -1292,6 +1292,11 @@ function calibrationIds(catalog: CatalogEntry[]): string[] {
   const floor = q[Math.floor(q.length * 0.75)];
   const leaders = new Map<string, CatalogEntry>();
   for (const s of catalog) if (s.quality >= floor && !isWeak(s) && !leaders.has(s.family)) leaders.set(s.family, s);
+  // The taste test needs a photograph: when none reaches the top quarter, the strongest one comes in (Oct 2026).
+  if (![...leaders.values()].some(isPhoto)) {
+    const photo = catalog.filter((s) => isPhoto(s) && !isWeak(s)).sort((a, b) => b.quality - a.quality || a.n - b.n)[0];
+    if (photo) leaders.set(photo.family, photo);
+  }
   const queue = getCalibrationQueue([...leaders.values()], CALIBRATION_SIZE, (s) => s.category, isPhoto);
   // The first card is a graphic (drawn), the boldest one.
   const bold = (s: CatalogEntry) => s.features.contrast + s.features.density + (s.medium === "drawn" ? 10 : 0);

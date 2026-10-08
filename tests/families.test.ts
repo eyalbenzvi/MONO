@@ -26,10 +26,20 @@ function rng(seed = 7) {
 const CALIBRATION = [...CALIBRATION_IDS];
 
 /** The categories with a print in the top quarter for quality that isn't weak (the taste test's candidates). */
-function strongCategories() {
+/** The taste test's candidates: each family's first design in the top quarter for quality (never a weak one), and the strongest photograph when none reaches it. */
+function tasteLeaders() {
   const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
   const floor = q[Math.floor(q.length * 0.75)];
-  return new Set(FULL.filter((s) => s.quality >= floor && !isWeak(s)).map((s) => s.category)).size;
+  const leaders = new Map([...FULL].reverse().filter((s) => s.quality >= floor && !isWeak(s)).map((s) => [s.family, s]));
+  if (![...leaders.values()].some(isPhoto)) {
+    const photo = FULL.filter((s) => isPhoto(s) && !isWeak(s)).sort((a, b) => b.quality - a.quality || a.n - b.n)[0];
+    if (photo) leaders.set(photo.family, photo);
+  }
+  return [...leaders.values()].sort((a, b) => a.n - b.n);
+}
+
+function strongCategories() {
+  return new Set(tasteLeaders().map((s) => s.category)).size;
 }
 
 /** Play Discover: always swipe the top card, alternating like/pass. */
@@ -159,11 +169,7 @@ describe("display pacing", () => {
 
 describe("precomputed calibration (I8)", () => {
   it("matches the runtime algorithm: farthest-point over family leaders in the top quarter for quality, a graphic first", () => {
-    // Each family's first design in the top quarter for quality (never a weak one).
-    const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
-    const floor = q[Math.floor(q.length * 0.75)];
-    const leaders = [...new Map([...FULL].reverse().filter((s) => s.quality >= floor && !isWeak(s)).map((s) => [s.family, s])).values()].sort((a, b) => a.n - b.n);
-    const queue = getCalibrationQueue(leaders, 10, (s) => s.category, isPhoto);
+    const queue = getCalibrationQueue(tasteLeaders(), 10, (s) => s.category, isPhoto);
     const bold = (s: (typeof queue)[number]) => s.features.contrast + s.features.density + (s.medium === "drawn" ? 10 : 0);
     const opener = queue.reduce((best, s) => (bold(s) > bold(best) ? s : best), queue[0]);
     expect(CALIBRATION_IDS).toEqual([opener, ...queue.filter((s) => s !== opener)].map((s) => s.id));
@@ -180,6 +186,9 @@ describe("precomputed calibration (I8)", () => {
     expect(photos).toBeLessThanOrEqual(2);
     expect(test[0].medium).toBe("drawn");
     const q = FULL.map((s) => s.quality).sort((a, b) => a - b);
-    for (const s of test) expect(s.quality, s.id).toBeGreaterThanOrEqual(q[Math.floor(q.length * 0.75)]);
+    // Every print is in the top quarter, but the photograph may be the strongest one below it (none reaches it).
+    const floor = q[Math.floor(q.length * 0.75)];
+    const best = Math.max(...FULL.filter((s) => s.medium === "photo").map((s) => s.quality));
+    for (const s of test) expect(s.quality, s.id).toBeGreaterThanOrEqual(s.medium === "photo" ? Math.min(floor, best) : floor);
   });
 });

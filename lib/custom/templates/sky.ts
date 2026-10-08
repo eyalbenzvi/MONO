@@ -5,7 +5,7 @@
  * the personalised ones are this function with different inputs.
  */
 import { altAzOf, siderealTime } from "../astro";
-import { DEG, STROKE, caption, circle, dot, line, path, polyline, text } from "../kit";
+import { DEG, STROKE, caption, circle, dot, f1, julian, line, path, polyline, text } from "../kit";
 
 export interface SkyData {
   /** [ra°, dec°, magnitude]. */
@@ -110,5 +110,47 @@ function makeChart({ stars, lines }: SkyData, place: { lat: number; lon: number 
   return body;
 }
 
+/**
+ * Sputnik 1 over its pad: PS-1 went up into an orbit inclined 65.1°, so from
+ * Baikonur it climbed away to the north-east (launch azimuth asin(cos i / cos φ),
+ * about 37°). The plane of that first orbit, seen from the pad, is a great circle
+ * through the zenith: on the chart's stereographic projection (centre 150,160,
+ * horizon radius 118, north up, east on the left) a straight dashed line across
+ * the sky, the satellite on it heading north-east. #010101 is the ground colour
+ * (the wrapper's), so the track and the satellite cut cleanly through the stars.
+ */
+function sputnikTrack(lat: number): string {
+  const CX = 150, CY = 160, R = 118;
+  const az = Math.asin(Math.cos(65.1 * DEG) / Math.cos(lat * DEG));
+  const at = (r: number, a: number): [number, number] => [CX - r * Math.sin(a), CY - r * Math.cos(a)];
+  const track = polyline([at(R - 3, az + Math.PI), at(R - 3, az)]);
+  let s = `<path d="${track}" fill="none" stroke="#010101" stroke-width="3.2" stroke-linecap="round"/>` + path(track, 0.8, ` stroke-dasharray="3.2 2.4"`);
+  // The satellite: a ball with its four swept-back antennae, on a ground-coloured disc.
+  const [x, y] = at(R * 0.58, az);
+  const [ux, uy] = [-Math.sin(az), -Math.cos(az)]; // heading, on the page
+  const [vx, vy] = [-uy, ux];
+  s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="7.5" fill="#010101"/>`;
+  for (const k of [-1, -0.35, 0.35, 1]) s += line(x - ux * 1.5 + vx * k * 1.3, y - uy * 1.5 + vy * k * 1.3, x - ux * 7 + vx * k * 3.4, y - uy * 7 + vy * k * 3.4, 0.5);
+  s += dot(x, y, 2.4);
+  const [lx, ly] = [x + vx * 9 + 1, y + vy * 9 - 1];
+  s += `<rect x="${f1(lx - 3)}" y="${f1(ly - 6.5)}" width="22.5" height="9" fill="#010101"/>` + text(lx, ly, "PS-1", 6, { bold: true, spacing: 0.4, anchor: "start" });
+  return s;
+}
+
+/** Launches the catalogue's charts mark: the pad and the moment (UT, as a Julian date). */
+const LAUNCHES = [{ lat: 45.92, lon: 63.342, jd: julian(1957, 10, 4, 19, 28), track: sputnikTrack, what: "the launch of Sputnik 1" }];
+
 /** The chart and its caption: the print's body (white ink, unwrapped). */
-export const skyBody = (input: SkyInput, data: SkyData) => skyChart(data, input.place, input.jd, input.make) + caption(318, input.caption.title, input.caption.sub, input.caption.sub2);
+export const skyBody = (input: SkyInput, data: SkyData) => {
+  const launch = input.make ? undefined : LAUNCHES.find((l) => Math.abs(l.lat - input.place.lat) < 1e-6 && Math.abs(l.lon - input.place.lon) < 1e-6 && Math.abs(l.jd - input.jd) < 1 / 1440);
+  if (!launch) return skyChart(data, input.place, input.jd, input.make) + caption(318, input.caption.title, input.caption.sub, input.caption.sub2);
+  // A launch night: the launch drawn on the sky, the place set large with the date and the event close under it.
+  const { title, sub, sub2 } = input.caption;
+  return (
+    skyChart(data, input.place, input.jd) +
+    launch.track(input.place.lat) +
+    (title ? text(150, 320, title.toUpperCase(), 16, { bold: true, spacing: 3 }) : "") +
+    (sub ? text(150, 333, sub, 7.5) : "") +
+    text(150, 343, sub2 ? `${sub2} · ${launch.what}` : launch.what, 6.2)
+  );
+};

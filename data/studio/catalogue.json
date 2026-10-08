@@ -686,10 +686,10 @@
   "mode": "line",
   "quality": 87,
   "printCm": {
-   "width": 12,
+   "width": 14,
    "height": 35
   },
-  "coverage": 0.091,
+  "coverage": 0.126,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50/05-2-fern-frond/sources/brief.txt"
  },
  {
@@ -1564,12 +1564,12 @@
   "baseColor": "black",
   "single": false,
   "mode": "line",
-  "quality": 87,
+  "quality": 88,
   "printCm": {
    "width": 26,
    "height": 29
   },
-  "coverage": 0.278,
+  "coverage": 0.277,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/run50b/01-3-sea-urchin/sources/brief.txt"
  },
  {
@@ -3359,10 +3359,10 @@
   "mode": "line",
   "quality": 78,
   "printCm": {
-   "width": 21,
+   "width": 18,
    "height": 35
   },
-  "coverage": 0.088,
+  "coverage": 0.077,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/sdxl50/05-2-antique-telescope/sources/brief.txt",
   "model": "sdxl"
  },
@@ -4657,9 +4657,9 @@
   "quality": 75,
   "printCm": {
    "width": 21,
-   "height": 34
+   "height": 33
   },
-  "coverage": 0.232,
+  "coverage": 0.213,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/archive1/02-1-nobody-had-looked/sources/brief.txt",
   "model": "archive",
   "credit": "Robert Hooke, Micrographia (1665), Schem. XXXIV, the flea. Wellcome Collection, L0084699, CC BY 4.0: https://wellcomecollection.org/works/jrp59aem. Traced to one ink, cropped and captioned by MONO.",
@@ -5122,9 +5122,9 @@
   "quality": 75,
   "printCm": {
    "width": 26,
-   "height": 25
+   "height": 27
   },
-  "coverage": 0.09,
+  "coverage": 0.087,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/eiger1/01-1-eiger/sources/brief.txt",
   "features": {
    "line_art": 0.85,
@@ -5429,10 +5429,10 @@
   "mode": "line",
   "quality": 73,
   "printCm": {
-   "width": 24,
+   "width": 26,
    "height": 35
   },
-  "coverage": 0.088,
+  "coverage": 0.092,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready2/03-1-fermenter/sources/brief.txt",
   "features": {
    "line_art": 0.9,
@@ -5478,10 +5478,10 @@
   "mode": "line",
   "quality": 69,
   "printCm": {
-   "width": 23,
-   "height": 35
+   "width": 25,
+   "height": 26
   },
-  "coverage": 0.075,
+  "coverage": 0.062,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready2/04-1-oak-barrel/sources/brief.txt",
   "features": {
    "line_art": 0.95,
@@ -5682,7 +5682,7 @@
    "width": 26,
    "height": 33
   },
-  "coverage": 0.096,
+  "coverage": 0.128,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready3/01-1-summit-ridge/sources/brief.txt",
   "features": {
    "line_art": 0.9,
@@ -6120,7 +6120,7 @@
    "width": 19,
    "height": 35
   },
-  "coverage": 0.094,
+  "coverage": 0.093,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready3/10-1-el-calafate-signpost/sources/brief.txt",
   "features": {
    "line_art": 0.85,
@@ -6217,10 +6217,10 @@
   "mode": "line",
   "quality": 69,
   "printCm": {
-   "width": 26,
-   "height": 28
+   "width": 25,
+   "height": 22
   },
-  "coverage": 0.118,
+  "coverage": 0.113,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready3/12-1-belize/sources/brief.txt",
   "features": {
    "line_art": 0.85,
@@ -6420,7 +6420,7 @@
    "width": 26,
    "height": 26
   },
-  "coverage": 0.194,
+  "coverage": 0.187,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/ready4/04-1-san-juan-del-sur/sources/brief.txt",
   "features": {
    "line_art": 0.9,
@@ -6879,9 +6879,9 @@
   "quality": 71,
   "printCm": {
    "width": 26,
-   "height": 30
+   "height": 31
   },
-  "coverage": 0.113,
+  "coverage": 0.112,
   "briefUrl": "https://github.com/eyalbenzvi/MONO/blob/claude/tshirt-discovery-mvp-pc6mk9/data/studio/best1/01-1-probably-fine/sources/brief.txt",
   "features": {
    "typography": 0.6,
