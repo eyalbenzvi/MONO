@@ -136,7 +136,7 @@ describe("Part 8: For you, simulated for three tastes", () => {
   it("each sees at least six categories in the first 24, and no subject twice", async () => {
     const { dedupeByFamily, diversify } = await import("@/lib/catalog");
     const { updateUserVector } = await import("@/lib/recommendation");
-    const tastes: ((s: (typeof SHIRTS)[number]) => boolean)[] = [(s) => s.medium === "photo", (s) => s.category === "sky" || s.category === "pattern", (s) => ["plants", "animals", "microscope"].includes(s.category)];
+    const tastes: ((s: (typeof SHIRTS)[number]) => boolean)[] = [(s) => s.medium === "photo", (s) => s.category === "sky", (s) => ["plants", "animals", "microscope"].includes(s.category)];
     for (const likes of tastes) {
       let v = createInitialVector();
       const strong = SHIRTS.filter((s) => !s.weak);

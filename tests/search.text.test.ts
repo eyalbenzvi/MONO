@@ -119,7 +119,7 @@ describe("search: label case", () => {
     }
     const subjects = subjectChips(index, SHIRTS).map((s) => s.label);
     // (The designers' second review took out the NASA photographs: "NASA" is no longer a subject.)
-    expect(subjects).toEqual(expect.arrayContaining(["New York", "New England"]));
+    expect(subjects).toEqual(expect.arrayContaining(["New England"]));
     expect(file.tables.style.map((e) => e.label)).toEqual(expect.arrayContaining(["Line art", "Illustration"]));
     // (Halley's orbit is no longer in the shop; its label still is the runtime's.)
     expect(VARIANT_LABELS["orbit-halley"]).toBe("Halley’s orbit");

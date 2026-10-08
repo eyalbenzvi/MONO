@@ -97,7 +97,6 @@ export const SHIRT_CATEGORIES = [
   "sky",
   "workshop",
   "type",
-  "pattern",
 ] as const;
 export type ShirtCategory = (typeof SHIRT_CATEGORIES)[number];
 
@@ -111,7 +110,6 @@ export const CATEGORY_LABELS: Record<ShirtCategory, string> = {
   sky: "Sky & Science",
   workshop: "Workshop & Kitchen",
   type: "Type & Wit",
-  pattern: "Pattern & Ornament",
 };
 
 /**
@@ -149,7 +147,7 @@ export const LEGACY_TO_SHOP: Record<LegacyCategory, ShirtCategory> = {
   architecture: "architecture",
   etched: "travel",
   brush: "travel",
-  pattern: "pattern",
+  pattern: "architecture", // Pattern & Ornament closed (Oct 2026): ornament goes with Architecture & Towns
   systems: "sky",
   type: "type",
   terminal: "type",
@@ -166,11 +164,10 @@ export const CATEGORY_VIBES: Record<ShirtCategory, string> = {
   microscope: "Cells, crystals, diatoms and the small world, drawn as the naturalists saw it.",
   ships: "Sail plans, hulls, knots, lighthouses and the sea.",
   travel: "Places worth the trip: coasts, towns, mountains and the badges they leave.",
-  architecture: "Buildings and towns: elevations, views and measured drawings.",
+  architecture: "Buildings and towns: elevations, views, measured drawings and their ornament.",
   sky: "Star charts of the real sky, orbits, maps and the instruments that read them.",
   workshop: "Tools, machines, engines and the kitchen bench, drawn to be made.",
   type: "Words, alphabets, slogans and real data set in type.",
-  pattern: "Lace, stencils, rosettes, tiles and curves drawn from their equations.",
 };
 
 /** A photograph (Medium "photo"): never inverted for the other tee colour — that would make a negative. */

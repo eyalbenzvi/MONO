@@ -73,9 +73,10 @@ describe("generated catalog (data/shirts.json)", () => {
     }
   });
 
-  it("the shop's ten categories by subject, in their order, each at least 5% of the shop and none swamping it", () => {
-    expect([...SHIRT_CATEGORIES]).toEqual(["plants", "animals", "microscope", "ships", "travel", "architecture", "sky", "workshop", "type", "pattern"]);
-    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Plants & Gardens", "Animals", "Under the Microscope", "Ships & Sea", "Travel & Landscapes", "Architecture & Towns", "Sky & Science", "Workshop & Kitchen", "Type & Wit", "Pattern & Ornament"]);
+  it("the shop's nine categories by subject, in their order, each at least 5% of the shop and none swamping it", () => {
+    // (Pattern & Ornament closed after the calibrated panel left it three designs, Oct 2026.)
+    expect([...SHIRT_CATEGORIES]).toEqual(["plants", "animals", "microscope", "ships", "travel", "architecture", "sky", "workshop", "type"]);
+    expect(SHIRT_CATEGORIES.map((c) => CATEGORY_LABELS[c])).toEqual(["Plants & Gardens", "Animals", "Under the Microscope", "Ships & Sea", "Travel & Landscapes", "Architecture & Towns", "Sky & Science", "Workshop & Kitchen", "Type & Wit"]);
     for (const c of SHIRT_CATEGORIES) {
       const count = SHIRTS.filter((s) => s.category === c).length;
       expect(count, c).toBeGreaterThanOrEqual(Math.ceil(SHIRTS.length * 0.05));

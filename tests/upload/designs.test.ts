@@ -20,7 +20,8 @@ describe("Open Call designs on this device", () => {
     storage.setItem("mono-make", JSON.stringify({ state: { offers: { u1abc: offer() } }, version: 1 }));
     const { getShirtById, SHIRTS, creditLine } = await fresh();
     const p = getShirtById("mono-u-k1")!;
-    expect(p).toMatchObject({ id: "mono-u-k1", title: "Heron at Dusk", category: "pattern", colors: ["white", "black"], baseColor: "white" });
+    // An offer saved under the closed Pattern & Ornament category is shown under Architecture & Towns.
+    expect(p).toMatchObject({ id: "mono-u-k1", title: "Heron at Dusk", category: "architecture", colors: ["white", "black"], baseColor: "white" });
     expect(SHIRTS.some((s) => s.id === "mono-u-k1")).toBe(false);
     expect(creditLine(offer())).toBe("By Noa L. · Open Call 01");
   });

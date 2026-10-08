@@ -25,7 +25,7 @@ function Sheet({ uploadId, onClose }: { uploadId: string; onClose: () => void })
   const panel = useRef<HTMLDivElement>(null);
   useFocusTrap(panel, true, onClose);
   const [title, setTitle] = useState(meta?.title ?? "");
-  const [category, setCategory] = useState<ShirtCategory>(asShopCategory(meta?.category) ?? "pattern");
+  const [category, setCategory] = useState<ShirtCategory>(asShopCategory(meta?.category) ?? "travel");
   const [credit, setCredit] = useState("");
   const [own, setOwn] = useState(false);
   const [error, setError] = useState<string | null>(null);

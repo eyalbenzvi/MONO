@@ -11,7 +11,7 @@ import {
   updateUserVector,
 } from "@/lib/recommendation";
 import { SHIRTS } from "@/lib/catalog";
-import { FEATURE_KEYS, createInitialVector, type FeatureVector } from "@/types/shirt";
+import { FEATURE_KEYS, SHIRT_CATEGORIES, createInitialVector, type FeatureVector } from "@/types/shirt";
 
 const vec = (fill: (i: number) => number): FeatureVector =>
   Object.fromEntries(FEATURE_KEYS.map((k, i) => [k, fill(i)])) as FeatureVector;
@@ -110,7 +110,7 @@ describe("getCalibrationQueue", () => {
 
   it("probes every generative category", () => {
     const cats = new Set(getCalibrationQueue(SHIRTS, 10, (s) => s.category).map((s) => s.category));
-    expect(cats.size).toBe(10);
+    expect(cats.size).toBe(Math.min(10, SHIRT_CATEGORIES.length));
   });
 
   it("handles small inputs", () => {

@@ -151,6 +151,7 @@ const LEGACY_LABELS: Record<string, LegacyCategory> = {
   engravings: "etched",
   "brush & woodblock": "brush",
   pattern: "pattern",
+  "pattern & ornament": "pattern", // the shop label until Oct 2026; its designs now go to Architecture & Towns
   geometric: "systems",
   type: "type",
   "ascii & code": "terminal",

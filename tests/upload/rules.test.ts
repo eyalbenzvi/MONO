@@ -124,13 +124,13 @@ describe("uploads: features and category (brief 6.6)", () => {
     }
   }, 60_000);
 
-  it("the category rule: photo (travel), then type, geometric (pattern), detailed (travel), pattern", () => {
+  it("the category rule: photo (travel), then type, geometric (sky), anything else (travel)", () => {
     const photoC = conv({ cls: "photo" });
     expect(category(photoC, { typography: 1, geometric: 1 }, { detail: 1 })).toBe("travel");
     expect(category(conv({}), { typography: 0.5, geometric: 1 }, { detail: 1 })).toBe("type");
-    expect(category(conv({}), { typography: 0.49, geometric: 0.6 }, { detail: 1 })).toBe("pattern");
+    expect(category(conv({}), { typography: 0.49, geometric: 0.6 }, { detail: 1 })).toBe("sky");
     expect(category(conv({}), { typography: 0.49, geometric: 0.59 }, { detail: 0.5 })).toBe("travel");
-    expect(category(conv({}), { typography: 0.49, geometric: 0.59 }, { detail: 0.49 })).toBe("pattern");
+    expect(category(conv({}), { typography: 0.49, geometric: 0.59 }, { detail: 0.49 })).toBe("travel");
   });
 
   it("the measures move the right way: a regular grid repeats, rings are symmetric, a row of letters reads as text", () => {

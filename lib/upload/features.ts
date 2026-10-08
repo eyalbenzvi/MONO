@@ -215,9 +215,8 @@ export function measured(conv: Converted, m: Measures, priors: Priors = PRIORS a
 export function category(conv: Converted, f: Pick<FeatureVector, "typography" | "geometric">, m: Pick<Measures, "detail">): ShirtCategory {
   if (conv.cls === "photo") return "travel";
   if (f.typography >= 0.5) return "type";
-  if (f.geometric >= 0.6) return "pattern";
-  if (m.detail >= 0.5) return "travel";
-  return "pattern";
+  if (f.geometric >= 0.6) return "sky";
+  return "travel";
 }
 
 /** The upload's full feature vector: the measured axes, the rest from its category's catalogue mean. */

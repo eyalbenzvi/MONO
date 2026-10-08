@@ -221,9 +221,9 @@ describe("search: expert review (algorithm and content)", () => {
     for (const [q, to] of [["gatxs ", "gate"], ["engnie ", "engin"]]) expect(run(q).corrected.map((c) => stem(c.to)), q).toContain(to);
   });
 
-  it("a catalogue word beats a lexicon word as the correction, and a typo in an -ing ending still finds the word (woodx, lookxng)", () => {
-    // "woodx" is one letter from the catalogue's "woods" and from the lexicon's "wood": the catalogue's word wins.
-    expect(run("woodx ").corrected.map((c) => c.to)).toContain("woods");
+  it("a catalogue word beats a lexicon word as the correction, and a typo in an -ing ending still finds the word (shipx, lookxng)", () => {
+    // "shipx" is one letter from the catalogue's "ships" and from the lexicon's "ship": the catalogue's word wins.
+    expect(run("shipx ").corrected.map((c) => c.to)).toContain("ships");
     expect(run("lookxng ").corrected.length).toBeGreaterThan(0);
   });
 

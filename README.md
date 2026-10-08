@@ -2,7 +2,7 @@
 
 Swipe ten tees and the shop edits itself to your taste. Every print is a single ink on a black or white tee. A vector recommendation engine learns your taste as you swipe, then opens the shop as **your edit**.
 
-## Catalogue: 172 tees in 10 categories by subject
+## Catalogue: 148 tees in 9 categories by subject
 
 The catalogue is offline and deterministic. `scripts/generateCatalog.ts` (seeded; two runs are byte-identical) builds every design it has ever made — so ids never move — then takes out what the reviews retired (with the reason, logged per run) and writes:
 
@@ -21,7 +21,7 @@ npm run audit:prints   # renders every print in Chromium and flags text that ove
 
 Generator modules: `scripts/gen/core.ts` (randomness, geometry, contracts) · `legacy.ts`, `expansion.ts`, `set3/` (the first sets, ids 1–2800, mostly retired) · `set5/` (ids 3401–3830: star charts, curves, plants by rule, ornament) · `set7/` (ids from 7001: designs made from real data) · `quality.ts` (the solid-block check and the quality score) · `retire.ts` (the reviews' removals) · `titles.ts` (titles that name what you see) · `categories.ts` (the shop's categories) · `describe.ts` (closing lines, each used at most 20 times).
 
-The shop's ten categories go by subject, what a design shows (`types/shirt.ts` `SHIRT_CATEGORIES`). Every design in the shop is filed by hand in `scripts/gen/shopCategories.json`; each category holds at least 5% of the shop (`tests/catalog.test.ts`). A new studio design files itself through its details' Category line (one of the labels below). The generator still files each design its old way (`LegacyCategory`: Photographs, Engravings, Brush & Woodblock and the rest) for its features, screen and SKU, so a design keeps the SKU it was first sold under (the index stores the code); an old address (`?cat=specimens`, `?m=photo`) opens the category most of its designs went to.
+The shop's nine categories go by subject, what a design shows (`types/shirt.ts` `SHIRT_CATEGORIES`). Every design in the shop is filed by hand in `scripts/gen/shopCategories.json`; each category holds at least 5% of the shop (`tests/catalog.test.ts`). A new studio design files itself through its details' Category line (one of the labels below). The generator still files each design its old way (`LegacyCategory`: Photographs, Engravings, Brush & Woodblock and the rest) for its features, screen and SKU, so a design keeps the SKU it was first sold under (the index stores the code); an old address (`?cat=specimens`, `?m=photo`) opens the category most of its designs went to. Pattern & Ornament closed in October 2026, when the calibrated design panel (all six designers, design only) retired 33 designs and left it three; its designs and an old `?cat=pattern` go to Architecture & Towns.
 
 | Category (key) | What's in it |
 | --- | --- |
@@ -30,11 +30,10 @@ The shop's ten categories go by subject, what a design shows (`types/shirt.ts` `
 | **Under the Microscope** (`microscope`) | cells, diatoms, radiolaria, crystals and the small world as the naturalists drew it |
 | **Ships & Sea** (`ships`) | sail plans, hulls, knots, lighthouses, waves and the coast |
 | **Travel & Landscapes** (`travel`) | mountains, coasts and towns worth the trip, and the badges they leave |
-| **Architecture & Towns** (`architecture`) | etched views of buildings and cities, elevations and measured drawings |
+| **Architecture & Towns** (`architecture`) | etched views of buildings and cities, elevations, measured drawings and ornament |
 | **Sky & Science** (`sky`) | constellations on their real stars, orbits, the moon, maps, curves and the instruments that read them |
 | **Workshop & Kitchen** (`workshop`) | tools, machines, engines, patent models and the kitchen bench |
 | **Type & Wit** (`type`) | words, alphabets, slogans and real data set in type |
-| **Pattern & Ornament** (`pattern`) | lace, ornament prints and stencils, rosettes and tiles |
 
 ### Photographs
 

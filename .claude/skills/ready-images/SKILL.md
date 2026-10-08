@@ -69,7 +69,7 @@ catalogue step, the checks, the commit and the report are each done **once for t
    with `both`) and `features` into `print.json`.
 5. **Details.** Write `<slug>.txt` in the shape of design-loop.md's "Delivery": Title (what it shows),
    Category (a shop label, by subject: Plants & Gardens, Animals, Under the Microscope, Ships & Sea, Travel &
-   Landscapes, Architecture & Towns, Sky & Science, Workshop & Kitchen, Type & Wit, Pattern & Ornament), Family, Subject, Style, Medium, Description (two sentences, facts checked or left
+   Landscapes, Architecture & Towns, Sky & Science, Workshop & Kitchen, Type & Wit), Family, Subject, Style, Medium, Description (two sentences, facts checked or left
    out), Tee colours, Print size (from `print.json`), Keywords, Model, Credit and source (from the intake
    answer, plus every retouch you made, as Wok Hei's does), Licence. Read the subject from the picture, and
    don't make it up: an object you can't identify gets a plain title.
